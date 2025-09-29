@@ -12,11 +12,12 @@ import { MASSAGE_TYPES_CATEGORIZED } from '../constants';
 interface PlaceDashboardPageProps {
     onSave: (data: Omit<Place, 'id' | 'isLive' | 'rating' | 'reviewCount'>) => void;
     onBack: () => void;
+    onLogout: () => void;
     place?: Place | null;
     t: any;
 }
 
-const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onBack, place, t }) => {
+const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onBack, onLogout, place, t }) => {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [mainImage, setMainImage] = useState('');
@@ -87,6 +88,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onBack,
     const handleSave = () => {
         onSave({
             name,
+            email: place?.email || '',
             description,
             mainImage,
             thumbnailImages,
@@ -153,13 +155,9 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onBack,
 
     return (
         <div className="min-h-screen bg-gray-50 p-4">
-             <header className="flex justify-between items-center mb-6 relative">
-                 <button onClick={onBack} className="absolute left-0 text-gray-600 hover:text-gray-800">
-                     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                </button>
-                <h1 className="text-2xl font-bold text-gray-800 text-center flex-grow">{t.placeTitle}</h1>
+             <header className="flex justify-between items-center mb-6">
+                <h1 className="text-2xl font-bold text-gray-800">{t.placeTitle}</h1>
+                <Button onClick={onLogout} variant="secondary" className="w-auto px-4 py-2 text-sm">{t.logoutButton}</Button>
             </header>
 
             <div className={`p-4 rounded-lg mb-6 text-center text-sm font-medium ${place?.isLive ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>

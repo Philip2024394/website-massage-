@@ -13,6 +13,8 @@ export interface Pricing {
 export interface Therapist {
     id: number;
     name: string;
+    email: string;
+    password?: string;
     profilePicture: string;
     description: string;
     status: AvailabilityStatus;
@@ -30,6 +32,8 @@ export interface Therapist {
 export interface Place {
     id: number;
     name: string;
+    email: string;
+    password?: string;
     description: string;
     mainImage: string;
     thumbnailImages: string[];

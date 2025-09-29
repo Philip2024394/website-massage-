@@ -1,5 +1,6 @@
 
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import type { User, Place, Therapist } from './types';
 import { AvailabilityStatus } from './types';
 import AuthPage from './pages/AuthPage';
@@ -15,11 +16,12 @@ import PlaceDashboardPage from './pages/PlaceDashboardPage';
 import AgentPage from './pages/AgentPage';
 import ServiceTermsPage from './pages/ServiceTermsPage';
 import Footer from './components/Footer';
+import ProviderAuthPage from './pages/ProviderAuthPage';
 
 import { translations } from './translations';
 import { MOCK_THERAPISTS, MOCK_PLACES } from './constants';
 
-type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'serviceTerms';
+type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'serviceTerms';
 type Language = 'en' | 'id';
 type LoggedInProvider = { id: number; type: 'therapist' | 'place' };
 
@@ -30,10 +32,32 @@ const App: React.FC = () => {
     const [language, setLanguage] = useState<Language>('en');
     const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
     const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
-    const [loggedInProvider, setLoggedInProvider] = useState<LoggedInProvider | null>(null);
-
+    
     const [therapists, setTherapists] = useState<Therapist[]>(MOCK_THERAPISTS);
     const [places, setPlaces] = useState<Place[]>(MOCK_PLACES);
+    
+    // Provider auth state
+    const [loggedInProvider, setLoggedInProvider] = useState<LoggedInProvider | null>(null);
+    const [providerAuthInfo, setProviderAuthInfo] = useState<{ type: 'therapist' | 'place', mode: 'login' | 'register' } | null>(null);
+
+
+    useEffect(() => {
+        const storedProvider = localStorage.getItem('loggedInProvider');
+        if (storedProvider) {
+            try {
+                const providerData = JSON.parse(storedProvider);
+                setLoggedInProvider(providerData);
+                if (providerData.type === 'therapist') {
+                    setPage('therapistDashboard');
+                } else {
+                    setPage('placeDashboard');
+                }
+            } catch (error) {
+                console.error("Failed to parse loggedInProvider from localStorage", error);
+                localStorage.removeItem('loggedInProvider');
+            }
+        }
+    }, []);
 
     const t = translations[language];
 
@@ -68,8 +92,7 @@ const App: React.FC = () => {
 
     const handleBackToHome = () => {
         setSelectedPlace(null);
-        setLoggedInProvider(null);
-        setIsAdminLoggedIn(false);
+        setProviderAuthInfo(null);
         setPage('home');
     };
     
@@ -98,15 +121,94 @@ const App: React.FC = () => {
     };
 
     const handleSelectRegistration = (type: 'therapist' | 'place') => {
-        if (type === 'therapist') {
-            const newId = Date.now();
-            setLoggedInProvider({ id: newId, type: 'therapist' });
-            setPage('therapistDashboard');
-        } else {
-            const newId = Date.now();
-            setLoggedInProvider({ id: newId, type: 'place' });
-            setPage('placeDashboard');
+        setProviderAuthInfo({ type, mode: 'register' });
+        setPage('providerAuth');
+    };
+    
+    const handleProviderRegister = (email: string, password: string): {success: boolean, message: string} => {
+        if (!providerAuthInfo) return { success: false, message: t.providerAuth.genericError };
+
+        const emailExists = therapists.some(t => t.email === email) || places.some(p => p.email === email);
+        if (emailExists) {
+            return { success: false, message: t.providerAuth.emailExistsError };
         }
+
+        const newId = Date.now();
+        if (providerAuthInfo.type === 'therapist') {
+            const nextMonth = new Date();
+            nextMonth.setMonth(nextMonth.getMonth() + 1);
+            const newTherapist: Therapist = {
+                id: newId,
+                email,
+                password,
+                name: '',
+                profilePicture: '',
+                description: '',
+                status: AvailabilityStatus.Offline,
+                pricing: { 60: 0, 90: 0, 120: 0 },
+                whatsappNumber: '',
+                distance: 0,
+                rating: 0,
+                reviewCount: 0,
+                massageTypes: [],
+                isLive: false,
+                location: '',
+                activeMembershipDate: nextMonth.toISOString().split('T')[0],
+            };
+            setTherapists(prev => [...prev, newTherapist]);
+        } else {
+             const newPlace: Place = {
+                id: newId,
+                email,
+                password,
+                name: '',
+                description: '',
+                mainImage: '',
+                thumbnailImages: [],
+                pricing: { 60: 0, 90: 0, 120: 0 },
+                whatsappNumber: '',
+                distance: 0,
+                rating: 0,
+                reviewCount: 0,
+                massageTypes: [],
+                isLive: false,
+                location: '',
+            };
+            setPlaces(prev => [...prev, newPlace]);
+        }
+        
+        setProviderAuthInfo(prev => prev ? { ...prev, mode: 'login' } : null);
+        return { success: true, message: t.providerAuth.registerSuccess };
+    };
+
+    const handleProviderLogin = (email: string, password: string): {success: boolean, message: string} => {
+        const therapist = therapists.find(t => t.email === email && t.password === password);
+        if (therapist) {
+            const providerData = { id: therapist.id, type: 'therapist' as const };
+            setLoggedInProvider(providerData);
+            localStorage.setItem('loggedInProvider', JSON.stringify(providerData));
+            setPage('therapistDashboard');
+            setProviderAuthInfo(null);
+            return { success: true, message: '' };
+        }
+
+        const place = places.find(p => p.email === email && p.password === password);
+        if (place) {
+            const providerData = { id: place.id, type: 'place' as const };
+            setLoggedInProvider(providerData);
+            localStorage.setItem('loggedInProvider', JSON.stringify(providerData));
+            setPage('placeDashboard');
+            setProviderAuthInfo(null);
+            return { success: true, message: '' };
+        }
+        
+        return { success: false, message: t.providerAuth.invalidCredentialsError };
+    };
+
+    const handleProviderLogout = () => {
+        setLoggedInProvider(null);
+        localStorage.removeItem('loggedInProvider');
+        setPage('home');
     };
 
     const handleSaveTherapist = (therapistData: Omit<Therapist, 'id' | 'isLive' | 'rating' | 'reviewCount' | 'activeMembershipDate'>) => {
@@ -116,6 +218,7 @@ const App: React.FC = () => {
             const updatedTherapist = { ...existingTherapist, ...therapistData };
             setTherapists(therapists.map(t => t.id === loggedInProvider!.id ? updatedTherapist : t));
         } else {
+            // This case should ideally not be hit in the new flow, but kept as a fallback.
             const nextMonth = new Date();
             nextMonth.setMonth(nextMonth.getMonth() + 1);
             const newTherapist: Therapist = {
@@ -165,11 +268,20 @@ const App: React.FC = () => {
                             onCreateProfileClick={handleNavigateToRegistrationChoice}
                             t={t} />;
             case 'detail': return selectedPlace && <PlaceDetailPage place={selectedPlace} onBack={handleBackToHome} t={t.detail} />;
-            case 'adminLogin': return <AdminLoginPage onAdminLogin={handleAdminLogin} t={t.adminLogin} />;
-            case 'adminDashboard': return isAdminLoggedIn ? <AdminDashboardPage therapists={therapists} places={places} onToggleTherapist={handleToggleTherapistLive} onTogglePlace={handleTogglePlaceLive} onLogout={handleAdminLogout} t={t.adminDashboard} /> : <AdminLoginPage onAdminLogin={handleAdminLogin} t={t.adminLogin} />;
+            case 'adminLogin': return <AdminLoginPage onAdminLogin={handleAdminLogin} onBack={handleBackToHome} t={t.adminLogin} />;
+            case 'adminDashboard': return isAdminLoggedIn ? <AdminDashboardPage therapists={therapists} places={places} onToggleTherapist={handleToggleTherapistLive} onTogglePlace={handleTogglePlaceLive} onLogout={handleAdminLogout} t={t.adminDashboard} /> : <AdminLoginPage onAdminLogin={handleAdminLogin} onBack={handleBackToHome} t={t.adminLogin} />;
             case 'registrationChoice': return <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice} />;
-            case 'therapistDashboard': return loggedInProvider ? <TherapistDashboardPage onSave={handleSaveTherapist} onBack={handleBackToHome} t={t.providerDashboard} therapist={therapists.find(t => t.id === loggedInProvider?.id)} /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice}/>;
-            case 'placeDashboard': return loggedInProvider ? <PlaceDashboardPage onSave={handleSavePlace} onBack={handleBackToHome} t={t.providerDashboard} place={places.find(p => p.id === loggedInProvider?.id)} /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice} />;
+            case 'providerAuth': return providerAuthInfo && <ProviderAuthPage
+                providerType={providerAuthInfo.type}
+                mode={providerAuthInfo.mode}
+                onRegister={handleProviderRegister}
+                onLogin={handleProviderLogin}
+                onSwitchMode={() => setProviderAuthInfo(prev => prev ? { ...prev, mode: prev.mode === 'login' ? 'register' : 'login' } : null)}
+                onBack={handleBackToHome}
+                t={t.providerAuth}
+            />;
+            case 'therapistDashboard': return loggedInProvider ? <TherapistDashboardPage onSave={handleSaveTherapist} onBack={handleBackToHome} onLogout={handleProviderLogout} t={t.providerDashboard} therapist={therapists.find(t => t.id === loggedInProvider?.id)} /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice}/>;
+            case 'placeDashboard': return loggedInProvider ? <PlaceDashboardPage onSave={handleSavePlace} onBack={handleBackToHome} onLogout={handleProviderLogout} t={t.providerDashboard} place={places.find(p => p.id === loggedInProvider?.id)} /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice} />;
             case 'agent': return <AgentPage onBack={handleBackToHome} t={t.agentPage} />;
             case 'serviceTerms': return <ServiceTermsPage onBack={handleBackToHome} t={t.serviceTerms} />;
             default: return <LandingPage onLanguageSelect={handleLanguageSelect} />;

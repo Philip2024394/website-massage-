@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import type { User } from '../types';
 import Button from '../components/Button';
@@ -45,9 +46,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin, t }) => {
         <div className="min-h-screen flex flex-col justify-center bg-gray-50 p-4">
             <div className="w-full max-w-md mx-auto">
                 <div className="text-center mb-8">
-                    <div className="inline-block bg-brand-green p-4 rounded-full">
-                       <LogoIcon className="h-12 w-auto" />
-                    </div>
+                    <LogoIcon className="h-20 w-20 text-brand-green mx-auto" />
                     <h1 className="text-3xl font-bold text-brand-green mt-4">2Go Massage</h1>
                     <p className="text-gray-500">{t.tagline}</p>
                 </div>

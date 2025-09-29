@@ -26,6 +26,8 @@ export const MOCK_THERAPISTS: Therapist[] = [
     {
         id: 1,
         name: 'Budi Santoso',
+        email: 'budi@massage.com',
+        password: 'password123',
         profilePicture: 'https://picsum.photos/seed/budi/200/200',
         description: 'Specializes in deep tissue and relaxation massage. 5 years of experience.',
         status: AvailabilityStatus.Available,
@@ -42,6 +44,8 @@ export const MOCK_THERAPISTS: Therapist[] = [
     {
         id: 2,
         name: 'Citra Lestari',
+        email: 'citra@massage.com',
+        password: 'password123',
         profilePicture: 'https://picsum.photos/seed/citra/200/200',
         description: 'Certified in aromatherapy and hot stone massage. Focus on holistic wellness.',
         status: AvailabilityStatus.Busy,
@@ -58,6 +62,8 @@ export const MOCK_THERAPISTS: Therapist[] = [
     {
         id: 3,
         name: 'Agus Wijaya',
+        email: 'agus@massage.com',
+        password: 'password123',
         profilePicture: 'https://picsum.photos/seed/agus/200/200',
         description: 'Expert in sports massage and injury recovery. Works with professional athletes.',
         status: AvailabilityStatus.Offline,
@@ -74,6 +80,8 @@ export const MOCK_THERAPISTS: Therapist[] = [
     {
         id: 4,
         name: 'Dewi Anggraini',
+        email: 'dewi@massage.com',
+        password: 'password123',
         profilePicture: 'https://picsum.photos/seed/dewi/200/200',
         description: 'Gentle touch, specializing in Swedish and prenatal massage techniques.',
         status: AvailabilityStatus.Available,
@@ -93,6 +101,8 @@ export const MOCK_PLACES: Place[] = [
     {
         id: 1,
         name: 'Serene Spa & Wellness',
+        email: 'serene@spa.com',
+        password: 'password123',
         description: 'Experience tranquility and rejuvenation at Serene Spa. Our professional therapists offer a range of treatments designed to relax your body and mind. Enjoy our peaceful ambiance and top-notch facilities.',
         mainImage: 'https://picsum.photos/seed/serene_main/800/600',
         thumbnailImages: [
@@ -112,6 +122,8 @@ export const MOCK_PLACES: Place[] = [
     {
         id: 2,
         name: 'Urban Oasis Massage',
+        email: 'urban@spa.com',
+        password: 'password123',
         description: 'Escape the hustle and bustle of the city at Urban Oasis. We specialize in deep tissue and sports massages to relieve stress and muscle tension. Your urban sanctuary awaits.',
         mainImage: 'https://picsum.photos/seed/urban_main/800/600',
         thumbnailImages: [

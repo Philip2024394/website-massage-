@@ -1,15 +1,18 @@
 
+
 import React, { useState } from 'react';
 import Button from '../components/Button';
 import { ADMIN_SIGNIN_CODE } from '../constants';
 import LogoIcon from '../components/icons/LogoIcon';
+import HomeIcon from '../components/icons/HomeIcon';
 
 interface AdminLoginPageProps {
     onAdminLogin: () => void;
+    onBack: () => void;
     t: any;
 }
 
-const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin, t }) => {
+const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin, onBack, t }) => {
     const [code, setCode] = useState('');
     const [error, setError] = useState('');
 
@@ -22,12 +25,13 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin, t }) => {
     };
 
     return (
-        <div className="min-h-screen flex flex-col justify-center bg-gray-50 p-4">
+        <div className="min-h-screen flex flex-col justify-center bg-gray-50 p-4 relative">
+            <button onClick={onBack} className="absolute top-4 left-4 text-gray-600 hover:text-gray-800" aria-label="Back to Home">
+                <HomeIcon className="w-8 h-8" />
+            </button>
             <div className="w-full max-w-sm mx-auto">
                  <div className="text-center mb-8">
-                    <div className="inline-block bg-brand-green p-4 rounded-full">
-                       <LogoIcon className="h-12 w-auto" />
-                    </div>
+                    <LogoIcon className="h-20 w-20 text-brand-green mx-auto" />
                     <h1 className="text-3xl font-bold text-brand-green mt-4">2Go Massage</h1>
                 </div>
 

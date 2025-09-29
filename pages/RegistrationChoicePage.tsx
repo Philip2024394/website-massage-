@@ -18,9 +18,7 @@ const RegistrationChoicePage: React.FC<RegistrationChoicePageProps> = ({ onSelec
                 </svg>
             </button>
             <div className="w-full max-w-sm mx-auto text-center">
-                <div className="inline-block bg-brand-green p-4 rounded-full mb-4">
-                    <LogoIcon className="h-12 w-auto" />
-                </div>
+                <LogoIcon className="h-20 w-20 text-brand-green mx-auto mb-4" />
                 <h1 className="text-3xl font-bold text-gray-800">{t.title}</h1>
                 <p className="text-gray-600 mt-2 mb-8">{t.prompt}</p>
 
