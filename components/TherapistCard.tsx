@@ -1,10 +1,14 @@
 import React from 'react';
-import type { Therapist } from '../types';
+import type { Therapist, Analytics } from '../types';
 import { AvailabilityStatus } from '../types';
+import Button from './Button';
 
 interface TherapistCardProps {
     therapist: Therapist;
     onRate: (therapist: Therapist) => void;
+    onBook: (therapist: Therapist) => void;
+    onIncrementAnalytics: (metric: keyof Analytics) => void;
+    t: any;
 }
 
 const WhatsAppIcon: React.FC<{className?: string}> = ({ className }) => (
@@ -32,10 +36,11 @@ const statusStyles: { [key in AvailabilityStatus]: { text: string; bg: string; d
     [AvailabilityStatus.Offline]: { text: 'text-gray-700', bg: 'bg-gray-100', dot: 'bg-gray-500' },
 };
 
-const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate }) => {
+const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook, onIncrementAnalytics, t }) => {
     const style = statusStyles[therapist.status];
 
     const openWhatsApp = () => {
+        onIncrementAnalytics('whatsappClicks');
         window.open(`https://wa.me/${therapist.whatsappNumber}`, '_blank');
     };
 
@@ -98,13 +103,18 @@ const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate }) => {
                 </div>
             </div>
 
-            <button
-                onClick={openWhatsApp}
-                className="w-full flex items-center justify-center gap-2 bg-green-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-600 transition-colors duration-300"
-            >
-                <WhatsAppIcon className="w-5 h-5"/>
-                <span>WhatsApp</span>
-            </button>
+            <div className="flex gap-2">
+                <button
+                    onClick={openWhatsApp}
+                    className="w-1/2 flex items-center justify-center gap-2 bg-green-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-600 transition-colors duration-300"
+                >
+                    <WhatsAppIcon className="w-5 h-5"/>
+                    <span>{t.orderNow}</span>
+                </button>
+                 <Button onClick={() => onBook(therapist)} className="w-1/2" variant="primary">
+                    {t.schedule}
+                </Button>
+            </div>
         </div>
     );
 };

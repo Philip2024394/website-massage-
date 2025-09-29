@@ -1,7 +1,8 @@
-
-
 export const translations = {
     en: {
+        app: {
+            mapsApiKeyWarning: 'Google Maps API Key not configured. Please set it in the Admin Dashboard to enable location features.',
+        },
         header: {
             welcome: 'Welcome Back',
         },
@@ -38,10 +39,22 @@ export const translations = {
             updateLocation: 'Update',
             locationError: 'Could not get location. Please enable permissions and try again.',
             gettingLocation: 'Getting location...',
+            therapistCard: {
+                orderNow: 'Order Now',
+                schedule: 'Schedule',
+            },
+            menu: {
+                title: 'Menu',
+                createProfile: 'Create Profile',
+                adminLogin: 'Admin Login',
+                customerLogin: 'Customer Login',
+                logout: 'Logout',
+            },
         },
         detail: {
             pricingTitle: 'Pricing',
-            contactButton: 'Contact via WhatsApp',
+            contactButton: 'Order Now',
+            bookButton: 'Schedule',
         },
         locationModal: {
             title: 'Set Your Location',
@@ -53,11 +66,12 @@ export const translations = {
         ratingModal: {
             title: 'Rate {itemName}',
             prompt: 'How was your experience?',
-            whatsappLabel: 'Your WhatsApp Number (Optional)',
-            whatsappPlaceholder: 'Enter your number',
+            whatsappLabel: 'Your WhatsApp Number',
+            whatsappPlaceholder: 'e.g. 81234567890',
             submitButton: 'Submit Review',
             confirmation: 'Thank you for your review! It will be reviewed by an administrator before going live.',
             selectRatingError: 'Please select a rating.',
+            whatsappRequiredError: 'Please enter your WhatsApp number.',
         },
         adminLogin: {
             title: 'Admin Access',
@@ -74,6 +88,25 @@ export const translations = {
             notLive: 'Not Live',
             live: 'Live',
             logout: 'Logout',
+            dbSettings: 'Database Settings',
+            dbStatusConnected: 'Connected',
+            dbStatusNotConnected: 'Not Connected',
+            manageConnection: 'Manage',
+            membershipTitle: 'Membership Management',
+            membershipUpdateSuccess: 'Membership updated successfully!',
+            membershipDurations: {
+                oneMonth: '1m',
+                threeMonths: '3m',
+                sixMonths: '6m',
+                oneYear: '1y',
+            },
+            googleMapsApiKey: {
+                title: 'Google Maps API Key',
+                description: 'Enter a valid Google Maps JavaScript API key to enable all location-based features, such as address search and distance calculation.',
+                label: 'API Key',
+                placeholder: 'Enter your API key here',
+                saveButton: 'Save Key',
+            }
         },
         registrationChoice: {
             title: 'Join Us',
@@ -107,6 +140,31 @@ export const translations = {
             mapsApiError: 'Google Maps could not load. Please check the API key. Location features are disabled.',
             onlineStatusLabel: 'Online Status',
             logoutButton: 'Logout',
+            tabs: {
+                profile: 'Profile',
+                bookings: 'Bookings',
+                analytics: 'Analytics',
+            },
+            bookings: {
+                upcoming: 'Upcoming',
+                past: 'Past',
+                noUpcoming: 'No upcoming bookings.',
+                noPast: 'No past bookings.',
+                confirm: 'Confirm',
+                cancel: 'Cancel',
+                customer: 'Customer',
+                service: 'Service',
+                date: 'Date',
+                status: 'Status',
+            },
+            analytics: {
+                impressions: 'Impressions',
+                profileViews: 'Profile Views',
+                whatsappClicks: 'WhatsApp Clicks',
+                impressionsDesc: 'Times you appeared in search results.',
+                profileViewsDesc: 'Times your profile was viewed.',
+                whatsappClicksDesc: 'Times users clicked to message you.',
+            },
         },
         providerAuth: {
             registerTherapistTitle: 'Register as a Therapist',
@@ -159,9 +217,71 @@ export const translations = {
             disclaimerTitle: 'Disclaimer of Liability',
             disclaimerContent: '2Go Massage acts as a directory to connect clients with massage service providers. We are not the provider of the massage services themselves. Therefore, 2Go Massage will not be held responsible for any situation that may arise and will not be involved in resolving disputes between the massage therapist or establishment and the customer.',
             customerServiceButton: 'Contact Customer Service',
+        },
+        supabaseSettings: {
+            title: 'Supabase Connection',
+            description: 'Enter your Supabase project URL and Anon Key to connect the application to your database. This information can be found in your Supabase project settings under API.',
+            urlLabel: 'Supabase Project URL',
+            keyLabel: 'Supabase Anon Key',
+            connectButton: 'Save & Connect',
+            disconnectButton: 'Disconnect',
+            status: 'Connection Status',
+            connected: 'Connected',
+            notConnected: 'Not Connected',
+            backButton: 'Back to Dashboard',
+            error: 'Please fill both fields.',
+        },
+        membershipPage: {
+            title: 'Choose Your Membership',
+            subtitle: 'Activate your profile by selecting a membership package. Your profile will be visible to customers after payment is confirmed by an admin.',
+            packages: {
+                oneMonth: {
+                    title: '1 Month',
+                    price: '150k'
+                },
+                threeMonths: {
+                    title: '3 Months',
+                    price: '400k',
+                    save: 'Save 50k'
+                },
+                sixMonths: {
+                    title: '6 Months',
+                    price: '800k',
+                    save: 'Save 100k'
+                },
+                oneYear: {
+                    title: '1 Year',
+                    price: '1.5jt',
+                    save: 'Save 300k',
+                    bestValue: 'Best Value'
+                }
+            },
+            selectButton: 'Select Plan via WhatsApp',
+            backToDashboard: 'I will do this later',
+        },
+        bookingPage: {
+            title: 'Book a Session with {name}',
+            selectDate: '1. Select a Date',
+            selectTime: '2. Select a Time Slot',
+            selectService: '3. Select a Service',
+            noSlots: 'No available slots for this day. Please try another date.',
+            confirmBooking: 'Confirm Booking',
+            bookingSuccessTitle: 'Booking Request Sent!',
+            bookingSuccessMessage: 'Your request has been sent to {name}. You will be notified when they confirm.',
+            loginPrompt: 'You must be logged in to book a session.',
+        },
+        notificationsPage: {
+            title: 'Notifications',
+            noNotifications: 'You have no notifications.',
+            markAsRead: 'Mark as read',
+            unread: 'Unread',
+            bookingReminder: 'Reminder: You have a booking with {userName} today at {time}.',
         }
     },
     id: {
+        app: {
+            mapsApiKeyWarning: 'Kunci API Google Maps belum dikonfigurasi. Harap atur di Dasbor Admin untuk mengaktifkan fitur lokasi.',
+        },
         header: {
             welcome: 'Selamat Datang Kembali',
         },
@@ -198,10 +318,22 @@ export const translations = {
             updateLocation: 'Perbarui',
             locationError: 'Tidak dapat mengambil lokasi. Harap aktifkan izin dan coba lagi.',
             gettingLocation: 'Mendapatkan lokasi...',
+            therapistCard: {
+                orderNow: 'Pesan Sekarang',
+                schedule: 'Jadwalkan',
+            },
+            menu: {
+                title: 'Menu',
+                createProfile: 'Buat Profil',
+                adminLogin: 'Login Admin',
+                customerLogin: 'Login Pelanggan',
+                logout: 'Keluar',
+            },
         },
         detail: {
             pricingTitle: 'Harga',
-            contactButton: 'Hubungi via WhatsApp',
+            contactButton: 'Pesan Sekarang',
+            bookButton: 'Jadwalkan',
         },
         locationModal: {
             title: 'Atur Lokasi Anda',
@@ -213,11 +345,12 @@ export const translations = {
         ratingModal: {
             title: 'Beri Nilai {itemName}',
             prompt: 'Bagaimana pengalaman Anda?',
-            whatsappLabel: 'Nomor WhatsApp Anda (Opsional)',
-            whatsappPlaceholder: 'Masukkan nomor Anda',
+            whatsappLabel: 'Nomor WhatsApp Anda',
+            whatsappPlaceholder: 'cth. 81234567890',
             submitButton: 'Kirim Ulasan',
             confirmation: 'Terima kasih atas ulasan Anda! Ulasan akan ditinjau oleh administrator sebelum ditayangkan.',
             selectRatingError: 'Silakan pilih peringkat.',
+            whatsappRequiredError: 'Harap masukkan nomor WhatsApp Anda.',
         },
         adminLogin: {
             title: 'Akses Admin',
@@ -234,6 +367,25 @@ export const translations = {
             notLive: 'Tidak Tayang',
             live: 'Tayang',
             logout: 'Keluar',
+            dbSettings: 'Pengaturan Database',
+            dbStatusConnected: 'Terhubung',
+            dbStatusNotConnected: 'Tidak Terhubung',
+            manageConnection: 'Kelola',
+            membershipTitle: 'Manajemen Keanggotaan',
+            membershipUpdateSuccess: 'Keanggotaan berhasil diperbarui!',
+            membershipDurations: {
+                oneMonth: '1b',
+                threeMonths: '3b',
+                sixMonths: '6b',
+                oneYear: '1t',
+            },
+            googleMapsApiKey: {
+                title: 'Kunci API Google Maps',
+                description: 'Masukkan Kunci API JavaScript Google Maps yang valid untuk mengaktifkan semua fitur berbasis lokasi, seperti pencarian alamat dan perhitungan jarak.',
+                label: 'Kunci API',
+                placeholder: 'Masukkan kunci API Anda di sini',
+                saveButton: 'Simpan Kunci',
+            }
         },
         registrationChoice: {
             title: 'Bergabunglah',
@@ -267,6 +419,31 @@ export const translations = {
             mapsApiError: 'Google Maps tidak dapat dimuat. Silakan periksa kunci API. Fitur lokasi dinonaktifkan.',
             onlineStatusLabel: 'Status Online',
             logoutButton: 'Keluar',
+            tabs: {
+                profile: 'Profil',
+                bookings: 'Pemesanan',
+                analytics: 'Analitik',
+            },
+            bookings: {
+                upcoming: 'Akan Datang',
+                past: 'Lampau',
+                noUpcoming: 'Tidak ada pemesanan akan datang.',
+                noPast: 'Tidak ada pemesanan lampau.',
+                confirm: 'Konfirmasi',
+                cancel: 'Batalkan',
+                customer: 'Pelanggan',
+                service: 'Layanan',
+                date: 'Tanggal',
+                status: 'Status',
+            },
+             analytics: {
+                impressions: 'Impresi',
+                profileViews: 'Kunjungan Profil',
+                whatsappClicks: 'Klik WhatsApp',
+                impressionsDesc: 'Berapa kali Anda muncul di hasil pencarian.',
+                profileViewsDesc: 'Berapa kali profil Anda dilihat.',
+                whatsappClicksDesc: 'Berapa kali pengguna mengklik untuk mengirimi Anda pesan.',
+            },
         },
         providerAuth: {
             registerTherapistTitle: 'Daftar sebagai Terapis',
@@ -319,6 +496,65 @@ export const translations = {
             disclaimerTitle: 'Penafian Tanggung Jawab',
             disclaimerContent: '2Go Massage bertindak sebagai direktori untuk menghubungkan klien dengan penyedia layanan pijat. Kami bukan penyedia layanan pijat itu sendiri. Oleh karena itu, 2Go Massage tidak akan bertanggung jawab atas situasi apa pun yang mungkin timbul dan tidak akan terlibat dalam penyelesaian perselisihan antara terapis pijat atau tempat pijat dengan pelanggan.',
             customerServiceButton: 'Hubungi Layanan Pelanggan',
+        },
+        supabaseSettings: {
+            title: 'Koneksi Supabase',
+            description: 'Masukkan URL Proyek Supabase dan Kunci Anon Anda untuk menghubungkan aplikasi ke database Anda. Informasi ini dapat ditemukan di pengaturan proyek Supabase Anda di bawah API.',
+            urlLabel: 'URL Proyek Supabase',
+            keyLabel: 'Kunci Anon Supabase',
+            connectButton: 'Simpan & Hubungkan',
+            disconnectButton: 'Putuskan Koneksi',
+            status: 'Status Koneksi',
+            connected: 'Terhubung',
+            notConnected: 'Tidak Terhubung',
+            backButton: 'Kembali ke Dasbor',
+            error: 'Harap isi kedua kolom.',
+        },
+        membershipPage: {
+            title: 'Pilih Keanggotaan Anda',
+            subtitle: 'Aktifkan profil Anda dengan memilih paket keanggotaan. Profil Anda akan dapat dilihat oleh pelanggan setelah pembayaran dikonfirmasi oleh admin.',
+            packages: {
+                oneMonth: {
+                    title: '1 Bulan',
+                    price: '150rb'
+                },
+                threeMonths: {
+                    title: '3 Bulan',
+                    price: '400rb',
+                    save: 'Hemat 50rb'
+                },
+                sixMonths: {
+                    title: '6 Bulan',
+                    price: '800rb',
+                    save: 'Hemat 100rb'
+                },
+                oneYear: {
+                    title: '1 Tahun',
+                    price: '1.5jt',
+                    save: 'Hemat 300rb',
+                    bestValue: 'Paling Hemat'
+                }
+            },
+            selectButton: 'Pilih Paket via WhatsApp',
+            backToDashboard: 'Saya akan lakukan nanti',
+        },
+        bookingPage: {
+            title: 'Pesan Sesi dengan {name}',
+            selectDate: '1. Pilih Tanggal',
+            selectTime: '2. Pilih Slot Waktu',
+            selectService: '3. Pilih Layanan',
+            noSlots: 'Tidak ada slot yang tersedia untuk hari ini. Silakan coba tanggal lain.',
+            confirmBooking: 'Konfirmasi Pemesanan',
+            bookingSuccessTitle: 'Permintaan Pemesanan Terkirim!',
+            bookingSuccessMessage: 'Permintaan Anda telah dikirim ke {name}. Anda akan diberi tahu saat mereka mengonfirmasi.',
+            loginPrompt: 'Anda harus masuk untuk memesan sesi.',
+        },
+        notificationsPage: {
+            title: 'Notifikasi',
+            noNotifications: 'Anda tidak memiliki notifikasi.',
+            markAsRead: 'Tandai sebagai sudah dibaca',
+            unread: 'Belum Dibaca',
+            bookingReminder: 'Pengingat: Anda memiliki pemesanan dengan {userName} hari ini jam {time}.',
         }
     },
 };

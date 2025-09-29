@@ -1,13 +1,14 @@
-
-
-import React, { useState, useMemo } from 'react';
-import type { User, Place, Therapist, UserLocation } from '../types';
+import React, { useState, useMemo, useEffect } from 'react';
+import type { User, Place, Therapist, UserLocation, Analytics } from '../types';
 import TherapistCard from '../components/TherapistCard';
 import PlaceCard from '../components/PlaceCard';
 import RatingModal from '../components/RatingModal';
+import LocationModal from '../components/LocationModal';
 import { MASSAGE_TYPES_CATEGORIZED } from '../constants';
 import HomeIcon from '../components/icons/HomeIcon';
 import MapPinIcon from '../components/icons/MapPinIcon';
+import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
+import CloseIcon from '../components/icons/CloseIcon';
 
 interface HomePageProps {
     user: User | null;
@@ -20,6 +21,9 @@ interface HomePageProps {
     onLoginClick: () => void;
     onAdminClick: () => void;
     onCreateProfileClick: () => void;
+    onBook: (provider: Therapist | Place, type: 'therapist' | 'place') => void;
+    onIncrementAnalytics: (id: number, type: 'therapist' | 'place', metric: keyof Analytics) => void;
+    isLoading: boolean;
     t: any;
 }
 
@@ -90,20 +94,29 @@ const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => 
 };
 
 
-const HomePage: React.FC<HomePageProps> = ({ user, therapists, places, userLocation, onSetUserLocation, onSelectPlace, onLogout, onLoginClick, onAdminClick, onCreateProfileClick, t }) => {
+const HomePage: React.FC<HomePageProps> = ({ user, therapists, places, userLocation, onSetUserLocation, onSelectPlace, onLogout, onLoginClick, onAdminClick, onCreateProfileClick, onBook, onIncrementAnalytics, isLoading, t }) => {
     const [activeTab, setActiveTab] = useState<ActiveTab>('home');
     const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
+    const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [itemToRate, setItemToRate] = useState<Therapist | Place | null>(null);
     const [selectedMassageType, setSelectedMassageType] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
-    const [isLoadingLocation, setIsLoadingLocation] = useState(false);
-    const [locationError, setLocationError] = useState('');
 
-    const liveTherapists = useMemo(() => therapists.filter(therapist => therapist.isLive), [therapists]);
-    const livePlaces = useMemo(() => places.filter(place => place.isLive), [places]);
+    useEffect(() => {
+        if (!userLocation) {
+            setIsLocationModalOpen(true);
+        }
+    }, [userLocation]);
+    
+    useEffect(() => {
+        // Simulate impression tracking for all live providers once
+        therapists.forEach(p => onIncrementAnalytics(p.id, 'therapist', 'impressions'));
+        places.forEach(p => onIncrementAnalytics(p.id, 'place', 'impressions'));
+    }, [therapists, places, onIncrementAnalytics]); 
 
     const processedTherapists = useMemo(() => {
-        let filtered = liveTherapists.filter(therapist => {
+        let filtered = therapists.filter(therapist => {
             const typeMatch = selectedMassageType === 'all' || therapist.massageTypes.includes(selectedMassageType);
             const searchMatch = therapist.name.toLowerCase().includes(searchQuery.toLowerCase());
             return typeMatch && searchMatch;
@@ -117,10 +130,10 @@ const HomePage: React.FC<HomePageProps> = ({ user, therapists, places, userLocat
         }
         
         return filtered;
-    }, [liveTherapists, userLocation, selectedMassageType, searchQuery]);
+    }, [therapists, userLocation, selectedMassageType, searchQuery]);
     
     const processedPlaces = useMemo(() => {
-        let filtered = livePlaces.filter(place => {
+        let filtered = places.filter(place => {
             const typeMatch = selectedMassageType === 'all' || place.massageTypes.includes(selectedMassageType);
             const searchMatch = place.name.toLowerCase().includes(searchQuery.toLowerCase());
             return typeMatch && searchMatch;
@@ -134,7 +147,7 @@ const HomePage: React.FC<HomePageProps> = ({ user, therapists, places, userLocat
         }
 
         return filtered;
-    }, [livePlaces, userLocation, selectedMassageType, searchQuery]);
+    }, [places, userLocation, selectedMassageType, searchQuery]);
 
 
     const handleOpenRatingModal = (item: Therapist | Place) => {
@@ -146,38 +159,6 @@ const HomePage: React.FC<HomePageProps> = ({ user, therapists, places, userLocat
         setIsRatingModalOpen(false);
         setItemToRate(null);
     };
-    
-    const handleSetLocation = () => {
-        if (!navigator.geolocation) {
-            setLocationError('Geolocation is not supported by your browser.');
-            return;
-        }
-        setIsLoadingLocation(true);
-        setLocationError('');
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const { latitude, longitude } = position.coords;
-                 const geocoder = new (window as any).google.maps.Geocoder();
-                 geocoder.geocode({ location: { lat: latitude, lng: longitude } }, (results: any, status: string) => {
-                    setIsLoadingLocation(false);
-                    if (status === 'OK' && results[0]) {
-                        const location: UserLocation = {
-                            address: results[0].formatted_address,
-                            lat: latitude,
-                            lng: longitude,
-                        };
-                        onSetUserLocation(location);
-                    } else {
-                        setLocationError(t.home.locationError);
-                    }
-                });
-            },
-            () => {
-                setIsLoadingLocation(false);
-                setLocationError(t.home.locationError);
-            }
-        );
-    };
 
     const handleSubmitRating = (rating: number, whatsapp: string) => {
         console.log(`Rating for ${itemToRate?.name}: ${rating}, WhatsApp: ${whatsapp}`);
@@ -185,20 +166,33 @@ const HomePage: React.FC<HomePageProps> = ({ user, therapists, places, userLocat
         handleCloseRatingModal();
     };
 
-    const onlineTherapistsCount = useMemo(() => liveTherapists.filter(t => t.status === 'Available').length, [liveTherapists]);
+    const onlineTherapistsCount = useMemo(() => therapists.filter(t => t.status === 'Available').length, [therapists]);
 
     const renderTherapists = () => {
+        if (isLoading) {
+            return <p className="text-center text-gray-500 py-8">{t.home.loading}</p>;
+        }
         if (processedTherapists.length === 0) {
             return <p className="text-center text-gray-500 py-8">{t.home.noResults}</p>;
         }
         return (
             <div className="space-y-4">
-                {processedTherapists.map(therapist => <TherapistCard key={therapist.id} therapist={therapist} onRate={handleOpenRatingModal} />)}
+                {processedTherapists.map(therapist => <TherapistCard 
+                    key={therapist.id} 
+                    therapist={therapist} 
+                    onRate={handleOpenRatingModal}
+                    onBook={() => onBook(therapist, 'therapist')}
+                    onIncrementAnalytics={(metric) => onIncrementAnalytics(therapist.id, 'therapist', metric)}
+                    t={t.home.therapistCard}
+                />)}
             </div>
         );
     };
 
     const renderPlaces = () => {
+        if (isLoading) {
+            return <p className="text-center text-gray-500 py-8">{t.home.loading}</p>;
+        }
          if (processedPlaces.length === 0) {
             return <p className="text-center text-gray-500 py-8">{t.home.noResults}</p>;
         }
@@ -211,25 +205,77 @@ const HomePage: React.FC<HomePageProps> = ({ user, therapists, places, userLocat
 
     return (
         <div className="min-h-screen bg-gray-50">
-             <header className="p-4 bg-white sticky top-0 z-10 shadow-sm">
+             <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">
                         <span className="text-brand-green">2Go</span> Massage
                     </h1>
-                    <div className="flex items-center gap-3 text-gray-600">
-                        <button onClick={onCreateProfileClick} title="Create Profile"><CreateProfileIcon /></button>
-                        <button onClick={onAdminClick} title="Admin Login"><AdminIcon /></button>
-                        <button onClick={user ? onLogout : onLoginClick} className="text-brand-green" title="Customer Login/Logout">
-                           <UserIcon />
+                    <div className="flex items-center gap-4 text-gray-600">
+                        <button onClick={() => setIsLocationModalOpen(true)} title="Set Your Location">
+                            <MapPinIcon className="w-6 h-6" />
+                        </button>
+                        <button onClick={() => setIsMenuOpen(true)} title="Menu">
+                           <BurgerMenuIcon className="w-6 h-6" />
                         </button>
                     </div>
                 </div>
             </header>
+            
+            {isMenuOpen && (
+                <div className="fixed inset-0 z-30" role="dialog" aria-modal="true">
+                    <div 
+                        className="absolute inset-0 bg-black bg-opacity-50 transition-opacity" 
+                        onClick={() => setIsMenuOpen(false)}
+                        aria-hidden="true"
+                    ></div>
+    
+                    <div className={`absolute right-0 top-0 bottom-0 w-64 bg-white shadow-xl p-4 flex flex-col transform transition-transform ease-in-out duration-300 ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+                        <div className="flex justify-between items-center mb-8">
+                            <h2 className="font-bold text-lg text-brand-green">{t.home.menu.title}</h2>
+                            <button onClick={() => setIsMenuOpen(false)} className="text-gray-500 hover:text-gray-800" aria-label="Close menu">
+                                <CloseIcon />
+                            </button>
+                        </div>
+                        <nav className="flex-grow">
+                            <ul className="space-y-2">
+                                <li>
+                                    <button 
+                                        onClick={() => { onCreateProfileClick(); setIsMenuOpen(false); }} 
+                                        className="flex items-center gap-3 text-gray-700 hover:text-brand-green w-full text-left p-2 rounded-md hover:bg-gray-100 transition-colors"
+                                    >
+                                        <CreateProfileIcon className="w-5 h-5" />
+                                        <span>{t.home.menu.createProfile}</span>
+                                    </button>
+                                </li>
+                                <li>
+                                    <button 
+                                        onClick={() => { onAdminClick(); setIsMenuOpen(false); }} 
+                                        className="flex items-center gap-3 text-gray-700 hover:text-brand-green w-full text-left p-2 rounded-md hover:bg-gray-100 transition-colors"
+                                    >
+                                        <AdminIcon className="w-5 h-5" />
+                                        <span>{t.home.menu.adminLogin}</span>
+                                    </button>
+                                </li>
+                                <li>
+                                    <button 
+                                        onClick={() => { (user ? onLogout() : onLoginClick()); setIsMenuOpen(false); }} 
+                                        className="flex items-center gap-3 text-gray-700 hover:text-brand-green w-full text-left p-2 rounded-md hover:bg-gray-100 transition-colors"
+                                    >
+                                        <UserIcon className="w-5 h-5" />
+                                        <span>{user ? t.home.menu.logout : t.home.menu.customerLogin}</span>
+                                    </button>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            )}
+
 
             <main className="p-4">
                 <div className="flex items-center justify-center gap-2 text-gray-500 mb-4">
                     <UsersIcon className="w-5 h-5"/>
-                    <span className="font-medium">{t.home.therapistsOnline.replace('{count}', onlineTherapistsCount).replace('{total}', liveTherapists.length)}</span>
+                    <span className="font-medium">{t.home.therapistsOnline.replace('{count}', onlineTherapistsCount).replace('{total}', therapists.length)}</span>
                 </div>
 
                 <div className="flex bg-gray-200 rounded-full p-1 mb-4">
@@ -250,26 +296,6 @@ const HomePage: React.FC<HomePageProps> = ({ user, therapists, places, userLocat
                 </div>
 
                 <div className="space-y-3 mb-6">
-                    <div className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
-                        <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-3 overflow-hidden">
-                                <MapPinIcon className="w-8 h-8 text-gray-400 flex-shrink-0" />
-                                <div className="overflow-hidden">
-                                    <p className="text-xs text-gray-500">Your Location</p>
-                                    <p className="font-medium text-gray-800 text-sm truncate">{userLocation ? userLocation.address : 'Location not set'}</p>
-                                </div>
-                            </div>
-                            <button 
-                                onClick={handleSetLocation}
-                                disabled={isLoadingLocation}
-                                className="bg-brand-green-light text-brand-green-dark font-semibold text-sm px-4 py-2 rounded-lg hover:bg-green-200 transition-colors disabled:opacity-50 flex-shrink-0"
-                            >
-                                {isLoadingLocation ? t.home.gettingLocation : (userLocation ? t.home.updateLocation : t.home.setLocation)}
-                            </button>
-                        </div>
-                        {locationError && <p className="text-red-500 text-xs mt-2 text-center">{locationError}</p>}
-                    </div>
-
                     <div className="relative">
                         <SparklesIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"/>
                         <select 
@@ -303,6 +329,16 @@ const HomePage: React.FC<HomePageProps> = ({ user, therapists, places, userLocat
 
                 {activeTab === 'home' ? renderTherapists() : renderPlaces()}
             </main>
+            {isLocationModalOpen && (
+                <LocationModal
+                    onConfirm={(location) => {
+                        onSetUserLocation(location);
+                        setIsLocationModalOpen(false);
+                    }}
+                    onClose={() => setIsLocationModalOpen(false)}
+                    t={t.locationModal}
+                />
+            )}
             {isRatingModalOpen && itemToRate && (
                 <RatingModal
                     itemName={itemToRate.name}

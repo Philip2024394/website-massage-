@@ -5,7 +5,7 @@ interface LandingPageProps {
     onLanguageSelect: (lang: 'en' | 'id') => void;
 }
 
-const imageSrc = 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=1080&h=1920&fit=crop&q=80';
+const imageSrc = 'https://ik.imagekit.io/7grri5v7d/massage%20picture.png?updatedAt=1759150336132';
 
 const LandingPage: React.FC<LandingPageProps> = ({ onLanguageSelect }) => {
     const [imageLoaded, setImageLoaded] = useState(false);
@@ -14,8 +14,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLanguageSelect }) => {
         const img = new Image();
         img.src = imageSrc;
         img.onload = () => setImageLoaded(true);
-        img.onerror = (err) => {
-            console.error("Error preloading landing page image:", err);
+        img.onerror = () => {
+            console.error(`Failed to preload landing page image at: ${imageSrc}. It might be unavailable or blocked.`);
             // Fallback: if preloading fails, still try to show the page.
             setImageLoaded(true);
         };

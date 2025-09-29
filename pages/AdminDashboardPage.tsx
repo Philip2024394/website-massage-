@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import type { Therapist, Place } from '../types';
 import ToggleSwitch from '../components/ToggleSwitch';
 import Button from '../components/Button';
@@ -10,6 +9,11 @@ interface AdminDashboardPageProps {
     onToggleTherapist: (id: number) => void;
     onTogglePlace: (id: number) => void;
     onLogout: () => void;
+    isSupabaseConnected: boolean;
+    onGoToSupabaseSettings: () => void;
+    onUpdateMembership: (id: number, type: 'therapist' | 'place', months: number) => void;
+    googleMapsApiKey: string | null;
+    onSaveGoogleMapsApiKey: (key: string) => void;
     t: any;
 }
 
@@ -19,11 +23,53 @@ const StarIcon: React.FC<{className?: string}> = ({ className }) => (
     </svg>
 );
 
-const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ therapists, places, onToggleTherapist, onTogglePlace, onLogout, t }) => {
+const MembershipControls: React.FC<{ onUpdate: (months: number) => void, t: any }> = ({ onUpdate, t: t_membership }) => {
+    const durations = [
+        { months: 1, label: t_membership.oneMonth },
+        { months: 3, label: t_membership.threeMonths },
+        { months: 6, label: t_membership.sixMonths },
+        { months: 12, label: t_membership.oneYear },
+    ];
+
+    return (
+        <div>
+            <h4 className="text-sm font-semibold text-gray-600 mb-2">{t_membership.membershipTitle || 'Membership Management'}</h4>
+            <div className="flex items-center gap-2 flex-wrap">
+                {durations.map(({ months, label }) => (
+                    <button
+                        key={months}
+                        onClick={() => onUpdate(months)}
+                        className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full hover:bg-blue-200 transition-colors"
+                    >
+                        + {label}
+                    </button>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+
+const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ therapists, places, onToggleTherapist, onTogglePlace, onLogout, isSupabaseConnected, onGoToSupabaseSettings, onUpdateMembership, googleMapsApiKey, onSaveGoogleMapsApiKey, t }) => {
+    const [apiKeyInput, setApiKeyInput] = useState('');
+
+    useEffect(() => {
+        if (googleMapsApiKey) {
+            setApiKeyInput(googleMapsApiKey);
+        }
+    }, [googleMapsApiKey]);
     
     const formatDate = (dateString: string) => {
-        const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
-        return new Date(dateString).toLocaleDateString(undefined, options);
+        try {
+            const date = new Date(dateString);
+             if (isNaN(date.getTime())) {
+                return "Invalid Date";
+            }
+            const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+            return date.toLocaleDateString(undefined, options);
+        } catch (error) {
+            return "Invalid Date";
+        }
     };
 
     return (
@@ -34,6 +80,42 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ therapists, pla
             </header>
 
             <div className="space-y-8">
+                 <section>
+                    <h2 className="text-xl font-semibold text-gray-700 mb-4">{t.dbSettings}</h2>
+                    <div className="bg-white p-4 rounded-lg shadow-md flex items-center justify-between">
+                        <div>
+                            <p className="font-medium text-gray-800">Supabase Connection</p>
+                            <p className={`text-sm font-bold ${isSupabaseConnected ? 'text-green-600' : 'text-red-600'}`}>
+                                {isSupabaseConnected ? t.dbStatusConnected : t.dbStatusNotConnected}
+                            </p>
+                        </div>
+                        <Button onClick={onGoToSupabaseSettings} variant="secondary" className="w-auto px-4 py-2 text-sm">
+                            {t.manageConnection}
+                        </Button>
+                    </div>
+                </section>
+
+                <section>
+                    <h2 className="text-xl font-semibold text-gray-700 mb-4">{t.googleMapsApiKey.title}</h2>
+                    <div className="bg-white p-4 rounded-lg shadow-md space-y-3">
+                        <p className="text-sm text-gray-600">{t.googleMapsApiKey.description}</p>
+                        <div>
+                            <label htmlFor="gmaps-api-key" className="block text-sm font-medium text-gray-700">{t.googleMapsApiKey.label}</label>
+                            <input
+                                id="gmaps-api-key"
+                                type="text"
+                                value={apiKeyInput}
+                                onChange={(e) => setApiKeyInput(e.target.value)}
+                                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-green focus:border-brand-green"
+                                placeholder={t.googleMapsApiKey.placeholder}
+                            />
+                        </div>
+                        <Button onClick={() => onSaveGoogleMapsApiKey(apiKeyInput)} variant="primary" className="w-auto px-4 py-2 text-sm">
+                            {t.googleMapsApiKey.saveButton}
+                        </Button>
+                    </div>
+                </section>
+
                 <section>
                     <h2 className="text-xl font-semibold text-gray-700 mb-4">{t.therapists} ({therapists.length})</h2>
                     <div className="space-y-4">
@@ -49,34 +131,48 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ therapists, pla
                                         labelOff={t.notLive}
                                     />
                                 </div>
-                                <div className="text-sm text-gray-600 space-y-1">
+                                <div className="text-sm text-gray-600 space-y-1 border-b pb-3">
                                     <p><span className="font-semibold">WhatsApp:</span> {therapist.whatsappNumber}</p>
                                     <p><span className="font-semibold">Location:</span> {therapist.location}</p>
                                     <p><span className="font-semibold">Membership Active Until:</span> {formatDate(therapist.activeMembershipDate)}</p>
+                                    <div className="flex items-center gap-1 text-sm pt-1">
+                                        <StarIcon className="w-5 h-5 text-yellow-400"/>
+                                        <span className="font-bold text-gray-700">{therapist.rating.toFixed(1)}</span>
+                                        <span className="text-gray-500">({therapist.reviewCount} reviews)</span>
+                                    </div>
                                 </div>
-                                 <div className="flex items-center gap-1 text-sm">
-                                    <StarIcon className="w-5 h-5 text-yellow-400"/>
-                                    <span className="font-bold text-gray-700">{therapist.rating.toFixed(1)}</span>
-                                    <span className="text-gray-500">({therapist.reviewCount} reviews)</span>
-                                </div>
+                                 <MembershipControls onUpdate={(months) => onUpdateMembership(therapist.id, 'therapist', months)} t={{...t, ...t.membershipDurations}} />
                             </div>
                         ))}
                     </div>
                 </section>
 
-                <section className="bg-white p-4 rounded-lg shadow-md">
+                <section>
                     <h2 className="text-xl font-semibold text-gray-700 mb-4">{t.places} ({places.length})</h2>
                      <div className="space-y-4">
                         {places.map(place => (
-                           <div key={place.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
-                                <span className="font-medium text-gray-900">{place.name}</span>
-                                 <ToggleSwitch 
-                                    id={`place-${place.id}`}
-                                    checked={place.isLive}
-                                    onChange={() => onTogglePlace(place.id)}
-                                    labelOn={t.live}
-                                    labelOff={t.notLive}
-                                />
+                           <div key={place.id} className="bg-white p-4 rounded-lg shadow-md space-y-3">
+                               <div className="flex items-center justify-between">
+                                    <h3 className="font-bold text-lg text-gray-900">{place.name}</h3>
+                                     <ToggleSwitch 
+                                        id={`place-${place.id}`}
+                                        checked={place.isLive}
+                                        onChange={() => onTogglePlace(place.id)}
+                                        labelOn={t.live}
+                                        labelOff={t.notLive}
+                                    />
+                                </div>
+                                <div className="text-sm text-gray-600 space-y-1 border-b pb-3">
+                                    <p><span className="font-semibold">WhatsApp:</span> {place.whatsappNumber}</p>
+                                    <p><span className="font-semibold">Location:</span> {place.location}</p>
+                                    <p><span className="font-semibold">Membership Active Until:</span> {formatDate(place.activeMembershipDate)}</p>
+                                    <div className="flex items-center gap-1 text-sm pt-1">
+                                        <StarIcon className="w-5 h-5 text-yellow-400"/>
+                                        <span className="font-bold text-gray-700">{place.rating.toFixed(1)}</span>
+                                        <span className="text-gray-500">({place.reviewCount} reviews)</span>
+                                    </div>
+                                </div>
+                                <MembershipControls onUpdate={(months) => onUpdateMembership(place.id, 'place', months)} t={{...t, ...t.membershipDurations}} />
                             </div>
                         ))}
                     </div>

@@ -1,8 +1,6 @@
-
-
-import React, { useState, useEffect } from 'react';
-import type { User, Place, Therapist, UserLocation } from './types';
-import { AvailabilityStatus } from './types';
+import React, { useState, useEffect, useCallback } from 'react';
+import type { User, Place, Therapist, UserLocation, SupabaseConfig, Booking, Notification, Analytics } from './types';
+import { AvailabilityStatus, BookingStatus, NotificationType } from './types';
 import AuthPage from './pages/AuthPage';
 import HomePage from './pages/HomePage';
 import PlaceDetailPage from './pages/PlaceDetailPage';
@@ -16,11 +14,15 @@ import AgentPage from './pages/AgentPage';
 import ServiceTermsPage from './pages/ServiceTermsPage';
 import Footer from './components/Footer';
 import ProviderAuthPage from './pages/ProviderAuthPage';
+import SupabaseSettingsPage from './pages/SupabaseSettingsPage';
+import MembershipPage from './pages/MembershipPage';
+import BookingPage from './pages/BookingPage';
+import NotificationsPage from './pages/NotificationsPage';
 
 import { translations } from './translations';
-import { MOCK_THERAPISTS, MOCK_PLACES } from './constants';
+import { initSupabase, disconnectSupabase, getSupabase } from './lib/supabase';
 
-type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'serviceTerms';
+type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'serviceTerms' | 'supabaseSettings' | 'membership' | 'booking' | 'notifications';
 type Language = 'en' | 'id';
 type LoggedInProvider = { id: number; type: 'therapist' | 'place' };
 
@@ -32,15 +34,96 @@ const App: React.FC = () => {
     const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
     const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
     
-    const [therapists, setTherapists] = useState<Therapist[]>(MOCK_THERAPISTS);
-    const [places, setPlaces] = useState<Place[]>(MOCK_PLACES);
+    const [therapists, setTherapists] = useState<Therapist[]>([]);
+    const [places, setPlaces] = useState<Place[]>([]);
+    const [bookings, setBookings] = useState<Booking[]>([]);
+    const [notifications, setNotifications] = useState<Notification[]>([]);
+    const [allAdminTherapists, setAllAdminTherapists] = useState<Therapist[]>([]);
+    const [allAdminPlaces, setAllAdminPlaces] = useState<Place[]>([]);
+    
+    // Loading state
+    const [isLoading, setIsLoading] = useState(true);
     
     // Provider auth state
     const [loggedInProvider, setLoggedInProvider] = useState<LoggedInProvider | null>(null);
     const [providerAuthInfo, setProviderAuthInfo] = useState<{ type: 'therapist' | 'place', mode: 'login' | 'register' } | null>(null);
+    const [providerForBooking, setProviderForBooking] = useState<{ provider: Therapist | Place; type: 'therapist' | 'place' } | null>(null);
+
+    // Supabase state
+    const [supabaseConfig, setSupabaseConfig] = useState<SupabaseConfig | null>(null);
+    const [isSupabaseConnected, setIsSupabaseConnected] = useState(false);
+    
+    // Google Maps state
+    const [googleMapsApiKey, setGoogleMapsApiKey] = useState<string | null>(null);
+    const [isMapsApiKeyMissing, setIsMapsApiKeyMissing] = useState(false);
+
+    const loadGoogleMapsScript = (apiKey: string) => {
+        if (document.getElementById('google-maps-script')) {
+            return;
+        }
+        const script = document.createElement('script');
+        script.id = 'google-maps-script';
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+        script.async = true;
+        script.defer = true;
+        script.onload = () => {
+            console.log('Google Maps script loaded successfully.');
+            setIsMapsApiKeyMissing(false);
+        };
+        script.onerror = () => {
+            console.error("Error loading Google Maps script. Please check your API key in the admin dashboard.");
+            setIsMapsApiKeyMissing(true);
+            const failedScript = document.getElementById('google-maps-script');
+            if (failedScript) {
+                failedScript.remove();
+            }
+        };
+        document.head.appendChild(script);
+    };
+
+    const fetchPublicData = useCallback(async () => {
+        const supabase = getSupabase();
+        if (!supabase) return;
+        setIsLoading(true);
+        const { data: therapistsData, error: therapistsError } = await supabase.from('therapists').select('*').eq('isLive', true);
+        const { data: placesData, error: placesError } = await supabase.from('places').select('*').eq('isLive', true);
+        
+        if (therapistsError) console.error("Error fetching therapists:", therapistsError);
+        else setTherapists(therapistsData || []);
+        
+        if (placesError) console.error("Error fetching places:", placesError);
+        else setPlaces(placesData || []);
+
+        setIsLoading(false);
+    }, []);
+
+    const fetchAdminData = useCallback(async () => {
+        const supabase = getSupabase();
+        if (!supabase) return;
+        setIsLoading(true);
+        const { data: therapistsData, error: therapistsError } = await supabase.from('therapists').select('*');
+        const { data: placesData, error: placesError } = await supabase.from('places').select('*');
+
+        if (therapistsError) console.error("Error fetching all therapists:", therapistsError);
+        else setAllAdminTherapists(therapistsData || []);
+
+        if (placesError) console.error("Error fetching all places:", placesError);
+        else setAllAdminPlaces(placesData || []);
+
+        setIsLoading(false);
+    }, []);
 
 
     useEffect(() => {
+        const storedMapsKey = localStorage.getItem('googleMapsApiKey');
+        if (storedMapsKey) {
+            setGoogleMapsApiKey(storedMapsKey);
+            loadGoogleMapsScript(storedMapsKey);
+        } else {
+            setIsMapsApiKeyMissing(true);
+            console.warn('Google Maps API key is not configured. Please set it in the Admin Dashboard.');
+        }
+
         const storedProvider = localStorage.getItem('loggedInProvider');
         if (storedProvider) {
             try {
@@ -66,17 +149,37 @@ const App: React.FC = () => {
                 localStorage.removeItem('user_location');
             }
         }
+
+        const storedSupabaseConfig = localStorage.getItem('supabaseConfig');
+        if (storedSupabaseConfig) {
+            try {
+                const config = JSON.parse(storedSupabaseConfig);
+                if(config.url && config.key) {
+                    handleSupabaseConnect(config.url, config.key, true);
+                }
+            } catch (e) {
+                console.error("Failed to parse supabase config", e);
+                localStorage.removeItem('supabaseConfig');
+                setIsLoading(false);
+            }
+        } else {
+            setIsLoading(false);
+        }
     }, []);
+
+    useEffect(() => {
+        if(isSupabaseConnected) {
+            fetchPublicData();
+            if (isAdminLoggedIn) {
+                fetchAdminData();
+            }
+        }
+    }, [isSupabaseConnected, isAdminLoggedIn, fetchPublicData, fetchAdminData]);
 
     const t = translations[language];
 
     const handleLanguageSelect = (lang: Language) => {
         setLanguage(lang);
-        setPage('home');
-    };
-
-    const handleLogin = (loggedInUser: User) => {
-        setUser(loggedInUser);
         setPage('home');
     };
     
@@ -85,12 +188,15 @@ const App: React.FC = () => {
         localStorage.setItem('user_location', JSON.stringify(location));
     };
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        const supabase = getSupabase();
+        if (supabase) await supabase.auth.signOut();
         setUser(null);
         setPage('home');
     };
     
     const handleSelectPlace = (place: Place) => {
+        handleIncrementAnalytics(place.id, 'place', 'profileViews');
         setSelectedPlace(place);
         setPage('detail');
     };
@@ -98,6 +204,7 @@ const App: React.FC = () => {
     const handleBackToHome = () => {
         setSelectedPlace(null);
         setProviderAuthInfo(null);
+        setProviderForBooking(null);
         setPage('home');
     };
     
@@ -106,23 +213,57 @@ const App: React.FC = () => {
     const handleNavigateToRegistrationChoice = () => setPage('registrationChoice');
     const handleNavigateToAgentPage = () => setPage('agent');
     const handleNavigateToServiceTerms = () => setPage('serviceTerms');
+    const handleNavigateToSupabaseSettings = () => setPage('supabaseSettings');
+    const handleNavigateToNotifications = () => setPage('notifications');
     
     const handleAdminLogin = () => {
         setIsAdminLoggedIn(true);
         setPage('adminDashboard');
     };
     
-    const handleAdminLogout = () => {
+    const handleAdminLogout = async () => {
+        const supabase = getSupabase();
+        if (supabase) await supabase.auth.signOut();
         setIsAdminLoggedIn(false);
         setPage('home');
     }
 
-    const handleToggleTherapistLive = (id: number) => {
-        setTherapists(therapists.map(therapist => therapist.id === id ? { ...therapist, isLive: !therapist.isLive } : therapist));
+    const handleToggleTherapistLive = async (id: number) => {
+        const supabase = getSupabase();
+        if(!supabase) return;
+        const therapist = allAdminTherapists.find(t => t.id === id);
+        if(!therapist) return;
+        
+        const { data, error } = await supabase
+            .from('therapists')
+            .update({ isLive: !therapist.isLive })
+            .eq('id', id)
+            .select();
+
+        if (error) {
+            alert("Error updating therapist status.");
+        } else if (data) {
+            setAllAdminTherapists(allAdminTherapists.map(t => t.id === id ? data[0] : t));
+        }
     };
 
-    const handleTogglePlaceLive = (id: number) => {
-        setPlaces(places.map(place => place.id === id ? { ...place, isLive: !place.isLive } : place));
+    const handleTogglePlaceLive = async (id: number) => {
+        const supabase = getSupabase();
+        if(!supabase) return;
+        const place = allAdminPlaces.find(p => p.id === id);
+        if(!place) return;
+        
+        const { data, error } = await supabase
+            .from('places')
+            .update({ isLive: !place.isLive })
+            .eq('id', id)
+            .select();
+        
+        if (error) {
+            alert("Error updating place status.");
+        } else if (data) {
+            setAllAdminPlaces(allAdminPlaces.map(p => p.id === id ? data[0] : p));
+        }
     };
 
     const handleSelectRegistration = (type: 'therapist' | 'place') => {
@@ -130,70 +271,42 @@ const App: React.FC = () => {
         setPage('providerAuth');
     };
     
-    const handleProviderRegister = (email: string, password: string): {success: boolean, message: string} => {
+    const handleProviderRegister = async (email: string): Promise<{success: boolean, message: string}> => {
         if (!providerAuthInfo) return { success: false, message: t.providerAuth.genericError };
+        
+        const supabase = getSupabase();
+        if (!supabase) return { success: false, message: t.providerAuth.genericError };
 
-        const emailExists = therapists.some(t => t.email === email) || places.some(p => p.email === email);
-        if (emailExists) {
-            return { success: false, message: t.providerAuth.emailExistsError };
-        }
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        
+        const commonData = {
+            email,
+            isLive: false,
+            activeMembershipDate: yesterday.toISOString().split('T')[0],
+            pricing: { 60: 0, 90: 0, 120: 0 },
+            analytics: { impressions: 0, profileViews: 0, whatsappClicks: 0 },
+        };
 
-        const newId = Date.now();
-        if (providerAuthInfo.type === 'therapist') {
-            const nextMonth = new Date();
-            nextMonth.setMonth(nextMonth.getMonth() + 1);
-            const newTherapist: Therapist = {
-                id: newId,
-                email,
-                password,
-                name: '',
-                profilePicture: '',
-                description: '',
-                status: AvailabilityStatus.Offline,
-                pricing: { 60: 0, 90: 0, 120: 0 },
-                whatsappNumber: '',
-                distance: 0,
-                rating: 0,
-                reviewCount: 0,
-                massageTypes: [],
-                isLive: false,
-                location: '',
-                coordinates: { lat: 0, lng: 0 },
-                activeMembershipDate: nextMonth.toISOString().split('T')[0],
-            };
-            setTherapists(prev => [...prev, newTherapist]);
-        } else {
-             const newPlace: Place = {
-                id: newId,
-                email,
-                password,
-                name: '',
-                description: '',
-                mainImage: '',
-                thumbnailImages: [],
-                pricing: { 60: 0, 90: 0, 120: 0 },
-                whatsappNumber: '',
-                distance: 0,
-                rating: 0,
-                reviewCount: 0,
-                massageTypes: [],
-                isLive: false,
-                location: '',
-                coordinates: { lat: 0, lng: 0 },
-                openingTime: '',
-                closingTime: '',
-            };
-            setPlaces(prev => [...prev, newPlace]);
+        const table = providerAuthInfo.type === 'therapist' ? 'therapists' : 'places';
+        
+        const { error } = await supabase.from(table).insert([commonData]);
+
+        if (error) {
+            return { success: false, message: error.message };
         }
         
         setProviderAuthInfo(prev => prev ? { ...prev, mode: 'login' } : null);
         return { success: true, message: t.providerAuth.registerSuccess };
     };
 
-    const handleProviderLogin = (email: string, password: string): {success: boolean, message: string} => {
-        const therapist = therapists.find(t => t.email === email && t.password === password);
-        if (therapist) {
-            const providerData = { id: therapist.id, type: 'therapist' as const };
+    const handleProviderLogin = async (email: string): Promise<{success: boolean, message: string}> => {
+        const supabase = getSupabase();
+        if (!supabase) return { success: false, message: t.providerAuth.genericError };
+        
+        const { data: therapistData } = await supabase.from('therapists').select('id').eq('email', email).single();
+        if (therapistData) {
+            const providerData = { id: therapistData.id, type: 'therapist' as const };
             setLoggedInProvider(providerData);
             localStorage.setItem('loggedInProvider', JSON.stringify(providerData));
             setPage('therapistDashboard');
@@ -201,9 +314,9 @@ const App: React.FC = () => {
             return { success: true, message: '' };
         }
 
-        const place = places.find(p => p.email === email && p.password === password);
-        if (place) {
-            const providerData = { id: place.id, type: 'place' as const };
+        const { data: placeData } = await supabase.from('places').select('id').eq('email', email).single();
+        if (placeData) {
+            const providerData = { id: placeData.id, type: 'place' as const };
             setLoggedInProvider(providerData);
             localStorage.setItem('loggedInProvider', JSON.stringify(providerData));
             setPage('placeDashboard');
@@ -214,57 +327,172 @@ const App: React.FC = () => {
         return { success: false, message: t.providerAuth.invalidCredentialsError };
     };
 
+
     const handleProviderLogout = () => {
         setLoggedInProvider(null);
         localStorage.removeItem('loggedInProvider');
         setPage('home');
     };
 
-    const handleSaveTherapist = (therapistData: Omit<Therapist, 'id' | 'isLive' | 'rating' | 'reviewCount' | 'activeMembershipDate'>) => {
-        const existingTherapist = therapists.find(t => t.id === loggedInProvider!.id);
+    const handleSaveTherapist = async (therapistData: Omit<Therapist, 'id' | 'isLive' | 'rating' | 'reviewCount' | 'activeMembershipDate' | 'email'>) => {
+        const supabase = getSupabase();
+        if (!supabase || !loggedInProvider) return;
 
-        if (existingTherapist) {
-            const updatedTherapist = { ...existingTherapist, ...therapistData };
-            setTherapists(therapists.map(t => t.id === loggedInProvider!.id ? updatedTherapist : t));
-        } else {
-            // This case should ideally not be hit in the new flow, but kept as a fallback.
-            const nextMonth = new Date();
-            nextMonth.setMonth(nextMonth.getMonth() + 1);
-            const newTherapist: Therapist = {
-                ...therapistData,
-                id: loggedInProvider!.id,
-                isLive: false,
-                rating: 0,
-                reviewCount: 0,
-                activeMembershipDate: nextMonth.toISOString().split('T')[0],
-            };
-            setTherapists([...therapists, newTherapist]);
+        const { data, error } = await supabase
+            .from('therapists')
+            .update(therapistData)
+            .eq('id', loggedInProvider.id)
+            .select();
+
+        if (error) {
+            alert("Error saving profile.");
+            console.error(error);
+        } else if (data) {
+            alert(t.providerDashboard.profileSaved);
         }
-        alert(t.providerDashboard.profileSaved);
     };
     
-    const handleSavePlace = (placeData: Omit<Place, 'id' | 'isLive' | 'rating' | 'reviewCount'>) => {
-         const newPlace: Place = {
-            ...placeData,
-            id: loggedInProvider!.id,
-            isLive: false,
-            rating: 0,
-            reviewCount: 0,
-        };
+    const handleSavePlace = async (placeData: Omit<Place, 'id' | 'isLive' | 'rating' | 'reviewCount' | 'email'>) => {
+        const supabase = getSupabase();
+        if (!supabase || !loggedInProvider) return;
 
-        const existingIndex = places.findIndex(p => p.id === newPlace.id);
-        if (existingIndex > -1) {
-            setPlaces(places.map(p => p.id === newPlace.id ? newPlace : p));
-        } else {
-            setPlaces([...places, newPlace]);
+        const { data, error } = await supabase
+            .from('places')
+            .update(placeData)
+            .eq('id', loggedInProvider.id)
+            .select();
+
+        if (error) {
+            alert("Error saving profile.");
+            console.error(error);
+        } else if (data) {
+            alert(t.providerDashboard.profileSaved);
         }
-        alert(t.providerDashboard.profileSaved);
+    };
+
+
+    const handleSupabaseConnect = (url: string, key: string, silent = false) => {
+        const client = initSupabase(url, key);
+        if (client) {
+            const config = { url, key };
+            setSupabaseConfig(config);
+            setIsSupabaseConnected(true);
+            localStorage.setItem('supabaseConfig', JSON.stringify(config));
+            if (!silent) {
+                alert('Successfully connected to Supabase!');
+                setPage('adminDashboard');
+            }
+        } else {
+            if (!silent) {
+                alert('Failed to connect to Supabase. Check credentials and console for errors.');
+            }
+            setIsSupabaseConnected(false);
+        }
+    };
+
+    const handleSupabaseDisconnect = () => {
+        disconnectSupabase();
+        setSupabaseConfig(null);
+        setIsSupabaseConnected(false);
+        localStorage.removeItem('supabaseConfig');
+        alert('Disconnected from Supabase.');
+    };
+
+    const handleUpdateMembership = (id: number, type: 'therapist' | 'place', months: number) => {
+        const newExpiryDate = new Date();
+        newExpiryDate.setMonth(newExpiryDate.getMonth() + months);
+        const newExpiryDateString = newExpiryDate.toISOString().split('T')[0];
+
+        // This would be a Supabase call in a real app
+        if (type === 'therapist') {
+            setAllAdminTherapists(allAdminTherapists.map(t => t.id === id ? { ...t, activeMembershipDate: newExpiryDateString, isLive: true } : t));
+        } else {
+            setAllAdminPlaces(allAdminPlaces.map(p => p.id === id ? { ...p, activeMembershipDate: newExpiryDateString, isLive: true } : p));
+        }
+        alert(t.adminDashboard.membershipUpdateSuccess);
+    };
+
+    const handleSelectMembershipPackage = (packageName: string, price: string) => {
+        const number = '6281392000050';
+        const provider = loggedInProvider?.type === 'therapist'
+            ? therapists.find(t => t.id === loggedInProvider.id)
+            : places.find(p => p.id === loggedInProvider!.id);
+        
+        const message = encodeURIComponent(
+            `Hi, I would like to purchase the ${packageName} membership for ${price}.\n\nMy registered email is: ${provider?.email}`
+        );
+        window.open(`https://wa.me/${number}?text=${message}`, '_blank');
+    };
+
+    const handleBackToProviderDashboard = () => {
+        if (loggedInProvider?.type === 'therapist') {
+            setPage('therapistDashboard');
+        } else if (loggedInProvider?.type === 'place') {
+            setPage('placeDashboard');
+        } else {
+            setPage('home');
+        }
+    };
+
+    const handleIncrementAnalytics = (id: number, type: 'therapist' | 'place', metric: keyof Analytics) => {
+        // This should be an RPC call to Supabase to increment the value
+        console.log(`Incrementing ${metric} for ${type} ${id}`);
+    };
+
+    const handleNavigateToBooking = (provider: Therapist | Place, type: 'therapist' | 'place') => {
+        if (!user) {
+            alert(t.bookingPage.loginPrompt);
+            setPage('auth');
+            return;
+        }
+        setProviderForBooking({ provider, type });
+        setPage('booking');
+    };
+
+    const handleCreateBooking = (bookingData: Omit<Booking, 'id' | 'status' | 'userId' | 'userName'>) => {
+        const newBooking: Booking = {
+            ...bookingData,
+            id: Date.now(),
+            status: BookingStatus.Pending,
+            userId: user!.id,
+            userName: user!.name,
+        };
+        setBookings(prev => [...prev, newBooking]);
+
+        alert(t.bookingPage.bookingSuccessTitle + '\n' + t.bookingPage.bookingSuccessMessage.replace('{name}', newBooking.providerName));
+        setPage('home');
+    };
+    
+    const handleUpdateBookingStatus = (bookingId: number, newStatus: BookingStatus) => {
+        setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: newStatus } : b));
+    };
+
+    const handleMarkNotificationAsRead = (notificationId: number) => {
+        setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n));
+    };
+
+    const handleSaveGoogleMapsApiKey = (key: string) => {
+        if (key && key.trim()) {
+            localStorage.setItem('googleMapsApiKey', key);
+            setGoogleMapsApiKey(key);
+            alert('Google Maps API Key saved. The application will now reload to apply the changes.');
+            window.location.reload();
+        } else {
+            localStorage.removeItem('googleMapsApiKey');
+            setGoogleMapsApiKey(null);
+            alert('Google Maps API Key cleared. The application will now reload.');
+            window.location.reload();
+        }
     };
 
     const renderPage = () => {
+        if (isLoading && page !== 'landing') {
+            return <div className="flex justify-center items-center h-screen"><div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand-green"></div></div>;
+        }
+
         switch (page) {
             case 'landing': return <LandingPage onLanguageSelect={handleLanguageSelect} />;
-            case 'auth': return <AuthPage onLogin={handleLogin} onBack={handleBackToHome} t={t.auth} />;
+            case 'auth': return <AuthPage onAuthSuccess={() => setPage('home')} onBack={handleBackToHome} t={t.auth} />;
             case 'home':
                 return <HomePage 
                             user={user} 
@@ -277,10 +505,13 @@ const App: React.FC = () => {
                             onLoginClick={handleNavigateToAuth}
                             onAdminClick={handleNavigateToAdminLogin}
                             onCreateProfileClick={handleNavigateToRegistrationChoice}
+                            onBook={handleNavigateToBooking}
+                            onIncrementAnalytics={handleIncrementAnalytics}
+                            isLoading={isLoading}
                             t={t} />;
-            case 'detail': return selectedPlace && <PlaceDetailPage place={selectedPlace} onBack={handleBackToHome} t={t.detail} />;
+            case 'detail': return selectedPlace && <PlaceDetailPage place={selectedPlace} onBack={handleBackToHome} onBook={(place) => handleNavigateToBooking(place, 'place')} onIncrementAnalytics={(metric) => handleIncrementAnalytics(selectedPlace.id, 'place', metric)} t={t.detail} />;
             case 'adminLogin': return <AdminLoginPage onAdminLogin={handleAdminLogin} onBack={handleBackToHome} t={t.adminLogin} />;
-            case 'adminDashboard': return isAdminLoggedIn ? <AdminDashboardPage therapists={therapists} places={places} onToggleTherapist={handleToggleTherapistLive} onTogglePlace={handleTogglePlaceLive} onLogout={handleAdminLogout} t={t.adminDashboard} /> : <AdminLoginPage onAdminLogin={handleAdminLogin} onBack={handleBackToHome} t={t.adminLogin} />;
+            case 'adminDashboard': return isAdminLoggedIn ? <AdminDashboardPage therapists={allAdminTherapists} places={allAdminPlaces} onToggleTherapist={handleToggleTherapistLive} onTogglePlace={handleTogglePlaceLive} onLogout={handleAdminLogout} isSupabaseConnected={isSupabaseConnected} onGoToSupabaseSettings={handleNavigateToSupabaseSettings} onUpdateMembership={handleUpdateMembership} googleMapsApiKey={googleMapsApiKey} onSaveGoogleMapsApiKey={handleSaveGoogleMapsApiKey} t={t.adminDashboard} /> : <AdminLoginPage onAdminLogin={handleAdminLogin} onBack={handleBackToHome} t={t.adminLogin} />;
             case 'registrationChoice': return <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice} />;
             case 'providerAuth': return providerAuthInfo && <ProviderAuthPage
                 providerType={providerAuthInfo.type}
@@ -291,10 +522,39 @@ const App: React.FC = () => {
                 onBack={handleBackToHome}
                 t={t.providerAuth}
             />;
-            case 'therapistDashboard': return loggedInProvider ? <TherapistDashboardPage onSave={handleSaveTherapist} onBack={handleBackToHome} onLogout={handleProviderLogout} t={t.providerDashboard} therapist={therapists.find(t => t.id === loggedInProvider?.id)} /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice}/>;
-            case 'placeDashboard': return loggedInProvider ? <PlaceDashboardPage onSave={handleSavePlace} onBack={handleBackToHome} onLogout={handleProviderLogout} t={t.providerDashboard} place={places.find(p => p.id === loggedInProvider?.id)} /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice} />;
+            case 'therapistDashboard': return loggedInProvider ? <TherapistDashboardPage 
+                onSave={handleSaveTherapist} 
+                onLogout={handleProviderLogout} 
+                onNavigateToNotifications={handleNavigateToNotifications}
+                onUpdateBookingStatus={handleUpdateBookingStatus}
+                t={t.providerDashboard} 
+                therapistId={loggedInProvider.id}
+                bookings={bookings.filter(b => b.providerId === loggedInProvider.id && b.providerType === 'therapist')}
+                notifications={notifications.filter(n => n.providerId === loggedInProvider.id)}
+            /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice}/>;
+            case 'placeDashboard': return loggedInProvider ? <PlaceDashboardPage 
+                onSave={handleSavePlace} 
+                onLogout={handleProviderLogout} 
+                onNavigateToNotifications={handleNavigateToNotifications}
+                onUpdateBookingStatus={handleUpdateBookingStatus}
+                t={t.providerDashboard} 
+                placeId={loggedInProvider.id}
+                bookings={bookings.filter(b => b.providerId === loggedInProvider.id && b.providerType === 'place')}
+                notifications={notifications.filter(n => n.providerId === loggedInProvider.id)}
+            /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice} />;
             case 'agent': return <AgentPage onBack={handleBackToHome} t={t.agentPage} />;
             case 'serviceTerms': return <ServiceTermsPage onBack={handleBackToHome} t={t.serviceTerms} />;
+            case 'supabaseSettings': return <SupabaseSettingsPage
+                    onConnect={handleSupabaseConnect}
+                    onDisconnect={handleSupabaseDisconnect}
+                    onBack={() => setPage('adminDashboard')}
+                    config={supabaseConfig}
+                    isConnected={isSupabaseConnected}
+                    t={t.supabaseSettings}
+                />;
+            case 'membership': return loggedInProvider ? <MembershipPage onPackageSelect={handleSelectMembershipPackage} onBack={handleBackToProviderDashboard} t={t.membershipPage} /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice}/>;
+            case 'booking': return providerForBooking ? <BookingPage provider={providerForBooking.provider} providerType={providerForBooking.type} onBook={handleCreateBooking} onBack={handleBackToHome} bookings={bookings.filter(b => b.providerId === providerForBooking.provider.id)} t={t.bookingPage} /> : <HomePage user={user} therapists={therapists} places={places} userLocation={userLocation} onSetUserLocation={handleSetUserLocation} onSelectPlace={handleSelectPlace} onLogout={handleLogout} onLoginClick={handleNavigateToAuth} onAdminClick={handleNavigateToAdminLogin} onCreateProfileClick={handleNavigateToRegistrationChoice} onBook={handleNavigateToBooking} onIncrementAnalytics={handleIncrementAnalytics} isLoading={isLoading} t={t} />;
+            case 'notifications': return loggedInProvider ? <NotificationsPage notifications={notifications.filter(n => n.providerId === loggedInProvider.id)} onMarkAsRead={handleMarkNotificationAsRead} onBack={handleBackToProviderDashboard} t={t.notificationsPage} /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice}/>;
             default: return <LandingPage onLanguageSelect={handleLanguageSelect} />;
         }
     };
@@ -303,6 +563,11 @@ const App: React.FC = () => {
 
     return (
         <div className="max-w-md mx-auto min-h-screen bg-white shadow-lg flex flex-col">
+            {isMapsApiKeyMissing && t.app && (
+                <div className="bg-yellow-400 text-yellow-900 p-3 text-center text-sm font-semibold z-50">
+                    {t.app.mapsApiKeyWarning}
+                </div>
+            )}
             <div className="flex-grow">
                 {renderPage()}
             </div>

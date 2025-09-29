@@ -1,9 +1,12 @@
-import React from 'react';
-import type { Place } from '../types';
+import React, { useState, useEffect } from 'react';
+import type { Place, Analytics } from '../types';
+import Button from '../components/Button';
 
 interface PlaceDetailPageProps {
     place: Place;
     onBack: () => void;
+    onBook: (place: Place) => void;
+    onIncrementAnalytics: (metric: keyof Analytics) => void;
     t: any;
 }
 
@@ -14,9 +17,15 @@ const WhatsAppIcon: React.FC<{className?: string}> = ({ className }) => (
 );
 
 
-const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({ place, onBack, t }) => {
+const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({ place, onBack, onBook, onIncrementAnalytics, t }) => {
+    const [currentMainImage, setCurrentMainImage] = useState(place.mainImage);
+
+    useEffect(() => {
+        onIncrementAnalytics('profileViews');
+    }, []);
 
     const openWhatsApp = () => {
+        onIncrementAnalytics('whatsappClicks');
         window.open(`https://wa.me/${place.whatsappNumber}`, '_blank');
     };
 
@@ -50,7 +59,7 @@ const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({ place, onBack, t }) =
     return (
         <div className="min-h-screen bg-white">
              <div className="relative">
-                <img className="w-full h-64 object-cover" src={place.mainImage} alt={place.name} />
+                <img className="w-full h-64 object-cover" src={currentMainImage} alt={place.name} />
                 <div className="absolute inset-0 bg-black/20"></div>
                 <button onClick={onBack} className="absolute top-4 left-4 bg-white/70 rounded-full p-2 text-gray-800 hover:bg-white transition-colors z-10">
                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -65,7 +74,13 @@ const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({ place, onBack, t }) =
             <div className="p-4">
                 <div className="grid grid-cols-3 gap-2 mb-4">
                     {place.thumbnailImages.map((img, index) => (
-                        <img key={index} src={img} alt={`${place.name} thumbnail ${index+1}`} className="w-full h-24 object-cover rounded-lg shadow-sm" />
+                        <img 
+                            key={index} 
+                            src={img} 
+                            alt={`${place.name} thumbnail ${index+1}`} 
+                            className="w-full h-24 object-cover rounded-lg shadow-sm cursor-pointer hover:opacity-80 transition-opacity" 
+                            onClick={() => setCurrentMainImage(img)}
+                        />
                     ))}
                 </div>
 
@@ -105,14 +120,17 @@ const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({ place, onBack, t }) =
                 </div>
             </div>
 
-            <div className="p-4 mt-4 sticky bottom-0 bg-white border-t">
+            <div className="p-4 mt-4 sticky bottom-0 bg-white border-t flex gap-2">
                  <button
                     onClick={openWhatsApp}
-                    className="w-full flex items-center justify-center gap-2 bg-green-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-600 transition-colors duration-300"
+                    className="w-1/2 flex items-center justify-center gap-2 bg-green-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-600 transition-colors duration-300"
                 >
                     <WhatsAppIcon className="w-5 h-5"/>
                     <span>{t.contactButton}</span>
                 </button>
+                <Button onClick={() => onBook(place)} className="w-1/2">
+                    {t.bookButton}
+                </Button>
             </div>
         </div>
     );

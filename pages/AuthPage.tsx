@@ -1,47 +1,72 @@
-
-
 import React, { useState } from 'react';
-import type { User } from '../types';
 import Button from '../components/Button';
-import { ADMIN_ACTIVATION_CODE } from '../constants';
 import HomeIcon from '../components/icons/HomeIcon';
+import { getSupabase } from '../lib/supabase';
 
 interface AuthPageProps {
-    onLogin: (user: User) => void;
+    onAuthSuccess: () => void;
     onBack: () => void;
     t: any;
 }
 
-const AuthPage: React.FC<AuthPageProps> = ({ onLogin, onBack, t }) => {
-    const [isSignedUp, setIsSignedUp] = useState(false);
-    const [activationCode, setActivationCode] = useState('');
+const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t }) => {
+    const [mode, setMode] = useState<'login' | 'signup'>('login');
     const [error, setError] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
-    const handleSignUp = (e: React.FormEvent) => {
+    const handleAuth = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (name && email && password) {
-            setError('');
-            setIsSignedUp(true);
-        } else {
-            setError(t.fillFieldsError);
+        const supabase = getSupabase();
+        if (!supabase) {
+            setError("Database connection not available.");
+            return;
         }
-    };
-    
-    const handleActivation = () => {
-        if (activationCode === ADMIN_ACTIVATION_CODE) {
-            const newUser: User = {
-                id: `user_${Date.now()}`,
-                name: name,
-                email: email,
-                isActivated: true,
-            };
-            onLogin(newUser);
-        } else {
-            setError(t.invalidCodeError);
+
+        setIsLoading(true);
+        setError('');
+        setSuccessMessage('');
+        
+        if (mode === 'signup') {
+            if (!name || !email || !password) {
+                setError(t.fillFieldsError);
+                setIsLoading(false);
+                return;
+            }
+            const { error: signUpError } = await supabase.auth.signUp({ 
+                email, 
+                password, 
+                options: { 
+                    data: { name: name }
+                }
+            });
+
+            if (signUpError) {
+                setError(signUpError.message);
+            } else {
+                setSuccessMessage("Sign up successful! Please wait for an admin to activate your account.");
+                setName('');
+                setEmail('');
+                setPassword('');
+                setMode('login');
+            }
+        } else { // Login mode
+            if (!email || !password) {
+                setError(t.fillFieldsError);
+                setIsLoading(false);
+                return;
+            }
+            const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+            if (signInError) {
+                setError(signInError.message);
+            } else {
+                onAuthSuccess();
+            }
         }
+        setIsLoading(false);
     };
 
     return (
@@ -56,42 +81,39 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin, onBack, t }) => {
                 </div>
 
                 <div className="bg-white p-8 rounded-2xl shadow-lg">
-                    {!isSignedUp ? (
-                        <form onSubmit={handleSignUp} className="space-y-6">
-                            <h2 className="text-2xl font-semibold text-gray-800 text-center">{t.createAccount}</h2>
-                             <div>
-                                <label htmlFor="name" className="block text-sm font-medium text-gray-700">{t.nameLabel}</label>
-                                <input id="name" type="text" value={name} onChange={e => setName(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-green focus:border-brand-green" placeholder={t.namePlaceholder} />
-                            </div>
+                    <form onSubmit={handleAuth} className="space-y-6">
+                        <h2 className="text-2xl font-semibold text-gray-800 text-center">
+                            {mode === 'signup' ? t.createAccount : 'Welcome Back'}
+                        </h2>
+                        {mode === 'signup' && (
                             <div>
-                                <label htmlFor="email" className="block text-sm font-medium text-gray-700">{t.emailLabel}</label>
-                                <input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-green focus:border-brand-green" placeholder={t.emailPlaceholder} />
+                                <label htmlFor="name" className="block text-sm font-medium text-gray-700">{t.nameLabel}</label>
+                                <input id="name" type="text" value={name} onChange={e => setName(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-green focus:border-brand-green" placeholder={t.namePlaceholder} required />
                             </div>
-                             <div>
-                                <label htmlFor="password" className="block text-sm font-medium text-gray-700">{t.passwordLabel}</label>
-                                <input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-green focus:border-brand-green" placeholder="••••••••" />
-                            </div>
-                            {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-                            <Button type="submit">{t.signUpButton}</Button>
-                        </form>
-                    ) : (
-                        <div className="space-y-6">
-                            <h2 className="text-2xl font-semibold text-gray-800 text-center">{t.activationTitle}</h2>
-                            <p className="text-center text-gray-600">{t.activationPrompt}</p>
-                             <div>
-                                <label htmlFor="activationCode" className="block text-sm font-medium text-gray-700">{t.activationCodeLabel}</label>
-                                <input 
-                                    id="activationCode"
-                                    type="text" 
-                                    value={activationCode} 
-                                    onChange={e => setActivationCode(e.target.value)} 
-                                    className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-green focus:border-brand-green"
-                                    placeholder={t.activationCodePlaceholder} />
-                            </div>
-                             {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-                            <Button onClick={handleActivation}>{t.activateButton}</Button>
+                        )}
+                        <div>
+                            <label htmlFor="email" className="block text-sm font-medium text-gray-700">{t.emailLabel}</label>
+                            <input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-green focus:border-brand-green" placeholder={t.emailPlaceholder} required />
                         </div>
-                    )}
+                            <div>
+                            <label htmlFor="password" className="block text-sm font-medium text-gray-700">{t.passwordLabel}</label>
+                            <input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-green focus:border-brand-green" placeholder="••••••••" required />
+                        </div>
+                        {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+                        {successMessage && <p className="text-green-600 text-sm text-center">{successMessage}</p>}
+                        <Button type="submit" disabled={isLoading}>
+                            {isLoading ? 'Processing...' : (mode === 'signup' ? t.signUpButton : 'Login')}
+                        </Button>
+                        <div className="text-center">
+                            <button
+                                type="button"
+                                onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
+                                className="text-sm font-medium text-brand-green hover:underline"
+                            >
+                                {mode === 'login' ? "Don't have an account? Sign Up" : "Already have an account? Login"}
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>

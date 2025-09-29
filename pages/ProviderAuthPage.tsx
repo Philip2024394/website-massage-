@@ -1,12 +1,12 @@
-
 import React, { useState } from 'react';
 import Button from '../components/Button';
+import { getSupabase } from '../lib/supabase';
 
 interface ProviderAuthPageProps {
     mode: 'login' | 'register';
     providerType: 'therapist' | 'place';
-    onRegister: (email: string, password: string) => {success: boolean, message: string};
-    onLogin: (email: string, password: string) => {success: boolean, message: string};
+    onRegister: (email: string) => Promise<{success: boolean, message: string}>;
+    onLogin: (email: string) => Promise<{success: boolean, message: string}>;
     onSwitchMode: () => void;
     onBack: () => void;
     t: any;
@@ -17,32 +17,55 @@ const ProviderAuthPage: React.FC<ProviderAuthPageProps> = ({ mode, providerType,
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError('');
-        setSuccessMessage('');
-
-        if (!email || !password) {
-            setError(t.fillFieldsError);
+        const supabase = getSupabase();
+        if (!supabase) {
+            setError("Database connection not available.");
             return;
         }
 
-        let result;
-        if (mode === 'register') {
-            result = onRegister(email, password);
-        } else {
-            result = onLogin(email, password);
+        setError('');
+        setSuccessMessage('');
+        setIsLoading(true);
+
+        if (!email || !password) {
+            setError(t.fillFieldsError);
+            setIsLoading(false);
+            return;
         }
 
-        if (!result.success) {
-            setError(result.message);
-        } else if (result.message) {
-            setSuccessMessage(result.message);
-            // Clear fields after successful registration
-            setEmail('');
-            setPassword('');
+        if (mode === 'register') {
+            const { data: { user }, error: signUpError } = await supabase.auth.signUp({ email, password });
+
+            if (signUpError) {
+                setError(signUpError.message);
+            } else if (user) {
+                const result = await onRegister(email);
+                if (result.success) {
+                    setSuccessMessage(result.message);
+                    setEmail('');
+                    setPassword('');
+                } else {
+                    setError(result.message);
+                    // Consider deleting the auth user if profile creation fails
+                }
+            }
+        } else {
+             const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+             if (signInError) {
+                setError(signInError.message);
+             } else {
+                const result = await onLogin(email);
+                if (!result.success) {
+                    setError(result.message);
+                    await supabase.auth.signOut(); // Log them out if profile not found
+                }
+             }
         }
+        setIsLoading(false);
     };
 
     const getTitle = () => {
@@ -96,12 +119,16 @@ const ProviderAuthPage: React.FC<ProviderAuthPageProps> = ({ mode, providerType,
                         {error && <p className="text-red-500 text-sm text-center">{error}</p>}
                         {successMessage && <p className="text-green-600 text-sm text-center">{successMessage}</p>}
                         
-                        <Button type="submit">{buttonText}</Button>
+                        <Button type="submit" disabled={isLoading}>{isLoading ? 'Processing...' : buttonText}</Button>
                         
                         <div className="text-center">
                             <button
                                 type="button"
-                                onClick={onSwitchMode}
+                                onClick={() => {
+                                    setError('');
+                                    setSuccessMessage('');
+                                    onSwitchMode();
+                                }}
                                 className="text-sm font-medium text-brand-green hover:underline"
                             >
                                 {switchText}

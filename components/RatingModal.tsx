@@ -1,5 +1,7 @@
+
 import React, { useState } from 'react';
 import Button from './Button';
+import { COUNTRIES } from '../countries';
 
 interface RatingModalProps {
     onClose: () => void;
@@ -12,6 +14,7 @@ interface RatingModalProps {
         whatsappPlaceholder: string;
         submitButton: string;
         selectRatingError: string;
+        whatsappRequiredError: string;
     };
 }
 
@@ -25,6 +28,7 @@ const emojis = [
 
 const RatingModal: React.FC<RatingModalProps> = ({ onClose, onSubmit, itemName, t }) => {
     const [selectedRating, setSelectedRating] = useState<number | null>(null);
+    const [countryCode, setCountryCode] = useState('+62');
     const [whatsapp, setWhatsapp] = useState('');
     const [error, setError] = useState('');
 
@@ -33,8 +37,14 @@ const RatingModal: React.FC<RatingModalProps> = ({ onClose, onSubmit, itemName, 
             setError(t.selectRatingError);
             return;
         }
+        if (!whatsapp.trim()) {
+            setError(t.whatsappRequiredError);
+            return;
+        }
         setError('');
-        onSubmit(selectedRating, whatsapp);
+        // Remove leading zeros from the phone number part
+        const fullWhatsappNumber = `${countryCode}${whatsapp.replace(/^0+/, '')}`;
+        onSubmit(selectedRating, fullWhatsappNumber);
     };
     
     return (
@@ -67,14 +77,26 @@ const RatingModal: React.FC<RatingModalProps> = ({ onClose, onSubmit, itemName, 
 
                 <div className="mb-4">
                      <label htmlFor="whatsapp" className="block text-sm font-medium text-gray-700 mb-1">{t.whatsappLabel}</label>
-                     <input 
-                        id="whatsapp"
-                        type="tel"
-                        value={whatsapp}
-                        onChange={e => setWhatsapp(e.target.value)}
-                        className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-green focus:border-brand-green"
-                        placeholder={t.whatsappPlaceholder}
-                    />
+                     <div className="flex items-center">
+                        <select 
+                            value={countryCode} 
+                            onChange={e => setCountryCode(e.target.value)}
+                            className="flex-shrink-0 z-10 inline-flex items-center py-2.5 px-3 text-sm font-medium text-center text-gray-900 bg-gray-100 border border-r-0 border-gray-300 rounded-l-md hover:bg-gray-200 focus:outline-none focus:ring-1 focus:ring-brand-green focus:border-brand-green"
+                            aria-label="Country Code"
+                        >
+                            {COUNTRIES.map(country => (
+                                <option key={country.code} value={country.dial_code}>{country.code} {country.dial_code}</option>
+                            ))}
+                        </select>
+                        <input 
+                            id="whatsapp"
+                            type="tel"
+                            value={whatsapp}
+                            onChange={e => setWhatsapp(e.target.value)}
+                            className="w-full px-3 py-2 bg-white border border-gray-300 rounded-r-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-green focus:border-brand-green"
+                            placeholder={t.whatsappPlaceholder}
+                        />
+                     </div>
                 </div>
                  {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
                 <Button onClick={handleSubmit}>
