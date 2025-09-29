@@ -42,6 +42,8 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
     const [massageTypes, setMassageTypes] = useState<string[]>([]);
     const [pricing, setPricing] = useState<Pricing>({ 60: 0, 90: 0, 120: 0 });
     const [location, setLocation] = useState('');
+    // FIX: Add state for coordinates to resolve missing property error
+    const [coordinates, setCoordinates] = useState({ lat: 0, lng: 0 });
     const [status, setStatus] = useState<AvailabilityStatus>(AvailabilityStatus.Offline);
     const [mapsApiLoaded, setMapsApiLoaded] = useState(false);
 
@@ -56,6 +58,8 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
             setMassageTypes(therapist.massageTypes);
             setPricing(therapist.pricing);
             setLocation(therapist.location);
+            // FIX: Populate coordinates from therapist data
+            setCoordinates(therapist.coordinates);
             setStatus(therapist.status);
         }
     }, [therapist]);
@@ -98,11 +102,19 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                 if (place.formatted_address) {
                     setLocation(place.formatted_address);
                 }
+                // FIX: Update coordinates when location is selected from autocomplete
+                if (place.geometry && place.geometry.location) {
+                    setCoordinates({
+                        lat: place.geometry.location.lat(),
+                        lng: place.geometry.location.lng(),
+                    });
+                }
             });
         }
     }, [mapsApiLoaded]);
 
     const handleSave = () => {
+        // FIX: Add coordinates to the onSave payload
         onSave({
             name,
             email: therapist?.email || '',
@@ -112,6 +124,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
             pricing,
             massageTypes,
             location,
+            coordinates,
             status,
             distance: 0, // dummy value
         });
@@ -138,6 +151,8 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                     lat: position.coords.latitude,
                     lng: position.coords.longitude
                 };
+                // FIX: Update coordinates when using current location
+                setCoordinates(latlng);
                 geocoder.geocode({ location: latlng }, (results: any, status: string) => {
                     if (status === 'OK' && results[0]) {
                         setLocation(results[0].formatted_address);

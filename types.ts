@@ -26,6 +26,7 @@ export interface Therapist {
     massageTypes: string[];
     isLive: boolean;
     location: string;
+    coordinates: { lat: number; lng: number; };
     activeMembershipDate: string;
 }
 
@@ -45,6 +46,9 @@ export interface Place {
     massageTypes: string[];
     isLive: boolean;
     location: string;
+    coordinates: { lat: number; lng: number; };
+    openingTime: string;
+    closingTime: string;
 }
 
 export interface User {
@@ -52,4 +56,10 @@ export interface User {
     name: string;
     email: string;
     isActivated: boolean;
+}
+
+export interface UserLocation {
+    address: string;
+    lat: number;
+    lng: number;
 }

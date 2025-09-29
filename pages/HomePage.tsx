@@ -1,18 +1,20 @@
 
 
 import React, { useState, useMemo } from 'react';
-import type { User, Place, Therapist } from '../types';
+import type { User, Place, Therapist, UserLocation } from '../types';
 import TherapistCard from '../components/TherapistCard';
 import PlaceCard from '../components/PlaceCard';
 import RatingModal from '../components/RatingModal';
-import { locations } from '../locations';
 import { MASSAGE_TYPES_CATEGORIZED } from '../constants';
 import HomeIcon from '../components/icons/HomeIcon';
+import MapPinIcon from '../components/icons/MapPinIcon';
 
 interface HomePageProps {
     user: User | null;
     therapists: Therapist[];
     places: Place[];
+    userLocation: UserLocation | null;
+    onSetUserLocation: (location: UserLocation) => void;
     onSelectPlace: (place: Place) => void;
     onLogout: () => void;
     onLoginClick: () => void;
@@ -24,18 +26,6 @@ interface HomePageProps {
 type ActiveTab = 'home' | 'places';
 
 // Icons
-const DownloadIcon = ({ className = 'w-6 h-6' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-    </svg>
-);
-
-const ShieldIcon = ({ className = 'w-6 h-6' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 20.944a11.955 11.955 0 0118 0c0-6.627-5.373-12-12-12-.625 0-1.241.05-1.852.144z" />
-    </svg>
-);
-
 const UserIcon = ({ className = 'w-8 h-8' }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="currentColor">
         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0012 11z" clipRule="evenodd" />
@@ -68,12 +58,6 @@ const BuildingIcon = ({ className = 'w-5 h-5' }) => (
     </svg>
 );
 
-const MapIcon = ({ className = 'w-5 h-5' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 16.382V5.618a1 1 0 00-1.447-.894L15 7m0 10V7m0 0L9 4" />
-    </svg>
-);
-
 const SparklesIcon = ({ className = 'w-5 h-5' }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.293 2.293a1 1 0 010 1.414L10 17l-4 4 4-4 6.293-6.293a1 1 0 011.414 0L21 11" />
@@ -92,35 +76,65 @@ const ChevronDownIcon = ({ className = 'w-5 h-5' }) => (
     </svg>
 );
 
+const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 6371; // Radius of the earth in km
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lon2 - lon1) * (Math.PI / 180);
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const d = R * c; // Distance in km
+    return d;
+};
 
-const HomePage: React.FC<HomePageProps> = ({ user, therapists, places, onSelectPlace, onLogout, onLoginClick, onAdminClick, onCreateProfileClick, t }) => {
+
+const HomePage: React.FC<HomePageProps> = ({ user, therapists, places, userLocation, onSetUserLocation, onSelectPlace, onLogout, onLoginClick, onAdminClick, onCreateProfileClick, t }) => {
     const [activeTab, setActiveTab] = useState<ActiveTab>('home');
     const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
     const [itemToRate, setItemToRate] = useState<Therapist | Place | null>(null);
-    const [selectedCity, setSelectedCity] = useState('All Cities');
     const [selectedMassageType, setSelectedMassageType] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
+    const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+    const [locationError, setLocationError] = useState('');
 
     const liveTherapists = useMemo(() => therapists.filter(therapist => therapist.isLive), [therapists]);
     const livePlaces = useMemo(() => places.filter(place => place.isLive), [places]);
 
-    const filteredTherapists = useMemo(() => {
-        return liveTherapists.filter(therapist => {
-            const cityMatch = selectedCity === 'All Cities' || therapist.location.includes(selectedCity);
+    const processedTherapists = useMemo(() => {
+        let filtered = liveTherapists.filter(therapist => {
             const typeMatch = selectedMassageType === 'all' || therapist.massageTypes.includes(selectedMassageType);
             const searchMatch = therapist.name.toLowerCase().includes(searchQuery.toLowerCase());
-            return cityMatch && typeMatch && searchMatch;
+            return typeMatch && searchMatch;
         });
-    }, [liveTherapists, selectedCity, selectedMassageType, searchQuery]);
+
+        if (userLocation) {
+            return filtered.map(therapist => ({
+                ...therapist,
+                distance: parseFloat(getDistance(userLocation.lat, userLocation.lng, therapist.coordinates.lat, therapist.coordinates.lng).toFixed(1))
+            })).sort((a, b) => a.distance - b.distance);
+        }
+        
+        return filtered;
+    }, [liveTherapists, userLocation, selectedMassageType, searchQuery]);
     
-    const filteredPlaces = useMemo(() => {
-        return livePlaces.filter(place => {
-            const cityMatch = selectedCity === 'All Cities' || place.location.includes(selectedCity);
+    const processedPlaces = useMemo(() => {
+        let filtered = livePlaces.filter(place => {
             const typeMatch = selectedMassageType === 'all' || place.massageTypes.includes(selectedMassageType);
             const searchMatch = place.name.toLowerCase().includes(searchQuery.toLowerCase());
-            return cityMatch && typeMatch && searchMatch;
+            return typeMatch && searchMatch;
         });
-    }, [livePlaces, selectedCity, selectedMassageType, searchQuery]);
+
+        if (userLocation) {
+             return filtered.map(place => ({
+                ...place,
+                distance: parseFloat(getDistance(userLocation.lat, userLocation.lng, place.coordinates.lat, place.coordinates.lng).toFixed(1))
+            })).sort((a, b) => a.distance - b.distance);
+        }
+
+        return filtered;
+    }, [livePlaces, userLocation, selectedMassageType, searchQuery]);
 
 
     const handleOpenRatingModal = (item: Therapist | Place) => {
@@ -132,6 +146,38 @@ const HomePage: React.FC<HomePageProps> = ({ user, therapists, places, onSelectP
         setIsRatingModalOpen(false);
         setItemToRate(null);
     };
+    
+    const handleSetLocation = () => {
+        if (!navigator.geolocation) {
+            setLocationError('Geolocation is not supported by your browser.');
+            return;
+        }
+        setIsLoadingLocation(true);
+        setLocationError('');
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                 const geocoder = new (window as any).google.maps.Geocoder();
+                 geocoder.geocode({ location: { lat: latitude, lng: longitude } }, (results: any, status: string) => {
+                    setIsLoadingLocation(false);
+                    if (status === 'OK' && results[0]) {
+                        const location: UserLocation = {
+                            address: results[0].formatted_address,
+                            lat: latitude,
+                            lng: longitude,
+                        };
+                        onSetUserLocation(location);
+                    } else {
+                        setLocationError(t.home.locationError);
+                    }
+                });
+            },
+            () => {
+                setIsLoadingLocation(false);
+                setLocationError(t.home.locationError);
+            }
+        );
+    };
 
     const handleSubmitRating = (rating: number, whatsapp: string) => {
         console.log(`Rating for ${itemToRate?.name}: ${rating}, WhatsApp: ${whatsapp}`);
@@ -142,23 +188,23 @@ const HomePage: React.FC<HomePageProps> = ({ user, therapists, places, onSelectP
     const onlineTherapistsCount = useMemo(() => liveTherapists.filter(t => t.status === 'Available').length, [liveTherapists]);
 
     const renderTherapists = () => {
-        if (filteredTherapists.length === 0) {
+        if (processedTherapists.length === 0) {
             return <p className="text-center text-gray-500 py-8">{t.home.noResults}</p>;
         }
         return (
             <div className="space-y-4">
-                {filteredTherapists.map(therapist => <TherapistCard key={therapist.id} therapist={therapist} onRate={handleOpenRatingModal} />)}
+                {processedTherapists.map(therapist => <TherapistCard key={therapist.id} therapist={therapist} onRate={handleOpenRatingModal} />)}
             </div>
         );
     };
 
     const renderPlaces = () => {
-         if (filteredPlaces.length === 0) {
+         if (processedPlaces.length === 0) {
             return <p className="text-center text-gray-500 py-8">{t.home.noResults}</p>;
         }
         return (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {filteredPlaces.map(place => <PlaceCard key={place.id} place={place} onClick={() => onSelectPlace(place)} onRate={handleOpenRatingModal} />)}
+                {processedPlaces.map(place => <PlaceCard key={place.id} place={place} onClick={() => onSelectPlace(place)} onRate={handleOpenRatingModal} />)}
             </div>
         );
     };
@@ -204,44 +250,45 @@ const HomePage: React.FC<HomePageProps> = ({ user, therapists, places, onSelectP
                 </div>
 
                 <div className="space-y-3 mb-6">
-                    <div className="flex gap-3">
-                        <div className="relative w-1/2">
-                            <MapIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"/>
-                            <select 
-                                className="w-full pl-10 pr-8 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 appearance-none focus:outline-none focus:ring-2 focus:ring-brand-green"
-                                value={selectedCity}
-                                onChange={e => setSelectedCity(e.target.value)}
+                    <div className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
+                        <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-3 overflow-hidden">
+                                <MapPinIcon className="w-8 h-8 text-gray-400 flex-shrink-0" />
+                                <div className="overflow-hidden">
+                                    <p className="text-xs text-gray-500">Your Location</p>
+                                    <p className="font-medium text-gray-800 text-sm truncate">{userLocation ? userLocation.address : 'Location not set'}</p>
+                                </div>
+                            </div>
+                            <button 
+                                onClick={handleSetLocation}
+                                disabled={isLoadingLocation}
+                                className="bg-brand-green-light text-brand-green-dark font-semibold text-sm px-4 py-2 rounded-lg hover:bg-green-200 transition-colors disabled:opacity-50 flex-shrink-0"
                             >
-                                <option value="All Cities">{t.home.allCities}</option>
-                                {locations.map(provinceData => (
-                                    <optgroup label={provinceData.province} key={provinceData.province}>
-                                        {provinceData.cities.map(city => (
-                                            <option key={city} value={city}>{city}</option>
-                                        ))}
-                                    </optgroup>
-                                ))}
-                            </select>
-                             <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"/>
+                                {isLoadingLocation ? t.home.gettingLocation : (userLocation ? t.home.updateLocation : t.home.setLocation)}
+                            </button>
                         </div>
-                        <div className="relative w-1/2">
-                            <SparklesIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"/>
-                            <select 
-                                className="w-full pl-10 pr-8 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 appearance-none focus:outline-none focus:ring-2 focus:ring-brand-green"
-                                value={selectedMassageType}
-                                onChange={e => setSelectedMassageType(e.target.value)}
-                            >
-                                <option value="all">{t.home.massageType}</option>
-                                {MASSAGE_TYPES_CATEGORIZED.map(category => (
-                                    <optgroup label={category.category} key={category.category}>
-                                        {category.types.map(type => (
-                                            <option key={type} value={type}>{type}</option>
-                                        ))}
-                                    </optgroup>
-                                ))}
-                            </select>
-                             <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"/>
-                        </div>
+                        {locationError && <p className="text-red-500 text-xs mt-2 text-center">{locationError}</p>}
                     </div>
+
+                    <div className="relative">
+                        <SparklesIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"/>
+                        <select 
+                            className="w-full pl-10 pr-8 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 appearance-none focus:outline-none focus:ring-2 focus:ring-brand-green"
+                            value={selectedMassageType}
+                            onChange={e => setSelectedMassageType(e.target.value)}
+                        >
+                            <option value="all">{t.home.massageType}</option>
+                            {MASSAGE_TYPES_CATEGORIZED.map(category => (
+                                <optgroup label={category.category} key={category.category}>
+                                    {category.types.map(type => (
+                                        <option key={type} value={type}>{type}</option>
+                                    ))}
+                                </optgroup>
+                            ))}
+                        </select>
+                         <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"/>
+                    </div>
+                    
                     <div className="relative">
                         <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"/>
                         <input 

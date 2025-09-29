@@ -19,16 +19,47 @@ const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({ place, onBack, t }) =
     const openWhatsApp = () => {
         window.open(`https://wa.me/${place.whatsappNumber}`, '_blank');
     };
+
+    const getStatus = (): { text: string; color: string } => {
+        if (!place.openingTime || !place.closingTime) {
+            return { text: 'N/A', color: 'bg-gray-500' };
+        }
+        
+        try {
+            const now = new Date();
+            const currentTime = now.getHours() * 60 + now.getMinutes();
+
+            const [openHour, openMinute] = place.openingTime.split(':').map(Number);
+            const openTime = openHour * 60 + openMinute;
+
+            const [closeHour, closeMinute] = place.closingTime.split(':').map(Number);
+            const closeTime = closeHour * 60 + closeMinute;
+
+            if (currentTime >= openTime && currentTime <= closeTime) {
+                return { text: 'Open', color: 'bg-green-500' };
+            }
+            return { text: 'Closed', color: 'bg-red-500' };
+        } catch (error) {
+            console.error("Error parsing time:", error);
+            return { text: 'N/A', color: 'bg-gray-500' };
+        }
+    };
+
+    const status = getStatus();
     
     return (
         <div className="min-h-screen bg-white">
              <div className="relative">
                 <img className="w-full h-64 object-cover" src={place.mainImage} alt={place.name} />
-                <button onClick={onBack} className="absolute top-4 left-4 bg-white/70 rounded-full p-2 text-gray-800 hover:bg-white transition-colors">
+                <div className="absolute inset-0 bg-black/20"></div>
+                <button onClick={onBack} className="absolute top-4 left-4 bg-white/70 rounded-full p-2 text-gray-800 hover:bg-white transition-colors z-10">
                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
                 </button>
+                <span className={`absolute top-4 right-4 px-3 py-1 rounded-full text-white font-bold text-sm ${status.color} z-10 shadow-lg`}>
+                    {status.text}
+                </span>
             </div>
             
             <div className="p-4">
@@ -39,13 +70,18 @@ const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({ place, onBack, t }) =
                 </div>
 
                 <h1 className="text-3xl font-bold text-gray-900">{place.name}</h1>
+                {place.openingTime && place.closingTime && (
+                    <p className="text-sm text-gray-500 mt-1 font-medium">
+                        Today's Hours: {place.openingTime} - {place.closingTime}
+                    </p>
+                )}
                 <p className="mt-2 text-gray-600">{place.description}</p>
             </div>
 
             <div className="px-4 py-2">
-                <h3 className="text-xl font-semibold text-gray-800 mb-3">Massage Types</h3>
+                <h3 className="text-xl font-semibold text-gray-800 mb-3">Services Offered</h3>
                 <div className="flex flex-wrap gap-2">
-                    {place.massageTypes.map(type => (
+                    {place.massageTypes && place.massageTypes.map(type => (
                         <span key={type} className="px-3 py-1 bg-gray-100 text-gray-800 text-sm font-medium rounded-full">{type}</span>
                     ))}
                 </div>

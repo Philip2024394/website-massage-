@@ -1,13 +1,12 @@
 
 
 import React, { useState, useEffect } from 'react';
-import type { User, Place, Therapist } from './types';
+import type { User, Place, Therapist, UserLocation } from './types';
 import { AvailabilityStatus } from './types';
 import AuthPage from './pages/AuthPage';
 import HomePage from './pages/HomePage';
 import PlaceDetailPage from './pages/PlaceDetailPage';
 import LandingPage from './pages/LandingPage';
-import LocationModal from './components/LocationModal';
 import AdminLoginPage from './pages/AdminLoginPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import RegistrationChoicePage from './pages/RegistrationChoicePage';
@@ -30,7 +29,7 @@ const App: React.FC = () => {
     const [page, setPage] = useState<Page>('landing');
     const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
     const [language, setLanguage] = useState<Language>('en');
-    const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+    const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
     const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
     
     const [therapists, setTherapists] = useState<Therapist[]>(MOCK_THERAPISTS);
@@ -57,6 +56,16 @@ const App: React.FC = () => {
                 localStorage.removeItem('loggedInProvider');
             }
         }
+        
+        const storedLocation = localStorage.getItem('user_location');
+        if (storedLocation) {
+            try {
+                setUserLocation(JSON.parse(storedLocation));
+            } catch (e) {
+                console.error("Failed to parse user location", e);
+                localStorage.removeItem('user_location');
+            }
+        }
     }, []);
 
     const t = translations[language];
@@ -69,15 +78,11 @@ const App: React.FC = () => {
     const handleLogin = (loggedInUser: User) => {
         setUser(loggedInUser);
         setPage('home');
-        const location = localStorage.getItem('user_location');
-        if (!location) {
-            setIsLocationModalOpen(true);
-        }
     };
     
-    const handleLocationConfirm = () => {
-        localStorage.setItem('user_location', JSON.stringify({ set: true }));
-        setIsLocationModalOpen(false);
+    const handleSetUserLocation = (location: UserLocation) => {
+        setUserLocation(location);
+        localStorage.setItem('user_location', JSON.stringify(location));
     };
 
     const handleLogout = () => {
@@ -153,6 +158,7 @@ const App: React.FC = () => {
                 massageTypes: [],
                 isLive: false,
                 location: '',
+                coordinates: { lat: 0, lng: 0 },
                 activeMembershipDate: nextMonth.toISOString().split('T')[0],
             };
             setTherapists(prev => [...prev, newTherapist]);
@@ -173,6 +179,9 @@ const App: React.FC = () => {
                 massageTypes: [],
                 isLive: false,
                 location: '',
+                coordinates: { lat: 0, lng: 0 },
+                openingTime: '',
+                closingTime: '',
             };
             setPlaces(prev => [...prev, newPlace]);
         }
@@ -255,12 +264,14 @@ const App: React.FC = () => {
     const renderPage = () => {
         switch (page) {
             case 'landing': return <LandingPage onLanguageSelect={handleLanguageSelect} />;
-            case 'auth': return <AuthPage onLogin={handleLogin} t={t.auth} />;
+            case 'auth': return <AuthPage onLogin={handleLogin} onBack={handleBackToHome} t={t.auth} />;
             case 'home':
                 return <HomePage 
                             user={user} 
                             therapists={therapists}
                             places={places}
+                            userLocation={userLocation}
+                            onSetUserLocation={handleSetUserLocation}
                             onSelectPlace={handleSelectPlace} 
                             onLogout={handleLogout}
                             onLoginClick={handleNavigateToAuth}
@@ -295,7 +306,6 @@ const App: React.FC = () => {
             <div className="flex-grow">
                 {renderPage()}
             </div>
-            {isLocationModalOpen && <LocationModal onClose={handleLocationConfirm} t={t.locationModal} />}
             {showFooter && (
                 <Footer 
                     onAgentClick={handleNavigateToAgentPage}

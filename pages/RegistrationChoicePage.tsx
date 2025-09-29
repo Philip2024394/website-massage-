@@ -1,7 +1,6 @@
 
 import React from 'react';
 import Button from '../components/Button';
-import LogoIcon from '../components/icons/LogoIcon';
 
 interface RegistrationChoicePageProps {
     onSelect: (type: 'therapist' | 'place') => void;
@@ -18,8 +17,7 @@ const RegistrationChoicePage: React.FC<RegistrationChoicePageProps> = ({ onSelec
                 </svg>
             </button>
             <div className="w-full max-w-sm mx-auto text-center">
-                <LogoIcon className="h-20 w-20 text-brand-green mx-auto mb-4" />
-                <h1 className="text-3xl font-bold text-gray-800">{t.title}</h1>
+                <h1 className="text-3xl font-bold text-gray-800 mb-2">{t.title}</h1>
                 <p className="text-gray-600 mt-2 mb-8">{t.prompt}</p>
 
                 <div className="space-y-4">

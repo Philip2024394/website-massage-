@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import Button from '../components/Button';
-import LogoIcon from '../components/icons/LogoIcon';
 
 interface ProviderAuthPageProps {
     mode: 'login' | 'register';
@@ -65,8 +64,7 @@ const ProviderAuthPage: React.FC<ProviderAuthPageProps> = ({ mode, providerType,
             </button>
             <div className="w-full max-w-md mx-auto">
                 <div className="text-center mb-8">
-                    <LogoIcon className="h-20 w-20 text-brand-green mx-auto" />
-                    <h1 className="text-3xl font-bold text-brand-green mt-4">2Go Massage</h1>
+                    <h1 className="text-3xl font-bold text-brand-green">2Go Massage</h1>
                 </div>
 
                 <div className="bg-white p-8 rounded-2xl shadow-lg">

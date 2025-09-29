@@ -7,7 +7,8 @@ import DocumentTextIcon from '../components/icons/DocumentTextIcon';
 import PhoneIcon from '../components/icons/PhoneIcon';
 import CurrencyRpIcon from '../components/icons/CurrencyRpIcon';
 import MapPinIcon from '../components/icons/MapPinIcon';
-import { MASSAGE_TYPES_CATEGORIZED } from '../constants';
+import ClockIcon from '../components/icons/ClockIcon';
+import { PLACE_SERVICES } from '../constants';
 
 interface PlaceDashboardPageProps {
     onSave: (data: Omit<Place, 'id' | 'isLive' | 'rating' | 'reviewCount'>) => void;
@@ -26,6 +27,10 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onBack,
     const [pricing, setPricing] = useState<Pricing>({ 60: 0, 90: 0, 120: 0 });
     const [location, setLocation] = useState('');
     const [massageTypes, setMassageTypes] = useState<string[]>([]);
+    // FIX: Add state for coordinates to resolve missing property error
+    const [coordinates, setCoordinates] = useState({ lat: 0, lng: 0 });
+    const [openingTime, setOpeningTime] = useState('09:00');
+    const [closingTime, setClosingTime] = useState('21:00');
     const [mapsApiLoaded, setMapsApiLoaded] = useState(false);
 
     const locationInputRef = useRef<HTMLInputElement>(null);
@@ -39,7 +44,11 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onBack,
             setWhatsappNumber(place.whatsappNumber);
             setPricing(place.pricing);
             setLocation(place.location);
+            // FIX: Populate coordinates from place data
+            setCoordinates(place.coordinates);
             setMassageTypes(place.massageTypes || []);
+            setOpeningTime(place.openingTime || '09:00');
+            setClosingTime(place.closingTime || '21:00');
         }
     }, [place]);
 
@@ -81,11 +90,19 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onBack,
                 if (placeResult.formatted_address) {
                     setLocation(placeResult.formatted_address);
                 }
+                // FIX: Update coordinates when location is selected from autocomplete
+                if (placeResult.geometry && placeResult.geometry.location) {
+                    setCoordinates({
+                        lat: placeResult.geometry.location.lat(),
+                        lng: placeResult.geometry.location.lng(),
+                    });
+                }
             });
         }
     }, [mapsApiLoaded]);
 
     const handleSave = () => {
+        // FIX: Add coordinates to the onSave payload
         onSave({
             name,
             email: place?.email || '',
@@ -95,7 +112,10 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onBack,
             whatsappNumber,
             pricing,
             location,
+            coordinates,
             massageTypes,
+            openingTime,
+            closingTime,
             distance: 0, // dummy value
         });
     };
@@ -127,6 +147,8 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onBack,
                     lat: position.coords.latitude,
                     lng: position.coords.longitude
                 };
+                // FIX: Update coordinates when using current location
+                setCoordinates(latlng);
                 geocoder.geocode({ location: latlng }, (results: any, status: string) => {
                     if (status === 'OK' && results[0]) {
                         setLocation(results[0].formatted_address);
@@ -202,27 +224,43 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onBack,
                     <label className="block text-sm font-medium text-gray-700">{t.whatsappLabel}</label>
                      {renderInput(whatsappNumber, setWhatsappNumber, PhoneIcon, '6281234567890')}
                 </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">Business Hours</label>
+                    <div className="grid grid-cols-2 gap-4 mt-1">
+                        <div>
+                            <label className="block text-xs font-medium text-gray-600">Opening Time</label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><ClockIcon className="h-5 w-5 text-gray-400" /></div>
+                                <input type="time" value={openingTime} onChange={e => setOpeningTime(e.target.value)} className="mt-1 block w-full pl-10 pr-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-green focus:border-brand-green" />
+                            </div>
+                        </div>
+                         <div>
+                            <label className="block text-xs font-medium text-gray-600">Closing Time</label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><ClockIcon className="h-5 w-5 text-gray-400" /></div>
+                                <input type="time" value={closingTime} onChange={e => setClosingTime(e.target.value)} className="mt-1 block w-full pl-10 pr-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-green focus:border-brand-green" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div>
                     <label className="block text-sm font-medium text-gray-700">{t.massageTypesLabel}</label>
-                    <div className="mt-2 p-3 bg-white border border-gray-200 rounded-lg space-y-4">
-                        {MASSAGE_TYPES_CATEGORIZED.map(category => (
-                            <div key={category.category}>
-                                <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{category.category}</h4>
-                                <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-2">
-                                    {category.types.map(type => (
-                                        <label key={type} className="flex items-center space-x-2 text-sm font-medium text-gray-700">
-                                            <input
-                                                type="checkbox"
-                                                checked={massageTypes.includes(type)}
-                                                onChange={() => handleMassageTypeChange(type)}
-                                                className="rounded text-brand-green focus:ring-brand-green"
-                                            />
-                                            <span>{type}</span>
-                                        </label>
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
+                    <div className="mt-2 p-3 bg-white border border-gray-200 rounded-lg">
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                            {PLACE_SERVICES.map(type => (
+                                <label key={type} className="flex items-center space-x-2 text-sm font-medium text-gray-700">
+                                    <input
+                                        type="checkbox"
+                                        checked={massageTypes.includes(type)}
+                                        onChange={() => handleMassageTypeChange(type)}
+                                        className="rounded text-brand-green focus:ring-brand-green"
+                                    />
+                                    <span>{type}</span>
+                                </label>
+                            ))}
+                        </div>
                     </div>
                 </div>
                 <div>

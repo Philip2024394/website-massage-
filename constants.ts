@@ -1,4 +1,5 @@
 
+
 import type { Therapist, Place } from './types';
 import { AvailabilityStatus } from './types';
 
@@ -21,6 +22,12 @@ export const MASSAGE_TYPES_CATEGORIZED = [
     }
 ];
 
+export const PLACE_SERVICES = [
+    'Facials', 'Body Scrubs', 'Body Wraps', 'Hair Salon', 'Beautician', 
+    'Acupressure', 'Reflexology', 'Aromatherapy', 'Yoga & Pilates', 
+    'Cupping Therapy', 'Physical Therapy', 'Sauna', 'Jacuzzi', 'Steam Room'
+];
+
 
 export const MOCK_THERAPISTS: Therapist[] = [
     {
@@ -39,6 +46,7 @@ export const MOCK_THERAPISTS: Therapist[] = [
         massageTypes: ['Deep Tissue Massage', 'Swedish Massage', 'Javanese Massage'],
         isLive: true,
         location: 'Jl. Teuku Nyak Arief No. 1, Banda Aceh',
+        coordinates: { lat: 5.5563, lng: 95.3211 },
         activeMembershipDate: '2025-06-30',
     },
     {
@@ -57,6 +65,7 @@ export const MOCK_THERAPISTS: Therapist[] = [
         massageTypes: ['Aromatherapy Massage', 'Hot Stone Massage', 'Balinese Massage'],
         isLive: true,
         location: 'Jl. Gajah Mada No.7, Bandung',
+        coordinates: { lat: -6.9147, lng: 107.6098 },
         activeMembershipDate: '2025-08-15',
     },
     {
@@ -75,6 +84,7 @@ export const MOCK_THERAPISTS: Therapist[] = [
         massageTypes: ['Sports Massage', 'Reflexology'],
         isLive: true,
         location: 'Jl. Mayjend. Sungkono No.89, Surabaya',
+        coordinates: { lat: -7.2759, lng: 112.7538 },
         activeMembershipDate: '2024-12-01',
     },
     {
@@ -93,6 +103,7 @@ export const MOCK_THERAPISTS: Therapist[] = [
         massageTypes: ['Swedish Massage', 'Prenatal Massage', 'Lomi Lomi Massage'],
         isLive: false,
         location: 'Jl. Teuku Umar No.1, Denpasar',
+        coordinates: { lat: -8.6705, lng: 115.2126 },
         activeMembershipDate: '2025-03-22',
     },
 ];
@@ -115,9 +126,12 @@ export const MOCK_PLACES: Place[] = [
         distance: 5.1,
         rating: 4.9,
         reviewCount: 156,
-        massageTypes: ['Balinese Massage', 'Hot Stone Massage', 'Aromatherapy Massage', 'Reflexology', 'Jamu Massage'],
+        massageTypes: ['Balinese Massage', 'Hot Stone Massage', 'Facials', 'Sauna'],
         isLive: true,
         location: 'Jl. Sunset Road No.81, Denpasar, Bali',
+        coordinates: { lat: -8.6924, lng: 115.1764 },
+        openingTime: '09:00',
+        closingTime: '22:00',
     },
     {
         id: 2,
@@ -136,9 +150,12 @@ export const MOCK_PLACES: Place[] = [
         distance: 7.3,
         rating: 4.8,
         reviewCount: 204,
-        massageTypes: ['Deep Tissue Massage', 'Sports Massage', 'Swedish Massage', 'Thai Massage'],
+        massageTypes: ['Deep Tissue Massage', 'Sports Massage', 'Yoga & Pilates', 'Jacuzzi'],
         isLive: true,
         location: 'Pacific Place Mall, Jl. Jenderal Sudirman, Jakarta',
+        coordinates: { lat: -6.2249, lng: 106.8021 },
+        openingTime: '10:00',
+        closingTime: '21:00',
     },
 ];
 

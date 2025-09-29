@@ -1,16 +1,18 @@
 
+
 import React, { useState } from 'react';
 import type { User } from '../types';
 import Button from '../components/Button';
 import { ADMIN_ACTIVATION_CODE } from '../constants';
-import LogoIcon from '../components/icons/LogoIcon';
+import HomeIcon from '../components/icons/HomeIcon';
 
 interface AuthPageProps {
     onLogin: (user: User) => void;
+    onBack: () => void;
     t: any;
 }
 
-const AuthPage: React.FC<AuthPageProps> = ({ onLogin, t }) => {
+const AuthPage: React.FC<AuthPageProps> = ({ onLogin, onBack, t }) => {
     const [isSignedUp, setIsSignedUp] = useState(false);
     const [activationCode, setActivationCode] = useState('');
     const [error, setError] = useState('');
@@ -43,12 +45,14 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin, t }) => {
     };
 
     return (
-        <div className="min-h-screen flex flex-col justify-center bg-gray-50 p-4">
+        <div className="min-h-screen flex flex-col justify-center bg-gray-50 p-4 relative">
+             <button onClick={onBack} className="absolute top-4 left-4 text-gray-600 hover:text-gray-800" aria-label="Back to Home">
+                <HomeIcon className="w-8 h-8" />
+            </button>
             <div className="w-full max-w-md mx-auto">
                 <div className="text-center mb-8">
-                    <LogoIcon className="h-20 w-20 text-brand-green mx-auto" />
-                    <h1 className="text-3xl font-bold text-brand-green mt-4">2Go Massage</h1>
-                    <p className="text-gray-500">{t.tagline}</p>
+                    <h1 className="text-3xl font-bold text-brand-green">2Go Massage</h1>
+                    <p className="text-gray-500 mt-2">{t.tagline}</p>
                 </div>
 
                 <div className="bg-white p-8 rounded-2xl shadow-lg">
