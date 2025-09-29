@@ -209,7 +209,15 @@ const App: React.FC = () => {
     };
     
     const handleNavigateToAuth = () => setPage('auth');
-    const handleNavigateToAdminLogin = () => setPage('adminLogin');
+    
+    const handleNavigateToAdminLogin = () => {
+        if (isSupabaseConnected) {
+            setPage('adminLogin');
+        } else {
+            setPage('supabaseSettings');
+        }
+    };
+
     const handleNavigateToRegistrationChoice = () => setPage('registrationChoice');
     const handleNavigateToAgentPage = () => setPage('agent');
     const handleNavigateToServiceTerms = () => setPage('serviceTerms');
@@ -510,8 +518,8 @@ const App: React.FC = () => {
                             isLoading={isLoading}
                             t={t} />;
             case 'detail': return selectedPlace && <PlaceDetailPage place={selectedPlace} onBack={handleBackToHome} onBook={(place) => handleNavigateToBooking(place, 'place')} onIncrementAnalytics={(metric) => handleIncrementAnalytics(selectedPlace.id, 'place', metric)} t={t.detail} />;
-            case 'adminLogin': return <AdminLoginPage onAdminLogin={handleAdminLogin} onBack={handleBackToHome} t={t.adminLogin} />;
-            case 'adminDashboard': return isAdminLoggedIn ? <AdminDashboardPage therapists={allAdminTherapists} places={allAdminPlaces} onToggleTherapist={handleToggleTherapistLive} onTogglePlace={handleTogglePlaceLive} onLogout={handleAdminLogout} isSupabaseConnected={isSupabaseConnected} onGoToSupabaseSettings={handleNavigateToSupabaseSettings} onUpdateMembership={handleUpdateMembership} googleMapsApiKey={googleMapsApiKey} onSaveGoogleMapsApiKey={handleSaveGoogleMapsApiKey} t={t.adminDashboard} /> : <AdminLoginPage onAdminLogin={handleAdminLogin} onBack={handleBackToHome} t={t.adminLogin} />;
+            case 'adminLogin': return <AdminLoginPage onAdminLogin={handleAdminLogin} onBack={handleBackToHome} t={t.adminLogin} onGoToSupabaseSettings={handleNavigateToSupabaseSettings} isSupabaseConnected={isSupabaseConnected} />;
+            case 'adminDashboard': return isAdminLoggedIn ? <AdminDashboardPage therapists={allAdminTherapists} places={allAdminPlaces} onToggleTherapist={handleToggleTherapistLive} onTogglePlace={handleTogglePlaceLive} onLogout={handleAdminLogout} isSupabaseConnected={isSupabaseConnected} onGoToSupabaseSettings={handleNavigateToSupabaseSettings} onUpdateMembership={handleUpdateMembership} googleMapsApiKey={googleMapsApiKey} onSaveGoogleMapsApiKey={handleSaveGoogleMapsApiKey} t={t.adminDashboard} /> : <AdminLoginPage onAdminLogin={handleAdminLogin} onBack={handleBackToHome} t={t.adminLogin} onGoToSupabaseSettings={handleNavigateToSupabaseSettings} isSupabaseConnected={isSupabaseConnected} />;
             case 'registrationChoice': return <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice} />;
             case 'providerAuth': return providerAuthInfo && <ProviderAuthPage
                 providerType={providerAuthInfo.type}

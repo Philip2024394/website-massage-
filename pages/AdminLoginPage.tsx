@@ -6,10 +6,12 @@ import { getSupabase } from '../lib/supabase';
 interface AdminLoginPageProps {
     onAdminLogin: () => void;
     onBack: () => void;
+    onGoToSupabaseSettings: () => void;
+    isSupabaseConnected: boolean;
     t: any;
 }
 
-const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin, onBack, t }) => {
+const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin, onBack, t, onGoToSupabaseSettings, isSupabaseConnected }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -18,15 +20,14 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin, onBack, t
     const handleLogin = async () => {
         const supabase = getSupabase();
         if (!supabase) {
-            setError("Database connection is not available.");
+            // This case should ideally not be reached due to the conditional render, but it's a good safeguard.
+            setError("Database connection lost. Please configure it again.");
             return;
         }
 
         setError('');
         setIsLoading(true);
 
-        // In a real app, you would check a user's role from the DB after they log in.
-        // For this demo, we'll use a hardcoded admin email for simplicity and security.
         if (email.toLowerCase() !== 'admin@2go.massage') {
             setError("Access denied. Not an admin account.");
             setIsLoading(false);
@@ -42,6 +43,29 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin, onBack, t
         }
         setIsLoading(false);
     };
+
+    if (!isSupabaseConnected) {
+        return (
+            <div className="min-h-screen flex flex-col justify-center bg-gray-50 p-4 relative">
+                <button onClick={onBack} className="absolute top-4 left-4 text-gray-600 hover:text-gray-800" aria-label="Back to Home">
+                    <HomeIcon className="w-8 h-8" />
+                </button>
+                <div className="w-full max-w-sm mx-auto">
+                    <div className="text-center mb-8">
+                        <h1 className="text-3xl font-bold text-brand-green">2Go Massage</h1>
+                    </div>
+                    <div className="bg-white p-8 rounded-2xl shadow-lg text-center">
+                        <h2 className="text-xl font-semibold text-gray-800">Database Not Connected</h2>
+                        <p className="text-gray-600 mt-4 mb-6">
+                            To access the admin panel, you must first connect the application to your Supabase database.
+                        </p>
+                        <Button onClick={onGoToSupabaseSettings}>Go to Connection Settings</Button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
 
     return (
         <div className="min-h-screen flex flex-col justify-center bg-gray-50 p-4 relative">
