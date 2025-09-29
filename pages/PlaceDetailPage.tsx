@@ -43,6 +43,15 @@ const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({ place, onBack, t }) =
             </div>
 
             <div className="px-4 py-2">
+                <h3 className="text-xl font-semibold text-gray-800 mb-3">Massage Types</h3>
+                <div className="flex flex-wrap gap-2">
+                    {place.massageTypes.map(type => (
+                        <span key={type} className="px-3 py-1 bg-gray-100 text-gray-800 text-sm font-medium rounded-full">{type}</span>
+                    ))}
+                </div>
+            </div>
+
+            <div className="px-4 py-2 mt-4">
                 <h3 className="text-xl font-semibold text-gray-800 mb-2">{t.pricingTitle}</h3>
                  <div className="grid grid-cols-3 gap-2 text-center text-sm text-gray-600">
                     <div className="bg-brand-green-light p-3 rounded-lg">

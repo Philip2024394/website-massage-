@@ -7,6 +7,7 @@ import DocumentTextIcon from '../components/icons/DocumentTextIcon';
 import PhoneIcon from '../components/icons/PhoneIcon';
 import CurrencyRpIcon from '../components/icons/CurrencyRpIcon';
 import MapPinIcon from '../components/icons/MapPinIcon';
+import { MASSAGE_TYPES_CATEGORIZED } from '../constants';
 
 interface PlaceDashboardPageProps {
     onSave: (data: Omit<Place, 'id' | 'isLive' | 'rating' | 'reviewCount'>) => void;
@@ -23,6 +24,8 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onBack,
     const [whatsappNumber, setWhatsappNumber] = useState('');
     const [pricing, setPricing] = useState<Pricing>({ 60: 0, 90: 0, 120: 0 });
     const [location, setLocation] = useState('');
+    const [massageTypes, setMassageTypes] = useState<string[]>([]);
+    const [mapsApiLoaded, setMapsApiLoaded] = useState(false);
 
     const locationInputRef = useRef<HTMLInputElement>(null);
 
@@ -35,11 +38,39 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onBack,
             setWhatsappNumber(place.whatsappNumber);
             setPricing(place.pricing);
             setLocation(place.location);
+            setMassageTypes(place.massageTypes || []);
         }
     }, [place]);
 
     useEffect(() => {
-        if ((window as any).google && locationInputRef.current) {
+        const checkGoogleMaps = () => {
+             if ((window as any).google && (window as any).google.maps && (window as any).google.maps.places) {
+                setMapsApiLoaded(true);
+                return true;
+            }
+            return false;
+        };
+
+        if (!checkGoogleMaps()) {
+            const interval = setInterval(() => {
+                if (checkGoogleMaps()) {
+                    clearInterval(interval);
+                }
+            }, 500);
+            
+            const timeout = setTimeout(() => {
+                clearInterval(interval);
+            }, 5000);
+
+            return () => {
+                clearInterval(interval)
+                clearTimeout(timeout);
+            };
+        }
+    }, []);
+
+    useEffect(() => {
+        if (mapsApiLoaded && locationInputRef.current) {
             const autocomplete = new (window as any).google.maps.places.Autocomplete(locationInputRef.current, {
                 types: ['establishment', 'geocode'],
                 componentRestrictions: { country: 'id' }
@@ -51,7 +82,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onBack,
                 }
             });
         }
-    }, []);
+    }, [mapsApiLoaded]);
 
     const handleSave = () => {
         onSave({
@@ -62,6 +93,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onBack,
             whatsappNumber,
             pricing,
             location,
+            massageTypes,
             distance: 0, // dummy value
         });
     };
@@ -75,6 +107,14 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onBack,
         const newThumbs = [...thumbnailImages];
         newThumbs[index] = value;
         setThumbnailImages(newThumbs);
+    };
+
+    const handleMassageTypeChange = (type: string) => {
+        setMassageTypes(prev =>
+            prev.includes(type)
+                ? prev.filter(t => t !== type)
+                : [...prev, type]
+        );
     };
 
     const handleSetLocation = () => {
@@ -165,17 +205,48 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onBack,
                      {renderInput(whatsappNumber, setWhatsappNumber, PhoneIcon, '6281234567890')}
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-gray-700">{t.locationLabel}</label>
-                    <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <MapPinIcon className="h-5 w-5 text-gray-400" />
-                        </div>
-                        <input ref={locationInputRef} type="text" value={location} onChange={e => setLocation(e.target.value)} placeholder={t.locationPlaceholder} className="mt-1 block w-full pl-10 pr-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-green focus:border-brand-green" />
+                    <label className="block text-sm font-medium text-gray-700">{t.massageTypesLabel}</label>
+                    <div className="mt-2 p-3 bg-white border border-gray-200 rounded-lg space-y-4">
+                        {MASSAGE_TYPES_CATEGORIZED.map(category => (
+                            <div key={category.category}>
+                                <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{category.category}</h4>
+                                <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-2">
+                                    {category.types.map(type => (
+                                        <label key={type} className="flex items-center space-x-2 text-sm font-medium text-gray-700">
+                                            <input
+                                                type="checkbox"
+                                                checked={massageTypes.includes(type)}
+                                                onChange={() => handleMassageTypeChange(type)}
+                                                className="rounded text-brand-green focus:ring-brand-green"
+                                            />
+                                            <span>{type}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
                     </div>
-                     <Button onClick={handleSetLocation} variant="secondary" className="flex items-center justify-center gap-2 mt-2 text-sm py-2">
-                        <MapPinIcon className="w-4 h-4" />
-                        <span>{t.setLocation}</span>
-                    </Button>
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">{t.locationLabel}</label>
+                    {mapsApiLoaded ? (
+                        <>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <MapPinIcon className="h-5 w-5 text-gray-400" />
+                                </div>
+                                <input ref={locationInputRef} type="text" value={location} onChange={e => setLocation(e.target.value)} placeholder={t.locationPlaceholder} className="mt-1 block w-full pl-10 pr-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-green focus:border-brand-green" />
+                            </div>
+                            <Button onClick={handleSetLocation} variant="secondary" className="flex items-center justify-center gap-2 mt-2 text-sm py-2">
+                                <MapPinIcon className="w-4 h-4" />
+                                <span>{t.setLocation}</span>
+                            </Button>
+                        </>
+                    ) : (
+                         <div className="mt-2 p-3 bg-yellow-100 text-yellow-800 text-sm rounded-md">
+                           {t.mapsApiError}
+                        </div>
+                    )}
                 </div>
                 <div>
                     <h3 className="text-md font-medium text-gray-800">{t.pricingTitle}</h3>

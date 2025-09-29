@@ -1,9 +1,12 @@
 
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useMemo } from 'react';
 import type { User, Place, Therapist } from '../types';
 import TherapistCard from '../components/TherapistCard';
 import PlaceCard from '../components/PlaceCard';
 import RatingModal from '../components/RatingModal';
+import { locations } from '../locations';
+import { MASSAGE_TYPES_CATEGORIZED } from '../constants';
 
 interface HomePageProps {
     user: User | null;
@@ -40,7 +43,7 @@ const UserIcon = ({ className = 'w-8 h-8' }) => (
 
 const AdminIcon = ({ className = 'w-6 h-6' }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0 3.35a1.724 1.724 0 001.066 2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
         <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
     </svg>
 );
@@ -88,14 +91,42 @@ const SearchIcon = ({ className = 'w-5 h-5' }) => (
     </svg>
 );
 
+const ChevronDownIcon = ({ className = 'w-5 h-5' }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+    </svg>
+);
+
 
 const HomePage: React.FC<HomePageProps> = ({ user, therapists, places, onSelectPlace, onLogout, onLoginClick, onAdminClick, onCreateProfileClick, t }) => {
     const [activeTab, setActiveTab] = useState<ActiveTab>('home');
     const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
     const [itemToRate, setItemToRate] = useState<Therapist | Place | null>(null);
+    const [selectedCity, setSelectedCity] = useState('All Cities');
+    const [selectedMassageType, setSelectedMassageType] = useState('all');
+    const [searchQuery, setSearchQuery] = useState('');
 
-    const liveTherapists = therapists.filter(t => t.isLive);
-    const livePlaces = places.filter(p => p.isLive);
+    const liveTherapists = useMemo(() => therapists.filter(therapist => therapist.isLive), [therapists]);
+    const livePlaces = useMemo(() => places.filter(place => place.isLive), [places]);
+
+    const filteredTherapists = useMemo(() => {
+        return liveTherapists.filter(therapist => {
+            const cityMatch = selectedCity === 'All Cities' || therapist.location.includes(selectedCity);
+            const typeMatch = selectedMassageType === 'all' || therapist.massageTypes.includes(selectedMassageType);
+            const searchMatch = therapist.name.toLowerCase().includes(searchQuery.toLowerCase());
+            return cityMatch && typeMatch && searchMatch;
+        });
+    }, [liveTherapists, selectedCity, selectedMassageType, searchQuery]);
+    
+    const filteredPlaces = useMemo(() => {
+        return livePlaces.filter(place => {
+            const cityMatch = selectedCity === 'All Cities' || place.location.includes(selectedCity);
+            const typeMatch = selectedMassageType === 'all' || place.massageTypes.includes(selectedMassageType);
+            const searchMatch = place.name.toLowerCase().includes(searchQuery.toLowerCase());
+            return cityMatch && typeMatch && searchMatch;
+        });
+    }, [livePlaces, selectedCity, selectedMassageType, searchQuery]);
+
 
     const handleOpenRatingModal = (item: Therapist | Place) => {
         setItemToRate(item);
@@ -113,19 +144,29 @@ const HomePage: React.FC<HomePageProps> = ({ user, therapists, places, onSelectP
         handleCloseRatingModal();
     };
 
-    const onlineTherapistsCount = liveTherapists.filter(t => t.status === 'Available').length;
+    const onlineTherapistsCount = useMemo(() => liveTherapists.filter(t => t.status === 'Available').length, [liveTherapists]);
 
-    const renderTherapists = () => (
-        <div className="space-y-4">
-            {liveTherapists.map(therapist => <TherapistCard key={therapist.id} therapist={therapist} onRate={handleOpenRatingModal} />)}
-        </div>
-    );
+    const renderTherapists = () => {
+        if (filteredTherapists.length === 0) {
+            return <p className="text-center text-gray-500 py-8">{t.home.noResults}</p>;
+        }
+        return (
+            <div className="space-y-4">
+                {filteredTherapists.map(therapist => <TherapistCard key={therapist.id} therapist={therapist} onRate={handleOpenRatingModal} />)}
+            </div>
+        );
+    };
 
-    const renderPlaces = () => (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {livePlaces.map(place => <PlaceCard key={place.id} place={place} onClick={() => onSelectPlace(place)} onRate={handleOpenRatingModal} />)}
-        </div>
-    );
+    const renderPlaces = () => {
+         if (filteredPlaces.length === 0) {
+            return <p className="text-center text-gray-500 py-8">{t.home.noResults}</p>;
+        }
+        return (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {filteredPlaces.map(place => <PlaceCard key={place.id} place={place} onClick={() => onSelectPlace(place)} onRate={handleOpenRatingModal} />)}
+            </div>
+        );
+    };
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -171,20 +212,50 @@ const HomePage: React.FC<HomePageProps> = ({ user, therapists, places, onSelectP
                     <div className="flex gap-3">
                         <div className="relative w-1/2">
                             <MapIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"/>
-                            <select className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-brand-green">
-                                <option>{t.home.allCities}</option>
+                            <select 
+                                className="w-full pl-10 pr-8 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 appearance-none focus:outline-none focus:ring-2 focus:ring-brand-green"
+                                value={selectedCity}
+                                onChange={e => setSelectedCity(e.target.value)}
+                            >
+                                <option value="All Cities">{t.home.allCities}</option>
+                                {locations.map(provinceData => (
+                                    <optgroup label={provinceData.province} key={provinceData.province}>
+                                        {provinceData.cities.map(city => (
+                                            <option key={city} value={city}>{city}</option>
+                                        ))}
+                                    </optgroup>
+                                ))}
                             </select>
+                             <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"/>
                         </div>
                         <div className="relative w-1/2">
                             <SparklesIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"/>
-                            <select className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-brand-green">
-                                <option>{t.home.massageType}</option>
+                            <select 
+                                className="w-full pl-10 pr-8 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 appearance-none focus:outline-none focus:ring-2 focus:ring-brand-green"
+                                value={selectedMassageType}
+                                onChange={e => setSelectedMassageType(e.target.value)}
+                            >
+                                <option value="all">{t.home.massageType}</option>
+                                {MASSAGE_TYPES_CATEGORIZED.map(category => (
+                                    <optgroup label={category.category} key={category.category}>
+                                        {category.types.map(type => (
+                                            <option key={type} value={type}>{type}</option>
+                                        ))}
+                                    </optgroup>
+                                ))}
                             </select>
+                             <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"/>
                         </div>
                     </div>
                     <div className="relative">
                         <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"/>
-                        <input type="text" placeholder={t.home.searchPlaceholder} className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-green"/>
+                        <input 
+                            type="text" 
+                            placeholder={t.home.searchPlaceholder} 
+                            className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-green"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
                     </div>
                 </div>
 

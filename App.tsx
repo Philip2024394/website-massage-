@@ -12,11 +12,14 @@ import AdminDashboardPage from './pages/AdminDashboardPage';
 import RegistrationChoicePage from './pages/RegistrationChoicePage';
 import TherapistDashboardPage from './pages/TherapistDashboardPage';
 import PlaceDashboardPage from './pages/PlaceDashboardPage';
+import AgentPage from './pages/AgentPage';
+import ServiceTermsPage from './pages/ServiceTermsPage';
+import Footer from './components/Footer';
 
 import { translations } from './translations';
 import { MOCK_THERAPISTS, MOCK_PLACES } from './constants';
 
-type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'therapistDashboard' | 'placeDashboard';
+type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'serviceTerms';
 type Language = 'en' | 'id';
 type LoggedInProvider = { id: number; type: 'therapist' | 'place' };
 
@@ -73,6 +76,8 @@ const App: React.FC = () => {
     const handleNavigateToAuth = () => setPage('auth');
     const handleNavigateToAdminLogin = () => setPage('adminLogin');
     const handleNavigateToRegistrationChoice = () => setPage('registrationChoice');
+    const handleNavigateToAgentPage = () => setPage('agent');
+    const handleNavigateToServiceTerms = () => setPage('serviceTerms');
     
     const handleAdminLogin = () => {
         setIsAdminLoggedIn(true);
@@ -104,20 +109,23 @@ const App: React.FC = () => {
         }
     };
 
-    const handleSaveTherapist = (therapistData: Omit<Therapist, 'id' | 'isLive' | 'status' | 'rating' | 'reviewCount'>) => {
-        const newTherapist: Therapist = {
-            ...therapistData,
-            id: loggedInProvider!.id,
-            isLive: false,
-            status: AvailabilityStatus.Offline,
-            rating: 0,
-            reviewCount: 0,
-        };
-        
-        const existingIndex = therapists.findIndex(t => t.id === newTherapist.id);
-        if (existingIndex > -1) {
-            setTherapists(therapists.map(t => t.id === newTherapist.id ? newTherapist : t));
+    const handleSaveTherapist = (therapistData: Omit<Therapist, 'id' | 'isLive' | 'rating' | 'reviewCount' | 'activeMembershipDate'>) => {
+        const existingTherapist = therapists.find(t => t.id === loggedInProvider!.id);
+
+        if (existingTherapist) {
+            const updatedTherapist = { ...existingTherapist, ...therapistData };
+            setTherapists(therapists.map(t => t.id === loggedInProvider!.id ? updatedTherapist : t));
         } else {
+            const nextMonth = new Date();
+            nextMonth.setMonth(nextMonth.getMonth() + 1);
+            const newTherapist: Therapist = {
+                ...therapistData,
+                id: loggedInProvider!.id,
+                isLive: false,
+                rating: 0,
+                reviewCount: 0,
+                activeMembershipDate: nextMonth.toISOString().split('T')[0],
+            };
             setTherapists([...therapists, newTherapist]);
         }
         alert(t.providerDashboard.profileSaved);
@@ -162,14 +170,27 @@ const App: React.FC = () => {
             case 'registrationChoice': return <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice} />;
             case 'therapistDashboard': return loggedInProvider ? <TherapistDashboardPage onSave={handleSaveTherapist} onBack={handleBackToHome} t={t.providerDashboard} therapist={therapists.find(t => t.id === loggedInProvider?.id)} /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice}/>;
             case 'placeDashboard': return loggedInProvider ? <PlaceDashboardPage onSave={handleSavePlace} onBack={handleBackToHome} t={t.providerDashboard} place={places.find(p => p.id === loggedInProvider?.id)} /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice} />;
+            case 'agent': return <AgentPage onBack={handleBackToHome} t={t.agentPage} />;
+            case 'serviceTerms': return <ServiceTermsPage onBack={handleBackToHome} t={t.serviceTerms} />;
             default: return <LandingPage onLanguageSelect={handleLanguageSelect} />;
         }
     };
+    
+    const showFooter = ['home', 'detail', 'agent', 'serviceTerms'].includes(page);
 
     return (
-        <div className="max-w-md mx-auto min-h-screen bg-white shadow-lg">
-            {renderPage()}
+        <div className="max-w-md mx-auto min-h-screen bg-white shadow-lg flex flex-col">
+            <div className="flex-grow">
+                {renderPage()}
+            </div>
             {isLocationModalOpen && <LocationModal onClose={handleLocationConfirm} t={t.locationModal} />}
+            {showFooter && (
+                <Footer 
+                    onAgentClick={handleNavigateToAgentPage}
+                    onTermsClick={handleNavigateToServiceTerms}
+                    t={t} 
+                />
+            )}
         </div>
     );
 };

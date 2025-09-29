@@ -1,5 +1,26 @@
+
 import type { Therapist, Place } from './types';
 import { AvailabilityStatus } from './types';
+
+export const MASSAGE_TYPES_CATEGORIZED = [
+    {
+        category: 'Western Massages',
+        types: ['Swedish Massage', 'Deep Tissue Massage', 'Sports Massage', 'Hot Stone Massage', 'Aromatherapy Massage']
+    },
+    {
+        category: 'Eastern & Indonesian Massages',
+        types: ['Balinese Massage', 'Javanese Massage', 'Thai Massage', 'Shiatsu Massage', 'Reflexology', 'Acupressure', 'Lomi Lomi Massage']
+    },
+    {
+        category: 'Traditional Indonesian Techniques',
+        types: ['Kerokan (Coin Rub)', 'Jamu Massage']
+    },
+    {
+        category: 'Specialty Massages',
+        types: ['Prenatal Massage', 'Lymphatic Massage', 'Indian Head Massage']
+    }
+];
+
 
 export const MOCK_THERAPISTS: Therapist[] = [
     {
@@ -13,9 +34,10 @@ export const MOCK_THERAPISTS: Therapist[] = [
         distance: 2.5,
         rating: 4.8,
         reviewCount: 82,
-        massageTypes: ['Deep Tissue', 'Relaxation', 'Swedish'],
+        massageTypes: ['Deep Tissue Massage', 'Swedish Massage', 'Javanese Massage'],
         isLive: true,
-        location: 'Jl. Jenderal Sudirman No.Kav. 52-53, Jakarta Selatan',
+        location: 'Jl. Teuku Nyak Arief No. 1, Banda Aceh',
+        activeMembershipDate: '2025-06-30',
     },
     {
         id: 2,
@@ -28,9 +50,10 @@ export const MOCK_THERAPISTS: Therapist[] = [
         distance: 4.1,
         rating: 4.9,
         reviewCount: 112,
-        massageTypes: ['Aromatherapy', 'Hot Stone'],
+        massageTypes: ['Aromatherapy Massage', 'Hot Stone Massage', 'Balinese Massage'],
         isLive: true,
-        location: 'Jl. Gajah Mada No.7, Kota Bandung',
+        location: 'Jl. Gajah Mada No.7, Bandung',
+        activeMembershipDate: '2025-08-15',
     },
     {
         id: 3,
@@ -43,9 +66,10 @@ export const MOCK_THERAPISTS: Therapist[] = [
         distance: 8.9,
         rating: 4.7,
         reviewCount: 65,
-        massageTypes: ['Sports Massage', 'Injury Recovery'],
+        massageTypes: ['Sports Massage', 'Reflexology'],
         isLive: true,
         location: 'Jl. Mayjend. Sungkono No.89, Surabaya',
+        activeMembershipDate: '2024-12-01',
     },
     {
         id: 4,
@@ -58,9 +82,10 @@ export const MOCK_THERAPISTS: Therapist[] = [
         distance: 1.2,
         rating: 4.9,
         reviewCount: 98,
-        massageTypes: ['Swedish', 'Prenatal'],
-        isLive: true,
+        massageTypes: ['Swedish Massage', 'Prenatal Massage', 'Lomi Lomi Massage'],
+        isLive: false,
         location: 'Jl. Teuku Umar No.1, Denpasar',
+        activeMembershipDate: '2025-03-22',
     },
 ];
 
@@ -80,8 +105,9 @@ export const MOCK_PLACES: Place[] = [
         distance: 5.1,
         rating: 4.9,
         reviewCount: 156,
+        massageTypes: ['Balinese Massage', 'Hot Stone Massage', 'Aromatherapy Massage', 'Reflexology', 'Jamu Massage'],
         isLive: true,
-        location: 'Jl. Sunset Road No.81, Kuta, Bali',
+        location: 'Jl. Sunset Road No.81, Denpasar, Bali',
     },
     {
         id: 2,
@@ -98,6 +124,7 @@ export const MOCK_PLACES: Place[] = [
         distance: 7.3,
         rating: 4.8,
         reviewCount: 204,
+        massageTypes: ['Deep Tissue Massage', 'Sports Massage', 'Swedish Massage', 'Thai Massage'],
         isLive: true,
         location: 'Pacific Place Mall, Jl. Jenderal Sudirman, Jakarta',
     },

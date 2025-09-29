@@ -40,7 +40,7 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin, t }) => {
                                 type="password" 
                                 value={code} 
                                 onChange={e => setCode(e.target.value)}
-                                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-green focus:border-brand-green text-center"
+                                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-green focus:border-brand-green text-center text-gray-900"
                                 placeholder={t.placeholder}
                                 onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
                             />

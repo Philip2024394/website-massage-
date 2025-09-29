@@ -27,7 +27,24 @@
   }
 }
 </script>
+    <!-- 
+        !!! IMPORTANT !!!
+        You must replace 'YOUR_GOOGLE_MAPS_API_KEY_PLACEHOLDER' below with a valid Google Maps API key 
+        for the location features to work. Get a key from the Google Cloud Console.
+    -->
     <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY_PLACEHOLDER&libraries=places" async defer></script>
+    <style>
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        *::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Hide scrollbar for IE, Edge and Firefox */
+        * {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+    </style>
 </head>
 <body class="bg-gray-100">
     <div id="root"></div>

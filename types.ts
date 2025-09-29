@@ -24,6 +24,7 @@ export interface Therapist {
     massageTypes: string[];
     isLive: boolean;
     location: string;
+    activeMembershipDate: string;
 }
 
 export interface Place {
@@ -37,6 +38,7 @@ export interface Place {
     distance: number;
     rating: number;
     reviewCount: number;
+    massageTypes: string[];
     isLive: boolean;
     location: string;
 }
