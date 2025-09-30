@@ -10,6 +10,7 @@ import MapPinIcon from '../components/icons/MapPinIcon';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import CloseIcon from '../components/icons/CloseIcon';
 import BriefcaseIcon from '../components/icons/BriefcaseIcon';
+import AddToHomeScreenPrompt from '../components/AddToHomeScreenPrompt';
 
 interface HomePageProps {
     user: User | null;
@@ -161,12 +162,6 @@ const HomePage: React.FC<HomePageProps> = ({ user, loggedInAgent, therapists, pl
     const handleCloseRatingModal = () => {
         setIsRatingModalOpen(false);
         setItemToRate(null);
-    };
-
-    const handleSubmitRating = (rating: number, whatsapp: string) => {
-        console.log(`Rating for ${itemToRate?.name}: ${rating}, WhatsApp: ${whatsapp}`);
-        alert(t.ratingModal.confirmation);
-        handleCloseRatingModal();
     };
 
     const onlineTherapistsCount = useMemo(() => therapists.filter(t => t.status === 'Available').length, [therapists]);
@@ -341,6 +336,7 @@ const HomePage: React.FC<HomePageProps> = ({ user, loggedInAgent, therapists, pl
 
                 {activeTab === 'home' ? renderTherapists() : renderPlaces()}
             </main>
+            <AddToHomeScreenPrompt t={t.a2hsPrompt} />
             {isLocationModalOpen && (
                 <LocationModal
                     onConfirm={(location) => {
@@ -354,8 +350,10 @@ const HomePage: React.FC<HomePageProps> = ({ user, loggedInAgent, therapists, pl
             {isRatingModalOpen && itemToRate && (
                 <RatingModal
                     itemName={itemToRate.name}
+                    itemId={itemToRate.id}
+                    itemType={'status' in itemToRate ? 'therapist' : 'place'}
                     onClose={handleCloseRatingModal}
-                    onSubmit={handleSubmitRating}
+                    onSubmit={handleCloseRatingModal}
                     t={t.ratingModal}
                 />
             )}

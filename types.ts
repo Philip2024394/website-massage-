@@ -19,6 +19,23 @@ export enum NotificationType {
     BookingReminder = 'booking_reminder',
 }
 
+export enum ReviewStatus {
+    Pending = 'pending',
+    Approved = 'approved',
+    Rejected = 'rejected',
+}
+
+export interface Review {
+    id: number;
+    providerId: number;
+    providerType: 'therapist' | 'place';
+    providerName: string;
+    rating: number;
+    whatsapp: string;
+    status: ReviewStatus;
+    createdAt: string; // ISO string
+}
+
 export interface Pricing {
     60: number;
     90: number;

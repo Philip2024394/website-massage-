@@ -74,6 +74,7 @@ export const translations = {
             whatsappPlaceholder: 'e.g. 81234567890',
             submitButton: 'Submit Review',
             confirmation: 'Thank you for your review! It will be reviewed by an administrator before going live.',
+            confirmationV2: 'Thank you for your submission! Your review has been sent to our administrators for approval.',
             selectRatingError: 'Please select a rating.',
             whatsappRequiredError: 'Please enter your WhatsApp number.',
         },
@@ -90,6 +91,7 @@ export const translations = {
                 members: 'Members Management',
                 settings: 'App Settings',
                 agents: 'Agents',
+                reviews: 'Reviews',
             },
             therapists: 'Therapists',
             places: 'Massage Places',
@@ -131,7 +133,19 @@ export const translations = {
                 totalSignups: 'Total Sign-ups',
                 viewDashboard: 'View Dashboard',
                 neverLoggedIn: 'Never',
-            }
+            },
+            reviews: {
+                title: 'Pending Reviews',
+                noPendingReviews: 'There are no pending reviews to approve.',
+                provider: 'Provider',
+                rating: 'Rating',
+                whatsapp: 'Submitter WhatsApp',
+                submitted: 'Submitted',
+                approve: 'Approve',
+                reject: 'Reject',
+                approveConfirm: 'Are you sure you want to approve this review? This will update the provider\'s public rating.',
+                rejectConfirm: 'Are you sure you want to reject this review?',
+            },
         },
         registrationChoice: {
             title: 'Join Us',
@@ -488,7 +502,13 @@ export const translations = {
             markAsRead: 'Mark as read',
             unread: 'Unread',
             bookingReminder: 'Reminder: You have a booking with {userName} today at {time}.',
-        }
+        },
+        a2hsPrompt: {
+            title: 'Get the 2Go Massage App!',
+            iosInstruction: 'To install, tap the Share icon below and then select "Add to Home Screen".',
+            iosAction: 'Add to Home Screen',
+            androidInstruction: 'Install this web app on your device for a better experience. Tap the menu button and then "Install app".'
+        },
     },
     id: {
         app: {
@@ -563,15 +583,9 @@ export const translations = {
             whatsappPlaceholder: 'cth. 81234567890',
             submitButton: 'Kirim Ulasan',
             confirmation: 'Terima kasih atas ulasan Anda! Ulasan akan ditinjau oleh administrator sebelum ditayangkan.',
+            confirmationV2: 'Terima kasih atas kiriman Anda! Ulasan Anda telah dikirim ke administrator kami untuk persetujuan.',
             selectRatingError: 'Silakan pilih peringkat.',
             whatsappRequiredError: 'Harap masukkan nomor WhatsApp Anda.',
-        },
-        adminLogin: {
-            title: 'Login Admin',
-            prompt: 'Kata Sandi',
-            placeholder: 'Masukkan kata sandi Anda',
-            button: 'Masuk',
-            error: 'Kata Sandi Salah',
         },
         adminDashboard: {
             title: 'Dasbor Admin',
@@ -579,6 +593,7 @@ export const translations = {
                 members: 'Manajemen Anggota',
                 settings: 'Pengaturan Aplikasi',
                 agents: 'Agen',
+                reviews: 'Ulasan',
             },
             therapists: 'Terapis',
             places: 'Tempat Pijat',
@@ -620,7 +635,19 @@ export const translations = {
                 totalSignups: 'Total Pendaftaran',
                 viewDashboard: 'Lihat Dasbor',
                 neverLoggedIn: 'Tidak Pernah',
-            }
+            },
+            reviews: {
+                title: 'Ulasan Tertunda',
+                noPendingReviews: 'Tidak ada ulasan tertunda untuk disetujui.',
+                provider: 'Penyedia',
+                rating: 'Peringkat',
+                whatsapp: 'WhatsApp Pengirim',
+                submitted: 'Dikirim',
+                approve: 'Setujui',
+                reject: 'Tolak',
+                approveConfirm: 'Apakah Anda yakin ingin menyetujui ulasan ini? Ini akan memperbarui peringkat publik penyedia.',
+                rejectConfirm: 'Apakah Anda yakin ingin menolak ulasan ini?',
+            },
         },
         registrationChoice: {
             title: 'Bergabunglah',
@@ -977,6 +1004,12 @@ export const translations = {
             markAsRead: 'Tandai sebagai sudah dibaca',
             unread: 'Belum Dibaca',
             bookingReminder: 'Pengingat: Anda memiliki pemesanan dengan {userName} hari ini jam {time}.',
-        }
+        },
+        a2hsPrompt: {
+            title: 'Dapatkan Aplikasi 2Go Massage!',
+            iosInstruction: 'Untuk menginstal, ketuk ikon Bagikan di bawah lalu pilih "Tambah ke Layar Utama".',
+            iosAction: 'Tambah ke Layar Utama',
+            androidInstruction: 'Instal aplikasi web ini di perangkat Anda untuk pengalaman yang lebih baik. Ketuk tombol menu lalu "Instal aplikasi".'
+        },
     },
 };

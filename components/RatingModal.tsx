@@ -1,12 +1,17 @@
 
+
 import React, { useState } from 'react';
 import Button from './Button';
 import { COUNTRIES } from '../countries';
+import { getSupabase } from '../lib/supabase';
+import type { ReviewStatus } from '../types';
 
 interface RatingModalProps {
     onClose: () => void;
-    onSubmit: (rating: number, whatsapp: string) => void;
+    onSubmit: () => void;
     itemName: string;
+    itemType: 'therapist' | 'place';
+    itemId: number;
     t: {
         title: string;
         prompt: string;
@@ -15,6 +20,7 @@ interface RatingModalProps {
         submitButton: string;
         selectRatingError: string;
         whatsappRequiredError: string;
+        confirmationV2: string;
     };
 }
 
@@ -26,13 +32,14 @@ const emojis = [
     { emoji: '🤩', label: 'Amazing', rating: 5 },
 ];
 
-const RatingModal: React.FC<RatingModalProps> = ({ onClose, onSubmit, itemName, t }) => {
+const RatingModal: React.FC<RatingModalProps> = ({ onClose, onSubmit, itemName, itemType, itemId, t }) => {
     const [selectedRating, setSelectedRating] = useState<number | null>(null);
     const [countryCode, setCountryCode] = useState('+62');
     const [whatsapp, setWhatsapp] = useState('');
     const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (selectedRating === null) {
             setError(t.selectRatingError);
             return;
@@ -41,10 +48,35 @@ const RatingModal: React.FC<RatingModalProps> = ({ onClose, onSubmit, itemName, 
             setError(t.whatsappRequiredError);
             return;
         }
+
+        const supabase = getSupabase();
+        if (!supabase) {
+            setError("Database connection error.");
+            return;
+        }
+        
+        setIsLoading(true);
         setError('');
-        // Remove leading zeros from the phone number part
+        
         const fullWhatsappNumber = `${countryCode}${whatsapp.replace(/^0+/, '')}`;
-        onSubmit(selectedRating, fullWhatsappNumber);
+
+        const { error: insertError } = await supabase.from('reviews').insert({
+            providerId: itemId,
+            providerType: itemType,
+            providerName: itemName,
+            rating: selectedRating,
+            whatsapp: fullWhatsappNumber,
+            status: 'pending' as ReviewStatus,
+        });
+
+        setIsLoading(false);
+
+        if (insertError) {
+            setError(insertError.message);
+        } else {
+            alert(t.confirmationV2);
+            onSubmit();
+        }
     };
     
     return (
@@ -99,8 +131,8 @@ const RatingModal: React.FC<RatingModalProps> = ({ onClose, onSubmit, itemName, 
                      </div>
                 </div>
                  {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
-                <Button onClick={handleSubmit}>
-                    {t.submitButton}
+                <Button onClick={handleSubmit} disabled={isLoading}>
+                    {isLoading ? 'Submitting...' : t.submitButton}
                 </Button>
             </div>
         </div>

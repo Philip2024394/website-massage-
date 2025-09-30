@@ -1,8 +1,11 @@
 
+
 import React, { useState, useEffect } from 'react';
-import type { Therapist, Place, Agent } from '../types';
+import type { Therapist, Place, Agent, Review } from '../types';
+import { ReviewStatus } from '../types';
 import ToggleSwitch from '../components/ToggleSwitch';
 import Button from '../components/Button';
+import { getSupabase } from '../lib/supabase';
 
 interface AdminDashboardPageProps {
     therapists: Therapist[];
@@ -58,7 +61,9 @@ const MembershipControls: React.FC<{ onUpdate: (months: number) => void, t: any 
 const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ therapists, places, agents, onToggleTherapist, onTogglePlace, onLogout, isSupabaseConnected, onGoToSupabaseSettings, onUpdateMembership, onImpersonateAgent, googleMapsApiKey, onSaveGoogleMapsApiKey, appContactNumber, onSaveAppContactNumber, t }) => {
     const [apiKeyInput, setApiKeyInput] = useState('');
     const [contactNumberInput, setContactNumberInput] = useState('');
-    const [activeView, setActiveView] = useState<'members' | 'agents' | 'settings'>('members');
+    const [activeView, setActiveView] = useState<'members' | 'agents' | 'reviews' | 'settings'>('members');
+    const [reviews, setReviews] = useState<Review[]>([]);
+    const [isReviewsLoading, setIsReviewsLoading] = useState(false);
 
     useEffect(() => {
         if (googleMapsApiKey) {
@@ -71,6 +76,30 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ therapists, pla
             setContactNumberInput(appContactNumber);
         }
     }, [appContactNumber]);
+
+    useEffect(() => {
+        const fetchReviews = async () => {
+            if (activeView !== 'reviews') return;
+            const supabase = getSupabase();
+            if (!supabase) return;
+            
+            setIsReviewsLoading(true);
+            const { data, error } = await supabase
+                .from('reviews')
+                .select('*')
+                .eq('status', ReviewStatus.Pending)
+                .order('createdAt', { ascending: true });
+
+            if (error) {
+                console.error("Error fetching reviews:", error);
+                alert("Error fetching reviews.");
+            } else {
+                setReviews(data || []);
+            }
+            setIsReviewsLoading(false);
+        };
+        fetchReviews();
+    }, [activeView]);
     
     const formatDate = (dateString: string | null | undefined) => {
         if (!dateString) return "N/A";
@@ -97,6 +126,63 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ therapists, pla
         return therapistCount + placeCount;
     };
 
+    const handleUpdateReviewStatus = async (reviewId: number, status: ReviewStatus) => {
+        const supabase = getSupabase();
+        if (!supabase) return;
+        
+        const { error } = await supabase
+            .from('reviews')
+            .update({ status })
+            .eq('id', reviewId);
+            
+        if (error) {
+            alert(`Failed to update review status: ${error.message}`);
+        } else {
+            setReviews(prev => prev.filter(r => r.id !== reviewId));
+        }
+    };
+
+    const handleApproveReview = async (review: Review) => {
+        if (!window.confirm(t.reviews.approveConfirm)) return;
+        const supabase = getSupabase();
+        if (!supabase) return;
+
+        const table = review.providerType === 'therapist' ? 'therapists' : 'places';
+        
+        const { data: providerData, error: providerError } = await supabase
+            .from(table)
+            .select('rating, reviewCount')
+            .eq('id', review.providerId)
+            .single();
+
+        if (providerError || !providerData) {
+            alert(`Could not find provider to update rating: ${providerError?.message}`);
+            return;
+        }
+
+        const currentRating = providerData.rating || 0;
+        const currentReviewCount = providerData.reviewCount || 0;
+        const newReviewCount = currentReviewCount + 1;
+        const newRating = ((currentRating * currentReviewCount) + review.rating) / newReviewCount;
+        
+        const { error: updateProviderError } = await supabase
+            .from(table)
+            .update({ rating: newRating.toFixed(2), reviewCount: newReviewCount })
+            .eq('id', review.providerId);
+            
+        if (updateProviderError) {
+            alert(`Failed to update provider's rating: ${updateProviderError.message}`);
+            return;
+        }
+
+        await handleUpdateReviewStatus(review.id, ReviewStatus.Approved);
+    };
+
+    const handleRejectReview = async (reviewId: number) => {
+        if (!window.confirm(t.reviews.rejectConfirm)) return;
+        await handleUpdateReviewStatus(reviewId, ReviewStatus.Rejected);
+    };
+
 
     return (
         <div className="min-h-screen bg-gray-100 p-4">
@@ -108,19 +194,26 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ therapists, pla
             <div className="flex bg-gray-200 rounded-full p-1 mb-6">
                 <button
                     onClick={() => setActiveView('members')}
-                    className={`w-1/3 py-2 px-4 rounded-full text-sm font-semibold transition-colors duration-300 ${activeView === 'members' ? 'bg-brand-green text-white shadow' : 'text-gray-600'}`}
+                    className={`w-1/4 py-2 px-4 rounded-full text-sm font-semibold transition-colors duration-300 ${activeView === 'members' ? 'bg-brand-green text-white shadow' : 'text-gray-600'}`}
                 >
                     {t.tabs.members}
                 </button>
                  <button
                     onClick={() => setActiveView('agents')}
-                    className={`w-1/3 py-2 px-4 rounded-full text-sm font-semibold transition-colors duration-300 ${activeView === 'agents' ? 'bg-brand-green text-white shadow' : 'text-gray-600'}`}
+                    className={`w-1/4 py-2 px-4 rounded-full text-sm font-semibold transition-colors duration-300 ${activeView === 'agents' ? 'bg-brand-green text-white shadow' : 'text-gray-600'}`}
                 >
                     {t.tabs.agents}
                 </button>
                 <button
+                    onClick={() => setActiveView('reviews')}
+                    className={`w-1/4 py-2 px-4 rounded-full text-sm font-semibold transition-colors duration-300 relative ${activeView === 'reviews' ? 'bg-brand-green text-white shadow' : 'text-gray-600'}`}
+                >
+                    {t.tabs.reviews}
+                    {reviews.length > 0 && <span className="ml-1 absolute top-1 right-1 inline-flex items-center justify-center h-5 w-5 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">{reviews.length}</span>}
+                </button>
+                <button
                     onClick={() => setActiveView('settings')}
-                    className={`w-1/3 py-2 px-4 rounded-full text-sm font-semibold transition-colors duration-300 ${activeView === 'settings' ? 'bg-brand-green text-white shadow' : 'text-gray-600'}`}
+                    className={`w-1/4 py-2 px-4 rounded-full text-sm font-semibold transition-colors duration-300 ${activeView === 'settings' ? 'bg-brand-green text-white shadow' : 'text-gray-600'}`}
                 >
                     {t.tabs.settings}
                 </button>
@@ -220,6 +313,39 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ therapists, pla
                             </div>
                         ))}
                     </div>
+                </section>
+            )}
+
+            {activeView === 'reviews' && (
+                <section>
+                    <h2 className="text-xl font-semibold text-gray-700 mb-4">{t.reviews.title}</h2>
+                    {isReviewsLoading ? (
+                        <div className="flex justify-center items-center h-48"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-green"></div></div>
+                    ) : reviews.length > 0 ? (
+                        <div className="space-y-4">
+                            {reviews.map(review => (
+                                <div key={review.id} className="bg-white p-4 rounded-lg shadow-md space-y-3">
+                                    <div className="flex justify-between items-start">
+                                        <h3 className="font-bold text-lg text-gray-900">{review.providerName}</h3>
+                                        <div className="flex items-center gap-1 text-yellow-500 font-bold">
+                                            {review.rating} <StarIcon className="w-5 h-5"/>
+                                        </div>
+                                    </div>
+                                    <div className="text-sm text-gray-600 space-y-1 border-t pt-3 mt-3">
+                                        <p><span className="font-semibold">{t.reviews.provider}:</span> {review.providerType}</p>
+                                        <p><span className="font-semibold">{t.reviews.whatsapp}:</span> {review.whatsapp}</p>
+                                        <p><span className="font-semibold">{t.reviews.submitted}:</span> {formatDate(review.createdAt)}</p>
+                                    </div>
+                                    <div className="flex gap-2 pt-2">
+                                        <Button onClick={() => handleApproveReview(review)} className="w-full text-sm py-2">{t.reviews.approve}</Button>
+                                        <Button onClick={() => handleRejectReview(review.id)} variant="secondary" className="w-full text-sm py-2">{t.reviews.reject}</Button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="text-gray-500">{t.reviews.noPendingReviews}</p>
+                    )}
                 </section>
             )}
 
