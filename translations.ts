@@ -83,6 +83,10 @@ export const translations = {
         },
         adminDashboard: {
             title: 'Admin Dashboard',
+            tabs: {
+                members: 'Members Management',
+                settings: 'App Settings',
+            },
             therapists: 'Therapists',
             places: 'Massage Places',
             profileStatus: 'Profile Status',
@@ -369,6 +373,10 @@ export const translations = {
         },
         adminDashboard: {
             title: 'Dasbor Admin',
+            tabs: {
+                members: 'Manajemen Anggota',
+                settings: 'Pengaturan Aplikasi',
+            },
             therapists: 'Terapis',
             places: 'Tempat Pijat',
             profileStatus: 'Status Profil',
