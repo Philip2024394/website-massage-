@@ -50,6 +50,7 @@ export interface Therapist {
     coordinates: { lat: number; lng: number; };
     activeMembershipDate: string;
     analytics: Analytics;
+    agentId?: number;
 }
 
 export interface Place {
@@ -73,6 +74,7 @@ export interface Place {
     closingTime: string;
     activeMembershipDate: string;
     analytics: Analytics;
+    agentId?: number;
 }
 
 export interface User {
@@ -80,6 +82,13 @@ export interface User {
     name: string;
     email: string;
     isActivated: boolean;
+}
+
+export interface Agent {
+    id: number;
+    name: string;
+    email: string;
+    agentCode: string;
 }
 
 export interface UserLocation {

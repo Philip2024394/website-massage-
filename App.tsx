@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import type { User, Place, Therapist, UserLocation, SupabaseConfig, Booking, Notification, Analytics } from './types';
+import type { User, Place, Therapist, UserLocation, SupabaseConfig, Booking, Notification, Analytics, Agent } from './types';
 import { AvailabilityStatus, BookingStatus, NotificationType } from './types';
 import AuthPage from './pages/AuthPage';
 import HomePage from './pages/HomePage';
@@ -12,6 +12,8 @@ import RegistrationChoicePage from './pages/RegistrationChoicePage';
 import TherapistDashboardPage from './pages/TherapistDashboardPage';
 import PlaceDashboardPage from './pages/PlaceDashboardPage';
 import AgentPage from './pages/AgentPage';
+import AgentAuthPage from './pages/AgentAuthPage';
+import AgentDashboardPage from './pages/AgentDashboardPage';
 import ServiceTermsPage from './pages/ServiceTermsPage';
 import Footer from './components/Footer';
 import ProviderAuthPage from './pages/ProviderAuthPage';
@@ -23,7 +25,7 @@ import NotificationsPage from './pages/NotificationsPage';
 import { translations } from './translations';
 import { initSupabase, disconnectSupabase, getSupabase } from './lib/supabase';
 
-type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'serviceTerms' | 'supabaseSettings' | 'membership' | 'booking' | 'notifications';
+type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'agentAuth' | 'agentDashboard' | 'serviceTerms' | 'supabaseSettings' | 'membership' | 'booking' | 'notifications';
 type Language = 'en' | 'id';
 type LoggedInProvider = { id: number; type: 'therapist' | 'place' };
 
@@ -49,6 +51,9 @@ const App: React.FC = () => {
     const [loggedInProvider, setLoggedInProvider] = useState<LoggedInProvider | null>(null);
     const [providerAuthInfo, setProviderAuthInfo] = useState<{ type: 'therapist' | 'place', mode: 'login' | 'register' } | null>(null);
     const [providerForBooking, setProviderForBooking] = useState<{ provider: Therapist | Place; type: 'therapist' | 'place' } | null>(null);
+    
+    // Agent state
+    const [loggedInAgent, setLoggedInAgent] = useState<Agent | null>(null);
 
     // Supabase state
     const [supabaseConfig, setSupabaseConfig] = useState<SupabaseConfig | null>(null);
@@ -149,6 +154,18 @@ const App: React.FC = () => {
             }
         }
         
+        const storedAgent = localStorage.getItem('loggedInAgent');
+        if (storedAgent) {
+            try {
+                const agentData = JSON.parse(storedAgent);
+                setLoggedInAgent(agentData);
+                setPage('agentDashboard');
+            } catch (error) {
+                console.error("Failed to parse loggedInAgent from localStorage", error);
+                localStorage.removeItem('loggedInAgent');
+            }
+        }
+        
         const storedLocation = localStorage.getItem('user_location');
         if (storedLocation) {
             try {
@@ -232,6 +249,7 @@ const App: React.FC = () => {
     const handleNavigateToServiceTerms = () => setPage('serviceTerms');
     const handleNavigateToSupabaseSettings = () => setPage('supabaseSettings');
     const handleNavigateToNotifications = () => setPage('notifications');
+    const handleNavigateToAgentAuth = () => setPage('agentAuth');
     
     const handleAdminLogin = () => {
         setIsAdminLoggedIn(true);
@@ -288,22 +306,39 @@ const App: React.FC = () => {
         setPage('providerAuth');
     };
     
-    const handleProviderRegister = async (email: string): Promise<{success: boolean, message: string}> => {
+    const handleProviderRegister = async (email: string, agentCode?: string): Promise<{success: boolean, message: string}> => {
         if (!providerAuthInfo) return { success: false, message: t.providerAuth.genericError };
         
         const supabase = getSupabase();
         if (!supabase) return { success: false, message: t.providerAuth.genericError };
+    
+        let agentId: number | undefined = undefined;
+        if (agentCode) {
+            const { data: agentData, error: agentError } = await supabase
+                .from('agents')
+                .select('id')
+                .eq('agentCode', agentCode.trim())
+                .single();
+            if (agentError || !agentData) {
+                return { success: false, message: t.providerAuth.invalidAgentCode };
+            }
+            agentId = agentData.id;
+        }
 
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
         
-        const commonData = {
+        const commonData: any = {
             email,
             isLive: false,
             activeMembershipDate: yesterday.toISOString().split('T')[0],
             pricing: { 60: 0, 90: 0, 120: 0 },
             analytics: { impressions: 0, profileViews: 0, whatsappClicks: 0 },
         };
+
+        if (agentId) {
+            commonData.agentId = agentId;
+        }
 
         const table = providerAuthInfo.type === 'therapist' ? 'therapists' : 'places';
         
@@ -385,6 +420,46 @@ const App: React.FC = () => {
         } else if (data) {
             alert(t.providerDashboard.profileSaved);
         }
+    };
+
+    const handleAgentRegister = async (name: string, email: string): Promise<{ success: boolean; message: string }> => {
+        const supabase = getSupabase();
+        if (!supabase) return { success: false, message: t.agentAuth.genericError };
+    
+        const agentCode = `${name.toLowerCase().replace(/\s+/g, '-').slice(0, 10)}-${Math.random().toString(36).substring(2, 6)}`;
+    
+        const { error } = await supabase.from('agents').insert([{ name, email, agentCode }]);
+    
+        if (error) {
+            console.error('Agent creation error:', error);
+            return { success: false, message: error.message };
+        }
+    
+        return { success: true, message: t.agentAuth.registerSuccess.replace('{agentCode}', agentCode) };
+    };
+    
+    const handleAgentLogin = async (email: string): Promise<{ success: boolean; message: string }> => {
+        const supabase = getSupabase();
+        if (!supabase) return { success: false, message: t.agentAuth.genericError };
+    
+        const { data: agentData, error } = await supabase.from('agents').select('*').eq('email', email).single();
+    
+        if (error || !agentData) {
+            return { success: false, message: t.agentAuth.invalidCredentialsError };
+        }
+    
+        setLoggedInAgent(agentData);
+        localStorage.setItem('loggedInAgent', JSON.stringify(agentData));
+        setPage('agentDashboard');
+        return { success: true, message: '' };
+    };
+
+    const handleAgentLogout = async () => {
+        const supabase = getSupabase();
+        if (supabase) await supabase.auth.signOut();
+        setLoggedInAgent(null);
+        localStorage.removeItem('loggedInAgent');
+        setPage('home');
     };
 
 
@@ -547,6 +622,7 @@ const App: React.FC = () => {
             case 'home':
                 return <HomePage 
                             user={user} 
+                            loggedInAgent={loggedInAgent}
                             therapists={therapists}
                             places={places}
                             userLocation={userLocation}
@@ -556,6 +632,7 @@ const App: React.FC = () => {
                             onLoginClick={handleNavigateToAuth}
                             onAdminClick={handleNavigateToAdminLogin}
                             onCreateProfileClick={handleNavigateToRegistrationChoice}
+                            onAgentPortalClick={loggedInAgent ? () => setPage('agentDashboard') : handleNavigateToAgentAuth}
                             onBook={handleNavigateToBooking}
                             onIncrementAnalytics={handleIncrementAnalytics}
                             isLoading={isLoading}
@@ -594,6 +671,8 @@ const App: React.FC = () => {
                 notifications={notifications.filter(n => n.providerId === loggedInProvider.id)}
             /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice} />;
             case 'agent': return <AgentPage onBack={handleBackToHome} t={t.agentPage} contactNumber={appContactNumber} />;
+            case 'agentAuth': return <AgentAuthPage onRegister={handleAgentRegister} onLogin={handleAgentLogin} onBack={handleBackToHome} t={t.agentAuth} />;
+            case 'agentDashboard': return loggedInAgent ? <AgentDashboardPage agent={loggedInAgent} onLogout={handleAgentLogout} t={t.agentDashboard} /> : <AgentAuthPage onRegister={handleAgentRegister} onLogin={handleAgentLogin} onBack={handleBackToHome} t={t.agentAuth} />;
             case 'serviceTerms': return <ServiceTermsPage onBack={handleBackToHome} t={t.serviceTerms} contactNumber={appContactNumber} />;
             case 'supabaseSettings': return <SupabaseSettingsPage
                     onConnect={handleSupabaseConnect}
@@ -604,7 +683,7 @@ const App: React.FC = () => {
                     t={t.supabaseSettings}
                 />;
             case 'membership': return loggedInProvider ? <MembershipPage onPackageSelect={handleSelectMembershipPackage} onBack={handleBackToProviderDashboard} t={t.membershipPage} /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice}/>;
-            case 'booking': return providerForBooking ? <BookingPage provider={providerForBooking.provider} providerType={providerForBooking.type} onBook={handleCreateBooking} onBack={handleBackToHome} bookings={bookings.filter(b => b.providerId === providerForBooking.provider.id)} t={t.bookingPage} /> : <HomePage user={user} therapists={therapists} places={places} userLocation={userLocation} onSetUserLocation={handleSetUserLocation} onSelectPlace={handleSelectPlace} onLogout={handleLogout} onLoginClick={handleNavigateToAuth} onAdminClick={handleNavigateToAdminLogin} onCreateProfileClick={handleNavigateToRegistrationChoice} onBook={handleNavigateToBooking} onIncrementAnalytics={handleIncrementAnalytics} isLoading={isLoading} t={t} />;
+            case 'booking': return providerForBooking ? <BookingPage provider={providerForBooking.provider} providerType={providerForBooking.type} onBook={handleCreateBooking} onBack={handleBackToHome} bookings={bookings.filter(b => b.providerId === providerForBooking.provider.id)} t={t.bookingPage} /> : <HomePage user={user} loggedInAgent={loggedInAgent} therapists={therapists} places={places} userLocation={userLocation} onSetUserLocation={handleSetUserLocation} onSelectPlace={handleSelectPlace} onLogout={handleLogout} onLoginClick={handleNavigateToAuth} onAdminClick={handleNavigateToAdminLogin} onCreateProfileClick={handleNavigateToRegistrationChoice} onAgentPortalClick={loggedInAgent ? () => setPage('agentDashboard') : handleNavigateToAgentAuth} onBook={handleNavigateToBooking} onIncrementAnalytics={handleIncrementAnalytics} isLoading={isLoading} t={t} />;
             case 'notifications': return loggedInProvider ? <NotificationsPage notifications={notifications.filter(n => n.providerId === loggedInProvider.id)} onMarkAsRead={handleMarkNotificationAsRead} onBack={handleBackToProviderDashboard} t={t.notificationsPage} /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice}/>;
             default: return <LandingPage onLanguageSelect={handleLanguageSelect} />;
         }

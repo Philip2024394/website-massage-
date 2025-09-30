@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import type { User, Place, Therapist, UserLocation, Analytics } from '../types';
+import type { User, Place, Therapist, UserLocation, Analytics, Agent } from '../types';
 import TherapistCard from '../components/TherapistCard';
 import PlaceCard from '../components/PlaceCard';
 import RatingModal from '../components/RatingModal';
@@ -9,9 +9,11 @@ import HomeIcon from '../components/icons/HomeIcon';
 import MapPinIcon from '../components/icons/MapPinIcon';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import CloseIcon from '../components/icons/CloseIcon';
+import BriefcaseIcon from '../components/icons/BriefcaseIcon';
 
 interface HomePageProps {
     user: User | null;
+    loggedInAgent: Agent | null;
     therapists: Therapist[];
     places: Place[];
     userLocation: UserLocation | null;
@@ -21,6 +23,7 @@ interface HomePageProps {
     onLoginClick: () => void;
     onAdminClick: () => void;
     onCreateProfileClick: () => void;
+    onAgentPortalClick: () => void;
     onBook: (provider: Therapist | Place, type: 'therapist' | 'place') => void;
     onIncrementAnalytics: (id: number, type: 'therapist' | 'place', metric: keyof Analytics) => void;
     isLoading: boolean;
@@ -94,7 +97,7 @@ const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => 
 };
 
 
-const HomePage: React.FC<HomePageProps> = ({ user, therapists, places, userLocation, onSetUserLocation, onSelectPlace, onLogout, onLoginClick, onAdminClick, onCreateProfileClick, onBook, onIncrementAnalytics, isLoading, t }) => {
+const HomePage: React.FC<HomePageProps> = ({ user, loggedInAgent, therapists, places, userLocation, onSetUserLocation, onSelectPlace, onLogout, onLoginClick, onAdminClick, onCreateProfileClick, onAgentPortalClick, onBook, onIncrementAnalytics, isLoading, t }) => {
     const [activeTab, setActiveTab] = useState<ActiveTab>('home');
     const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
     const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
@@ -245,6 +248,15 @@ const HomePage: React.FC<HomePageProps> = ({ user, therapists, places, userLocat
                                     >
                                         <CreateProfileIcon className="w-5 h-5" />
                                         <span>{t.home.menu.createProfile}</span>
+                                    </button>
+                                </li>
+                                <li>
+                                    <button 
+                                        onClick={() => { onAgentPortalClick(); setIsMenuOpen(false); }} 
+                                        className="flex items-center gap-3 text-gray-700 hover:text-brand-green w-full text-left p-2 rounded-md hover:bg-gray-100 transition-colors"
+                                    >
+                                        <BriefcaseIcon className="w-5 h-5" />
+                                        <span>{loggedInAgent ? t.home.menu.agentDashboard : t.home.menu.agentLogin}</span>
                                     </button>
                                 </li>
                                 <li>

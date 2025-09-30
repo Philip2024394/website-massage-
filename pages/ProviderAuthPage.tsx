@@ -5,7 +5,7 @@ import { getSupabase } from '../lib/supabase';
 interface ProviderAuthPageProps {
     mode: 'login' | 'register';
     providerType: 'therapist' | 'place';
-    onRegister: (email: string) => Promise<{success: boolean, message: string}>;
+    onRegister: (email: string, agentCode?: string) => Promise<{success: boolean, message: string}>;
     onLogin: (email: string) => Promise<{success: boolean, message: string}>;
     onSwitchMode: () => void;
     onBack: () => void;
@@ -15,6 +15,7 @@ interface ProviderAuthPageProps {
 const ProviderAuthPage: React.FC<ProviderAuthPageProps> = ({ mode, providerType, onRegister, onLogin, onSwitchMode, onBack, t }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [agentCode, setAgentCode] = useState('');
     const [error, setError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -43,11 +44,12 @@ const ProviderAuthPage: React.FC<ProviderAuthPageProps> = ({ mode, providerType,
             if (signUpError) {
                 setError(signUpError.message);
             } else if (user) {
-                const result = await onRegister(email);
+                const result = await onRegister(email, agentCode);
                 if (result.success) {
                     setSuccessMessage(result.message);
                     setEmail('');
                     setPassword('');
+                    setAgentCode('');
                 } else {
                     setError(result.message);
                     // Consider deleting the auth user if profile creation fails
@@ -115,6 +117,20 @@ const ProviderAuthPage: React.FC<ProviderAuthPageProps> = ({ mode, providerType,
                                 placeholder="••••••••"
                             />
                         </div>
+
+                        {mode === 'register' && (
+                            <div>
+                                <label htmlFor="agentCode" className="block text-sm font-medium text-gray-700">{t.agentCodeLabel}</label>
+                                <input
+                                    id="agentCode"
+                                    type="text"
+                                    value={agentCode}
+                                    onChange={e => setAgentCode(e.target.value)}
+                                    className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-green focus:border-brand-green"
+                                    placeholder={t.agentCodePlaceholder}
+                                />
+                            </div>
+                        )}
                         
                         {error && <p className="text-red-500 text-sm text-center">{error}</p>}
                         {successMessage && <p className="text-green-600 text-sm text-center">{successMessage}</p>}
