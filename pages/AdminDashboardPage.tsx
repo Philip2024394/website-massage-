@@ -14,6 +14,8 @@ interface AdminDashboardPageProps {
     onUpdateMembership: (id: number, type: 'therapist' | 'place', months: number) => void;
     googleMapsApiKey: string | null;
     onSaveGoogleMapsApiKey: (key: string) => void;
+    appContactNumber: string | null;
+    onSaveAppContactNumber: (number: string) => void;
     t: any;
 }
 
@@ -50,14 +52,21 @@ const MembershipControls: React.FC<{ onUpdate: (months: number) => void, t: any 
 };
 
 
-const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ therapists, places, onToggleTherapist, onTogglePlace, onLogout, isSupabaseConnected, onGoToSupabaseSettings, onUpdateMembership, googleMapsApiKey, onSaveGoogleMapsApiKey, t }) => {
+const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ therapists, places, onToggleTherapist, onTogglePlace, onLogout, isSupabaseConnected, onGoToSupabaseSettings, onUpdateMembership, googleMapsApiKey, onSaveGoogleMapsApiKey, appContactNumber, onSaveAppContactNumber, t }) => {
     const [apiKeyInput, setApiKeyInput] = useState('');
+    const [contactNumberInput, setContactNumberInput] = useState('');
 
     useEffect(() => {
         if (googleMapsApiKey) {
             setApiKeyInput(googleMapsApiKey);
         }
     }, [googleMapsApiKey]);
+
+    useEffect(() => {
+        if (appContactNumber) {
+            setContactNumberInput(appContactNumber);
+        }
+    }, [appContactNumber]);
     
     const formatDate = (dateString: string) => {
         try {
@@ -112,6 +121,27 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ therapists, pla
                         </div>
                         <Button onClick={() => onSaveGoogleMapsApiKey(apiKeyInput)} variant="primary" className="w-auto px-4 py-2 text-sm">
                             {t.googleMapsApiKey.saveButton}
+                        </Button>
+                    </div>
+                </section>
+
+                <section>
+                    <h2 className="text-xl font-semibold text-gray-700 mb-4">{t.appContactNumber.title}</h2>
+                    <div className="bg-white p-4 rounded-lg shadow-md space-y-3">
+                        <p className="text-sm text-gray-600">{t.appContactNumber.description}</p>
+                        <div>
+                            <label htmlFor="contact-number-input" className="block text-sm font-medium text-gray-700">{t.appContactNumber.label}</label>
+                            <input
+                                id="contact-number-input"
+                                type="text"
+                                value={contactNumberInput}
+                                onChange={(e) => setContactNumberInput(e.target.value)}
+                                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-green focus:border-brand-green"
+                                placeholder={t.appContactNumber.placeholder}
+                            />
+                        </div>
+                        <Button onClick={() => onSaveAppContactNumber(contactNumberInput)} variant="primary" className="w-auto px-4 py-2 text-sm">
+                            {t.appContactNumber.saveButton}
                         </Button>
                     </div>
                 </section>

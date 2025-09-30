@@ -57,6 +57,9 @@ const App: React.FC = () => {
     const [googleMapsApiKey, setGoogleMapsApiKey] = useState<string | null>(null);
     const [isMapsApiKeyMissing, setIsMapsApiKeyMissing] = useState(false);
 
+    // App config state
+    const [appContactNumber, setAppContactNumber] = useState<string>('6281392000050');
+
     const loadGoogleMapsScript = (apiKey: string) => {
         if (document.getElementById('google-maps-script')) {
             return;
@@ -115,6 +118,11 @@ const App: React.FC = () => {
 
 
     useEffect(() => {
+        const storedContactNumber = localStorage.getItem('appContactNumber');
+        if (storedContactNumber) {
+            setAppContactNumber(storedContactNumber);
+        }
+
         const storedMapsKey = localStorage.getItem('googleMapsApiKey');
         if (storedMapsKey) {
             setGoogleMapsApiKey(storedMapsKey);
@@ -421,7 +429,7 @@ const App: React.FC = () => {
     };
 
     const handleSelectMembershipPackage = (packageName: string, price: string) => {
-        const number = '6281392000050';
+        const number = appContactNumber;
         const provider = loggedInProvider?.type === 'therapist'
             ? therapists.find(t => t.id === loggedInProvider.id)
             : places.find(p => p.id === loggedInProvider!.id);
@@ -493,6 +501,18 @@ const App: React.FC = () => {
         }
     };
 
+    const handleSaveAppContactNumber = (number: string) => {
+        if (number && number.trim()) {
+            localStorage.setItem('appContactNumber', number);
+            setAppContactNumber(number);
+            alert('App Contact Number saved.');
+        } else {
+            localStorage.removeItem('appContactNumber');
+            setAppContactNumber('6281392000050'); // Revert to default
+            alert('App Contact Number cleared. Reverted to default.');
+        }
+    };
+
     const renderPage = () => {
         if (isLoading && page !== 'landing') {
             return <div className="flex justify-center items-center h-screen"><div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand-green"></div></div>;
@@ -519,7 +539,7 @@ const App: React.FC = () => {
                             t={t} />;
             case 'detail': return selectedPlace && <PlaceDetailPage place={selectedPlace} onBack={handleBackToHome} onBook={(place) => handleNavigateToBooking(place, 'place')} onIncrementAnalytics={(metric) => handleIncrementAnalytics(selectedPlace.id, 'place', metric)} t={t.detail} />;
             case 'adminLogin': return <AdminLoginPage onAdminLogin={handleAdminLogin} onBack={handleBackToHome} t={t.adminLogin} onGoToSupabaseSettings={handleNavigateToSupabaseSettings} isSupabaseConnected={isSupabaseConnected} />;
-            case 'adminDashboard': return isAdminLoggedIn ? <AdminDashboardPage therapists={allAdminTherapists} places={allAdminPlaces} onToggleTherapist={handleToggleTherapistLive} onTogglePlace={handleTogglePlaceLive} onLogout={handleAdminLogout} isSupabaseConnected={isSupabaseConnected} onGoToSupabaseSettings={handleNavigateToSupabaseSettings} onUpdateMembership={handleUpdateMembership} googleMapsApiKey={googleMapsApiKey} onSaveGoogleMapsApiKey={handleSaveGoogleMapsApiKey} t={t.adminDashboard} /> : <AdminLoginPage onAdminLogin={handleAdminLogin} onBack={handleBackToHome} t={t.adminLogin} onGoToSupabaseSettings={handleNavigateToSupabaseSettings} isSupabaseConnected={isSupabaseConnected} />;
+            case 'adminDashboard': return isAdminLoggedIn ? <AdminDashboardPage therapists={allAdminTherapists} places={allAdminPlaces} onToggleTherapist={handleToggleTherapistLive} onTogglePlace={handleTogglePlaceLive} onLogout={handleAdminLogout} isSupabaseConnected={isSupabaseConnected} onGoToSupabaseSettings={handleNavigateToSupabaseSettings} onUpdateMembership={handleUpdateMembership} googleMapsApiKey={googleMapsApiKey} onSaveGoogleMapsApiKey={handleSaveGoogleMapsApiKey} appContactNumber={appContactNumber} onSaveAppContactNumber={handleSaveAppContactNumber} t={t.adminDashboard} /> : <AdminLoginPage onAdminLogin={handleAdminLogin} onBack={handleBackToHome} t={t.adminLogin} onGoToSupabaseSettings={handleNavigateToSupabaseSettings} isSupabaseConnected={isSupabaseConnected} />;
             case 'registrationChoice': return <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice} />;
             case 'providerAuth': return providerAuthInfo && <ProviderAuthPage
                 providerType={providerAuthInfo.type}
@@ -550,8 +570,8 @@ const App: React.FC = () => {
                 bookings={bookings.filter(b => b.providerId === loggedInProvider.id && b.providerType === 'place')}
                 notifications={notifications.filter(n => n.providerId === loggedInProvider.id)}
             /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice} />;
-            case 'agent': return <AgentPage onBack={handleBackToHome} t={t.agentPage} />;
-            case 'serviceTerms': return <ServiceTermsPage onBack={handleBackToHome} t={t.serviceTerms} />;
+            case 'agent': return <AgentPage onBack={handleBackToHome} t={t.agentPage} contactNumber={appContactNumber} />;
+            case 'serviceTerms': return <ServiceTermsPage onBack={handleBackToHome} t={t.serviceTerms} contactNumber={appContactNumber} />;
             case 'supabaseSettings': return <SupabaseSettingsPage
                     onConnect={handleSupabaseConnect}
                     onDisconnect={handleSupabaseDisconnect}

@@ -1,3 +1,4 @@
+
 export const translations = {
     en: {
         app: {
@@ -74,11 +75,11 @@ export const translations = {
             whatsappRequiredError: 'Please enter your WhatsApp number.',
         },
         adminLogin: {
-            title: 'Admin Access',
-            prompt: 'Enter the admin code to continue.',
-            placeholder: 'Admin Code',
+            title: 'Admin Login',
+            prompt: 'Password',
+            placeholder: 'Enter your password',
             button: 'Sign In',
-            error: 'Invalid Code',
+            error: 'Invalid Password',
         },
         adminDashboard: {
             title: 'Admin Dashboard',
@@ -106,6 +107,13 @@ export const translations = {
                 label: 'API Key',
                 placeholder: 'Enter your API key here',
                 saveButton: 'Save Key',
+            },
+            appContactNumber: {
+                title: 'App Contact Number',
+                description: 'Set the primary WhatsApp number for customer service, agent sign-ups, and membership payments.',
+                label: 'WhatsApp Number',
+                placeholder: 'e.g. 6281234567890',
+                saveButton: 'Save Number',
             }
         },
         registrationChoice: {
@@ -353,11 +361,11 @@ export const translations = {
             whatsappRequiredError: 'Harap masukkan nomor WhatsApp Anda.',
         },
         adminLogin: {
-            title: 'Akses Admin',
-            prompt: 'Masukkan kode admin untuk melanjutkan.',
-            placeholder: 'Kode Admin',
+            title: 'Login Admin',
+            prompt: 'Kata Sandi',
+            placeholder: 'Masukkan kata sandi Anda',
             button: 'Masuk',
-            error: 'Kode Salah',
+            error: 'Kata Sandi Salah',
         },
         adminDashboard: {
             title: 'Dasbor Admin',
@@ -385,6 +393,13 @@ export const translations = {
                 label: 'Kunci API',
                 placeholder: 'Masukkan kunci API Anda di sini',
                 saveButton: 'Simpan Kunci',
+            },
+            appContactNumber: {
+                title: 'Nomor Kontak Aplikasi',
+                description: 'Atur nomor WhatsApp utama untuk layanan pelanggan, pendaftaran agen, dan pembayaran keanggotaan.',
+                label: 'Nomor WhatsApp',
+                placeholder: 'cth. 6281234567890',
+                saveButton: 'Simpan Nomor',
             }
         },
         registrationChoice: {

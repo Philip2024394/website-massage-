@@ -11,12 +11,13 @@ const WhatsAppIcon: React.FC<{className?: string}> = ({ className }) => (
 interface ServiceTermsPageProps {
     onBack: () => void;
     t: any;
+    contactNumber: string;
 }
 
-const ServiceTermsPage: React.FC<ServiceTermsPageProps> = ({ onBack, t }) => {
+const ServiceTermsPage: React.FC<ServiceTermsPageProps> = ({ onBack, t, contactNumber }) => {
 
     const handleWhatsAppClick = () => {
-        const number = '6281392000050';
+        const number = contactNumber;
         const message = encodeURIComponent('I have a customer service question.');
         window.open(`https://wa.me/${number}?text=${message}`, '_blank');
     };

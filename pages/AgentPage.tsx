@@ -17,12 +17,13 @@ const CheckCircleIcon: React.FC<{className?: string}> = ({ className }) => (
 interface AgentPageProps {
     onBack: () => void;
     t: any;
+    contactNumber: string;
 }
 
-const AgentPage: React.FC<AgentPageProps> = ({ onBack, t }) => {
+const AgentPage: React.FC<AgentPageProps> = ({ onBack, t, contactNumber }) => {
 
     const handleWhatsAppClick = () => {
-        const number = '6281392000050';
+        const number = contactNumber;
         const message = encodeURIComponent('Hi i would like more information to become a 2Go Agent For Massage Therapist And Massage Places');
         window.open(`https://wa.me/${number}?text=${message}`, '_blank');
     };
