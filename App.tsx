@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import type { User, Place, Therapist, UserLocation, SupabaseConfig, Booking, Notification, Analytics } from './types';
 import { AvailabilityStatus, BookingStatus, NotificationType } from './types';
@@ -414,18 +415,40 @@ const App: React.FC = () => {
         alert('Disconnected from Supabase.');
     };
 
-    const handleUpdateMembership = (id: number, type: 'therapist' | 'place', months: number) => {
-        const newExpiryDate = new Date();
+    const handleUpdateMembership = async (id: number, type: 'therapist' | 'place', months: number) => {
+        const supabase = getSupabase();
+        if (!supabase) return;
+    
+        const table = type === 'therapist' ? 'therapists' : 'places';
+        const providersArray = type === 'therapist' ? allAdminTherapists : allAdminPlaces;
+    
+        const provider = providersArray.find(p => p.id === id);
+        if (!provider) return;
+        
+        const currentExpiry = new Date(provider.activeMembershipDate);
+        const now = new Date();
+        const startDate = currentExpiry > now ? currentExpiry : now;
+        
+        const newExpiryDate = new Date(startDate);
         newExpiryDate.setMonth(newExpiryDate.getMonth() + months);
         const newExpiryDateString = newExpiryDate.toISOString().split('T')[0];
-
-        // This would be a Supabase call in a real app
-        if (type === 'therapist') {
-            setAllAdminTherapists(allAdminTherapists.map(t => t.id === id ? { ...t, activeMembershipDate: newExpiryDateString, isLive: true } : t));
-        } else {
-            setAllAdminPlaces(allAdminPlaces.map(p => p.id === id ? { ...p, activeMembershipDate: newExpiryDateString, isLive: true } : p));
+    
+        const { data, error } = await supabase
+            .from(table)
+            .update({ activeMembershipDate: newExpiryDateString, isLive: true })
+            .eq('id', id)
+            .select();
+    
+        if (error) {
+            alert(`Error updating membership: ${error.message}`);
+        } else if (data && data[0]) {
+            if (type === 'therapist') {
+                setAllAdminTherapists(allAdminTherapists.map(t => t.id === id ? data[0] : t));
+            } else {
+                setAllAdminPlaces(allAdminPlaces.map(p => p.id === id ? data[0] : p));
+            }
+            alert(t.adminDashboard.membershipUpdateSuccess);
         }
-        alert(t.adminDashboard.membershipUpdateSuccess);
     };
 
     const handleSelectMembershipPackage = (packageName: string, price: string) => {
@@ -591,7 +614,7 @@ const App: React.FC = () => {
 
     return (
         <div className="max-w-md mx-auto min-h-screen bg-white shadow-lg flex flex-col">
-            {isMapsApiKeyMissing && t.app && (
+            {isMapsApiKeyMissing && isAdminLoggedIn && t.app && (
                 <div className="bg-yellow-400 text-yellow-900 p-3 text-center text-sm font-semibold z-50">
                     {t.app.mapsApiKeyWarning}
                 </div>

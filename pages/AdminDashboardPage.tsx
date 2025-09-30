@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import type { Therapist, Place } from '../types';
 import ToggleSwitch from '../components/ToggleSwitch';
@@ -151,17 +152,20 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ therapists, pla
                     <div className="space-y-4">
                         {therapists.map(therapist => (
                             <div key={therapist.id} className="bg-white p-4 rounded-lg shadow-md space-y-3">
-                                <div className="flex items-center justify-between">
+                                <div className="flex items-start justify-between gap-4">
                                     <h3 className="font-bold text-lg text-gray-900">{therapist.name}</h3>
-                                    <ToggleSwitch 
-                                        id={`therapist-${therapist.id}`}
-                                        checked={therapist.isLive}
-                                        onChange={() => onToggleTherapist(therapist.id)}
-                                        labelOn={t.live}
-                                        labelOff={t.notLive}
-                                    />
+                                    <div className="flex-shrink-0">
+                                        <ToggleSwitch 
+                                            id={`therapist-${therapist.id}`}
+                                            checked={therapist.isLive}
+                                            onChange={() => onToggleTherapist(therapist.id)}
+                                            labelOn={t.live}
+                                            labelOff={t.notLive}
+                                        />
+                                    </div>
                                 </div>
-                                <div className="text-sm text-gray-600 space-y-1 border-b pb-3">
+                                <div className="text-sm text-gray-600 space-y-1 border-t pt-3 mt-3">
+                                    <p><span className="font-semibold">Email:</span> {therapist.email}</p>
                                     <p><span className="font-semibold">WhatsApp:</span> {therapist.whatsappNumber}</p>
                                     <p><span className="font-semibold">Location:</span> {therapist.location}</p>
                                     <p><span className="font-semibold">Membership Active Until:</span> {formatDate(therapist.activeMembershipDate)}</p>
@@ -182,17 +186,20 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ therapists, pla
                      <div className="space-y-4">
                         {places.map(place => (
                            <div key={place.id} className="bg-white p-4 rounded-lg shadow-md space-y-3">
-                               <div className="flex items-center justify-between">
+                               <div className="flex items-start justify-between gap-4">
                                     <h3 className="font-bold text-lg text-gray-900">{place.name}</h3>
-                                     <ToggleSwitch 
-                                        id={`place-${place.id}`}
-                                        checked={place.isLive}
-                                        onChange={() => onTogglePlace(place.id)}
-                                        labelOn={t.live}
-                                        labelOff={t.notLive}
-                                    />
+                                    <div className="flex-shrink-0">
+                                        <ToggleSwitch 
+                                            id={`place-${place.id}`}
+                                            checked={place.isLive}
+                                            onChange={() => onTogglePlace(place.id)}
+                                            labelOn={t.live}
+                                            labelOff={t.notLive}
+                                        />
+                                    </div>
                                 </div>
-                                <div className="text-sm text-gray-600 space-y-1 border-b pb-3">
+                                <div className="text-sm text-gray-600 space-y-1 border-t pt-3 mt-3">
+                                    <p><span className="font-semibold">Email:</span> {place.email}</p>
                                     <p><span className="font-semibold">WhatsApp:</span> {place.whatsappNumber}</p>
                                     <p><span className="font-semibold">Location:</span> {place.location}</p>
                                     <p><span className="font-semibold">Membership Active Until:</span> {formatDate(place.activeMembershipDate)}</p>
