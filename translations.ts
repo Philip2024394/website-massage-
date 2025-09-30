@@ -1,4 +1,5 @@
 
+
 export const translations = {
     en: {
         app: {
@@ -88,6 +89,7 @@ export const translations = {
             tabs: {
                 members: 'Members Management',
                 settings: 'App Settings',
+                agents: 'Agents',
             },
             therapists: 'Therapists',
             places: 'Massage Places',
@@ -120,6 +122,15 @@ export const translations = {
                 label: 'WhatsApp Number',
                 placeholder: 'e.g. 6281234567890',
                 saveButton: 'Save Number',
+            },
+            agents: {
+                title: 'Agent Management',
+                agentCode: 'Agent Code',
+                agentTier: 'Tier',
+                lastLogin: 'Last Login',
+                totalSignups: 'Total Sign-ups',
+                viewDashboard: 'View Dashboard',
+                neverLoggedIn: 'Never',
             }
         },
         registrationChoice: {
@@ -222,6 +233,8 @@ export const translations = {
                 clients: 'My Clients',
                 renewals: 'Renewals Due',
                 earnings: 'Earnings',
+                messages: 'Admin Messages',
+                profile: 'My Profile',
             },
             clients: {
                 therapists: 'Therapists',
@@ -238,9 +251,34 @@ export const translations = {
                 title: 'Earnings Summary',
                 totalSignups: 'Total Sign-ups',
                 commissionInfo: 'Commission Structure',
-                commissionNew: '20% for all new sign-ups.',
                 commissionRecurring: '10% for recurring members.',
                 note: 'This is a summary of your sign-ups. Actual earnings will be calculated and paid out by administration.',
+                tier: 'Your Current Tier',
+                standardTier: 'Standard Agent',
+                toptierTier: 'Toptier Agent',
+                toptierInfoTitle: 'Toptier Agent Program',
+                toptierInfoContent: 'Achieve 20 sign-ups in a month to become a Toptier Agent and earn a +3% commission bonus on new sign-ups for the next month! Maintain your status for exclusive rewards.',
+            },
+            messages: {
+                unreadMessages: 'You have unread messages!',
+                noMessages: 'No messages from admin.',
+                adminMessageTitle: 'Messages from Admin',
+                adminChatPlaceholder: 'Type your message to the agent...',
+                sendButton: 'Send Message',
+                impersonationBanner: 'You are viewing the dashboard as {agentName}.',
+                returnToAdmin: 'Return to Admin Dashboard',
+            },
+            profile: {
+                title: 'My Profile & Payment Details',
+                bankName: 'Bank Name',
+                accountNumber: 'Bank Account Number',
+                accountName: 'Account Holder Name',
+                contactNumber: 'Contact Number',
+                homeAddress: 'Home Address',
+                idCard: 'Indonesian ID Card (KTP)',
+                saveButton: 'Save Profile',
+                profileSavedSuccess: 'Profile saved successfully!',
+                profileSavedError: 'Error saving profile.',
             },
         },
         agentPage: {
@@ -254,6 +292,52 @@ export const translations = {
             targetsTitle: 'Achievable Targets',
             targetsText: 'This opportunity has set weekly sales targets that are easily achieved.',
             ctaButton: 'Become an Agent via WhatsApp',
+        },
+        agentTermsPage: {
+            title: 'Agent Terms & Conditions',
+            agreement: 'Please read and accept the following terms to continue.',
+            independentContractor: {
+                title: 'Independent Contractor Status',
+                content: 'You acknowledge and agree that you are an independent contractor, not an employee, partner, or joint venturer of 2Go Massage. You are solely responsible for your own business operations, including all tax liabilities and government contributions.'
+            },
+            professionalConduct: {
+                title: 'Professional Conduct & Appearance',
+                content: 'You must maintain a professional appearance at all times when representing 2Go Massage. A mandatory registration fee of IDR 100,000 is required to receive your official Agent Kit, which includes a branded T-shirt and name tag. This uniform must be worn during all interactions with potential and existing members. Additional T-shirts are available for purchase at IDR 60,000.'
+            },
+            socialMediaPolicy: {
+                title: 'Social Media Policy',
+                content: "You are strictly prohibited from creating any social media accounts, pages, or profiles using the '2Go Massage' brand name, logo, or any affiliated contact information unless you have received prior written approval from the administration. Failure to comply with this policy will result in the immediate deactivation of your agent account until the situation is resolved directly with the administration."
+            },
+            performance: {
+                title: 'Performance Requirements',
+                content: 'To maintain an active account and be eligible for commissions, you are required to secure a minimum of five (5) new member sign-ups per week, totaling twenty (20) per calendar month. This requirement is waived for one week during the official Eid al-Fitr holiday period each year.'
+            },
+            performanceTiers: {
+                title: "Performance Tiers & Commission Bonus",
+                content: "Agents who successfully meet the monthly target of twenty (20) new member sign-ups will be promoted to 'Toptier 2Go Agent'. Toptier agents will receive a 3% commission increase on all new sign-ups for the following calendar month. This bonus is only applicable for the month immediately following the successful target achievement. If a Toptier agent fails to meet the monthly target, their status will revert to 'Standard Agent' and their commission will return to the standard rate. Agents who consistently maintain Toptier status will be eligible for free 2Go Massage merchandise and other rewards as determined by the administration."
+            },
+            renewals: {
+                title: 'Membership Renewals & Reporting',
+                content: 'You are responsible for proactively following up with your clients regarding their membership renewals. If a member decides not to renew, you must promptly report this status to the administration via the internal messaging system in your dashboard.'
+            },
+            payment: {
+                title: 'Payment Processing',
+                content: 'Commission payments are processed approximately 48 to 72 hours after the weekly minimum of five (5) new member sign-ups has been met and verified. Payments will not be processed or considered due if the weekly minimum is not achieved.'
+            },
+            profileCompletion: {
+                title: 'Profile & Payment Information',
+                content: 'To be eligible for commission payments, you must complete your profile in the Agent Dashboard. This includes providing your full bank details (bank name, account number, account holder name), your Indonesian ID card (KTP), a current contact number, and your home address.'
+            },
+            compliance: {
+                title: 'Compliance and Account Status',
+                content: 'Failure to adhere to these terms and conditions may result in the temporary suspension of your account pending an administrative review. The administration reserves the right to freeze accounts until any issues are resolved to our satisfaction. All communication with the administration should be conducted through the official chat system in your Agent Dashboard.'
+            },
+            training: {
+                title: 'Mandatory Training & Seminars',
+                content: 'You agree to attend mandatory training seminars as required by the administration. You will be notified of the date, time, and location of these seminars through the official message center in your Agent Dashboard. These training sessions are designed to enhance your skills and product knowledge and will be held within the locality of your registered city.'
+            },
+            acceptButton: 'I Agree & Continue',
+            declineButton: 'Decline & Logout'
         },
         footer: {
             agentLink: '2Go Agent',
@@ -426,6 +510,7 @@ export const translations = {
             tabs: {
                 members: 'Manajemen Anggota',
                 settings: 'Pengaturan Aplikasi',
+                agents: 'Agen',
             },
             therapists: 'Terapis',
             places: 'Tempat Pijat',
@@ -458,6 +543,15 @@ export const translations = {
                 label: 'Nomor WhatsApp',
                 placeholder: 'cth. 6281234567890',
                 saveButton: 'Simpan Nomor',
+            },
+            agents: {
+                title: 'Manajemen Agen',
+                agentCode: 'Kode Agen',
+                agentTier: 'Tingkatan',
+                lastLogin: 'Login Terakhir',
+                totalSignups: 'Total Pendaftaran',
+                viewDashboard: 'Lihat Dasbor',
+                neverLoggedIn: 'Tidak Pernah',
             }
         },
         registrationChoice: {
@@ -560,6 +654,8 @@ export const translations = {
                 clients: 'Klien Saya',
                 renewals: 'Jatuh Tempo',
                 earnings: 'Pendapatan',
+                messages: 'Pesan Admin',
+                profile: 'Profil Saya',
             },
             clients: {
                 therapists: 'Terapis',
@@ -576,9 +672,34 @@ export const translations = {
                 title: 'Ringkasan Pendapatan',
                 totalSignups: 'Total Pendaftaran',
                 commissionInfo: 'Struktur Komisi',
-                commissionNew: '20% untuk semua pendaftaran baru.',
                 commissionRecurring: '10% untuk anggota berulang.',
                 note: 'Ini adalah ringkasan pendaftaran Anda. Pendapatan aktual akan dihitung dan dibayarkan oleh administrasi.',
+                tier: 'Tingkatan Anda Saat Ini',
+                standardTier: 'Agen Standar',
+                toptierTier: 'Agen Toptier',
+                toptierInfoTitle: 'Program Agen Toptier',
+                toptierInfoContent: 'Dapatkan 20 pendaftaran dalam sebulan untuk menjadi Agen Toptier dan dapatkan bonus komisi +3% untuk pendaftaran baru di bulan berikutnya! Pertahankan status Anda untuk hadiah eksklusif.',
+            },
+            messages: {
+                unreadMessages: 'Anda memiliki pesan yang belum dibaca!',
+                noMessages: 'Tidak ada pesan dari admin.',
+                adminMessageTitle: 'Pesan dari Admin',
+                adminChatPlaceholder: 'Ketik pesan Anda untuk agen...',
+                sendButton: 'Kirim Pesan',
+                impersonationBanner: 'Anda melihat dasbor sebagai {agentName}.',
+                returnToAdmin: 'Kembali ke Dasbor Admin',
+            },
+            profile: {
+                title: 'Profil & Detail Pembayaran Saya',
+                bankName: 'Nama Bank',
+                accountNumber: 'Nomor Rekening Bank',
+                accountName: 'Nama Pemegang Rekening',
+                contactNumber: 'Nomor Kontak',
+                homeAddress: 'Alamat Rumah',
+                idCard: 'Kartu Tanda Penduduk (KTP)',
+                saveButton: 'Simpan Profil',
+                profileSavedSuccess: 'Profil berhasil disimpan!',
+                profileSavedError: 'Gagal menyimpan profil.',
             },
         },
         agentPage: {
@@ -592,6 +713,52 @@ export const translations = {
             targetsTitle: 'Target yang Dapat Dicapai',
             targetsText: 'Peluang ini memiliki target penjualan mingguan yang ditetapkan yang mudah dicapai.',
             ctaButton: 'Jadi Agen via WhatsApp',
+        },
+        agentTermsPage: {
+            title: 'Syarat & Ketentuan Agen',
+            agreement: 'Harap baca dan setujui persyaratan berikut untuk melanjutkan.',
+            independentContractor: {
+                title: 'Status Kontraktor Independen',
+                content: 'Anda mengakui dan menyetujui bahwa Anda adalah kontraktor independen, bukan karyawan, mitra, atau usaha patungan dari 2Go Massage. Anda sepenuhnya bertanggung jawab atas operasi bisnis Anda sendiri, termasuk semua kewajiban pajak dan kontribusi pemerintah.'
+            },
+            professionalConduct: {
+                title: 'Perilaku & Penampilan Profesional',
+                content: 'Anda harus menjaga penampilan profesional setiap saat ketika mewakili 2Go Massage. Biaya pendaftaran wajib sebesar Rp 100.000 diperlukan untuk menerima Paket Agen resmi Anda, yang mencakup kaos bermerek dan tanda pengenal. Seragam ini harus dikenakan selama semua interaksi dengan anggota potensial dan yang sudah ada. Kaos tambahan tersedia untuk dibeli seharga Rp 60.000.'
+            },
+            socialMediaPolicy: {
+                title: 'Kebijakan Media Sosial',
+                content: "Anda dilarang keras membuat akun, halaman, atau profil media sosial apa pun menggunakan nama merek, logo, atau informasi kontak terafiliasi '2Go Massage' kecuali Anda telah menerima persetujuan tertulis sebelumnya dari administrasi. Kegagalan untuk mematuhi kebijakan ini akan mengakibatkan penonaktifan segera akun agen Anda hingga situasi tersebut diselesaikan langsung dengan administrasi."
+            },
+            performance: {
+                title: 'Persyaratan Kinerja',
+                content: 'Untuk menjaga akun tetap aktif dan berhak atas komisi, Anda diharuskan mendapatkan minimal lima (5) pendaftaran anggota baru per minggu, dengan total dua puluh (20) per bulan kalender. Persyaratan ini ditiadakan selama satu minggu selama periode libur resmi Idul Fitri setiap tahun.'
+            },
+            performanceTiers: {
+                title: "Tingkatan Kinerja & Bonus Komisi",
+                content: "Agen yang berhasil memenuhi target bulanan dua puluh (20) pendaftaran anggota baru akan dipromosikan menjadi 'Agen Toptier 2Go'. Agen Toptier akan menerima kenaikan komisi sebesar 3% untuk semua pendaftaran baru pada bulan kalender berikutnya. Bonus ini hanya berlaku untuk bulan setelah pencapaian target yang berhasil. Jika Agen Toptier gagal memenuhi target bulanan, status mereka akan kembali menjadi 'Agen Standar' dan komisi mereka akan kembali ke tarif standar. Agen yang secara konsisten mempertahankan status Toptier akan berhak mendapatkan merchandise 2Go Massage gratis dan hadiah lainnya yang ditentukan oleh administrasi."
+            },
+            renewals: {
+                title: 'Perpanjangan & Pelaporan Keanggotaan',
+                content: 'Anda bertanggung jawab untuk secara proaktif menindaklanjuti klien Anda mengenai perpanjangan keanggotaan mereka. Jika seorang anggota memutuskan untuk tidak memperpanjang, Anda harus segera melaporkan status ini kepada administrasi melalui sistem pesan internal di dasbor Anda.'
+            },
+            payment: {
+                title: 'Proses Pembayaran',
+                content: 'Pembayaran komisi diproses sekitar 48 hingga 72 jam setelah target minimum mingguan lima (5) pendaftaran anggota baru terpenuhi dan diverifikasi. Pembayaran tidak akan diproses atau dianggap jatuh tempo jika target minimum mingguan tidak tercapai.'
+            },
+            profileCompletion: {
+                title: 'Informasi Profil & Pembayaran',
+                content: 'Agar berhak menerima pembayaran komisi, Anda harus melengkapi profil Anda di Dasbor Agen. Ini termasuk memberikan detail bank lengkap Anda (nama bank, nomor rekening, nama pemegang rekening), Kartu Tanda Penduduk (KTP) Anda, nomor kontak saat ini, dan alamat rumah Anda.'
+            },
+            compliance: {
+                title: 'Kepatuhan dan Status Akun',
+                content: 'Kegagalan untuk mematuhi syarat dan ketentuan ini dapat mengakibatkan penangguhan sementara akun Anda sambil menunggu tinjauan administratif. Administrasi berhak membekukan akun sampai masalah apa pun diselesaikan hingga kami puas. Semua komunikasi dengan administrasi harus dilakukan melalui sistem obrolan resmi di Dasbor Agen Anda.'
+            },
+            training: {
+                title: 'Pelatihan & Seminar Wajib',
+                content: 'Anda setuju untuk menghadiri seminar pelatihan wajib yang disyaratkan oleh administrasi. Anda akan diberitahu tentang tanggal, waktu, dan lokasi seminar ini melalui pusat pesan resmi di Dasbor Agen Anda. Sesi pelatihan ini dirancang untuk meningkatkan keterampilan dan pengetahuan produk Anda dan akan diadakan di dalam lokalitas kota terdaftar Anda.'
+            },
+            acceptButton: 'Saya Setuju & Lanjutkan',
+            declineButton: 'Tolak & Keluar'
         },
         footer: {
             agentLink: 'Agen 2Go',

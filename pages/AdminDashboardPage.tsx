@@ -1,18 +1,20 @@
 
 import React, { useState, useEffect } from 'react';
-import type { Therapist, Place } from '../types';
+import type { Therapist, Place, Agent } from '../types';
 import ToggleSwitch from '../components/ToggleSwitch';
 import Button from '../components/Button';
 
 interface AdminDashboardPageProps {
     therapists: Therapist[];
     places: Place[];
+    agents: Agent[];
     onToggleTherapist: (id: number) => void;
     onTogglePlace: (id: number) => void;
     onLogout: () => void;
     isSupabaseConnected: boolean;
     onGoToSupabaseSettings: () => void;
     onUpdateMembership: (id: number, type: 'therapist' | 'place', months: number) => void;
+    onImpersonateAgent: (agent: Agent) => void;
     googleMapsApiKey: string | null;
     onSaveGoogleMapsApiKey: (key: string) => void;
     appContactNumber: string | null;
@@ -53,10 +55,10 @@ const MembershipControls: React.FC<{ onUpdate: (months: number) => void, t: any 
 };
 
 
-const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ therapists, places, onToggleTherapist, onTogglePlace, onLogout, isSupabaseConnected, onGoToSupabaseSettings, onUpdateMembership, googleMapsApiKey, onSaveGoogleMapsApiKey, appContactNumber, onSaveAppContactNumber, t }) => {
+const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ therapists, places, agents, onToggleTherapist, onTogglePlace, onLogout, isSupabaseConnected, onGoToSupabaseSettings, onUpdateMembership, onImpersonateAgent, googleMapsApiKey, onSaveGoogleMapsApiKey, appContactNumber, onSaveAppContactNumber, t }) => {
     const [apiKeyInput, setApiKeyInput] = useState('');
     const [contactNumberInput, setContactNumberInput] = useState('');
-    const [activeView, setActiveView] = useState<'members' | 'settings'>('members');
+    const [activeView, setActiveView] = useState<'members' | 'agents' | 'settings'>('members');
 
     useEffect(() => {
         if (googleMapsApiKey) {
@@ -70,7 +72,8 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ therapists, pla
         }
     }, [appContactNumber]);
     
-    const formatDate = (dateString: string) => {
+    const formatDate = (dateString: string | null | undefined) => {
+        if (!dateString) return "N/A";
         try {
             const date = new Date(dateString);
              if (isNaN(date.getTime())) {
@@ -82,6 +85,18 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ therapists, pla
             return "Invalid Date";
         }
     };
+    
+    const formatDateTime = (dateString: string | null | undefined) => {
+        if (!dateString) return t.agents.neverLoggedIn;
+        return new Date(dateString).toLocaleString();
+    };
+
+    const getAgentSignupCount = (agentId: number) => {
+        const therapistCount = therapists.filter(t => t.agentId === agentId).length;
+        const placeCount = places.filter(p => p.agentId === agentId).length;
+        return therapistCount + placeCount;
+    };
+
 
     return (
         <div className="min-h-screen bg-gray-100 p-4">
@@ -93,13 +108,19 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ therapists, pla
             <div className="flex bg-gray-200 rounded-full p-1 mb-6">
                 <button
                     onClick={() => setActiveView('members')}
-                    className={`w-1/2 py-2 px-4 rounded-full text-sm font-semibold transition-colors duration-300 ${activeView === 'members' ? 'bg-brand-green text-white shadow' : 'text-gray-600'}`}
+                    className={`w-1/3 py-2 px-4 rounded-full text-sm font-semibold transition-colors duration-300 ${activeView === 'members' ? 'bg-brand-green text-white shadow' : 'text-gray-600'}`}
                 >
                     {t.tabs.members}
                 </button>
+                 <button
+                    onClick={() => setActiveView('agents')}
+                    className={`w-1/3 py-2 px-4 rounded-full text-sm font-semibold transition-colors duration-300 ${activeView === 'agents' ? 'bg-brand-green text-white shadow' : 'text-gray-600'}`}
+                >
+                    {t.tabs.agents}
+                </button>
                 <button
                     onClick={() => setActiveView('settings')}
-                    className={`w-1/2 py-2 px-4 rounded-full text-sm font-semibold transition-colors duration-300 ${activeView === 'settings' ? 'bg-brand-green text-white shadow' : 'text-gray-600'}`}
+                    className={`w-1/3 py-2 px-4 rounded-full text-sm font-semibold transition-colors duration-300 ${activeView === 'settings' ? 'bg-brand-green text-white shadow' : 'text-gray-600'}`}
                 >
                     {t.tabs.settings}
                 </button>
@@ -175,6 +196,31 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ therapists, pla
                         </div>
                     </section>
                 </div>
+            )}
+
+            {activeView === 'agents' && (
+                 <section>
+                    <h2 className="text-xl font-semibold text-gray-700 mb-4">{t.agents.title} ({agents.length})</h2>
+                    <div className="space-y-4">
+                        {agents.map(agent => (
+                            <div key={agent.id} className="bg-white p-4 rounded-lg shadow-md space-y-3">
+                                <h3 className="font-bold text-lg text-gray-900">{agent.name}</h3>
+                                <div className="text-sm text-gray-600 space-y-1 border-t pt-3 mt-3">
+                                    <p><span className="font-semibold">Email:</span> {agent.email}</p>
+                                    <p><span className="font-semibold">{t.agents.agentCode}:</span> <span className="font-mono bg-gray-100 px-1.5 py-0.5 rounded">{agent.agentCode}</span></p>
+                                    <p><span className="font-semibold">{t.agents.agentTier || 'Tier'}:</span> <span className={`font-bold px-2 py-0.5 rounded-full text-xs ${agent.tier === 'Toptier' ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-700'}`}>{agent.tier || 'Standard'}</span></p>
+                                    <p><span className="font-semibold">{t.agents.lastLogin}:</span> {formatDateTime(agent.lastLogin)}</p>
+                                    <p><span className="font-semibold">{t.agents.totalSignups}:</span> {getAgentSignupCount(agent.id)}</p>
+                                </div>
+                                <div className="pt-2">
+                                    <Button onClick={() => onImpersonateAgent(agent)} variant="secondary" className="w-auto px-4 py-2 text-sm">
+                                        {t.agents.viewDashboard}
+                                    </Button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
             )}
 
             {activeView === 'settings' && (

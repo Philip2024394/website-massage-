@@ -1,12 +1,19 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import type { Agent, Therapist, Place } from '../types';
+import type { Agent, Therapist, Place, AdminMessage } from '../types';
 import Button from '../components/Button';
 import { getSupabase } from '../lib/supabase';
+import ImageUpload from '../components/ImageUpload';
 
 interface AgentDashboardPageProps {
     agent: Agent;
     onLogout: () => void;
     t: any;
+    isAdminView?: boolean;
+    onStopImpersonating?: () => void;
+    messages: AdminMessage[];
+    onSendMessage?: (message: string) => void;
+    onMarkMessagesAsRead?: () => void;
+    onSaveProfile?: (data: Partial<Agent>) => void;
 }
 
 const WhatsAppIcon: React.FC<{ className?: string }> = ({ className }) => (
@@ -15,10 +22,20 @@ const WhatsAppIcon: React.FC<{ className?: string }> = ({ className }) => (
     </svg>
 );
 
-const AgentDashboardPage: React.FC<AgentDashboardPageProps> = ({ agent, onLogout, t }) => {
-    const [activeTab, setActiveTab] = useState<'clients' | 'renewals' | 'earnings'>('clients');
+const AgentDashboardPage: React.FC<AgentDashboardPageProps> = ({ agent, onLogout, t, isAdminView = false, onStopImpersonating, messages = [], onSendMessage, onMarkMessagesAsRead, onSaveProfile }) => {
+    const [activeTab, setActiveTab] = useState<'clients' | 'renewals' | 'earnings' | 'messages' | 'profile'>('clients');
     const [clients, setClients] = useState<(Therapist | Place)[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [newMessage, setNewMessage] = useState('');
+    
+    // Profile state
+    const [bankName, setBankName] = useState(agent.bankName || '');
+    const [bankAccountNumber, setBankAccountNumber] = useState(agent.bankAccountNumber || '');
+    const [bankAccountName, setBankAccountName] = useState(agent.bankAccountName || '');
+    const [idCardImage, setIdCardImage] = useState(agent.idCardImage || '');
+    const [contactNumber, setContactNumber] = useState(agent.contactNumber || '');
+    const [homeAddress, setHomeAddress] = useState(agent.homeAddress || '');
+
 
     useEffect(() => {
         const fetchClients = async () => {
@@ -50,6 +67,34 @@ const AgentDashboardPage: React.FC<AgentDashboardPageProps> = ({ agent, onLogout
             return expiryDate >= now && expiryDate <= oneWeekFromNow;
         });
     }, [clients]);
+    
+    const unreadMessagesCount = useMemo(() => messages.filter(m => !m.isRead).length, [messages]);
+
+    const handleTabClick = (tab: 'clients' | 'renewals' | 'earnings' | 'messages' | 'profile') => {
+        setActiveTab(tab);
+        if (tab === 'messages' && !isAdminView && unreadMessagesCount > 0) {
+            onMarkMessagesAsRead?.();
+        }
+    };
+
+    const handleSendMessage = () => {
+        if (newMessage.trim() && onSendMessage) {
+            onSendMessage(newMessage);
+            setNewMessage('');
+        }
+    };
+
+    const handleProfileSave = () => {
+        if (!onSaveProfile) return;
+        onSaveProfile({
+            bankName,
+            bankAccountNumber,
+            bankAccountName,
+            idCardImage,
+            contactNumber,
+            homeAddress
+        });
+    };
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString(undefined, {
@@ -57,7 +102,8 @@ const AgentDashboardPage: React.FC<AgentDashboardPageProps> = ({ agent, onLogout
         });
     };
 
-    // FIX: Explicitly type component as React.FC to allow 'key' prop.
+    const currentCommission = agent.tier === 'Toptier' ? 23 : 20;
+
     const ClientCard: React.FC<{ client: Therapist | Place }> = ({ client }) => (
         <div className="bg-white p-4 rounded-lg shadow-md">
             <h4 className="font-bold text-gray-800">{client.name}</h4>
@@ -66,7 +112,6 @@ const AgentDashboardPage: React.FC<AgentDashboardPageProps> = ({ agent, onLogout
         </div>
     );
     
-    // FIX: Explicitly type component as React.FC to allow 'key' prop.
     const RenewalCard: React.FC<{ client: Therapist | Place }> = ({ client }) => (
         <div className="bg-white p-4 rounded-lg shadow-md flex justify-between items-center">
             <div>
@@ -82,12 +127,23 @@ const AgentDashboardPage: React.FC<AgentDashboardPageProps> = ({ agent, onLogout
 
     return (
         <div className="min-h-screen bg-gray-100 p-4">
+            {isAdminView && (
+                <div className="bg-yellow-200 text-yellow-900 text-center p-3 rounded-lg mb-4 shadow">
+                    <p className="font-bold text-sm">{t.messages.impersonationBanner.replace('{agentName}', agent.name)}</p>
+                    <button onClick={onStopImpersonating} className="text-sm font-semibold underline hover:text-yellow-800 mt-1">{t.messages.returnToAdmin}</button>
+                </div>
+            )}
             <header className="flex justify-between items-center mb-6">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-800">{t.title}</h1>
-                    <p className="text-sm text-gray-600">Welcome, {agent.name}!</p>
+                    <p className="text-sm text-gray-600 flex items-center">
+                        Welcome, {agent.name}!
+                        <span className={`ml-2 font-bold px-2 py-0.5 rounded-full text-xs ${agent.tier === 'Toptier' ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-700'}`}>
+                            {agent.tier === 'Toptier' ? t.earnings.toptierTier : t.earnings.standardTier}
+                        </span>
+                    </p>
                 </div>
-                <Button onClick={onLogout} variant="secondary" className="w-auto px-4 py-2 text-sm">{t.logout}</Button>
+                {!isAdminView && <Button onClick={onLogout} variant="secondary" className="w-auto px-4 py-2 text-sm">{t.logout}</Button>}
             </header>
             
             <div className="mb-6">
@@ -96,16 +152,23 @@ const AgentDashboardPage: React.FC<AgentDashboardPageProps> = ({ agent, onLogout
                 </p>
             </div>
 
-            <div className="flex bg-gray-200 rounded-full p-1 mb-6">
-                <button onClick={() => setActiveTab('clients')} className={`w-1/3 py-2 px-4 rounded-full text-sm font-semibold transition-colors duration-300 ${activeTab === 'clients' ? 'bg-brand-green text-white shadow' : 'text-gray-600'}`}>
+            <div className="flex bg-gray-200 rounded-full p-1 mb-6 text-center">
+                <button onClick={() => handleTabClick('clients')} className={`flex-1 py-2 px-2 rounded-full text-xs sm:text-sm font-semibold transition-colors duration-300 ${activeTab === 'clients' ? 'bg-brand-green text-white shadow' : 'text-gray-600'}`}>
                     {t.tabs.clients}
                 </button>
-                <button onClick={() => setActiveTab('renewals')} className={`w-1/3 py-2 px-4 rounded-full text-sm font-semibold transition-colors duration-300 relative ${activeTab === 'renewals' ? 'bg-brand-green text-white shadow' : 'text-gray-600'}`}>
+                <button onClick={() => handleTabClick('renewals')} className={`flex-1 py-2 px-2 rounded-full text-xs sm:text-sm font-semibold transition-colors duration-300 relative ${activeTab === 'renewals' ? 'bg-brand-green text-white shadow' : 'text-gray-600'}`}>
                     {t.tabs.renewals}
                     {renewalsDue.length > 0 && <span className="absolute top-0 right-1 block h-3 w-3 rounded-full bg-red-500 ring-2 ring-white"></span>}
                 </button>
-                <button onClick={() => setActiveTab('earnings')} className={`w-1/3 py-2 px-4 rounded-full text-sm font-semibold transition-colors duration-300 ${activeTab === 'earnings' ? 'bg-brand-green text-white shadow' : 'text-gray-600'}`}>
+                <button onClick={() => handleTabClick('earnings')} className={`flex-1 py-2 px-2 rounded-full text-xs sm:text-sm font-semibold transition-colors duration-300 ${activeTab === 'earnings' ? 'bg-brand-green text-white shadow' : 'text-gray-600'}`}>
                     {t.tabs.earnings}
+                </button>
+                 <button onClick={() => handleTabClick('messages')} className={`flex-1 py-2 px-2 rounded-full text-xs sm:text-sm font-semibold transition-colors duration-300 relative ${activeTab === 'messages' ? 'bg-brand-green text-white shadow' : 'text-gray-600'}`}>
+                    {t.tabs.messages}
+                    {!isAdminView && unreadMessagesCount > 0 && <span className="absolute top-0 right-1 block h-3 w-3 rounded-full bg-red-500 ring-2 ring-white"></span>}
+                </button>
+                <button onClick={() => handleTabClick('profile')} className={`flex-1 py-2 px-2 rounded-full text-xs sm:text-sm font-semibold transition-colors duration-300 ${activeTab === 'profile' ? 'bg-brand-green text-white shadow' : 'text-gray-600'}`}>
+                    {t.tabs.profile}
                 </button>
             </div>
 
@@ -129,7 +192,7 @@ const AgentDashboardPage: React.FC<AgentDashboardPageProps> = ({ agent, onLogout
                          </div>
                     )}
                     {activeTab === 'earnings' && (
-                        <div className="bg-white p-6 rounded-lg shadow-md space-y-4">
+                        <div className="bg-white p-6 rounded-lg shadow-md space-y-6">
                             <h2 className="text-xl font-semibold text-gray-700">{t.earnings.title}</h2>
                             <div className="text-center bg-gray-50 p-4 rounded-lg">
                                 <p className="text-gray-600">{t.earnings.totalSignups}</p>
@@ -138,12 +201,75 @@ const AgentDashboardPage: React.FC<AgentDashboardPageProps> = ({ agent, onLogout
                             <div>
                                 <h4 className="font-semibold text-gray-800">{t.earnings.commissionInfo}</h4>
                                 <ul className="list-disc list-inside text-sm text-gray-600 mt-2 space-y-1">
-                                    <li>{t.earnings.commissionNew}</li>
+                                    <li><strong>{currentCommission}%</strong> for all new sign-ups {agent.tier === 'Toptier' && <span className="font-semibold">(20% base + 3% bonus)</span>}.</li>
                                     <li>{t.earnings.commissionRecurring}</li>
                                 </ul>
                             </div>
+                            <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded-r-lg">
+                                <h4 className="font-bold text-green-800">{t.earnings.toptierInfoTitle}</h4>
+                                <p className="text-sm text-green-700 mt-1">{t.earnings.toptierInfoContent}</p>
+                            </div>
                             <p className="text-xs text-gray-500 text-center pt-4 border-t">{t.earnings.note}</p>
                         </div>
+                    )}
+                    {activeTab === 'messages' && (
+                        <div className="bg-white p-4 rounded-lg shadow-md">
+                            <h2 className="text-xl font-semibold text-gray-700 mb-4">{t.messages.adminMessageTitle}</h2>
+                             {!isAdminView && unreadMessagesCount > 0 && <p className="text-sm font-semibold text-red-600 mb-4">{t.messages.unreadMessages}</p>}
+                            <div className="space-y-3 h-64 overflow-y-auto mb-4 border rounded-lg p-3 bg-gray-50">
+                                {messages.length > 0 ? messages.map(msg => (
+                                    <div key={msg.id} className="bg-blue-100 p-3 rounded-lg">
+                                        <p className="text-sm text-gray-800">{msg.message}</p>
+                                        <p className="text-xs text-gray-500 text-right mt-1">{new Date(msg.createdAt).toLocaleString()}</p>
+                                    </div>
+                                )) : <p className="text-sm text-gray-500 text-center py-8">{t.messages.noMessages}</p>}
+                            </div>
+                            {isAdminView && (
+                                <div className="flex gap-2">
+                                    <input 
+                                        type="text"
+                                        value={newMessage}
+                                        onChange={e => setNewMessage(e.target.value)}
+                                        placeholder={t.messages.adminChatPlaceholder}
+                                        className="flex-grow w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-green focus:border-brand-green"
+                                        onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                                    />
+                                    <Button onClick={handleSendMessage} className="w-auto px-4">{t.messages.sendButton}</Button>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                    {activeTab === 'profile' && !isAdminView && (
+                         <div className="bg-white p-6 rounded-lg shadow-md space-y-4">
+                            <h2 className="text-xl font-semibold text-gray-700">{t.profile.title}</h2>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">{t.profile.bankName}</label>
+                                <input type="text" value={bankName} onChange={e => setBankName(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm" />
+                            </div>
+                             <div>
+                                <label className="block text-sm font-medium text-gray-700">{t.profile.accountNumber}</label>
+                                <input type="text" value={bankAccountNumber} onChange={e => setBankAccountNumber(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">{t.profile.accountName}</label>
+                                <input type="text" value={bankAccountName} onChange={e => setBankAccountName(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm" />
+                            </div>
+                             <div>
+                                <label className="block text-sm font-medium text-gray-700">{t.profile.contactNumber}</label>
+                                <input type="tel" value={contactNumber} onChange={e => setContactNumber(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">{t.profile.homeAddress}</label>
+                                <textarea value={homeAddress} onChange={e => setHomeAddress(e.target.value)} rows={3} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm" />
+                            </div>
+                            <ImageUpload
+                                id="id-card-upload"
+                                label={t.profile.idCard}
+                                currentImage={idCardImage}
+                                onImageChange={setIdCardImage}
+                            />
+                            <Button onClick={handleProfileSave}>{t.profile.saveButton}</Button>
+                         </div>
                     )}
                 </div>
             )}

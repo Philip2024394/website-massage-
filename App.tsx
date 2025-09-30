@@ -1,6 +1,7 @@
 
+
 import React, { useState, useEffect, useCallback } from 'react';
-import type { User, Place, Therapist, UserLocation, SupabaseConfig, Booking, Notification, Analytics, Agent } from './types';
+import type { User, Place, Therapist, UserLocation, SupabaseConfig, Booking, Notification, Analytics, Agent, AdminMessage } from './types';
 import { AvailabilityStatus, BookingStatus, NotificationType } from './types';
 import AuthPage from './pages/AuthPage';
 import HomePage from './pages/HomePage';
@@ -14,6 +15,7 @@ import PlaceDashboardPage from './pages/PlaceDashboardPage';
 import AgentPage from './pages/AgentPage';
 import AgentAuthPage from './pages/AgentAuthPage';
 import AgentDashboardPage from './pages/AgentDashboardPage';
+import AgentTermsPage from './pages/AgentTermsPage';
 import ServiceTermsPage from './pages/ServiceTermsPage';
 import Footer from './components/Footer';
 import ProviderAuthPage from './pages/ProviderAuthPage';
@@ -25,7 +27,7 @@ import NotificationsPage from './pages/NotificationsPage';
 import { translations } from './translations';
 import { initSupabase, disconnectSupabase, getSupabase } from './lib/supabase';
 
-type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'agentAuth' | 'agentDashboard' | 'serviceTerms' | 'supabaseSettings' | 'membership' | 'booking' | 'notifications';
+type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'agentAuth' | 'agentDashboard' | 'agentTerms' | 'serviceTerms' | 'supabaseSettings' | 'membership' | 'booking' | 'notifications';
 type Language = 'en' | 'id';
 type LoggedInProvider = { id: number; type: 'therapist' | 'place' };
 
@@ -43,6 +45,7 @@ const App: React.FC = () => {
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [allAdminTherapists, setAllAdminTherapists] = useState<Therapist[]>([]);
     const [allAdminPlaces, setAllAdminPlaces] = useState<Place[]>([]);
+    const [allAdminAgents, setAllAdminAgents] = useState<Agent[]>([]);
     
     // Loading state
     const [isLoading, setIsLoading] = useState(true);
@@ -54,6 +57,8 @@ const App: React.FC = () => {
     
     // Agent state
     const [loggedInAgent, setLoggedInAgent] = useState<Agent | null>(null);
+    const [impersonatedAgent, setImpersonatedAgent] = useState<Agent | null>(null);
+    const [adminMessages, setAdminMessages] = useState<AdminMessage[]>([]);
 
     // Supabase state
     const [supabaseConfig, setSupabaseConfig] = useState<SupabaseConfig | null>(null);
@@ -112,12 +117,16 @@ const App: React.FC = () => {
         setIsLoading(true);
         const { data: therapistsData, error: therapistsError } = await supabase.from('therapists').select('*');
         const { data: placesData, error: placesError } = await supabase.from('places').select('*');
+        const { data: agentsData, error: agentsError } = await supabase.from('agents').select('*');
 
         if (therapistsError) console.error("Error fetching all therapists:", therapistsError);
         else setAllAdminTherapists(therapistsData || []);
 
         if (placesError) console.error("Error fetching all places:", placesError);
         else setAllAdminPlaces(placesData || []);
+
+        if (agentsError) console.error("Error fetching all agents:", agentsError);
+        else setAllAdminAgents(agentsData || []);
 
         setIsLoading(false);
     }, []);
@@ -157,9 +166,13 @@ const App: React.FC = () => {
         const storedAgent = localStorage.getItem('loggedInAgent');
         if (storedAgent) {
             try {
-                const agentData = JSON.parse(storedAgent);
+                const agentData: Agent = JSON.parse(storedAgent);
                 setLoggedInAgent(agentData);
-                setPage('agentDashboard');
+                if (agentData.hasAcceptedTerms) {
+                    setPage('agentDashboard');
+                } else {
+                    setPage('agentTerms');
+                }
             } catch (error) {
                 console.error("Failed to parse loggedInAgent from localStorage", error);
                 localStorage.removeItem('loggedInAgent');
@@ -201,6 +214,36 @@ const App: React.FC = () => {
             }
         }
     }, [isSupabaseConnected, isAdminLoggedIn, fetchPublicData, fetchAdminData]);
+
+    useEffect(() => {
+        const fetchMessages = async () => {
+            const supabase = getSupabase();
+            if (!supabase) return;
+
+            const agentId = impersonatedAgent?.id ?? loggedInAgent?.id;
+            if (!agentId) {
+                setAdminMessages([]);
+                return;
+            }
+
+            const { data, error } = await supabase
+                .from('admin_messages')
+                .select('*')
+                .eq('agentId', agentId)
+                .order('createdAt', { ascending: true });
+
+            if (error) {
+                console.error('Error fetching admin messages:', error);
+            } else {
+                setAdminMessages(data || []);
+            }
+        };
+
+        if ((loggedInAgent || impersonatedAgent) && isSupabaseConnected) {
+            fetchMessages();
+        }
+    }, [loggedInAgent, impersonatedAgent, isSupabaseConnected]);
+
 
     const t = translations[language];
 
@@ -260,6 +303,7 @@ const App: React.FC = () => {
         const supabase = getSupabase();
         if (supabase) await supabase.auth.signOut();
         setIsAdminLoggedIn(false);
+        setImpersonatedAgent(null);
         setPage('home');
     }
 
@@ -428,7 +472,7 @@ const App: React.FC = () => {
     
         const agentCode = `${name.toLowerCase().replace(/\s+/g, '-').slice(0, 10)}-${Math.random().toString(36).substring(2, 6)}`;
     
-        const { error } = await supabase.from('agents').insert([{ name, email, agentCode }]);
+        const { error } = await supabase.from('agents').insert([{ name, email, agentCode, hasAcceptedTerms: false }]);
     
         if (error) {
             console.error('Agent creation error:', error);
@@ -447,10 +491,25 @@ const App: React.FC = () => {
         if (error || !agentData) {
             return { success: false, message: t.agentAuth.invalidCredentialsError };
         }
+
+        const { error: updateError } = await supabase
+            .from('agents')
+            .update({ lastLogin: new Date().toISOString() })
+            .eq('id', agentData.id);
+
+        if (updateError) {
+            console.error("Failed to update last login time", updateError);
+        }
     
         setLoggedInAgent(agentData);
         localStorage.setItem('loggedInAgent', JSON.stringify(agentData));
-        setPage('agentDashboard');
+
+        if (agentData.hasAcceptedTerms) {
+            setPage('agentDashboard');
+        } else {
+            setPage('agentTerms');
+        }
+
         return { success: true, message: '' };
     };
 
@@ -460,6 +519,87 @@ const App: React.FC = () => {
         setLoggedInAgent(null);
         localStorage.removeItem('loggedInAgent');
         setPage('home');
+    };
+    
+    const handleAgentAcceptTerms = async () => {
+        const supabase = getSupabase();
+        if (!supabase || !loggedInAgent) return;
+
+        const { error } = await supabase
+            .from('agents')
+            .update({ hasAcceptedTerms: true })
+            .eq('id', loggedInAgent.id);
+        
+        if (error) {
+            alert("Could not accept terms. Please try again.");
+        } else {
+            const updatedAgent = { ...loggedInAgent, hasAcceptedTerms: true };
+            setLoggedInAgent(updatedAgent);
+            localStorage.setItem('loggedInAgent', JSON.stringify(updatedAgent));
+            setPage('agentDashboard');
+        }
+    };
+
+    const handleSaveAgentProfile = async (agentData: Partial<Agent>) => {
+        const supabase = getSupabase();
+        if (!supabase || !loggedInAgent) return;
+    
+        const { data, error } = await supabase
+            .from('agents')
+            .update(agentData)
+            .eq('id', loggedInAgent.id)
+            .select();
+    
+        if (error) {
+            alert(t.agentDashboard.profile.profileSavedError);
+            console.error(error);
+        } else if (data) {
+            const updatedAgent = data[0];
+            setLoggedInAgent(updatedAgent);
+            localStorage.setItem('loggedInAgent', JSON.stringify(updatedAgent));
+            alert(t.agentDashboard.profile.profileSavedSuccess);
+        }
+    };
+
+    const handleImpersonateAgent = (agent: Agent) => {
+        setImpersonatedAgent(agent);
+        setPage('agentDashboard');
+    };
+
+    const handleStopImpersonating = () => {
+        setImpersonatedAgent(null);
+        setPage('adminDashboard');
+    };
+
+    const handleSendAdminMessage = async (message: string) => {
+        const supabase = getSupabase();
+        if (!supabase || !impersonatedAgent) return;
+        const { data, error } = await supabase
+            .from('admin_messages')
+            .insert({ agentId: impersonatedAgent.id, message, isRead: false })
+            .select();
+
+        if (error) {
+            alert('Failed to send message.');
+        } else if (data) {
+            setAdminMessages(prev => [...prev, data[0]]);
+        }
+    };
+
+    const handleMarkMessagesAsRead = async () => {
+        const supabase = getSupabase();
+        if (!supabase || !loggedInAgent) return;
+        const { error } = await supabase
+            .from('admin_messages')
+            .update({ isRead: true })
+            .eq('agentId', loggedInAgent.id)
+            .eq('isRead', false);
+
+        if (error) {
+            console.error("Failed to mark messages as read");
+        } else {
+             setAdminMessages(prev => prev.map(m => ({ ...m, isRead: true })));
+        }
     };
 
 
@@ -639,7 +779,7 @@ const App: React.FC = () => {
                             t={t} />;
             case 'detail': return selectedPlace && <PlaceDetailPage place={selectedPlace} onBack={handleBackToHome} onBook={(place) => handleNavigateToBooking(place, 'place')} onIncrementAnalytics={(metric) => handleIncrementAnalytics(selectedPlace.id, 'place', metric)} t={t.detail} />;
             case 'adminLogin': return <AdminLoginPage onAdminLogin={handleAdminLogin} onBack={handleBackToHome} t={t.adminLogin} onGoToSupabaseSettings={handleNavigateToSupabaseSettings} isSupabaseConnected={isSupabaseConnected} />;
-            case 'adminDashboard': return isAdminLoggedIn ? <AdminDashboardPage therapists={allAdminTherapists} places={allAdminPlaces} onToggleTherapist={handleToggleTherapistLive} onTogglePlace={handleTogglePlaceLive} onLogout={handleAdminLogout} isSupabaseConnected={isSupabaseConnected} onGoToSupabaseSettings={handleNavigateToSupabaseSettings} onUpdateMembership={handleUpdateMembership} googleMapsApiKey={googleMapsApiKey} onSaveGoogleMapsApiKey={handleSaveGoogleMapsApiKey} appContactNumber={appContactNumber} onSaveAppContactNumber={handleSaveAppContactNumber} t={t.adminDashboard} /> : <AdminLoginPage onAdminLogin={handleAdminLogin} onBack={handleBackToHome} t={t.adminLogin} onGoToSupabaseSettings={handleNavigateToSupabaseSettings} isSupabaseConnected={isSupabaseConnected} />;
+            case 'adminDashboard': return isAdminLoggedIn ? <AdminDashboardPage therapists={allAdminTherapists} places={allAdminPlaces} agents={allAdminAgents} onToggleTherapist={handleToggleTherapistLive} onTogglePlace={handleTogglePlaceLive} onLogout={handleAdminLogout} isSupabaseConnected={isSupabaseConnected} onGoToSupabaseSettings={handleNavigateToSupabaseSettings} onUpdateMembership={handleUpdateMembership} googleMapsApiKey={googleMapsApiKey} onSaveGoogleMapsApiKey={handleSaveGoogleMapsApiKey} appContactNumber={appContactNumber} onSaveAppContactNumber={handleSaveAppContactNumber} onImpersonateAgent={handleImpersonateAgent} t={t.adminDashboard} /> : <AdminLoginPage onAdminLogin={handleAdminLogin} onBack={handleBackToHome} t={t.adminLogin} onGoToSupabaseSettings={handleNavigateToSupabaseSettings} isSupabaseConnected={isSupabaseConnected} />;
             case 'registrationChoice': return <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice} />;
             case 'providerAuth': return providerAuthInfo && <ProviderAuthPage
                 providerType={providerAuthInfo.type}
@@ -672,7 +812,33 @@ const App: React.FC = () => {
             /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice} />;
             case 'agent': return <AgentPage onBack={handleBackToHome} t={t.agentPage} contactNumber={appContactNumber} />;
             case 'agentAuth': return <AgentAuthPage onRegister={handleAgentRegister} onLogin={handleAgentLogin} onBack={handleBackToHome} t={t.agentAuth} />;
-            case 'agentDashboard': return loggedInAgent ? <AgentDashboardPage agent={loggedInAgent} onLogout={handleAgentLogout} t={t.agentDashboard} /> : <AgentAuthPage onRegister={handleAgentRegister} onLogin={handleAgentLogin} onBack={handleBackToHome} t={t.agentAuth} />;
+            case 'agentTerms': return loggedInAgent ? <AgentTermsPage onAccept={handleAgentAcceptTerms} onLogout={handleAgentLogout} t={t.agentTermsPage} /> : <AgentAuthPage onRegister={handleAgentRegister} onLogin={handleAgentLogin} onBack={handleBackToHome} t={t.agentAuth} />;
+            case 'agentDashboard': 
+                if (impersonatedAgent) {
+                    return <AgentDashboardPage 
+                                agent={impersonatedAgent} 
+                                onLogout={() => {}} 
+                                isAdminView={true}
+                                onStopImpersonating={handleStopImpersonating}
+                                messages={adminMessages}
+                                onSendMessage={handleSendAdminMessage}
+                                t={t.agentDashboard} 
+                           />;
+                }
+                if (loggedInAgent) {
+                     if (!loggedInAgent.hasAcceptedTerms) {
+                        return <AgentTermsPage onAccept={handleAgentAcceptTerms} onLogout={handleAgentLogout} t={t.agentTermsPage} />;
+                     }
+                     return <AgentDashboardPage 
+                                agent={loggedInAgent} 
+                                onLogout={handleAgentLogout} 
+                                messages={adminMessages}
+                                onMarkMessagesAsRead={handleMarkMessagesAsRead}
+                                onSaveProfile={handleSaveAgentProfile}
+                                t={t.agentDashboard} 
+                            />;
+                }
+                return <AgentAuthPage onRegister={handleAgentRegister} onLogin={handleAgentLogin} onBack={handleBackToHome} t={t.agentAuth} />;
             case 'serviceTerms': return <ServiceTermsPage onBack={handleBackToHome} t={t.serviceTerms} contactNumber={appContactNumber} />;
             case 'supabaseSettings': return <SupabaseSettingsPage
                     onConnect={handleSupabaseConnect}

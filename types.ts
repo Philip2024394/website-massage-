@@ -89,6 +89,15 @@ export interface Agent {
     name: string;
     email: string;
     agentCode: string;
+    lastLogin?: string;
+    hasAcceptedTerms: boolean;
+    bankName?: string;
+    bankAccountNumber?: string;
+    bankAccountName?: string;
+    idCardImage?: string;
+    contactNumber?: string;
+    homeAddress?: string;
+    tier?: 'Standard' | 'Toptier';
 }
 
 export interface UserLocation {
@@ -122,4 +131,12 @@ export interface Notification {
     isRead: boolean;
     createdAt: string; // ISO string
     bookingId?: number;
+}
+
+export interface AdminMessage {
+    id: number;
+    agentId: number;
+    message: string;
+    createdAt: string; // ISO string
+    isRead: boolean;
 }
