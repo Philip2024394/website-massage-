@@ -33,6 +33,7 @@ const AgentTermsPage: React.FC<AgentTermsPageProps> = ({ onAccept, onLogout, t }
                  <p className="text-center text-gray-600 mb-6">{t.agreement}</p>
                  <div className="space-y-6">
                     <TermSection title={t.independentContractor.title} content={t.independentContractor.content} />
+                    <TermSection title={t.noExclusivity.title} content={t.noExclusivity.content} />
                     <TermSection title={t.professionalConduct.title} content={t.professionalConduct.content} />
                     <TermSection title={t.socialMediaPolicy.title} content={t.socialMediaPolicy.content} />
                     <TermSection title={t.performance.title} content={t.performance.content} />
@@ -42,6 +43,7 @@ const AgentTermsPage: React.FC<AgentTermsPageProps> = ({ onAccept, onLogout, t }
                     <TermSection title={t.profileCompletion.title} content={t.profileCompletion.content} />
                     <TermSection title={t.compliance.title} content={t.compliance.content} />
                     <TermSection title={t.training.title} content={t.training.content} />
+                    <TermSection title={t.indemnification.title} content={t.indemnification.content} />
                 </div>
             </div>
 

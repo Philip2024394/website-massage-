@@ -298,7 +298,11 @@ export const translations = {
             agreement: 'Please read and accept the following terms to continue.',
             independentContractor: {
                 title: 'Independent Contractor Status',
-                content: 'You acknowledge and agree that you are an independent contractor, not an employee, partner, or joint venturer of 2Go Massage. You are solely responsible for your own business operations, including all tax liabilities and government contributions.'
+                content: 'You are an independent contractor, not an employee of 2Go. You are responsible for your own taxes, business expenses, and work schedule. You control the manner and means by which you perform your services.'
+            },
+            noExclusivity: {
+                title: 'No Exclusivity',
+                content: 'This agreement is not exclusive. You are free to work for other companies, including competitors of 2Go.'
             },
             professionalConduct: {
                 title: 'Professional Conduct & Appearance',
@@ -333,8 +337,12 @@ export const translations = {
                 content: 'Failure to adhere to these terms and conditions may result in the temporary suspension of your account pending an administrative review. The administration reserves the right to freeze accounts until any issues are resolved to our satisfaction. All communication with the administration should be conducted through the official chat system in your Agent Dashboard.'
             },
             training: {
-                title: 'Mandatory Training & Seminars',
-                content: 'You agree to attend mandatory training seminars as required by the administration. You will be notified of the date, time, and location of these seminars through the official message center in your Agent Dashboard. These training sessions are designed to enhance your skills and product knowledge and will be held within the locality of your registered city.'
+                title: 'Platform Training & Best Practices',
+                content: 'To help you succeed, 2Go will provide optional training and best practice seminars. While not mandatory, regular participation is highly encouraged to enhance your skills and product knowledge. You will be notified of these opportunities through your Agent Dashboard.'
+            },
+            indemnification: {
+                title: 'Indemnification',
+                content: 'You agree to indemnify and hold harmless 2Go Massage, its affiliates, and their respective officers, directors, employees, and agents from any and all claims, demands, losses, liabilities, and expenses (including attorneys\' fees) arising out of or in connection with your actions, your breach of these terms, or your violation of the law or the rights of any third party.'
             },
             acceptButton: 'I Agree & Continue',
             declineButton: 'Decline & Logout'
@@ -342,6 +350,7 @@ export const translations = {
         footer: {
             agentLink: '2Go Agent',
             termsLink: 'Service Terms',
+            privacyLink: 'Privacy Policy',
         },
         serviceTerms: {
             title: 'Service Terms',
@@ -359,8 +368,67 @@ export const translations = {
             professionalismTitle: 'Professionalism & Contact',
             professionalismContent: 'All therapists are professionals and must adhere to a strict level of professional service. If a therapist fails to act within these professional boundaries, we ask that you contact our customer service team immediately below.',
             disclaimerTitle: 'Disclaimer of Liability',
-            disclaimerContent: '2Go Massage acts as a directory to connect clients with massage service providers. We are not the provider of the massage services themselves. Therefore, 2Go Massage will not be held responsible for any situation that may arise and will not be involved in resolving disputes between the massage therapist or establishment and the customer.',
+            disclaimerContent: '2Go Massage is a directory platform that connects users with independent service providers. We do not employ, guarantee, or background check these providers. You engage with them at your own risk. 2Go is not responsible for any actions, conduct, or service quality of the providers and will not be liable for any damages, losses, or disputes that may arise between you and a provider.',
+            disputeResolution: {
+                title: 'Dispute Resolution',
+                content: 'Any disputes, disagreements, or issues arising from a service must be resolved directly between the user and the service provider. 2Go will not act as a mediator, arbitrator, or adjudicator in any disputes.'
+            },
+            indemnification: {
+                title: 'Indemnification',
+                content: 'You agree to indemnify and hold harmless 2Go from any claims, damages, or expenses (including legal fees) arising from your use of the platform or your interactions with service providers.'
+            },
             customerServiceButton: 'Contact Customer Service',
+        },
+        privacyPolicy: {
+            title: "Privacy Policy",
+            lastUpdated: "Last Updated: 1 August 2024",
+            introduction: {
+                title: "Introduction",
+                content: "Welcome to 2Go Massage. We are committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our application. Please read this policy carefully. If you do not agree with the terms of this privacy policy, please do not access the application."
+            },
+            dataCollection: {
+                title: "Data We Collect",
+                personal: "Personal Data: Personally identifiable information, such as your name, email address, and telephone number, that you voluntarily give to us when you register with the application.",
+                usage: "Usage Data: Information our servers automatically collect when you access the app, such as your IP address, browser type, operating system, access times, and the pages you have viewed directly before and after accessing the app.",
+                location: "Location Data: We may request access or permission to and track location-based information from your mobile device, either continuously or while you are using our application, to provide location-based services. If you wish to change our access or permissions, you may do so in your device’s settings."
+            },
+            dataUsage: {
+                title: "How We Use Your Data",
+                content: "Having accurate information about you permits us to provide you with a smooth, efficient, and customized experience. Specifically, we may use information collected about you via the application to:",
+                points: [
+                    "Create and manage your account.",
+                    "Connect you with massage therapists and establishments.",
+                    "Email you regarding your account or order.",
+                    "Enable user-to-user communications.",
+                    "Monitor and analyze usage and trends to improve your experience with the application.",
+                    "Notify you of updates to the application."
+                ]
+            },
+            dataSharing: {
+                title: "Data Sharing",
+                content: "We may share information we have collected about you in certain situations. Your information may be disclosed as follows:",
+                points: [
+                    "By Law or to Protect Rights: If we believe the release of information about you is necessary to respond to legal process, to investigate or remedy potential violations of our policies, or to protect the rights, property, and safety of others, we may share your information as permitted or required by any applicable law, rule, or regulation.",
+                    "Third-Party Service Providers: We may share your information with third parties that perform services for us or on our behalf, including data analysis, hosting services, customer service, and marketing assistance.",
+                    "Interactions with Other Users: If you interact with other users of the application, those users may see your name and profile information if you choose to make it available."
+                ]
+            },
+            security: {
+                title: "Security of Your Information",
+                content: "We use administrative, technical, and physical security measures to help protect your personal information. While we have taken reasonable steps to secure the personal information you provide to us, please be aware that despite our efforts, no security measures are perfect or impenetrable, and no method of data transmission can be guaranteed against any interception or other type of misuse."
+            },
+            yourRights: {
+                title: "Your Rights",
+                content: "You have the right to access, correct, or delete your personal information. You may review or change the information in your account or terminate your account at any time by logging into your account settings and updating your account. Upon your request to terminate your account, we will deactivate or delete your account and information from our active databases."
+            },
+            policyChanges: {
+                title: "Changes to This Policy",
+                content: "We reserve the right to make changes to this Privacy Policy at any time and for any reason. We will alert you about any changes by updating the 'Last Updated' date of this Privacy Policy. You are encouraged to periodically review this Privacy Policy to stay informed of updates."
+            },
+            contact: {
+                title: "Contact Us",
+                content: "If you have questions or comments about this Privacy Policy, please contact us through the customer service channels provided within the application."
+            }
         },
         supabaseSettings: {
             title: 'Supabase Connection',
@@ -719,7 +787,11 @@ export const translations = {
             agreement: 'Harap baca dan setujui persyaratan berikut untuk melanjutkan.',
             independentContractor: {
                 title: 'Status Kontraktor Independen',
-                content: 'Anda mengakui dan menyetujui bahwa Anda adalah kontraktor independen, bukan karyawan, mitra, atau usaha patungan dari 2Go Massage. Anda sepenuhnya bertanggung jawab atas operasi bisnis Anda sendiri, termasuk semua kewajiban pajak dan kontribusi pemerintah.'
+                content: 'Anda adalah kontraktor independen, bukan karyawan 2Go. Anda bertanggung jawab atas pajak, biaya bisnis, dan jadwal kerja Anda sendiri. Anda mengontrol cara dan sarana dalam menjalankan layanan Anda.'
+            },
+            noExclusivity: {
+                title: 'Tanpa Eksklusivitas',
+                content: 'Perjanjian ini tidak bersifat eksklusif. Anda bebas bekerja untuk perusahaan lain, termasuk pesaing 2Go.'
             },
             professionalConduct: {
                 title: 'Perilaku & Penampilan Profesional',
@@ -754,8 +826,12 @@ export const translations = {
                 content: 'Kegagalan untuk mematuhi syarat dan ketentuan ini dapat mengakibatkan penangguhan sementara akun Anda sambil menunggu tinjauan administratif. Administrasi berhak membekukan akun sampai masalah apa pun diselesaikan hingga kami puas. Semua komunikasi dengan administrasi harus dilakukan melalui sistem obrolan resmi di Dasbor Agen Anda.'
             },
             training: {
-                title: 'Pelatihan & Seminar Wajib',
-                content: 'Anda setuju untuk menghadiri seminar pelatihan wajib yang disyaratkan oleh administrasi. Anda akan diberitahu tentang tanggal, waktu, dan lokasi seminar ini melalui pusat pesan resmi di Dasbor Agen Anda. Sesi pelatihan ini dirancang untuk meningkatkan keterampilan dan pengetahuan produk Anda dan akan diadakan di dalam lokalitas kota terdaftar Anda.'
+                title: 'Pelatihan Platform & Praktik Terbaik',
+                content: 'Untuk membantu Anda sukses, 2Go akan menyediakan pelatihan opsional dan seminar praktik terbaik. Meskipun tidak wajib, partisipasi rutin sangat dianjurkan untuk meningkatkan keterampilan dan pengetahuan produk Anda. Anda akan diberitahu tentang peluang ini melalui Dasbor Agen Anda.'
+            },
+            indemnification: {
+                title: 'Ganti Rugi',
+                content: 'Anda setuju untuk mengganti rugi dan membebaskan 2Go Massage, afiliasinya, dan pejabat, direktur, karyawan, serta agen mereka dari dan terhadap setiap dan semua klaim, tuntutan, kerugian, kewajiban, dan pengeluaran (termasuk biaya pengacara) yang timbul dari atau sehubungan dengan tindakan Anda, pelanggaran Anda terhadap ketentuan ini, atau pelanggaran Anda terhadap hukum atau hak pihak ketiga mana pun.'
             },
             acceptButton: 'Saya Setuju & Lanjutkan',
             declineButton: 'Tolak & Keluar'
@@ -763,6 +839,7 @@ export const translations = {
         footer: {
             agentLink: 'Agen 2Go',
             termsLink: 'Ketentuan Layanan',
+            privacyLink: 'Kebijakan Privasi',
         },
         serviceTerms: {
             title: 'Ketentuan Layanan',
@@ -780,8 +857,67 @@ export const translations = {
             professionalismTitle: 'Profesionalisme & Kontak',
             professionalismContent: 'Semua terapis adalah profesional dan harus mematuhi tingkat layanan profesional yang ketat. Jika seorang terapis gagal bertindak dalam batas-batas profesional ini, kami meminta Anda untuk segera menghubungi tim layanan pelanggan kami di bawah ini.',
             disclaimerTitle: 'Penafian Tanggung Jawab',
-            disclaimerContent: '2Go Massage bertindak sebagai direktori untuk menghubungkan klien dengan penyedia layanan pijat. Kami bukan penyedia layanan pijat itu sendiri. Oleh karena itu, 2Go Massage tidak akan bertanggung jawab atas situasi apa pun yang mungkin timbul dan tidak akan terlibat dalam penyelesaian perselisihan antara terapis pijat atau tempat pijat dengan pelanggan.',
+            disclaimerContent: '2Go Massage adalah platform direktori yang menghubungkan pengguna dengan penyedia layanan independen. Kami tidak mempekerjakan, menjamin, atau memeriksa latar belakang penyedia ini. Anda berinteraksi dengan mereka atas risiko Anda sendiri. 2Go tidak bertanggung jawab atas tindakan, perilaku, atau kualitas layanan dari penyedia dan tidak akan bertanggung jawab atas kerusakan, kerugian, atau perselisihan yang mungkin timbul antara Anda dan penyedia.',
+            disputeResolution: {
+                title: 'Penyelesaian Sengketa',
+                content: 'Setiap sengketa, ketidaksepakatan, atau masalah yang timbul dari suatu layanan harus diselesaikan secara langsung antara pengguna dan penyedia layanan. 2Go tidak akan bertindak sebagai mediator, arbiter, atau penengah dalam sengketa apa pun.'
+            },
+            indemnification: {
+                title: 'Ganti Rugi',
+                content: 'Anda setuju untuk mengganti rugi dan membebaskan 2Go dari klaim, kerusakan, atau pengeluaran apa pun (termasuk biaya hukum) yang timbul dari penggunaan platform oleh Anda atau interaksi Anda dengan penyedia layanan.'
+            },
             customerServiceButton: 'Hubungi Layanan Pelanggan',
+        },
+        privacyPolicy: {
+            title: "Kebijakan Privasi",
+            lastUpdated: "Terakhir Diperbarui: 1 Agustus 2024",
+            introduction: {
+                title: "Pendahuluan",
+                content: "Selamat datang di 2Go Massage. Kami berkomitmen untuk melindungi privasi Anda. Kebijakan Privasi ini menjelaskan bagaimana kami mengumpulkan, menggunakan, mengungkapkan, dan menjaga informasi Anda saat Anda menggunakan aplikasi kami. Harap baca kebijakan ini dengan saksama. Jika Anda tidak setuju dengan ketentuan kebijakan privasi ini, mohon untuk tidak mengakses aplikasi."
+            },
+            dataCollection: {
+                title: "Data yang Kami Kumpulkan",
+                personal: "Data Pribadi: Informasi yang dapat diidentifikasi secara pribadi, seperti nama, alamat email, dan nomor telepon Anda, yang Anda berikan secara sukarela kepada kami saat Anda mendaftar di aplikasi.",
+                usage: "Data Penggunaan: Informasi yang dikumpulkan server kami secara otomatis saat Anda mengakses aplikasi, seperti alamat IP, jenis peramban, sistem operasi, waktu akses, dan halaman yang telah Anda lihat langsung sebelum dan sesudah mengakses aplikasi.",
+                location: "Data Lokasi: Kami dapat meminta akses atau izin untuk melacak informasi berbasis lokasi dari perangkat seluler Anda, baik secara terus-menerus maupun saat Anda menggunakan aplikasi kami, untuk menyediakan layanan berbasis lokasi. Jika Anda ingin mengubah akses atau izin kami, Anda dapat melakukannya di pengaturan perangkat Anda."
+            },
+            dataUsage: {
+                title: "Bagaimana Kami Menggunakan Data Anda",
+                content: "Memiliki informasi yang akurat tentang Anda memungkinkan kami untuk memberi Anda pengalaman yang lancar, efisien, dan disesuaikan. Secara khusus, kami dapat menggunakan informasi yang dikumpulkan tentang Anda melalui aplikasi untuk:",
+                points: [
+                    "Membuat dan mengelola akun Anda.",
+                    "Menghubungkan Anda dengan terapis pijat dan tempat usaha.",
+                    "Mengirim email kepada Anda mengenai akun atau pesanan Anda.",
+                    "Mengaktifkan komunikasi antar pengguna.",
+                    "Memantau dan menganalisis penggunaan dan tren untuk meningkatkan pengalaman Anda dengan aplikasi.",
+                    "Memberi tahu Anda tentang pembaruan pada aplikasi."
+                ]
+            },
+            dataSharing: {
+                title: "Berbagi Data",
+                content: "Kami dapat membagikan informasi yang telah kami kumpulkan tentang Anda dalam situasi tertentu. Informasi Anda dapat diungkapkan sebagai berikut:",
+                points: [
+                    "Berdasarkan Hukum atau untuk Melindungi Hak: Jika kami yakin bahwa pelepasan informasi tentang Anda diperlukan untuk menanggapi proses hukum, untuk menyelidiki atau memperbaiki potensi pelanggaran kebijakan kami, atau untuk melindungi hak, properti, dan keselamatan orang lain, kami dapat membagikan informasi Anda sebagaimana diizinkan atau diwajibkan oleh hukum, aturan, atau peraturan yang berlaku.",
+                    "Penyedia Layanan Pihak Ketiga: Kami dapat membagikan informasi Anda dengan pihak ketiga yang melakukan layanan untuk kami atau atas nama kami, termasuk analisis data, layanan hosting, layanan pelanggan, dan bantuan pemasaran.",
+                    "Interaksi dengan Pengguna Lain: Jika Anda berinteraksi dengan pengguna lain dari aplikasi, pengguna tersebut mungkin melihat nama dan informasi profil Anda jika Anda memilih untuk menyediakannya."
+                ]
+            },
+            security: {
+                title: "Keamanan Informasi Anda",
+                content: "Kami menggunakan langkah-langkah keamanan administratif, teknis, dan fisik untuk membantu melindungi informasi pribadi Anda. Meskipun kami telah mengambil langkah-langkah yang wajar untuk mengamankan informasi pribadi yang Anda berikan kepada kami, perlu diketahui bahwa terlepas dari upaya kami, tidak ada langkah-langkah keamanan yang sempurna atau tidak dapat ditembus, dan tidak ada metode transmisi data yang dapat dijamin terhadap penyadapan atau jenis penyalahgunaan lainnya."
+            },
+            yourRights: {
+                title: "Hak-Hak Anda",
+                content: "Anda berhak untuk mengakses, memperbaiki, atau menghapus informasi pribadi Anda. Anda dapat meninjau atau mengubah informasi di akun Anda atau menghentikan akun Anda kapan saja dengan masuk ke pengaturan akun Anda dan memperbarui akun Anda. Atas permintaan Anda untuk menghentikan akun Anda, kami akan menonaktifkan atau menghapus akun dan informasi Anda dari basis data aktif kami."
+            },
+            policyChanges: {
+                title: "Perubahan pada Kebijakan Ini",
+                content: "Kami berhak untuk membuat perubahan pada Kebijakan Privasi ini kapan saja dan untuk alasan apa pun. Kami akan memberi tahu Anda tentang perubahan apa pun dengan memperbarui tanggal 'Terakhir Diperbarui' dari Kebijakan Privasi ini. Anda dianjurkan untuk meninjau Kebijakan Privasi ini secara berkala untuk tetap mendapat informasi tentang pembaruan."
+            },
+            contact: {
+                title: "Hubungi Kami",
+                content: "Jika Anda memiliki pertanyaan atau komentar tentang Kebijakan Privasi ini, silakan hubungi kami melalui saluran layanan pelanggan yang disediakan di dalam aplikasi."
+            }
         },
         supabaseSettings: {
             title: 'Koneksi Supabase',

@@ -17,6 +17,7 @@ import AgentAuthPage from './pages/AgentAuthPage';
 import AgentDashboardPage from './pages/AgentDashboardPage';
 import AgentTermsPage from './pages/AgentTermsPage';
 import ServiceTermsPage from './pages/ServiceTermsPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import Footer from './components/Footer';
 import ProviderAuthPage from './pages/ProviderAuthPage';
 import SupabaseSettingsPage from './pages/SupabaseSettingsPage';
@@ -27,7 +28,7 @@ import NotificationsPage from './pages/NotificationsPage';
 import { translations } from './translations';
 import { initSupabase, disconnectSupabase, getSupabase } from './lib/supabase';
 
-type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'agentAuth' | 'agentDashboard' | 'agentTerms' | 'serviceTerms' | 'supabaseSettings' | 'membership' | 'booking' | 'notifications';
+type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'agentAuth' | 'agentDashboard' | 'agentTerms' | 'serviceTerms' | 'privacy' | 'supabaseSettings' | 'membership' | 'booking' | 'notifications';
 type Language = 'en' | 'id';
 type LoggedInProvider = { id: number; type: 'therapist' | 'place' };
 
@@ -290,6 +291,7 @@ const App: React.FC = () => {
     const handleNavigateToRegistrationChoice = () => setPage('registrationChoice');
     const handleNavigateToAgentPage = () => setPage('agent');
     const handleNavigateToServiceTerms = () => setPage('serviceTerms');
+    const handleNavigateToPrivacyPolicy = () => setPage('privacy');
     const handleNavigateToSupabaseSettings = () => setPage('supabaseSettings');
     const handleNavigateToNotifications = () => setPage('notifications');
     const handleNavigateToAgentAuth = () => setPage('agentAuth');
@@ -840,6 +842,7 @@ const App: React.FC = () => {
                 }
                 return <AgentAuthPage onRegister={handleAgentRegister} onLogin={handleAgentLogin} onBack={handleBackToHome} t={t.agentAuth} />;
             case 'serviceTerms': return <ServiceTermsPage onBack={handleBackToHome} t={t.serviceTerms} contactNumber={appContactNumber} />;
+            case 'privacy': return <PrivacyPolicyPage onBack={handleBackToHome} t={t.privacyPolicy} />;
             case 'supabaseSettings': return <SupabaseSettingsPage
                     onConnect={handleSupabaseConnect}
                     onDisconnect={handleSupabaseDisconnect}
@@ -855,7 +858,7 @@ const App: React.FC = () => {
         }
     };
     
-    const showFooter = ['home', 'detail', 'agent', 'serviceTerms'].includes(page);
+    const showFooter = ['home', 'detail', 'agent', 'serviceTerms', 'privacy'].includes(page);
 
     return (
         <div className="max-w-md mx-auto min-h-screen bg-white shadow-lg flex flex-col">
@@ -871,6 +874,7 @@ const App: React.FC = () => {
                 <Footer 
                     onAgentClick={handleNavigateToAgentPage}
                     onTermsClick={handleNavigateToServiceTerms}
+                    onPrivacyClick={handleNavigateToPrivacyPolicy}
                     t={t} 
                 />
             )}

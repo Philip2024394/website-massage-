@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import Button from '../components/Button';
 
@@ -69,6 +70,16 @@ const ServiceTermsPage: React.FC<ServiceTermsPageProps> = ({ onBack, t, contactN
                 <div className="space-y-2 pt-4 border-t border-gray-200">
                     <h3 className="font-bold text-gray-800">{t.disclaimerTitle}</h3>
                     <p className="text-sm">{t.disclaimerContent}</p>
+                </div>
+                
+                 <div className="space-y-2">
+                    <h3 className="font-bold text-gray-800">{t.disputeResolution.title}</h3>
+                    <p className="text-sm">{t.disputeResolution.content}</p>
+                </div>
+
+                <div className="space-y-2">
+                    <h3 className="font-bold text-gray-800">{t.indemnification.title}</h3>
+                    <p className="text-sm">{t.indemnification.content}</p>
                 </div>
             </main>
 
