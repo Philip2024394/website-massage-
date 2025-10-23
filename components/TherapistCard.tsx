@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Therapist, Analytics } from '../types';
 import { AvailabilityStatus } from '../types';
+import { parsePricing, parseMassageTypes } from '../utils/appwriteHelpers';
 import Button from './Button';
 
 interface TherapistCardProps {
@@ -38,6 +39,10 @@ const statusStyles: { [key in AvailabilityStatus]: { text: string; bg: string; d
 
 const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook, onIncrementAnalytics, t }) => {
     const style = statusStyles[therapist.status];
+    
+    // Parse Appwrite string fields
+    const pricing = parsePricing(therapist.pricing);
+    const massageTypes = parseMassageTypes(therapist.massageTypes);
 
     const openWhatsApp = () => {
         onIncrementAnalytics('whatsappClicks');
@@ -82,24 +87,24 @@ const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook
             <div>
                 <h4 className="text-sm font-semibold text-gray-700 mb-1.5">Massage Types</h4>
                 <div className="flex flex-wrap gap-2">
-                    {therapist.massageTypes.map(type => (
+                    {massageTypes.map(type => (
                         <span key={type} className="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded-full">{type}</span>
                     ))}
                 </div>
             </div>
 
             <div className="grid grid-cols-3 gap-2 text-center text-sm text-gray-600">
-                <div className="bg-brand-green-light p-2 rounded-lg">
+                <div className="bg-brand-orange-light p-2 rounded-lg">
                     <p>60 min</p>
-                    <p className="font-bold text-brand-green-dark">Rp {therapist.pricing[60]}k</p>
+                    <p className="font-bold text-brand-orange-dark">Rp {pricing["60"]}k</p>
                 </div>
-                <div className="bg-brand-green-light p-2 rounded-lg">
+                <div className="bg-brand-orange-light p-2 rounded-lg">
                     <p>90 min</p>
-                    <p className="font-bold text-brand-green-dark">Rp {therapist.pricing[90]}k</p>
+                    <p className="font-bold text-brand-orange-dark">Rp {pricing["90"]}k</p>
                 </div>
-                <div className="bg-brand-green-light p-2 rounded-lg">
+                <div className="bg-brand-orange-light p-2 rounded-lg">
                     <p>120 min</p>
-                    <p className="font-bold text-brand-green-dark">Rp {therapist.pricing[120]}k</p>
+                    <p className="font-bold text-brand-orange-dark">Rp {pricing["120"]}k</p>
                 </div>
             </div>
 

@@ -1,8 +1,9 @@
 
 
 import React, { useState, useEffect, useCallback } from 'react';
-import type { User, Place, Therapist, UserLocation, SupabaseConfig, Booking, Notification, Analytics, Agent, AdminMessage } from './types';
-import { AvailabilityStatus, BookingStatus, NotificationType } from './types';
+import type { User, Place, Therapist, UserLocation, Booking, Notification, Analytics, Agent, AdminMessage } from './types';
+import { BookingStatus } from './types';
+import { dataService } from './services/dataService';
 import AuthPage from './pages/AuthPage';
 import HomePage from './pages/HomePage';
 import PlaceDetailPage from './pages/PlaceDetailPage';
@@ -20,17 +21,17 @@ import ServiceTermsPage from './pages/ServiceTermsPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import Footer from './components/Footer';
 import ProviderAuthPage from './pages/ProviderAuthPage';
-import SupabaseSettingsPage from './pages/SupabaseSettingsPage';
 import MembershipPage from './pages/MembershipPage';
 import BookingPage from './pages/BookingPage';
 import NotificationsPage from './pages/NotificationsPage';
+import MassageTypesPage from './pages/MassageTypesPage';
 
-import { translations } from './translations';
-import { initSupabase, disconnectSupabase, getSupabase } from './lib/supabase';
+import { translations } from './translations/index';
+import { therapistService, placeService, agentService, authService, userService } from './lib/appwriteService';
 
-type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'agentAuth' | 'agentDashboard' | 'agentTerms' | 'serviceTerms' | 'privacy' | 'supabaseSettings' | 'membership' | 'booking' | 'notifications';
+type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'agentAuth' | 'agentDashboard' | 'agentTerms' | 'serviceTerms' | 'privacy' | 'membership' | 'booking' | 'notifications' | 'massageTypes';
 type Language = 'en' | 'id';
-type LoggedInProvider = { id: number; type: 'therapist' | 'place' };
+type LoggedInProvider = { id: number | string; type: 'therapist' | 'place' }; // Support both number and string IDs for Appwrite compatibility
 
 const App: React.FC = () => {
     const [user, setUser] = useState<User | null>(null);
@@ -60,10 +61,6 @@ const App: React.FC = () => {
     const [loggedInAgent, setLoggedInAgent] = useState<Agent | null>(null);
     const [impersonatedAgent, setImpersonatedAgent] = useState<Agent | null>(null);
     const [adminMessages, setAdminMessages] = useState<AdminMessage[]>([]);
-
-    // Supabase state
-    const [supabaseConfig, setSupabaseConfig] = useState<SupabaseConfig | null>(null);
-    const [isSupabaseConnected, setIsSupabaseConnected] = useState(false);
     
     // Google Maps state
     const [googleMapsApiKey, setGoogleMapsApiKey] = useState<string | null>(null);
@@ -97,37 +94,35 @@ const App: React.FC = () => {
     };
 
     const fetchPublicData = useCallback(async () => {
-        const supabase = getSupabase();
-        if (!supabase) return;
-        setIsLoading(true);
-        const { data: therapistsData, error: therapistsError } = await supabase.from('therapists').select('*').eq('isLive', true);
-        const { data: placesData, error: placesError } = await supabase.from('places').select('*').eq('isLive', true);
-        
-        if (therapistsError) console.error("Error fetching therapists:", therapistsError);
-        else setTherapists(therapistsData || []);
-        
-        if (placesError) console.error("Error fetching places:", placesError);
-        else setPlaces(placesData || []);
-
-        setIsLoading(false);
+        try {
+            setIsLoading(true);
+            const [therapistsData, placesData] = await Promise.all([
+                dataService.getTherapists(),
+                dataService.getPlaces()
+            ]);
+            
+            setTherapists(therapistsData || []);
+            setPlaces(placesData || []);
+        } catch (error) {
+            console.error('Error fetching public data:', error);
+            setTherapists([]);
+            setPlaces([]);
+        } finally {
+            setIsLoading(false);
+        }
     }, []);
 
     const fetchAdminData = useCallback(async () => {
-        const supabase = getSupabase();
-        if (!supabase) return;
+        // TODO: Integrate with Appwrite backend
+        // For now, using local dataService
         setIsLoading(true);
-        const { data: therapistsData, error: therapistsError } = await supabase.from('therapists').select('*');
-        const { data: placesData, error: placesError } = await supabase.from('places').select('*');
-        const { data: agentsData, error: agentsError } = await supabase.from('agents').select('*');
+        const therapistsData = await dataService.getTherapists();
+        const placesData = await dataService.getPlaces();
+        const agentsData: Agent[] = []; // TODO: Add agents service when ready
 
-        if (therapistsError) console.error("Error fetching all therapists:", therapistsError);
-        else setAllAdminTherapists(therapistsData || []);
-
-        if (placesError) console.error("Error fetching all places:", placesError);
-        else setAllAdminPlaces(placesData || []);
-
-        if (agentsError) console.error("Error fetching all agents:", agentsError);
-        else setAllAdminAgents(agentsData || []);
+        setAllAdminTherapists(therapistsData || []);
+        setAllAdminPlaces(placesData || []);
+        setAllAdminAgents(agentsData || []);
 
         setIsLoading(false);
     }, []);
@@ -190,60 +185,22 @@ const App: React.FC = () => {
             }
         }
 
-        const storedSupabaseConfig = localStorage.getItem('supabaseConfig');
-        if (storedSupabaseConfig) {
-            try {
-                const config = JSON.parse(storedSupabaseConfig);
-                if(config.url && config.key) {
-                    handleSupabaseConnect(config.url, config.key, true);
-                }
-            } catch (e) {
-                console.error("Failed to parse supabase config", e);
-                localStorage.removeItem('supabaseConfig');
-                setIsLoading(false);
-            }
-        } else {
-            setIsLoading(false);
-        }
-    }, []);
+        // Initialize data loading (no Supabase required - using Appwrite/mock data)
+        fetchPublicData();
+        setIsLoading(false);
+    }, [fetchPublicData]);
 
     useEffect(() => {
-        if(isSupabaseConnected) {
-            fetchPublicData();
-            if (isAdminLoggedIn) {
-                fetchAdminData();
-            }
+        if (isAdminLoggedIn) {
+            fetchAdminData();
         }
-    }, [isSupabaseConnected, isAdminLoggedIn, fetchPublicData, fetchAdminData]);
+    }, [isAdminLoggedIn, fetchAdminData]);
 
     useEffect(() => {
-        const fetchMessages = async () => {
-            const supabase = getSupabase();
-            if (!supabase) return;
-
-            const agentId = impersonatedAgent?.id ?? loggedInAgent?.id;
-            if (!agentId) {
-                setAdminMessages([]);
-                return;
-            }
-
-            const { data, error } = await supabase
-                .from('admin_messages')
-                .select('*')
-                .eq('agentId', agentId)
-                .order('createdAt', { ascending: true });
-
-            if (error) {
-                console.error('Error fetching admin messages:', error);
-            } else {
-                setAdminMessages(data || []);
-            }
-        };
-
-        if ((loggedInAgent || impersonatedAgent) && isSupabaseConnected) {
-            fetchMessages();
-        }
-    }, [loggedInAgent, impersonatedAgent, isSupabaseConnected]);
+        // TODO: Fetch admin messages from Appwrite when ready
+        // For now, admin messages are disabled
+        setAdminMessages([]);
+    }, [loggedInAgent, impersonatedAgent]);
 
 
     const t = translations[language];
@@ -259,8 +216,7 @@ const App: React.FC = () => {
     };
 
     const handleLogout = async () => {
-        const supabase = getSupabase();
-        if (supabase) await supabase.auth.signOut();
+        // TODO: Implement logout with Appwrite
         setUser(null);
         setPage('home');
     };
@@ -281,18 +237,15 @@ const App: React.FC = () => {
     const handleNavigateToAuth = () => setPage('auth');
     
     const handleNavigateToAdminLogin = () => {
-        if (isSupabaseConnected) {
-            setPage('adminLogin');
-        } else {
-            setPage('supabaseSettings');
-        }
+        // Appwrite is now configured - navigate directly to admin login
+        setPage('adminLogin');
     };
 
     const handleNavigateToRegistrationChoice = () => setPage('registrationChoice');
     const handleNavigateToAgentPage = () => setPage('agent');
     const handleNavigateToServiceTerms = () => setPage('serviceTerms');
     const handleNavigateToPrivacyPolicy = () => setPage('privacy');
-    const handleNavigateToSupabaseSettings = () => setPage('supabaseSettings');
+    // Supabase settings removed - using Appwrite as backend
     const handleNavigateToNotifications = () => setPage('notifications');
     const handleNavigateToAgentAuth = () => setPage('agentAuth');
     
@@ -302,48 +255,45 @@ const App: React.FC = () => {
     };
     
     const handleAdminLogout = async () => {
-        const supabase = getSupabase();
-        if (supabase) await supabase.auth.signOut();
+        // TODO: Implement with Appwrite authService.logout()
+        // const supabase = getSupabase();
+        // if (supabase) await supabase.auth.signOut();
         setIsAdminLoggedIn(false);
         setImpersonatedAgent(null);
         setPage('home');
     }
 
     const handleToggleTherapistLive = async (id: number) => {
-        const supabase = getSupabase();
-        if(!supabase) return;
         const therapist = allAdminTherapists.find(t => t.id === id);
         if(!therapist) return;
         
-        const { data, error } = await supabase
-            .from('therapists')
-            .update({ isLive: !therapist.isLive })
-            .eq('id', id)
-            .select();
-
-        if (error) {
-            alert("Error updating therapist status.");
-        } else if (data) {
-            setAllAdminTherapists(allAdminTherapists.map(t => t.id === id ? data[0] : t));
+        try {
+            // Appwrite uses string IDs with $id property
+            const therapistId = (therapist as any).$id || id.toString();
+            await therapistService.update(therapistId, { isLive: !therapist.isLive });
+            setAllAdminTherapists(allAdminTherapists.map(t => 
+                t.id === id ? { ...t, isLive: !t.isLive } : t
+            ));
+        } catch (error: any) {
+            console.error('Toggle therapist error:', error);
+            alert('Error updating therapist status: ' + (error.message || 'Unknown error'));
         }
     };
 
     const handleTogglePlaceLive = async (id: number) => {
-        const supabase = getSupabase();
-        if(!supabase) return;
         const place = allAdminPlaces.find(p => p.id === id);
         if(!place) return;
         
-        const { data, error } = await supabase
-            .from('places')
-            .update({ isLive: !place.isLive })
-            .eq('id', id)
-            .select();
-        
-        if (error) {
-            alert("Error updating place status.");
-        } else if (data) {
-            setAllAdminPlaces(allAdminPlaces.map(p => p.id === id ? data[0] : p));
+        try {
+            // Appwrite uses string IDs with $id property
+            const placeId = (place as any).$id || id.toString();
+            await placeService.update(placeId, { isLive: !place.isLive });
+            setAllAdminPlaces(allAdminPlaces.map(p => 
+                p.id === id ? { ...p, isLive: !p.isLive } : p
+            ));
+        } catch (error: any) {
+            console.error('Toggle place error:', error);
+            alert('Error updating place status: ' + (error.message || 'Unknown error'));
         }
     };
 
@@ -353,76 +303,94 @@ const App: React.FC = () => {
     };
     
     const handleProviderRegister = async (email: string, agentCode?: string): Promise<{success: boolean, message: string}> => {
-        if (!providerAuthInfo) return { success: false, message: t.providerAuth.genericError };
+        if (!providerAuthInfo) return { success: false, message: 'Generic error' };
         
-        const supabase = getSupabase();
-        if (!supabase) return { success: false, message: t.providerAuth.genericError };
-    
-        let agentId: number | undefined = undefined;
-        if (agentCode) {
-            const { data: agentData, error: agentError } = await supabase
-                .from('agents')
-                .select('id')
-                .eq('agentCode', agentCode.trim())
-                .single();
-            if (agentError || !agentData) {
-                return { success: false, message: t.providerAuth.invalidAgentCode };
+        try {
+            let agentId: string | undefined = undefined;
+            if (agentCode) {
+                const agent = await agentService.getByCode(agentCode.trim());
+                if (!agent) {
+                    return { success: false, message: 'Invalid agent code' };
+                }
+                agentId = agent.$id;
             }
-            agentId = agentData.id;
+
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            
+            const commonData: any = {
+                email,
+                name: '',
+                description: '',
+                isLive: false,
+                activeMembershipDate: yesterday.toISOString().split('T')[0],
+                pricing: JSON.stringify({ 60: 0, 90: 0, 120: 0 }),
+                analytics: JSON.stringify({ impressions: 0, profileViews: 0, whatsappClicks: 0 }),
+                rating: 0,
+                reviewCount: 0,
+                city: '',
+                country: '',
+            };
+
+            if (agentId) {
+                commonData.agentId = agentId;
+            }
+
+            if (providerAuthInfo.type === 'therapist') {
+                commonData.profilePicture = '';
+                commonData.mainImage = '';
+                commonData.thumbnailImages = JSON.stringify([]);
+                commonData.status = 'available';
+                await therapistService.create(commonData);
+            } else {
+                commonData.profilePicture = '';
+                commonData.mainImage = '';
+                commonData.thumbnailImages = JSON.stringify([]);
+                commonData.openingTime = '09:00';
+                commonData.closingTime = '21:00';
+                commonData.status = 'available';
+                await placeService.create(commonData);
+            }
+            
+            setProviderAuthInfo(prev => prev ? { ...prev, mode: 'login' } : null);
+            return { success: true, message: 'Registration successful! Please login with your email.' };
+        } catch (error: any) {
+            console.error('Registration error:', error);
+            return { success: false, message: error.message || 'Registration failed' };
         }
-
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        
-        const commonData: any = {
-            email,
-            isLive: false,
-            activeMembershipDate: yesterday.toISOString().split('T')[0],
-            pricing: { 60: 0, 90: 0, 120: 0 },
-            analytics: { impressions: 0, profileViews: 0, whatsappClicks: 0 },
-        };
-
-        if (agentId) {
-            commonData.agentId = agentId;
-        }
-
-        const table = providerAuthInfo.type === 'therapist' ? 'therapists' : 'places';
-        
-        const { error } = await supabase.from(table).insert([commonData]);
-
-        if (error) {
-            return { success: false, message: error.message };
-        }
-        
-        setProviderAuthInfo(prev => prev ? { ...prev, mode: 'login' } : null);
-        return { success: true, message: t.providerAuth.registerSuccess };
     };
 
     const handleProviderLogin = async (email: string): Promise<{success: boolean, message: string}> => {
-        const supabase = getSupabase();
-        if (!supabase) return { success: false, message: t.providerAuth.genericError };
-        
-        const { data: therapistData } = await supabase.from('therapists').select('id').eq('email', email).single();
-        if (therapistData) {
-            const providerData = { id: therapistData.id, type: 'therapist' as const };
-            setLoggedInProvider(providerData);
-            localStorage.setItem('loggedInProvider', JSON.stringify(providerData));
-            setPage('therapistDashboard');
-            setProviderAuthInfo(null);
-            return { success: true, message: '' };
-        }
+        try {
+            const therapists = await therapistService.getAll();
+            const therapist = therapists.find((t: any) => t.email === email);
+            
+            if (therapist) {
+                const providerData = { id: therapist.$id, type: 'therapist' as const };
+                setLoggedInProvider(providerData);
+                localStorage.setItem('loggedInProvider', JSON.stringify(providerData));
+                setPage('therapistDashboard');
+                setProviderAuthInfo(null);
+                return { success: true, message: '' };
+            }
 
-        const { data: placeData } = await supabase.from('places').select('id').eq('email', email).single();
-        if (placeData) {
-            const providerData = { id: placeData.id, type: 'place' as const };
-            setLoggedInProvider(providerData);
-            localStorage.setItem('loggedInProvider', JSON.stringify(providerData));
-            setPage('placeDashboard');
-            setProviderAuthInfo(null);
-            return { success: true, message: '' };
+            const places = await placeService.getAll();
+            const place = places.find((p: any) => p.email === email);
+            
+            if (place) {
+                const providerData = { id: place.$id, type: 'place' as const };
+                setLoggedInProvider(providerData);
+                localStorage.setItem('loggedInProvider', JSON.stringify(providerData));
+                setPage('placeDashboard');
+                setProviderAuthInfo(null);
+                return { success: true, message: '' };
+            }
+            
+            return { success: false, message: 'Invalid email. Please check and try again.' };
+        } catch (error: any) {
+            console.error('Login error:', error);
+            return { success: false, message: error.message || 'Login failed' };
         }
-        
-        return { success: false, message: t.providerAuth.invalidCredentialsError };
     };
 
 
@@ -433,133 +401,146 @@ const App: React.FC = () => {
     };
 
     const handleSaveTherapist = async (therapistData: Omit<Therapist, 'id' | 'isLive' | 'rating' | 'reviewCount' | 'activeMembershipDate' | 'email'>) => {
-        const supabase = getSupabase();
-        if (!supabase || !loggedInProvider) return;
-
-        const { data, error } = await supabase
-            .from('therapists')
-            .update(therapistData)
-            .eq('id', loggedInProvider.id)
-            .select();
-
-        if (error) {
-            alert("Error saving profile.");
-            console.error(error);
-        } else if (data) {
-            alert(t.providerDashboard.profileSaved);
+        if (!loggedInProvider) return;
+        
+        try {
+            const updateData: any = {
+                ...therapistData,
+                pricing: typeof therapistData.pricing === 'string' ? therapistData.pricing : JSON.stringify(therapistData.pricing),
+                analytics: typeof therapistData.analytics === 'string' ? therapistData.analytics : JSON.stringify(therapistData.analytics),
+            };
+            
+            // Handle thumbnailImages if present
+            if ('thumbnailImages' in therapistData) {
+                const thumbs = (therapistData as any).thumbnailImages;
+                updateData.thumbnailImages = Array.isArray(thumbs) ? JSON.stringify(thumbs) : thumbs;
+            }
+            
+            // Use string ID for Appwrite
+            const therapistId = typeof loggedInProvider.id === 'string' ? loggedInProvider.id : loggedInProvider.id.toString();
+            await therapistService.update(therapistId, updateData);
+            alert('Profile saved successfully!');
+        } catch (error: any) {
+            console.error('Save error:', error);
+            alert('Error saving profile: ' + (error.message || 'Unknown error'));
         }
     };
     
     const handleSavePlace = async (placeData: Omit<Place, 'id' | 'isLive' | 'rating' | 'reviewCount' | 'email'>) => {
-        const supabase = getSupabase();
-        if (!supabase || !loggedInProvider) return;
-
-        const { data, error } = await supabase
-            .from('places')
-            .update(placeData)
-            .eq('id', loggedInProvider.id)
-            .select();
-
-        if (error) {
-            alert("Error saving profile.");
-            console.error(error);
-        } else if (data) {
-            alert(t.providerDashboard.profileSaved);
+        if (!loggedInProvider) return;
+        
+        try {
+            const updateData: any = {
+                ...placeData,
+                pricing: typeof placeData.pricing === 'string' ? placeData.pricing : JSON.stringify(placeData.pricing),
+                analytics: typeof placeData.analytics === 'string' ? placeData.analytics : JSON.stringify(placeData.analytics),
+            };
+            
+            // Handle thumbnailImages if present
+            if ('thumbnailImages' in placeData) {
+                const thumbs = (placeData as any).thumbnailImages;
+                updateData.thumbnailImages = Array.isArray(thumbs) ? JSON.stringify(thumbs) : thumbs;
+            }
+            
+            // Use string ID for Appwrite
+            const placeId = typeof loggedInProvider.id === 'string' ? loggedInProvider.id : loggedInProvider.id.toString();
+            await placeService.update(placeId, updateData);
+            alert('Profile saved successfully!');
+        } catch (error: any) {
+            console.error('Save error:', error);
+            alert('Error saving profile: ' + (error.message || 'Unknown error'));
         }
     };
 
     const handleAgentRegister = async (name: string, email: string): Promise<{ success: boolean; message: string }> => {
-        const supabase = getSupabase();
-        if (!supabase) return { success: false, message: t.agentAuth.genericError };
-    
-        const agentCode = `${name.toLowerCase().replace(/\s+/g, '-').slice(0, 10)}-${Math.random().toString(36).substring(2, 6)}`;
-    
-        const { error } = await supabase.from('agents').insert([{ name, email, agentCode, hasAcceptedTerms: false }]);
-    
-        if (error) {
-            console.error('Agent creation error:', error);
-            return { success: false, message: error.message };
+        try {
+            const agentCode = `${name.toLowerCase().replace(/\s+/g, '-').slice(0, 10)}-${Math.random().toString(36).substring(2, 6)}`;
+            
+            await agentService.create({
+                name,
+                email,
+                agentCode,
+                hasAcceptedTerms: false,
+                lastLogin: new Date().toISOString()
+            });
+            
+            return { success: true, message: `Registration successful! Your agent code is: ${agentCode}. Please save it for future reference.` };
+        } catch (error: any) {
+            console.error('Agent registration error:', error);
+            return { success: false, message: error.message || 'Registration failed' };
         }
-    
-        return { success: true, message: t.agentAuth.registerSuccess.replace('{agentCode}', agentCode) };
     };
     
     const handleAgentLogin = async (email: string): Promise<{ success: boolean; message: string }> => {
-        const supabase = getSupabase();
-        if (!supabase) return { success: false, message: t.agentAuth.genericError };
-    
-        const { data: agentData, error } = await supabase.from('agents').select('*').eq('email', email).single();
-    
-        if (error || !agentData) {
-            return { success: false, message: t.agentAuth.invalidCredentialsError };
+        try {
+            const agents = await agentService.getAll();
+            const agentData = agents.find((a: any) => a.email === email);
+            
+            if (!agentData) {
+                return { success: false, message: 'Invalid email. Please check and try again.' };
+            }
+
+            // Update last login
+            try {
+                await agentService.update(agentData.$id, { lastLogin: new Date().toISOString() });
+            } catch (updateError) {
+                console.error('Failed to update last login time', updateError);
+            }
+        
+            setLoggedInAgent(agentData);
+            localStorage.setItem('loggedInAgent', JSON.stringify(agentData));
+
+            if (agentData.hasAcceptedTerms) {
+                setPage('agentDashboard');
+            } else {
+                setPage('agentTerms');
+            }
+
+            return { success: true, message: '' };
+        } catch (error: any) {
+            console.error('Agent login error:', error);
+            return { success: false, message: error.message || 'Login failed' };
         }
-
-        const { error: updateError } = await supabase
-            .from('agents')
-            .update({ lastLogin: new Date().toISOString() })
-            .eq('id', agentData.id);
-
-        if (updateError) {
-            console.error("Failed to update last login time", updateError);
-        }
-    
-        setLoggedInAgent(agentData);
-        localStorage.setItem('loggedInAgent', JSON.stringify(agentData));
-
-        if (agentData.hasAcceptedTerms) {
-            setPage('agentDashboard');
-        } else {
-            setPage('agentTerms');
-        }
-
-        return { success: true, message: '' };
     };
 
     const handleAgentLogout = async () => {
-        const supabase = getSupabase();
-        if (supabase) await supabase.auth.signOut();
+        // TODO: Implement with authService.logout()
         setLoggedInAgent(null);
         localStorage.removeItem('loggedInAgent');
         setPage('home');
     };
     
     const handleAgentAcceptTerms = async () => {
-        const supabase = getSupabase();
-        if (!supabase || !loggedInAgent) return;
+        if (!loggedInAgent) return;
 
-        const { error } = await supabase
-            .from('agents')
-            .update({ hasAcceptedTerms: true })
-            .eq('id', loggedInAgent.id);
-        
-        if (error) {
-            alert("Could not accept terms. Please try again.");
-        } else {
+        try {
+            const agentId = loggedInAgent.$id || loggedInAgent.id.toString();
+            await agentService.update(agentId, { hasAcceptedTerms: true });
+            
             const updatedAgent = { ...loggedInAgent, hasAcceptedTerms: true };
             setLoggedInAgent(updatedAgent);
             localStorage.setItem('loggedInAgent', JSON.stringify(updatedAgent));
             setPage('agentDashboard');
+        } catch (error: any) {
+            console.error('Accept terms error:', error);
+            alert('Could not accept terms: ' + (error.message || 'Unknown error'));
         }
     };
 
     const handleSaveAgentProfile = async (agentData: Partial<Agent>) => {
-        const supabase = getSupabase();
-        if (!supabase || !loggedInAgent) return;
+        if (!loggedInAgent) return;
     
-        const { data, error } = await supabase
-            .from('agents')
-            .update(agentData)
-            .eq('id', loggedInAgent.id)
-            .select();
-    
-        if (error) {
-            alert(t.agentDashboard.profile.profileSavedError);
-            console.error(error);
-        } else if (data) {
-            const updatedAgent = data[0];
+        try {
+            const agentId = loggedInAgent.$id || loggedInAgent.id.toString();
+            await agentService.update(agentId, agentData);
+            
+            const updatedAgent = { ...loggedInAgent, ...agentData };
             setLoggedInAgent(updatedAgent);
             localStorage.setItem('loggedInAgent', JSON.stringify(updatedAgent));
-            alert(t.agentDashboard.profile.profileSavedSuccess);
+            alert('Profile saved successfully!');
+        } catch (error: any) {
+            console.error('Save agent profile error:', error);
+            alert('Error saving profile: ' + (error.message || 'Unknown error'));
         }
     };
 
@@ -574,69 +555,32 @@ const App: React.FC = () => {
     };
 
     const handleSendAdminMessage = async (message: string) => {
-        const supabase = getSupabase();
-        if (!supabase || !impersonatedAgent) return;
-        const { data, error } = await supabase
-            .from('admin_messages')
-            .insert({ agentId: impersonatedAgent.id, message, isRead: false })
-            .select();
-
-        if (error) {
-            alert('Failed to send message.');
-        } else if (data) {
-            setAdminMessages(prev => [...prev, data[0]]);
-        }
+        // TODO: Implement with Appwrite messaging service
+        if (!impersonatedAgent) return;
+        
+        const newMessage = {
+            id: Date.now(),
+            agentId: impersonatedAgent.id,
+            message,
+            isRead: false,
+            createdAt: new Date().toISOString()
+        };
+        setAdminMessages(prev => [...prev, newMessage]);
+        console.log('TODO: Send message to Appwrite', message);
     };
 
     const handleMarkMessagesAsRead = async () => {
-        const supabase = getSupabase();
-        if (!supabase || !loggedInAgent) return;
-        const { error } = await supabase
-            .from('admin_messages')
-            .update({ isRead: true })
-            .eq('agentId', loggedInAgent.id)
-            .eq('isRead', false);
-
-        if (error) {
-            console.error("Failed to mark messages as read");
-        } else {
-             setAdminMessages(prev => prev.map(m => ({ ...m, isRead: true })));
-        }
+        // TODO: Implement with Appwrite messaging service
+        if (!loggedInAgent) return;
+        
+        setAdminMessages(prev => prev.map(m => ({ ...m, isRead: true })));
+        console.log('TODO: Mark messages as read in Appwrite');
     };
 
-
-    const handleSupabaseConnect = (url: string, key: string, silent = false) => {
-        const client = initSupabase(url, key);
-        if (client) {
-            const config = { url, key };
-            setSupabaseConfig(config);
-            setIsSupabaseConnected(true);
-            localStorage.setItem('supabaseConfig', JSON.stringify(config));
-            if (!silent) {
-                alert('Successfully connected to Supabase!');
-                setPage('adminDashboard');
-            }
-        } else {
-            if (!silent) {
-                alert('Failed to connect to Supabase. Check credentials and console for errors.');
-            }
-            setIsSupabaseConnected(false);
-        }
-    };
-
-    const handleSupabaseDisconnect = () => {
-        disconnectSupabase();
-        setSupabaseConfig(null);
-        setIsSupabaseConnected(false);
-        localStorage.removeItem('supabaseConfig');
-        alert('Disconnected from Supabase.');
-    };
+    // Supabase functions removed - using Appwrite as backend
 
     const handleUpdateMembership = async (id: number, type: 'therapist' | 'place', months: number) => {
-        const supabase = getSupabase();
-        if (!supabase) return;
-    
-        const table = type === 'therapist' ? 'therapists' : 'places';
+        // TODO: Integrate with Appwrite therapistService/placeService
         const providersArray = type === 'therapist' ? allAdminTherapists : allAdminPlaces;
     
         const provider = providersArray.find(p => p.id === id);
@@ -650,22 +594,18 @@ const App: React.FC = () => {
         newExpiryDate.setMonth(newExpiryDate.getMonth() + months);
         const newExpiryDateString = newExpiryDate.toISOString().split('T')[0];
     
-        const { data, error } = await supabase
-            .from(table)
-            .update({ activeMembershipDate: newExpiryDateString, isLive: true })
-            .eq('id', id)
-            .select();
-    
-        if (error) {
-            alert(`Error updating membership: ${error.message}`);
-        } else if (data && data[0]) {
-            if (type === 'therapist') {
-                setAllAdminTherapists(allAdminTherapists.map(t => t.id === id ? data[0] : t));
-            } else {
-                setAllAdminPlaces(allAdminPlaces.map(p => p.id === id ? data[0] : p));
-            }
-            alert(t.adminDashboard.membershipUpdateSuccess);
+        // Temporarily update locally
+        if (type === 'therapist') {
+            setAllAdminTherapists(allAdminTherapists.map(t => 
+                t.id === id ? { ...t, activeMembershipDate: newExpiryDateString, isLive: true } : t
+            ));
+        } else {
+            setAllAdminPlaces(allAdminPlaces.map(p => 
+                p.id === id ? { ...p, activeMembershipDate: newExpiryDateString, isLive: true } : p
+            ));
         }
+        alert('Membership updated (local only - Appwrite integration pending)');
+        console.log('TODO: Update membership in Appwrite');
     };
 
     const handleSelectMembershipPackage = (packageName: string, price: string) => {
@@ -777,11 +717,12 @@ const App: React.FC = () => {
                             onAgentPortalClick={loggedInAgent ? () => setPage('agentDashboard') : handleNavigateToAgentAuth}
                             onBook={handleNavigateToBooking}
                             onIncrementAnalytics={handleIncrementAnalytics}
+                            onMassageTypesClick={() => setPage('massageTypes')}
                             isLoading={isLoading}
                             t={t} />;
             case 'detail': return selectedPlace && <PlaceDetailPage place={selectedPlace} onBack={handleBackToHome} onBook={(place) => handleNavigateToBooking(place, 'place')} onIncrementAnalytics={(metric) => handleIncrementAnalytics(selectedPlace.id, 'place', metric)} t={t.detail} />;
-            case 'adminLogin': return <AdminLoginPage onAdminLogin={handleAdminLogin} onBack={handleBackToHome} t={t.adminLogin} onGoToSupabaseSettings={handleNavigateToSupabaseSettings} isSupabaseConnected={isSupabaseConnected} />;
-            case 'adminDashboard': return isAdminLoggedIn ? <AdminDashboardPage therapists={allAdminTherapists} places={allAdminPlaces} agents={allAdminAgents} onToggleTherapist={handleToggleTherapistLive} onTogglePlace={handleTogglePlaceLive} onLogout={handleAdminLogout} isSupabaseConnected={isSupabaseConnected} onGoToSupabaseSettings={handleNavigateToSupabaseSettings} onUpdateMembership={handleUpdateMembership} googleMapsApiKey={googleMapsApiKey} onSaveGoogleMapsApiKey={handleSaveGoogleMapsApiKey} appContactNumber={appContactNumber} onSaveAppContactNumber={handleSaveAppContactNumber} onImpersonateAgent={handleImpersonateAgent} t={t.adminDashboard} /> : <AdminLoginPage onAdminLogin={handleAdminLogin} onBack={handleBackToHome} t={t.adminLogin} onGoToSupabaseSettings={handleNavigateToSupabaseSettings} isSupabaseConnected={isSupabaseConnected} />;
+            case 'adminLogin': return <AdminLoginPage onAdminLogin={handleAdminLogin} onBack={handleBackToHome} t={t.adminLogin} />;
+            case 'adminDashboard': return isAdminLoggedIn ? <AdminDashboardPage therapists={allAdminTherapists} places={allAdminPlaces} agents={allAdminAgents} onToggleTherapist={handleToggleTherapistLive} onTogglePlace={handleTogglePlaceLive} onLogout={handleAdminLogout} onUpdateMembership={handleUpdateMembership} googleMapsApiKey={googleMapsApiKey} onSaveGoogleMapsApiKey={handleSaveGoogleMapsApiKey} appContactNumber={appContactNumber} onSaveAppContactNumber={handleSaveAppContactNumber} onImpersonateAgent={handleImpersonateAgent} t={t.adminDashboard} /> : <AdminLoginPage onAdminLogin={handleAdminLogin} onBack={handleBackToHome} t={t.adminLogin} />;
             case 'registrationChoice': return <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice} />;
             case 'providerAuth': return providerAuthInfo && <ProviderAuthPage
                 providerType={providerAuthInfo.type}
@@ -843,26 +784,19 @@ const App: React.FC = () => {
                 return <AgentAuthPage onRegister={handleAgentRegister} onLogin={handleAgentLogin} onBack={handleBackToHome} t={t.agentAuth} />;
             case 'serviceTerms': return <ServiceTermsPage onBack={handleBackToHome} t={t.serviceTerms} contactNumber={appContactNumber} />;
             case 'privacy': return <PrivacyPolicyPage onBack={handleBackToHome} t={t.privacyPolicy} />;
-            case 'supabaseSettings': return <SupabaseSettingsPage
-                    onConnect={handleSupabaseConnect}
-                    onDisconnect={handleSupabaseDisconnect}
-                    onBack={() => setPage('adminDashboard')}
-                    config={supabaseConfig}
-                    isConnected={isSupabaseConnected}
-                    t={t.supabaseSettings}
-                />;
             case 'membership': return loggedInProvider ? <MembershipPage onPackageSelect={handleSelectMembershipPackage} onBack={handleBackToProviderDashboard} t={t.membershipPage} /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice}/>;
-            case 'booking': return providerForBooking ? <BookingPage provider={providerForBooking.provider} providerType={providerForBooking.type} onBook={handleCreateBooking} onBack={handleBackToHome} bookings={bookings.filter(b => b.providerId === providerForBooking.provider.id)} t={t.bookingPage} /> : <HomePage user={user} loggedInAgent={loggedInAgent} therapists={therapists} places={places} userLocation={userLocation} onSetUserLocation={handleSetUserLocation} onSelectPlace={handleSelectPlace} onLogout={handleLogout} onLoginClick={handleNavigateToAuth} onAdminClick={handleNavigateToAdminLogin} onCreateProfileClick={handleNavigateToRegistrationChoice} onAgentPortalClick={loggedInAgent ? () => setPage('agentDashboard') : handleNavigateToAgentAuth} onBook={handleNavigateToBooking} onIncrementAnalytics={handleIncrementAnalytics} isLoading={isLoading} t={t} />;
+            case 'booking': return providerForBooking ? <BookingPage provider={providerForBooking.provider} providerType={providerForBooking.type} onBook={handleCreateBooking} onBack={handleBackToHome} bookings={bookings.filter(b => b.providerId === providerForBooking.provider.id)} t={t.bookingPage} /> : <HomePage user={user} loggedInAgent={loggedInAgent} therapists={therapists} places={places} userLocation={userLocation} onSetUserLocation={handleSetUserLocation} onSelectPlace={handleSelectPlace} onLogout={handleLogout} onLoginClick={handleNavigateToAuth} onAdminClick={handleNavigateToAdminLogin} onCreateProfileClick={handleNavigateToRegistrationChoice} onAgentPortalClick={loggedInAgent ? () => setPage('agentDashboard') : handleNavigateToAgentAuth} onBook={handleNavigateToBooking} onIncrementAnalytics={handleIncrementAnalytics} onMassageTypesClick={() => setPage('massageTypes')} isLoading={isLoading} t={t} />;
             case 'notifications': return loggedInProvider ? <NotificationsPage notifications={notifications.filter(n => n.providerId === loggedInProvider.id)} onMarkAsRead={handleMarkNotificationAsRead} onBack={handleBackToProviderDashboard} t={t.notificationsPage} /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice}/>;
+            case 'massageTypes': return <MassageTypesPage onBack={handleBackToHome} />;
             default: return <LandingPage onLanguageSelect={handleLanguageSelect} />;
         }
     };
     
-    const showFooter = ['home', 'detail', 'agent', 'serviceTerms', 'privacy'].includes(page);
+    const showFooter = ['home', 'detail', 'agent', 'serviceTerms', 'privacy', 'massageTypes'].includes(page);
 
     return (
         <div className="max-w-md mx-auto min-h-screen bg-white shadow-lg flex flex-col">
-            {isMapsApiKeyMissing && isAdminLoggedIn && t.app && (
+            {isMapsApiKeyMissing && isAdminLoggedIn && t?.app && (
                 <div className="bg-yellow-400 text-yellow-900 p-3 text-center text-sm font-semibold z-50">
                     {t.app.mapsApiKeyWarning}
                 </div>

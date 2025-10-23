@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { Place, Pricing, Booking, Notification } from '../types';
-import { BookingStatus } from '../types';
+import { BookingStatus, HotelVillaServiceStatus, AvailabilityStatus } from '../types';
 import Button from '../components/Button';
 import ImageUpload from '../components/ImageUpload';
+import HotelVillaOptIn from '../components/HotelVillaOptIn';
 import UserSolidIcon from '../components/icons/UserSolidIcon';
 import DocumentTextIcon from '../components/icons/DocumentTextIcon';
 import PhoneIcon from '../components/icons/PhoneIcon';
@@ -12,14 +13,13 @@ import ClockIcon from '../components/icons/ClockIcon';
 import NotificationBell from '../components/NotificationBell';
 import CustomCheckbox from '../components/CustomCheckbox';
 import { PLACE_SERVICES } from '../constants';
-import { getSupabase } from '../lib/supabase';
 
 interface PlaceDashboardPageProps {
     onSave: (data: Omit<Place, 'id' | 'isLive' | 'rating' | 'reviewCount' | 'email'>) => void;
     onLogout: () => void;
     onNavigateToNotifications: () => void;
     onUpdateBookingStatus: (bookingId: number, status: BookingStatus) => void;
-    placeId: number;
+    placeId: number | string; // Support both for Appwrite compatibility
     bookings: Booking[];
     notifications: Notification[];
     t: any;
@@ -86,26 +86,46 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     const locationInputRef = useRef<HTMLInputElement>(null);
 
     const fetchPlaceData = useCallback(async () => {
-        const supabase = getSupabase();
-        if (!supabase) return;
         setIsLoading(true);
-        const { data, error } = await supabase.from('places').select('*').eq('id', placeId).single();
-        if (error) {
-            console.error("Error fetching place data", error);
-        } else {
-            setPlace(data);
-            setName(data.name || '');
-            setDescription(data.description || '');
-            setMainImage(data.mainImage || '');
-            setThumbnailImages([...(data.thumbnailImages || []), '', '', ''].slice(0, 3));
-            setWhatsappNumber(data.whatsappNumber || '');
-            setPricing(data.pricing || { 60: 0, 90: 0, 120: 0 });
-            setLocation(data.location || '');
-            setCoordinates(data.coordinates || { lat: 0, lng: 0 });
-            setMassageTypes(data.massageTypes || []);
-            setOpeningTime(data.openingTime || '09:00');
-            setClosingTime(data.closingTime || '21:00');
-        }
+        
+        // Mock place data for demonstration
+        // In production, this would fetch from your data service
+        const mockPlaceData = {
+            id: 1,
+            name: 'Sample Place',
+            description: 'A beautiful wellness center',
+            mainImage: 'https://via.placeholder.com/400x250/F97316/FFFFFF?text=Sample+Place',
+            thumbnailImages: ['https://via.placeholder.com/150/F97316/FFFFFF?text=1'],
+            whatsappNumber: '6281234567890',
+            pricing: JSON.stringify({ 60: 200000, 90: 280000, 120: 360000 }),
+            location: 'Jakarta',
+            coordinates: JSON.stringify({ lat: -6.2088, lng: 106.8456 }),
+            massageTypes: 'Relaxation,Deep Tissue',
+            openingTime: '09:00',
+            closingTime: '21:00',
+            email: 'info@sampleplace.com',
+            distance: 0,
+            rating: 4.5,
+            reviewCount: 32,
+            isLive: true,
+            status: AvailabilityStatus.Available,
+            analytics: '{ "impressions": 245, "profileViews": 89, "whatsappClicks": 23 }',
+            activeMembershipDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        };
+        
+        setPlace(mockPlaceData);
+        setName(mockPlaceData.name || '');
+        setDescription(mockPlaceData.description || '');
+        setMainImage(mockPlaceData.mainImage || '');
+        setThumbnailImages([...(mockPlaceData.thumbnailImages || []), '', '', ''].slice(0, 3));
+        setWhatsappNumber(mockPlaceData.whatsappNumber || '');
+        setPricing(JSON.parse(mockPlaceData.pricing) || { 60: 0, 90: 0, 120: 0 });
+        setLocation(mockPlaceData.location || '');
+        setCoordinates(JSON.parse(mockPlaceData.coordinates) || { lat: 0, lng: 0 });
+        setMassageTypes(mockPlaceData.massageTypes.split(',') || []);
+        setOpeningTime(mockPlaceData.openingTime || '09:00');
+        setClosingTime(mockPlaceData.closingTime || '21:00');
+        
         setIsLoading(false);
     }, [placeId]);
 
@@ -169,16 +189,16 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             mainImage,
             thumbnailImages: thumbnailImages.filter(img => img), // remove empty strings
             whatsappNumber,
-            pricing,
+            pricing: JSON.stringify(pricing),
             location,
-            coordinates,
-            massageTypes,
+            coordinates: JSON.stringify(coordinates),
+            massageTypes: JSON.stringify(massageTypes),
             openingTime,
             closingTime,
             distance: 0, // dummy value
             activeMembershipDate: place?.activeMembershipDate || '',
             password: place?.password,
-            analytics: place?.analytics || { impressions: 0, profileViews: 0, whatsappClicks: 0 },
+            analytics: typeof place?.analytics === 'string' ? place.analytics : JSON.stringify(place?.analytics || { impressions: 0, profileViews: 0, whatsappClicks: 0 }),
         });
     };
     
@@ -275,10 +295,40 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             case 'analytics':
                  return (
                     <div className="space-y-4">
-                        <AnalyticsCard title={t.analytics.impressions} value={place?.analytics.impressions ?? 0} description={t.analytics.impressionsDesc} />
-                        <AnalyticsCard title={t.analytics.profileViews} value={place?.analytics.profileViews ?? 0} description={t.analytics.profileViewsDesc} />
-                        <AnalyticsCard title={t.analytics.whatsappClicks} value={place?.analytics.whatsappClicks ?? 0} description={t.analytics.whatsappClicksDesc} />
+                        <AnalyticsCard title={t.analytics.impressions} value={(() => {
+                            try {
+                                const analytics = typeof place?.analytics === 'string' ? JSON.parse(place.analytics) : place?.analytics;
+                                return analytics?.impressions ?? 0;
+                            } catch { return 0; }
+                        })()} description={t.analytics.impressionsDesc} />
+                        <AnalyticsCard title={t.analytics.profileViews} value={(() => {
+                            try {
+                                const analytics = typeof place?.analytics === 'string' ? JSON.parse(place.analytics) : place?.analytics;
+                                return analytics?.profileViews ?? 0;
+                            } catch { return 0; }
+                        })()} description={t.analytics.profileViewsDesc} />
+                        <AnalyticsCard title={t.analytics.whatsappClicks} value={(() => {
+                            try {
+                                const analytics = typeof place?.analytics === 'string' ? JSON.parse(place.analytics) : place?.analytics;
+                                return analytics?.whatsappClicks ?? 0;
+                            } catch { return 0; }
+                        })()} description={t.analytics.whatsappClicksDesc} />
                     </div>
+                );
+            case 'hotelVilla':
+                const handleHotelVillaUpdate = (status: HotelVillaServiceStatus, hotelDiscount: number, villaDiscount: number) => {
+                    // Update place data with hotel-villa preferences
+                    console.log('Hotel-Villa preferences updated:', { status, hotelDiscount, villaDiscount });
+                    // In a real app, this would save to the backend
+                };
+                
+                return (
+                    <HotelVillaOptIn
+                        currentStatus={place?.hotelVillaServiceStatus || HotelVillaServiceStatus.NotOptedIn}
+                        hotelDiscount={place?.hotelDiscount || 20}
+                        villaDiscount={place?.villaDiscount || 20}
+                        onUpdate={handleHotelVillaUpdate}
+                    />
                 );
             case 'profile':
             default:
@@ -381,21 +431,21 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                 <label className="block text-xs font-medium text-gray-900">{t['60min']}</label>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
-                                    <input type="number" value={pricing[60]} onChange={e => handlePriceChange(60, e.target.value)} className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
+                                    <input type="number" value={pricing['60']} onChange={e => handlePriceChange('60', e.target.value)} className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
                                     </div>
                                 </div>
                                 <div>
                                 <label className="block text-xs font-medium text-gray-900">{t['90min']}</label>
                                     <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
-                                    <input type="number" value={pricing[90]} onChange={e => handlePriceChange(90, e.target.value)} className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
+                                    <input type="number" value={pricing['90']} onChange={e => handlePriceChange('90', e.target.value)} className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
                                     </div>
                                 </div>
                                 <div>
                                 <label className="block text-xs font-medium text-gray-900">{t['120min']}</label>
                                     <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
-                                    <input type="number" value={pricing[120]} onChange={e => handlePriceChange(120, e.target.value)} className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
+                                    <input type="number" value={pricing['120']} onChange={e => handlePriceChange('120', e.target.value)} className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
                                     </div>
                                 </div>
                             </div>
@@ -428,6 +478,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                     <button onClick={() => setActiveTab('profile')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'profile' ? 'border-b-2 border-brand-green text-brand-green' : 'text-gray-500'}`}>{t.tabs.profile}</button>
                     <button onClick={() => setActiveTab('bookings')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'bookings' ? 'border-b-2 border-brand-green text-brand-green' : 'text-gray-500'}`}>{t.tabs.bookings}</button>
                     <button onClick={() => setActiveTab('analytics')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'analytics' ? 'border-b-2 border-brand-green text-brand-green' : 'text-gray-500'}`}>{t.tabs.analytics}</button>
+                    <button onClick={() => setActiveTab('hotelVilla')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'hotelVilla' ? 'border-b-2 border-brand-green text-brand-green' : 'text-gray-500'}`}>Hotel & Villa</button>
                 </div>
             </div>
 

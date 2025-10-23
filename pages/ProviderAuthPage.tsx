@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Button from '../components/Button';
-import { getSupabase } from '../lib/supabase';
+
 
 interface ProviderAuthPageProps {
     mode: 'login' | 'register';
@@ -22,12 +22,7 @@ const ProviderAuthPage: React.FC<ProviderAuthPageProps> = ({ mode, providerType,
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const supabase = getSupabase();
-        if (!supabase) {
-            setError("Database connection not available.");
-            return;
-        }
-
+        
         setError('');
         setSuccessMessage('');
         setIsLoading(true);
@@ -39,33 +34,22 @@ const ProviderAuthPage: React.FC<ProviderAuthPageProps> = ({ mode, providerType,
         }
 
         if (mode === 'register') {
-            const { data: { user }, error: signUpError } = await supabase.auth.signUp({ email, password });
-
-            if (signUpError) {
-                setError(signUpError.message);
-            } else if (user) {
-                const result = await onRegister(email, agentCode);
-                if (result.success) {
-                    setSuccessMessage(result.message);
-                    setEmail('');
-                    setPassword('');
-                    setAgentCode('');
-                } else {
-                    setError(result.message);
-                    // Consider deleting the auth user if profile creation fails
-                }
+            // Mock implementation - replace with your actual authentication logic
+            const result = await onRegister(email, agentCode);
+            if (result.success) {
+                setSuccessMessage(result.message);
+                setEmail('');
+                setPassword('');
+                setAgentCode('');
+            } else {
+                setError(result.message);
             }
         } else {
-             const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-             if (signInError) {
-                setError(signInError.message);
-             } else {
-                const result = await onLogin(email);
-                if (!result.success) {
-                    setError(result.message);
-                    await supabase.auth.signOut(); // Log them out if profile not found
-                }
-             }
+            // Mock implementation for login - replace with your actual authentication logic
+            const result = await onLogin(email);
+            if (!result.success) {
+                setError(result.message);
+            }
         }
         setIsLoading(false);
     };
@@ -81,61 +65,68 @@ const ProviderAuthPage: React.FC<ProviderAuthPageProps> = ({ mode, providerType,
     const switchText = mode === 'register' ? t.switchToLogin : t.switchToRegister;
 
     return (
-         <div className="min-h-screen flex flex-col justify-center bg-gray-50 p-4 relative">
-            <button onClick={onBack} className="absolute top-4 left-4 text-gray-600 hover:text-gray-800">
+         <div className="min-h-screen flex flex-col justify-center bg-gradient-to-br from-blue-600 via-purple-600 to-pink-500 p-4 relative">
+            <button onClick={onBack} className="absolute top-4 left-4 text-white/80 hover:text-white">
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
             </button>
             <div className="w-full max-w-md mx-auto">
-                <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-brand-green">2Go Massage</h1>
-                </div>
-
-                <div className="bg-white p-8 rounded-2xl shadow-lg">
+                <div className="bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl shadow-2xl p-8">
+                    <div className="text-center mb-8">
+                        <h1 className="text-3xl font-bold mb-2">
+                            <span className="text-white">Indo</span><span className="text-orange-400">Street</span>
+                        </h1>
+                    </div>
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        <h2 className="text-2xl font-semibold text-gray-800 text-center">{getTitle()}</h2>
+                        <h2 className="text-xl font-semibold text-white text-center mb-6">{getTitle()}</h2>
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700">{t.emailLabel}</label>
+                            <label htmlFor="email" className="block text-sm font-medium text-white/90 mb-2">{t.emailLabel}</label>
                             <input
                                 id="email"
                                 type="email"
                                 value={email}
                                 onChange={e => setEmail(e.target.value)}
-                                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-green focus:border-brand-green"
-                                placeholder="you@example.com"
+                                className="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-md text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent backdrop-blur-sm"
+                                placeholder={providerType === 'therapist' ? 'therapist@example.com' : 'place@example.com'}
                             />
                         </div>
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700">{t.passwordLabel}</label>
+                            <label htmlFor="password" className="block text-sm font-medium text-white/90 mb-2">{t.passwordLabel}</label>
                             <input
                                 id="password"
                                 type="password"
                                 value={password}
                                 onChange={e => setPassword(e.target.value)}
-                                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-green focus:border-brand-green"
-                                placeholder="••••••••"
+                                className="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-md text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent backdrop-blur-sm"
+                                placeholder="password123"
                             />
                         </div>
 
                         {mode === 'register' && (
                             <div>
-                                <label htmlFor="agentCode" className="block text-sm font-medium text-gray-700">{t.agentCodeLabel}</label>
+                                <label htmlFor="agentCode" className="block text-sm font-medium text-white/90 mb-2">{t.agentCodeLabel}</label>
                                 <input
                                     id="agentCode"
                                     type="text"
                                     value={agentCode}
                                     onChange={e => setAgentCode(e.target.value)}
-                                    className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-green focus:border-brand-green"
-                                    placeholder={t.agentCodePlaceholder}
+                                    className="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-md text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent backdrop-blur-sm"
+                                    placeholder="AGENT123"
                                 />
                             </div>
                         )}
                         
-                        {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-                        {successMessage && <p className="text-green-600 text-sm text-center">{successMessage}</p>}
+                        {error && <div className="text-red-400 text-sm text-center bg-red-500/20 p-2 rounded-md border border-red-400/30">{error}</div>}
+                        {successMessage && <div className="text-green-400 text-sm text-center bg-green-500/20 p-2 rounded-md border border-green-400/30">{successMessage}</div>}
                         
-                        <Button type="submit" disabled={isLoading}>{isLoading ? 'Processing...' : buttonText}</Button>
+                        <button
+                            type="submit"
+                            disabled={isLoading}
+                            className="w-full bg-orange-500/80 backdrop-blur-sm text-white py-3 px-4 rounded-md hover:bg-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium border border-white/20"
+                        >
+                            {isLoading ? 'Processing...' : buttonText}
+                        </button>
                         
                         <div className="text-center">
                             <button
@@ -145,10 +136,16 @@ const ProviderAuthPage: React.FC<ProviderAuthPageProps> = ({ mode, providerType,
                                     setSuccessMessage('');
                                     onSwitchMode();
                                 }}
-                                className="text-sm font-medium text-brand-green hover:underline"
+                                className="text-sm font-medium text-white/80 hover:text-white hover:underline"
                             >
                                 {switchText}
                             </button>
+                        </div>
+                        
+                        <div className="text-center">
+                            <p className="text-sm text-white/70">
+                                Demo: {providerType}@example.com / password123
+                            </p>
                         </div>
                     </form>
                 </div>

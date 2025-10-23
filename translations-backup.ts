@@ -296,7 +296,7 @@ export const translations = {
             },
         },
         agentPage: {
-            title: 'Become a 2Go Agent',
+            title: 'Become an Indostreet Agent',
             subtitle: 'Join our team and earn by connecting therapists and places with new customers.',
             commissionTitle: 'Our Commission Structure',
             commissionNew: '20% for all new sign-ups',
@@ -312,19 +312,19 @@ export const translations = {
             agreement: 'Please read and accept the following terms to continue.',
             independentContractor: {
                 title: 'Independent Contractor Status',
-                content: 'You are an independent contractor, not an employee of 2Go. You are responsible for your own taxes, business expenses, and work schedule. You control the manner and means by which you perform your services.'
+                content: 'You are an independent contractor, not an employee of Indostreet. You are responsible for your own taxes, business expenses, and work schedule. You control the manner and means by which you perform your services.'
             },
             noExclusivity: {
                 title: 'No Exclusivity',
-                content: 'This agreement is not exclusive. You are free to work for other companies, including competitors of 2Go.'
+                content: 'This agreement is not exclusive. You are free to work for other companies, including competitors of Indostreet.'
             },
             professionalConduct: {
                 title: 'Professional Conduct & Appearance',
-                content: 'You must maintain a professional appearance at all times when representing 2Go Massage. A mandatory registration fee of IDR 100,000 is required to receive your official Agent Kit, which includes a branded T-shirt and name tag. This uniform must be worn during all interactions with potential and existing members. Additional T-shirts are available for purchase at IDR 60,000.'
+                content: 'You must maintain a professional appearance at all times when representing Indostreet Massage. A mandatory registration fee of IDR 100,000 is required to receive your official Agent Kit, which includes a branded T-shirt and name tag. This uniform must be worn during all interactions with potential and existing members. Additional T-shirts are available for purchase at IDR 60,000.'
             },
             socialMediaPolicy: {
                 title: 'Social Media Policy',
-                content: "You are strictly prohibited from creating any social media accounts, pages, or profiles using the '2Go Massage' brand name, logo, or any affiliated contact information unless you have received prior written approval from the administration. Failure to comply with this policy will result in the immediate deactivation of your agent account until the situation is resolved directly with the administration."
+                content: "You are strictly prohibited from creating any social media accounts, pages, or profiles using the 'Indostreet Massage' brand name, logo, or any affiliated contact information unless you have received prior written approval from the administration. Failure to comply with this policy will result in the immediate deactivation of your agent account until the situation is resolved directly with the administration."
             },
             performance: {
                 title: 'Performance Requirements',
@@ -332,7 +332,7 @@ export const translations = {
             },
             performanceTiers: {
                 title: "Performance Tiers & Commission Bonus",
-                content: "Agents who successfully meet the monthly target of twenty (20) new member sign-ups will be promoted to 'Toptier 2Go Agent'. Toptier agents will receive a 3% commission increase on all new sign-ups for the following calendar month. This bonus is only applicable for the month immediately following the successful target achievement. If a Toptier agent fails to meet the monthly target, their status will revert to 'Standard Agent' and their commission will return to the standard rate. Agents who consistently maintain Toptier status will be eligible for free 2Go Massage merchandise and other rewards as determined by the administration."
+                content: "Agents who successfully meet the monthly target of twenty (20) new member sign-ups will be promoted to 'Toptier Indostreet Agent'. Toptier agents will receive a 3% commission increase on all new sign-ups for the following calendar month. This bonus is only applicable for the month immediately following the successful target achievement. If a Toptier agent fails to meet the monthly target, their status will revert to 'Standard Agent' and their commission will return to the standard rate. Agents who consistently maintain Toptier status will be eligible for free Indostreet Massage merchandise and other rewards as determined by the administration."
             },
             renewals: {
                 title: 'Membership Renewals & Reporting',
@@ -352,17 +352,17 @@ export const translations = {
             },
             training: {
                 title: 'Platform Training & Best Practices',
-                content: 'To help you succeed, 2Go will provide optional training and best practice seminars. While not mandatory, regular participation is highly encouraged to enhance your skills and product knowledge. You will be notified of these opportunities through your Agent Dashboard.'
+                content: 'To help you succeed, Indostreet will provide optional training and best practice seminars. While not mandatory, regular participation is highly encouraged to enhance your skills and product knowledge. You will be notified of these opportunities through your Agent Dashboard.'
             },
             indemnification: {
                 title: 'Indemnification',
-                content: 'You agree to indemnify and hold harmless 2Go Massage, its affiliates, and their respective officers, directors, employees, and agents from any and all claims, demands, losses, liabilities, and expenses (including attorneys\' fees) arising out of or in connection with your actions, your breach of these terms, or your violation of the law or the rights of any third party.'
+                content: 'You agree to indemnify and hold harmless Indostreet Massage, its affiliates, and their respective officers, directors, employees, and agents from any and all claims, demands, losses, liabilities, and expenses (including attorneys\' fees) arising out of or in connection with your actions, your breach of these terms, or your violation of the law or the rights of any third party.'
             },
             acceptButton: 'I Agree & Continue',
             declineButton: 'Decline & Logout'
         },
         footer: {
-            agentLink: '2Go Agent',
+            agentLink: 'Indostreet Agent',
             termsLink: 'Service Terms',
             privacyLink: 'Privacy Policy',
         },
@@ -382,14 +382,14 @@ export const translations = {
             professionalismTitle: 'Professionalism & Contact',
             professionalismContent: 'All therapists are professionals and must adhere to a strict level of professional service. If a therapist fails to act within these professional boundaries, we ask that you contact our customer service team immediately below.',
             disclaimerTitle: 'Disclaimer of Liability',
-            disclaimerContent: '2Go Massage is a directory platform that connects users with independent service providers. We do not employ, guarantee, or background check these providers. You engage with them at your own risk. 2Go is not responsible for any actions, conduct, or service quality of the providers and will not be liable for any damages, losses, or disputes that may arise between you and a provider.',
+            disclaimerContent: 'Indostreet Massage is a directory platform that connects users with independent service providers. We do not employ, guarantee, or background check these providers. You engage with them at your own risk. Indostreet is not responsible for any actions, conduct, or service quality of the providers and will not be liable for any damages, losses, or disputes that may arise between you and a provider.',
             disputeResolution: {
                 title: 'Dispute Resolution',
-                content: 'Any disputes, disagreements, or issues arising from a service must be resolved directly between the user and the service provider. 2Go will not act as a mediator, arbitrator, or adjudicator in any disputes.'
+                content: 'Any disputes, disagreements, or issues arising from a service must be resolved directly between the user and the service provider. Indostreet will not act as a mediator, arbitrator, or adjudicator in any disputes.'
             },
             indemnification: {
                 title: 'Indemnification',
-                content: 'You agree to indemnify and hold harmless 2Go from any claims, damages, or expenses (including legal fees) arising from your use of the platform or your interactions with service providers.'
+                content: 'You agree to indemnify and hold harmless Indostreet from any claims, damages, or expenses (including legal fees) arising from your use of the platform or your interactions with service providers.'
             },
             customerServiceButton: 'Contact Customer Service',
         },
@@ -398,7 +398,7 @@ export const translations = {
             lastUpdated: "Last Updated: 1 August 2024",
             introduction: {
                 title: "Introduction",
-                content: "Welcome to 2Go Massage. We are committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our application. Please read this policy carefully. If you do not agree with the terms of this privacy policy, please do not access the application."
+                content: "Welcome to Indostreet Massage. We are committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our application. Please read this policy carefully. If you do not agree with the terms of this privacy policy, please do not access the application."
             },
             dataCollection: {
                 title: "Data We Collect",
@@ -443,19 +443,6 @@ export const translations = {
                 title: "Contact Us",
                 content: "If you have questions or comments about this Privacy Policy, please contact us through the customer service channels provided within the application."
             }
-        },
-        supabaseSettings: {
-            title: 'Supabase Connection',
-            description: 'Enter your Supabase project URL and Anon Key to connect the application to your database. This information can be found in your Supabase project settings under API.',
-            urlLabel: 'Supabase Project URL',
-            keyLabel: 'Supabase Anon Key',
-            connectButton: 'Save & Connect',
-            disconnectButton: 'Disconnect',
-            status: 'Connection Status',
-            connected: 'Connected',
-            notConnected: 'Not Connected',
-            backButton: 'Back to Dashboard',
-            error: 'Please fill both fields.',
         },
         membershipPage: {
             title: 'Choose Your Membership',
@@ -504,7 +491,7 @@ export const translations = {
             bookingReminder: 'Reminder: You have a booking with {userName} today at {time}.',
         },
         a2hsPrompt: {
-            title: 'Get the 2Go Massage App!',
+            title: 'Get the Indostreet Massage App!',
             iosInstruction: 'To install, tap the Share icon below and then select "Add to Home Screen".',
             iosAction: 'Add to Home Screen',
             androidInstruction: 'Install this web app on your device for a better experience. Tap the menu button and then "Install app".'
@@ -798,7 +785,7 @@ export const translations = {
             },
         },
         agentPage: {
-            title: 'Jadilah Agen 2Go',
+            title: 'Jadilah Agen Indostreet',
             subtitle: 'Bergabunglah dengan tim kami dan dapatkan penghasilan dengan menghubungkan terapis dan tempat pijat dengan pelanggan baru.',
             commissionTitle: 'Struktur Komisi Kami',
             commissionNew: '20% untuk semua pendaftaran baru',
@@ -814,19 +801,19 @@ export const translations = {
             agreement: 'Harap baca dan setujui persyaratan berikut untuk melanjutkan.',
             independentContractor: {
                 title: 'Status Kontraktor Independen',
-                content: 'Anda adalah kontraktor independen, bukan karyawan 2Go. Anda bertanggung jawab atas pajak, biaya bisnis, dan jadwal kerja Anda sendiri. Anda mengontrol cara dan sarana dalam menjalankan layanan Anda.'
+                content: 'Anda adalah kontraktor independen, bukan karyawan Indostreet. Anda bertanggung jawab atas pajak, biaya bisnis, dan jadwal kerja Anda sendiri. Anda mengontrol cara dan sarana dalam menjalankan layanan Anda.'
             },
             noExclusivity: {
                 title: 'Tanpa Eksklusivitas',
-                content: 'Perjanjian ini tidak bersifat eksklusif. Anda bebas bekerja untuk perusahaan lain, termasuk pesaing 2Go.'
+                content: 'Perjanjian ini tidak bersifat eksklusif. Anda bebas bekerja untuk perusahaan lain, termasuk pesaing Indostreet.'
             },
             professionalConduct: {
                 title: 'Perilaku & Penampilan Profesional',
-                content: 'Anda harus menjaga penampilan profesional setiap saat ketika mewakili 2Go Massage. Biaya pendaftaran wajib sebesar Rp 100.000 diperlukan untuk menerima Paket Agen resmi Anda, yang mencakup kaos bermerek dan tanda pengenal. Seragam ini harus dikenakan selama semua interaksi dengan anggota potensial dan yang sudah ada. Kaos tambahan tersedia untuk dibeli seharga Rp 60.000.'
+                content: 'Anda harus menjaga penampilan profesional setiap saat ketika mewakili Indostreet Massage. Biaya pendaftaran wajib sebesar Rp 100.000 diperlukan untuk menerima Paket Agen resmi Anda, yang mencakup kaos bermerek dan tanda pengenal. Seragam ini harus dikenakan selama semua interaksi dengan anggota potensial dan yang sudah ada. Kaos tambahan tersedia untuk dibeli seharga Rp 60.000.'
             },
             socialMediaPolicy: {
                 title: 'Kebijakan Media Sosial',
-                content: "Anda dilarang keras membuat akun, halaman, atau profil media sosial apa pun menggunakan nama merek, logo, atau informasi kontak terafiliasi '2Go Massage' kecuali Anda telah menerima persetujuan tertulis sebelumnya dari administrasi. Kegagalan untuk mematuhi kebijakan ini akan mengakibatkan penonaktifan segera akun agen Anda hingga situasi tersebut diselesaikan langsung dengan administrasi."
+                content: "Anda dilarang keras membuat akun, halaman, atau profil media sosial apa pun menggunakan nama merek, logo, atau informasi kontak terafiliasi 'Indostreet Massage' kecuali Anda telah menerima persetujuan tertulis sebelumnya dari administrasi. Kegagalan untuk mematuhi kebijakan ini akan mengakibatkan penonaktifan segera akun agen Anda hingga situasi tersebut diselesaikan langsung dengan administrasi."
             },
             performance: {
                 title: 'Persyaratan Kinerja',
@@ -834,7 +821,7 @@ export const translations = {
             },
             performanceTiers: {
                 title: "Tingkatan Kinerja & Bonus Komisi",
-                content: "Agen yang berhasil memenuhi target bulanan dua puluh (20) pendaftaran anggota baru akan dipromosikan menjadi 'Agen Toptier 2Go'. Agen Toptier akan menerima kenaikan komisi sebesar 3% untuk semua pendaftaran baru pada bulan kalender berikutnya. Bonus ini hanya berlaku untuk bulan setelah pencapaian target yang berhasil. Jika Agen Toptier gagal memenuhi target bulanan, status mereka akan kembali menjadi 'Agen Standar' dan komisi mereka akan kembali ke tarif standar. Agen yang secara konsisten mempertahankan status Toptier akan berhak mendapatkan merchandise 2Go Massage gratis dan hadiah lainnya yang ditentukan oleh administrasi."
+                content: "Agen yang berhasil memenuhi target bulanan dua puluh (20) pendaftaran anggota baru akan dipromosikan menjadi 'Agen Toptier Indostreet'. Agen Toptier akan menerima kenaikan komisi sebesar 3% untuk semua pendaftaran baru pada bulan kalender berikutnya. Bonus ini hanya berlaku untuk bulan setelah pencapaian target yang berhasil. Jika Agen Toptier gagal memenuhi target bulanan, status mereka akan kembali menjadi 'Agen Standar' dan komisi mereka akan kembali ke tarif standar. Agen yang secara konsisten mempertahankan status Toptier akan berhak mendapatkan merchandise Indostreet Massage gratis dan hadiah lainnya yang ditentukan oleh administrasi."
             },
             renewals: {
                 title: 'Perpanjangan & Pelaporan Keanggotaan',
@@ -854,17 +841,17 @@ export const translations = {
             },
             training: {
                 title: 'Pelatihan Platform & Praktik Terbaik',
-                content: 'Untuk membantu Anda sukses, 2Go akan menyediakan pelatihan opsional dan seminar praktik terbaik. Meskipun tidak wajib, partisipasi rutin sangat dianjurkan untuk meningkatkan keterampilan dan pengetahuan produk Anda. Anda akan diberitahu tentang peluang ini melalui Dasbor Agen Anda.'
+                content: 'Untuk membantu Anda sukses, Indostreet akan menyediakan pelatihan opsional dan seminar praktik terbaik. Meskipun tidak wajib, partisipasi rutin sangat dianjurkan untuk meningkatkan keterampilan dan pengetahuan produk Anda. Anda akan diberitahu tentang peluang ini melalui Dasbor Agen Anda.'
             },
             indemnification: {
                 title: 'Ganti Rugi',
-                content: 'Anda setuju untuk mengganti rugi dan membebaskan 2Go Massage, afiliasinya, dan pejabat, direktur, karyawan, serta agen mereka dari dan terhadap setiap dan semua klaim, tuntutan, kerugian, kewajiban, dan pengeluaran (termasuk biaya pengacara) yang timbul dari atau sehubungan dengan tindakan Anda, pelanggaran Anda terhadap ketentuan ini, atau pelanggaran Anda terhadap hukum atau hak pihak ketiga mana pun.'
+                content: 'Anda setuju untuk mengganti rugi dan membebaskan Indostreet Massage, afiliasinya, dan pejabat, direktur, karyawan, serta agen mereka dari dan terhadap setiap dan semua klaim, tuntutan, kerugian, kewajiban, dan pengeluaran (termasuk biaya pengacara) yang timbul dari atau sehubungan dengan tindakan Anda, pelanggaran Anda terhadap ketentuan ini, atau pelanggaran Anda terhadap hukum atau hak pihak ketiga mana pun.'
             },
             acceptButton: 'Saya Setuju & Lanjutkan',
             declineButton: 'Tolak & Keluar'
         },
         footer: {
-            agentLink: 'Agen 2Go',
+            agentLink: 'Agen Indostreet',
             termsLink: 'Ketentuan Layanan',
             privacyLink: 'Kebijakan Privasi',
         },
@@ -884,14 +871,14 @@ export const translations = {
             professionalismTitle: 'Profesionalisme & Kontak',
             professionalismContent: 'Semua terapis adalah profesional dan harus mematuhi tingkat layanan profesional yang ketat. Jika seorang terapis gagal bertindak dalam batas-batas profesional ini, kami meminta Anda untuk segera menghubungi tim layanan pelanggan kami di bawah ini.',
             disclaimerTitle: 'Penafian Tanggung Jawab',
-            disclaimerContent: '2Go Massage adalah platform direktori yang menghubungkan pengguna dengan penyedia layanan independen. Kami tidak mempekerjakan, menjamin, atau memeriksa latar belakang penyedia ini. Anda berinteraksi dengan mereka atas risiko Anda sendiri. 2Go tidak bertanggung jawab atas tindakan, perilaku, atau kualitas layanan dari penyedia dan tidak akan bertanggung jawab atas kerusakan, kerugian, atau perselisihan yang mungkin timbul antara Anda dan penyedia.',
+            disclaimerContent: 'Indostreet Massage adalah platform direktori yang menghubungkan pengguna dengan penyedia layanan independen. Kami tidak mempekerjakan, menjamin, atau memeriksa latar belakang penyedia ini. Anda berinteraksi dengan mereka atas risiko Anda sendiri. Indostreet tidak bertanggung jawab atas tindakan, perilaku, atau kualitas layanan dari penyedia dan tidak akan bertanggung jawab atas kerusakan, kerugian, atau perselisihan yang mungkin timbul antara Anda dan penyedia.',
             disputeResolution: {
                 title: 'Penyelesaian Sengketa',
-                content: 'Setiap sengketa, ketidaksepakatan, atau masalah yang timbul dari suatu layanan harus diselesaikan secara langsung antara pengguna dan penyedia layanan. 2Go tidak akan bertindak sebagai mediator, arbiter, atau penengah dalam sengketa apa pun.'
+                content: 'Setiap sengketa, ketidaksepakatan, atau masalah yang timbul dari suatu layanan harus diselesaikan secara langsung antara pengguna dan penyedia layanan. Indostreet tidak akan bertindak sebagai mediator, arbiter, atau penengah dalam sengketa apa pun.'
             },
             indemnification: {
                 title: 'Ganti Rugi',
-                content: 'Anda setuju untuk mengganti rugi dan membebaskan 2Go dari klaim, kerusakan, atau pengeluaran apa pun (termasuk biaya hukum) yang timbul dari penggunaan platform oleh Anda atau interaksi Anda dengan penyedia layanan.'
+                content: 'Anda setuju untuk mengganti rugi dan membebaskan Indostreet dari klaim, kerusakan, atau pengeluaran apa pun (termasuk biaya hukum) yang timbul dari penggunaan platform oleh Anda atau interaksi Anda dengan penyedia layanan.'
             },
             customerServiceButton: 'Hubungi Layanan Pelanggan',
         },
@@ -900,7 +887,7 @@ export const translations = {
             lastUpdated: "Terakhir Diperbarui: 1 Agustus 2024",
             introduction: {
                 title: "Pendahuluan",
-                content: "Selamat datang di 2Go Massage. Kami berkomitmen untuk melindungi privasi Anda. Kebijakan Privasi ini menjelaskan bagaimana kami mengumpulkan, menggunakan, mengungkapkan, dan menjaga informasi Anda saat Anda menggunakan aplikasi kami. Harap baca kebijakan ini dengan saksama. Jika Anda tidak setuju dengan ketentuan kebijakan privasi ini, mohon untuk tidak mengakses aplikasi."
+                content: "Selamat datang di Indostreet Massage. Kami berkomitmen untuk melindungi privasi Anda. Kebijakan Privasi ini menjelaskan bagaimana kami mengumpulkan, menggunakan, mengungkapkan, dan menjaga informasi Anda saat Anda menggunakan aplikasi kami. Harap baca kebijakan ini dengan saksama. Jika Anda tidak setuju dengan ketentuan kebijakan privasi ini, mohon untuk tidak mengakses aplikasi."
             },
             dataCollection: {
                 title: "Data yang Kami Kumpulkan",
@@ -945,19 +932,6 @@ export const translations = {
                 title: "Hubungi Kami",
                 content: "Jika Anda memiliki pertanyaan atau komentar tentang Kebijakan Privasi ini, silakan hubungi kami melalui saluran layanan pelanggan yang disediakan di dalam aplikasi."
             }
-        },
-        supabaseSettings: {
-            title: 'Koneksi Supabase',
-            description: 'Masukkan URL Proyek Supabase dan Kunci Anon Anda untuk menghubungkan aplikasi ke database Anda. Informasi ini dapat ditemukan di pengaturan proyek Supabase Anda di bawah API.',
-            urlLabel: 'URL Proyek Supabase',
-            keyLabel: 'Kunci Anon Supabase',
-            connectButton: 'Simpan & Hubungkan',
-            disconnectButton: 'Putuskan Koneksi',
-            status: 'Status Koneksi',
-            connected: 'Terhubung',
-            notConnected: 'Tidak Terhubung',
-            backButton: 'Kembali ke Dasbor',
-            error: 'Harap isi kedua kolom.',
         },
         membershipPage: {
             title: 'Pilih Keanggotaan Anda',
@@ -1006,7 +980,7 @@ export const translations = {
             bookingReminder: 'Pengingat: Anda memiliki pemesanan dengan {userName} hari ini jam {time}.',
         },
         a2hsPrompt: {
-            title: 'Dapatkan Aplikasi 2Go Massage!',
+            title: 'Dapatkan Aplikasi Indostreet Massage!',
             iosInstruction: 'Untuk menginstal, ketuk ikon Bagikan di bawah lalu pilih "Tambah ke Layar Utama".',
             iosAction: 'Tambah ke Layar Utama',
             androidInstruction: 'Instal aplikasi web ini di perangkat Anda untuk pengalaman yang lebih baik. Ketuk tombol menu lalu "Instal aplikasi".'

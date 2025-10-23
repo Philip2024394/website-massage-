@@ -10,6 +10,7 @@ import MapPinIcon from '../components/icons/MapPinIcon';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import CloseIcon from '../components/icons/CloseIcon';
 import BriefcaseIcon from '../components/icons/BriefcaseIcon';
+import UserSolidIcon from '../components/icons/UserSolidIcon';
 import AddToHomeScreenPrompt from '../components/AddToHomeScreenPrompt';
 
 interface HomePageProps {
@@ -27,6 +28,7 @@ interface HomePageProps {
     onAgentPortalClick: () => void;
     onBook: (provider: Therapist | Place, type: 'therapist' | 'place') => void;
     onIncrementAnalytics: (id: number, type: 'therapist' | 'place', metric: keyof Analytics) => void;
+    onMassageTypesClick: () => void;
     isLoading: boolean;
     t: any;
 }
@@ -42,7 +44,7 @@ const UserIcon = ({ className = 'w-8 h-8' }) => (
 
 const AdminIcon = ({ className = 'w-6 h-6' }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0 3.35a1.724 1.724 0 001.066 2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
         <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
     </svg>
 );
@@ -57,6 +59,24 @@ const CreateProfileIcon = ({ className = 'w-6 h-6' }) => (
 const UsersIcon = ({ className = 'w-6 h-6' }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.653-.122-1.28-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.653.122-1.28.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+    </svg>
+);
+
+const TherapistIcon = ({ className = 'w-6 h-6' }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+    </svg>
+);
+
+const MassagePlaceIcon = ({ className = 'w-6 h-6' }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+    </svg>
+);
+
+const HotelIcon = ({ className = 'w-6 h-6' }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
     </svg>
 );
 
@@ -98,7 +118,20 @@ const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => 
 };
 
 
-const HomePage: React.FC<HomePageProps> = ({ user, loggedInAgent, therapists, places, userLocation, onSetUserLocation, onSelectPlace, onLogout, onLoginClick, onAdminClick, onCreateProfileClick, onAgentPortalClick, onBook, onIncrementAnalytics, isLoading, t }) => {
+const HomePage: React.FC<HomePageProps> = ({ user, loggedInAgent, therapists, places, userLocation, onSetUserLocation, onSelectPlace, onLogout, onLoginClick, onAdminClick, onCreateProfileClick, onAgentPortalClick, onBook, onIncrementAnalytics, onMassageTypesClick, isLoading, t }) => {
+    // Safety check for translations
+    if (!t || !t.home) {
+        console.error('HomePage: Missing translations object or t.home', { t });
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="text-center">
+                    <p className="text-red-600 font-bold">Translation Error</p>
+                    <p className="text-gray-600">Unable to load translations. Please refresh the page.</p>
+                </div>
+            </div>
+        );
+    }
+
     const [activeTab, setActiveTab] = useState<ActiveTab>('home');
     const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
     const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
@@ -127,10 +160,19 @@ const HomePage: React.FC<HomePageProps> = ({ user, loggedInAgent, therapists, pl
         });
 
         if (userLocation) {
-            return filtered.map(therapist => ({
-                ...therapist,
-                distance: parseFloat(getDistance(userLocation.lat, userLocation.lng, therapist.coordinates.lat, therapist.coordinates.lng).toFixed(1))
-            })).sort((a, b) => a.distance - b.distance);
+            return filtered.map(therapist => {
+                let coords = { lat: 0, lng: 0 };
+                try {
+                    coords = typeof therapist.coordinates === 'string' ? JSON.parse(therapist.coordinates) : therapist.coordinates;
+                } catch (e) {
+                    console.warn('Invalid coordinates for therapist:', therapist.id);
+                }
+                
+                return {
+                    ...therapist,
+                    distance: parseFloat(getDistance(userLocation.lat, userLocation.lng, coords.lat, coords.lng).toFixed(1))
+                };
+            }).sort((a, b) => a.distance - b.distance);
         }
         
         return filtered;
@@ -144,10 +186,19 @@ const HomePage: React.FC<HomePageProps> = ({ user, loggedInAgent, therapists, pl
         });
 
         if (userLocation) {
-             return filtered.map(place => ({
-                ...place,
-                distance: parseFloat(getDistance(userLocation.lat, userLocation.lng, place.coordinates.lat, place.coordinates.lng).toFixed(1))
-            })).sort((a, b) => a.distance - b.distance);
+             return filtered.map(place => {
+                let coords = { lat: 0, lng: 0 };
+                try {
+                    coords = typeof place.coordinates === 'string' ? JSON.parse(place.coordinates) : place.coordinates;
+                } catch (e) {
+                    console.warn('Invalid coordinates for place:', place.id);
+                }
+                
+                return {
+                    ...place,
+                    distance: parseFloat(getDistance(userLocation.lat, userLocation.lng, coords.lat, coords.lng).toFixed(1))
+                };
+            }).sort((a, b) => a.distance - b.distance);
         }
 
         return filtered;
@@ -206,7 +257,7 @@ const HomePage: React.FC<HomePageProps> = ({ user, loggedInAgent, therapists, pl
              <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">
-                        <span className="text-brand-green">2Go</span> Massage
+                        <span className="text-black">Indo</span><span className="text-orange-500">street</span>
                     </h1>
                     <div className="flex items-center gap-4 text-gray-600">
                         <button onClick={() => setIsLocationModalOpen(true)} title="Set Your Location">
@@ -227,53 +278,134 @@ const HomePage: React.FC<HomePageProps> = ({ user, loggedInAgent, therapists, pl
                         aria-hidden="true"
                     ></div>
     
-                    <div className={`absolute right-0 top-0 bottom-0 w-64 bg-white shadow-xl p-4 flex flex-col transform transition-transform ease-in-out duration-300 ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-                        <div className="flex justify-between items-center mb-8">
-                            <h2 className="font-bold text-lg text-brand-green">{t.home.menu.title}</h2>
-                            <button onClick={() => setIsMenuOpen(false)} className="text-gray-500 hover:text-gray-800" aria-label="Close menu">
-                                <CloseIcon />
-                            </button>
+                    <div className={`absolute right-0 top-0 bottom-0 w-80 bg-gradient-to-br from-white via-gray-50 to-gray-100 shadow-2xl flex flex-col transform transition-transform ease-in-out duration-300 ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+                        {/* Header */}
+                        <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-6 shadow-lg">
+                            <div className="flex justify-between items-center">
+                                <div>
+                                    <h2 className="font-bold text-2xl text-white mb-1">Menu</h2>
+                                    <p className="text-orange-100 text-sm">Choose your portal</p>
+                                </div>
+                                <button 
+                                    onClick={() => setIsMenuOpen(false)} 
+                                    className="text-white hover:bg-white/20 p-2 rounded-full transition-all" 
+                                    aria-label="Close menu"
+                                >
+                                    <CloseIcon />
+                                </button>
+                            </div>
                         </div>
-                        <nav className="flex-grow">
-                            <ul className="space-y-2">
-                                <li>
-                                    <button 
-                                        onClick={() => { onCreateProfileClick(); setIsMenuOpen(false); }} 
-                                        className="flex items-center gap-3 text-gray-700 hover:text-brand-green w-full text-left p-2 rounded-md hover:bg-gray-100 transition-colors"
-                                    >
-                                        <CreateProfileIcon className="w-5 h-5" />
-                                        <span>{t.home.menu.createProfile}</span>
-                                    </button>
-                                </li>
-                                <li>
-                                    <button 
-                                        onClick={() => { onAgentPortalClick(); setIsMenuOpen(false); }} 
-                                        className="flex items-center gap-3 text-gray-700 hover:text-brand-green w-full text-left p-2 rounded-md hover:bg-gray-100 transition-colors"
-                                    >
-                                        <BriefcaseIcon className="w-5 h-5" />
-                                        <span>{loggedInAgent ? t.home.menu.agentDashboard : t.home.menu.agentLogin}</span>
-                                    </button>
-                                </li>
-                                <li>
-                                    <button 
-                                        onClick={() => { onAdminClick(); setIsMenuOpen(false); }} 
-                                        className="flex items-center gap-3 text-gray-700 hover:text-brand-green w-full text-left p-2 rounded-md hover:bg-gray-100 transition-colors"
-                                    >
-                                        <AdminIcon className="w-5 h-5" />
-                                        <span>{t.home.menu.adminLogin}</span>
-                                    </button>
-                                </li>
-                                <li>
-                                    <button 
-                                        onClick={() => { (user ? onLogout() : onLoginClick()); setIsMenuOpen(false); }} 
-                                        className="flex items-center gap-3 text-gray-700 hover:text-brand-green w-full text-left p-2 rounded-md hover:bg-gray-100 transition-colors"
-                                    >
-                                        <UserIcon className="w-5 h-5" />
-                                        <span>{user ? t.home.menu.logout : t.home.menu.customerLogin}</span>
-                                    </button>
-                                </li>
-                            </ul>
+
+                        {/* Menu Items */}
+                        <nav className="flex-grow overflow-y-auto p-4">
+                            <div className="space-y-2">
+                                {/* User Login */}
+                                <button 
+                                    onClick={() => { (user ? onLogout() : onLoginClick()); setIsMenuOpen(false); }} 
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-orange-500 group"
+                                >
+                                    <div className="p-3 rounded-lg bg-orange-50 group-hover:bg-orange-100 transition-colors">
+                                        <UserSolidIcon className="w-6 h-6 text-orange-600" />
+                                    </div>
+                                    <div className="flex-grow">
+                                        <h3 className="font-semibold text-gray-800 group-hover:text-orange-600 transition-colors">
+                                            {user ? 'Logout' : 'Customer Login'}
+                                        </h3>
+                                        <p className="text-xs text-gray-500">Book massage services</p>
+                                    </div>
+                                </button>
+
+                                {/* Therapist Login */}
+                                <button 
+                                    onClick={() => { onCreateProfileClick(); setIsMenuOpen(false); }} 
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-blue-500 group"
+                                >
+                                    <div className="p-3 rounded-lg bg-blue-50 group-hover:bg-blue-100 transition-colors">
+                                        <TherapistIcon className="w-6 h-6 text-blue-600" />
+                                    </div>
+                                    <div className="flex-grow">
+                                        <h3 className="font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
+                                            Therapist Portal
+                                        </h3>
+                                        <p className="text-xs text-gray-500">Manage your profile</p>
+                                    </div>
+                                </button>
+
+                                {/* Massage Place Login */}
+                                <button 
+                                    onClick={() => { onCreateProfileClick(); setIsMenuOpen(false); }} 
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-green-500 group"
+                                >
+                                    <div className="p-3 rounded-lg bg-green-50 group-hover:bg-green-100 transition-colors">
+                                        <MassagePlaceIcon className="w-6 h-6 text-green-600" />
+                                    </div>
+                                    <div className="flex-grow">
+                                        <h3 className="font-semibold text-gray-800 group-hover:text-green-600 transition-colors">
+                                            Massage Place
+                                        </h3>
+                                        <p className="text-xs text-gray-500">Business dashboard</p>
+                                    </div>
+                                </button>
+
+                                {/* Agent Portal */}
+                                <button 
+                                    onClick={() => { onAgentPortalClick(); setIsMenuOpen(false); }} 
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-purple-500 group"
+                                >
+                                    <div className="p-3 rounded-lg bg-purple-50 group-hover:bg-purple-100 transition-colors">
+                                        <BriefcaseIcon className="w-6 h-6 text-purple-600" />
+                                    </div>
+                                    <div className="flex-grow">
+                                        <h3 className="font-semibold text-gray-800 group-hover:text-purple-600 transition-colors">
+                                            {loggedInAgent ? 'Agent Dashboard' : 'Agent Portal'}
+                                        </h3>
+                                        <p className="text-xs text-gray-500">Earn commissions</p>
+                                    </div>
+                                </button>
+
+                                {/* Hotel/Villa Portal */}
+                                <button 
+                                    onClick={() => { onCreateProfileClick(); setIsMenuOpen(false); }} 
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-pink-500 group"
+                                >
+                                    <div className="p-3 rounded-lg bg-pink-50 group-hover:bg-pink-100 transition-colors">
+                                        <HotelIcon className="w-6 h-6 text-pink-600" />
+                                    </div>
+                                    <div className="flex-grow">
+                                        <h3 className="font-semibold text-gray-800 group-hover:text-pink-600 transition-colors">
+                                            Hotel & Villa
+                                        </h3>
+                                        <p className="text-xs text-gray-500">Partner services</p>
+                                    </div>
+                                </button>
+
+                                {/* Divider */}
+                                <div className="border-t border-gray-300 my-3"></div>
+
+                                {/* Admin Login */}
+                                <button 
+                                    onClick={() => { onAdminClick(); setIsMenuOpen(false); }} 
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-gradient-to-r from-gray-800 to-gray-900 shadow-sm hover:shadow-md transition-all duration-200 group"
+                                >
+                                    <div className="p-3 rounded-lg bg-white/10 group-hover:bg-white/20 transition-colors">
+                                        <AdminIcon className="w-6 h-6 text-white" />
+                                    </div>
+                                    <div className="flex-grow">
+                                        <h3 className="font-semibold text-white">
+                                            Admin Portal
+                                        </h3>
+                                        <p className="text-xs text-gray-400">System management</p>
+                                    </div>
+                                </button>
+                            </div>
                         </nav>
+
+                        {/* Footer */}
+                        <div className="p-4 bg-gray-50 border-t border-gray-200">
+                            <p className="text-xs text-center text-gray-500">
+                                © 2025 IndoStreet Massage
+                            </p>
+                        </div>
                     </div>
                 </div>
             )}
@@ -288,14 +420,14 @@ const HomePage: React.FC<HomePageProps> = ({ user, loggedInAgent, therapists, pl
                 <div className="flex bg-gray-200 rounded-full p-1 mb-4">
                     <button 
                         onClick={() => setActiveTab('home')} 
-                        className={`w-1/2 py-2 px-4 rounded-full flex items-center justify-center gap-2 text-sm font-semibold transition-colors duration-300 ${activeTab === 'home' ? 'bg-brand-green text-white shadow' : 'text-gray-600'}`}
+                        className={`w-1/2 py-2 px-4 rounded-full flex items-center justify-center gap-2 text-sm font-semibold transition-colors duration-300 ${activeTab === 'home' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
                     >
                         <HomeIcon className="w-5 h-5" />
                         {t.home.homeServiceTab}
                     </button>
                     <button 
                         onClick={() => setActiveTab('places')} 
-                        className={`w-1/2 py-2 px-4 rounded-full flex items-center justify-center gap-2 text-sm font-semibold transition-colors duration-300 ${activeTab === 'places' ? 'bg-brand-green text-white shadow' : 'text-gray-600'}`}
+                        className={`w-1/2 py-2 px-4 rounded-full flex items-center justify-center gap-2 text-sm font-semibold transition-colors duration-300 ${activeTab === 'places' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
                     >
                         <BuildingIcon />
                         {t.home.massagePlacesTab}
@@ -303,34 +435,28 @@ const HomePage: React.FC<HomePageProps> = ({ user, loggedInAgent, therapists, pl
                 </div>
 
                 <div className="space-y-3 mb-6">
-                    <div className="relative">
-                        <SparklesIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"/>
-                        <select 
-                            className="w-full pl-10 pr-8 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 appearance-none focus:outline-none focus:ring-2 focus:ring-brand-green"
-                            value={selectedMassageType}
-                            onChange={e => setSelectedMassageType(e.target.value)}
-                        >
-                            <option value="all">{t.home.massageType}</option>
-                            {MASSAGE_TYPES_CATEGORIZED.map(category => (
-                                <optgroup label={category.category} key={category.category}>
-                                    {category.types.map(type => (
-                                        <option key={type} value={type}>{type}</option>
-                                    ))}
-                                </optgroup>
-                            ))}
-                        </select>
-                         <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"/>
-                    </div>
-                    
-                    <div className="relative">
-                        <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"/>
-                        <input 
-                            type="text" 
-                            placeholder={t.home.searchPlaceholder} 
-                            className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-green"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
+                    <div className="flex items-center justify-between">
+                        <div className="relative flex-grow">
+                            <SparklesIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"/>
+                            <select 
+                                className="w-full pl-10 pr-8 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 appearance-none focus:outline-none focus:ring-2 focus:ring-green-600"
+                                value={selectedMassageType}
+                                onChange={e => setSelectedMassageType(e.target.value)}
+                            >
+                                <option value="all">{t.home.massageType}</option>
+                                {MASSAGE_TYPES_CATEGORIZED.map(category => (
+                                    <optgroup label={category.category} key={category.category}>
+                                        {category.types.map(type => (
+                                            <option key={type} value={type}>{type}</option>
+                                        ))}
+                                    </optgroup>
+                                ))}
+                            </select>
+                            <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"/>
+                        </div>
+                        <button onClick={onMassageTypesClick} className="ml-3 text-orange-500 font-semibold text-sm whitespace-nowrap hover:text-orange-600 transition-colors">
+                            Massage Directory
+                        </button>
                     </div>
                 </div>
 

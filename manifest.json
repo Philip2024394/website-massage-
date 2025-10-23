@@ -4,14 +4,9 @@
   "description": "A two-sided marketplace connecting customers with massage therapists and establishments.",
   "icons": [
     {
-      "src": "/logo192.png",
-      "type": "image/png",
-      "sizes": "192x192"
-    },
-    {
-      "src": "/logo512.png",
-      "type": "image/png",
-      "sizes": "512x512"
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23f97316'/><text x='50' y='60' font-family='Arial' font-size='40' fill='white' text-anchor='middle'>I</text></svg>",
+      "type": "image/svg+xml",
+      "sizes": "any"
     }
   ],
   "start_url": ".",

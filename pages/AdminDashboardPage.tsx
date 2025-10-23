@@ -5,7 +5,8 @@ import type { Therapist, Place, Agent, Review } from '../types';
 import { ReviewStatus } from '../types';
 import ToggleSwitch from '../components/ToggleSwitch';
 import Button from '../components/Button';
-import { getSupabase } from '../lib/supabase';
+import { dataService } from '../services/dataService';
+
 
 interface AdminDashboardPageProps {
     therapists: Therapist[];
@@ -14,8 +15,6 @@ interface AdminDashboardPageProps {
     onToggleTherapist: (id: number) => void;
     onTogglePlace: (id: number) => void;
     onLogout: () => void;
-    isSupabaseConnected: boolean;
-    onGoToSupabaseSettings: () => void;
     onUpdateMembership: (id: number, type: 'therapist' | 'place', months: number) => void;
     onImpersonateAgent: (agent: Agent) => void;
     googleMapsApiKey: string | null;
@@ -58,7 +57,7 @@ const MembershipControls: React.FC<{ onUpdate: (months: number) => void, t: any 
 };
 
 
-const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ therapists, places, agents, onToggleTherapist, onTogglePlace, onLogout, isSupabaseConnected, onGoToSupabaseSettings, onUpdateMembership, onImpersonateAgent, googleMapsApiKey, onSaveGoogleMapsApiKey, appContactNumber, onSaveAppContactNumber, t }) => {
+const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ therapists, places, agents, onToggleTherapist, onTogglePlace, onLogout, onUpdateMembership, onImpersonateAgent, googleMapsApiKey, onSaveGoogleMapsApiKey, appContactNumber, onSaveAppContactNumber, t }) => {
     const [apiKeyInput, setApiKeyInput] = useState('');
     const [contactNumberInput, setContactNumberInput] = useState('');
     const [activeView, setActiveView] = useState<'members' | 'agents' | 'reviews' | 'settings'>('members');
@@ -80,22 +79,11 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ therapists, pla
     useEffect(() => {
         const fetchReviews = async () => {
             if (activeView !== 'reviews') return;
-            const supabase = getSupabase();
-            if (!supabase) return;
             
             setIsReviewsLoading(true);
-            const { data, error } = await supabase
-                .from('reviews')
-                .select('*')
-                .eq('status', ReviewStatus.Pending)
-                .order('createdAt', { ascending: true });
-
-            if (error) {
-                console.error("Error fetching reviews:", error);
-                alert("Error fetching reviews.");
-            } else {
-                setReviews(data || []);
-            }
+            // Mock implementation - replace with actual review service when needed
+            await new Promise(resolve => setTimeout(resolve, 500)); // Simulate loading
+            setReviews([]); // No reviews in mock mode
             setIsReviewsLoading(false);
         };
         fetchReviews();
@@ -127,55 +115,17 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ therapists, pla
     };
 
     const handleUpdateReviewStatus = async (reviewId: number, status: ReviewStatus) => {
-        const supabase = getSupabase();
-        if (!supabase) return;
-        
-        const { error } = await supabase
-            .from('reviews')
-            .update({ status })
-            .eq('id', reviewId);
-            
-        if (error) {
-            alert(`Failed to update review status: ${error.message}`);
-        } else {
-            setReviews(prev => prev.filter(r => r.id !== reviewId));
-        }
+        // Mock implementation - replace with actual review service when needed
+        console.log(`Update review ${reviewId} status to ${status}`);
+        setReviews(prev => prev.filter(r => r.id !== reviewId));
     };
 
     const handleApproveReview = async (review: Review) => {
         if (!window.confirm(t.reviews.approveConfirm)) return;
-        const supabase = getSupabase();
-        if (!supabase) return;
-
-        const table = review.providerType === 'therapist' ? 'therapists' : 'places';
         
-        const { data: providerData, error: providerError } = await supabase
-            .from(table)
-            .select('rating, reviewCount')
-            .eq('id', review.providerId)
-            .single();
-
-        if (providerError || !providerData) {
-            alert(`Could not find provider to update rating: ${providerError?.message}`);
-            return;
-        }
-
-        const currentRating = providerData.rating || 0;
-        const currentReviewCount = providerData.reviewCount || 0;
-        const newReviewCount = currentReviewCount + 1;
-        const newRating = ((currentRating * currentReviewCount) + review.rating) / newReviewCount;
-        
-        const { error: updateProviderError } = await supabase
-            .from(table)
-            .update({ rating: newRating.toFixed(2), reviewCount: newReviewCount })
-            .eq('id', review.providerId);
-            
-        if (updateProviderError) {
-            alert(`Failed to update provider's rating: ${updateProviderError.message}`);
-            return;
-        }
-
-        await handleUpdateReviewStatus(review.id, ReviewStatus.Approved);
+        // Mock implementation - replace with actual review service when needed
+        console.log(`Approve review for ${review.providerType} ${review.providerId}`);
+        setReviews(prev => prev.filter(r => r.id !== review.id));
     };
 
     const handleRejectReview = async (reviewId: number) => {
@@ -352,17 +302,28 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ therapists, pla
             {activeView === 'settings' && (
                 <div className="space-y-8">
                     <section>
-                        <h2 className="text-xl font-semibold text-gray-700 mb-4">{t.dbSettings}</h2>
-                        <div className="bg-white p-4 rounded-lg shadow-md flex items-center justify-between">
-                            <div>
-                                <p className="font-medium text-gray-800">Supabase Connection</p>
-                                <p className={`text-sm font-bold ${isSupabaseConnected ? 'text-green-600' : 'text-red-600'}`}>
-                                    {isSupabaseConnected ? t.dbStatusConnected : t.dbStatusNotConnected}
-                                </p>
+                        <h2 className="text-xl font-semibold text-gray-700 mb-4">Data Source Settings</h2>
+                        <div className="bg-white p-4 rounded-lg shadow-md">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="font-medium text-gray-800">Current Data Source</p>
+                                    <p className={`text-sm font-bold ${dataService.isUsingMockData() ? 'text-blue-600' : 'text-green-600'}`}>
+                                        {dataService.isUsingMockData() ? 'Mock Data (Development)' : 'Appwrite Database'}
+                                    </p>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        {dataService.isUsingMockData() 
+                                            ? 'Using sample data for development. Switch to Appwrite in config.ts when ready.'
+                                            : 'Connected to Appwrite cloud database.'
+                                        }
+                                    </p>
+                                </div>
+                                {dataService.isUsingMockData() && (
+                                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                                        <p className="text-xs text-blue-800 font-medium">Development Mode</p>
+                                        <p className="text-xs text-blue-600">Change DATA_SOURCE in config.ts to 'appwrite' when ready</p>
+                                    </div>
+                                )}
                             </div>
-                            <Button onClick={onGoToSupabaseSettings} variant="secondary" className="w-auto px-4 py-2 text-sm">
-                                {t.manageConnection}
-                            </Button>
                         </div>
                     </section>
 

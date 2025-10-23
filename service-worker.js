@@ -1,4 +1,4 @@
-const CACHE_NAME = '2go-massage-cache-v1';
+const CACHE_NAME = 'indostreet-massage-cache-v1';
 const urlsToCache = [
   '/',
   '/index.html',

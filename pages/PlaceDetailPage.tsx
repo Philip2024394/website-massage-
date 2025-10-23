@@ -20,6 +20,10 @@ const WhatsAppIcon: React.FC<{className?: string}> = ({ className }) => (
 const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({ place, onBack, onBook, onIncrementAnalytics, t }) => {
     const [currentMainImage, setCurrentMainImage] = useState(place.mainImage);
 
+    // Parse JSON strings
+    const massageTypes = typeof place.massageTypes === 'string' ? JSON.parse(place.massageTypes) : place.massageTypes;
+    const pricing = typeof place.pricing === 'string' ? JSON.parse(place.pricing) : place.pricing;
+
     useEffect(() => {
         onIncrementAnalytics('profileViews');
     }, []);
@@ -96,7 +100,7 @@ const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({ place, onBack, onBook
             <div className="px-4 py-2">
                 <h3 className="text-xl font-semibold text-gray-800 mb-3">Services Offered</h3>
                 <div className="flex flex-wrap gap-2">
-                    {place.massageTypes && place.massageTypes.map(type => (
+                    {massageTypes && Array.isArray(massageTypes) && massageTypes.map((type: string) => (
                         <span key={type} className="px-3 py-1 bg-gray-100 text-gray-800 text-sm font-medium rounded-full">{type}</span>
                     ))}
                 </div>
@@ -107,15 +111,15 @@ const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({ place, onBack, onBook
                  <div className="grid grid-cols-3 gap-2 text-center text-sm text-gray-600">
                     <div className="bg-brand-green-light p-3 rounded-lg">
                         <p>60 min</p>
-                        <p className="font-bold text-lg text-brand-green-dark">Rp {place.pricing[60]}k</p>
+                        <p className="font-bold text-lg text-brand-green-dark">Rp {pricing[60]}k</p>
                     </div>
                     <div className="bg-brand-green-light p-3 rounded-lg">
                         <p>90 min</p>
-                        <p className="font-bold text-lg text-brand-green-dark">Rp {place.pricing[90]}k</p>
+                        <p className="font-bold text-lg text-brand-green-dark">Rp {pricing[90]}k</p>
                     </div>
                     <div className="bg-brand-green-light p-3 rounded-lg">
                         <p>120 min</p>
-                        <p className="font-bold text-lg text-brand-green-dark">Rp {place.pricing[120]}k</p>
+                        <p className="font-bold text-lg text-brand-green-dark">Rp {pricing[120]}k</p>
                     </div>
                 </div>
             </div>

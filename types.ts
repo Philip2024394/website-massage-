@@ -25,6 +25,37 @@ export enum ReviewStatus {
     Rejected = 'rejected',
 }
 
+export enum HotelVillaServiceStatus {
+    NotOptedIn = 'not_opted_in',
+    OptedIn = 'opted_in',
+    Active = 'active'
+}
+
+export interface HotelVillaDiscount {
+    id: number;
+    providerId: number;
+    providerType: 'therapist' | 'place';
+    providerName: string;
+    hotelDiscount: number; // minimum 20%
+    villaDiscount: number; // minimum 20%
+    status: HotelVillaServiceStatus;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface HotelVillaMenu {
+    id: number;
+    ownerId: number;
+    ownerType: 'hotel' | 'villa';
+    brandName: string;
+    brandLogo?: string;
+    customMessage?: string;
+    qrCode: string;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+}
+
 export interface Review {
     id: number;
     providerId: number;
@@ -37,10 +68,16 @@ export interface Review {
 }
 
 export interface Pricing {
-    60: number;
-    90: number;
-    120: number;
+    "60": number;
+    "90": number;
+    "120": number;
 }
+
+// Appwrite-compatible string versions
+export type PricingString = string; // JSON string of Pricing object
+export type AnalyticsString = string; // JSON string of Analytics object
+export type CoordinatesString = string; // JSON string of {lat: number, lng: number}
+export type MassageTypesString = string; // JSON string of string array
 
 export interface Analytics {
     impressions: number;
@@ -49,49 +86,55 @@ export interface Analytics {
 }
 
 export interface Therapist {
-    id: number;
+    id: number | string; // Support both for Appwrite compatibility ($id is string)
     name: string;
     email: string;
     password?: string;
     profilePicture: string;
     description: string;
     status: AvailabilityStatus;
-    pricing: Pricing;
+    pricing: PricingString; // JSON string for Appwrite
     whatsappNumber: string;
     distance: number;
     rating: number;
     reviewCount: number;
-    massageTypes: string[];
+    massageTypes: MassageTypesString; // JSON string for Appwrite
     isLive: boolean;
     location: string;
-    coordinates: { lat: number; lng: number; };
+    coordinates: CoordinatesString; // JSON string for Appwrite
     activeMembershipDate: string;
-    analytics: Analytics;
+    analytics: AnalyticsString; // JSON string for Appwrite
     agentId?: number;
+    hotelVillaServiceStatus?: HotelVillaServiceStatus;
+    hotelDiscount?: number; // minimum 20%
+    villaDiscount?: number; // minimum 20%
 }
 
 export interface Place {
-    id: number;
+    id: number | string; // Support both for Appwrite compatibility ($id is string)
     name: string;
     email: string;
     password?: string;
     description: string;
     mainImage: string;
     thumbnailImages: string[];
-    pricing: Pricing;
+    pricing: PricingString; // JSON string for Appwrite
     whatsappNumber: string;
     distance: number;
     rating: number;
     reviewCount: number;
-    massageTypes: string[];
+    massageTypes: MassageTypesString; // JSON string for Appwrite
     isLive: boolean;
     location: string;
-    coordinates: { lat: number; lng: number; };
+    coordinates: CoordinatesString; // JSON string for Appwrite
     openingTime: string;
     closingTime: string;
     activeMembershipDate: string;
-    analytics: Analytics;
+    analytics: AnalyticsString; // JSON string for Appwrite
     agentId?: number;
+    hotelVillaServiceStatus?: HotelVillaServiceStatus;
+    hotelDiscount?: number; // minimum 20%
+    villaDiscount?: number; // minimum 20%
 }
 
 export interface User {
@@ -103,6 +146,7 @@ export interface User {
 
 export interface Agent {
     id: number;
+    $id?: string; // Appwrite document ID
     name: string;
     email: string;
     agentCode: string;
@@ -123,10 +167,7 @@ export interface UserLocation {
     lng: number;
 }
 
-export interface SupabaseConfig {
-    url: string;
-    key: string;
-}
+
 
 export interface Booking {
     id: number;

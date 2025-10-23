@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { Therapist, Pricing, Booking, Notification } from '../types';
-import { AvailabilityStatus, BookingStatus } from '../types';
+import { AvailabilityStatus, BookingStatus, HotelVillaServiceStatus } from '../types';
+import { parsePricing, parseCoordinates, parseMassageTypes, parseAnalytics,
+         stringifyPricing, stringifyCoordinates, stringifyMassageTypes, stringifyAnalytics } from '../utils/appwriteHelpers';
 import Button from '../components/Button';
 import ImageUpload from '../components/ImageUpload';
+import HotelVillaOptIn from '../components/HotelVillaOptIn';
 import UserSolidIcon from '../components/icons/UserSolidIcon';
 import DocumentTextIcon from '../components/icons/DocumentTextIcon';
 import PhoneIcon from '../components/icons/PhoneIcon';
@@ -11,14 +14,14 @@ import MapPinIcon from '../components/icons/MapPinIcon';
 import NotificationBell from '../components/NotificationBell';
 import CustomCheckbox from '../components/CustomCheckbox';
 import { MASSAGE_TYPES_CATEGORIZED } from '../constants';
-import { getSupabase } from '../lib/supabase';
+
 
 interface TherapistDashboardPageProps {
     onSave: (data: Omit<Therapist, 'id' | 'isLive' | 'rating' | 'reviewCount' | 'activeMembershipDate' | 'email'>) => void;
     onLogout: () => void;
     onNavigateToNotifications: () => void;
     onUpdateBookingStatus: (bookingId: number, status: BookingStatus) => void;
-    therapistId: number;
+    therapistId: number | string; // Support both for Appwrite compatibility
     bookings: Booking[];
     notifications: Notification[];
     t: any;
@@ -82,24 +85,41 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
     const locationInputRef = useRef<HTMLInputElement>(null);
     
     const fetchTherapistData = useCallback(async () => {
-        const supabase = getSupabase();
-        if (!supabase) return;
+        // Mock implementation - replace with your actual data fetching logic
         setIsLoading(true);
-        const { data, error } = await supabase.from('therapists').select('*').eq('id', therapistId).single();
-        if (error) {
-            console.error("Error fetching therapist data", error);
-        } else {
-            setTherapist(data);
-            setName(data.name || '');
-            setDescription(data.description || '');
-            setProfilePicture(data.profilePicture || '');
-            setWhatsappNumber(data.whatsappNumber || '');
-            setMassageTypes(data.massageTypes || []);
-            setPricing(data.pricing || { 60: 0, 90: 0, 120: 0 });
-            setLocation(data.location || '');
-            setCoordinates(data.coordinates || { lat: 0, lng: 0 });
-            setStatus(data.status || AvailabilityStatus.Offline);
-        }
+        
+        // Mock therapist data
+        const mockTherapist = {
+            id: therapistId,
+            name: 'Sample Therapist',
+            description: '',
+            profilePicture: '',
+            whatsappNumber: '',
+            massageTypes: stringifyMassageTypes([]),
+            pricing: stringifyPricing({ "60": 0, "90": 0, "120": 0 }),
+            location: '',
+            coordinates: stringifyCoordinates({ lat: 0, lng: 0 }),
+            status: AvailabilityStatus.Offline,
+            analytics: stringifyAnalytics({ impressions: 0, profileViews: 0, whatsappClicks: 0 }),
+            isLive: false,
+            rating: 0,
+            reviewCount: 0,
+            activeMembershipDate: new Date().toISOString().split('T')[0],
+            email: 'sample@email.com',
+            distance: 0
+        };
+        
+        setTherapist(mockTherapist);
+        setName(mockTherapist.name || '');
+        setDescription(mockTherapist.description || '');
+        setProfilePicture(mockTherapist.profilePicture || '');
+        setWhatsappNumber(mockTherapist.whatsappNumber || '');
+        setMassageTypes(parseMassageTypes(mockTherapist.massageTypes));
+        setPricing(parsePricing(mockTherapist.pricing));
+        setLocation(mockTherapist.location || '');
+        setCoordinates(parseCoordinates(mockTherapist.coordinates));
+        setStatus(mockTherapist.status || AvailabilityStatus.Offline);
+        
         setIsLoading(false);
     }, [therapistId]);
 
@@ -161,13 +181,13 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
             description,
             profilePicture,
             whatsappNumber,
-            pricing,
-            massageTypes,
+            pricing: stringifyPricing(pricing),
+            massageTypes: stringifyMassageTypes(massageTypes),
             location,
-            coordinates,
+            coordinates: stringifyCoordinates(coordinates),
             status,
             distance: 0, // dummy value
-            analytics: therapist?.analytics || { impressions: 0, profileViews: 0, whatsappClicks: 0 },
+            analytics: therapist?.analytics || stringifyAnalytics({ impressions: 0, profileViews: 0, whatsappClicks: 0 }),
         });
     };
     
@@ -215,7 +235,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Icon className="h-5 w-5 text-gray-400" />
             </div>
-            <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} className="mt-1 block w-full pl-10 pr-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-green focus:border-brand-green text-gray-900" />
+            <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} className="mt-1 block w-full pl-10 pr-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-orange focus:border-brand-orange text-gray-900" />
         </div>
     );
     
@@ -225,7 +245,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
     const pastBookings = bookings.filter(b => new Date(b.startTime) < now).sort((a,b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
 
     if (isLoading) {
-        return <div className="flex justify-center items-center h-screen"><div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand-green"></div></div>;
+        return <div className="flex justify-center items-center h-screen"><div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand-orange"></div></div>;
     }
 
     if (!therapist) {
@@ -258,10 +278,40 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
             case 'analytics':
                  return (
                     <div className="space-y-4">
-                        <AnalyticsCard title={t.analytics.impressions} value={therapist?.analytics.impressions ?? 0} description={t.analytics.impressionsDesc} />
-                        <AnalyticsCard title={t.analytics.profileViews} value={therapist?.analytics.profileViews ?? 0} description={t.analytics.profileViewsDesc} />
-                        <AnalyticsCard title={t.analytics.whatsappClicks} value={therapist?.analytics.whatsappClicks ?? 0} description={t.analytics.whatsappClicksDesc} />
+                        <AnalyticsCard title={t.analytics.impressions} value={(() => {
+                            try {
+                                const analytics = typeof therapist?.analytics === 'string' ? JSON.parse(therapist.analytics) : therapist?.analytics;
+                                return analytics?.impressions ?? 0;
+                            } catch { return 0; }
+                        })()} description={t.analytics.impressionsDesc} />
+                        <AnalyticsCard title={t.analytics.profileViews} value={(() => {
+                            try {
+                                const analytics = typeof therapist?.analytics === 'string' ? JSON.parse(therapist.analytics) : therapist?.analytics;
+                                return analytics?.profileViews ?? 0;
+                            } catch { return 0; }
+                        })()} description={t.analytics.profileViewsDesc} />
+                        <AnalyticsCard title={t.analytics.whatsappClicks} value={(() => {
+                            try {
+                                const analytics = typeof therapist?.analytics === 'string' ? JSON.parse(therapist.analytics) : therapist?.analytics;
+                                return analytics?.whatsappClicks ?? 0;
+                            } catch { return 0; }
+                        })()} description={t.analytics.whatsappClicksDesc} />
                     </div>
+                );
+            case 'hotelVilla':
+                const handleHotelVillaUpdate = (status: HotelVillaServiceStatus, hotelDiscount: number, villaDiscount: number) => {
+                    // Update therapist data with hotel-villa preferences
+                    console.log('Hotel-Villa preferences updated:', { status, hotelDiscount, villaDiscount });
+                    // In a real app, this would save to the backend
+                };
+                
+                return (
+                    <HotelVillaOptIn
+                        currentStatus={therapist?.hotelVillaServiceStatus || HotelVillaServiceStatus.NotOptedIn}
+                        hotelDiscount={therapist?.hotelDiscount || 20}
+                        villaDiscount={therapist?.villaDiscount || 20}
+                        onUpdate={handleHotelVillaUpdate}
+                    />
                 );
             case 'profile':
             default:
@@ -281,7 +331,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                         key={s}
                                         type="button"
                                         onClick={() => setStatus(s)}
-                                        className={`w-1/3 py-2 px-2 rounded-full text-sm font-semibold transition-colors duration-300 ${status === s ? 'bg-brand-green text-white shadow' : 'text-gray-600'}`}
+                                        className={`w-1/3 py-2 px-2 rounded-full text-sm font-semibold transition-colors duration-300 ${status === s ? 'bg-brand-orange text-white shadow' : 'text-gray-600'}`}
                                     >
                                         {s}
                                     </button>
@@ -298,7 +348,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                 <div className="absolute top-3.5 left-0 pl-3 flex items-center pointer-events-none">
                                     <DocumentTextIcon className="h-5 w-5 text-gray-400" />
                                 </div>
-                                <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className="mt-1 block w-full pl-10 pr-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-green focus:border-brand-green text-gray-900" />
+                                <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className="mt-1 block w-full pl-10 pr-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-orange focus:border-brand-orange text-gray-900" />
                             </div>
                         </div>
                         <div>
@@ -308,7 +358,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                     <PhoneIcon className="h-5 w-5 text-gray-400" />
                                 </div>
                                 <span className="absolute inset-y-0 left-10 pl-2 flex items-center text-gray-500 text-sm pointer-events-none">+62</span>
-                                <input type="tel" value={whatsappNumber} onChange={e => setWhatsappNumber(e.target.value)} placeholder="81234567890" className="block w-full pl-20 pr-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-green focus:border-brand-green text-gray-900" />
+                                <input type="tel" value={whatsappNumber} onChange={e => setWhatsappNumber(e.target.value)} placeholder="81234567890" className="block w-full pl-20 pr-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-orange focus:border-brand-orange text-gray-900" />
                             </div>
                         </div>
                          <div>
@@ -339,7 +389,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                             <MapPinIcon className="h-5 w-5 text-gray-400" />
                                         </div>
-                                        <input ref={locationInputRef} type="text" value={location} onChange={e => setLocation(e.target.value)} placeholder={t.locationPlaceholder} className="mt-1 block w-full pl-10 pr-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-green focus:border-brand-green text-gray-900" />
+                                        <input ref={locationInputRef} type="text" value={location} onChange={e => setLocation(e.target.value)} placeholder={t.locationPlaceholder} className="mt-1 block w-full pl-10 pr-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-orange focus:border-brand-orange text-gray-900" />
                                     </div>
                                     <Button onClick={handleSetLocation} variant="secondary" className="flex items-center justify-center gap-2 mt-2 text-sm py-2">
                                         <MapPinIcon className="w-4 h-4" />
@@ -359,21 +409,21 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                    <label className="block text-xs font-medium text-gray-600">{t['60min']}</label>
                                    <div className="relative">
                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
-                                       <input type="number" value={pricing[60]} onChange={e => handlePriceChange(60, e.target.value)} className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
+                                       <input type="number" value={pricing["60"]} onChange={e => handlePriceChange("60", e.target.value)} className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
                                     </div>
                                 </div>
                                 <div>
                                    <label className="block text-xs font-medium text-gray-600">{t['90min']}</label>
                                      <div className="relative">
                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
-                                       <input type="number" value={pricing[90]} onChange={e => handlePriceChange(90, e.target.value)} className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
+                                       <input type="number" value={pricing["90"]} onChange={e => handlePriceChange("90", e.target.value)} className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
                                     </div>
                                 </div>
                                  <div>
                                    <label className="block text-xs font-medium text-gray-600">{t['120min']}</label>
                                     <div className="relative">
                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
-                                       <input type="number" value={pricing[120]} onChange={e => handlePriceChange(120, e.target.value)} className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
+                                       <input type="number" value={pricing["120"]} onChange={e => handlePriceChange("120", e.target.value)} className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
                                     </div>
                                 </div>
                             </div>
@@ -404,9 +454,10 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
 
              <div className="mb-6">
                 <div className="flex border-b border-gray-200">
-                    <button onClick={() => setActiveTab('profile')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'profile' ? 'border-b-2 border-brand-green text-brand-green' : 'text-gray-500'}`}>{t.tabs.profile}</button>
-                    <button onClick={() => setActiveTab('bookings')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'bookings' ? 'border-b-2 border-brand-green text-brand-green' : 'text-gray-500'}`}>{t.tabs.bookings}</button>
-                    <button onClick={() => setActiveTab('analytics')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'analytics' ? 'border-b-2 border-brand-green text-brand-green' : 'text-gray-500'}`}>{t.tabs.analytics}</button>
+                    <button onClick={() => setActiveTab('profile')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'profile' ? 'border-b-2 border-brand-orange text-brand-orange' : 'text-gray-500'}`}>{t.tabs.profile}</button>
+                    <button onClick={() => setActiveTab('bookings')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'bookings' ? 'border-b-2 border-brand-orange text-brand-orange' : 'text-gray-500'}`}>{t.tabs.bookings}</button>
+                    <button onClick={() => setActiveTab('analytics')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'analytics' ? 'border-b-2 border-brand-orange text-brand-orange' : 'text-gray-500'}`}>{t.tabs.analytics}</button>
+                    <button onClick={() => setActiveTab('hotelVilla')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'hotelVilla' ? 'border-b-2 border-brand-orange text-brand-orange' : 'text-gray-500'}`}>Hotel & Villa</button>
                 </div>
             </div>
 

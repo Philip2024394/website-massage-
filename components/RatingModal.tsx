@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Button from './Button';
 import { COUNTRIES } from '../countries';
-import { getSupabase } from '../lib/supabase';
+
 import type { ReviewStatus } from '../types';
 
 interface RatingModalProps {
@@ -49,18 +49,13 @@ const RatingModal: React.FC<RatingModalProps> = ({ onClose, onSubmit, itemName, 
             return;
         }
 
-        const supabase = getSupabase();
-        if (!supabase) {
-            setError("Database connection error.");
-            return;
-        }
-        
         setIsLoading(true);
         setError('');
         
         const fullWhatsappNumber = `${countryCode}${whatsapp.replace(/^0+/, '')}`;
 
-        const { error: insertError } = await supabase.from('reviews').insert({
+        // Mock implementation - replace with your actual data storage logic
+        console.log('Rating submitted:', {
             providerId: itemId,
             providerType: itemType,
             providerName: itemName,
@@ -70,13 +65,8 @@ const RatingModal: React.FC<RatingModalProps> = ({ onClose, onSubmit, itemName, 
         });
 
         setIsLoading(false);
-
-        if (insertError) {
-            setError(insertError.message);
-        } else {
-            alert(t.confirmationV2);
-            onSubmit();
-        }
+        alert(t.confirmationV2);
+        onSubmit();
     };
     
     return (
@@ -113,7 +103,7 @@ const RatingModal: React.FC<RatingModalProps> = ({ onClose, onSubmit, itemName, 
                         <select 
                             value={countryCode} 
                             onChange={e => setCountryCode(e.target.value)}
-                            className="flex-shrink-0 z-10 inline-flex items-center py-2.5 px-3 text-sm font-medium text-center text-gray-900 bg-gray-100 border border-r-0 border-gray-300 rounded-l-md hover:bg-gray-200 focus:outline-none focus:ring-1 focus:ring-brand-green focus:border-brand-green"
+                            className="flex-shrink-0 z-10 inline-flex items-center py-2.5 px-3 text-sm font-medium text-center text-gray-900 bg-gray-100 border border-r-0 border-gray-300 rounded-l-md hover:bg-gray-200 focus:outline-none focus:ring-1 focus:ring-brand-orange focus:border-brand-orange"
                             aria-label="Country Code"
                         >
                             {COUNTRIES.map(country => (
@@ -125,7 +115,7 @@ const RatingModal: React.FC<RatingModalProps> = ({ onClose, onSubmit, itemName, 
                             type="tel"
                             value={whatsapp}
                             onChange={e => setWhatsapp(e.target.value)}
-                            className="w-full px-3 py-2 bg-white border border-gray-300 rounded-r-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-green focus:border-brand-green"
+                            className="w-full px-3 py-2 bg-white border border-gray-300 rounded-r-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-orange focus:border-brand-orange"
                             placeholder={t.whatsappPlaceholder}
                         />
                      </div>

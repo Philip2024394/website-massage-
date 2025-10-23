@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import type { Agent, Therapist, Place, AdminMessage } from '../types';
 import Button from '../components/Button';
-import { getSupabase } from '../lib/supabase';
+
 import ImageUpload from '../components/ImageUpload';
 
 interface AgentDashboardPageProps {
@@ -39,18 +39,12 @@ const AgentDashboardPage: React.FC<AgentDashboardPageProps> = ({ agent, onLogout
 
     useEffect(() => {
         const fetchClients = async () => {
-            const supabase = getSupabase();
-            if (!supabase) return;
+            // Mock implementation - replace with your actual data fetching logic
             setIsLoading(true);
-
-            const { data: therapists, error: therapistsError } = await supabase.from('therapists').select('*').eq('agentId', agent.id);
-            const { data: places, error: placesError } = await supabase.from('places').select('*').eq('agentId', agent.id);
-
-            if (therapistsError) console.error(therapistsError);
-            if (placesError) console.error(placesError);
-
-            const allClients = [...(therapists || []), ...(places || [])];
-            setClients(allClients);
+            
+            // Mock data - replace with actual API calls
+            const mockClients: any[] = [];
+            setClients(mockClients);
             setIsLoading(false);
         };
 

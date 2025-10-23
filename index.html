@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>2Go Massage</title>
+    <title>Indostreet Massage</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23f97316'/><text x='50' y='60' font-family='Arial' font-size='40' fill='white' text-anchor='middle'>I</text></svg>" />
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#16a34a" />
     <script src="https://cdn.tailwindcss.com"></script>
@@ -12,23 +13,17 @@
             theme: {
                 extend: {
                     colors: {
+                        'brand-orange': '#f97316',
+                        'brand-orange-dark': '#ea580c',
+                        'brand-orange-light': '#fed7aa',
                         'brand-green': '#16a34a',
                         'brand-green-dark': '#15803d',
-                        'brand-green-light': '#dcfce7',
+                        'brand-green-light': '#86efac',
                     }
                 }
             }
         }
     </script>
-<script type="importmap">
-{
-  "imports": {
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
-    "react/": "https://aistudiocdn.com/react@^19.1.1/",
-    "react": "https://aistudiocdn.com/react@^19.1.1"
-  }
-}
-</script>
     <!-- 
         ========================================================================
                                   GOOGLE MAPS SETUP
@@ -58,7 +53,7 @@
 </head>
 <body class="bg-gray-100">
     <div id="root"></div>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <script type="module" src="/index.tsx"></script>
     <script>
         if ('serviceWorker' in navigator) {
