@@ -13,7 +13,7 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onHotelLogin, onBack })
     });
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const { backgroundStyle, backgroundClass } = useBackground('hotel');
+    useBackground('hotel');
 
     const handleInputChange = (field: string, value: string) => {
         setCredentials(prev => ({

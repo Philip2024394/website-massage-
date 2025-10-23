@@ -13,7 +13,7 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin, onBack, t
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const { backgroundStyle, backgroundClass } = useBackground('admin');
+    useBackground('admin');
 
     const handleLogin = async () => {
         setError('');

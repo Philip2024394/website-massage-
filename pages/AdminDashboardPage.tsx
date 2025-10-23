@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import type { Therapist, Place, Agent, Review } from '../types';
 import { ReviewStatus } from '../types';
-import ToggleSwitch from '../components/ToggleSwitch';
+// import ToggleSwitch from '../components/ToggleSwitch';
 import Button from '../components/Button';
 import { dataService } from '../services/dataService';
 
@@ -12,8 +12,6 @@ interface AdminDashboardPageProps {
     therapists: Therapist[];
     places: Place[];
     agents: Agent[];
-    onToggleTherapist: (id: number | string) => void;
-    onTogglePlace: (id: number | string) => void;
     onLogout: () => void;
     onUpdateMembership: (id: number | string, type: 'therapist' | 'place', months: number) => void;
     onImpersonateAgent: (agent: Agent) => void;
@@ -30,39 +28,21 @@ const StarIcon: React.FC<{className?: string}> = ({ className }) => (
     </svg>
 );
 
-const MembershipControls: React.FC<{ onUpdate: (months: number) => void, t: any }> = ({ onUpdate, t: t_membership }) => {
-    const durations = [
-        { months: 1, label: t_membership.oneMonth },
-        { months: 3, label: t_membership.threeMonths },
-        { months: 6, label: t_membership.sixMonths },
-        { months: 12, label: t_membership.oneYear },
-    ];
-
-    return (
-        <div>
-            <h4 className="text-sm font-semibold text-gray-600 mb-2">{t_membership.membershipTitle || 'Membership Management'}</h4>
-            <div className="flex items-center gap-2 flex-wrap">
-                {durations.map(({ months, label }) => (
-                    <button
-                        key={months}
-                        onClick={() => onUpdate(months)}
-                        className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full hover:bg-blue-200 transition-colors"
-                    >
-                        + {label}
-                    </button>
-                ))}
-            </div>
-        </div>
-    );
-};
 
 
-const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ therapists, places, agents, onToggleTherapist, onTogglePlace, onLogout, onUpdateMembership, onImpersonateAgent, googleMapsApiKey, onSaveGoogleMapsApiKey, appContactNumber, onSaveAppContactNumber, t }) => {
+// Duplicate definition removed below. Only the correct component remains.
+const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ therapists, places, agents, onLogout, onUpdateMembership, onImpersonateAgent, googleMapsApiKey, onSaveGoogleMapsApiKey, appContactNumber, onSaveAppContactNumber, t }) => {
     const [apiKeyInput, setApiKeyInput] = useState('');
     const [contactNumberInput, setContactNumberInput] = useState('');
     const [activeView, setActiveView] = useState<'members' | 'agents' | 'reviews' | 'settings'>('members');
     const [reviews, setReviews] = useState<Review[]>([]);
     const [isReviewsLoading, setIsReviewsLoading] = useState(false);
+
+    // State for selected membership durations and last activated dates for therapists and places
+    const [therapistDurations, setTherapistDurations] = useState<{ [id: string]: number | null }>({});
+    const [therapistLastActivated, setTherapistLastActivated] = useState<{ [id: string]: string | null }>({});
+    const [placeDurations, setPlaceDurations] = useState<{ [id: string]: number | null }>({});
+    const [placeLastActivated, setPlaceLastActivated] = useState<{ [id: string]: string | null }>({});
 
     useEffect(() => {
         if (googleMapsApiKey) {
@@ -169,77 +149,125 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ therapists, pla
                 </button>
             </div>
             
-            {activeView === 'members' && (
-                <div className="space-y-8">
-                    <section>
-                        <h2 className="text-xl font-semibold text-gray-700 mb-4">{t.therapists} ({therapists.length})</h2>
-                        <div className="space-y-4">
-                            {therapists.map(therapist => (
+        {activeView === 'members' && (
+            <div className="space-y-8">
+                <section>
+                    <h2 className="text-xl font-semibold text-gray-700 mb-4">{t.therapists} ({therapists.length})</h2>
+                    <div className="space-y-4">
+                        {therapists.map(therapist => {
+                            const selectedDuration = therapistDurations[therapist.id] ?? null;
+                            const lastActivated = therapistLastActivated[therapist.id] ?? null;
+                            const handleSelectDuration = (months: number) => {
+                                setTherapistDurations(prev => ({ ...prev, [therapist.id]: months }));
+                            };
+                            const handleActivate = () => {
+                                if (selectedDuration) {
+                                    onUpdateMembership(therapist.id, 'therapist', selectedDuration);
+                                    setTherapistLastActivated(prev => ({ ...prev, [therapist.id]: new Date().toISOString() }));
+                                }
+                            };
+                            return (
                                 <div key={therapist.id} className="bg-white p-4 rounded-lg shadow-md space-y-3">
                                     <div className="flex items-start justify-between gap-4">
                                         <h3 className="font-bold text-lg text-gray-900">{therapist.name}</h3>
-                                        <div className="flex-shrink-0">
-                                            <ToggleSwitch 
-                                                id={`therapist-${therapist.id}`}
-                                                checked={therapist.isLive}
-                                                onChange={() => onToggleTherapist(therapist.id)}
-                                                labelOn={t.live}
-                                                labelOff={t.notLive}
-                                            />
-                                        </div>
                                     </div>
                                     <div className="text-sm text-gray-600 space-y-1 border-t pt-3 mt-3">
                                         <p><span className="font-semibold">Email:</span> {therapist.email}</p>
                                         <p><span className="font-semibold">WhatsApp:</span> {therapist.whatsappNumber}</p>
                                         <p><span className="font-semibold">Location:</span> {therapist.location}</p>
                                         <p><span className="font-semibold">Membership Active Until:</span> {formatDate(therapist.activeMembershipDate)}</p>
+                                        <p><span className="font-semibold">Last Activated:</span> {lastActivated ? formatDateTime(lastActivated) : 'Never'}</p>
                                         <div className="flex items-center gap-1 text-sm pt-1">
                                             <StarIcon className="w-5 h-5 text-yellow-400"/>
                                             <span className="font-bold text-gray-700">{therapist.rating.toFixed(1)}</span>
                                             <span className="text-gray-500">({therapist.reviewCount} reviews)</span>
                                         </div>
                                     </div>
-                                    <MembershipControls onUpdate={(months) => onUpdateMembership(therapist.id, 'therapist', months)} t={{...t, ...t.membershipDurations}} />
+                                    <div className="flex items-center gap-2 flex-wrap mt-2">
+                                        {[1, 3, 6, 12].map(months => (
+                                            <button
+                                                key={months}
+                                                onClick={() => handleSelectDuration(months)}
+                                                className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${selectedDuration === months ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-800 hover:bg-blue-200'}`}
+                                            >
+                                                {months === 1 ? '1 Month' : months === 12 ? '1 Year' : `${months} Months`}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <div className="flex gap-2 mt-2">
+                                        <Button
+                                            onClick={handleActivate}
+                                            disabled={!selectedDuration}
+                                            className="w-auto px-4 py-2 text-sm"
+                                        >
+                                            {therapist.isLive ? 'Deactivate' : 'Activate Account'}
+                                        </Button>
+                                    </div>
                                 </div>
-                            ))}
-                        </div>
-                    </section>
+                            );
+                        })}
+                    </div>
+                </section>
 
-                    <section>
-                        <h2 className="text-xl font-semibold text-gray-700 mb-4">{t.places} ({places.length})</h2>
-                        <div className="space-y-4">
-                            {places.map(place => (
-                            <div key={place.id} className="bg-white p-4 rounded-lg shadow-md space-y-3">
-                                <div className="flex items-start justify-between gap-4">
+                <section>
+                    <h2 className="text-xl font-semibold text-gray-700 mb-4">{t.places} ({places.length})</h2>
+                    <div className="space-y-4">
+                        {places.map(place => {
+                            const selectedDuration = placeDurations[place.id] ?? null;
+                            const lastActivated = placeLastActivated[place.id] ?? null;
+                            const handleSelectDuration = (months: number) => {
+                                setPlaceDurations(prev => ({ ...prev, [place.id]: months }));
+                            };
+                            const handleActivate = () => {
+                                if (selectedDuration) {
+                                    onUpdateMembership(place.id, 'place', selectedDuration);
+                                    setPlaceLastActivated(prev => ({ ...prev, [place.id]: new Date().toISOString() }));
+                                }
+                            };
+                            return (
+                                <div key={place.id} className="bg-white p-4 rounded-lg shadow-md space-y-3">
+                                    <div className="flex items-start justify-between gap-4">
                                         <h3 className="font-bold text-lg text-gray-900">{place.name}</h3>
-                                        <div className="flex-shrink-0">
-                                            <ToggleSwitch 
-                                                id={`place-${place.id}`}
-                                                checked={place.isLive}
-                                                onChange={() => onTogglePlace(place.id)}
-                                                labelOn={t.live}
-                                                labelOff={t.notLive}
-                                            />
-                                        </div>
                                     </div>
                                     <div className="text-sm text-gray-600 space-y-1 border-t pt-3 mt-3">
                                         <p><span className="font-semibold">Email:</span> {place.email}</p>
                                         <p><span className="font-semibold">WhatsApp:</span> {place.whatsappNumber}</p>
                                         <p><span className="font-semibold">Location:</span> {place.location}</p>
                                         <p><span className="font-semibold">Membership Active Until:</span> {formatDate(place.activeMembershipDate)}</p>
+                                        <p><span className="font-semibold">Last Activated:</span> {lastActivated ? formatDateTime(lastActivated) : 'Never'}</p>
                                         <div className="flex items-center gap-1 text-sm pt-1">
                                             <StarIcon className="w-5 h-5 text-yellow-400"/>
                                             <span className="font-bold text-gray-700">{place.rating.toFixed(1)}</span>
                                             <span className="text-gray-500">({place.reviewCount} reviews)</span>
                                         </div>
                                     </div>
-                                    <MembershipControls onUpdate={(months) => onUpdateMembership(place.id, 'place', months)} t={{...t, ...t.membershipDurations}} />
+                                    <div className="flex items-center gap-2 flex-wrap mt-2">
+                                        {[1, 3, 6, 12].map(months => (
+                                            <button
+                                                key={months}
+                                                onClick={() => handleSelectDuration(months)}
+                                                className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${selectedDuration === months ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-800 hover:bg-blue-200'}`}
+                                            >
+                                                {months === 1 ? '1 Month' : months === 12 ? '1 Year' : `${months} Months`}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <div className="flex gap-2 mt-2">
+                                        <Button
+                                            onClick={handleActivate}
+                                            disabled={!selectedDuration}
+                                            className="w-auto px-4 py-2 text-sm"
+                                        >
+                                            {place.isLive ? 'Deactivate' : 'Activate Account'}
+                                        </Button>
+                                    </div>
                                 </div>
-                            ))}
-                        </div>
-                    </section>
-                </div>
-            )}
+                            );
+                        })}
+                    </div>
+                </section>
+            </div>
+        )}
 
             {activeView === 'agents' && (
                  <section>

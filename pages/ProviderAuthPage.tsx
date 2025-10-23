@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { dataService } from '../services/dataService';
 
 
 interface ProviderAuthPageProps {
@@ -12,7 +13,52 @@ interface ProviderAuthPageProps {
 }
 
 const ProviderAuthPage: React.FC<ProviderAuthPageProps> = ({ mode, providerType, onRegister, onLogin, onSwitchMode, onBack, t }) => {
-    const [email, setEmail] = useState('');
+	// Real membership expiry date from Appwrite
+	const [membershipExpiry, setMembershipExpiry] = useState<Date | null>(null);
+	const [showExpiryPopup, setShowExpiryPopup] = useState(false);
+	const [popupDismissed, setPopupDismissed] = useState(false);
+	const [email, setEmail] = useState('');
+
+	// Fetch real expiry date from Appwrite after login
+	useEffect(() => {
+		const fetchExpiry = async () => {
+			if (mode === 'login' && email) {
+				try {
+					let profile = null;
+					if (providerType === 'therapist') {
+						profile = await dataService.getTherapists();
+						profile = profile.find((t: any) => t.email === email);
+					} else {
+						profile = await dataService.getPlaces();
+						profile = profile.find((p: any) => p.email === email);
+					}
+					if (profile && profile.activeMembershipDate) {
+						setMembershipExpiry(new Date(profile.activeMembershipDate));
+					} else {
+						setMembershipExpiry(null);
+					}
+				} catch (e) {
+					setMembershipExpiry(null);
+				}
+			}
+		};
+		fetchExpiry();
+	}, [mode, email, providerType]);
+
+    // Show popup if within 7 days of expiry and not dismissed
+    useEffect(() => {
+        if (membershipExpiry && mode === 'login' && !popupDismissed) {
+            const now = new Date();
+            const diff = (membershipExpiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+            if (diff <= 7 && diff >= 0) {
+                setShowExpiryPopup(true);
+            } else {
+                setShowExpiryPopup(false);
+            }
+        } else {
+            setShowExpiryPopup(false);
+        }
+    }, [membershipExpiry, mode, popupDismissed]);
     const [password, setPassword] = useState('');
     // Removed agentCode for therapist and place login/register
     const [error, setError] = useState('');
@@ -64,6 +110,30 @@ const ProviderAuthPage: React.FC<ProviderAuthPageProps> = ({ mode, providerType,
 
     return (
         <div className="min-h-screen flex flex-col justify-center p-4 relative" style={{ backgroundImage: "url('https://ik.imagekit.io/7grri5v7d/massage%20rooms.png?updatedAt=1761150670027')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
+            {/* Membership Expiry Popup */}
+            {showExpiryPopup && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                    <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-xs w-full flex flex-col items-center">
+                        <h2 className="text-lg font-bold text-orange-600 mb-2">Membership Expiring Soon</h2>
+                        <p className="text-gray-700 text-center mb-4">Your membership will expire on <span className="font-semibold">{membershipExpiry?.toLocaleDateString()}</span>.<br/>Please contact support to keep your account active.</p>
+                        <a
+                            href="https://wa.me/6281392000050"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full bg-green-500 text-white font-semibold py-2 px-4 rounded-lg shadow hover:bg-green-600 transition mb-2 text-center"
+                            onClick={() => { setShowExpiryPopup(false); setPopupDismissed(true); }}
+                        >
+                            WhatsApp Customer Service
+                        </a>
+                        <button
+                            className="text-xs text-gray-500 hover:underline mt-1"
+                            onClick={() => setShowExpiryPopup(false)}
+                        >
+                            Remind me later
+                        </button>
+                    </div>
+                </div>
+            )}
             <button onClick={onBack} className="absolute top-8 left-4 z-20 focus:outline-none" aria-label="Back to Home">
                 <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-orange-500 shadow-lg border-2 border-white transition-all duration-200 hover:bg-orange-600">
                     <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
