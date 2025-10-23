@@ -3,7 +3,7 @@ import { Therapist, Place, HotelVillaServiceStatus } from '../types';
 import { parsePricing } from '../utils/appwriteHelpers';
 
 interface ProviderWithDiscount {
-    id: number;
+    id: number | string;
     name: string;
     type: 'therapist' | 'place';
     image: string;
@@ -21,7 +21,7 @@ interface HotelVillaProvidersProps {
     therapists: Therapist[];
     places: Place[];
     viewerType: 'hotel' | 'villa';
-    onContactProvider: (providerId: number, providerType: 'therapist' | 'place') => void;
+    onContactProvider: (providerId: number | string, providerType: 'therapist' | 'place') => void;
 }
 
 const HotelVillaProviders: React.FC<HotelVillaProvidersProps> = ({

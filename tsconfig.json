@@ -39,6 +39,7 @@
   },
   "include": [
     "src/**/*",
+    "translations/**/*",
     "*.tsx",
     "*.ts"
   ],

@@ -12,10 +12,10 @@ interface AdminDashboardPageProps {
     therapists: Therapist[];
     places: Place[];
     agents: Agent[];
-    onToggleTherapist: (id: number) => void;
-    onTogglePlace: (id: number) => void;
+    onToggleTherapist: (id: number | string) => void;
+    onTogglePlace: (id: number | string) => void;
     onLogout: () => void;
-    onUpdateMembership: (id: number, type: 'therapist' | 'place', months: number) => void;
+    onUpdateMembership: (id: number | string, type: 'therapist' | 'place', months: number) => void;
     onImpersonateAgent: (agent: Agent) => void;
     googleMapsApiKey: string | null;
     onSaveGoogleMapsApiKey: (key: string) => void;

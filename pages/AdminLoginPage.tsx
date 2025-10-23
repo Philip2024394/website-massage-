@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import Button from '../components/Button';
 import HomeIcon from '../components/icons/HomeIcon';
 import { useBackground } from '../src/shared/hooks/useBackground';
 

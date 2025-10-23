@@ -1,243 +1,346 @@
-import React, { useState } from 'react';
-import HotelVillaProviders from '../components/HotelVillaProviders';
-import QRCodeMenuBuilder from '../components/QRCodeMenuBuilder';
-import { HotelVillaMenu } from '../types';
+import React, { useMemo, useState } from 'react';
+import { Building, Image as ImageIcon, Link as LinkIcon, LogOut, Menu, MessageSquare, Phone, QrCode, Star, Tag, User, Users, X } from 'lucide-react';
+import { Therapist, Place, HotelVillaServiceStatus } from '../types';
+import { parsePricing } from '../utils/appwriteHelpers';
+import ImageUpload from '../components/ImageUpload';
+import Header from '../components/dashboard/Header';
+import StatCard from '../components/dashboard/StatCard';
+import TabButton from '../components/dashboard/TabButton';
+import Section from '../components/dashboard/Section';
+
+type DurationKey = '60' | '90' | '120';
+type ProviderType = 'therapist' | 'place';
+interface ProviderCard {
+    id: string | number;
+    name: string;
+    type: ProviderType;
+    image: string;
+    location: string;
+    rating: number;
+    reviewCount: number;
+    pricing: Record<DurationKey, number>;
+    discount: number; // percent
+    whatsappNumber?: string;
+    description: string;
+}
 
 interface VillaDashboardPageProps {
     onLogout: () => void;
-    therapists?: any[];
-    places?: any[];
-    t: any;
+    therapists?: Therapist[];
+    places?: Place[];
 }
 
-const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({ onLogout, therapists = [], places = [], t }) => {
-    const [activeTab, setActiveTab] = useState('overview');
-    const [villaMenu, setVillaMenu] = useState<HotelVillaMenu | null>(null);
+const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({ onLogout, therapists = [], places = [] }) => {
+    const [activeTab, setActiveTab] = useState<'branding' | 'menu'>('branding');
+    const [isSidebarOpen, setSidebarOpen] = useState(false);
 
-    const handleSaveMenu = (menuData: Omit<HotelVillaMenu, 'id' | 'createdAt' | 'updatedAt'>) => {
-        const newMenu: HotelVillaMenu = {
-            ...menuData,
-            id: 1,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
+    const placeholderImage =
+        'https://images.unsplash.com/photo-1570129477492-45c003edd2be?q=80&w=1200&auto=format&fit=crop';
+
+    const providers = useMemo<ProviderCard[]>(() => {
+        const list: ProviderCard[] = [];
+        const add = (item: Therapist | Place, type: ProviderType) => {
+            const status = item.hotelVillaServiceStatus ?? HotelVillaServiceStatus.NotOptedIn;
+            const discount = (item as any).villaDiscount || 0;
+            if (status === HotelVillaServiceStatus.OptedIn && discount > 0) {
+                const pricing = parsePricing(item.pricing) as Record<DurationKey, number>;
+                list.push({
+                    id: item.id,
+                    name: item.name,
+                    type,
+                    image: (type === 'therapist' ? (item as any).profilePicture : (item as any).mainImage) || placeholderImage,
+                    location: (item as any).location,
+                    rating: (item as any).rating,
+                    reviewCount: (item as any).reviewCount,
+                    pricing,
+                    discount,
+                    whatsappNumber: (item as any).whatsappNumber,
+                    description: (item as any).description,
+                });
+            }
         };
-        setVillaMenu(newMenu);
-        console.log('Villa menu saved:', newMenu);
+        therapists.forEach(t => add(t, 'therapist'));
+        places.forEach(p => add(p, 'place'));
+        return list;
+    }, [therapists, places]);
+
+    const mockProviders: ProviderCard[] = [
+        {
+            id: 't-001',
+            name: 'Made Sari',
+            type: 'therapist',
+            image: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?q=80&w=1200&auto=format&fit=crop',
+            location: 'Canggu, Bali',
+            rating: 4.8,
+            reviewCount: 92,
+            pricing: { '60': 260000, '90': 360000, '120': 460000 },
+            discount: 10,
+            description: 'Experienced therapist offering Balinese and Swedish techniques for deep relaxation.',
+        },
+        {
+            id: 'p-001',
+            name: 'Lotus Spa Ubud',
+            type: 'place',
+            image: 'https://images.unsplash.com/photo-1519823551278-64ac92734fb1?q=80&w=1200&auto=format&fit=crop',
+            location: 'Ubud, Bali',
+            rating: 4.6,
+            reviewCount: 187,
+            pricing: { '60': 320000, '90': 430000, '120': 540000 },
+            discount: 18,
+            description: 'Tranquil spa with private rooms and signature aromatherapy rituals.',
+        },
+    ];
+
+    const displayProviders = providers.length ? providers : mockProviders;
+
+    const stats = useMemo(() => {
+        const count = providers.length;
+        const avg = count ? Math.round(providers.reduce((s, p) => s + p.discount, 0) / count) : 0;
+        const top = count ? Math.max(...providers.map(p => p.discount)) : 0;
+        return { partners: count, avgDiscount: avg, topDiscount: top };
+    }, [providers]);
+
+    const [mainImage, setMainImage] = useState<string | null>(null);
+    const [profileImage, setProfileImage] = useState<string | null>(null);
+    const [villaName, setVillaName] = useState<string>('Your Villa Name');
+    const [villaAddress, setVillaAddress] = useState<string>('Your Villa Address');
+    const [villaPhone, setVillaPhone] = useState<string>('+62 123 456 789');
+
+    const [qrOpen, setQrOpen] = useState(false);
+    const [qrLink, setQrLink] = useState('');
+
+    const openQrFor = (link: string) => {
+        setQrLink(link);
+        setQrOpen(true);
     };
 
-    const handleContactProvider = (providerId: number, providerType: 'therapist' | 'place') => {
-        console.log('Contacting provider:', { providerId, providerType });
-        alert(`Contacting ${providerType} with ID: ${providerId}`);
+    const DiscountCard: React.FC<{ data: ProviderCard }> = ({ data: p }) => {
+        const menuUrl = typeof window !== 'undefined' ? window.location.href : '';
+        const providerMenuUrl = `${menuUrl}?provider=${encodeURIComponent(`${p.type}-${p.id}`)}`;
+
+        return (
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 flex flex-col transition-transform transform hover:scale-[1.02]">
+                <div className="relative">
+                    <img src={p.image || placeholderImage} alt={p.name} className="w-full h-48 object-cover" />
+                    <div className="absolute top-4 right-4 bg-brand-500 text-white text-sm font-bold px-4 py-1 rounded-full shadow-md">
+                        {p.discount}% OFF
+                    </div>
+                    <div className="absolute bottom-0 left-0 bg-gradient-to-t from-black/60 to-transparent w-full p-4">
+                        <h3 className="font-bold text-white text-xl">{p.name}</h3>
+                        <p className="text-xs text-gray-200">{p.location}</p>
+                    </div>
+                </div>
+                <div className="p-5 flex-1 flex flex-col">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center text-yellow-500">
+                            <Star className="w-5 h-5" fill="currentColor" />
+                            <span className="text-sm font-bold ml-1.5">{p.rating}</span>
+                            <span className="text-xs text-gray-500 ml-2">({p.reviewCount} reviews)</span>
+                        </div>
+                        <div className="text-sm font-medium px-3 py-1 rounded-full bg-gray-100 text-gray-700 capitalize">
+                            {p.type}
+                        </div>
+                    </div>
+
+                    <p className="text-sm text-gray-600 mb-5 flex-grow">{p.description}</p>
+
+                    <div className="grid grid-cols-3 gap-3 text-sm mb-5">
+                        {(['60','90','120'] as DurationKey[]).map((d) => (
+                            <div key={d} className="text-center p-3 bg-gray-50 rounded-lg border">
+                                <div className="text-xs text-gray-500">{d} min</div>
+                                <div className="line-through text-gray-400 text-xs">Rp {p.pricing[d].toLocaleString()}</div>
+                                <div className="font-bold text-brand-600 text-base">Rp {Math.round(p.pricing[d] * (1 - p.discount/100)).toLocaleString()}</div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="mt-auto flex items-center justify-between gap-2">
+                        <button onClick={() => openQrFor(providerMenuUrl)} className="flex-1 text-center px-4 py-2.5 bg-brand-500 text-white rounded-lg text-sm font-semibold hover:bg-brand-600 transition-all flex items-center justify-center gap-2">
+                            <QrCode size={16} />
+                            <span>Share</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
     };
 
     const renderTabContent = () => {
         switch (activeTab) {
-            case 'providers':
+            case 'branding':
                 return (
-                    <HotelVillaProviders
-                        therapists={therapists}
-                        places={places}
-                        viewerType="villa"
-                        onContactProvider={handleContactProvider}
-                    />
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div className="lg:col-span-2">
+                            <Section title="Branding Controls" description="Customize the look of your shared guest menu.">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <ImageUpload id="villa-main" label="Banner Image" currentImage={mainImage} onImageChange={setMainImage} heightClass="h-48" />
+                                    <ImageUpload id="villa-profile" label="Logo / Profile Picture" currentImage={profileImage} onImageChange={setProfileImage} heightClass="h-48" />
+                                </div>
+                                <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <input className="w-full p-3 border rounded-lg" placeholder="Villa Name" value={villaName} onChange={(e) => setVillaName(e.target.value)} />
+                                    <input className="w-full p-3 border rounded-lg" placeholder="Address or Location" value={villaAddress} onChange={(e) => setVillaAddress(e.target.value)} />
+                                </div>
+                                <div className="mt-4">
+                                    <input className="w-full p-3 border rounded-lg" placeholder="Contact Phone (optional)" value={villaPhone} onChange={(e) => setVillaPhone(e.target.value)} />
+                                </div>
+                                <div className="mt-6 text-right">
+                                    <button className="bg-brand-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-brand-600">Save Changes</button>
+                                </div>
+                            </Section>
+                        </div>
+                        <div className="lg:col-span-1">
+                            <Section title="Live Preview" description="This is how your menu header will appear to guests.">
+                                <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+                                    <div className="w-full h-32 rounded-xl overflow-hidden mb-4 relative bg-gray-100">
+                                        {mainImage ? <img src={mainImage} alt="main" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-gray-400"><ImageIcon size={32}/></div>}
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-200 border-4 border-white -mt-10 shadow-md flex-shrink-0">
+                                            {profileImage ? <img src={profileImage} alt="profile" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-gray-400"><User size={24}/></div>}
+                                        </div>
+                                        <div className="flex-grow">
+                                            <div className="font-bold text-gray-900 text-lg truncate">{villaName}</div>
+                                            <div className="text-xs text-gray-600 flex items-center gap-1.5"><Building size={12}/> {villaAddress}</div>
+                                            {villaPhone && <div className="text-xs text-gray-600 flex items-center gap-1.5 mt-0.5"><Phone size={12}/> {villaPhone}</div>}
+                                        </div>
+                                    </div>
+                                </div>
+                            </Section>
+                        </div>
+                    </div>
                 );
             case 'menu':
                 return (
-                    <QRCodeMenuBuilder
-                        menu={villaMenu}
-                        ownerType="villa"
-                        onSaveMenu={handleSaveMenu}
-                    />
-                );
-            case 'overview':
-            default:
-                return (
-                    <div className="space-y-6">
-                        {/* Stats Cards */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            <div className="bg-white rounded-lg shadow-md p-6">
-                                <div className="flex items-center">
-                                    <div className="p-3 rounded-full bg-orange-100 text-orange-600">
-                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                                        </svg>
-                                    </div>
-                                    <div className="ml-4">
-                                        <p className="text-sm font-medium text-gray-600">Total Villas</p>
-                                        <p className="text-2xl font-semibold text-gray-900">8</p>
-                                    </div>
-                                </div>
+                    <Section
+                        title="Guest Menu & Providers"
+                        description="A preview of the full menu that your guests will see, with all available partners and discounts."
+                        actions={
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => navigator.clipboard.writeText(window.location.href)}
+                                    className="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium flex items-center gap-2"
+                                >
+                                    <LinkIcon size={16} />
+                                    Copy Link
+                                </button>
+                                <button onClick={() => openQrFor(window.location.href)} className="bg-brand-500 text-white px-4 py-2 rounded-lg hover:bg-brand-600 transition-colors text-sm font-medium flex items-center gap-2">
+                                    <QrCode size={16} />
+                                    Show QR
+                                </button>
                             </div>
-
-                            <div className="bg-white rounded-lg shadow-md p-6">
-                                <div className="flex items-center">
-                                    <div className="p-3 rounded-full bg-green-100 text-green-600">
-                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                    </div>
-                                    <div className="ml-4">
-                                        <p className="text-sm font-medium text-gray-600">Occupied</p>
-                                        <p className="text-2xl font-semibold text-gray-900">6</p>
-                                    </div>
-                                </div>
+                        }
+                    >
+                        {providers.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                                {displayProviders.map((p) => (
+                                    <DiscountCard key={`${p.type}-${p.id}`} data={p} />
+                                ))}
                             </div>
-
-                            <div className="bg-white rounded-lg shadow-md p-6">
-                                <div className="flex items-center">
-                                    <div className="p-3 rounded-full bg-blue-100 text-blue-600">
-                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                        </svg>
-                                    </div>
-                                    <div className="ml-4">
-                                        <p className="text-sm font-medium text-gray-600">Total Guests</p>
-                                        <p className="text-2xl font-semibold text-gray-900">28</p>
-                                    </div>
-                                </div>
+                        ) : (
+                            <div className="text-center py-20 border-2 border-dashed rounded-2xl">
+                                <div className="text-6xl mb-4">🤷</div>
+                                <h3 className="text-xl font-semibold text-gray-800">No Discounted Partners Found</h3>
+                                <p className="text-gray-500 max-w-md mx-auto mt-2">When therapists or massage places in the IndoStreet network offer a special discount for your guests, they will automatically appear here.</p>
                             </div>
-
-                            <div className="bg-white rounded-lg shadow-md p-6">
-                                <div className="flex items-center">
-                                    <div className="p-3 rounded-full bg-purple-100 text-purple-600">
-                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                                        </svg>
-                                    </div>
-                                    <div className="ml-4">
-                                        <p className="text-sm font-medium text-gray-600">Monthly Revenue</p>
-                                        <p className="text-2xl font-semibold text-gray-900">$45,200</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Quick Actions and Recent Activity remain the same... */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <div className="bg-white rounded-lg shadow-md p-6">
-                                <h3 className="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
-                                <div className="space-y-3">
-                                    <button className="w-full text-left p-3 rounded-md border border-gray-200 hover:bg-orange-50 hover:border-orange-200 transition-colors">
-                                        <div className="flex items-center">
-                                            <svg className="w-5 h-5 text-orange-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                            </svg>
-                                            New Booking
-                                        </div>
-                                    </button>
-                                    <button className="w-full text-left p-3 rounded-md border border-gray-200 hover:bg-orange-50 hover:border-orange-200 transition-colors">
-                                        <div className="flex items-center">
-                                            <svg className="w-5 h-5 text-orange-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                            </svg>
-                                            Property Management
-                                        </div>
-                                    </button>
-                                    <button className="w-full text-left p-3 rounded-md border border-gray-200 hover:bg-orange-50 hover:border-orange-200 transition-colors">
-                                        <div className="flex items-center">
-                                            <svg className="w-5 h-5 text-orange-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            </svg>
-                                            Maintenance
-                                        </div>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div className="bg-white rounded-lg shadow-md p-6">
-                                <h3 className="text-lg font-semibold text-gray-800 mb-4">Recent Activity</h3>
-                                <div className="space-y-3">
-                                    <div className="flex items-center p-3 bg-gray-50 rounded-md">
-                                        <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-                                        <div>
-                                            <p className="text-sm font-medium text-gray-800">Villa Sunset checked in</p>
-                                            <p className="text-xs text-gray-600">1 hour ago</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center p-3 bg-gray-50 rounded-md">
-                                        <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                                        <div>
-                                            <p className="text-sm font-medium text-gray-800">Pool maintenance: Villa Ocean</p>
-                                            <p className="text-xs text-gray-600">3 hours ago</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center p-3 bg-gray-50 rounded-md">
-                                        <div className="w-2 h-2 bg-orange-500 rounded-full mr-3"></div>
-                                        <div>
-                                            <p className="text-sm font-medium text-gray-800">New booking: Villa Paradise</p>
-                                            <p className="text-xs text-gray-600">5 hours ago</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                        )}
+                    </Section>
                 );
         }
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Header */}
-            <header className="bg-white shadow-sm border-b border-gray-200">
-                <div className="px-4 py-4">
-                    <div className="flex justify-between items-center">
-                        <h1 className="text-2xl font-bold text-gray-800">
-                            <span className="text-white">Indo</span><span className="text-orange-500">street</span> - Villa Dashboard
-                        </h1>
-                        <button
-                            onClick={onLogout}
-                            className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors"
-                        >
-                            Logout
-                        </button>
-                    </div>
+        <div className="min-h-screen bg-gray-50 flex">
+            {/* Sidebar */}
+            <aside className={`fixed inset-y-0 left-0 bg-white w-64 p-6 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 transition-transform duration-300 ease-in-out z-40 shadow-lg md:shadow-none`}>
+                <div className="flex items-center justify-between mb-10">
+                    <h1 className="text-2xl font-bold text-gray-800">
+                        <span className="text-gray-900">Indo</span><span className="text-brand-500">street</span>
+                    </h1>
+                    <button onClick={() => setSidebarOpen(false)} className="md:hidden text-gray-500">
+                        <X size={24} />
+                    </button>
                 </div>
-            </header>
+                <nav className="flex flex-col space-y-2">
+                    <TabButton
+                        icon={<ImageIcon size={20} />}
+                        label="Branding"
+                        isActive={activeTab === 'branding'}
+                        onClick={() => setActiveTab('branding')}
+                    />
+                    <TabButton
+                        icon={<Menu size={20} />}
+                        label="Guest Menu"
+                        isActive={activeTab === 'menu'}
+                        onClick={() => setActiveTab('menu')}
+                        badge={providers.length}
+                    />
+                </nav>
+                <div className="mt-auto absolute bottom-6 left-6 right-6">
+                    <button
+                        onClick={onLogout}
+                        className="w-full flex items-center justify-center gap-2 bg-red-50 text-red-600 px-4 py-2.5 rounded-lg hover:bg-red-100 transition-colors font-semibold"
+                    >
+                        <LogOut size={16} />
+                        <span>Logout</span>
+                    </button>
+                </div>
+            </aside>
 
-            {/* Tab Navigation */}
-            <div className="bg-white border-b border-gray-200">
-                <div className="px-4">
-                    <div className="flex space-x-8">
-                        <button
-                            onClick={() => setActiveTab('overview')}
-                            className={`py-4 px-2 border-b-2 font-medium text-sm ${
-                                activeTab === 'overview'
-                                    ? 'border-orange-500 text-orange-600'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                            }`}
-                        >
-                            Overview
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('providers')}
-                            className={`py-4 px-2 border-b-2 font-medium text-sm ${
-                                activeTab === 'providers'
-                                    ? 'border-orange-500 text-orange-600'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                            }`}
-                        >
-                            Massage Partners ({therapists.length + places.length})
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('menu')}
-                            className={`py-4 px-2 border-b-2 font-medium text-sm ${
-                                activeTab === 'menu'
-                                    ? 'border-orange-500 text-orange-600'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                            }`}
-                        >
-                            QR Menu Builder
-                        </button>
+            <div className="flex-1 flex flex-col">
+                {/* Header */}
+                <Header
+                    title={activeTab === 'branding' ? 'Branding & Menu Customization' : 'Guest Menu Preview'}
+                    onMenuClick={() => setSidebarOpen(true)}
+                >
+                    <div className="flex items-center gap-4">
+                        <div className="text-right">
+                            <p className="font-semibold text-gray-800">{villaName}</p>
+                            <p className="text-xs text-gray-500">Villa Partner</p>
+                        </div>
+                        <img
+                            src={profileImage || 'https://ui.shadcn.com/avatars/02.png'}
+                            alt="Villa Logo"
+                            className="w-10 h-10 rounded-full object-cover border-2 border-brand-100"
+                        />
                     </div>
-                </div>
+                </Header>
+
+                {/* Main Content */}
+                <main className="flex-1 p-6 lg:p-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                        <StatCard icon={<Users size={24} />} label="Available Partners" value={stats.partners} color="blue" />
+                        <StatCard icon={<Tag size={24} />} label="Average Discount" value={`${stats.avgDiscount}%`} color="green" />
+                        <StatCard icon={<Star size={24} />} label="Top Discount" value={`${stats.topDiscount}%`} color="orange" />
+                    </div>
+                    {renderTabContent()}
+                </main>
             </div>
 
-            {/* Main Content */}
-            <div className="p-6">
-                {renderTabContent()}
-            </div>
+            {/* QR Modal */}
+            {qrOpen && (
+                <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setQrOpen(false)}>
+                    <div className="bg-white rounded-2xl p-8 w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-xl font-bold text-gray-800">Share Your Menu</h3>
+                            <button onClick={() => setQrOpen(false)} className="text-gray-400 hover:text-gray-600"><X size={24}/></button>
+                        </div>
+                        <div className="flex flex-col items-center">
+                            <div className="p-4 bg-white rounded-lg border-4 border-gray-100">
+                                <img src={`https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl=${encodeURIComponent(qrLink)}&choe=UTF-8`} alt="QR code" className="w-64 h-64" />
+                            </div>
+                            <p className="text-sm text-gray-500 mt-4 text-center break-all bg-gray-50 p-2 rounded-md">{qrLink}</p>
+                            <div className="mt-6 w-full grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <button onClick={() => navigator.clipboard.writeText(qrLink)} className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 text-gray-800 rounded-lg font-semibold hover:bg-gray-200 transition-colors">
+                                    <LinkIcon size={16} /> Copy Link
+                                </button>
+                                <button onClick={() => window.open(`mailto:?subject=Guest%20Menu&body=${encodeURIComponent(qrLink)}`)} className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition-colors">
+                                    <MessageSquare size={16} /> Email
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

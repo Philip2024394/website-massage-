@@ -4,10 +4,9 @@ import { useBackground } from '../src/shared/hooks/useBackground';
 interface VillaLoginPageProps {
     onVillaLogin: () => void;
     onBack: () => void;
-    t: any;
 }
 
-const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onVillaLogin, onBack, t }) => {
+const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onVillaLogin, onBack }) => {
     const [credentials, setCredentials] = useState({
         username: '',
         password: ''
@@ -37,10 +36,13 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onVillaLogin, onBack, t
 
         try {
             // Mock authentication - replace with actual villa authentication logic
-            if (credentials.username === 'villa123' && credentials.password === 'indostreet2024') {
+            const username = credentials.username.trim().toLowerCase();
+            const password = credentials.password.trim();
+            
+            if (username === 'villa123' && password === 'indostreet2024') {
                 onVillaLogin();
             } else {
-                setError('Invalid villa credentials');
+                setError(`Invalid credentials. Please use: villa123 / indostreet2024`);
             }
         } catch (err) {
             setError('Login failed. Please try again.');

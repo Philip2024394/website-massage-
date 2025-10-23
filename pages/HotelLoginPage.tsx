@@ -4,10 +4,9 @@ import { useBackground } from '../src/shared/hooks/useBackground';
 interface HotelLoginPageProps {
     onHotelLogin: () => void;
     onBack: () => void;
-    t: any;
 }
 
-const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onHotelLogin, onBack, t }) => {
+const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onHotelLogin, onBack }) => {
     const [credentials, setCredentials] = useState({
         username: '',
         password: ''
@@ -37,10 +36,13 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onHotelLogin, onBack, t
 
         try {
             // Mock authentication - replace with actual hotel authentication logic
-            if (credentials.username === 'hotel123' && credentials.password === 'indostreet2024') {
+            const username = credentials.username.trim().toLowerCase();
+            const password = credentials.password.trim();
+            
+            if (username === 'hotel123' && password === 'indostreet2024') {
                 onHotelLogin();
             } else {
-                setError('Invalid hotel credentials');
+                setError(`Invalid credentials. Please use: hotel123 / indostreet2024`);
             }
         } catch (err) {
             setError('Login failed. Please try again.');
@@ -67,7 +69,7 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onHotelLogin, onBack, t
                         Back
                     </button>
                     <h1 className="text-xl font-bold text-gray-800">
-                        <span className="text-white">Indo</span><span className="text-orange-500">street</span> - Hotel Portal
+                        <span className="text-gray-900">Indo</span><span className="text-orange-500">street</span> - Hotel Portal
                     </h1>
                     <div></div>
                 </div>

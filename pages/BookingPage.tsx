@@ -55,8 +55,9 @@ const BookingPage: React.FC<BookingPageProps> = ({ provider, providerType, onBoo
         const bookingStartTime = new Date(selectedDate);
         bookingStartTime.setHours(hour, minute, 0, 0);
 
+        const providerIdNumber = typeof provider.id === 'number' ? provider.id : (parseInt(String(provider.id), 10) || 0);
         onBook({
-            providerId: provider.id,
+            providerId: providerIdNumber,
             providerType,
             providerName: provider.name,
             service: selectedService,

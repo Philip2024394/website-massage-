@@ -12,6 +12,7 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint . --ext ts,tsx --fix",
     "type-check": "tsc --noEmit",
+    "save": "git add -A && git commit -m \"chore(save): workspace snapshot\" && git push origin main",
     "mobile:android": "cd mobile && npx react-native run-android",
     "mobile:ios": "cd mobile && npx react-native run-ios",
     "mobile:start": "cd mobile && npx react-native start"
@@ -23,6 +24,7 @@
     "clsx": "^2.0.0",
     "date-fns": "^3.0.0",
     "framer-motion": "^11.0.0",
+    "lucide-react": "^0.546.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-hook-form": "^7.48.0",

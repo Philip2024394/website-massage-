@@ -11,7 +11,7 @@ interface RatingModalProps {
     onSubmit: () => void;
     itemName: string;
     itemType: 'therapist' | 'place';
-    itemId: number;
+    itemId: number | string;
     t: {
         title: string;
         prompt: string;

@@ -25,11 +25,15 @@ import MembershipPage from './pages/MembershipPage';
 import BookingPage from './pages/BookingPage';
 import NotificationsPage from './pages/NotificationsPage';
 import MassageTypesPage from './pages/MassageTypesPage';
+import HotelLoginPage from './pages/HotelLoginPage';
+import HotelDashboardPage from './pages/HotelDashboardPage';
+import VillaLoginPage from './pages/VillaLoginPage';
+import VillaDashboardPage from './pages/VillaDashboardPage';
 
-import { translations } from './translations/index';
-import { therapistService, placeService, agentService, authService, userService } from './lib/appwriteService';
+import { translations } from './translations/index.ts';
+import { therapistService, placeService, agentService } from './lib/appwriteService';
 
-type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'agentAuth' | 'agentDashboard' | 'agentTerms' | 'serviceTerms' | 'privacy' | 'membership' | 'booking' | 'notifications' | 'massageTypes';
+type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'agentAuth' | 'agentDashboard' | 'agentTerms' | 'serviceTerms' | 'privacy' | 'membership' | 'booking' | 'notifications' | 'massageTypes' | 'hotelLogin' | 'hotelDashboard' | 'villaLogin' | 'villaDashboard';
 type Language = 'en' | 'id';
 type LoggedInProvider = { id: number | string; type: 'therapist' | 'place' }; // Support both number and string IDs for Appwrite compatibility
 
@@ -61,6 +65,10 @@ const App: React.FC = () => {
     const [loggedInAgent, setLoggedInAgent] = useState<Agent | null>(null);
     const [impersonatedAgent, setImpersonatedAgent] = useState<Agent | null>(null);
     const [adminMessages, setAdminMessages] = useState<AdminMessage[]>([]);
+    
+    // Hotel/Villa state
+    const [isHotelLoggedIn, setIsHotelLoggedIn] = useState(false);
+    const [isVillaLoggedIn, setIsVillaLoggedIn] = useState(false);
     
     // Google Maps state
     const [googleMapsApiKey, setGoogleMapsApiKey] = useState<string | null>(null);
@@ -248,10 +256,32 @@ const App: React.FC = () => {
     // Supabase settings removed - using Appwrite as backend
     const handleNavigateToNotifications = () => setPage('notifications');
     const handleNavigateToAgentAuth = () => setPage('agentAuth');
+    const handleNavigateToHotelLogin = () => setPage('hotelLogin');
+    // const handleNavigateToVillaLogin = () => setPage('villaLogin'); // Unused
     
     const handleAdminLogin = () => {
         setIsAdminLoggedIn(true);
         setPage('adminDashboard');
+    };
+    
+    const handleHotelLogin = () => {
+        setIsHotelLoggedIn(true);
+        setPage('hotelDashboard');
+    };
+    
+    const handleVillaLogin = () => {
+        setIsVillaLoggedIn(true);
+        setPage('villaDashboard');
+    };
+    
+    const handleHotelLogout = () => {
+        setIsHotelLoggedIn(false);
+        setPage('home');
+    };
+    
+    const handleVillaLogout = () => {
+        setIsVillaLoggedIn(false);
+        setPage('home');
     };
     
     const handleAdminLogout = async () => {
@@ -263,8 +293,8 @@ const App: React.FC = () => {
         setPage('home');
     }
 
-    const handleToggleTherapistLive = async (id: number) => {
-        const therapist = allAdminTherapists.find(t => t.id === id);
+    const handleToggleTherapistLive = async (id: number | string) => {
+        const therapist = allAdminTherapists.find(t => String(t.id) === String(id));
         if(!therapist) return;
         
         try {
@@ -272,7 +302,7 @@ const App: React.FC = () => {
             const therapistId = (therapist as any).$id || id.toString();
             await therapistService.update(therapistId, { isLive: !therapist.isLive });
             setAllAdminTherapists(allAdminTherapists.map(t => 
-                t.id === id ? { ...t, isLive: !t.isLive } : t
+                String(t.id) === String(id) ? { ...t, isLive: !t.isLive } : t
             ));
         } catch (error: any) {
             console.error('Toggle therapist error:', error);
@@ -280,8 +310,8 @@ const App: React.FC = () => {
         }
     };
 
-    const handleTogglePlaceLive = async (id: number) => {
-        const place = allAdminPlaces.find(p => p.id === id);
+    const handleTogglePlaceLive = async (id: number | string) => {
+        const place = allAdminPlaces.find(p => String(p.id) === String(id));
         if(!place) return;
         
         try {
@@ -289,7 +319,7 @@ const App: React.FC = () => {
             const placeId = (place as any).$id || id.toString();
             await placeService.update(placeId, { isLive: !place.isLive });
             setAllAdminPlaces(allAdminPlaces.map(p => 
-                p.id === id ? { ...p, isLive: !p.isLive } : p
+                String(p.id) === String(id) ? { ...p, isLive: !p.isLive } : p
             ));
         } catch (error: any) {
             console.error('Toggle place error:', error);
@@ -579,11 +609,11 @@ const App: React.FC = () => {
 
     // Supabase functions removed - using Appwrite as backend
 
-    const handleUpdateMembership = async (id: number, type: 'therapist' | 'place', months: number) => {
+    const handleUpdateMembership = async (id: number | string, type: 'therapist' | 'place', months: number) => {
         // TODO: Integrate with Appwrite therapistService/placeService
         const providersArray = type === 'therapist' ? allAdminTherapists : allAdminPlaces;
     
-        const provider = providersArray.find(p => p.id === id);
+        const provider = providersArray.find(p => String(p.id) === String(id));
         if (!provider) return;
         
         const currentExpiry = new Date(provider.activeMembershipDate);
@@ -597,11 +627,11 @@ const App: React.FC = () => {
         // Temporarily update locally
         if (type === 'therapist') {
             setAllAdminTherapists(allAdminTherapists.map(t => 
-                t.id === id ? { ...t, activeMembershipDate: newExpiryDateString, isLive: true } : t
+                String(t.id) === String(id) ? { ...t, activeMembershipDate: newExpiryDateString, isLive: true } : t
             ));
         } else {
             setAllAdminPlaces(allAdminPlaces.map(p => 
-                p.id === id ? { ...p, activeMembershipDate: newExpiryDateString, isLive: true } : p
+                String(p.id) === String(id) ? { ...p, activeMembershipDate: newExpiryDateString, isLive: true } : p
             ));
         }
         alert('Membership updated (local only - Appwrite integration pending)');
@@ -630,7 +660,7 @@ const App: React.FC = () => {
         }
     };
 
-    const handleIncrementAnalytics = (id: number, type: 'therapist' | 'place', metric: keyof Analytics) => {
+    const handleIncrementAnalytics = (id: number | string, type: 'therapist' | 'place', metric: keyof Analytics) => {
         // This should be an RPC call to Supabase to increment the value
         console.log(`Incrementing ${metric} for ${type} ${id}`);
     };
@@ -718,6 +748,7 @@ const App: React.FC = () => {
                             onBook={handleNavigateToBooking}
                             onIncrementAnalytics={handleIncrementAnalytics}
                             onMassageTypesClick={() => setPage('massageTypes')}
+                            onHotelPortalClick={handleNavigateToHotelLogin}
                             isLoading={isLoading}
                             t={t} />;
             case 'detail': return selectedPlace && <PlaceDetailPage place={selectedPlace} onBack={handleBackToHome} onBook={(place) => handleNavigateToBooking(place, 'place')} onIncrementAnalytics={(metric) => handleIncrementAnalytics(selectedPlace.id, 'place', metric)} t={t.detail} />;
@@ -785,9 +816,13 @@ const App: React.FC = () => {
             case 'serviceTerms': return <ServiceTermsPage onBack={handleBackToHome} t={t.serviceTerms} contactNumber={appContactNumber} />;
             case 'privacy': return <PrivacyPolicyPage onBack={handleBackToHome} t={t.privacyPolicy} />;
             case 'membership': return loggedInProvider ? <MembershipPage onPackageSelect={handleSelectMembershipPackage} onBack={handleBackToProviderDashboard} t={t.membershipPage} /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice}/>;
-            case 'booking': return providerForBooking ? <BookingPage provider={providerForBooking.provider} providerType={providerForBooking.type} onBook={handleCreateBooking} onBack={handleBackToHome} bookings={bookings.filter(b => b.providerId === providerForBooking.provider.id)} t={t.bookingPage} /> : <HomePage user={user} loggedInAgent={loggedInAgent} therapists={therapists} places={places} userLocation={userLocation} onSetUserLocation={handleSetUserLocation} onSelectPlace={handleSelectPlace} onLogout={handleLogout} onLoginClick={handleNavigateToAuth} onAdminClick={handleNavigateToAdminLogin} onCreateProfileClick={handleNavigateToRegistrationChoice} onAgentPortalClick={loggedInAgent ? () => setPage('agentDashboard') : handleNavigateToAgentAuth} onBook={handleNavigateToBooking} onIncrementAnalytics={handleIncrementAnalytics} onMassageTypesClick={() => setPage('massageTypes')} isLoading={isLoading} t={t} />;
+            case 'booking': return providerForBooking ? <BookingPage provider={providerForBooking.provider} providerType={providerForBooking.type} onBook={handleCreateBooking} onBack={handleBackToHome} bookings={bookings.filter(b => b.providerId === providerForBooking.provider.id)} t={t.bookingPage} /> : <HomePage user={user} loggedInAgent={loggedInAgent} therapists={therapists} places={places} userLocation={userLocation} onSetUserLocation={handleSetUserLocation} onSelectPlace={handleSelectPlace} onLogout={handleLogout} onLoginClick={handleNavigateToAuth} onAdminClick={handleNavigateToAdminLogin} onCreateProfileClick={handleNavigateToRegistrationChoice} onAgentPortalClick={loggedInAgent ? () => setPage('agentDashboard') : handleNavigateToAgentAuth} onBook={handleNavigateToBooking} onIncrementAnalytics={handleIncrementAnalytics} onMassageTypesClick={() => setPage('massageTypes')} onHotelPortalClick={handleNavigateToHotelLogin} isLoading={isLoading} t={t} />;
             case 'notifications': return loggedInProvider ? <NotificationsPage notifications={notifications.filter(n => n.providerId === loggedInProvider.id)} onMarkAsRead={handleMarkNotificationAsRead} onBack={handleBackToProviderDashboard} t={t.notificationsPage} /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice}/>;
             case 'massageTypes': return <MassageTypesPage onBack={handleBackToHome} />;
+            case 'hotelLogin': return <HotelLoginPage onHotelLogin={handleHotelLogin} onBack={handleBackToHome} />;
+            case 'hotelDashboard': return isHotelLoggedIn ? <HotelDashboardPage onLogout={handleHotelLogout} /> : <HotelLoginPage onHotelLogin={handleHotelLogin} onBack={handleBackToHome} />;
+            case 'villaLogin': return <VillaLoginPage onVillaLogin={handleVillaLogin} onBack={handleBackToHome} />;
+            case 'villaDashboard': return isVillaLoggedIn ? <VillaDashboardPage onLogout={handleVillaLogout} /> : <VillaLoginPage onVillaLogin={handleVillaLogin} onBack={handleBackToHome} />;
             default: return <LandingPage onLanguageSelect={handleLanguageSelect} />;
         }
     };

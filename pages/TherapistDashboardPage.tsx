@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { Therapist, Pricing, Booking, Notification } from '../types';
 import { AvailabilityStatus, BookingStatus, HotelVillaServiceStatus } from '../types';
-import { parsePricing, parseCoordinates, parseMassageTypes, parseAnalytics,
-         stringifyPricing, stringifyCoordinates, stringifyMassageTypes, stringifyAnalytics } from '../utils/appwriteHelpers';
+import { parsePricing, parseCoordinates, parseMassageTypes, stringifyPricing, stringifyCoordinates, stringifyMassageTypes, stringifyAnalytics } from '../utils/appwriteHelpers';
 import Button from '../components/Button';
 import ImageUpload from '../components/ImageUpload';
 import HotelVillaOptIn from '../components/HotelVillaOptIn';
@@ -100,13 +99,13 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
             location: '',
             coordinates: stringifyCoordinates({ lat: 0, lng: 0 }),
             status: AvailabilityStatus.Offline,
-            analytics: stringifyAnalytics({ impressions: 0, profileViews: 0, whatsappClicks: 0 }),
             isLive: false,
             rating: 0,
             reviewCount: 0,
             activeMembershipDate: new Date().toISOString().split('T')[0],
             email: 'sample@email.com',
-            distance: 0
+            distance: 0,
+            analytics: stringifyAnalytics({ impressions: 0, profileViews: 0, whatsappClicks: 0 }),
         };
         
         setTherapist(mockTherapist);
@@ -181,13 +180,15 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
             description,
             profilePicture,
             whatsappNumber,
+           
             pricing: stringifyPricing(pricing),
-            massageTypes: stringifyMassageTypes(massageTypes),
+           
             location,
             coordinates: stringifyCoordinates(coordinates),
             status,
             distance: 0, // dummy value
             analytics: therapist?.analytics || stringifyAnalytics({ impressions: 0, profileViews: 0, whatsappClicks: 0 }),
+            massageTypes: stringifyMassageTypes(massageTypes),
         });
     };
     
@@ -242,7 +243,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
     const unreadNotificationsCount = notifications.filter(n => !n.isRead).length;
     const now = new Date();
     const upcomingBookings = bookings.filter(b => new Date(b.startTime) >= now).sort((a,b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
-    const pastBookings = bookings.filter(b => new Date(b.startTime) < now).sort((a,b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
+    const pastBookings = bookings.filter(b => new Date(b.startTime) < now).sort((_, b) => new Date(b.startTime).getTime() - new Date(b.startTime).getTime());
 
     if (isLoading) {
         return <div className="flex justify-center items-center h-screen"><div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand-orange"></div></div>;

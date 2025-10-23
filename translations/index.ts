@@ -4,33 +4,38 @@ import { authTranslations } from './auth';
 import { homeTranslations } from './home';
 import { dashboardTranslations } from './dashboard';
 
+type LangDict = Record<string, any>;
+type Translations = { en: LangDict; id: LangDict };
+
 // Function to deep merge translation objects
-function mergeTranslations(...translationObjects: any[]) {
-  const merged = { en: {}, id: {} };
-  
+function mergeTranslations(...translationObjects: Translations[]): Translations {
+  const merged: Translations = { en: {}, id: {} };
+
   for (const obj of translationObjects) {
     // Deep merge for nested objects
     for (const key in obj.en) {
-      if (typeof obj.en[key] === 'object' && !Array.isArray(obj.en[key])) {
-        merged.en[key] = { ...merged.en[key], ...obj.en[key] };
+      const value = (obj.en as LangDict)[key];
+      if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+        merged.en[key] = { ...(merged.en[key] || {}), ...value };
       } else {
-        merged.en[key] = obj.en[key];
+        merged.en[key] = value;
       }
     }
     for (const key in obj.id) {
-      if (typeof obj.id[key] === 'object' && !Array.isArray(obj.id[key])) {
-        merged.id[key] = { ...merged.id[key], ...obj.id[key] };
+      const value = (obj.id as LangDict)[key];
+      if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+        merged.id[key] = { ...(merged.id[key] || {}), ...value };
       } else {
-        merged.id[key] = obj.id[key];
+        merged.id[key] = value;
       }
     }
   }
-  
+
   return merged;
 }
 
 // Export combined translations
-const translations = mergeTranslations(
+const translations: Translations = mergeTranslations(
   commonTranslations,
   authTranslations,
   homeTranslations,

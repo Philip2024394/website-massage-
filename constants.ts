@@ -1,5 +1,4 @@
-import type { Therapist, Place, Booking, Notification } from './types';
-import { AvailabilityStatus, BookingStatus, NotificationType } from './types';
+// Note: previously imported types from './types' were unused here and removed to fix TS6192 warnings.
 
 export const MASSAGE_TYPES_CATEGORIZED = [
     {
