@@ -30,26 +30,49 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate }) => {
     return (
         <div className="bg-white rounded-xl shadow-md overflow-hidden transform hover:scale-105 transition-transform duration-300" onClick={onClick}>
             <img className="h-40 w-full object-cover" src={place.mainImage} alt={place.name} />
-            <div className="p-4">
-                <h3 className="text-lg font-bold text-gray-900">{place.name}</h3>
-                <p className="mt-1 text-gray-500 text-sm truncate">{place.description}</p>
-                <div className="flex justify-between items-center mt-3 text-sm">
-                    <div 
-                        className="flex items-center gap-1 cursor-pointer"
-                        onClick={handleRateClick}
-                        aria-label={`Rate ${place.name}`}
-                        role="button"
-                    >
-                        <StarIcon className="w-5 h-5 text-yellow-400"/>
-                        <span className="font-bold text-gray-700">{place.rating.toFixed(1)}</span>
-                        <span className="text-gray-500">({place.reviewCount})</span>
-                    </div>
-                     <div className="flex items-center text-gray-500 gap-1">
-                        <LocationPinIcon className="w-4 h-4 text-gray-400"/>
-                        <span>{place.distance}km</span>
-                    </div>
-                </div>
-            </div>
+                        <div className="p-4">
+                                <h3 className="text-lg font-bold text-gray-900">{place.name}</h3>
+                                <p className="mt-1 text-gray-500 text-sm truncate">{place.description}</p>
+                                <div className="flex justify-between items-center mt-3 text-sm">
+                                        <div 
+                                                className="flex items-center gap-1 cursor-pointer"
+                                                onClick={handleRateClick}
+                                                aria-label={`Rate ${place.name}`}
+                                                role="button"
+                                        >
+                                                <StarIcon className="w-5 h-5 text-yellow-400"/>
+                                                <span className="font-bold text-gray-700">{place.rating.toFixed(1)}</span>
+                                                <span className="text-gray-500">({place.reviewCount})</span>
+                                        </div>
+                                         <div className="flex items-center text-gray-500 gap-1">
+                                                <LocationPinIcon className="w-4 h-4 text-gray-400"/>
+                                                <span>{place.distance}km</span>
+                                        </div>
+                                </div>
+                                {/* Price structure for 60, 90, 120 min */}
+                                {place.pricing && (
+                                    (() => {
+                                        let pricing = {"60":0,"90":0,"120":0};
+                                        try { pricing = JSON.parse(place.pricing); } catch {}
+                                        return (
+                                            <div className="grid grid-cols-3 gap-2 text-center text-sm text-gray-600 mt-3">
+                                                <div className="bg-brand-orange-light p-2 rounded-lg">
+                                                    <p>60 min</p>
+                                                    <p className="font-bold text-brand-orange-dark">Rp {String(pricing["60"]).padStart(3, '0')}k</p>
+                                                </div>
+                                                <div className="bg-brand-orange-light p-2 rounded-lg">
+                                                    <p>90 min</p>
+                                                    <p className="font-bold text-brand-orange-dark">Rp {String(pricing["90"]).padStart(3, '0')}k</p>
+                                                </div>
+                                                <div className="bg-brand-orange-light p-2 rounded-lg">
+                                                    <p>120 min</p>
+                                                    <p className="font-bold text-brand-orange-dark">Rp {String(pricing["120"]).padStart(3, '0')}k</p>
+                                                </div>
+                                            </div>
+                                        );
+                                    })()
+                                )}
+                        </div>
         </div>
     );
 };

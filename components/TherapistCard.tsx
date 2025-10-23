@@ -58,7 +58,12 @@ const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook
                         <div>
                            <h3 className="text-lg font-bold text-gray-900">{therapist.name}</h3>
                             <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${style.bg} ${style.text} mt-1`}>
-                                <span className={`w-2 h-2 mr-1.5 rounded-full ${style.dot}`}></span>
+                                <span className="relative mr-1.5">
+                                    {therapist.status === AvailabilityStatus.Available && (
+                                        <span className="absolute inset-0 w-4 h-4 -left-1 -top-1 rounded-full bg-green-400 opacity-40 animate-ping"></span>
+                                    )}
+                                    <span className={`w-2 h-2 rounded-full block ${style.dot}`}></span>
+                                </span>
                                 {therapist.status}
                             </div>
                         </div>
@@ -96,15 +101,15 @@ const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook
             <div className="grid grid-cols-3 gap-2 text-center text-sm text-gray-600">
                 <div className="bg-brand-orange-light p-2 rounded-lg">
                     <p>60 min</p>
-                    <p className="font-bold text-brand-orange-dark">Rp {pricing["60"]}k</p>
+                    <p className="font-bold text-brand-orange-dark">Rp {String(pricing["60"]).padStart(3, '0')}k</p>
                 </div>
                 <div className="bg-brand-orange-light p-2 rounded-lg">
                     <p>90 min</p>
-                    <p className="font-bold text-brand-orange-dark">Rp {pricing["90"]}k</p>
+                    <p className="font-bold text-brand-orange-dark">Rp {String(pricing["90"]).padStart(3, '0')}k</p>
                 </div>
                 <div className="bg-brand-orange-light p-2 rounded-lg">
                     <p>120 min</p>
-                    <p className="font-bold text-brand-orange-dark">Rp {pricing["120"]}k</p>
+                    <p className="font-bold text-brand-orange-dark">Rp {String(pricing["120"]).padStart(3, '0')}k</p>
                 </div>
             </div>
 

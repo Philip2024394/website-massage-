@@ -3,7 +3,7 @@ import { Building, Image as ImageIcon, Link as LinkIcon, LogOut, Menu, MessageSq
 import { Therapist, Place, HotelVillaServiceStatus } from '../types';
 import { parsePricing } from '../utils/appwriteHelpers';
 import ImageUpload from '../components/ImageUpload';
-import Header from '../components/dashboard/Header';
+// import Header from '../components/dashboard/Header';
 import StatCard from '../components/dashboard/StatCard';
 import TabButton from '../components/dashboard/TabButton';
 import Section from '../components/dashboard/Section';
@@ -31,8 +31,8 @@ interface HotelDashboardPageProps {
 }
 
 const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, therapists = [], places = [] }) => {
-    const [activeTab, setActiveTab] = useState<'branding' | 'menu'>('branding');
-    const [isSidebarOpen, setSidebarOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState<'discounts' | 'profile' | 'menu'>('discounts');
+    // Removed sidebar state as sidebar is no longer used
 
     const placeholderImage =
         'https://images.unsplash.com/photo-1600959907703-125ba1374a12?q=80&w=1200&auto=format&fit=crop';
@@ -171,53 +171,51 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
 
     const renderTabContent = () => {
         switch (activeTab) {
-            case 'branding':
+            case 'discounts':
                 return (
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <div className="lg:col-span-2">
-                            <Section title="Branding Controls" description="Customize the look of your shared guest menu.">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <ImageUpload id="hotel-main" label="Banner Image" currentImage={mainImage} onImageChange={setMainImage} heightClass="h-48" />
-                                    <ImageUpload id="hotel-profile" label="Logo / Profile Picture" currentImage={profileImage} onImageChange={setProfileImage} heightClass="h-48" />
-                                </div>
-                                <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <input className="w-full p-3 border rounded-lg" placeholder="Hotel/Villa Name" value={hotelName} onChange={(e) => setHotelName(e.target.value)} />
-                                    <input className="w-full p-3 border rounded-lg" placeholder="Address or Location" value={hotelAddress} onChange={(e) => setHotelAddress(e.target.value)} />
-                                </div>
-                                <div className="mt-4">
-                                    <input className="w-full p-3 border rounded-lg" placeholder="Contact Phone (optional)" value={hotelPhone} onChange={(e) => setHotelPhone(e.target.value)} />
-                                </div>
-                                <div className="mt-6 text-right">
-                                    <button className="bg-brand-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-brand-600">Save Changes</button>
-                                </div>
-                            </Section>
+                    <Section
+                        title="Discounted Therapists & Places"
+                        description="All available massage therapists and places offering discounts for your guests."
+                    >
+                        {providers.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                                {displayProviders.map((p) => (
+                                    <DiscountCard key={`${p.type}-${p.id}`} data={p} />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-20 border-2 border-dashed rounded-2xl">
+                                <div className="text-6xl mb-4">🤷</div>
+                                <h3 className="text-xl font-semibold text-gray-800">No Discounted Partners Found</h3>
+                                <p className="text-gray-500 max-w-md mx-auto mt-2">When therapists or massage places in the IndoStreet network offer a special discount for your guests, they will automatically appear here.</p>
+                            </div>
+                        )}
+                    </Section>
+                );
+            case 'profile':
+                return (
+                    <Section title="Hotel Profile Setup" description="Set up your hotel branding and contact details.">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <ImageUpload id="hotel-main" label="Banner Image" currentImage={mainImage} onImageChange={setMainImage} heightClass="h-48" />
+                            <ImageUpload id="hotel-profile" label="Logo / Profile Picture" currentImage={profileImage} onImageChange={setProfileImage} heightClass="h-48" />
                         </div>
-                        <div className="lg:col-span-1">
-                            <Section title="Live Preview" description="This is how your menu header will appear to guests.">
-                                <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
-                                    <div className="w-full h-32 rounded-xl overflow-hidden mb-4 relative bg-gray-100">
-                                        {mainImage ? <img src={mainImage} alt="main" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-gray-400"><ImageIcon size={32}/></div>}
-                                    </div>
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-200 border-4 border-white -mt-10 shadow-md flex-shrink-0">
-                                            {profileImage ? <img src={profileImage} alt="profile" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-gray-400"><User size={24}/></div>}
-                                        </div>
-                                        <div className="flex-grow">
-                                            <div className="font-bold text-gray-900 text-lg truncate">{hotelName}</div>
-                                            <div className="text-xs text-gray-600 flex items-center gap-1.5"><Building size={12}/> {hotelAddress}</div>
-                                            {hotelPhone && <div className="text-xs text-gray-600 flex items-center gap-1.5 mt-0.5"><Phone size={12}/> {hotelPhone}</div>}
-                                        </div>
-                                    </div>
-                                </div>
-                            </Section>
+                        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input className="w-full p-3 border rounded-lg" placeholder="Hotel/Villa Name" value={hotelName} onChange={(e) => setHotelName(e.target.value)} />
+                            <input className="w-full p-3 border rounded-lg" placeholder="Address or Location" value={hotelAddress} onChange={(e) => setHotelAddress(e.target.value)} />
                         </div>
-                    </div>
+                        <div className="mt-4">
+                            <input className="w-full p-3 border rounded-lg" placeholder="Contact Phone (optional)" value={hotelPhone} onChange={(e) => setHotelPhone(e.target.value)} />
+                        </div>
+                        <div className="mt-6 text-right">
+                            <button className="bg-brand-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-brand-600">Save Changes</button>
+                        </div>
+                    </Section>
                 );
             case 'menu':
                 return (
                     <Section
-                        title="Guest Menu & Providers"
-                        description="A preview of the full menu that your guests will see, with all available partners and discounts."
+                        title="Guest Menu"
+                        description="This is the menu your guests will see, with your branding and all available therapists and places."
                         actions={
                             <div className="flex items-center gap-2">
                                 <button
@@ -234,6 +232,21 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                             </div>
                         }
                     >
+                        <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm mb-8">
+                            <div className="w-full h-32 rounded-xl overflow-hidden mb-4 relative bg-gray-100">
+                                {mainImage ? <img src={mainImage} alt="main" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-gray-400"><ImageIcon size={32}/></div>}
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-200 border-4 border-white -mt-10 shadow-md flex-shrink-0">
+                                    {profileImage ? <img src={profileImage} alt="profile" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-gray-400"><User size={24}/></div>}
+                                </div>
+                                <div className="flex-grow">
+                                    <div className="font-bold text-gray-900 text-lg truncate">{hotelName}</div>
+                                    <div className="text-xs text-gray-600 flex items-center gap-1.5"><Building size={12}/> {hotelAddress}</div>
+                                    {hotelPhone && <div className="text-xs text-gray-600 flex items-center gap-1.5 mt-0.5"><Phone size={12}/> {hotelPhone}</div>}
+                                </div>
+                            </div>
+                        </div>
                         {providers.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
                                 {displayProviders.map((p) => (
@@ -253,72 +266,65 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex">
-            {/* Sidebar */}
-            <aside className={`fixed inset-y-0 left-0 bg-white w-64 p-6 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 transition-transform duration-300 ease-in-out z-40 shadow-lg md:shadow-none`}>
-                <div className="flex items-center justify-between mb-10">
+
+        <div className="min-h-screen bg-gray-50 flex flex-col">
+            {/* Top Navigation Bar */}
+            <header className="bg-white shadow-sm px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sticky top-0 z-30">
+                <div className="flex items-center gap-3">
                     <h1 className="text-2xl font-bold text-gray-800">
                         <span className="text-gray-900">Indo</span><span className="text-brand-500">street</span>
                     </h1>
-                    <button onClick={() => setSidebarOpen(false)} className="md:hidden text-gray-500">
-                        <X size={24} />
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <TabButton
+                            icon={<Tag size={20} />}
+                            label="Discounts"
+                            isActive={activeTab === 'discounts'}
+                            onClick={() => setActiveTab('discounts')}
+                        />
+                        <TabButton
+                            icon={<User size={20} />}
+                            label="Profile"
+                            isActive={activeTab === 'profile'}
+                            onClick={() => setActiveTab('profile')}
+                        />
+                        <TabButton
+                            icon={<Menu size={20} />}
+                            label="Guest Menu"
+                            isActive={activeTab === 'menu'}
+                            onClick={() => setActiveTab('menu')}
+                            badge={providers.length}
+                        />
+                    </div>
                 </div>
-                <nav className="flex flex-col space-y-2">
-                    <TabButton
-                        icon={<ImageIcon size={20} />}
-                        label="Branding"
-                        isActive={activeTab === 'branding'}
-                        onClick={() => setActiveTab('branding')}
+                <div className="flex items-center gap-4">
+                    <div className="text-right">
+                        <p className="font-semibold text-gray-800">{hotelName}</p>
+                        <p className="text-xs text-gray-500">Hotel Partner</p>
+                    </div>
+                    <img
+                        src={profileImage || 'https://ui.shadcn.com/avatars/01.png'}
+                        alt="Hotel Logo"
+                        className="w-10 h-10 rounded-full object-cover border-2 border-brand-100"
                     />
-                    <TabButton
-                        icon={<Menu size={20} />}
-                        label="Guest Menu"
-                        isActive={activeTab === 'menu'}
-                        onClick={() => setActiveTab('menu')}
-                        badge={providers.length}
-                    />
-                </nav>
-                <div className="mt-auto absolute bottom-6 left-6 right-6">
                     <button
                         onClick={onLogout}
-                        className="w-full flex items-center justify-center gap-2 bg-red-50 text-red-600 px-4 py-2.5 rounded-lg hover:bg-red-100 transition-colors font-semibold"
+                        className="flex items-center gap-2 bg-red-50 text-red-600 px-4 py-2.5 rounded-lg hover:bg-red-100 transition-colors font-semibold text-sm"
                     >
                         <LogOut size={16} />
                         <span>Logout</span>
                     </button>
                 </div>
-            </aside>
+            </header>
 
-            <div className="flex-1 flex flex-col">
-                {/* Header */}
-                <Header
-                    title={activeTab === 'branding' ? 'Branding & Menu Customization' : 'Guest Menu Preview'}
-                    onMenuClick={() => setSidebarOpen(true)}
-                >
-                    <div className="flex items-center gap-4">
-                        <div className="text-right">
-                            <p className="font-semibold text-gray-800">{hotelName}</p>
-                            <p className="text-xs text-gray-500">Hotel Partner</p>
-                        </div>
-                        <img
-                            src={profileImage || 'https://ui.shadcn.com/avatars/01.png'}
-                            alt="Hotel Logo"
-                            className="w-10 h-10 rounded-full object-cover border-2 border-brand-100"
-                        />
-                    </div>
-                </Header>
-
-                {/* Main Content */}
-                <main className="flex-1 p-6 lg:p-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                        <StatCard icon={<Users size={24} />} label="Available Partners" value={stats.partners} color="blue" />
-                        <StatCard icon={<Tag size={24} />} label="Average Discount" value={`${stats.avgDiscount}%`} color="green" />
-                        <StatCard icon={<Star size={24} />} label="Top Discount" value={`${stats.topDiscount}%`} color="orange" />
-                    </div>
-                    {renderTabContent()}
-                </main>
-            </div>
+            {/* Main Content */}
+            <main className="flex-1 w-full max-w-5xl mx-auto p-3 sm:p-4 md:p-6 lg:p-8">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 mb-6">
+                    <StatCard icon={<Users size={24} />} label="Available Partners" value={stats.partners} color="blue" />
+                    <StatCard icon={<Tag size={24} />} label="Average Discount" value={`${stats.avgDiscount}%`} color="green" />
+                    <StatCard icon={<Star size={24} />} label="Top Discount" value={`${stats.topDiscount}%`} color="orange" />
+                </div>
+                {renderTabContent()}
+            </main>
 
             {/* QR Modal */}
             {qrOpen && (

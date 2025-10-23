@@ -63,20 +63,20 @@ const AgentAuthPage: React.FC<AgentAuthPageProps> = ({ onRegister, onLogin, onBa
     const switchText = mode === 'register' ? t.switchToLogin : t.switchToRegister;
 
     return (
-        <div className="min-h-screen flex flex-col justify-center bg-gradient-to-br from-blue-600 via-purple-600 to-pink-500 p-4 relative">
-            <button onClick={onBack} className="absolute top-4 left-4 text-white/80 hover:text-white" aria-label="Back to Home">
-                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
+        <div className="min-h-screen flex flex-col justify-center p-4 relative" style={{ backgroundImage: "url('https://ik.imagekit.io/7grri5v7d/massage%20hoter%20villa.png?updatedAt=1760965742264')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
+            <div className="w-full flex justify-center z-30 pt-20 pb-8 absolute top-0 left-0">
+                <h1 className="text-6xl font-extrabold tracking-tight drop-shadow-lg">
+                    <span className="text-white">Indo</span>
+                    <span className="text-orange-500">Street</span>
+                </h1>
+            </div>
+            <button onClick={onBack} className="absolute top-8 left-4 z-20 focus:outline-none" aria-label="Back to Home">
+                <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-orange-500 shadow-lg border-2 border-white transition-all duration-200 hover:bg-orange-600">
+                    <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                </span>
             </button>
-            <div className="w-full max-w-md mx-auto">
-                <div className="bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl shadow-2xl p-8">
-                    <div className="text-center mb-8">
-                        <h1 className="text-3xl font-bold mb-2">
-                            <span className="text-white">Indo</span><span className="text-orange-400">Street</span>
-                        </h1>
-                        <p className="text-white/80">Agent Portal</p>
-                    </div>
+            <div className="w-full max-w-sm mx-auto relative z-20 flex items-center justify-center min-h-[20vh] mt-32">
+                <div className="bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl shadow-2xl p-4 flex flex-col justify-center transition-all duration-300 min-h-[240px] max-h-[340px] w-full max-w-xs">
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <h2 className="text-xl font-semibold text-white text-center mb-6">{title}</h2>
                         {mode === 'register' && (

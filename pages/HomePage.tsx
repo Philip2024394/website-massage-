@@ -287,8 +287,8 @@ const HomePage: React.FC<HomePageProps> = ({ user, loggedInAgent, therapists, pl
                                     onClick={() => { (user ? onLogout() : onLoginClick()); setIsMenuOpen(false); }} 
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-orange-500 group"
                                 >
-                                    <div className="p-3 rounded-lg bg-orange-50 group-hover:bg-orange-100 transition-colors">
-                                        <UserSolidIcon className="w-6 h-6 text-orange-600" />
+                                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl shadow-lg bg-gradient-to-br from-orange-400 via-yellow-300 to-orange-600 border-2 border-white transform hover:scale-105 transition-transform">
+                                        <UserSolidIcon className="w-6 h-6 text-white drop-shadow" />
                                     </div>
                                     <div className="flex-grow">
                                         <h3 className="font-semibold text-gray-800 group-hover:text-orange-600 transition-colors">
@@ -303,8 +303,8 @@ const HomePage: React.FC<HomePageProps> = ({ user, loggedInAgent, therapists, pl
                                     onClick={() => { onCreateProfileClick(); setIsMenuOpen(false); }} 
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-blue-500 group"
                                 >
-                                    <div className="p-3 rounded-lg bg-blue-50 group-hover:bg-blue-100 transition-colors">
-                                        <TherapistIcon className="w-6 h-6 text-blue-600" />
+                                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl shadow-lg bg-gradient-to-br from-blue-400 via-cyan-300 to-blue-700 border-2 border-white transform hover:scale-105 transition-transform">
+                                        <TherapistIcon className="w-6 h-6 text-white drop-shadow" />
                                     </div>
                                     <div className="flex-grow">
                                         <h3 className="font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
@@ -319,8 +319,8 @@ const HomePage: React.FC<HomePageProps> = ({ user, loggedInAgent, therapists, pl
                                     onClick={() => { onCreateProfileClick(); setIsMenuOpen(false); }} 
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-green-500 group"
                                 >
-                                    <div className="p-3 rounded-lg bg-green-50 group-hover:bg-green-100 transition-colors">
-                                        <MassagePlaceIcon className="w-6 h-6 text-green-600" />
+                                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl shadow-lg bg-gradient-to-br from-green-400 via-lime-300 to-green-700 border-2 border-white transform hover:scale-105 transition-transform">
+                                        <MassagePlaceIcon className="w-6 h-6 text-white drop-shadow" />
                                     </div>
                                     <div className="flex-grow">
                                         <h3 className="font-semibold text-gray-800 group-hover:text-green-600 transition-colors">
@@ -335,8 +335,8 @@ const HomePage: React.FC<HomePageProps> = ({ user, loggedInAgent, therapists, pl
                                     onClick={() => { onAgentPortalClick(); setIsMenuOpen(false); }} 
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-purple-500 group"
                                 >
-                                    <div className="p-3 rounded-lg bg-purple-50 group-hover:bg-purple-100 transition-colors">
-                                        <BriefcaseIcon className="w-6 h-6 text-purple-600" />
+                                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl shadow-lg bg-gradient-to-br from-purple-500 via-fuchsia-400 to-purple-800 border-2 border-white transform hover:scale-105 transition-transform">
+                                        <BriefcaseIcon className="w-6 h-6 text-white drop-shadow" />
                                     </div>
                                     <div className="flex-grow">
                                         <h3 className="font-semibold text-gray-800 group-hover:text-purple-600 transition-colors">
@@ -351,8 +351,8 @@ const HomePage: React.FC<HomePageProps> = ({ user, loggedInAgent, therapists, pl
                                     onClick={() => { onHotelPortalClick(); setIsMenuOpen(false); }} 
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-pink-500 group"
                                 >
-                                    <div className="p-3 rounded-lg bg-pink-50 group-hover:bg-pink-100 transition-colors">
-                                        <HotelIcon className="w-6 h-6 text-pink-600" />
+                                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl shadow-lg bg-gradient-to-br from-pink-400 via-rose-300 to-pink-700 border-2 border-white transform hover:scale-105 transition-transform">
+                                        <HotelIcon className="w-6 h-6 text-white drop-shadow" />
                                     </div>
                                     <div className="flex-grow">
                                         <h3 className="font-semibold text-gray-800 group-hover:text-pink-600 transition-colors">
@@ -370,8 +370,8 @@ const HomePage: React.FC<HomePageProps> = ({ user, loggedInAgent, therapists, pl
                                     onClick={() => { onAdminClick(); setIsMenuOpen(false); }} 
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-gradient-to-r from-gray-800 to-gray-900 shadow-sm hover:shadow-md transition-all duration-200 group"
                                 >
-                                    <div className="p-3 rounded-lg bg-white/10 group-hover:bg-white/20 transition-colors">
-                                        <AdminIcon className="w-6 h-6 text-white" />
+                                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl shadow-lg bg-gradient-to-br from-gray-700 via-gray-500 to-gray-900 border-2 border-white transform hover:scale-105 transition-transform">
+                                        <AdminIcon className="w-6 h-6 text-white drop-shadow" />
                                     </div>
                                     <div className="flex-grow">
                                         <h3 className="font-semibold text-white">
@@ -405,7 +405,7 @@ const HomePage: React.FC<HomePageProps> = ({ user, loggedInAgent, therapists, pl
                         onClick={() => setActiveTab('home')} 
                         className={`w-1/2 py-2 px-4 rounded-full flex items-center justify-center gap-2 text-sm font-semibold transition-colors duration-300 ${activeTab === 'home' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
                     >
-                        <HomeIcon className="w-5 h-5" />
+                        <HomeIcon className="w-4 h-4" />
                         {t.home.homeServiceTab}
                     </button>
                     <button 
@@ -416,6 +416,7 @@ const HomePage: React.FC<HomePageProps> = ({ user, loggedInAgent, therapists, pl
                         {t.home.massagePlacesTab}
                     </button>
                 </div>
+
 
                 <div className="space-y-3 mb-6">
                     <div className="flex items-center justify-between">
