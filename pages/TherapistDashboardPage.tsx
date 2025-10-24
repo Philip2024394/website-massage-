@@ -14,6 +14,7 @@ import NotificationBell from '../components/NotificationBell';
 import CustomCheckbox from '../components/CustomCheckbox';
 import LogoutIcon from '../components/icons/LogoutIcon';
 import { MASSAGE_TYPES_CATEGORIZED } from '../constants';
+import TherapistTermsPage from './TherapistTermsPage';
 
 
 interface TherapistDashboardPageProps {
@@ -73,7 +74,6 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [profilePicture, setProfilePicture] = useState('');
-    const [mainImage, setMainImage] = useState('');
     const [whatsappNumber, setWhatsappNumber] = useState('');
     const [massageTypes, setMassageTypes] = useState<string[]>([]);
     const [pricing, setPricing] = useState<Pricing>({ 60: 0, 90: 0, 120: 0 });
@@ -82,6 +82,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
     const [status, setStatus] = useState<AvailabilityStatus>(AvailabilityStatus.Offline);
     const [mapsApiLoaded, setMapsApiLoaded] = useState(false);
     const [activeTab, setActiveTab] = useState('profile');
+    const [showConfirmation, setShowConfirmation] = useState(false);
 
     const locationInputRef = useRef<HTMLInputElement>(null);
     
@@ -114,7 +115,6 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
         setName(mockTherapist.name || '');
         setDescription(mockTherapist.description || '');
         setProfilePicture(mockTherapist.profilePicture || '');
-        setMainImage((mockTherapist as any).mainImage || '');
         setWhatsappNumber(mockTherapist.whatsappNumber || '');
         setMassageTypes(parseMassageTypes(mockTherapist.massageTypes));
         setPricing(parsePricing(mockTherapist.pricing));
@@ -193,6 +193,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
             analytics: therapist?.analytics || stringifyAnalytics({ impressions: 0, profileViews: 0, whatsappClicks: 0 }),
             massageTypes: stringifyMassageTypes(massageTypes),
         });
+        setShowConfirmation(true);
     };
     
     const handlePriceChange = (duration: keyof Pricing, value: string) => {
@@ -338,38 +339,12 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                         onUpdate={handleHotelVillaUpdate}
                     />
                 );
+            case 'terms':
+                return <TherapistTermsPage />;
             case 'profile':
             default:
                 return (
                      <div className="space-y-6">
-                         {/* Important Profile Image Requirements Notice */}
-                         <div className="bg-red-50 border-2 border-red-500 rounded-lg p-4 mb-6">
-                            <div className="flex items-start gap-3">
-                                <span className="text-2xl">⚠️</span>
-                                <div>
-                                    <h3 className="text-red-800 font-bold text-lg mb-2">IMPORTANT: Profile Image Requirements</h3>
-                                    <ul className="text-red-700 text-sm space-y-2">
-                                        <li className="flex items-start gap-2">
-                                            <span className="font-bold">✓</span>
-                                            <span><strong>REQUIRED:</strong> Your profile image MUST show your face - side view or front view only</span>
-                                        </li>
-                                        <li className="flex items-start gap-2">
-                                            <span className="font-bold">✗</span>
-                                            <span><strong>NOT ALLOWED:</strong> Images that do not represent you as the therapist</span>
-                                        </li>
-                                        <li className="flex items-start gap-2">
-                                            <span className="font-bold">⚠</span>
-                                            <span><strong>WARNING:</strong> Accounts with inappropriate or non-representative images will be <strong>BLOCKED</strong> until corrected</span>
-                                        </li>
-                                        <li className="flex items-start gap-2">
-                                            <span className="font-bold">📸</span>
-                                            <span>Live profiles must display professional photos showing the therapist clearly</span>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-
                          <ImageUpload
                             id="profile-picture-upload"
                             label={t.uploadProfilePic}
@@ -378,28 +353,6 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                             variant="profile"
                         />
                          
-                         <ImageUpload
-                            id="main-image-upload"
-                            label="Cover Image (1200x400px recommended)"
-                            currentImage={mainImage}
-                            onImageChange={setMainImage}
-                        />
-
-                         <div>
-                            <label className="block text-sm font-medium text-gray-700">{t.onlineStatusLabel}</label>
-                            <div className="mt-2 flex bg-gray-200 rounded-full p-1">
-                                {Object.values(AvailabilityStatus).map(s => (
-                                    <button
-                                        key={s}
-                                        type="button"
-                                        onClick={() => setStatus(s)}
-                                        className={`w-1/3 py-2 px-2 rounded-full text-sm font-semibold transition-colors duration-300 ${status === s ? 'bg-brand-orange text-white shadow' : 'text-gray-600'}`}
-                                    >
-                                        {s}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700">{t.nameLabel}</label>
                             {renderInput(name, setName, UserSolidIcon)}
@@ -410,7 +363,20 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                 <div className="absolute top-3.5 left-0 pl-3 flex items-center pointer-events-none">
                                     <DocumentTextIcon className="h-5 w-5 text-gray-400" />
                                 </div>
-                                <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className="mt-1 block w-full pl-10 pr-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-orange focus:border-brand-orange text-gray-900" />
+                                <textarea 
+                                    value={description} 
+                                    onChange={e => {
+                                        const words = e.target.value.trim().split(/\s+/);
+                                        if (words.length <= 250 || e.target.value === '') {
+                                            setDescription(e.target.value);
+                                        }
+                                    }} 
+                                    rows={3} 
+                                    className="mt-1 block w-full pl-10 pr-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-orange focus:border-brand-orange text-gray-900" 
+                                />
+                                <p className="text-xs text-gray-500 mt-1">
+                                    {description.trim().split(/\s+/).filter(w => w).length}/250 words
+                                </p>
                             </div>
                         </div>
                         <div>
@@ -422,6 +388,18 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                 <span className="absolute inset-y-0 left-10 pl-2 flex items-center text-gray-500 text-sm pointer-events-none">+62</span>
                                 <input type="tel" value={whatsappNumber} onChange={e => setWhatsappNumber(e.target.value)} placeholder="81234567890" className="block w-full pl-20 pr-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-orange focus:border-brand-orange text-gray-900" />
                             </div>
+                            <Button 
+                                onClick={() => {
+                                    const adminNumber = '6281234567890'; // Replace with actual admin WhatsApp
+                                    const message = `Hello IndoStreet Admin, this is a test message from therapist ${name || 'Therapist'} (ID: ${therapistId}). My WhatsApp number is +62${whatsappNumber}.`;
+                                    window.open(`https://wa.me/${adminNumber}?text=${encodeURIComponent(message)}`, '_blank');
+                                }}
+                                variant="secondary" 
+                                className="flex items-center justify-center gap-2 mt-2 text-sm py-2"
+                            >
+                                <PhoneIcon className="w-4 h-4" />
+                                <span>Test WhatsApp Connection</span>
+                            </Button>
                         </div>
                          <div>
                             <label className="block text-sm font-medium text-gray-700">{t.massageTypesLabel}</label>
@@ -444,55 +422,66 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                             </div>
                         </div>
                          <div>
-                            <label className="block text-sm font-medium text-gray-700">{t.locationLabel}</label>
-                            {mapsApiLoaded ? (
-                                <>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <MapPinIcon className="h-5 w-5 text-gray-400" />
-                                        </div>
-                                        <input ref={locationInputRef} type="text" value={location} onChange={e => setLocation(e.target.value)} placeholder={t.locationPlaceholder} className="mt-1 block w-full pl-10 pr-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-orange focus:border-brand-orange text-gray-900" />
+                            <label className="block text-sm font-medium text-gray-700 mb-2">{t.locationLabel || 'Location'}</label>
+                            <div className="bg-white border-2 border-gray-200 rounded-lg p-4">
+                                <div className="relative mb-3">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <MapPinIcon className="h-5 w-5 text-gray-400" />
                                     </div>
-                                    <Button onClick={handleSetLocation} variant="secondary" className="flex items-center justify-center gap-2 mt-2 text-sm py-2">
-                                        <MapPinIcon className="w-4 h-4" />
-                                        <span>{t.setLocation}</span>
-                                    </Button>
-                                </>
-                            ) : (
-                                <div className="mt-2 p-3 bg-yellow-100 text-yellow-800 text-sm rounded-md">
-                                   {t.mapsApiError}
+                                    <input 
+                                        ref={locationInputRef} 
+                                        type="text" 
+                                        value={location} 
+                                        onChange={e => setLocation(e.target.value)} 
+                                        placeholder={t.locationPlaceholder || 'Enter your location'} 
+                                        className="block w-full pl-10 pr-3 py-3 bg-gray-50 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-orange focus:border-brand-orange text-gray-900 text-sm" 
+                                        readOnly={!mapsApiLoaded}
+                                    />
                                 </div>
-                            )}
+                                <Button 
+                                    onClick={handleSetLocation} 
+                                    variant="secondary" 
+                                    className="w-full flex items-center justify-center gap-2 py-3 bg-brand-orange text-white hover:bg-orange-600 border-0"
+                                >
+                                    <MapPinIcon className="w-5 h-5" />
+                                    <span className="font-semibold">Set Location from Device</span>
+                                </Button>
+                                {location && (
+                                    <p className="text-xs text-gray-500 mt-2 text-center">
+                                        📍 {location.substring(0, 50)}{location.length > 50 ? '...' : ''}
+                                    </p>
+                                )}
+                            </div>
                         </div>
                         <div>
-                            <h3 className="text-md font-medium text-gray-800">{t.pricingTitle}</h3>
-                            <div className="grid grid-cols-3 gap-2 mt-2">
+                            <h3 className="text-sm sm:text-md font-medium text-gray-800 mb-2">{t.pricingTitle || 'Pricing'}</h3>
+                            <div className="grid grid-cols-3 gap-2 sm:gap-3">
                                 <div>
-                                   <label className="block text-xs font-medium text-gray-600">{t['60min']}</label>
+                                   <label className="block text-xs font-medium text-gray-600 mb-1">{t['60min'] || '60min'}</label>
                                    <div className="relative">
-                                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
-                                       <input type="text" value={formatPriceDisplay(pricing["60"])} onChange={e => handlePriceChange("60", e.target.value)} placeholder="e.g., 250k" className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
+                                       <div className="absolute inset-y-0 left-0 pl-2 sm:pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" /></div>
+                                       <input type="text" value={formatPriceDisplay(pricing["60"])} onChange={e => handlePriceChange("60", e.target.value)} placeholder="250k" className="block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm" />
                                     </div>
                                 </div>
                                 <div>
-                                   <label className="block text-xs font-medium text-gray-600">{t['90min']}</label>
+                                   <label className="block text-xs font-medium text-gray-600 mb-1">{t['90min'] || '90min'}</label>
                                      <div className="relative">
-                                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
-                                       <input type="text" value={formatPriceDisplay(pricing["90"])} onChange={e => handlePriceChange("90", e.target.value)} placeholder="e.g., 350k" className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
+                                       <div className="absolute inset-y-0 left-0 pl-2 sm:pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" /></div>
+                                       <input type="text" value={formatPriceDisplay(pricing["90"])} onChange={e => handlePriceChange("90", e.target.value)} placeholder="350k" className="block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm" />
                                     </div>
                                 </div>
                                  <div>
-                                   <label className="block text-xs font-medium text-gray-600">{t['120min']}</label>
+                                   <label className="block text-xs font-medium text-gray-600 mb-1">{t['120min'] || '120min'}</label>
                                     <div className="relative">
-                                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
-                                       <input type="text" value={formatPriceDisplay(pricing["120"])} onChange={e => handlePriceChange("120", e.target.value)} placeholder="e.g., 450k" className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
+                                       <div className="absolute inset-y-0 left-0 pl-2 sm:pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" /></div>
+                                       <input type="text" value={formatPriceDisplay(pricing["120"])} onChange={e => handlePriceChange("120", e.target.value)} placeholder="450k" className="block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm" />
                                     </div>
                                 </div>
                             </div>
                         </div>
                         
                         <div className="pt-4">
-                            <Button onClick={handleSave}>{t.saveButton}</Button>
+                            <Button onClick={handleSave} className="w-full py-3 text-base font-semibold">{t.saveButton || 'Save Profile'}</Button>
                         </div>
                     </div>
                 )
@@ -501,12 +490,12 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
 
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 pb-20">
             {/* Header */}
-            <header className="bg-white shadow-sm">
-                <div className="flex justify-between items-center p-4">
-                    <h1 className="text-xl font-bold text-gray-800">{t.therapistTitle}</h1>
-                    <div className="flex items-center gap-3">
+            <header className="bg-white shadow-sm sticky top-0 z-10">
+                <div className="flex justify-between items-center p-3 sm:p-4">
+                    <h1 className="text-lg sm:text-xl font-bold text-gray-800">{t.therapistTitle}</h1>
+                    <div className="flex items-center gap-2 sm:gap-3">
                         <NotificationBell count={unreadNotificationsCount} onClick={onNavigateToNotifications} />
                         <button 
                             onClick={onLogout}
@@ -520,23 +509,44 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
             </header>
 
             {/* Content Area */}
-            <div className="p-4">
-                <div className={`p-4 rounded-lg mb-6 text-center text-sm font-medium ${therapist?.isLive ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                    {therapist?.isLive ? t.profileLive : t.pendingApproval}
-                </div>
-
-                    <div className="mb-6">
-                        <div className="flex border-b border-gray-200">
-                            <button onClick={() => setActiveTab('profile')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'profile' ? 'border-b-2 border-brand-orange text-brand-orange' : 'text-gray-500'}`}>{t.tabs.profile}</button>
-                            <button onClick={() => setActiveTab('bookings')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'bookings' ? 'border-b-2 border-brand-orange text-brand-orange' : 'text-gray-500'}`}>{t.tabs.bookings}</button>
-                            <button onClick={() => setActiveTab('analytics')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'analytics' ? 'border-b-2 border-brand-orange text-brand-orange' : 'text-gray-500'}`}>{t.tabs.analytics}</button>
-                            <button onClick={() => setActiveTab('hotelVilla')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'hotelVilla' ? 'border-b-2 border-brand-orange text-brand-orange' : 'text-gray-500'}`}>Hotel & Villa</button>
+            <div className="p-3 sm:p-4">
+                    <div className="mb-4 sm:mb-6">
+                        <div className="flex overflow-x-auto border-b border-gray-200 -mx-3 px-3 sm:mx-0 sm:px-0 scrollbar-hide">
+                            <button onClick={() => setActiveTab('profile')} className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium whitespace-nowrap ${activeTab === 'profile' ? 'border-b-2 border-brand-orange text-brand-orange' : 'text-gray-500'}`}>{t.tabs?.profile || 'Profile'}</button>
+                            <button onClick={() => setActiveTab('bookings')} className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium whitespace-nowrap ${activeTab === 'bookings' ? 'border-b-2 border-brand-orange text-brand-orange' : 'text-gray-500'}`}>{t.tabs?.bookings || 'Bookings'}</button>
+                            <button onClick={() => setActiveTab('analytics')} className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium whitespace-nowrap ${activeTab === 'analytics' ? 'border-b-2 border-brand-orange text-brand-orange' : 'text-gray-500'}`}>{t.tabs?.analytics || 'Analytics'}</button>
+                            <button onClick={() => setActiveTab('terms')} className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium whitespace-nowrap ${activeTab === 'terms' ? 'border-b-2 border-brand-orange text-brand-orange' : 'text-gray-500'}`}>Terms</button>
+                            <button onClick={() => setActiveTab('hotelVilla')} className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium whitespace-nowrap ${activeTab === 'hotelVilla' ? 'border-b-2 border-brand-orange text-brand-orange' : 'text-gray-500'}`}>Hotel & Villa</button>
                         </div>
                     </div>
 
                     {renderContent()}
                 </div>
-            </div>
+            
+
+            {/* Confirmation Popup */}
+            {showConfirmation && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 text-center">
+                        <div className="mb-4">
+                            <div className="mx-auto w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center">
+                                <svg className="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">Profile Saved!</h3>
+                        <p className="text-gray-600 mb-6">Admin Will Confirm Your Profile Soon</p>
+                        <button
+                            onClick={() => setShowConfirmation(false)}
+                            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+                        >
+                            Got it
+                        </button>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 };
 

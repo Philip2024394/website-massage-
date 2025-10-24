@@ -9,13 +9,7 @@ interface TherapistStatusPageProps {
     t: any;
 }
 
-const DashboardIcon: React.FC<{ className?: string }> = ({ className = "w-6 h-6" }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-    </svg>
-);
-
-const TherapistStatusPage: React.FC<TherapistStatusPageProps> = ({ therapist, onStatusChange, onNavigateToDashboard, t: _t }) => {
+const TherapistStatusPage: React.FC<TherapistStatusPageProps> = ({ therapist, onStatusChange, onNavigateToDashboard: _onNavigateToDashboard, t: _t }) => {
     const [currentStatus, setCurrentStatus] = useState<AvailabilityStatus>(therapist?.status || AvailabilityStatus.Offline);
 
     useEffect(() => {
@@ -35,7 +29,7 @@ const TherapistStatusPage: React.FC<TherapistStatusPageProps> = ({ therapist, on
             hoverBg: 'hover:bg-green-600',
             text: 'text-white',
             label: 'Available',
-            icon: '✓',
+            icon: '🛏️',
             description: 'Ready to accept bookings'
         },
         [AvailabilityStatus.Busy]: {
@@ -51,14 +45,14 @@ const TherapistStatusPage: React.FC<TherapistStatusPageProps> = ({ therapist, on
             hoverBg: 'hover:bg-red-600',
             text: 'text-white',
             label: 'Offline',
-            icon: '✕',
+            icon: '☕',
             description: 'Not accepting bookings'
         }
     };
 
     return (
         <div 
-            className="min-h-screen flex flex-col items-center justify-center p-4 relative"
+            className="h-screen overflow-hidden flex flex-col items-center justify-center p-4 relative"
             style={{
                 backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/garden%20forest.png?updatedAt=1761334454082)',
                 backgroundSize: 'cover',
@@ -69,27 +63,16 @@ const TherapistStatusPage: React.FC<TherapistStatusPageProps> = ({ therapist, on
             {/* Overlay for better text readability */}
             <div className="absolute inset-0 bg-black/20"></div>
 
-            {/* Dashboard Icon - Top Right */}
-            <button
-                onClick={onNavigateToDashboard}
-                className="fixed top-6 right-6 w-14 h-14 bg-orange-500 rounded-full shadow-lg flex items-center justify-center hover:bg-orange-600 transition-all hover:shadow-xl z-20"
-                aria-label="Go to Dashboard"
-            >
-                <DashboardIcon className="w-7 h-7 text-white" />
-            </button>
-
             {/* Main Content */}
             <div className="max-w-md w-full relative z-10">
                 {/* Welcome Section */}
                 <div className="text-center mb-12">
                     <div className="mb-6">
-                        <h1 className="text-4xl font-bold text-white mb-1 drop-shadow-lg">IndoStreet</h1>
-                        <p className="text-sm text-white/90 drop-shadow">Home Massage Services</p>
+                        <h1 className="text-5xl font-bold drop-shadow-lg">
+                            <span className="text-white">Indo</span><span className="text-orange-500">Street</span>
+                        </h1>
+                        <p className="text-lg text-white/90 drop-shadow mt-3">Set Your Online Status</p>
                     </div>
-                    <h2 className="text-2xl font-bold text-white mb-2 drop-shadow-lg">
-                        Welcome, {therapist?.name || 'Therapist'}!
-                    </h2>
-                    <p className="text-white/90 drop-shadow">Set your availability status</p>
                 </div>
 
                 {/* Status Buttons */}
@@ -128,11 +111,6 @@ const TherapistStatusPage: React.FC<TherapistStatusPageProps> = ({ therapist, on
                             </button>
                         );
                     })}
-                </div>
-
-                {/* Quick Tip */}
-                <div className="mt-8 text-center text-sm text-white/80 drop-shadow">
-                    <p>💡 Tip: Tap the dashboard icon above to access your full profile</p>
                 </div>
             </div>
         </div>

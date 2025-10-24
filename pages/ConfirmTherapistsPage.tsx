@@ -152,7 +152,8 @@ const ConfirmTherapistsPage: React.FC = () => {
                 key={therapist.$id}
                 className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow"
               >
-                <div className="flex flex-col md:flex-row md:items-center gap-4">
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                   {/* Profile Image Section */}
                   <div className="flex-shrink-0">
                     {therapist.profilePicture ? (
@@ -205,14 +206,15 @@ const ConfirmTherapistsPage: React.FC = () => {
                       </p>
                     )}
                   </div>
+                  </div>
 
                   {/* Actions Section */}
-                  <div className="flex flex-col gap-2 md:items-end">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
                     {therapist.status === 'pending' || therapist.status === 'deactivated' || (therapist.status === 'active' && isExpired(therapist.activeMembershipDate)) ? (
-                      <div className="flex flex-col sm:flex-row gap-2">
+                      <div className="flex flex-col sm:flex-row gap-2 w-full">
                         <select
                           id={`membership-${therapist.$id}`}
-                          className="border border-gray-300 rounded px-2 py-1.5 text-sm focus:ring-2 focus:ring-brand-green focus:border-transparent"
+                          className="border border-gray-300 rounded px-2 py-1.5 text-sm focus:ring-2 focus:ring-brand-green focus:border-transparent flex-1"
                           disabled={updatingId === therapist.$id}
                         >
                           {membershipOptions.map((opt) => (
@@ -223,7 +225,7 @@ const ConfirmTherapistsPage: React.FC = () => {
                         </select>
                         <Button
                           variant="primary"
-                          className="px-4 py-1.5 text-sm whitespace-nowrap"
+                          className="px-4 py-1.5 text-sm whitespace-nowrap flex-shrink-0"
                           disabled={updatingId === therapist.$id}
                           onClick={() => {
                             const select = document.getElementById(`membership-${therapist.$id}`) as HTMLSelectElement;
@@ -234,10 +236,10 @@ const ConfirmTherapistsPage: React.FC = () => {
                         </Button>
                       </div>
                     ) : (
-                      <div className="flex gap-2">
+                      <div className="flex flex-col sm:flex-row gap-2 w-full">
                         <Button
                           variant="secondary"
-                          className="px-4 py-1.5 text-sm"
+                          className="px-4 py-1.5 text-sm flex-shrink-0"
                           disabled={updatingId === therapist.$id}
                           onClick={() => handleDeactivate(therapist.$id)}
                         >
@@ -245,7 +247,7 @@ const ConfirmTherapistsPage: React.FC = () => {
                         </Button>
                         <select
                           id={`renew-${therapist.$id}`}
-                          className="border border-gray-300 rounded px-2 py-1.5 text-sm focus:ring-2 focus:ring-brand-green focus:border-transparent"
+                          className="border border-gray-300 rounded px-2 py-1.5 text-sm focus:ring-2 focus:ring-brand-green focus:border-transparent flex-1"
                           disabled={updatingId === therapist.$id}
                         >
                           {membershipOptions.map((opt) => (
@@ -256,7 +258,7 @@ const ConfirmTherapistsPage: React.FC = () => {
                         </select>
                         <Button
                           variant="primary"
-                          className="px-4 py-1.5 text-sm"
+                          className="px-4 py-1.5 text-sm flex-shrink-0"
                           disabled={updatingId === therapist.$id}
                           onClick={() => {
                             const select = document.getElementById(`renew-${therapist.$id}`) as HTMLSelectElement;

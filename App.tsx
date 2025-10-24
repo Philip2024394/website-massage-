@@ -28,11 +28,12 @@ import NotificationsPage from './pages/NotificationsPage';
 import MassageTypesPage from './pages/MassageTypesPage';
 import HotelDashboardPage from './pages/HotelDashboardPage';
 import VillaDashboardPage from './pages/VillaDashboardPage';
+import JoinIndoStreetPage from './pages/JoinIndoStreetPage';
 // import UnifiedLoginPage from './pages/UnifiedLoginPage';
 import { translations } from './translations/index.ts';
 import { therapistService, placeService, agentService } from './lib/appwriteService';
 
-type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistStatus' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'agentAuth' | 'agentDashboard' | 'agentTerms' | 'serviceTerms' | 'privacy' | 'membership' | 'booking' | 'notifications' | 'massageTypes' | 'hotelLogin' | 'hotelDashboard' | 'villaLogin' | 'villaDashboard' | 'unifiedLogin';
+type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistStatus' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'agentAuth' | 'agentDashboard' | 'agentTerms' | 'serviceTerms' | 'privacy' | 'membership' | 'booking' | 'bookings' | 'notifications' | 'massageTypes' | 'hotelLogin' | 'hotelDashboard' | 'villaLogin' | 'villaDashboard' | 'unifiedLogin' | 'joinIndoStreet';
 type Language = 'en' | 'id';
 type LoggedInProvider = { id: number | string; type: 'therapist' | 'place' }; // Support both number and string IDs for Appwrite compatibility
 
@@ -499,7 +500,8 @@ const App: React.FC = () => {
         }
 
         switch (page) {
-            case 'landing': return <LandingPage onLanguageSelect={handleLanguageSelect} />;
+            case 'landing': return <LandingPage onLanguageSelect={handleLanguageSelect} onJoinClick={() => setPage('joinIndoStreet')} />;
+            case 'joinIndoStreet': return <JoinIndoStreetPage />;
             // case 'auth': return <AuthPage onAuthSuccess={() => setPage('home')} onBack={handleBackToHome} t={t.auth} />;
             case 'unifiedLogin': return <UnifiedLoginPage />;
             case 'home':
@@ -634,8 +636,8 @@ const App: React.FC = () => {
                     hasWhatsAppClick={hasWhatsAppClick}
                     onHomeClick={() => setPage(loggedInProvider ? (loggedInProvider.type === 'therapist' ? 'therapistStatus' : 'placeDashboard') : 'home')}
                     onNotificationsClick={() => setPage('notifications')}
-                    onBookingsClick={() => setPage(loggedInProvider ? (loggedInProvider.type === 'therapist' ? 'therapistStatus' : 'placeDashboard') : 'home')}
-                    onProfileClick={() => setPage(loggedInProvider ? (loggedInProvider.type === 'therapist' ? 'therapistStatus' : 'placeDashboard') : 'home')}
+                    onBookingsClick={() => setPage('bookings')}
+                    onProfileClick={() => setPage(loggedInProvider ? (loggedInProvider.type === 'therapist' ? 'therapistDashboard' : 'placeDashboard') : 'home')}
                     t={t} 
                 />
             )}
