@@ -34,20 +34,31 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ id, label, currentImage, onIm
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
+            console.log('📸 Image selected:', file.name, 'Size:', file.size, 'Type:', file.type);
+            
             const reader = new FileReader();
             reader.onloadend = async () => {
                 const result = reader.result as string;
+                console.log('📸 Image read as base64, length:', result.length);
+                
+                // Set preview immediately for better UX
                 setPreview(result);
                 
                 // Upload to Appwrite Storage and get URL
                 try {
+                    console.log('📤 Starting upload to Appwrite Storage...');
                     const imageUrl = await imageUploadService.uploadProfileImage(result);
+                    console.log('✅ Upload successful! URL:', imageUrl);
                     onImageChange(imageUrl);
                 } catch (error) {
-                    console.error('Error uploading image:', error);
-                    alert('Error uploading image. Please try again.');
+                    console.error('❌ Error uploading image:', error);
+                    alert(`Error uploading image: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`);
                     setPreview(null);
                 }
+            };
+            reader.onerror = (error) => {
+                console.error('❌ Error reading file:', error);
+                alert('Error reading file. Please try again.');
             };
             reader.readAsDataURL(file);
         }
@@ -84,6 +95,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ id, label, currentImage, onIm
                     id={id}
                     type="file"
                     accept="image/*"
+                    capture="environment"
                     ref={fileInputRef}
                     onChange={handleFileChange}
                     className="hidden"

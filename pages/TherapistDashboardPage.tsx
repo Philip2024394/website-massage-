@@ -118,6 +118,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
         setName(mockTherapist.name || '');
         setDescription(mockTherapist.description || '');
         setProfilePicture(mockTherapist.profilePicture || '');
+        console.log('📷 Initial profilePicture from mockTherapist:', mockTherapist.profilePicture);
         setWhatsappNumber(mockTherapist.whatsappNumber || '');
         setYearsOfExperience((mockTherapist as any).yearsOfExperience || 0);
         setMassageTypes(parseMassageTypes(mockTherapist.massageTypes));
@@ -349,13 +350,19 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                 return <TherapistTermsPage />;
             case 'profile':
             default:
+                const handleProfilePictureChange = (imageUrl: string) => {
+                    console.log('🖼️ Profile picture changed to:', imageUrl);
+                    console.log('🖼️ URL length:', imageUrl.length);
+                    setProfilePicture(imageUrl);
+                };
+                
                 return (
                      <div className="space-y-6">
                          <ImageUpload
                             id="profile-picture-upload"
                             label={t.uploadProfilePic}
                             currentImage={profilePicture}
-                            onImageChange={setProfilePicture}
+                            onImageChange={handleProfilePictureChange}
                             variant="profile"
                         />
                          

@@ -270,6 +270,9 @@ const App: React.FC = () => {
             
             // Validate profilePicture length (max 512 chars for Appwrite)
             const profilePicture = therapistData.profilePicture || '';
+            console.log('💾 Saving therapist profile with profilePicture:', profilePicture);
+            console.log('📏 ProfilePicture length:', profilePicture.length);
+            
             if (profilePicture.length > 512) {
                 alert('Profile picture URL is too long. Please use a shorter URL or upload the image to a hosting service.');
                 return;

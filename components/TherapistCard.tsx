@@ -108,10 +108,14 @@ const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook
                 <div className="flex items-start gap-4">
                     {/* Profile Picture - Left Side */}
                     <img 
-                        className="w-20 h-20 rounded-full object-cover border-2 border-white shadow-lg" 
+                        className="w-20 h-20 rounded-full object-cover border-2 border-white shadow-lg bg-gray-100" 
                         style={{ marginTop: mainImage ? '-3rem' : '0' }}
-                        src={therapist.profilePicture} 
-                        alt={therapist.name} 
+                        src={therapist.profilePicture || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="80" height="80"%3E%3Crect fill="%23e5e7eb" width="80" height="80"/%3E%3Cpath fill="%239ca3af" d="M40 20c5.5 0 10 4.5 10 10s-4.5 10-10 10-10-4.5-10-10 4.5-10 10-10zm0 26c6.7 0 20 3.4 20 10v4H20v-4c0-6.6 13.3-10 20-10z"/%3E%3C/svg%3E'} 
+                        alt={therapist.name}
+                        onError={(e) => {
+                            console.error('Failed to load profile image for:', therapist.name);
+                            e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="80" height="80"%3E%3Crect fill="%23e5e7eb" width="80" height="80"/%3E%3Cpath fill="%239ca3af" d="M40 20c5.5 0 10 4.5 10 10s-4.5 10-10 10-10-4.5-10-10 4.5-10 10-10zm0 26c6.7 0 20 3.4 20 10v4H20v-4c0-6.6 13.3-10 20-10z"/%3E%3C/svg%3E';
+                        }}
                     />
                     <div className="flex-grow">
                         <div className="flex justify-between items-start">
