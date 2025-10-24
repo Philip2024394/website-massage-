@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { imageUploadService } from '../lib/appwriteService';
 
 interface ImageUploadProps {
     id: string;
@@ -30,14 +31,23 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ id, label, currentImage, onIm
         setPreview(currentImage);
     }, [currentImage]);
 
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
             const reader = new FileReader();
-            reader.onloadend = () => {
+            reader.onloadend = async () => {
                 const result = reader.result as string;
                 setPreview(result);
-                onImageChange(result);
+                
+                // Upload to Appwrite Storage and get URL
+                try {
+                    const imageUrl = await imageUploadService.uploadProfileImage(result);
+                    onImageChange(imageUrl);
+                } catch (error) {
+                    console.error('Error uploading image:', error);
+                    alert('Error uploading image. Please try again.');
+                    setPreview(null);
+                }
             };
             reader.readAsDataURL(file);
         }

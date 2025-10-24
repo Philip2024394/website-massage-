@@ -41,14 +41,14 @@ const HotelVillaOptIn: React.FC<HotelVillaOptInProps> = ({
     };
 
     return (
-        <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center justify-between mb-4">
-                <div>
-                    <h3 className="text-lg font-semibold text-gray-800">Hotel & Villa Services</h3>
+        <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+            <div className="mb-6">
+                <div className="mb-4">
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">Hotel & Villa Services</h3>
                     <p className="text-sm text-gray-600">Offer your services to hotel and villa guests with special discounts</p>
                 </div>
-                <div className="flex items-center">
-                    <span className={`text-sm font-medium mr-3 ${isOptedIn ? 'text-green-600' : 'text-gray-500'}`}>
+                <div className="flex items-center justify-between bg-gray-50 p-4 rounded-lg">
+                    <span className={`text-sm font-medium ${isOptedIn ? 'text-green-600' : 'text-gray-500'}`}>
                         {isOptedIn ? 'Opted In' : 'Not Opted In'}
                     </span>
                     <button
@@ -120,28 +120,28 @@ const HotelVillaOptIn: React.FC<HotelVillaOptInProps> = ({
                         </div>
                     </div>
 
-                    <div className="flex justify-between items-center pt-4 border-t border-gray-200">
-                        <div className="text-sm text-gray-600">
-                            <p><strong>Benefits:</strong></p>
-                            <ul className="list-disc list-inside text-xs space-y-1 mt-1">
+                    <div className="mt-6 pt-4 border-t border-gray-200">
+                        <div className="text-sm text-gray-600 mb-4">
+                            <p className="font-semibold mb-2">Benefits:</p>
+                            <ul className="list-disc list-inside text-xs sm:text-sm space-y-1">
                                 <li>Increased visibility to hotel & villa guests</li>
                                 <li>Exclusive partnerships with premium properties</li>
                                 <li>Higher booking volume potential</li>
                                 <li>Access to QR code menu systems</li>
                             </ul>
                         </div>
-                        <div className="space-x-2">
+                        <div className="flex flex-col sm:flex-row gap-2">
                             {isEditing ? (
                                 <>
                                     <button
                                         onClick={() => setIsEditing(false)}
-                                        className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
+                                        className="flex-1 px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
                                     >
                                         Cancel
                                     </button>
                                     <button
                                         onClick={handleUpdateDiscounts}
-                                        className="px-4 py-2 text-sm bg-orange-500 text-white rounded-md hover:bg-orange-600"
+                                        className="flex-1 px-4 py-2 text-sm bg-orange-500 text-white rounded-md hover:bg-orange-600"
                                     >
                                         Save Changes
                                     </button>
@@ -149,7 +149,7 @@ const HotelVillaOptIn: React.FC<HotelVillaOptInProps> = ({
                             ) : (
                                 <button
                                     onClick={() => setIsEditing(true)}
-                                    className="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
+                                    className="w-full px-4 py-3 text-sm bg-orange-500 text-white rounded-md hover:bg-orange-600 font-medium"
                                 >
                                     Edit Discounts
                                 </button>

@@ -1,3 +1,38 @@
+// --- Image Upload Service ---
+export const imageUploadService = {
+    async uploadProfileImage(base64Image: string): Promise<string> {
+        try {
+            // Convert base64 to blob
+            const base64Data = base64Image.split(',')[1];
+            const byteCharacters = atob(base64Data);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            const blob = new Blob([byteArray], { type: 'image/jpeg' });
+            
+            // Create a File object
+            const fileName = `profile_${Date.now()}.jpg`;
+            const file = new File([blob], fileName, { type: 'image/jpeg' });
+            
+            // Upload to Appwrite Storage
+            const response = await storage.createFile(
+                APPWRITE_CONFIG.bucketId,
+                ID.unique(),
+                file
+            );
+            
+            // Return the file view URL
+            const fileUrl = `${APPWRITE_CONFIG.endpoint}/storage/buckets/${APPWRITE_CONFIG.bucketId}/files/${response.$id}/view?project=${APPWRITE_CONFIG.projectId}`;
+            return fileUrl;
+        } catch (error) {
+            console.error('Error uploading profile image:', error);
+            throw error;
+        }
+    }
+};
+
 // --- Custom Links Service for Drawer ---
 export const customLinksService = {
     async uploadIcon(base64Image: string): Promise<string> {

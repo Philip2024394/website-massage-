@@ -265,21 +265,48 @@ const App: React.FC = () => {
         if (!loggedInProvider) return;
         
         try {
-            const updateData: any = {
-                ...therapistData,
-                pricing: typeof therapistData.pricing === 'string' ? therapistData.pricing : JSON.stringify(therapistData.pricing),
-                analytics: typeof therapistData.analytics === 'string' ? therapistData.analytics : JSON.stringify(therapistData.analytics),
-            };
-            
-            // Handle thumbnailImages if present
-            if ('thumbnailImages' in therapistData) {
-                const thumbs = (therapistData as any).thumbnailImages;
-                updateData.thumbnailImages = Array.isArray(thumbs) ? JSON.stringify(thumbs) : thumbs;
-            }
-            
             // Use string ID for Appwrite
             const therapistId = typeof loggedInProvider.id === 'string' ? loggedInProvider.id : loggedInProvider.id.toString();
-            await therapistService.update(therapistId, updateData);
+            
+            // Validate profilePicture length (max 512 chars for Appwrite)
+            const profilePicture = therapistData.profilePicture || '';
+            if (profilePicture.length > 512) {
+                alert('Profile picture URL is too long. Please use a shorter URL or upload the image to a hosting service.');
+                return;
+            }
+            
+            const updateData: any = {
+                ...therapistData,
+                profilePicture: profilePicture, // Ensure it's within 512 char limit
+                id: therapistId, // Add required id field
+                therapistId: therapistId, // Add required therapistId field
+                hotelId: '', // Required by schema but not used for therapists (only for hotel/villa services)
+                pricing: typeof therapistData.pricing === 'string' ? therapistData.pricing : JSON.stringify(therapistData.pricing),
+                analytics: typeof therapistData.analytics === 'string' ? therapistData.analytics : JSON.stringify(therapistData.analytics),
+                specialization: therapistData.massageTypes || '[]', // Add required specialization field
+                yearsOfExperience: (therapistData as any).yearsOfExperience || 0, // Add required yearsOfExperience field
+                isLicensed: (therapistData as any).isLicensed || false, // Add required isLicensed field
+                availability: '[]', // Required by Appwrite schema (empty array for therapists who use status instead)
+                hourlyRate: 100, // Required by schema (50-500 range) - therapists use pricing for 60/90/120 min sessions instead
+            };
+            
+            // Try to update first, if document doesn't exist, create it
+            try {
+                await therapistService.update(therapistId, updateData);
+            } catch (error: any) {
+                // If document not found, create new one
+                if (error.message?.includes('not be found') || error.code === 404) {
+                    const createData = {
+                        ...updateData,
+                        isLive: false,
+                        email: `therapist${therapistId}@indostreet.com`, // Placeholder email
+                    };
+                    await therapistService.create(createData);
+                } else {
+                    throw error;
+                }
+            }
+            
             alert('Profile saved successfully!');
         } catch (error: any) {
             console.error('Save error:', error);

@@ -78,39 +78,33 @@ const Footer: React.FC<FooterProps> = ({
                     {/* Home */}
                     <button 
                         onClick={onHomeClick}
-                        className={`flex flex-col items-center justify-center flex-1 h-full ${
-                            currentPage === 'home' ? 'text-orange-500' : 'text-gray-600'
-                        }`}
+                        className="flex flex-col items-center justify-center flex-1 h-full"
                     >
-                        <HomeIcon className="w-6 h-6" />
-                        <span className="text-xs mt-1">Home</span>
+                        <HomeIcon className="w-6 h-6 text-orange-500" />
+                        <span className="text-xs mt-1 text-gray-900">Home</span>
                     </button>
 
                     {/* Bookings/Calendar with alert dot */}
                     <button 
                         onClick={onBookingsClick}
-                        className={`flex flex-col items-center justify-center flex-1 h-full relative ${
-                            currentPage === 'bookings' ? 'text-orange-500' : 'text-gray-600'
-                        }`}
+                        className="flex flex-col items-center justify-center flex-1 h-full relative"
                     >
                         <div className="relative">
-                            <CalendarIcon className="w-6 h-6" />
+                            <CalendarIcon className="w-6 h-6 text-orange-500" />
                             {hasNewBookings && (
                                 <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
                             )}
                         </div>
-                        <span className="text-xs mt-1">Bookings</span>
+                        <span className="text-xs mt-1 text-gray-900">Bookings</span>
                     </button>
 
                     {/* Notifications with badge and WhatsApp alert */}
                     <button 
                         onClick={onNotificationsClick}
-                        className={`flex flex-col items-center justify-center flex-1 h-full relative ${
-                            currentPage === 'notifications' ? 'text-orange-500' : 'text-gray-600'
-                        }`}
+                        className="flex flex-col items-center justify-center flex-1 h-full relative"
                     >
                         <div className="relative">
-                            <BellIcon className="w-6 h-6" />
+                            <BellIcon className="w-6 h-6 text-orange-500" />
                             {(unreadNotifications > 0 || hasWhatsAppClick) && (
                                 <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
                             )}
@@ -120,20 +114,18 @@ const Footer: React.FC<FooterProps> = ({
                                 </span>
                             )}
                         </div>
-                        <span className="text-xs mt-1">Alerts</span>
+                        <span className="text-xs mt-1 text-gray-900">Alerts</span>
                     </button>
 
                     {/* Profile */}
                     <button 
                         onClick={onProfileClick}
-                        className={`flex flex-col items-center justify-center flex-1 h-full relative ${
-                            currentPage === 'profile' ? 'text-orange-500' : 'text-gray-600'
-                        }`}
+                        className="flex flex-col items-center justify-center flex-1 h-full relative"
                     >
                         <div className={`${currentPage === 'profile' ? 'drop-shadow-[0_0_8px_rgba(249,115,22,0.6)]' : ''}`}>
-                            <DashboardIcon className="w-6 h-6" />
+                            <DashboardIcon className="w-6 h-6 text-orange-500" />
                         </div>
-                        <span className="text-xs mt-1">Dashboard</span>
+                        <span className="text-xs mt-1 text-gray-900">Dashboard</span>
                     </button>
                 </div>
             </footer>
@@ -147,56 +139,46 @@ const Footer: React.FC<FooterProps> = ({
                 {/* Home */}
                 <button 
                     onClick={onHomeClick}
-                    className={`flex flex-col items-center justify-center flex-1 h-full ${
-                        currentPage === 'home' ? 'text-orange-500' : 'text-gray-600'
-                    }`}
+                    className="flex flex-col items-center justify-center flex-1 h-full"
                 >
-                    <HomeIcon className="w-6 h-6" />
-                    <span className="text-xs mt-1">Home</span>
+                    <HomeIcon className="w-6 h-6 text-orange-500" />
+                    <span className="text-xs mt-1 text-gray-900">Home</span>
                 </button>
 
                 {/* Search */}
                 <button 
                     onClick={onHomeClick}
-                    className={`flex flex-col items-center justify-center flex-1 h-full ${
-                        currentPage === 'search' ? 'text-orange-500' : 'text-gray-600'
-                    }`}
+                    className="flex flex-col items-center justify-center flex-1 h-full"
                 >
-                    <SearchIcon className="w-6 h-6" />
-                    <span className="text-xs mt-1">Search</span>
+                    <SearchIcon className="w-6 h-6 text-orange-500" />
+                    <span className="text-xs mt-1 text-gray-900">Search</span>
                 </button>
 
                 {/* Bookings */}
                 <button 
                     onClick={onBookingsClick}
-                    className={`flex flex-col items-center justify-center flex-1 h-full ${
-                        currentPage === 'bookings' ? 'text-orange-500' : 'text-gray-600'
-                    }`}
+                    className="flex flex-col items-center justify-center flex-1 h-full"
                 >
-                    <CalendarIcon className="w-6 h-6" />
-                    <span className="text-xs mt-1">Bookings</span>
+                    <CalendarIcon className="w-6 h-6 text-orange-500" />
+                    <span className="text-xs mt-1 text-gray-900">Bookings</span>
                 </button>
 
                 {/* Favorites */}
                 <button 
                     onClick={onProfileClick}
-                    className={`flex flex-col items-center justify-center flex-1 h-full ${
-                        currentPage === 'favorites' ? 'text-orange-500' : 'text-gray-600'
-                    }`}
+                    className="flex flex-col items-center justify-center flex-1 h-full"
                 >
-                    <HeartIcon className="w-6 h-6" />
-                    <span className="text-xs mt-1">Saved</span>
+                    <HeartIcon className="w-6 h-6 text-orange-500" />
+                    <span className="text-xs mt-1 text-gray-900">Saved</span>
                 </button>
 
                 {/* Profile */}
                 <button 
                     onClick={onProfileClick}
-                    className={`flex flex-col items-center justify-center flex-1 h-full ${
-                        currentPage === 'profile' ? 'text-orange-500' : 'text-gray-600'
-                    }`}
+                    className="flex flex-col items-center justify-center flex-1 h-full"
                 >
-                    <UserIcon className="w-6 h-6" />
-                    <span className="text-xs mt-1">Profile</span>
+                    <UserIcon className="w-6 h-6 text-orange-500" />
+                    <span className="text-xs mt-1 text-gray-900">Profile</span>
                 </button>
             </div>
         </footer>

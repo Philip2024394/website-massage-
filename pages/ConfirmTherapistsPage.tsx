@@ -39,6 +39,9 @@ const ConfirmTherapistsPage: React.FC = () => {
     setLoading(true);
     try {
       const data = await therapistService.getAll();
+      console.log('Raw therapist data from database:', data);
+      console.log('Number of therapists found:', data.length);
+      
       const formattedData = data.map((t: any) => ({
         $id: t.$id,
         name: t.name || 'No name',
@@ -47,10 +50,12 @@ const ConfirmTherapistsPage: React.FC = () => {
         country: t.country || '',
         whatsappNumber: t.whatsappNumber || t.phoneNumber || '',
         profilePicture: t.profilePicture || '',
-        status: t.status || 'pending',
+        status: (t.isLive ? 'active' : 'pending') as 'pending' | 'active' | 'deactivated', // Map isLive to status for display
         membershipPackage: t.membershipPackage,
         activeMembershipDate: t.activeMembershipDate,
+        isLive: t.isLive || false,
       }));
+      console.log('Formatted therapist data:', formattedData);
       setTherapists(formattedData);
     } catch (error) {
       console.error('Error fetching therapists:', error);
@@ -67,10 +72,6 @@ const ConfirmTherapistsPage: React.FC = () => {
       const newExpiryDateString = newExpiryDate.toISOString().split('T')[0];
 
       await therapistService.update(therapistId, {
-        id: Date.now().toString(),
-        therapistId: Date.now().toString(),
-        hotelId: Date.now().toString(),
-        status: 'active',
         isLive: true,
         activeMembershipDate: newExpiryDateString,
       });

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { User, UserLocation, Agent, Place, Therapist, Analytics } from '../types';
 import LocationModal from '../components/LocationModal';
+import TherapistCard from '../components/TherapistCard';
 import { MASSAGE_TYPES_CATEGORIZED } from '../constants';
 import HomeIcon from '../components/icons/HomeIcon';
 import MapPinIcon from '../components/icons/MapPinIcon';
@@ -64,7 +65,7 @@ const ChevronDownIcon = ({ className = 'w-5 h-5' }) => (
 
 
 
-const HomePage: React.FC<HomePageProps> = ({ loggedInAgent: _loggedInAgent, therapists, onSetUserLocation, onLoginClick, onAgentPortalClick, onMassageTypesClick, onTermsClick, onPrivacyClick, t }) => {
+const HomePage: React.FC<HomePageProps> = ({ loggedInAgent: _loggedInAgent, therapists, onSetUserLocation, onBook, onIncrementAnalytics, onLoginClick, onAgentPortalClick, onMassageTypesClick, onTermsClick, onPrivacyClick, t }) => {
     // Safety check for translations
     if (!t || !t.home) {
         console.error('HomePage: Missing translations object or t.home', { t });
@@ -361,6 +362,37 @@ const HomePage: React.FC<HomePageProps> = ({ loggedInAgent: _loggedInAgent, ther
                         </button>
                     </div>
                 </div>
+
+                {/* Therapists and Places Display */}
+                {activeTab === 'home' && (
+                    <div className="space-y-4">
+                        {therapists
+                            .filter((t: any) => t.isLive === true) // Only show activated therapists
+                            .filter((t: any) => selectedMassageType === 'all' || (t.massageTypes && t.massageTypes.includes(selectedMassageType)))
+                            .map((therapist: any) => (
+                                <TherapistCard
+                                    key={therapist.id || therapist.$id}
+                                    therapist={therapist}
+                                    onRate={() => {}}
+                                    onBook={() => onBook(therapist, 'therapist')}
+                                    onIncrementAnalytics={(metric) => onIncrementAnalytics(therapist.id || therapist.$id, 'therapist', metric)}
+                                    t={t}
+                                />
+                            ))}
+                        {therapists.filter((t: any) => t.isLive === true).length === 0 && (
+                            <div className="text-center py-12 bg-white rounded-lg">
+                                <p className="text-gray-500">No therapists available at the moment.</p>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {activeTab === 'places' && (
+                    <div className="text-center py-12 bg-white rounded-lg">
+                        <p className="text-gray-500">Massage places coming soon...</p>
+                    </div>
+                )}
+
                 {/* ...existing code for therapists/places rendering, modals, etc. should follow here... */}
             </main>
             <AddToHomeScreenPrompt t={t.a2hsPrompt} />

@@ -75,11 +75,14 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
     const [description, setDescription] = useState('');
     const [profilePicture, setProfilePicture] = useState('');
     const [whatsappNumber, setWhatsappNumber] = useState('');
+    const [yearsOfExperience, setYearsOfExperience] = useState<number>(0);
     const [massageTypes, setMassageTypes] = useState<string[]>([]);
     const [pricing, setPricing] = useState<Pricing>({ 60: 0, 90: 0, 120: 0 });
     const [location, setLocation] = useState('');
     const [coordinates, setCoordinates] = useState({ lat: 0, lng: 0 });
     const [status, setStatus] = useState<AvailabilityStatus>(AvailabilityStatus.Offline);
+    const [isLicensed, setIsLicensed] = useState(false);
+    const [licenseNumber, setLicenseNumber] = useState('');
     const [mapsApiLoaded, setMapsApiLoaded] = useState(false);
     const [activeTab, setActiveTab] = useState('profile');
     const [showConfirmation, setShowConfirmation] = useState(false);
@@ -116,11 +119,14 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
         setDescription(mockTherapist.description || '');
         setProfilePicture(mockTherapist.profilePicture || '');
         setWhatsappNumber(mockTherapist.whatsappNumber || '');
+        setYearsOfExperience((mockTherapist as any).yearsOfExperience || 0);
         setMassageTypes(parseMassageTypes(mockTherapist.massageTypes));
         setPricing(parsePricing(mockTherapist.pricing));
         setLocation(mockTherapist.location || '');
         setCoordinates(parseCoordinates(mockTherapist.coordinates));
         setStatus(mockTherapist.status || AvailabilityStatus.Offline);
+        setIsLicensed((mockTherapist as any).isLicensed || false);
+        setLicenseNumber((mockTherapist as any).licenseNumber || '');
         
         setIsLoading(false);
     }, [therapistId]);
@@ -183,16 +189,16 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
             description,
             profilePicture,
             whatsappNumber,
-           
+            yearsOfExperience,
+            isLicensed,
             pricing: stringifyPricing(pricing),
            
             location,
             coordinates: stringifyCoordinates(coordinates),
             status,
-            distance: 0, // dummy value
             analytics: therapist?.analytics || stringifyAnalytics({ impressions: 0, profileViews: 0, whatsappClicks: 0 }),
             massageTypes: stringifyMassageTypes(massageTypes),
-        });
+        } as any);
         setShowConfirmation(true);
     };
     
@@ -357,6 +363,55 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                             <label className="block text-sm font-medium text-gray-700">{t.nameLabel}</label>
                             {renderInput(name, setName, UserSolidIcon)}
                         </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Years of Experience</label>
+                            <input 
+                                type="number" 
+                                value={yearsOfExperience || ''} 
+                                onChange={e => setYearsOfExperience(parseInt(e.target.value) || 0)} 
+                                min="0"
+                                max="50"
+                                placeholder="Enter years of experience"
+                                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-orange focus:border-brand-orange text-gray-900" 
+                            />
+                        </div>
+                        
+                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg p-4">
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-2">
+                                    <svg className="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                    </svg>
+                                    <label className="text-sm font-semibold text-green-800">Qualified Therapist Badge</label>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsLicensed(!isLicensed)}
+                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                                        isLicensed ? 'bg-green-600' : 'bg-gray-300'
+                                    }`}
+                                >
+                                    <span
+                                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                            isLicensed ? 'translate-x-6' : 'translate-x-1'
+                                        }`}
+                                    />
+                                </button>
+                            </div>
+                            {isLicensed && (
+                                <div className="mt-3">
+                                    <label className="block text-xs font-medium text-green-700 mb-1">License Number</label>
+                                    <input
+                                        type="text"
+                                        value={licenseNumber}
+                                        onChange={e => setLicenseNumber(e.target.value)}
+                                        placeholder="Enter your license number"
+                                        className="block w-full px-3 py-2 bg-white border border-green-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-gray-900 text-sm"
+                                    />
+                                    <p className="text-xs text-green-600 mt-1">✓ Your profile will display a Qualified Therapist badge</p>
+                                </div>
+                            )}
+                        </div>
                          <div>
                             <label className="block text-sm font-medium text-gray-700">{t.descriptionLabel}</label>
                             <div className="relative">
@@ -366,16 +421,16 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                 <textarea 
                                     value={description} 
                                     onChange={e => {
-                                        const words = e.target.value.trim().split(/\s+/);
-                                        if (words.length <= 250 || e.target.value === '') {
+                                        if (e.target.value.length <= 500) {
                                             setDescription(e.target.value);
                                         }
                                     }} 
                                     rows={3} 
+                                    maxLength={500}
                                     className="mt-1 block w-full pl-10 pr-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-orange focus:border-brand-orange text-gray-900" 
                                 />
                                 <p className="text-xs text-gray-500 mt-1">
-                                    {description.trim().split(/\s+/).filter(w => w).length}/250 words
+                                    {description.length}/500 characters
                                 </p>
                             </div>
                         </div>
@@ -390,12 +445,12 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                             </div>
                             <Button 
                                 onClick={() => {
-                                    const adminNumber = '6281234567890'; // Replace with actual admin WhatsApp
+                                    const adminNumber = '6281392000050';
                                     const message = `Hello IndoStreet Admin, this is a test message from therapist ${name || 'Therapist'} (ID: ${therapistId}). My WhatsApp number is +62${whatsappNumber}.`;
                                     window.open(`https://wa.me/${adminNumber}?text=${encodeURIComponent(message)}`, '_blank');
                                 }}
                                 variant="secondary" 
-                                className="flex items-center justify-center gap-2 mt-2 text-sm py-2"
+                                className="flex items-center justify-center gap-2 mt-2 text-sm py-2 bg-green-500 hover:bg-green-600 text-white border-0"
                             >
                                 <PhoneIcon className="w-4 h-4" />
                                 <span>Test WhatsApp Connection</span>
@@ -496,7 +551,14 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                 <div className="flex justify-between items-center p-3 sm:p-4">
                     <h1 className="text-lg sm:text-xl font-bold text-gray-800">{t.therapistTitle}</h1>
                     <div className="flex items-center gap-2 sm:gap-3">
-                        <NotificationBell count={unreadNotificationsCount} onClick={onNavigateToNotifications} />
+                        <button onClick={() => setActiveTab('terms')} className="relative text-yellow-500 hover:text-yellow-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            </svg>
+                            <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-yellow-500 text-xs font-bold text-white">
+                                1
+                            </span>
+                        </button>
                         <button 
                             onClick={onLogout}
                             className="p-2 hover:bg-gray-100 rounded-full transition-all"
@@ -511,12 +573,12 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
             {/* Content Area */}
             <div className="p-3 sm:p-4">
                     <div className="mb-4 sm:mb-6">
-                        <div className="flex overflow-x-auto border-b border-gray-200 -mx-3 px-3 sm:mx-0 sm:px-0 scrollbar-hide">
-                            <button onClick={() => setActiveTab('profile')} className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium whitespace-nowrap ${activeTab === 'profile' ? 'border-b-2 border-brand-orange text-brand-orange' : 'text-gray-500'}`}>{t.tabs?.profile || 'Profile'}</button>
-                            <button onClick={() => setActiveTab('bookings')} className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium whitespace-nowrap ${activeTab === 'bookings' ? 'border-b-2 border-brand-orange text-brand-orange' : 'text-gray-500'}`}>{t.tabs?.bookings || 'Bookings'}</button>
-                            <button onClick={() => setActiveTab('analytics')} className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium whitespace-nowrap ${activeTab === 'analytics' ? 'border-b-2 border-brand-orange text-brand-orange' : 'text-gray-500'}`}>{t.tabs?.analytics || 'Analytics'}</button>
-                            <button onClick={() => setActiveTab('terms')} className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium whitespace-nowrap ${activeTab === 'terms' ? 'border-b-2 border-brand-orange text-brand-orange' : 'text-gray-500'}`}>Terms</button>
-                            <button onClick={() => setActiveTab('hotelVilla')} className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium whitespace-nowrap ${activeTab === 'hotelVilla' ? 'border-b-2 border-brand-orange text-brand-orange' : 'text-gray-500'}`}>Hotel & Villa</button>
+                        <div className="flex overflow-x-auto border-b border-gray-200 -mx-3 px-3 sm:mx-0 sm:px-0 scrollbar-hide" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
+                            <button onClick={() => setActiveTab('profile')} className={`px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium whitespace-nowrap flex-shrink-0 ${activeTab === 'profile' ? 'border-b-2 border-brand-orange text-brand-orange' : 'text-gray-500'}`}>{t.tabs?.profile || 'Profile'}</button>
+                            <button onClick={() => setActiveTab('bookings')} className={`px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium whitespace-nowrap flex-shrink-0 ${activeTab === 'bookings' ? 'border-b-2 border-brand-orange text-brand-orange' : 'text-gray-500'}`}>{t.tabs?.bookings || 'Bookings'}</button>
+                            <button onClick={() => setActiveTab('analytics')} className={`px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium whitespace-nowrap flex-shrink-0 ${activeTab === 'analytics' ? 'border-b-2 border-brand-orange text-brand-orange' : 'text-gray-500'}`}>{t.tabs?.analytics || 'Analytics'}</button>
+                            <button onClick={() => setActiveTab('terms')} className={`px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium whitespace-nowrap flex-shrink-0 ${activeTab === 'terms' ? 'border-b-2 border-brand-orange text-brand-orange' : 'text-gray-500'}`}>Terms</button>
+                            <button onClick={() => setActiveTab('hotelVilla')} className={`px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium whitespace-nowrap flex-shrink-0 ${activeTab === 'hotelVilla' ? 'border-b-2 border-brand-orange text-brand-orange' : 'text-gray-500'}`}>Hotel/Villa</button>
                         </div>
                     </div>
 
