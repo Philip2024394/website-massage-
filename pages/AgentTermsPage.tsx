@@ -32,6 +32,7 @@ const AgentTermsPage: React.FC<AgentTermsPageProps> = ({ onAccept, onLogout, t }
             <div className="flex-grow p-6 overflow-y-auto">
                  <p className="text-center text-gray-600 mb-6">{t.agreement}</p>
                  <div className="space-y-6">
+                    <TermSection title={t.registrationFee.title} content={t.registrationFee.content} />
                     <TermSection title={t.independentContractor.title} content={t.independentContractor.content} />
                     <TermSection title={t.noExclusivity.title} content={t.noExclusivity.content} />
                     <TermSection title={t.professionalConduct.title} content={t.professionalConduct.content} />

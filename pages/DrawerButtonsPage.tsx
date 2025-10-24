@@ -13,6 +13,7 @@ const DrawerButtonsPage: React.FC = () => {
     const [links, setLinks] = useState<CustomLink[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [showAddForm, setShowAddForm] = useState(false);
+    const [editingId, setEditingId] = useState<string | null>(null);
     const [authError, setAuthError] = useState<string | null>(null);
     const [formData, setFormData] = useState({
         name: '',
@@ -76,15 +77,42 @@ const DrawerButtonsPage: React.FC = () => {
         }
 
         try {
-            await customLinksService.create(formData);
+            if (editingId) {
+                // Update existing link
+                await customLinksService.update(editingId, formData);
+                setEditingId(null);
+                alert('✅ Button updated successfully!');
+            } else {
+                // Create new link
+                await customLinksService.create(formData);
+                alert('✅ Custom button added successfully!');
+            }
+            
             setFormData({ name: '', url: '', icon: '' });
             setShowAddForm(false);
             await fetchLinks();
-            alert('✅ Custom button added successfully!');
         } catch (error: any) {
-            console.error('Error adding link:', error);
-            alert('Error adding button: ' + (error.message || 'Unknown error'));
+            console.error('Error saving link:', error);
+            alert('Error saving button: ' + (error.message || 'Unknown error'));
         }
+    };
+
+    const handleEditLink = (link: CustomLink) => {
+        setFormData({
+            name: link.title,
+            url: link.url,
+            icon: link.icon
+        });
+        setEditingId(link.$id);
+        setShowAddForm(true);
+        // Scroll to top to show the form
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleCancelEdit = () => {
+        setFormData({ name: '', url: '', icon: '' });
+        setEditingId(null);
+        setShowAddForm(false);
     };
 
     const handleDeleteLink = async (id: string) => {
@@ -144,7 +172,13 @@ const DrawerButtonsPage: React.FC = () => {
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-800">Manage Drawer Buttons</h2>
                 <button
-                    onClick={() => setShowAddForm(!showAddForm)}
+                    onClick={() => {
+                        if (showAddForm && editingId) {
+                            handleCancelEdit();
+                        } else {
+                            setShowAddForm(!showAddForm);
+                        }
+                    }}
                     className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
                 >
                     {showAddForm ? 'Cancel' : '+ Add New Button'}
@@ -153,7 +187,9 @@ const DrawerButtonsPage: React.FC = () => {
 
             {showAddForm && (
                 <form onSubmit={handleAddLink} className="bg-gray-50 rounded-lg p-6 mb-6 border border-gray-200">
-                    <h3 className="text-lg font-semibold mb-4 text-gray-800">Add New Drawer Button</h3>
+                    <h3 className="text-lg font-semibold mb-4 text-gray-800">
+                        {editingId ? '✏️ Edit Drawer Button' : 'Add New Drawer Button'}
+                    </h3>
                     
                     <div className="space-y-4">
                         <div>
@@ -225,8 +261,18 @@ const DrawerButtonsPage: React.FC = () => {
                             type="submit"
                             className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
                         >
-                            Save Button
+                            {editingId ? '💾 Update Button' : 'Save Button'}
                         </button>
+                        
+                        {editingId && (
+                            <button
+                                type="button"
+                                onClick={handleCancelEdit}
+                                className="w-full bg-gray-400 text-white py-2 rounded-lg hover:bg-gray-500 transition-colors font-medium"
+                            >
+                                Cancel Edit
+                            </button>
+                        )}
                     </div>
                 </form>
             )}
@@ -265,12 +311,20 @@ const DrawerButtonsPage: React.FC = () => {
                                         </p>
                                     </div>
                                 </div>
-                                <button
-                                    onClick={() => handleDeleteLink(link.$id)}
-                                    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors text-sm font-medium ml-4 flex-shrink-0"
-                                >
-                                    🗑️ Delete
-                                </button>
+                                <div className="flex gap-2 ml-4 flex-shrink-0">
+                                    <button
+                                        onClick={() => handleEditLink(link)}
+                                        className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
+                                    >
+                                        ✏️ Edit
+                                    </button>
+                                    <button
+                                        onClick={() => handleDeleteLink(link.$id)}
+                                        className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors text-sm font-medium"
+                                    >
+                                        🗑️ Delete
+                                    </button>
+                                </div>
                             </div>
                         ))}
                     </>
@@ -280,9 +334,12 @@ const DrawerButtonsPage: React.FC = () => {
             {links.length > 0 && (
                 <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
                     <h4 className="font-semibold text-blue-900 mb-2">💡 How it works</h4>
-                    <p className="text-sm text-blue-800">
-                        These custom buttons will appear in the side drawer menu of your app. Users can click them to navigate to the specified URLs.
-                    </p>
+                    <ul className="text-sm text-blue-800 space-y-1">
+                        <li>• These custom buttons will appear in the side drawer menu of your app</li>
+                        <li>• Click <strong>"Edit"</strong> to change the button name or icon</li>
+                        <li>• Upload new icons to maintain consistent design across all buttons</li>
+                        <li>• Changes are immediately reflected in the app drawer</li>
+                    </ul>
                 </div>
             )}
         </div>

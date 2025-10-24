@@ -85,6 +85,32 @@ export const customLinksService = {
             console.error('Error deleting custom link:', error);
             throw error;
         }
+    },
+    
+    async update(id: string, link: { name: string; url: string; icon: string }): Promise<any> {
+        try {
+            // Upload icon to storage first if it's a new base64 image
+            let iconUrl = link.icon;
+            if (link.icon.startsWith('data:image')) {
+                iconUrl = await this.uploadIcon(link.icon);
+            }
+            
+            const response = await databases.updateDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.customLinks,
+                id,
+                {
+                    name: link.name,
+                    title: link.name,
+                    url: link.url,
+                    icon: iconUrl,
+                }
+            );
+            return response;
+        } catch (error) {
+            console.error('Error updating custom link:', error);
+            throw error;
+        }
     }
 };
 // Appwrite service - Real implementation

@@ -24,7 +24,6 @@ interface HomePageProps {
     onIncrementAnalytics: (id: number | string, type: 'therapist' | 'place', metric: keyof Analytics) => void;
     onLogout: () => void;
     onLoginClick: () => void;
-    onAdminClick: () => void;
     onCreateProfileClick: () => void;
     onAgentPortalClick: () => void;
     onMassageTypesClick: () => void;
@@ -36,14 +35,6 @@ interface HomePageProps {
 
 
 // Icons
-const AdminIcon = ({ className = 'w-6 h-6' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-    </svg>
-);
-
-
 const UsersIcon = ({ className = 'w-6 h-6' }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.653-.122-1.28-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.653.122-1.28.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -71,7 +62,7 @@ const ChevronDownIcon = ({ className = 'w-5 h-5' }) => (
 
 
 
-const HomePage: React.FC<HomePageProps> = ({ loggedInAgent, therapists, onSetUserLocation, onLoginClick, onAdminClick, onAgentPortalClick, onMassageTypesClick, t }) => {
+const HomePage: React.FC<HomePageProps> = ({ loggedInAgent, therapists, onSetUserLocation, onLoginClick, onAgentPortalClick, onMassageTypesClick, t }) => {
     // Safety check for translations
     if (!t || !t.home) {
         console.error('HomePage: Missing translations object or t.home', { t });
@@ -197,25 +188,6 @@ const HomePage: React.FC<HomePageProps> = ({ loggedInAgent, therapists, onSetUse
                                             {loggedInAgent ? 'Agent Dashboard' : 'Agent Portal'}
                                         </h3>
                                         <p className="text-xs text-gray-500">Earn commissions</p>
-                                    </div>
-                                </button>
-
-                                {/* Divider */}
-                                <div className="border-t border-gray-300 my-3"></div>
-
-                                {/* Admin Portal */}
-                                <button 
-                                    onClick={() => { onAdminClick(); setIsMenuOpen(false); }} 
-                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-gradient-to-r from-gray-800 to-gray-900 shadow-sm hover:shadow-md transition-all duration-200 group"
-                                >
-                                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl shadow-lg bg-gradient-to-br from-gray-700 via-gray-500 to-gray-900 border-2 border-white transform hover:scale-105 transition-transform">
-                                        <AdminIcon className="w-6 h-6 text-white drop-shadow" />
-                                    </div>
-                                    <div className="flex-grow">
-                                        <h3 className="font-semibold text-white">
-                                            Admin Portal
-                                        </h3>
-                                        <p className="text-xs text-gray-400">System management</p>
                                     </div>
                                 </button>
 

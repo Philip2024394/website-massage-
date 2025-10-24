@@ -15,6 +15,7 @@ import RegistrationChoicePage from './pages/RegistrationChoicePage';
 import TherapistDashboardPage from './pages/TherapistDashboardPage';
 import PlaceDashboardPage from './pages/PlaceDashboardPage';
 import AgentPage from './pages/AgentPage';
+import AgentAuthPage from './pages/AgentAuthPage';
 import AgentDashboardPage from './pages/AgentDashboardPage';
 import AgentTermsPage from './pages/AgentTermsPage';
 import ServiceTermsPage from './pages/ServiceTermsPage';
@@ -601,7 +602,6 @@ const App: React.FC = () => {
                             onSelectPlace={handleSelectPlace} 
                             onLogout={handleLogout}
                             onLoginClick={handleNavigateToAuth}
-                            onAdminClick={handleNavigateToAdminLogin}
                             onCreateProfileClick={handleNavigateToRegistrationChoice}
                             onAgentPortalClick={loggedInAgent ? () => setPage('agentDashboard') : handleNavigateToAgentAuth}
                             onBook={handleNavigateToBooking}
@@ -635,8 +635,8 @@ const App: React.FC = () => {
                 bookings={bookings.filter(b => b.providerId === loggedInProvider.id && b.providerType === 'place')}
                 notifications={notifications.filter(n => n.providerId === loggedInProvider.id)}
             /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice} />;
-            case 'agent': return <AgentPage onBack={handleBackToHome} t={t.agentPage} contactNumber={appContactNumber} />;
-            // case 'agentAuth': return <AgentAuthPage onRegister={handleAgentRegister} onLogin={handleAgentLogin} onBack={handleBackToHome} t={t.agentAuth} />;
+            case 'agent': return <AgentPage onBack={handleBackToHome} onNavigateToAgentAuth={handleNavigateToAgentAuth} t={t.agentPage} contactNumber={appContactNumber} />;
+            case 'agentAuth': return <AgentAuthPage onRegister={handleAgentRegister} onLogin={handleAgentLogin} onBack={handleBackToHome} t={t.agentAuth} />;
             case 'agentTerms': return loggedInAgent ? <AgentTermsPage onAccept={handleAgentAcceptTerms} onLogout={handleAgentLogout} t={t.agentTermsPage} /> : null;
             case 'agentDashboard': 
                 if (impersonatedAgent) {
@@ -667,7 +667,7 @@ const App: React.FC = () => {
             case 'serviceTerms': return <ServiceTermsPage onBack={handleBackToHome} t={t.serviceTerms} contactNumber={appContactNumber} />;
             case 'privacy': return <PrivacyPolicyPage onBack={handleBackToHome} t={t.privacyPolicy} />;
             case 'membership': return loggedInProvider ? <MembershipPage onPackageSelect={handleSelectMembershipPackage} onBack={handleBackToProviderDashboard} t={t.membershipPage} /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice}/>;
-            case 'booking': return providerForBooking ? <BookingPage provider={providerForBooking.provider} providerType={providerForBooking.type} onBook={handleCreateBooking} onBack={handleBackToHome} bookings={bookings.filter(b => b.providerId === providerForBooking.provider.id)} t={t.bookingPage} /> : <HomePage user={user} loggedInAgent={loggedInAgent} therapists={therapists} places={places} userLocation={userLocation} onSetUserLocation={handleSetUserLocation} onSelectPlace={handleSelectPlace} onLogout={handleLogout} onLoginClick={handleNavigateToAuth} onAdminClick={handleNavigateToAdminLogin} onCreateProfileClick={handleNavigateToRegistrationChoice} onAgentPortalClick={loggedInAgent ? () => setPage('agentDashboard') : handleNavigateToAgentAuth} onBook={handleNavigateToBooking} onIncrementAnalytics={handleIncrementAnalytics} onMassageTypesClick={() => setPage('massageTypes')} onHotelPortalClick={handleNavigateToHotelLogin} isLoading={isLoading} t={t} />;
+            case 'booking': return providerForBooking ? <BookingPage provider={providerForBooking.provider} providerType={providerForBooking.type} onBook={handleCreateBooking} onBack={handleBackToHome} bookings={bookings.filter(b => b.providerId === providerForBooking.provider.id)} t={t.bookingPage} /> : <HomePage user={user} loggedInAgent={loggedInAgent} therapists={therapists} places={places} userLocation={userLocation} onSetUserLocation={handleSetUserLocation} onSelectPlace={handleSelectPlace} onLogout={handleLogout} onLoginClick={handleNavigateToAuth} onCreateProfileClick={handleNavigateToRegistrationChoice} onAgentPortalClick={loggedInAgent ? () => setPage('agentDashboard') : handleNavigateToAgentAuth} onBook={handleNavigateToBooking} onIncrementAnalytics={handleIncrementAnalytics} onMassageTypesClick={() => setPage('massageTypes')} onHotelPortalClick={handleNavigateToHotelLogin} isLoading={isLoading} t={t} />;
             case 'notifications': return loggedInProvider ? <NotificationsPage notifications={notifications.filter(n => n.providerId === loggedInProvider.id)} onMarkAsRead={handleMarkNotificationAsRead} onBack={handleBackToProviderDashboard} t={t.notificationsPage} /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice}/>;
             case 'massageTypes': return <MassageTypesPage onBack={handleBackToHome} />;
             // case 'hotelLogin': return <HotelLoginPage onHotelLogin={handleHotelLogin} onBack={handleBackToHome} />;

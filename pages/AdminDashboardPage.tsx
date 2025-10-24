@@ -6,12 +6,13 @@ import TopNav from '../components/TopNav';
 import ConfirmTherapistsPage from './ConfirmTherapistsPage';
 import ConfirmPlacesPage from './ConfirmPlacesPage';
 import DrawerButtonsPage from './DrawerButtonsPage';
+import AgentCommissionPage from './AgentCommissionPage';
 import { authService } from '../lib/appwriteService';
 
 interface AdminDashboardPageProps {
     onLogout: () => void;
 }
-type DashboardPage = 'confirm-therapists' | 'confirm-places' | 'drawer-buttons';
+type DashboardPage = 'confirm-therapists' | 'confirm-places' | 'drawer-buttons' | 'agent-commission';
 const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout'>> = ({ onLogout }) => {
   const [activePage, setActivePage] = useState<DashboardPage>('confirm-therapists');
 
@@ -35,6 +36,7 @@ const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout'>> = 
         {activePage === 'confirm-therapists' && <ConfirmTherapistsPage />}
         {activePage === 'confirm-places' && <ConfirmPlacesPage />}
         {activePage === 'drawer-buttons' && <DrawerButtonsPage />}
+        {activePage === 'agent-commission' && <AgentCommissionPage />}
       </main>
     </div>
   );

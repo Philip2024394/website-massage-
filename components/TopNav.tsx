@@ -1,6 +1,6 @@
 import React from 'react';
 
-type DashboardPage = 'confirm-therapists' | 'confirm-places' | 'drawer-buttons';
+type DashboardPage = 'confirm-therapists' | 'confirm-places' | 'drawer-buttons' | 'agent-commission';
 interface TopNavProps {
   active: DashboardPage;
   onNavigate: (page: DashboardPage) => void;
@@ -10,6 +10,7 @@ const links: { label: string; page: DashboardPage }[] = [
   { label: 'Confirm Therapists', page: 'confirm-therapists' },
   { label: 'Confirm Places', page: 'confirm-places' },
   { label: 'Drawer Buttons', page: 'drawer-buttons' },
+  { label: 'Agent Commission', page: 'agent-commission' },
 ];
 
 const TopNav: React.FC<TopNavProps> = ({ active, onNavigate }) => (

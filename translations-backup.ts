@@ -310,6 +310,10 @@ export const translations = {
         agentTermsPage: {
             title: 'Agent Terms & Conditions',
             agreement: 'Please read and accept the following terms to continue.',
+            registrationFee: {
+                title: 'Agent Registration Fee',
+                content: 'The total registration fee to become an IndoStreet Agent is IDR 150,000. This fee is ONLY payable upon acceptance of your submitted agent details and after verification and approval by the IndoStreet office administration. Payment will be requested after your application has been reviewed and approved. This registration fee includes your official Agent Kit with branded materials.'
+            },
             independentContractor: {
                 title: 'Independent Contractor Status',
                 content: 'You are an independent contractor, not an employee of Indostreet. You are responsible for your own taxes, business expenses, and work schedule. You control the manner and means by which you perform your services.'
@@ -320,7 +324,9 @@ export const translations = {
             },
             professionalConduct: {
                 title: 'Professional Conduct & Appearance',
-                content: 'You must maintain a professional appearance at all times when representing Indostreet Massage. A mandatory registration fee of IDR 100,000 is required to receive your official Agent Kit, which includes a branded T-shirt and name tag. This uniform must be worn during all interactions with potential and existing members. Additional T-shirts are available for purchase at IDR 60,000.'
+                content: 'You must maintain a professional appearance at all times when representing Indostreet Massage. Your official Agent Kit (included in the registration fee) contains a branded T-shirt and name tag. This uniform must be worn during all interactions with potential and existing members. Additional T-shirts are available for purchase at IDR 60,000.'
+            },
+                content: 'You must maintain a professional appearance at all times when representing Indostreet Massage. Your official Agent Kit (included in the registration fee) contains a branded T-shirt and name tag. This uniform must be worn during all interactions with potential and existing members. Additional T-shirts are available for purchase at IDR 60,000.'
             },
             socialMediaPolicy: {
                 title: 'Social Media Policy',
@@ -799,6 +805,10 @@ export const translations = {
         agentTermsPage: {
             title: 'Syarat & Ketentuan Agen',
             agreement: 'Harap baca dan setujui persyaratan berikut untuk melanjutkan.',
+            registrationFee: {
+                title: 'Biaya Pendaftaran Agen',
+                content: 'Total biaya pendaftaran untuk menjadi Agen IndoStreet adalah Rp 150.000. Biaya ini HANYA dibayarkan setelah penerimaan dan persetujuan detail agen yang Anda kirimkan oleh administrasi kantor IndoStreet. Pembayaran akan diminta setelah aplikasi Anda ditinjau dan disetujui. Biaya pendaftaran ini sudah termasuk Kit Agen resmi Anda dengan materi bermerek.'
+            },
             independentContractor: {
                 title: 'Status Kontraktor Independen',
                 content: 'Anda adalah kontraktor independen, bukan karyawan Indostreet. Anda bertanggung jawab atas pajak, biaya bisnis, dan jadwal kerja Anda sendiri. Anda mengontrol cara dan sarana dalam menjalankan layanan Anda.'
@@ -809,7 +819,7 @@ export const translations = {
             },
             professionalConduct: {
                 title: 'Perilaku & Penampilan Profesional',
-                content: 'Anda harus menjaga penampilan profesional setiap saat ketika mewakili Indostreet Massage. Biaya pendaftaran wajib sebesar Rp 100.000 diperlukan untuk menerima Paket Agen resmi Anda, yang mencakup kaos bermerek dan tanda pengenal. Seragam ini harus dikenakan selama semua interaksi dengan anggota potensial dan yang sudah ada. Kaos tambahan tersedia untuk dibeli seharga Rp 60.000.'
+                content: 'Anda harus menjaga penampilan profesional setiap saat ketika mewakili Indostreet Massage. Paket Agen resmi Anda (termasuk dalam biaya pendaftaran) berisi kaos bermerek dan tanda pengenal. Seragam ini harus dikenakan selama semua interaksi dengan anggota potensial dan yang sudah ada. Kaos tambahan tersedia untuk dibeli seharga Rp 60.000.'
             },
             socialMediaPolicy: {
                 title: 'Kebijakan Media Sosial',
