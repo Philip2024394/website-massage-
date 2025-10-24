@@ -5,6 +5,7 @@ import { parsePricing, parseCoordinates, parseMassageTypes, stringifyPricing, st
 import Button from '../components/Button';
 import ImageUpload from '../components/ImageUpload';
 import HotelVillaOptIn from '../components/HotelVillaOptIn';
+import Footer from '../components/Footer';
 import UserSolidIcon from '../components/icons/UserSolidIcon';
 import DocumentTextIcon from '../components/icons/DocumentTextIcon';
 import PhoneIcon from '../components/icons/PhoneIcon';
@@ -21,6 +22,7 @@ interface TherapistDashboardPageProps {
     onSave: (data: Omit<Therapist, 'id' | 'isLive' | 'rating' | 'reviewCount' | 'activeMembershipDate' | 'email'>) => void;
     onLogout: () => void;
     onNavigateToNotifications: () => void;
+    onNavigateToHome?: () => void;
     onUpdateBookingStatus: (bookingId: number, status: BookingStatus) => void;
     therapistId: number | string; // Support both for Appwrite compatibility
     bookings: Booking[];
@@ -67,7 +69,7 @@ const BookingCard: React.FC<{ booking: Booking; onUpdateStatus: (id: number, sta
     );
 }
 
-const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave, onLogout, onNavigateToNotifications, onUpdateBookingStatus, therapistId, bookings, notifications, t }) => {
+const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave, onLogout, onNavigateToNotifications, onNavigateToHome, onUpdateBookingStatus, therapistId, bookings, notifications, t }) => {
     const [therapist, setTherapist] = useState<Therapist | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -615,6 +617,17 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                     </div>
                 </div>
             )}
+
+            {/* Footer */}
+            <Footer
+                currentPage="profile"
+                userRole="therapist"
+                onHomeClick={onNavigateToHome || (() => {})}
+                onNotificationsClick={onNavigateToNotifications}
+                onProfileClick={() => setActiveTab('profile')}
+                unreadNotifications={notifications.filter(n => !n.isRead).length}
+                t={t}
+            />
         </div>
     );
 };

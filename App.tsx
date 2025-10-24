@@ -570,6 +570,7 @@ const App: React.FC = () => {
                 onSave={handleSaveTherapist} 
                 onLogout={handleProviderLogout} 
                 onNavigateToNotifications={handleNavigateToNotifications}
+                onNavigateToHome={handleBackToHome}
                 onUpdateBookingStatus={handleUpdateBookingStatus}
                 t={t.providerDashboard} 
                 therapistId={loggedInProvider.id}
