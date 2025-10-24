@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import type { Therapist, Analytics } from '../types';
 import { AvailabilityStatus } from '../types';
 import { parsePricing, parseMassageTypes } from '../utils/appwriteHelpers';
-import Button from './Button';
 
 interface TherapistCardProps {
     therapist: Therapist;
@@ -40,6 +39,12 @@ const WhatsAppIcon: React.FC<{className?: string}> = ({ className }) => (
     </svg>
 );
 
+const CalendarIcon: React.FC<{className?: string}> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+    </svg>
+);
+
 const LocationPinIcon: React.FC<{className?: string}> = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 20 20" fill="currentColor">
         <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
@@ -59,7 +64,7 @@ const statusStyles: { [key in AvailabilityStatus]: { text: string; bg: string; d
     [AvailabilityStatus.Offline]: { text: 'text-gray-700', bg: 'bg-gray-100', dot: 'bg-gray-500' },
 };
 
-const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook, onIncrementAnalytics, t }) => {
+const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook, onIncrementAnalytics }) => {
     const [showBusyModal, setShowBusyModal] = useState(false);
     
     // Get the display status (may differ from actual status)
@@ -183,11 +188,15 @@ const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook
                     className="w-1/2 flex items-center justify-center gap-2 bg-green-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-600 transition-colors duration-300"
                 >
                     <WhatsAppIcon className="w-5 h-5"/>
-                    <span>{t.orderNow}</span>
+                    <span>Chat Now</span>
                 </button>
-                 <Button onClick={() => onBook(therapist)} className="w-1/2" variant="primary">
-                    {t.schedule}
-                </Button>
+                 <button 
+                    onClick={() => onBook(therapist)} 
+                    className="w-1/2 flex items-center justify-center gap-2 bg-brand-orange text-white font-bold py-3 px-4 rounded-lg hover:bg-orange-600 transition-colors duration-300"
+                >
+                    <CalendarIcon className="w-5 h-5"/>
+                    <span>Schedule</span>
+                </button>
             </div>
             </div>
             
