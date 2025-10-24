@@ -31,9 +31,11 @@ const PrivacyPolicyPage: React.FC<PrivacyPolicyPageProps> = ({ onBack, t }) => {
                 
                 <Section title={t.dataCollection.title} content={
                     <div className="space-y-2 text-sm text-gray-700 leading-relaxed">
-                        <p><strong>{t.dataCollection.personal.split(':')[0]}:</strong> {t.dataCollection.personal.split(':')[1]}</p>
-                        <p><strong>{t.dataCollection.usage.split(':')[0]}:</strong> {t.dataCollection.usage.split(':')[1]}</p>
-                        <p><strong>{t.dataCollection.location.split(':')[0]}:</strong> {t.dataCollection.location.split(':')[1]}</p>
+                        <p>• {t.dataCollection.personal}</p>
+                        <p>• {t.dataCollection.usage}</p>
+                        <p>• {t.dataCollection.location}</p>
+                        <p>• {t.dataCollection.photos}</p>
+                        <p>• {t.dataCollection.communications}</p>
                     </div>
                 } />
 
@@ -50,17 +52,35 @@ const PrivacyPolicyPage: React.FC<PrivacyPolicyPageProps> = ({ onBack, t }) => {
                      <div>
                         <p className="text-sm text-gray-700 leading-relaxed mb-2">{t.dataSharing.content}</p>
                         <ul className="list-disc list-inside space-y-1 text-sm text-gray-700">
-                            {t.dataSharing.points.map((point: string, index: number) => {
-                                const parts = point.split(':');
-                                return <li key={index}><strong>{parts[0]}:</strong>{parts.slice(1).join(':')}</li>
-                            })}
+                            {t.dataSharing.points.map((point: string, index: number) => <li key={index}>{point}</li>)}
+                        </ul>
+                        <p className="text-sm text-gray-700 leading-relaxed mt-3 italic">{t.dataSharing.note}</p>
+                    </div>
+                } />
+
+                <Section title={t.legalBasis.title} content={
+                    <div>
+                        <p className="text-sm text-gray-700 leading-relaxed mb-2">{t.legalBasis.content}</p>
+                        <ul className="list-disc list-inside space-y-1 text-sm text-gray-700">
+                            {t.legalBasis.points.map((point: string, index: number) => <li key={index}>{point}</li>)}
                         </ul>
                     </div>
                 } />
-                
+
+                <Section title={t.dataRetention.title} content={t.dataRetention.content} />
                 <Section title={t.security.title} content={t.security.content} />
                 <Section title={t.yourRights.title} content={t.yourRights.content} />
+                <Section title={t.cookies.title} content={t.cookies.content} />
+                <Section title={t.thirdPartyServices.title} content={t.thirdPartyServices.content} />
+                <Section title={t.childrenPrivacy.title} content={t.childrenPrivacy.content} />
+                <Section title={t.dataTransfer.title} content={t.dataTransfer.content} />
                 <Section title={t.policyChanges.title} content={t.policyChanges.content} />
+                <Section title={t.governing.title} content={t.governing.content} />
+                
+                <div className="bg-orange-50 border-l-4 border-orange-500 p-4 rounded">
+                    <Section title={t.disclaimer.title} content={t.disclaimer.content} />
+                </div>
+
                 <Section title={t.contact.title} content={t.contact.content} />
 
             </main>

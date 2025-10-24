@@ -138,28 +138,62 @@ const HomePage: React.FC<HomePageProps> = ({ loggedInAgent, therapists, onSetUse
                         aria-hidden="true"
                     ></div>
     
-                    <div className={`absolute right-0 top-0 bottom-0 w-80 bg-gradient-to-br from-white via-gray-50 to-gray-100 shadow-2xl flex flex-col transform transition-transform ease-in-out duration-300 ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-                        {/* Header */}
-                        <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-6 shadow-lg">
-                            <div className="flex justify-between items-center">
-                                <div>
-                                    <h2 className="font-bold text-2xl text-white mb-1">Menu</h2>
-                                    <p className="text-orange-100 text-sm">Choose your portal</p>
-                                </div>
-                                <button 
-                                    onClick={() => setIsMenuOpen(false)} 
-                                    className="text-white hover:bg-white/20 p-2 rounded-full transition-all" 
-                                    aria-label="Close menu"
-                                >
-                                    <CloseIcon />
-                                </button>
-                            </div>
+                    <div className={`absolute right-0 top-0 bottom-0 w-[70%] sm:w-80 bg-gradient-to-br from-white via-gray-50 to-gray-100 shadow-2xl flex flex-col transform transition-transform ease-in-out duration-300 ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+                        {/* Brand Header */}
+                        <div className="p-6 flex justify-between items-center border-b border-gray-200">
+                            <h2 className="font-bold text-2xl bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
+                                IndoStreet
+                            </h2>
+                            <button 
+                                onClick={() => setIsMenuOpen(false)} 
+                                className="text-gray-600 hover:bg-gray-200 p-2 rounded-full transition-all" 
+                                aria-label="Close menu"
+                            >
+                                <CloseIcon />
+                            </button>
                         </div>
 
                         {/* Menu Items */}
                         <nav className="flex-grow overflow-y-auto p-4">
                             <div className="space-y-2">
-                                {/* User Login (Unified) */}
+                                {/* Login Section Header */}
+                                <div className="px-2 py-2">
+                                    <h3 className="text-xs font-semibold text-white/60 uppercase tracking-wider">Login / Create Account</h3>
+                                </div>
+
+                                {/* Hotel Login */}
+                                <button 
+                                    onClick={() => { onLoginClick(); setIsMenuOpen(false); }} 
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-blue-500 group"
+                                >
+                                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl shadow-lg bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600 border-2 border-white transform hover:scale-105 transition-transform">
+                                        <BuildingIcon className="w-6 h-6 text-white drop-shadow" />
+                                    </div>
+                                    <div className="flex-grow">
+                                        <h3 className="font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
+                                            Hotel
+                                        </h3>
+                                        <p className="text-xs text-gray-500">Login / Register</p>
+                                    </div>
+                                </button>
+
+                                {/* Villa Login */}
+                                <button 
+                                    onClick={() => { onLoginClick(); setIsMenuOpen(false); }} 
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-green-500 group"
+                                >
+                                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl shadow-lg bg-gradient-to-br from-green-400 via-green-500 to-green-600 border-2 border-white transform hover:scale-105 transition-transform">
+                                        <HomeIcon className="w-6 h-6 text-white drop-shadow" />
+                                    </div>
+                                    <div className="flex-grow">
+                                        <h3 className="font-semibold text-gray-800 group-hover:text-green-600 transition-colors">
+                                            Villa
+                                        </h3>
+                                        <p className="text-xs text-gray-500">Login / Register</p>
+                                    </div>
+                                </button>
+
+                                {/* Therapists Login */}
                                 <button 
                                     onClick={() => { onLoginClick(); setIsMenuOpen(false); }} 
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-orange-500 group"
@@ -169,9 +203,25 @@ const HomePage: React.FC<HomePageProps> = ({ loggedInAgent, therapists, onSetUse
                                     </div>
                                     <div className="flex-grow">
                                         <h3 className="font-semibold text-gray-800 group-hover:text-orange-600 transition-colors">
-                                            Login / Create Account
+                                            Therapists
                                         </h3>
-                                        <p className="text-xs text-gray-500">Therapist, Place, Hotel, Villa, Admin</p>
+                                        <p className="text-xs text-gray-500">Login / Register</p>
+                                    </div>
+                                </button>
+
+                                {/* Massage Spa Login */}
+                                <button 
+                                    onClick={() => { onLoginClick(); setIsMenuOpen(false); }} 
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-pink-500 group"
+                                >
+                                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl shadow-lg bg-gradient-to-br from-pink-400 via-pink-500 to-pink-600 border-2 border-white transform hover:scale-105 transition-transform">
+                                        <SparklesIcon className="w-6 h-6 text-white drop-shadow" />
+                                    </div>
+                                    <div className="flex-grow">
+                                        <h3 className="font-semibold text-gray-800 group-hover:text-pink-600 transition-colors">
+                                            Massage Spa
+                                        </h3>
+                                        <p className="text-xs text-gray-500">Login / Register</p>
                                     </div>
                                 </button>
 
@@ -185,9 +235,9 @@ const HomePage: React.FC<HomePageProps> = ({ loggedInAgent, therapists, onSetUse
                                     </div>
                                     <div className="flex-grow">
                                         <h3 className="font-semibold text-gray-800 group-hover:text-purple-600 transition-colors">
-                                            {loggedInAgent ? 'Agent Dashboard' : 'Agent Portal'}
+                                            Agent
                                         </h3>
-                                        <p className="text-xs text-gray-500">Earn commissions</p>
+                                        <p className="text-xs text-gray-500">Login / Register</p>
                                     </div>
                                 </button>
 

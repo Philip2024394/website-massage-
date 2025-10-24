@@ -15,9 +15,6 @@ const LocationModal: React.FC<LocationModalProps> = ({ onConfirm, onClose, t }) 
     const [mapsApiLoaded, setMapsApiLoaded] = useState(false);
 
     const inputRef = useRef<HTMLInputElement>(null);
-    const mapRef = useRef<HTMLDivElement>(null);
-    const mapInstance = useRef<any>(null);
-    const markerInstance = useRef<any>(null);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -28,22 +25,6 @@ const LocationModal: React.FC<LocationModalProps> = ({ onConfirm, onClose, t }) 
         }, 100);
         return () => clearInterval(interval);
     }, []);
-
-    useEffect(() => {
-        if (mapsApiLoaded && mapRef.current && !mapInstance.current) {
-            const defaultCenter = { lat: -2.548926, lng: 118.0148634 };
-            mapInstance.current = new (window as any).google.maps.Map(mapRef.current, {
-                center: defaultCenter,
-                zoom: 5,
-                disableDefaultUI: true,
-            });
-            markerInstance.current = new (window as any).google.maps.Marker({
-                map: mapInstance.current,
-                position: defaultCenter,
-            });
-            markerInstance.current.setVisible(false);
-        }
-    }, [mapsApiLoaded]);
     
     useEffect(() => {
         if (mapsApiLoaded && inputRef.current) {
@@ -60,22 +41,11 @@ const LocationModal: React.FC<LocationModalProps> = ({ onConfirm, onClose, t }) 
                         lng: place.geometry.location.lng(),
                     };
                     setSelectedLocation(location);
-                    updateMap(location.lat, location.lng);
                     setError('');
                 }
             });
         }
     }, [mapsApiLoaded]);
-
-    const updateMap = (lat: number, lng: number) => {
-        if (mapInstance.current && markerInstance.current) {
-            const newPos = { lat, lng };
-            mapInstance.current.setCenter(newPos);
-            mapInstance.current.setZoom(15);
-            markerInstance.current.setPosition(newPos);
-            markerInstance.current.setVisible(true);
-        }
-    };
     
     const handleUseCurrentLocation = () => {
         if (!navigator.geolocation) {
@@ -100,7 +70,6 @@ const LocationModal: React.FC<LocationModalProps> = ({ onConfirm, onClose, t }) 
                         if (inputRef.current) {
                             inputRef.current.value = location.address;
                         }
-                        updateMap(location.lat, location.lng);
                     } else {
                         setError('Could not determine address from location.');
                     }
@@ -132,7 +101,27 @@ const LocationModal: React.FC<LocationModalProps> = ({ onConfirm, onClose, t }) 
                 </div>
                 <p className="text-gray-600 mb-4 text-center">{t.prompt}</p>
 
-                <div ref={mapRef} className="h-48 bg-gray-200 rounded-lg mb-4"></div>
+                {/* World Map with Pulsing Red Dot */}
+                <div className="relative h-48 bg-gray-200 rounded-lg mb-4 overflow-hidden">
+                    <img 
+                        src="https://ik.imagekit.io/7grri5v7d/indostreet%20world%20map.png?updatedAt=1761327681427"
+                        alt="World Map"
+                        className="w-full h-full object-cover"
+                    />
+                    {/* Pulsing Red Dot with Satellite Signal Effect - Moved down 40px */}
+                    <div className="absolute left-1/2 transform -translate-x-1/2" style={{ top: 'calc(50% + 40px)', transform: 'translate(-50%, -50%)' }}>
+                        {/* Outer pulsing circle - satellite signal */}
+                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                            <div className="w-16 h-16 bg-red-500 rounded-full opacity-30 animate-ping"></div>
+                        </div>
+                        {/* Middle pulsing circle */}
+                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                            <div className="w-10 h-10 bg-red-500 rounded-full opacity-50 animate-pulse"></div>
+                        </div>
+                        {/* Inner solid red dot */}
+                        <div className="w-4 h-4 bg-red-600 rounded-full shadow-lg"></div>
+                    </div>
+                </div>
 
                 <div className="mb-4">
                      <input 
@@ -144,7 +133,12 @@ const LocationModal: React.FC<LocationModalProps> = ({ onConfirm, onClose, t }) 
                     />
                 </div>
                 
-                <Button onClick={handleUseCurrentLocation} variant="secondary" disabled={isLoading} className="text-sm py-2.5">
+                <Button 
+                    onClick={handleUseCurrentLocation} 
+                    variant="primary" 
+                    disabled={isLoading} 
+                    className="text-sm py-2.5 bg-green-600 hover:bg-green-700 text-white"
+                >
                     {isLoading ? 'Getting Location...' : (t.useCurrentLocationButton || 'Use My Current Location')}
                 </Button>
                 

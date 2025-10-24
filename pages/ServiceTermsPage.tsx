@@ -34,52 +34,121 @@ const ServiceTermsPage: React.FC<ServiceTermsPageProps> = ({ onBack, t, contactN
                 <h1 className="text-xl font-bold text-gray-800">{t.title}</h1>
             </header>
 
-            <main className="p-6 space-y-6 text-gray-700 pb-24">
-                <p className="text-sm">{t.intro}</p>
+            <main className="p-6 space-y-6 text-gray-700 pb-24 max-w-4xl mx-auto">
+                <div className="bg-orange-100 border-l-4 border-orange-500 p-4 mb-6">
+                    <p className="text-sm font-semibold text-orange-900">{t.effectiveDate}</p>
+                </div>
+
+                <p className="text-sm leading-relaxed">{t.intro}</p>
                 
                 <div className="space-y-2">
-                    <h3 className="font-bold text-gray-800">{t.therapistRightsTitle}</h3>
-                    <p className="text-sm">{t.therapistRightsContent}</p>
+                    <h3 className="font-bold text-gray-800 text-lg">{t.acceptance.title}</h3>
+                    <p className="text-sm leading-relaxed">{t.acceptance.content}</p>
                 </div>
 
                 <div className="space-y-2">
-                    <h3 className="font-bold text-gray-800">{t.paymentTitle}</h3>
-                    <p className="text-sm">{t.paymentContent}</p>
-                </div>
-                
-                <div className="space-y-2">
-                    <h3 className="font-bold text-gray-800">{t.clientCommunicationTitle}</h3>
-                    <p className="text-sm">{t.clientCommunicationContent}</p>
-                </div>
-                
-                <div className="space-y-2">
-                    <h3 className="font-bold text-gray-800">{t.clientRightsTitle}</h3>
-                    <p className="text-sm">{t.clientRightsContent}</p>
+                    <h3 className="font-bold text-gray-800 text-lg">{t.platformNature.title}</h3>
+                    <p className="text-sm leading-relaxed">{t.platformNature.content}</p>
                 </div>
 
                 <div className="space-y-2">
-                    <h3 className="font-bold text-gray-800">{t.therapistObligationsTitle}</h3>
-                    <p className="text-sm">{t.therapistObligationsContent}</p>
+                    <h3 className="font-bold text-gray-800 text-lg">{t.governingLaw.title}</h3>
+                    <p className="text-sm leading-relaxed">{t.governingLaw.content}</p>
                 </div>
 
                 <div className="space-y-2">
-                    <h3 className="font-bold text-gray-800">{t.professionalismTitle}</h3>
-                    <p className="text-sm">{t.professionalismContent}</p>
-                </div>
-                
-                <div className="space-y-2 pt-4 border-t border-gray-200">
-                    <h3 className="font-bold text-gray-800">{t.disclaimerTitle}</h3>
-                    <p className="text-sm">{t.disclaimerContent}</p>
-                </div>
-                
-                 <div className="space-y-2">
-                    <h3 className="font-bold text-gray-800">{t.disputeResolution.title}</h3>
-                    <p className="text-sm">{t.disputeResolution.content}</p>
+                    <h3 className="font-bold text-gray-800 text-lg">{t.userRights.title}</h3>
+                    <p className="text-sm leading-relaxed">{t.userRights.content}</p>
                 </div>
 
                 <div className="space-y-2">
-                    <h3 className="font-bold text-gray-800">{t.indemnification.title}</h3>
-                    <p className="text-sm">{t.indemnification.content}</p>
+                    <h3 className="font-bold text-gray-800 text-lg">{t.confidentiality.title}</h3>
+                    <p className="text-sm leading-relaxed">{t.confidentiality.content}</p>
+                </div>
+                
+                <div className="space-y-2">
+                    <h3 className="font-bold text-gray-800 text-lg">{t.therapistRightsTitle}</h3>
+                    <p className="text-sm leading-relaxed">{t.therapistRightsContent}</p>
+                </div>
+
+                <div className="space-y-2">
+                    <h3 className="font-bold text-gray-800 text-lg">{t.paymentTitle}</h3>
+                    <p className="text-sm leading-relaxed">{t.paymentContent}</p>
+                </div>
+                
+                <div className="space-y-2">
+                    <h3 className="font-bold text-gray-800 text-lg">{t.clientCommunicationTitle}</h3>
+                    <p className="text-sm leading-relaxed">{t.clientCommunicationContent}</p>
+                </div>
+                
+                <div className="space-y-2">
+                    <h3 className="font-bold text-gray-800 text-lg">{t.clientRightsTitle}</h3>
+                    <p className="text-sm leading-relaxed">{t.clientRightsContent}</p>
+                </div>
+
+                <div className="space-y-2">
+                    <h3 className="font-bold text-gray-800 text-lg">{t.therapistObligationsTitle}</h3>
+                    <p className="text-sm leading-relaxed">{t.therapistObligationsContent}</p>
+                </div>
+
+                <div className="space-y-2">
+                    <h3 className="font-bold text-gray-800 text-lg">{t.professionalismTitle}</h3>
+                    <p className="text-sm leading-relaxed">{t.professionalismContent}</p>
+                </div>
+
+                <div className="space-y-2">
+                    <h3 className="font-bold text-gray-800 text-lg">{t.userConduct.title}</h3>
+                    <p className="text-sm leading-relaxed mb-3">{t.userConduct.content}</p>
+                    <ul className="list-disc list-inside space-y-2 text-sm ml-4">
+                        {t.userConduct.prohibitions.map((item: string, index: number) => (
+                            <li key={index} className="leading-relaxed">{item}</li>
+                        ))}
+                    </ul>
+                </div>
+
+                <div className="space-y-2">
+                    <h3 className="font-bold text-gray-800 text-lg">{t.intellectualProperty.title}</h3>
+                    <p className="text-sm leading-relaxed">{t.intellectualProperty.content}</p>
+                </div>
+                
+                <div className="space-y-2 pt-4 border-t-2 border-orange-200">
+                    <h3 className="font-bold text-gray-800 text-lg">{t.disclaimerTitle}</h3>
+                    <p className="text-sm leading-relaxed">{t.disclaimerContent}</p>
+                </div>
+
+                <div className="space-y-2">
+                    <h3 className="font-bold text-gray-800 text-lg">{t.limitationOfLiability.title}</h3>
+                    <p className="text-sm leading-relaxed">{t.limitationOfLiability.content}</p>
+                </div>
+                
+                <div className="space-y-2">
+                    <h3 className="font-bold text-gray-800 text-lg">{t.disputeResolution.title}</h3>
+                    <p className="text-sm leading-relaxed">{t.disputeResolution.content}</p>
+                </div>
+
+                <div className="space-y-2">
+                    <h3 className="font-bold text-gray-800 text-lg">{t.indemnification.title}</h3>
+                    <p className="text-sm leading-relaxed">{t.indemnification.content}</p>
+                </div>
+
+                <div className="space-y-2">
+                    <h3 className="font-bold text-gray-800 text-lg">{t.modifications.title}</h3>
+                    <p className="text-sm leading-relaxed">{t.modifications.content}</p>
+                </div>
+
+                <div className="space-y-2">
+                    <h3 className="font-bold text-gray-800 text-lg">{t.severability.title}</h3>
+                    <p className="text-sm leading-relaxed">{t.severability.content}</p>
+                </div>
+
+                <div className="space-y-2">
+                    <h3 className="font-bold text-gray-800 text-lg">{t.entireAgreement.title}</h3>
+                    <p className="text-sm leading-relaxed">{t.entireAgreement.content}</p>
+                </div>
+
+                <div className="space-y-2 bg-gray-100 p-4 rounded-lg">
+                    <h3 className="font-bold text-gray-800 text-lg">{t.contactInformation.title}</h3>
+                    <p className="text-sm leading-relaxed">{t.contactInformation.content}</p>
                 </div>
             </main>
 
