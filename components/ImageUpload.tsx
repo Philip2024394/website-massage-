@@ -28,6 +28,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ id, label, currentImage, onIm
     const fileInputRef = useRef<HTMLInputElement>(null);
     
     useEffect(() => {
+        console.log('🖼️ ImageUpload: currentImage changed to:', currentImage?.substring(0, 100) + '...');
         setPreview(currentImage);
     }, [currentImage]);
 
@@ -49,6 +50,11 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ id, label, currentImage, onIm
                     console.log('📤 Starting upload to Appwrite Storage...');
                     const imageUrl = await imageUploadService.uploadProfileImage(result);
                     console.log('✅ Upload successful! URL:', imageUrl);
+                    
+                    // Update preview to the uploaded URL
+                    setPreview(imageUrl);
+                    
+                    // Notify parent component
                     onImageChange(imageUrl);
                 } catch (error) {
                     console.error('❌ Error uploading image:', error);
@@ -82,7 +88,15 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ id, label, currentImage, onIm
                         tabIndex={0}
                     >
                         {preview && preview.length > 0 ? (
-                            <img src={preview} alt="Profile Preview" className="w-full h-full object-cover" />
+                            <img 
+                                src={preview} 
+                                alt="Profile Preview" 
+                                className="w-full h-full object-cover"
+                                onError={() => {
+                                    console.error('❌ Failed to load image preview:', preview.substring(0, 100));
+                                    setPreview(null);
+                                }}
+                            />
                         ) : (
                             <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
                                 <UserIcon className="w-16 h-16" />

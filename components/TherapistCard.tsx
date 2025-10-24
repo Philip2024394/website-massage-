@@ -67,6 +67,9 @@ const statusStyles: { [key in AvailabilityStatus]: { text: string; bg: string; d
 const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook, onIncrementAnalytics }) => {
     const [showBusyModal, setShowBusyModal] = useState(false);
     
+    // Debug: Log profile picture URL
+    console.log('🎴 TherapistCard rendering for:', therapist.name, 'ProfilePicture:', therapist.profilePicture?.substring(0, 100) + '...');
+    
     // Get the display status (may differ from actual status)
     const displayStatus = getDisplayStatus(therapist);
     const style = statusStyles[displayStatus];
