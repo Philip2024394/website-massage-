@@ -1,5 +1,94 @@
+// --- Custom Links Service for Drawer ---
+export const customLinksService = {
+    async uploadIcon(base64Image: string): Promise<string> {
+        try {
+            // Convert base64 to blob
+            const base64Data = base64Image.split(',')[1];
+            const byteCharacters = atob(base64Data);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            const blob = new Blob([byteArray], { type: 'image/png' });
+            
+            // Create a File object
+            const fileName = `icon_${Date.now()}.png`;
+            const file = new File([blob], fileName, { type: 'image/png' });
+            
+            // Upload to Appwrite Storage
+            const response = await storage.createFile(
+                APPWRITE_CONFIG.bucketId,
+                ID.unique(),
+                file
+            );
+            
+            // Return the file view URL
+            const fileUrl = `${APPWRITE_CONFIG.endpoint}/storage/buckets/${APPWRITE_CONFIG.bucketId}/files/${response.$id}/view?project=${APPWRITE_CONFIG.projectId}`;
+            return fileUrl;
+        } catch (error) {
+            console.error('Error uploading icon:', error);
+            throw error;
+        }
+    },
+    
+    async create(link: { name: string; url: string; icon: string }): Promise<any> {
+        try {
+            // Upload icon to storage first if it's a base64 image
+            let iconUrl = link.icon;
+            if (link.icon.startsWith('data:image')) {
+                iconUrl = await this.uploadIcon(link.icon);
+            }
+            
+            // Generate a unique customLinkId as an integer
+            const customLinkId = Date.now();
+            
+            const response = await databases.createDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.customLinks,
+                'unique()',
+                {
+                    name: link.name,
+                    title: link.name,
+                    url: link.url,
+                    icon: iconUrl,
+                    customLinkId,
+                    createdAt: new Date().toISOString()
+                }
+            );
+            return response;
+        } catch (error) {
+            console.error('Error creating custom link:', error);
+            throw error;
+        }
+    },
+    async getAll(): Promise<any[]> {
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.customLinks
+            );
+            return response.documents;
+        } catch (error) {
+            console.error('Error fetching custom links:', error);
+            return [];
+        }
+    },
+    async delete(id: string): Promise<void> {
+        try {
+            await databases.deleteDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.customLinks,
+                id
+            );
+        } catch (error) {
+            console.error('Error deleting custom link:', error);
+            throw error;
+        }
+    }
+};
 // Appwrite service - Real implementation
-import { Client, Databases, Account, Query } from 'appwrite';
+import { Client, Databases, Account, Query, Storage, ID } from 'appwrite';
 import { APPWRITE_CONFIG } from './appwrite.config';
 
 // Initialize Appwrite Client
@@ -9,6 +98,7 @@ const client = new Client()
 
 const databases = new Databases(client);
 const account = new Account(client);
+const storage = new Storage(client);
 
 export const appwriteClient = client;
 export const appwriteDatabases = databases;
@@ -314,6 +404,20 @@ export const authService = {
             await account.deleteSession('current');
         } catch (error) {
             console.error('Error logging out:', error);
+            throw error;
+        }
+    },
+    async createAnonymousSession(): Promise<any> {
+        try {
+            // Check if already logged in
+            const currentUser = await account.get().catch(() => null);
+            if (currentUser) return currentUser;
+            
+            // Create anonymous session for guest access
+            await account.createAnonymousSession();
+            return await account.get();
+        } catch (error) {
+            console.error('Error creating anonymous session:', error);
             throw error;
         }
     }

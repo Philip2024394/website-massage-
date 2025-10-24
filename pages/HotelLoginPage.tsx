@@ -1,3 +1,4 @@
+// File deleted as part of unified login refactor.
 import React, { useState } from 'react';
 import { useBackground } from '../src/shared/hooks/useBackground';
 

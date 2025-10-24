@@ -318,6 +318,34 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
             default:
                 return (
                      <div className="space-y-6">
+                         {/* Important Profile Image Requirements Notice */}
+                         <div className="bg-red-50 border-2 border-red-500 rounded-lg p-4 mb-6">
+                            <div className="flex items-start gap-3">
+                                <span className="text-2xl">⚠️</span>
+                                <div>
+                                    <h3 className="text-red-800 font-bold text-lg mb-2">IMPORTANT: Profile Image Requirements</h3>
+                                    <ul className="text-red-700 text-sm space-y-2">
+                                        <li className="flex items-start gap-2">
+                                            <span className="font-bold">✓</span>
+                                            <span><strong>REQUIRED:</strong> Your profile image MUST show your face - side view or front view only</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <span className="font-bold">✗</span>
+                                            <span><strong>NOT ALLOWED:</strong> Images that do not represent you as the therapist</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <span className="font-bold">⚠</span>
+                                            <span><strong>WARNING:</strong> Accounts with inappropriate or non-representative images will be <strong>BLOCKED</strong> until corrected</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <span className="font-bold">📸</span>
+                                            <span>Live profiles must display professional photos showing the therapist clearly</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
                          <ImageUpload
                             id="profile-picture-upload"
                             label={t.uploadProfilePic}

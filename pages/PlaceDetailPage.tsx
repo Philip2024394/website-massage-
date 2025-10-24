@@ -111,15 +111,15 @@ const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({ place, onBack, onBook
                  <div className="grid grid-cols-3 gap-2 text-center text-sm text-gray-600">
                     <div className="bg-brand-green-light p-3 rounded-lg">
                         <p>60 min</p>
-                        <p className="font-bold text-lg text-brand-green-dark">Rp {pricing[60]}k</p>
+                        <p className="font-bold text-lg text-brand-green-dark">Rp {Number(pricing[60]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
                     </div>
                     <div className="bg-brand-green-light p-3 rounded-lg">
                         <p>90 min</p>
-                        <p className="font-bold text-lg text-brand-green-dark">Rp {pricing[90]}k</p>
+                        <p className="font-bold text-lg text-brand-green-dark">Rp {Number(pricing[90]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
                     </div>
                     <div className="bg-brand-green-light p-3 rounded-lg">
                         <p>120 min</p>
-                        <p className="font-bold text-lg text-brand-green-dark">Rp {pricing[120]}k</p>
+                        <p className="font-bold text-lg text-brand-green-dark">Rp {Number(pricing[120]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
                     </div>
                 </div>
             </div>

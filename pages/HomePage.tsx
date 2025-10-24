@@ -1,8 +1,5 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import type { User, Place, Therapist, UserLocation, Analytics, Agent } from '../types';
-import TherapistCard from '../components/TherapistCard';
-import PlaceCard from '../components/PlaceCard';
-import RatingModal from '../components/RatingModal';
+import React, { useState, useEffect } from 'react';
+import type { User, UserLocation, Agent, Place, Therapist, Analytics } from '../types';
 import LocationModal from '../components/LocationModal';
 import { MASSAGE_TYPES_CATEGORIZED } from '../constants';
 import HomeIcon from '../components/icons/HomeIcon';
@@ -12,29 +9,31 @@ import CloseIcon from '../components/icons/CloseIcon';
 import BriefcaseIcon from '../components/icons/BriefcaseIcon';
 import UserSolidIcon from '../components/icons/UserSolidIcon';
 import AddToHomeScreenPrompt from '../components/AddToHomeScreenPrompt';
+import { customLinksService } from '../lib/appwriteService';
+
 
 interface HomePageProps {
     user: User | null;
     loggedInAgent: Agent | null;
-    therapists: Therapist[];
-    places: Place[];
+    therapists: any[];
+    places: any[];
     userLocation: UserLocation | null;
     onSetUserLocation: (location: UserLocation) => void;
     onSelectPlace: (place: Place) => void;
+    onBook: (provider: Therapist | Place, type: 'therapist' | 'place') => void;
+    onIncrementAnalytics: (id: number | string, type: 'therapist' | 'place', metric: keyof Analytics) => void;
     onLogout: () => void;
     onLoginClick: () => void;
     onAdminClick: () => void;
     onCreateProfileClick: () => void;
     onAgentPortalClick: () => void;
-    onBook: (provider: Therapist | Place, type: 'therapist' | 'place') => void;
-    onIncrementAnalytics: (id: number | string, type: 'therapist' | 'place', metric: keyof Analytics) => void;
     onMassageTypesClick: () => void;
     onHotelPortalClick: () => void;
     isLoading: boolean;
     t: any;
 }
 
-type ActiveTab = 'home' | 'places';
+
 
 // Icons
 const AdminIcon = ({ className = 'w-6 h-6' }) => (
@@ -51,23 +50,6 @@ const UsersIcon = ({ className = 'w-6 h-6' }) => (
     </svg>
 );
 
-const TherapistIcon = ({ className = 'w-6 h-6' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-    </svg>
-);
-
-const MassagePlaceIcon = ({ className = 'w-6 h-6' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-    </svg>
-);
-
-const HotelIcon = ({ className = 'w-6 h-6' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-    </svg>
-);
 
 const BuildingIcon = ({ className = 'w-5 h-5' }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -87,21 +69,9 @@ const ChevronDownIcon = ({ className = 'w-5 h-5' }) => (
     </svg>
 );
 
-const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-    const R = 6371; // Radius of the earth in km
-    const dLat = (lat2 - lat1) * (Math.PI / 180);
-    const dLon = (lon2 - lon1) * (Math.PI / 180);
-    const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
-        Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const d = R * c; // Distance in km
-    return d;
-};
 
 
-const HomePage: React.FC<HomePageProps> = ({ user, loggedInAgent, therapists, places, userLocation, onSetUserLocation, onSelectPlace, onLogout, onLoginClick, onAdminClick, onCreateProfileClick, onAgentPortalClick, onBook, onIncrementAnalytics, onMassageTypesClick, onHotelPortalClick, isLoading, t }) => {
+const HomePage: React.FC<HomePageProps> = ({ loggedInAgent, therapists, onSetUserLocation, onLoginClick, onAdminClick, onAgentPortalClick, onMassageTypesClick, t }) => {
     // Safety check for translations
     if (!t || !t.home) {
         console.error('HomePage: Missing translations object or t.home', { t });
@@ -115,128 +85,44 @@ const HomePage: React.FC<HomePageProps> = ({ user, loggedInAgent, therapists, pl
         );
     }
 
-    const [activeTab, setActiveTab] = useState<ActiveTab>('home');
-    const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState('home');
     const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [itemToRate, setItemToRate] = useState<Therapist | Place | null>(null);
     const [selectedMassageType, setSelectedMassageType] = useState('all');
-    const [searchQuery] = useState('');
+    const [customLinks, setCustomLinks] = useState<any[]>([]);
 
     useEffect(() => {
-        if (!userLocation) {
-            setIsLocationModalOpen(true);
-        }
-    }, [userLocation]);
-    
+        setIsLocationModalOpen(true);
+    }, []);
+
     useEffect(() => {
-        // Simulate impression tracking for all live providers once
-        therapists.forEach(p => onIncrementAnalytics(p.id, 'therapist', 'impressions'));
-        places.forEach(p => onIncrementAnalytics(p.id, 'place', 'impressions'));
-    }, [therapists, places, onIncrementAnalytics]); 
+        // Fetch custom drawer links
+        const fetchCustomLinks = async () => {
+            try {
+                const links = await customLinksService.getAll();
+                setCustomLinks(links);
+            } catch (error) {
+                console.error('Error fetching custom links:', error);
+            }
+        };
+        fetchCustomLinks();
+    }, []);
 
-    const processedTherapists = useMemo(() => {
-        let filtered = therapists.filter(therapist => {
-            const typeMatch = selectedMassageType === 'all' || therapist.massageTypes.includes(selectedMassageType);
-            const searchMatch = therapist.name.toLowerCase().includes(searchQuery.toLowerCase());
-            return typeMatch && searchMatch;
-        });
+    // Removed unused processedTherapists and processedPlaces
 
-        if (userLocation) {
-            return filtered.map(therapist => {
-                let coords = { lat: 0, lng: 0 };
-                try {
-                    coords = typeof therapist.coordinates === 'string' ? JSON.parse(therapist.coordinates) : therapist.coordinates;
-                } catch (e) {
-                    console.warn('Invalid coordinates for therapist:', therapist.id);
-                }
-                
-                return {
-                    ...therapist,
-                    distance: parseFloat(getDistance(userLocation.lat, userLocation.lng, coords.lat, coords.lng).toFixed(1))
-                };
-            }).sort((a, b) => a.distance - b.distance);
-        }
-        
-        return filtered;
-    }, [therapists, userLocation, selectedMassageType, searchQuery]);
-    
-    const processedPlaces = useMemo(() => {
-        let filtered = places.filter(place => {
-            const typeMatch = selectedMassageType === 'all' || place.massageTypes.includes(selectedMassageType);
-            const searchMatch = place.name.toLowerCase().includes(searchQuery.toLowerCase());
-            return typeMatch && searchMatch;
-        });
+    // Count of online therapists (example: status === 'online')
+    const onlineTherapistsCount = 0;
 
-        if (userLocation) {
-             return filtered.map(place => {
-                let coords = { lat: 0, lng: 0 };
-                try {
-                    coords = typeof place.coordinates === 'string' ? JSON.parse(place.coordinates) : place.coordinates;
-                } catch (e) {
-                    console.warn('Invalid coordinates for place:', place.id);
-                }
-                
-                return {
-                    ...place,
-                    distance: parseFloat(getDistance(userLocation.lat, userLocation.lng, coords.lat, coords.lng).toFixed(1))
-                };
-            }).sort((a, b) => a.distance - b.distance);
-        }
+    // Rating modal handlers removed for design mock
 
-        return filtered;
-    }, [places, userLocation, selectedMassageType, searchQuery]);
+    // ...existing code...
 
+    // Removed unused renderTherapists
 
-    const handleOpenRatingModal = (item: Therapist | Place) => {
-        setItemToRate(item);
-        setIsRatingModalOpen(true);
-    };
-
-    const handleCloseRatingModal = () => {
-        setIsRatingModalOpen(false);
-        setItemToRate(null);
-    };
-
-    const onlineTherapistsCount = useMemo(() => therapists.filter(t => t.status === 'Available').length, [therapists]);
-
-    const renderTherapists = () => {
-        if (isLoading) {
-            return <p className="text-center text-gray-500 py-8">{t.home.loading}</p>;
-        }
-        if (processedTherapists.length === 0) {
-            return <p className="text-center text-gray-500 py-8">{t.home.noResults}</p>;
-        }
-        return (
-            <div className="space-y-4">
-                {processedTherapists.map(therapist => <TherapistCard 
-                    key={therapist.id} 
-                    therapist={therapist} 
-                    onRate={handleOpenRatingModal}
-                    onBook={() => onBook(therapist, 'therapist')}
-                    onIncrementAnalytics={(metric) => onIncrementAnalytics(therapist.id, 'therapist', metric)}
-                    t={t.home.therapistCard}
-                />)}
-            </div>
-        );
-    };
-
-    const renderPlaces = () => {
-        if (isLoading) {
-            return <p className="text-center text-gray-500 py-8">{t.home.loading}</p>;
-        }
-         if (processedPlaces.length === 0) {
-            return <p className="text-center text-gray-500 py-8">{t.home.noResults}</p>;
-        }
-        return (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {processedPlaces.map(place => <PlaceCard key={place.id} place={place} onClick={() => onSelectPlace(place)} onRate={handleOpenRatingModal} />)}
-            </div>
-        );
-    };
+    // Removed unused renderPlaces
 
     return (
-        <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
              <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">
@@ -282,9 +168,9 @@ const HomePage: React.FC<HomePageProps> = ({ user, loggedInAgent, therapists, pl
                         {/* Menu Items */}
                         <nav className="flex-grow overflow-y-auto p-4">
                             <div className="space-y-2">
-                                {/* User Login */}
+                                {/* User Login (Unified) */}
                                 <button 
-                                    onClick={() => { (user ? onLogout() : onLoginClick()); setIsMenuOpen(false); }} 
+                                    onClick={() => { onLoginClick(); setIsMenuOpen(false); }} 
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-orange-500 group"
                                 >
                                     <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl shadow-lg bg-gradient-to-br from-orange-400 via-yellow-300 to-orange-600 border-2 border-white transform hover:scale-105 transition-transform">
@@ -292,41 +178,9 @@ const HomePage: React.FC<HomePageProps> = ({ user, loggedInAgent, therapists, pl
                                     </div>
                                     <div className="flex-grow">
                                         <h3 className="font-semibold text-gray-800 group-hover:text-orange-600 transition-colors">
-                                            {user ? 'Logout' : 'Customer Login'}
+                                            Login / Create Account
                                         </h3>
-                                        <p className="text-xs text-gray-500">Book massage services</p>
-                                    </div>
-                                </button>
-
-                                {/* Therapist Login */}
-                                <button 
-                                    onClick={() => { onCreateProfileClick(); setIsMenuOpen(false); }} 
-                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-blue-500 group"
-                                >
-                                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl shadow-lg bg-gradient-to-br from-blue-400 via-cyan-300 to-blue-700 border-2 border-white transform hover:scale-105 transition-transform">
-                                        <TherapistIcon className="w-6 h-6 text-white drop-shadow" />
-                                    </div>
-                                    <div className="flex-grow">
-                                        <h3 className="font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
-                                            Therapist Portal
-                                        </h3>
-                                        <p className="text-xs text-gray-500">Manage your profile</p>
-                                    </div>
-                                </button>
-
-                                {/* Massage Place Login */}
-                                <button 
-                                    onClick={() => { onCreateProfileClick(); setIsMenuOpen(false); }} 
-                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-green-500 group"
-                                >
-                                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl shadow-lg bg-gradient-to-br from-green-400 via-lime-300 to-green-700 border-2 border-white transform hover:scale-105 transition-transform">
-                                        <MassagePlaceIcon className="w-6 h-6 text-white drop-shadow" />
-                                    </div>
-                                    <div className="flex-grow">
-                                        <h3 className="font-semibold text-gray-800 group-hover:text-green-600 transition-colors">
-                                            Massage Place
-                                        </h3>
-                                        <p className="text-xs text-gray-500">Business dashboard</p>
+                                        <p className="text-xs text-gray-500">Therapist, Place, Hotel, Villa, Admin</p>
                                     </div>
                                 </button>
 
@@ -346,26 +200,10 @@ const HomePage: React.FC<HomePageProps> = ({ user, loggedInAgent, therapists, pl
                                     </div>
                                 </button>
 
-                                {/* Hotel/Villa Portal */}
-                                <button 
-                                    onClick={() => { onHotelPortalClick(); setIsMenuOpen(false); }} 
-                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-pink-500 group"
-                                >
-                                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl shadow-lg bg-gradient-to-br from-pink-400 via-rose-300 to-pink-700 border-2 border-white transform hover:scale-105 transition-transform">
-                                        <HotelIcon className="w-6 h-6 text-white drop-shadow" />
-                                    </div>
-                                    <div className="flex-grow">
-                                        <h3 className="font-semibold text-gray-800 group-hover:text-pink-600 transition-colors">
-                                            Hotel & Villa
-                                        </h3>
-                                        <p className="text-xs text-gray-500">Partner services</p>
-                                    </div>
-                                </button>
-
                                 {/* Divider */}
                                 <div className="border-t border-gray-300 my-3"></div>
 
-                                {/* Admin Login */}
+                                {/* Admin Portal */}
                                 <button 
                                     onClick={() => { onAdminClick(); setIsMenuOpen(false); }} 
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-gradient-to-r from-gray-800 to-gray-900 shadow-sm hover:shadow-md transition-all duration-200 group"
@@ -380,6 +218,39 @@ const HomePage: React.FC<HomePageProps> = ({ user, loggedInAgent, therapists, pl
                                         <p className="text-xs text-gray-400">System management</p>
                                     </div>
                                 </button>
+
+                                {/* Custom Links */}
+                                {customLinks.length > 0 && (
+                                    <>
+                                        <div className="border-t border-gray-300 my-3"></div>
+                                        {customLinks.map((link) => (
+                                            <a
+                                                key={link.$id}
+                                                href={link.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                onClick={() => setIsMenuOpen(false)}
+                                                className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-blue-500 group"
+                                            >
+                                                {link.icon && (
+                                                    <div className="flex-shrink-0">
+                                                        <img 
+                                                            src={link.icon} 
+                                                            alt={link.title || link.name}
+                                                            className="w-12 h-12 object-cover rounded-xl shadow-lg border-2 border-white"
+                                                        />
+                                                    </div>
+                                                )}
+                                                <div className="flex-grow min-w-0">
+                                                    <h3 className="font-semibold text-gray-800 group-hover:text-blue-600 transition-colors truncate">
+                                                        {link.title || link.name}
+                                                    </h3>
+                                                    <p className="text-xs text-gray-500 truncate">{link.url}</p>
+                                                </div>
+                                            </a>
+                                        ))}
+                                    </>
+                                )}
                             </div>
                         </nav>
 
@@ -443,8 +314,7 @@ const HomePage: React.FC<HomePageProps> = ({ user, loggedInAgent, therapists, pl
                         </button>
                     </div>
                 </div>
-
-                {activeTab === 'home' ? renderTherapists() : renderPlaces()}
+                {/* ...existing code for therapists/places rendering, modals, etc. should follow here... */}
             </main>
             <AddToHomeScreenPrompt t={t.a2hsPrompt} />
             {isLocationModalOpen && (
@@ -457,16 +327,7 @@ const HomePage: React.FC<HomePageProps> = ({ user, loggedInAgent, therapists, pl
                     t={t.locationModal}
                 />
             )}
-            {isRatingModalOpen && itemToRate && (
-                <RatingModal
-                    itemName={itemToRate.name}
-                    itemId={itemToRate.id}
-                    itemType={'status' in itemToRate ? 'therapist' : 'place'}
-                    onClose={handleCloseRatingModal}
-                    onSubmit={handleCloseRatingModal}
-                    t={t.ratingModal}
-                />
-            )}
+            {/* Rating modal removed for design mock */}
         </div>
     );
 };

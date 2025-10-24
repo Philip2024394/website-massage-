@@ -4,36 +4,33 @@ import React, { useState, useEffect, useCallback } from 'react';
 import type { User, Place, Therapist, UserLocation, Booking, Notification, Analytics, Agent, AdminMessage } from './types';
 import { BookingStatus } from './types';
 import { dataService } from './services/dataService';
-import AuthPage from './pages/AuthPage';
+// import AuthPage from './pages/AuthPage';
+import UnifiedLoginPage from './pages/UnifiedLoginPage';
 import HomePage from './pages/HomePage';
 import PlaceDetailPage from './pages/PlaceDetailPage';
 import LandingPage from './pages/LandingPage';
-import AdminLoginPage from './pages/AdminLoginPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
+import AdminLoginPage from './pages/AdminLoginPage';
 import RegistrationChoicePage from './pages/RegistrationChoicePage';
 import TherapistDashboardPage from './pages/TherapistDashboardPage';
 import PlaceDashboardPage from './pages/PlaceDashboardPage';
 import AgentPage from './pages/AgentPage';
-import AgentAuthPage from './pages/AgentAuthPage';
 import AgentDashboardPage from './pages/AgentDashboardPage';
 import AgentTermsPage from './pages/AgentTermsPage';
 import ServiceTermsPage from './pages/ServiceTermsPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import Footer from './components/Footer';
-import ProviderAuthPage from './pages/ProviderAuthPage';
 import MembershipPage from './pages/MembershipPage';
 import BookingPage from './pages/BookingPage';
 import NotificationsPage from './pages/NotificationsPage';
 import MassageTypesPage from './pages/MassageTypesPage';
-import HotelLoginPage from './pages/HotelLoginPage';
 import HotelDashboardPage from './pages/HotelDashboardPage';
-import VillaLoginPage from './pages/VillaLoginPage';
 import VillaDashboardPage from './pages/VillaDashboardPage';
-
+// import UnifiedLoginPage from './pages/UnifiedLoginPage';
 import { translations } from './translations/index.ts';
 import { therapistService, placeService, agentService } from './lib/appwriteService';
 
-type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'agentAuth' | 'agentDashboard' | 'agentTerms' | 'serviceTerms' | 'privacy' | 'membership' | 'booking' | 'notifications' | 'massageTypes' | 'hotelLogin' | 'hotelDashboard' | 'villaLogin' | 'villaDashboard';
+type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'agentAuth' | 'agentDashboard' | 'agentTerms' | 'serviceTerms' | 'privacy' | 'membership' | 'booking' | 'notifications' | 'massageTypes' | 'hotelLogin' | 'hotelDashboard' | 'villaLogin' | 'villaDashboard' | 'unifiedLogin';
 type Language = 'en' | 'id';
 type LoggedInProvider = { id: number | string; type: 'therapist' | 'place' }; // Support both number and string IDs for Appwrite compatibility
 
@@ -51,7 +48,6 @@ const App: React.FC = () => {
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [allAdminTherapists, setAllAdminTherapists] = useState<Therapist[]>([]);
     const [allAdminPlaces, setAllAdminPlaces] = useState<Place[]>([]);
-    const [allAdminAgents, setAllAdminAgents] = useState<Agent[]>([]);
     
     // Loading state
     const [isLoading, setIsLoading] = useState(true);
@@ -70,36 +66,8 @@ const App: React.FC = () => {
     const [isHotelLoggedIn, setIsHotelLoggedIn] = useState(false);
     const [isVillaLoggedIn, setIsVillaLoggedIn] = useState(false);
     
-    // Google Maps state
-    const [googleMapsApiKey, setGoogleMapsApiKey] = useState<string | null>(null);
-    const [isMapsApiKeyMissing, setIsMapsApiKeyMissing] = useState(false);
-
     // App config state
     const [appContactNumber, setAppContactNumber] = useState<string>('6281392000050');
-
-    const loadGoogleMapsScript = (apiKey: string) => {
-        if (document.getElementById('google-maps-script')) {
-            return;
-        }
-        const script = document.createElement('script');
-        script.id = 'google-maps-script';
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
-        script.async = true;
-        script.defer = true;
-        script.onload = () => {
-            console.log('Google Maps script loaded successfully.');
-            setIsMapsApiKeyMissing(false);
-        };
-        script.onerror = () => {
-            console.error("Error loading Google Maps script. Please check your API key in the admin dashboard.");
-            setIsMapsApiKeyMissing(true);
-            const failedScript = document.getElementById('google-maps-script');
-            if (failedScript) {
-                failedScript.remove();
-            }
-        };
-        document.head.appendChild(script);
-    };
 
     const fetchPublicData = useCallback(async () => {
         try {
@@ -130,70 +98,19 @@ const App: React.FC = () => {
 
         setAllAdminTherapists(therapistsData || []);
         setAllAdminPlaces(placesData || []);
-        setAllAdminAgents(agentsData || []);
 
         setIsLoading(false);
     }, []);
 
 
+    // DEV ONLY: Bypass all login and show all dashboards
     useEffect(() => {
-        const storedContactNumber = localStorage.getItem('appContactNumber');
-        if (storedContactNumber) {
-            setAppContactNumber(storedContactNumber);
-        }
-
-        const storedMapsKey = localStorage.getItem('googleMapsApiKey');
-        if (storedMapsKey) {
-            setGoogleMapsApiKey(storedMapsKey);
-            loadGoogleMapsScript(storedMapsKey);
-        } else {
-            setIsMapsApiKeyMissing(true);
-            console.warn('Google Maps API key is not configured. Please set it in the Admin Dashboard.');
-        }
-
-        const storedProvider = localStorage.getItem('loggedInProvider');
-        if (storedProvider) {
-            try {
-                const providerData = JSON.parse(storedProvider);
-                setLoggedInProvider(providerData);
-                if (providerData.type === 'therapist') {
-                    setPage('therapistDashboard');
-                } else {
-                    setPage('placeDashboard');
-                }
-            } catch (error) {
-                console.error("Failed to parse loggedInProvider from localStorage", error);
-                localStorage.removeItem('loggedInProvider');
-            }
-        }
-        
-        const storedAgent = localStorage.getItem('loggedInAgent');
-        if (storedAgent) {
-            try {
-                const agentData: Agent = JSON.parse(storedAgent);
-                setLoggedInAgent(agentData);
-                if (agentData.hasAcceptedTerms) {
-                    setPage('agentDashboard');
-                } else {
-                    setPage('agentTerms');
-                }
-            } catch (error) {
-                console.error("Failed to parse loggedInAgent from localStorage", error);
-                localStorage.removeItem('loggedInAgent');
-            }
-        }
-        
-        const storedLocation = localStorage.getItem('user_location');
-        if (storedLocation) {
-            try {
-                setUserLocation(JSON.parse(storedLocation));
-            } catch (e) {
-                console.error("Failed to parse user location", e);
-                localStorage.removeItem('user_location');
-            }
-        }
-
-        // Initialize data loading (no Supabase required - using Appwrite/mock data)
+        setIsAdminLoggedIn(true);
+        setIsHotelLoggedIn(true);
+        setIsVillaLoggedIn(true);
+        setLoggedInProvider({ id: 'dev', type: 'therapist' });
+    setLoggedInAgent({ id: 0, name: 'Dev Agent', email: 'dev@dev.com', agentCode: 'DEV', hasAcceptedTerms: true });
+        setPage('adminDashboard'); // Default to admin, change as needed
         fetchPublicData();
         setIsLoading(false);
     }, [fetchPublicData]);
@@ -242,7 +159,7 @@ const App: React.FC = () => {
         setPage('home');
     };
     
-    const handleNavigateToAuth = () => setPage('auth');
+    const handleNavigateToAuth = () => setPage('unifiedLogin');
     
     const handleNavigateToAdminLogin = () => {
         // Appwrite is now configured - navigate directly to admin login
@@ -293,39 +210,6 @@ const App: React.FC = () => {
         setPage('home');
     }
 
-    const handleToggleTherapistLive = async (id: number | string) => {
-        const therapist = allAdminTherapists.find(t => String(t.id) === String(id));
-        if(!therapist) return;
-        
-        try {
-            // Appwrite uses string IDs with $id property
-            const therapistId = (therapist as any).$id || id.toString();
-            await therapistService.update(therapistId, { isLive: !therapist.isLive });
-            setAllAdminTherapists(allAdminTherapists.map(t => 
-                String(t.id) === String(id) ? { ...t, isLive: !t.isLive } : t
-            ));
-        } catch (error: any) {
-            console.error('Toggle therapist error:', error);
-            alert('Error updating therapist status: ' + (error.message || 'Unknown error'));
-        }
-    };
-
-    const handleTogglePlaceLive = async (id: number | string) => {
-        const place = allAdminPlaces.find(p => String(p.id) === String(id));
-        if(!place) return;
-        
-        try {
-            // Appwrite uses string IDs with $id property
-            const placeId = (place as any).$id || id.toString();
-            await placeService.update(placeId, { isLive: !place.isLive });
-            setAllAdminPlaces(allAdminPlaces.map(p => 
-                String(p.id) === String(id) ? { ...p, isLive: !p.isLive } : p
-            ));
-        } catch (error: any) {
-            console.error('Toggle place error:', error);
-            alert('Error updating place status: ' + (error.message || 'Unknown error'));
-        }
-    };
 
     const handleSelectRegistration = (type: 'therapist' | 'place') => {
         setProviderAuthInfo({ type, mode: 'register' });
@@ -697,32 +581,6 @@ const App: React.FC = () => {
         setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n));
     };
 
-    const handleSaveGoogleMapsApiKey = (key: string) => {
-        if (key && key.trim()) {
-            localStorage.setItem('googleMapsApiKey', key);
-            setGoogleMapsApiKey(key);
-            alert('Google Maps API Key saved. The application will now reload to apply the changes.');
-            window.location.reload();
-        } else {
-            localStorage.removeItem('googleMapsApiKey');
-            setGoogleMapsApiKey(null);
-            alert('Google Maps API Key cleared. The application will now reload.');
-            window.location.reload();
-        }
-    };
-
-    const handleSaveAppContactNumber = (number: string) => {
-        if (number && number.trim()) {
-            localStorage.setItem('appContactNumber', number);
-            setAppContactNumber(number);
-            alert('App Contact Number saved.');
-        } else {
-            localStorage.removeItem('appContactNumber');
-            setAppContactNumber('6281392000050'); // Revert to default
-            alert('App Contact Number cleared. Reverted to default.');
-        }
-    };
-
     const renderPage = () => {
         if (isLoading && page !== 'landing') {
             return <div className="flex justify-center items-center h-screen"><div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand-green"></div></div>;
@@ -730,7 +588,8 @@ const App: React.FC = () => {
 
         switch (page) {
             case 'landing': return <LandingPage onLanguageSelect={handleLanguageSelect} />;
-            case 'auth': return <AuthPage onAuthSuccess={() => setPage('home')} onBack={handleBackToHome} t={t.auth} />;
+            // case 'auth': return <AuthPage onAuthSuccess={() => setPage('home')} onBack={handleBackToHome} t={t.auth} />;
+            case 'unifiedLogin': return <UnifiedLoginPage />;
             case 'home':
                 return <HomePage 
                             user={user} 
@@ -752,18 +611,10 @@ const App: React.FC = () => {
                             isLoading={isLoading}
                             t={t} />;
             case 'detail': return selectedPlace && <PlaceDetailPage place={selectedPlace} onBack={handleBackToHome} onBook={(place) => handleNavigateToBooking(place, 'place')} onIncrementAnalytics={(metric) => handleIncrementAnalytics(selectedPlace.id, 'place', metric)} t={t.detail} />;
-            case 'adminLogin': return <AdminLoginPage onAdminLogin={handleAdminLogin} onBack={handleBackToHome} t={t.adminLogin} />;
-            case 'adminDashboard': return isAdminLoggedIn ? <AdminDashboardPage therapists={allAdminTherapists} places={allAdminPlaces} agents={allAdminAgents} onToggleTherapist={handleToggleTherapistLive} onTogglePlace={handleTogglePlaceLive} onLogout={handleAdminLogout} onUpdateMembership={handleUpdateMembership} googleMapsApiKey={googleMapsApiKey} onSaveGoogleMapsApiKey={handleSaveGoogleMapsApiKey} appContactNumber={appContactNumber} onSaveAppContactNumber={handleSaveAppContactNumber} onImpersonateAgent={handleImpersonateAgent} t={t.adminDashboard} /> : <AdminLoginPage onAdminLogin={handleAdminLogin} onBack={handleBackToHome} t={t.adminLogin} />;
+            // case 'adminLogin': return <AdminLoginPage onAdminLogin={handleAdminLogin} onBack={handleBackToHome} t={t.adminLogin} />;
+            case 'adminDashboard': return isAdminLoggedIn ? <AdminDashboardPage onLogout={handleAdminLogout} /> : <AdminLoginPage onAdminLogin={handleAdminLogin} onBack={handleBackToHome} t={t.adminLogin} />;
             case 'registrationChoice': return <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice} />;
-            case 'providerAuth': return providerAuthInfo && <ProviderAuthPage
-                providerType={providerAuthInfo.type}
-                mode={providerAuthInfo.mode}
-                onRegister={handleProviderRegister}
-                onLogin={handleProviderLogin}
-                onSwitchMode={() => setProviderAuthInfo(prev => prev ? { ...prev, mode: prev.mode === 'login' ? 'register' : 'login' } : null)}
-                onBack={handleBackToHome}
-                t={t.providerAuth}
-            />;
+            // case 'providerAuth': return providerAuthInfo && <ProviderAuthPage ... />;
             case 'therapistDashboard': return loggedInProvider ? <TherapistDashboardPage 
                 onSave={handleSaveTherapist} 
                 onLogout={handleProviderLogout} 
@@ -785,8 +636,8 @@ const App: React.FC = () => {
                 notifications={notifications.filter(n => n.providerId === loggedInProvider.id)}
             /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice} />;
             case 'agent': return <AgentPage onBack={handleBackToHome} t={t.agentPage} contactNumber={appContactNumber} />;
-            case 'agentAuth': return <AgentAuthPage onRegister={handleAgentRegister} onLogin={handleAgentLogin} onBack={handleBackToHome} t={t.agentAuth} />;
-            case 'agentTerms': return loggedInAgent ? <AgentTermsPage onAccept={handleAgentAcceptTerms} onLogout={handleAgentLogout} t={t.agentTermsPage} /> : <AgentAuthPage onRegister={handleAgentRegister} onLogin={handleAgentLogin} onBack={handleBackToHome} t={t.agentAuth} />;
+            // case 'agentAuth': return <AgentAuthPage onRegister={handleAgentRegister} onLogin={handleAgentLogin} onBack={handleBackToHome} t={t.agentAuth} />;
+            case 'agentTerms': return loggedInAgent ? <AgentTermsPage onAccept={handleAgentAcceptTerms} onLogout={handleAgentLogout} t={t.agentTermsPage} /> : null;
             case 'agentDashboard': 
                 if (impersonatedAgent) {
                     return <AgentDashboardPage 
@@ -812,17 +663,17 @@ const App: React.FC = () => {
                                 t={t.agentDashboard} 
                             />;
                 }
-                return <AgentAuthPage onRegister={handleAgentRegister} onLogin={handleAgentLogin} onBack={handleBackToHome} t={t.agentAuth} />;
+                return null;
             case 'serviceTerms': return <ServiceTermsPage onBack={handleBackToHome} t={t.serviceTerms} contactNumber={appContactNumber} />;
             case 'privacy': return <PrivacyPolicyPage onBack={handleBackToHome} t={t.privacyPolicy} />;
             case 'membership': return loggedInProvider ? <MembershipPage onPackageSelect={handleSelectMembershipPackage} onBack={handleBackToProviderDashboard} t={t.membershipPage} /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice}/>;
             case 'booking': return providerForBooking ? <BookingPage provider={providerForBooking.provider} providerType={providerForBooking.type} onBook={handleCreateBooking} onBack={handleBackToHome} bookings={bookings.filter(b => b.providerId === providerForBooking.provider.id)} t={t.bookingPage} /> : <HomePage user={user} loggedInAgent={loggedInAgent} therapists={therapists} places={places} userLocation={userLocation} onSetUserLocation={handleSetUserLocation} onSelectPlace={handleSelectPlace} onLogout={handleLogout} onLoginClick={handleNavigateToAuth} onAdminClick={handleNavigateToAdminLogin} onCreateProfileClick={handleNavigateToRegistrationChoice} onAgentPortalClick={loggedInAgent ? () => setPage('agentDashboard') : handleNavigateToAgentAuth} onBook={handleNavigateToBooking} onIncrementAnalytics={handleIncrementAnalytics} onMassageTypesClick={() => setPage('massageTypes')} onHotelPortalClick={handleNavigateToHotelLogin} isLoading={isLoading} t={t} />;
             case 'notifications': return loggedInProvider ? <NotificationsPage notifications={notifications.filter(n => n.providerId === loggedInProvider.id)} onMarkAsRead={handleMarkNotificationAsRead} onBack={handleBackToProviderDashboard} t={t.notificationsPage} /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice}/>;
             case 'massageTypes': return <MassageTypesPage onBack={handleBackToHome} />;
-            case 'hotelLogin': return <HotelLoginPage onHotelLogin={handleHotelLogin} onBack={handleBackToHome} />;
-            case 'hotelDashboard': return isHotelLoggedIn ? <HotelDashboardPage onLogout={handleHotelLogout} /> : <HotelLoginPage onHotelLogin={handleHotelLogin} onBack={handleBackToHome} />;
-            case 'villaLogin': return <VillaLoginPage onVillaLogin={handleVillaLogin} onBack={handleBackToHome} />;
-            case 'villaDashboard': return isVillaLoggedIn ? <VillaDashboardPage onLogout={handleVillaLogout} /> : <VillaLoginPage onVillaLogin={handleVillaLogin} onBack={handleBackToHome} />;
+            // case 'hotelLogin': return <HotelLoginPage onHotelLogin={handleHotelLogin} onBack={handleBackToHome} />;
+            case 'hotelDashboard': return isHotelLoggedIn ? <HotelDashboardPage onLogout={handleHotelLogout} /> : null;
+            // case 'villaLogin': return <VillaLoginPage onVillaLogin={handleVillaLogin} onBack={handleBackToHome} />;
+            case 'villaDashboard': return isVillaLoggedIn ? <VillaDashboardPage onLogout={handleVillaLogout} /> : null;
             default: return <LandingPage onLanguageSelect={handleLanguageSelect} />;
         }
     };
@@ -831,11 +682,6 @@ const App: React.FC = () => {
 
     return (
         <div className="max-w-md mx-auto min-h-screen bg-white shadow-lg flex flex-col">
-            {isMapsApiKeyMissing && isAdminLoggedIn && t?.app && (
-                <div className="bg-yellow-400 text-yellow-900 p-3 text-center text-sm font-semibold z-50">
-                    {t.app.mapsApiKeyWarning}
-                </div>
-            )}
             <div className="flex-grow">
                 {renderPage()}
             </div>

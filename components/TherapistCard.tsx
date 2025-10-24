@@ -101,15 +101,15 @@ const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook
             <div className="grid grid-cols-3 gap-2 text-center text-sm text-gray-600">
                 <div className="bg-brand-orange-light p-2 rounded-lg">
                     <p>60 min</p>
-                    <p className="font-bold text-brand-orange-dark">Rp {String(pricing["60"]).padStart(3, '0')}k</p>
+                    <p className="font-bold text-brand-orange-dark">Rp {Number(pricing["60"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
                 </div>
                 <div className="bg-brand-orange-light p-2 rounded-lg">
                     <p>90 min</p>
-                    <p className="font-bold text-brand-orange-dark">Rp {String(pricing["90"]).padStart(3, '0')}k</p>
+                    <p className="font-bold text-brand-orange-dark">Rp {Number(pricing["90"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
                 </div>
                 <div className="bg-brand-orange-light p-2 rounded-lg">
                     <p>120 min</p>
-                    <p className="font-bold text-brand-orange-dark">Rp {String(pricing["120"]).padStart(3, '0')}k</p>
+                    <p className="font-bold text-brand-orange-dark">Rp {Number(pricing["120"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
                 </div>
             </div>
 

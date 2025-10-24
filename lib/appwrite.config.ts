@@ -20,8 +20,11 @@ export const APPWRITE_CONFIG = {
         membershipPricing: 'MEMBERSHIP_PRICING_COLLECTION_ID',
         imageAssets: 'image_assets',
         loginBackgrounds: 'login_backgrounds',
-        // Removed adminMessages - not in your database
-    }
+    customLinks: 'custom_links_collection_id',
+    },
+    
+    // Storage bucket ID
+    bucketId: '68fba119002b9cdb08e8'
 };
 
 export default APPWRITE_CONFIG;

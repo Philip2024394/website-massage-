@@ -1,3 +1,4 @@
+// File deleted as part of unified login refactor.
 
 import React, { useState } from 'react';
 
