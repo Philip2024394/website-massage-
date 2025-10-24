@@ -20,7 +20,8 @@ export const APPWRITE_CONFIG = {
         membershipPricing: 'MEMBERSHIP_PRICING_COLLECTION_ID',
         imageAssets: 'image_assets',
         loginBackgrounds: 'login_backgrounds',
-    customLinks: 'custom_links_collection_id',
+        customLinks: 'custom_links_collection_id',
+        translations: 'translations_collection_id',
     },
     
     // Storage bucket ID

@@ -12,6 +12,7 @@ import CurrencyRpIcon from '../components/icons/CurrencyRpIcon';
 import MapPinIcon from '../components/icons/MapPinIcon';
 import NotificationBell from '../components/NotificationBell';
 import CustomCheckbox from '../components/CustomCheckbox';
+import LogoutIcon from '../components/icons/LogoutIcon';
 import { MASSAGE_TYPES_CATEGORIZED } from '../constants';
 
 
@@ -72,6 +73,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [profilePicture, setProfilePicture] = useState('');
+    const [mainImage, setMainImage] = useState('');
     const [whatsappNumber, setWhatsappNumber] = useState('');
     const [massageTypes, setMassageTypes] = useState<string[]>([]);
     const [pricing, setPricing] = useState<Pricing>({ 60: 0, 90: 0, 120: 0 });
@@ -112,6 +114,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
         setName(mockTherapist.name || '');
         setDescription(mockTherapist.description || '');
         setProfilePicture(mockTherapist.profilePicture || '');
+        setMainImage((mockTherapist as any).mainImage || '');
         setWhatsappNumber(mockTherapist.whatsappNumber || '');
         setMassageTypes(parseMassageTypes(mockTherapist.massageTypes));
         setPricing(parsePricing(mockTherapist.pricing));
@@ -193,8 +196,29 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
     };
     
     const handlePriceChange = (duration: keyof Pricing, value: string) => {
-        const numValue = parseInt(value, 10);
+        // Remove 'k' or 'K' and spaces
+        let cleanValue = value.replace(/[kK\s]/g, '');
+        
+        // Remove leading zeros
+        cleanValue = cleanValue.replace(/^0+/, '') || '0';
+        
+        // Parse the number
+        let numValue = parseInt(cleanValue, 10);
+        
+        // If value ended with 'k', multiply by 1000
+        if (/[kK]/.test(value)) {
+            numValue = numValue * 1000;
+        }
+        
         setPricing(prev => ({ ...prev, [duration]: isNaN(numValue) ? 0 : numValue }));
+    };
+    
+    const formatPriceDisplay = (value: number): string => {
+        if (value === 0) return '';
+        if (value >= 1000) {
+            return (value / 1000).toString() + 'k';
+        }
+        return value.toString();
     };
 
     const handleMassageTypeChange = (type: string) => {
@@ -351,7 +375,16 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                             label={t.uploadProfilePic}
                             currentImage={profilePicture}
                             onImageChange={setProfilePicture}
+                            variant="profile"
                         />
+                         
+                         <ImageUpload
+                            id="main-image-upload"
+                            label="Cover Image (1200x400px recommended)"
+                            currentImage={mainImage}
+                            onImageChange={setMainImage}
+                        />
+
                          <div>
                             <label className="block text-sm font-medium text-gray-700">{t.onlineStatusLabel}</label>
                             <div className="mt-2 flex bg-gray-200 rounded-full p-1">
@@ -438,21 +471,21 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                    <label className="block text-xs font-medium text-gray-600">{t['60min']}</label>
                                    <div className="relative">
                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
-                                       <input type="number" value={pricing["60"]} onChange={e => handlePriceChange("60", e.target.value)} className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
+                                       <input type="text" value={formatPriceDisplay(pricing["60"])} onChange={e => handlePriceChange("60", e.target.value)} placeholder="e.g., 250k" className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
                                     </div>
                                 </div>
                                 <div>
                                    <label className="block text-xs font-medium text-gray-600">{t['90min']}</label>
                                      <div className="relative">
                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
-                                       <input type="number" value={pricing["90"]} onChange={e => handlePriceChange("90", e.target.value)} className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
+                                       <input type="text" value={formatPriceDisplay(pricing["90"])} onChange={e => handlePriceChange("90", e.target.value)} placeholder="e.g., 350k" className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
                                     </div>
                                 </div>
                                  <div>
                                    <label className="block text-xs font-medium text-gray-600">{t['120min']}</label>
                                     <div className="relative">
                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
-                                       <input type="number" value={pricing["120"]} onChange={e => handlePriceChange("120", e.target.value)} className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
+                                       <input type="text" value={formatPriceDisplay(pricing["120"])} onChange={e => handlePriceChange("120", e.target.value)} placeholder="e.g., 450k" className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
                                     </div>
                                 </div>
                             </div>
@@ -468,31 +501,42 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
 
 
     return (
-        <div className="min-h-screen bg-gray-50 p-4">
-             <header className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">{t.therapistTitle}</h1>
-                <div className="flex items-center gap-4">
-                    <NotificationBell count={unreadNotificationsCount} onClick={onNavigateToNotifications} />
-                    <Button onClick={onLogout} variant="secondary" className="w-auto px-4 py-2 text-sm">{t.logoutButton}</Button>
+        <div className="min-h-screen bg-gray-50">
+            {/* Header */}
+            <header className="bg-white shadow-sm">
+                <div className="flex justify-between items-center p-4">
+                    <h1 className="text-xl font-bold text-gray-800">{t.therapistTitle}</h1>
+                    <div className="flex items-center gap-3">
+                        <NotificationBell count={unreadNotificationsCount} onClick={onNavigateToNotifications} />
+                        <button 
+                            onClick={onLogout}
+                            className="p-2 hover:bg-gray-100 rounded-full transition-all"
+                            aria-label="Logout"
+                        >
+                            <LogoutIcon className="w-5 h-5 text-gray-700" />
+                        </button>
+                    </div>
                 </div>
             </header>
 
-            <div className={`p-4 rounded-lg mb-6 text-center text-sm font-medium ${therapist?.isLive ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                {therapist?.isLive ? t.profileLive : t.pendingApproval}
-            </div>
+            {/* Content Area */}
+            <div className="p-4">
+                <div className={`p-4 rounded-lg mb-6 text-center text-sm font-medium ${therapist?.isLive ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                    {therapist?.isLive ? t.profileLive : t.pendingApproval}
+                </div>
 
-             <div className="mb-6">
-                <div className="flex border-b border-gray-200">
-                    <button onClick={() => setActiveTab('profile')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'profile' ? 'border-b-2 border-brand-orange text-brand-orange' : 'text-gray-500'}`}>{t.tabs.profile}</button>
-                    <button onClick={() => setActiveTab('bookings')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'bookings' ? 'border-b-2 border-brand-orange text-brand-orange' : 'text-gray-500'}`}>{t.tabs.bookings}</button>
-                    <button onClick={() => setActiveTab('analytics')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'analytics' ? 'border-b-2 border-brand-orange text-brand-orange' : 'text-gray-500'}`}>{t.tabs.analytics}</button>
-                    <button onClick={() => setActiveTab('hotelVilla')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'hotelVilla' ? 'border-b-2 border-brand-orange text-brand-orange' : 'text-gray-500'}`}>Hotel & Villa</button>
+                    <div className="mb-6">
+                        <div className="flex border-b border-gray-200">
+                            <button onClick={() => setActiveTab('profile')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'profile' ? 'border-b-2 border-brand-orange text-brand-orange' : 'text-gray-500'}`}>{t.tabs.profile}</button>
+                            <button onClick={() => setActiveTab('bookings')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'bookings' ? 'border-b-2 border-brand-orange text-brand-orange' : 'text-gray-500'}`}>{t.tabs.bookings}</button>
+                            <button onClick={() => setActiveTab('analytics')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'analytics' ? 'border-b-2 border-brand-orange text-brand-orange' : 'text-gray-500'}`}>{t.tabs.analytics}</button>
+                            <button onClick={() => setActiveTab('hotelVilla')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'hotelVilla' ? 'border-b-2 border-brand-orange text-brand-orange' : 'text-gray-500'}`}>Hotel & Villa</button>
+                        </div>
+                    </div>
+
+                    {renderContent()}
                 </div>
             </div>
-
-            {renderContent()}
-
-        </div>
     );
 };
 

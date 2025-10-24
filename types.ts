@@ -91,6 +91,7 @@ export interface Therapist {
     email: string;
     password?: string;
     profilePicture: string;
+    mainImage?: string; // Main banner image URL
     description: string;
     status: AvailabilityStatus;
     pricing: PricingString; // JSON string for Appwrite

@@ -203,8 +203,29 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     };
     
     const handlePriceChange = (duration: keyof Pricing, value: string) => {
-        const numValue = parseInt(value, 10);
+        // Remove 'k' or 'K' and spaces
+        let cleanValue = value.replace(/[kK\s]/g, '');
+        
+        // Remove leading zeros
+        cleanValue = cleanValue.replace(/^0+/, '') || '0';
+        
+        // Parse the number
+        let numValue = parseInt(cleanValue, 10);
+        
+        // If value ended with 'k', multiply by 1000
+        if (/[kK]/.test(value)) {
+            numValue = numValue * 1000;
+        }
+        
         setPricing(prev => ({ ...prev, [duration]: isNaN(numValue) ? 0 : numValue }));
+    };
+    
+    const formatPriceDisplay = (value: number): string => {
+        if (value === 0) return '';
+        if (value >= 1000) {
+            return (value / 1000).toString() + 'k';
+        }
+        return value.toString();
     };
     
     const handleThumbnailChange = (index: number, value: string) => {
@@ -431,21 +452,21 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                 <label className="block text-xs font-medium text-gray-900">{t['60min']}</label>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
-                                    <input type="number" value={pricing['60']} onChange={e => handlePriceChange('60', e.target.value)} className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
+                                    <input type="text" value={formatPriceDisplay(pricing['60'])} onChange={e => handlePriceChange('60', e.target.value)} placeholder="e.g., 250k" className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
                                     </div>
                                 </div>
                                 <div>
                                 <label className="block text-xs font-medium text-gray-900">{t['90min']}</label>
                                     <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
-                                    <input type="number" value={pricing['90']} onChange={e => handlePriceChange('90', e.target.value)} className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
+                                    <input type="text" value={formatPriceDisplay(pricing['90'])} onChange={e => handlePriceChange('90', e.target.value)} placeholder="e.g., 350k" className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
                                     </div>
                                 </div>
                                 <div>
                                 <label className="block text-xs font-medium text-gray-900">{t['120min']}</label>
                                     <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
-                                    <input type="number" value={pricing['120']} onChange={e => handlePriceChange('120', e.target.value)} className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
+                                    <input type="text" value={formatPriceDisplay(pricing['120'])} onChange={e => handlePriceChange('120', e.target.value)} placeholder="e.g., 450k" className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
                                     </div>
                                 </div>
                             </div>

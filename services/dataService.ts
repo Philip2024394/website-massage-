@@ -11,6 +11,33 @@ if (APP_CONFIG.DATA_SOURCE === 'appwrite') {
     });
 }
 
+// Main image URLs from ImageKit for therapists
+const THERAPIST_MAIN_IMAGES = [
+    'https://ik.imagekit.io/7grri5v7d/hotel%20massage%20indoniseas.png?updatedAt=1761154913720',
+    'https://ik.imagekit.io/7grri5v7d/massage%20room.png?updatedAt=1760975249566',
+    'https://ik.imagekit.io/7grri5v7d/massage%20hoter%20villa.png?updatedAt=1760965742264',
+    'https://ik.imagekit.io/7grri5v7d/massage%20agents.png?updatedAt=1760968250776',
+    'https://ik.imagekit.io/7grri5v7d/massage%20image%2016.png?updatedAt=1760187700624',
+    'https://ik.imagekit.io/7grri5v7d/massage%20image%2014.png?updatedAt=1760187606823',
+    'https://ik.imagekit.io/7grri5v7d/massage%20image%2013.png?updatedAt=1760187547313',
+    'https://ik.imagekit.io/7grri5v7d/massage%20image%2012.png?updatedAt=1760187511503',
+    'https://ik.imagekit.io/7grri5v7d/massage%20image%2011.png?updatedAt=1760187471233',
+    'https://ik.imagekit.io/7grri5v7d/massage%20image%2010.png?updatedAt=1760187307232',
+    'https://ik.imagekit.io/7grri5v7d/massage%20image%209.png?updatedAt=1760187266868',
+    'https://ik.imagekit.io/7grri5v7d/massage%20image%207.png?updatedAt=1760187181168',
+    'https://ik.imagekit.io/7grri5v7d/massage%20image%206.png?updatedAt=1760187126997',
+    'https://ik.imagekit.io/7grri5v7d/massage%20image%205.png?updatedAt=1760187081702',
+    'https://ik.imagekit.io/7grri5v7d/massage%20image%204.png?updatedAt=1760187040909',
+    'https://ik.imagekit.io/7grri5v7d/massage%20image%203.png?updatedAt=1760186998015',
+    'https://ik.imagekit.io/7grri5v7d/massage%20image%202.png?updatedAt=1760186944882',
+    'https://ik.imagekit.io/7grri5v7d/massage%20image%201.png?updatedAt=1760186885261',
+];
+
+// Helper function to get a random main image
+const getRandomMainImage = (index: number): string => {
+    return THERAPIST_MAIN_IMAGES[index % THERAPIST_MAIN_IMAGES.length];
+};
+
 // Mock data
 const generateMockTherapists = (): Therapist[] => [
     {
@@ -18,6 +45,7 @@ const generateMockTherapists = (): Therapist[] => [
         name: 'Maya Wellness',
         email: 'maya@example.com',
         profilePicture: 'https://via.placeholder.com/150/FFB366/FFFFFF?text=Maya',
+        mainImage: getRandomMainImage(0),
         description: 'Experienced traditional Indonesian massage therapist specializing in relaxation and deep tissue massage.',
         status: AvailabilityStatus.Available,
         pricing: stringifyPricing({ "60": 150000, "90": 200000, "120": 250000 }),
@@ -40,6 +68,7 @@ const generateMockTherapists = (): Therapist[] => [
         name: 'Budi Massage Therapy',
         email: 'budi@example.com',
         profilePicture: 'https://via.placeholder.com/150/66B2FF/FFFFFF?text=Budi',
+        mainImage: getRandomMainImage(1),
         description: 'Professional sports massage therapist with 8 years experience. Perfect for athletes and recovery.',
         status: AvailabilityStatus.Available,
         pricing: stringifyPricing({ "60": 180000, "90": 240000, "120": 300000 }),
@@ -60,6 +89,7 @@ const generateMockTherapists = (): Therapist[] => [
         name: 'Sari Holistic Care',
         email: 'sari@example.com',
         profilePicture: 'https://via.placeholder.com/150/FF66B2/FFFFFF?text=Sari',
+        mainImage: getRandomMainImage(2),
         description: 'Certified aromatherapy and holistic wellness specialist. Bringing peace and balance to your life.',
         status: AvailabilityStatus.Available,
         pricing: stringifyPricing({ "60": 160000, "90": 220000, "120": 280000 }),

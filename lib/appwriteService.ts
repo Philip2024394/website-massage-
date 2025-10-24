@@ -448,3 +448,81 @@ export const authService = {
         }
     }
 };
+
+// --- Translations Service ---
+export const translationsService = {
+    async getAll(): Promise<any> {
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.translations
+            );
+            
+            // Convert array of documents to translations object
+            if (response.documents.length === 0) return null;
+            
+            const translations: any = { en: {}, id: {} };
+            response.documents.forEach((doc: any) => {
+                const { key, language, value } = doc;
+                try {
+                    // Parse JSON value if it's a string
+                    const parsedValue = typeof value === 'string' ? JSON.parse(value) : value;
+                    translations[language][key] = parsedValue;
+                } catch (e) {
+                    translations[language][key] = value;
+                }
+            });
+            
+            return translations;
+        } catch (error) {
+            console.error('Error fetching translations:', error);
+            return null;
+        }
+    },
+
+    async set(language: string, key: string, value: any): Promise<void> {
+        try {
+            const stringValue = typeof value === 'object' ? JSON.stringify(value) : value;
+
+            // Just create new document - collection should have unique index on (language + key)
+            await databases.createDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.translations,
+                ID.unique(),
+                {
+                    language,
+                    key,
+                    value: stringValue
+                }
+            );
+        } catch (error: any) {
+            // If document exists, update it
+            if (error.code === 409) {
+                console.log(`Skipping duplicate: ${language}.${key}`);
+            } else {
+                console.error('Error setting translation:', error);
+                throw error;
+            }
+        }
+    },
+
+    async syncFromLocal(translations: any): Promise<void> {
+        try {
+            const languages = Object.keys(translations);
+            
+            for (const lang of languages) {
+                const keys = Object.keys(translations[lang]);
+                
+                for (const key of keys) {
+                    await this.set(lang, key, translations[lang][key]);
+                    console.log(`Synced ${lang}.${key}`);
+                }
+            }
+            
+            console.log('Translation sync complete!');
+        } catch (error) {
+            console.error('Error syncing translations:', error);
+            throw error;
+        }
+    }
+};

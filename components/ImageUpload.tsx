@@ -7,6 +7,7 @@ interface ImageUploadProps {
     onImageChange: (imageDataUrl: string) => void;
     className?: string;
     heightClass?: string;
+    variant?: 'default' | 'profile'; // Add variant prop for profile pictures
 }
 
 const UploadIcon: React.FC<{ className?: string }> = ({ className = "w-6 h-6" }) => (
@@ -15,7 +16,13 @@ const UploadIcon: React.FC<{ className?: string }> = ({ className = "w-6 h-6" })
     </svg>
 );
 
-const ImageUpload: React.FC<ImageUploadProps> = ({ id, label, currentImage, onImageChange, className, heightClass = 'h-48' }) => {
+const UserIcon: React.FC<{ className?: string }> = ({ className = "w-16 h-16" }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="currentColor" viewBox="0 0 24 24">
+        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+    </svg>
+);
+
+const ImageUpload: React.FC<ImageUploadProps> = ({ id, label, currentImage, onImageChange, className, heightClass = 'h-48', variant = 'default' }) => {
     const [preview, setPreview] = useState<string | null>(currentImage);
     const fileInputRef = useRef<HTMLInputElement>(null);
     
@@ -39,6 +46,43 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ id, label, currentImage, onIm
     const triggerFileInput = () => {
         fileInputRef.current?.click();
     };
+
+    // Render profile variant (round with mock user icon)
+    if (variant === 'profile') {
+        return (
+            <div className={className}>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
+                <div className="flex justify-center">
+                    <div
+                        className="relative w-32 h-32 rounded-full border-4 border-dashed border-gray-300 hover:border-brand-orange cursor-pointer transition-colors overflow-hidden bg-gray-100"
+                        onClick={triggerFileInput}
+                        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && triggerFileInput()}
+                        role="button"
+                        tabIndex={0}
+                    >
+                        {preview && preview.length > 0 ? (
+                            <img src={preview} alt="Profile Preview" className="w-full h-full object-cover" />
+                        ) : (
+                            <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
+                                <UserIcon className="w-16 h-16" />
+                                <span className="text-xs mt-1">Upload</span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+                <input
+                    id={id}
+                    type="file"
+                    accept="image/*"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    className="hidden"
+                />
+            </div>
+        );
+    }
+
+    // Default variant (rectangular)
 
     return (
         <div className={className}>

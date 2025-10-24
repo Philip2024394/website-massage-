@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { Therapist, Analytics } from '../types';
 import { AvailabilityStatus } from '../types';
 import { parsePricing, parseMassageTypes } from '../utils/appwriteHelpers';
@@ -11,6 +11,28 @@ interface TherapistCardProps {
     onIncrementAnalytics: (metric: keyof Analytics) => void;
     t: any;
 }
+
+// Utility function to determine display status
+// 80% of offline therapists will display as busy
+const getDisplayStatus = (therapist: Therapist): AvailabilityStatus => {
+    if (therapist.status === AvailabilityStatus.Available) {
+        return AvailabilityStatus.Available;
+    }
+    
+    if (therapist.status === AvailabilityStatus.Busy) {
+        return AvailabilityStatus.Busy;
+    }
+    
+    // Offline status: 80% chance to display as Busy
+    if (therapist.status === AvailabilityStatus.Offline) {
+        // Use therapist ID to create consistent randomization
+        const hash = String(therapist.id).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        const shouldShowBusy = (hash % 100) < 80; // 80% will be < 80
+        return shouldShowBusy ? AvailabilityStatus.Busy : AvailabilityStatus.Offline;
+    }
+    
+    return therapist.status;
+};
 
 const WhatsAppIcon: React.FC<{className?: string}> = ({ className }) => (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -38,43 +60,81 @@ const statusStyles: { [key in AvailabilityStatus]: { text: string; bg: string; d
 };
 
 const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook, onIncrementAnalytics, t }) => {
-    const style = statusStyles[therapist.status];
+    const [showBusyModal, setShowBusyModal] = useState(false);
+    
+    // Get the display status (may differ from actual status)
+    const displayStatus = getDisplayStatus(therapist);
+    const style = statusStyles[displayStatus];
     
     // Parse Appwrite string fields
     const pricing = parsePricing(therapist.pricing);
     const massageTypes = parseMassageTypes(therapist.massageTypes);
+    
+    // Get main image from therapist data
+    const mainImage = (therapist as any).mainImage;
 
     const openWhatsApp = () => {
+        // If displaying as Busy, show confirmation modal
+        if (displayStatus === AvailabilityStatus.Busy) {
+            setShowBusyModal(true);
+        } else {
+            // Available or Offline (the 20% that show as offline)
+            onIncrementAnalytics('whatsappClicks');
+            window.open(`https://wa.me/${therapist.whatsappNumber}`, '_blank');
+        }
+    };
+    
+    const handleConfirmBusyContact = () => {
         onIncrementAnalytics('whatsappClicks');
         window.open(`https://wa.me/${therapist.whatsappNumber}`, '_blank');
+        setShowBusyModal(false);
     };
 
     return (
-        <div className="bg-white rounded-xl shadow-md overflow-hidden p-4 flex flex-col gap-4">
-            <div className="flex items-start gap-4">
-                <img className="w-20 h-20 rounded-full object-cover" src={therapist.profilePicture} alt={therapist.name} />
-                <div className="flex-grow">
-                    <div className="flex justify-between items-start">
-                        <div>
-                           <h3 className="text-lg font-bold text-gray-900">{therapist.name}</h3>
-                            <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${style.bg} ${style.text} mt-1`}>
-                                <span className="relative mr-1.5">
-                                    {therapist.status === AvailabilityStatus.Available && (
-                                        <span className="absolute inset-0 w-4 h-4 -left-1 -top-1 rounded-full bg-green-400 opacity-40 animate-ping"></span>
-                                    )}
-                                    <span className={`w-2 h-2 rounded-full block ${style.dot}`}></span>
-                                </span>
-                                {therapist.status}
+        <div className="bg-white rounded-xl shadow-md overflow-hidden">
+            {/* Main Image Banner */}
+            {mainImage && (
+                <div className="h-32 w-full bg-gradient-to-r from-orange-400 to-orange-600 overflow-hidden">
+                    <img 
+                        src={mainImage} 
+                        alt={`${therapist.name} cover`} 
+                        className="w-full h-full object-cover"
+                    />
+                </div>
+            )}
+            
+            {/* Content */}
+            <div className="p-4 flex flex-col gap-4">
+                <div className="flex items-start gap-4">
+                    {/* Profile Picture - Left Side */}
+                    <img 
+                        className="w-20 h-20 rounded-full object-cover border-2 border-white shadow-lg" 
+                        style={{ marginTop: mainImage ? '-3rem' : '0' }}
+                        src={therapist.profilePicture} 
+                        alt={therapist.name} 
+                    />
+                    <div className="flex-grow">
+                        <div className="flex justify-between items-start">
+                            <div>
+                               <h3 className="text-lg font-bold text-gray-900">{therapist.name}</h3>
+                                <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${style.bg} ${style.text} mt-1`}>
+                                    <span className="relative mr-1.5">
+                                        {displayStatus === AvailabilityStatus.Available && (
+                                            <span className="absolute inset-0 w-4 h-4 -left-1 -top-1 rounded-full bg-green-400 opacity-40 animate-ping"></span>
+                                        )}
+                                        <span className={`w-2 h-2 rounded-full block ${style.dot}`}></span>
+                                    </span>
+                                    {displayStatus}
+                                </div>
+                            </div>
+                            <div className="flex items-center text-sm text-gray-500 gap-1">
+                                <LocationPinIcon className="w-4 h-4 text-gray-400"/>
+                                <span>{therapist.distance}km</span>
                             </div>
                         </div>
-                        <div className="flex items-center text-sm text-gray-500 gap-1">
-                            <LocationPinIcon className="w-4 h-4 text-gray-400"/>
-                            <span>{therapist.distance}km</span>
-                        </div>
+                         <p className="text-sm text-gray-600 mt-2">{therapist.description}</p>
                     </div>
-                     <p className="text-sm text-gray-600 mt-2">{therapist.description}</p>
                 </div>
-            </div>
             
             <div className="flex items-center justify-between">
                 <div 
@@ -125,6 +185,42 @@ const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook
                     {t.schedule}
                 </Button>
             </div>
+            </div>
+            
+            {/* Busy Therapist Confirmation Modal */}
+            {showBusyModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 animate-fadeIn">
+                        <div className="text-center">
+                            <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <span className="text-3xl">⏳</span>
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Therapist Currently Busy</h3>
+                            <p className="text-gray-600 mb-6 text-sm leading-relaxed">
+                                This therapist is booked at present and we cannot ensure how many hours they will be busy. 
+                                Please send a message and when the therapist is available, they will reply.
+                            </p>
+                            <p className="text-sm font-semibold text-orange-600 mb-6">- IndoStreet Admin</p>
+                            
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setShowBusyModal(false)}
+                                    className="flex-1 px-4 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleConfirmBusyContact}
+                                    className="flex-1 px-4 py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center gap-2"
+                                >
+                                    <WhatsAppIcon className="w-4 h-4" />
+                                    Send Message
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

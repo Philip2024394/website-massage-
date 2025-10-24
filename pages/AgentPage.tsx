@@ -15,7 +15,7 @@ interface AgentPageProps {
     contactNumber: string;
 }
 
-const AgentPage: React.FC<AgentPageProps> = ({ onBack, onNavigateToAgentAuth, t, contactNumber }) => {
+const AgentPage: React.FC<AgentPageProps> = ({ onBack, onNavigateToAgentAuth, t: _t, contactNumber }) => {
 
     const handleWhatsAppClick = () => {
         const number = contactNumber;

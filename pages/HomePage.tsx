@@ -28,6 +28,8 @@ interface HomePageProps {
     onAgentPortalClick: () => void;
     onMassageTypesClick: () => void;
     onHotelPortalClick: () => void;
+    onTermsClick?: () => void;
+    onPrivacyClick?: () => void;
     isLoading: boolean;
     t: any;
 }
@@ -62,7 +64,7 @@ const ChevronDownIcon = ({ className = 'w-5 h-5' }) => (
 
 
 
-const HomePage: React.FC<HomePageProps> = ({ loggedInAgent, therapists, onSetUserLocation, onLoginClick, onAgentPortalClick, onMassageTypesClick, t }) => {
+const HomePage: React.FC<HomePageProps> = ({ loggedInAgent: _loggedInAgent, therapists, onSetUserLocation, onLoginClick, onAgentPortalClick, onMassageTypesClick, onTermsClick, onPrivacyClick, t }) => {
     // Safety check for translations
     if (!t || !t.home) {
         console.error('HomePage: Missing translations object or t.home', { t });
@@ -140,9 +142,10 @@ const HomePage: React.FC<HomePageProps> = ({ loggedInAgent, therapists, onSetUse
     
                     <div className={`absolute right-0 top-0 bottom-0 w-[70%] sm:w-80 bg-gradient-to-br from-white via-gray-50 to-gray-100 shadow-2xl flex flex-col transform transition-transform ease-in-out duration-300 ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
                         {/* Brand Header */}
-                        <div className="p-6 flex justify-between items-center border-b border-gray-200">
-                            <h2 className="font-bold text-2xl bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
-                                IndoStreet
+                        <div className="p-6 flex justify-between items-center">
+                            <h2 className="font-bold text-2xl">
+                                <span className="text-black">Indo</span>
+                                <span className="text-orange-500">Street</span>
                             </h2>
                             <button 
                                 onClick={() => setIsMenuOpen(false)} 
@@ -276,8 +279,30 @@ const HomePage: React.FC<HomePageProps> = ({ loggedInAgent, therapists, onSetUse
                             </div>
                         </nav>
 
-                        {/* Footer */}
-                        <div className="p-4 bg-gray-50 border-t border-gray-200">
+                        {/* Footer with Links */}
+                        <div className="p-4 bg-gray-50 border-t border-gray-200 space-y-3">
+                            <div className="flex justify-center gap-2">
+                                <button 
+                                    onClick={() => { onAgentPortalClick(); setIsMenuOpen(false); }} 
+                                    className="text-xs text-orange-500 font-medium hover:underline"
+                                >
+                                    Become Agent
+                                </button>
+                                <span className="text-gray-400">|</span>
+                                <button 
+                                    onClick={() => { onTermsClick?.(); setIsMenuOpen(false); }} 
+                                    className="text-xs text-orange-500 font-medium hover:underline"
+                                >
+                                    Terms
+                                </button>
+                                <span className="text-gray-400">|</span>
+                                <button 
+                                    onClick={() => { onPrivacyClick?.(); setIsMenuOpen(false); }} 
+                                    className="text-xs text-orange-500 font-medium hover:underline"
+                                >
+                                    Privacy
+                                </button>
+                            </div>
                             <p className="text-xs text-center text-gray-500">
                                 © 2025 IndoStreet Massage
                             </p>

@@ -13,6 +13,7 @@ import AdminDashboardPage from './pages/AdminDashboardPage';
 import AdminLoginPage from './pages/AdminLoginPage';
 import RegistrationChoicePage from './pages/RegistrationChoicePage';
 import TherapistDashboardPage from './pages/TherapistDashboardPage';
+import TherapistStatusPage from './pages/TherapistStatusPage';
 import PlaceDashboardPage from './pages/PlaceDashboardPage';
 import AgentPage from './pages/AgentPage';
 import AgentAuthPage from './pages/AgentAuthPage';
@@ -31,7 +32,7 @@ import VillaDashboardPage from './pages/VillaDashboardPage';
 import { translations } from './translations/index.ts';
 import { therapistService, placeService, agentService } from './lib/appwriteService';
 
-type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'agentAuth' | 'agentDashboard' | 'agentTerms' | 'serviceTerms' | 'privacy' | 'membership' | 'booking' | 'notifications' | 'massageTypes' | 'hotelLogin' | 'hotelDashboard' | 'villaLogin' | 'villaDashboard' | 'unifiedLogin';
+type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistStatus' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'agentAuth' | 'agentDashboard' | 'agentTerms' | 'serviceTerms' | 'privacy' | 'membership' | 'booking' | 'notifications' | 'massageTypes' | 'hotelLogin' | 'hotelDashboard' | 'villaLogin' | 'villaDashboard' | 'unifiedLogin';
 type Language = 'en' | 'id';
 type LoggedInProvider = { id: number | string; type: 'therapist' | 'place' }; // Support both number and string IDs for Appwrite compatibility
 
@@ -47,15 +48,15 @@ const App: React.FC = () => {
     const [places, setPlaces] = useState<Place[]>([]);
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [notifications, setNotifications] = useState<Notification[]>([]);
-    const [allAdminTherapists, setAllAdminTherapists] = useState<Therapist[]>([]);
-    const [allAdminPlaces, setAllAdminPlaces] = useState<Place[]>([]);
+    const [_allAdminTherapists, setAllAdminTherapists] = useState<Therapist[]>([]);
+    const [_allAdminPlaces, setAllAdminPlaces] = useState<Place[]>([]);
     
     // Loading state
     const [isLoading, setIsLoading] = useState(true);
     
     // Provider auth state
     const [loggedInProvider, setLoggedInProvider] = useState<LoggedInProvider | null>(null);
-    const [providerAuthInfo, setProviderAuthInfo] = useState<{ type: 'therapist' | 'place', mode: 'login' | 'register' } | null>(null);
+    const [_providerAuthInfo, setProviderAuthInfo] = useState<{ type: 'therapist' | 'place', mode: 'login' | 'register' } | null>(null);
     const [providerForBooking, setProviderForBooking] = useState<{ provider: Therapist | Place; type: 'therapist' | 'place' } | null>(null);
     
     // Agent state
@@ -68,7 +69,7 @@ const App: React.FC = () => {
     const [isVillaLoggedIn, setIsVillaLoggedIn] = useState(false);
     
     // App config state
-    const [appContactNumber, setAppContactNumber] = useState<string>('6281392000050');
+    const appContactNumber = '6281392000050';
 
     const fetchPublicData = useCallback(async () => {
         try {
@@ -95,7 +96,6 @@ const App: React.FC = () => {
         setIsLoading(true);
         const therapistsData = await dataService.getTherapists();
         const placesData = await dataService.getPlaces();
-        const agentsData: Agent[] = []; // TODO: Add agents service when ready
 
         setAllAdminTherapists(therapistsData || []);
         setAllAdminPlaces(placesData || []);
@@ -161,35 +161,17 @@ const App: React.FC = () => {
     };
     
     const handleNavigateToAuth = () => setPage('unifiedLogin');
-    
-    const handleNavigateToAdminLogin = () => {
-        // Appwrite is now configured - navigate directly to admin login
-        setPage('adminLogin');
-    };
 
     const handleNavigateToRegistrationChoice = () => setPage('registrationChoice');
-    const handleNavigateToAgentPage = () => setPage('agent');
     const handleNavigateToServiceTerms = () => setPage('serviceTerms');
     const handleNavigateToPrivacyPolicy = () => setPage('privacy');
-    // Supabase settings removed - using Appwrite as backend
     const handleNavigateToNotifications = () => setPage('notifications');
     const handleNavigateToAgentAuth = () => setPage('agentAuth');
     const handleNavigateToHotelLogin = () => setPage('hotelLogin');
-    // const handleNavigateToVillaLogin = () => setPage('villaLogin'); // Unused
     
     const handleAdminLogin = () => {
         setIsAdminLoggedIn(true);
         setPage('adminDashboard');
-    };
-    
-    const handleHotelLogin = () => {
-        setIsHotelLoggedIn(true);
-        setPage('hotelDashboard');
-    };
-    
-    const handleVillaLogin = () => {
-        setIsVillaLoggedIn(true);
-        setPage('villaDashboard');
     };
     
     const handleHotelLogout = () => {
@@ -216,66 +198,8 @@ const App: React.FC = () => {
         setProviderAuthInfo({ type, mode: 'register' });
         setPage('providerAuth');
     };
-    
-    const handleProviderRegister = async (email: string, agentCode?: string): Promise<{success: boolean, message: string}> => {
-        if (!providerAuthInfo) return { success: false, message: 'Generic error' };
-        
-        try {
-            let agentId: string | undefined = undefined;
-            if (agentCode) {
-                const agent = await agentService.getByCode(agentCode.trim());
-                if (!agent) {
-                    return { success: false, message: 'Invalid agent code' };
-                }
-                agentId = agent.$id;
-            }
 
-            const yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            
-            const commonData: any = {
-                email,
-                name: '',
-                description: '',
-                isLive: false,
-                activeMembershipDate: yesterday.toISOString().split('T')[0],
-                pricing: JSON.stringify({ 60: 0, 90: 0, 120: 0 }),
-                analytics: JSON.stringify({ impressions: 0, profileViews: 0, whatsappClicks: 0 }),
-                rating: 0,
-                reviewCount: 0,
-                city: '',
-                country: '',
-            };
-
-            if (agentId) {
-                commonData.agentId = agentId;
-            }
-
-            if (providerAuthInfo.type === 'therapist') {
-                commonData.profilePicture = '';
-                commonData.mainImage = '';
-                commonData.thumbnailImages = JSON.stringify([]);
-                commonData.status = 'available';
-                await therapistService.create(commonData);
-            } else {
-                commonData.profilePicture = '';
-                commonData.mainImage = '';
-                commonData.thumbnailImages = JSON.stringify([]);
-                commonData.openingTime = '09:00';
-                commonData.closingTime = '21:00';
-                commonData.status = 'available';
-                await placeService.create(commonData);
-            }
-            
-            setProviderAuthInfo(prev => prev ? { ...prev, mode: 'login' } : null);
-            return { success: true, message: 'Registration successful! Please login with your email.' };
-        } catch (error: any) {
-            console.error('Registration error:', error);
-            return { success: false, message: error.message || 'Registration failed' };
-        }
-    };
-
-    const handleProviderLogin = async (email: string): Promise<{success: boolean, message: string}> => {
+    const _handleProviderLogin = async (email: string): Promise<{success: boolean, message: string}> => {
         try {
             const therapists = await therapistService.getAll();
             const therapist = therapists.find((t: any) => t.email === email);
@@ -284,7 +208,7 @@ const App: React.FC = () => {
                 const providerData = { id: therapist.$id, type: 'therapist' as const };
                 setLoggedInProvider(providerData);
                 localStorage.setItem('loggedInProvider', JSON.stringify(providerData));
-                setPage('therapistDashboard');
+                setPage('therapistStatus');
                 setProviderAuthInfo(null);
                 return { success: true, message: '' };
             }
@@ -313,6 +237,27 @@ const App: React.FC = () => {
         setLoggedInProvider(null);
         localStorage.removeItem('loggedInProvider');
         setPage('home');
+    };
+    
+    const handleNavigateToTherapistDashboard = () => {
+        setPage('therapistDashboard');
+    };
+    
+    const handleTherapistStatusChange = async (status: string) => {
+        if (!loggedInProvider || loggedInProvider.type !== 'therapist') return;
+        
+        try {
+            // Update status in backend
+            const therapist = therapists.find(t => t.id === loggedInProvider.id);
+            if (therapist) {
+                await handleSaveTherapist({
+                    ...therapist,
+                    status: status as any
+                });
+            }
+        } catch (error) {
+            console.error('Error updating therapist status:', error);
+        }
     };
 
     const handleSaveTherapist = async (therapistData: Omit<Therapist, 'id' | 'isLive' | 'rating' | 'reviewCount' | 'activeMembershipDate' | 'email'>) => {
@@ -459,11 +404,6 @@ const App: React.FC = () => {
         }
     };
 
-    const handleImpersonateAgent = (agent: Agent) => {
-        setImpersonatedAgent(agent);
-        setPage('agentDashboard');
-    };
-
     const handleStopImpersonating = () => {
         setImpersonatedAgent(null);
         setPage('adminDashboard');
@@ -494,35 +434,6 @@ const App: React.FC = () => {
 
     // Supabase functions removed - using Appwrite as backend
 
-    const handleUpdateMembership = async (id: number | string, type: 'therapist' | 'place', months: number) => {
-        // TODO: Integrate with Appwrite therapistService/placeService
-        const providersArray = type === 'therapist' ? allAdminTherapists : allAdminPlaces;
-    
-        const provider = providersArray.find(p => String(p.id) === String(id));
-        if (!provider) return;
-        
-        const currentExpiry = new Date(provider.activeMembershipDate);
-        const now = new Date();
-        const startDate = currentExpiry > now ? currentExpiry : now;
-        
-        const newExpiryDate = new Date(startDate);
-        newExpiryDate.setMonth(newExpiryDate.getMonth() + months);
-        const newExpiryDateString = newExpiryDate.toISOString().split('T')[0];
-    
-        // Temporarily update locally
-        if (type === 'therapist') {
-            setAllAdminTherapists(allAdminTherapists.map(t => 
-                String(t.id) === String(id) ? { ...t, activeMembershipDate: newExpiryDateString, isLive: true } : t
-            ));
-        } else {
-            setAllAdminPlaces(allAdminPlaces.map(p => 
-                String(p.id) === String(id) ? { ...p, activeMembershipDate: newExpiryDateString, isLive: true } : p
-            ));
-        }
-        alert('Membership updated (local only - Appwrite integration pending)');
-        console.log('TODO: Update membership in Appwrite');
-    };
-
     const handleSelectMembershipPackage = (packageName: string, price: string) => {
         const number = appContactNumber;
         const provider = loggedInProvider?.type === 'therapist'
@@ -537,7 +448,7 @@ const App: React.FC = () => {
 
     const handleBackToProviderDashboard = () => {
         if (loggedInProvider?.type === 'therapist') {
-            setPage('therapistDashboard');
+            setPage('therapistStatus'); // Changed to status page
         } else if (loggedInProvider?.type === 'place') {
             setPage('placeDashboard');
         } else {
@@ -608,6 +519,8 @@ const App: React.FC = () => {
                             onIncrementAnalytics={handleIncrementAnalytics}
                             onMassageTypesClick={() => setPage('massageTypes')}
                             onHotelPortalClick={handleNavigateToHotelLogin}
+                            onTermsClick={handleNavigateToServiceTerms}
+                            onPrivacyClick={handleNavigateToPrivacyPolicy}
                             isLoading={isLoading}
                             t={t} />;
             case 'detail': return selectedPlace && <PlaceDetailPage place={selectedPlace} onBack={handleBackToHome} onBook={(place) => handleNavigateToBooking(place, 'place')} onIncrementAnalytics={(metric) => handleIncrementAnalytics(selectedPlace.id, 'place', metric)} t={t.detail} />;
@@ -615,6 +528,12 @@ const App: React.FC = () => {
             case 'adminDashboard': return isAdminLoggedIn ? <AdminDashboardPage onLogout={handleAdminLogout} /> : <AdminLoginPage onAdminLogin={handleAdminLogin} onBack={handleBackToHome} t={t.adminLogin} />;
             case 'registrationChoice': return <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice} />;
             // case 'providerAuth': return providerAuthInfo && <ProviderAuthPage ... />;
+            case 'therapistStatus': return loggedInProvider ? <TherapistStatusPage
+                therapist={therapists.find(t => t.id === loggedInProvider.id) || null}
+                onStatusChange={handleTherapistStatusChange}
+                onNavigateToDashboard={handleNavigateToTherapistDashboard}
+                t={t.providerDashboard}
+            /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice}/>;
             case 'therapistDashboard': return loggedInProvider ? <TherapistDashboardPage 
                 onSave={handleSaveTherapist} 
                 onLogout={handleProviderLogout} 
@@ -678,18 +597,45 @@ const App: React.FC = () => {
         }
     };
     
-    const showFooter = ['home', 'detail', 'agent', 'serviceTerms', 'privacy', 'massageTypes'].includes(page);
+    // Determine user role for footer
+    const getUserRole = (): 'user' | 'therapist' | 'place' | null => {
+        if (!loggedInProvider) return null;
+        return loggedInProvider.type;
+    };
+
+    // Calculate unread notifications for providers
+    const unreadNotifications = loggedInProvider 
+        ? notifications.filter(n => n.providerId === loggedInProvider.id && !n.isRead).length 
+        : 0;
+
+    // Check for new bookings (bookings in pending status)
+    const hasNewBookings = loggedInProvider
+        ? bookings.some(b => b.providerId === loggedInProvider.id && b.status === BookingStatus.Pending)
+        : false;
+
+    // Check for WhatsApp click notifications
+    const hasWhatsAppClick = loggedInProvider
+        ? notifications.some(n => n.providerId === loggedInProvider.id && !n.isRead && n.message.includes('WhatsApp'))
+        : false;
+
+        const showFooter = ['home', 'therapistStatus', 'therapistDashboard', 'placeDashboard'].includes(page);
 
     return (
         <div className="max-w-md mx-auto min-h-screen bg-white shadow-lg flex flex-col">
-            <div className="flex-grow">
+            <div className="flex-grow pb-16">
                 {renderPage()}
             </div>
             {showFooter && (
                 <Footer 
-                    onAgentClick={handleNavigateToAgentPage}
-                    onTermsClick={handleNavigateToServiceTerms}
-                    onPrivacyClick={handleNavigateToPrivacyPolicy}
+                    userRole={getUserRole()}
+                    currentPage={page}
+                    unreadNotifications={unreadNotifications}
+                    hasNewBookings={hasNewBookings}
+                    hasWhatsAppClick={hasWhatsAppClick}
+                    onHomeClick={() => setPage(loggedInProvider ? (loggedInProvider.type === 'therapist' ? 'therapistStatus' : 'placeDashboard') : 'home')}
+                    onNotificationsClick={() => setPage('notifications')}
+                    onBookingsClick={() => setPage(loggedInProvider ? (loggedInProvider.type === 'therapist' ? 'therapistStatus' : 'placeDashboard') : 'home')}
+                    onProfileClick={() => setPage(loggedInProvider ? (loggedInProvider.type === 'therapist' ? 'therapistStatus' : 'placeDashboard') : 'home')}
                     t={t} 
                 />
             )}
