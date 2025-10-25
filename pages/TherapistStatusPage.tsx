@@ -74,10 +74,10 @@ const TherapistStatusPage: React.FC<TherapistStatusPageProps> = ({ therapist, on
             {onNavigateToHome && (
                 <button
                     onClick={onNavigateToHome}
-                    className="fixed top-4 right-4 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors z-20"
+                    className="fixed top-4 right-4 w-12 h-12 bg-orange-500 rounded-full shadow-lg flex items-center justify-center hover:bg-orange-600 transition-colors z-20"
                     aria-label="Go to home"
                 >
-                    <HomeIcon className="w-6 h-6 text-gray-700" />
+                    <HomeIcon className="w-6 h-6 text-white" />
                 </button>
             )}
 

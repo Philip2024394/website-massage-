@@ -12,7 +12,6 @@ import DocumentTextIcon from '../components/icons/DocumentTextIcon';
 import PhoneIcon from '../components/icons/PhoneIcon';
 import CurrencyRpIcon from '../components/icons/CurrencyRpIcon';
 import MapPinIcon from '../components/icons/MapPinIcon';
-import NotificationBell from '../components/NotificationBell';
 import CustomCheckbox from '../components/CustomCheckbox';
 import LogoutIcon from '../components/icons/LogoutIcon';
 import { MASSAGE_TYPES_CATEGORIZED } from '../constants';
@@ -77,6 +76,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [profilePicture, setProfilePicture] = useState('');
+    const [mainImage, setMainImage] = useState('');
     const [whatsappNumber, setWhatsappNumber] = useState('');
     const [yearsOfExperience, setYearsOfExperience] = useState<number>(0);
     const [massageTypes, setMassageTypes] = useState<string[]>([]);
@@ -103,11 +103,24 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
         
         if (existingTherapist) {
             console.log('✅ Found existing therapist profile:', existingTherapist);
+            console.log('📋 Profile data breakdown:', {
+                name: existingTherapist.name,
+                description: existingTherapist.description?.substring(0, 50) + '...',
+                profilePicture: existingTherapist.profilePicture?.substring(0, 50) + '...',
+                mainImage: existingTherapist.mainImage?.substring(0, 50) + '...',
+                location: existingTherapist.location,
+                whatsappNumber: existingTherapist.whatsappNumber,
+                yearsOfExperience: (existingTherapist as any).yearsOfExperience,
+                massageTypes: existingTherapist.massageTypes
+            });
             setTherapist(existingTherapist);
             setName(existingTherapist.name || '');
             setDescription(existingTherapist.description || '');
             setProfilePicture(existingTherapist.profilePicture || '');
+            setMainImage(existingTherapist.mainImage || '');
             console.log('📷 Loaded profilePicture from database:', existingTherapist.profilePicture);
+            console.log('📷 Loaded mainImage from database:', existingTherapist.mainImage);
+            console.log('🔄 State updated - name:', existingTherapist.name, 'description length:', existingTherapist.description?.length);
             setWhatsappNumber(existingTherapist.whatsappNumber || '');
             setYearsOfExperience((existingTherapist as any).yearsOfExperience || 0);
             setMassageTypes(parseMassageTypes(existingTherapist.massageTypes));
@@ -144,6 +157,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
             setName('');
             setDescription('');
             setProfilePicture('');
+            setMainImage('');
             setWhatsappNumber('');
             setYearsOfExperience(0);
             setMassageTypes([]);
@@ -215,6 +229,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
             name,
             description,
             profilePicture,
+            mainImage,
             whatsappNumber,
             yearsOfExperience,
             isLicensed,
@@ -298,7 +313,6 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
         </div>
     );
     
-    const unreadNotificationsCount = notifications.filter(n => !n.isRead).length;
     const now = new Date();
     const upcomingBookings = bookings.filter(b => new Date(b.startTime) >= now).sort((a,b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
     const pastBookings = bookings.filter(b => new Date(b.startTime) < now).sort((_, b) => new Date(b.startTime).getTime() - new Date(b.startTime).getTime());
@@ -512,6 +526,14 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                             currentImage={profilePicture}
                             onImageChange={handleProfilePictureChange}
                             variant="profile"
+                        />
+                        
+                        <ImageUpload
+                            id="main-image-upload"
+                            label="Main Banner Image (Optional)"
+                            currentImage={mainImage}
+                            onImageChange={(imageUrl) => setMainImage(imageUrl)}
+                            variant="default"
                         />
                          
                         <div>

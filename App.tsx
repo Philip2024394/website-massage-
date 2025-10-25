@@ -29,11 +29,16 @@ import NotificationsPage from './pages/NotificationsPage';
 import MassageTypesPage from './pages/MassageTypesPage';
 import HotelDashboardPage from './pages/HotelDashboardPage';
 import VillaDashboardPage from './pages/VillaDashboardPage';
+import HotelLoginPage from './pages/HotelLoginPage';
+import VillaLoginPage from './pages/VillaLoginPage';
+import MassagePlaceLoginPage from './pages/MassagePlaceLoginPage';
 // import UnifiedLoginPage from './pages/UnifiedLoginPage';
 import { translations } from './translations/index.ts';
 import { therapistService, placeService, agentService } from './lib/appwriteService';
+import GuestAlertsPage from './pages/GuestAlertsPage';
+import FloatingWebsiteButton from './components/FloatingWebsiteButton';
 
-type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistStatus' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'agentAuth' | 'agentDashboard' | 'agentTerms' | 'serviceTerms' | 'privacy' | 'membership' | 'booking' | 'bookings' | 'notifications' | 'massageTypes' | 'hotelLogin' | 'hotelDashboard' | 'villaLogin' | 'villaDashboard' | 'unifiedLogin' | 'therapistLogin';
+type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistStatus' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'agentAuth' | 'agentDashboard' | 'agentTerms' | 'serviceTerms' | 'privacy' | 'membership' | 'booking' | 'bookings' | 'notifications' | 'massageTypes' | 'hotelLogin' | 'hotelDashboard' | 'villaLogin' | 'villaDashboard' | 'unifiedLogin' | 'therapistLogin' | 'massagePlaceLogin';
 type Language = 'en' | 'id';
 type LoggedInProvider = { id: number | string; type: 'therapist' | 'place' }; // Support both number and string IDs for Appwrite compatibility
 type LoggedInUser = { id: string; type: 'admin' | 'hotel' | 'villa' | 'agent' };
@@ -45,7 +50,7 @@ const App: React.FC = () => {
     const [language, setLanguage] = useState<Language>('en');
     const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
     const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
-    const [loggedInUser, setLoggedInUser] = useState<LoggedInUser | null>(null);
+    const [loggedInUser, _setLoggedInUser] = useState<LoggedInUser | null>(null);
     
     const [therapists, setTherapists] = useState<Therapist[]>([]);
     const [places, setPlaces] = useState<Place[]>([]);
@@ -198,13 +203,16 @@ const App: React.FC = () => {
     
     const handleNavigateToAuth = () => setPage('unifiedLogin');
     const handleNavigateToTherapistLogin = () => setPage('therapistLogin');
+    const handleNavigateToHotelLogin = () => setPage('hotelLogin');
+    const handleNavigateToVillaLogin = () => setPage('villaLogin');
+    const handleNavigateToMassagePlaceLogin = () => setPage('massagePlaceLogin');
+    const handleNavigateToAdminLogin = () => setPage('adminDashboard');
 
     const handleNavigateToRegistrationChoice = () => setPage('registrationChoice');
     const handleNavigateToServiceTerms = () => setPage('serviceTerms');
     const handleNavigateToPrivacyPolicy = () => setPage('privacy');
     const handleNavigateToNotifications = () => setPage('notifications');
     const handleNavigateToAgentAuth = () => setPage('agentAuth');
-    const handleNavigateToHotelLogin = () => setPage('hotelLogin');
     
     const handleAdminLogin = () => {
         setIsAdminLoggedIn(true);
@@ -327,6 +335,7 @@ const App: React.FC = () => {
             const updateData: any = {
                 ...therapistData,
                 profilePicture: profilePicture, // Ensure it's within 512 char limit
+                mainImage: therapistData.mainImage || '', // Ensure mainImage is saved
                 id: therapistId, // Add required id field
                 therapistId: therapistId, // Add required therapistId field
                 hotelId: '', // Required by schema but not used for therapists (only for hotel/villa services)
@@ -338,6 +347,13 @@ const App: React.FC = () => {
                 availability: '[]', // Required by Appwrite schema (empty array for therapists who use status instead)
                 hourlyRate: 100, // Required by schema (50-500 range) - therapists use pricing for 60/90/120 min sessions instead
             };
+            
+            console.log('💾 Saving therapist data:', {
+                name: updateData.name,
+                profilePicture: updateData.profilePicture?.substring(0, 50) + '...',
+                mainImage: updateData.mainImage?.substring(0, 50) + '...',
+                location: updateData.location
+            });
             
             // If profile exists, preserve important fields that shouldn't be overwritten
             if (existingTherapist) {
@@ -599,6 +615,10 @@ const App: React.FC = () => {
                             onIncrementAnalytics={handleIncrementAnalytics}
                             onMassageTypesClick={() => setPage('massageTypes')}
                             onHotelPortalClick={handleNavigateToHotelLogin}
+                            onVillaPortalClick={handleNavigateToVillaLogin}
+                            onTherapistPortalClick={handleNavigateToTherapistLogin}
+                            onMassagePlacePortalClick={handleNavigateToMassagePlaceLogin}
+                            onAdminPortalClick={handleNavigateToAdminLogin}
                             onTermsClick={handleNavigateToServiceTerms}
                             onPrivacyClick={handleNavigateToPrivacyPolicy}
                             isLoading={isLoading}
@@ -612,7 +632,7 @@ const App: React.FC = () => {
                 therapist={therapists.find(t => t.id === loggedInProvider.id) || null}
                 onStatusChange={handleTherapistStatusChange}
                 onNavigateToDashboard={handleNavigateToTherapistDashboard}
-                onNavigateToHome={handleBackToHome}
+                onNavigateToHome={handleProviderLogout}
                 t={t.providerDashboard}
             /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice}/>;
             case 'therapistDashboard': return loggedInProvider ? <TherapistDashboardPage 
@@ -668,15 +688,52 @@ const App: React.FC = () => {
             case 'serviceTerms': return <ServiceTermsPage onBack={handleBackToHome} t={t.serviceTerms} contactNumber={appContactNumber} />;
             case 'privacy': return <PrivacyPolicyPage onBack={handleBackToHome} t={t.privacyPolicy} />;
             case 'membership': return loggedInProvider ? <MembershipPage onPackageSelect={handleSelectMembershipPackage} onBack={handleBackToProviderDashboard} t={t.membershipPage} /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice}/>;
-            case 'booking': return providerForBooking ? <BookingPage provider={providerForBooking.provider} providerType={providerForBooking.type} onBook={handleCreateBooking} onBack={handleBackToHome} bookings={bookings.filter(b => b.providerId === providerForBooking.provider.id)} t={t.bookingPage} /> : <HomePage user={user} loggedInAgent={loggedInAgent} therapists={therapists} places={places} userLocation={userLocation} onSetUserLocation={handleSetUserLocation} onSelectPlace={handleSelectPlace} onLogout={handleLogout} onLoginClick={handleNavigateToAuth} onCreateProfileClick={handleNavigateToRegistrationChoice} onAgentPortalClick={loggedInAgent ? () => setPage('agentDashboard') : handleNavigateToAgentAuth} onBook={handleNavigateToBooking} onIncrementAnalytics={handleIncrementAnalytics} onMassageTypesClick={() => setPage('massageTypes')} onHotelPortalClick={handleNavigateToHotelLogin} isLoading={isLoading} t={t} />;
-            case 'notifications': return loggedInProvider ? <NotificationsPage notifications={notifications.filter(n => n.providerId === loggedInProvider.id)} onMarkAsRead={handleMarkNotificationAsRead} onBack={handleBackToProviderDashboard} t={t.notificationsPage} /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice}/>;
-            case 'bookings': return loggedInProvider ? <NotificationsPage notifications={notifications.filter(n => n.providerId === loggedInProvider.id)} onMarkAsRead={handleMarkNotificationAsRead} onBack={handleBackToProviderDashboard} t={t.notificationsPage} /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice}/>;
+            case 'booking': return providerForBooking ? <BookingPage provider={providerForBooking.provider} providerType={providerForBooking.type} onBook={handleCreateBooking} onBack={handleBackToHome} bookings={bookings.filter(b => b.providerId === providerForBooking.provider.id)} t={t.bookingPage} /> : <HomePage user={user} loggedInAgent={loggedInAgent} therapists={therapists} places={places} userLocation={userLocation} onSetUserLocation={handleSetUserLocation} onSelectPlace={handleSelectPlace} onLogout={handleLogout} onLoginClick={handleNavigateToAuth} onCreateProfileClick={handleNavigateToRegistrationChoice} onAgentPortalClick={loggedInAgent ? () => setPage('agentDashboard') : handleNavigateToAgentAuth} onBook={handleNavigateToBooking} onIncrementAnalytics={handleIncrementAnalytics} onMassageTypesClick={() => setPage('massageTypes')} onHotelPortalClick={handleNavigateToHotelLogin} onVillaPortalClick={handleNavigateToVillaLogin} onTherapistPortalClick={handleNavigateToTherapistLogin} onMassagePlacePortalClick={handleNavigateToMassagePlaceLogin} onAdminPortalClick={handleNavigateToAdminLogin} onTermsClick={handleNavigateToServiceTerms} onPrivacyClick={handleNavigateToPrivacyPolicy} isLoading={isLoading} t={t} />;
+            case 'notifications': return loggedInProvider ? <NotificationsPage notifications={notifications.filter(n => n.providerId === loggedInProvider.id)} onMarkAsRead={handleMarkNotificationAsRead} onBack={handleBackToProviderDashboard} t={t.notificationsPage} /> : <GuestAlertsPage onBack={handleBackToHome} t={t} />;
+            case 'bookings': return loggedInProvider ? <NotificationsPage notifications={notifications.filter(n => n.providerId === loggedInProvider.id)} onMarkAsRead={handleMarkNotificationAsRead} onBack={handleBackToProviderDashboard} t={t.notificationsPage} /> : <GuestAlertsPage onBack={handleBackToHome} t={t} />;
             case 'massageTypes': return <MassageTypesPage onBack={handleBackToHome} />;
-            // case 'hotelLogin': return <HotelLoginPage onHotelLogin={handleHotelLogin} onBack={handleBackToHome} />;
-            case 'hotelDashboard': return isHotelLoggedIn ? <HotelDashboardPage onLogout={handleHotelLogout} /> : null;
-            // case 'villaLogin': return <VillaLoginPage onVillaLogin={handleVillaLogin} onBack={handleBackToHome} />;
-            case 'villaDashboard': return isVillaLoggedIn ? <VillaDashboardPage onLogout={handleVillaLogout} /> : null;
-            default: return <LandingPage onLanguageSelect={handleLanguageSelect} />;
+            case 'hotelLogin': return <HotelLoginPage onSuccess={(_hotelId) => { setIsHotelLoggedIn(true); setPage('hotelDashboard'); }} onBack={handleBackToHome} t={t} />;
+            case 'hotelDashboard': return isHotelLoggedIn ? <HotelDashboardPage onLogout={handleHotelLogout} /> : <HotelLoginPage onSuccess={(_hotelId) => { setIsHotelLoggedIn(true); setPage('hotelDashboard'); }} onBack={handleBackToHome} t={t} />;
+            case 'villaLogin': return <VillaLoginPage onVillaLogin={() => { setIsVillaLoggedIn(true); setPage('villaDashboard'); }} onBack={handleBackToHome} />;
+            case 'villaDashboard': return isVillaLoggedIn ? <VillaDashboardPage onLogout={handleVillaLogout} /> : <VillaLoginPage onVillaLogin={() => { setIsVillaLoggedIn(true); setPage('villaDashboard'); }} onBack={handleBackToHome} />;
+            case 'massagePlaceLogin': return <MassagePlaceLoginPage onSuccess={(_placeId) => { /* handle massage place login */ }} onBack={handleBackToHome} t={t} />;
+            default:
+                return providerForBooking ? (
+                    <BookingPage
+                        provider={providerForBooking.provider}
+                        providerType={providerForBooking.type}
+                        onBook={handleCreateBooking}
+                        onBack={handleBackToHome}
+                        bookings={bookings.filter((b) => b.providerId === providerForBooking.provider.id)}
+                        t={t.bookingPage}
+                    />
+                ) : (
+                    <HomePage
+                        user={user}
+                        loggedInAgent={loggedInAgent}
+                        therapists={therapists}
+                        places={places}
+                        userLocation={userLocation}
+                        onSetUserLocation={handleSetUserLocation}
+                        onSelectPlace={handleSelectPlace}
+                        onLogout={handleLogout}
+                        onLoginClick={handleNavigateToAuth}
+                        onCreateProfileClick={handleNavigateToRegistrationChoice}
+                        onAgentPortalClick={loggedInAgent ? () => setPage('agentDashboard') : handleNavigateToAgentAuth}
+                        onBook={handleNavigateToBooking}
+                        onIncrementAnalytics={handleIncrementAnalytics}
+                        onMassageTypesClick={() => setPage('massageTypes')}
+                        onHotelPortalClick={handleNavigateToHotelLogin}
+                        onVillaPortalClick={handleNavigateToVillaLogin}
+                        onTherapistPortalClick={handleNavigateToTherapistLogin}
+                        onMassagePlacePortalClick={handleNavigateToMassagePlaceLogin}
+                        onAdminPortalClick={handleNavigateToAdminLogin}
+                        onTermsClick={handleNavigateToServiceTerms}
+                        onPrivacyClick={handleNavigateToPrivacyPolicy}
+                        isLoading={isLoading}
+                        t={t}
+                    />
+                );
         }
     };
     
@@ -684,7 +741,11 @@ const App: React.FC = () => {
     const getUserRole = (): 'user' | 'therapist' | 'place' | 'admin' | 'hotel' | 'villa' | 'agent' | null => {
         if (loggedInUser) return loggedInUser.type;
         if (loggedInProvider) return loggedInProvider.type;
-        if (user) return 'user';
+        if (isAdminLoggedIn) return 'admin';
+        if (isHotelLoggedIn) return 'hotel';
+        if (isVillaLoggedIn) return 'villa';
+        if (loggedInAgent) return 'agent';
+        // Return null for guests without accounts (don't return 'user' here)
         return null;
     };
 
@@ -740,6 +801,10 @@ const App: React.FC = () => {
     const handleFooterProfile = () => {
         if (loggedInProvider) {
             setPage(loggedInProvider.type === 'therapist' ? 'therapistDashboard' : 'placeDashboard');
+        } else if (!loggedInUser && !loggedInProvider) {
+            // User without account - open drawer to show account options
+            const event = new CustomEvent('toggleDrawer');
+            window.dispatchEvent(event);
         }
     };
 
@@ -748,6 +813,10 @@ const App: React.FC = () => {
         if (loggedInUser?.type === 'hotel' || loggedInUser?.type === 'villa') {
             // Navigate to QR menu builder
             setPage('home'); // Replace with actual QR menu page when created
+        } else if (!loggedInUser && !loggedInProvider) {
+            // User without account - toggle drawer via event
+            const event = new CustomEvent('toggleDrawer');
+            window.dispatchEvent(event);
         }
     };
 
@@ -756,7 +825,7 @@ const App: React.FC = () => {
     };
 
     // Pages that need full screen without container
-    const fullScreenPages = ['therapistLogin', 'landing'];
+    const fullScreenPages = ['therapistLogin', 'landing', 'therapistStatus'];
     const isFullScreen = fullScreenPages.includes(page);
 
     return (
@@ -781,6 +850,7 @@ const App: React.FC = () => {
                     t={t} 
                 />
             )}
+            <FloatingWebsiteButton />
         </div>
     );
 };

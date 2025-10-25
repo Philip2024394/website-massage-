@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import type { Agent, Therapist, Place, AdminMessage } from '../types';
 import Button from '../components/Button';
-
+import LogoutIcon from '../components/icons/LogoutIcon';
 import ImageUpload from '../components/ImageUpload';
 
 interface AgentDashboardPageProps {
@@ -137,7 +137,16 @@ const AgentDashboardPage: React.FC<AgentDashboardPageProps> = ({ agent, onLogout
                         </span>
                     </p>
                 </div>
-                {!isAdminView && <Button onClick={onLogout} variant="secondary" className="w-auto px-4 py-2 text-sm">{t.logout}</Button>}
+                {!isAdminView && (
+                    <button 
+                        onClick={onLogout} 
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors border border-gray-300" 
+                        title="Logout"
+                    >
+                        <LogoutIcon className="w-5 h-5 text-gray-700" />
+                        <span className="text-sm font-medium text-gray-700">{t.logout}</span>
+                    </button>
+                )}
             </header>
             
             <div className="mb-6">

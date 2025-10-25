@@ -30,6 +30,10 @@ interface HomePageProps {
     onAgentPortalClick: () => void;
     onMassageTypesClick: () => void;
     onHotelPortalClick: () => void;
+    onVillaPortalClick: () => void;
+    onTherapistPortalClick: () => void;
+    onMassagePlacePortalClick: () => void;
+    onAdminPortalClick: () => void;
     onTermsClick?: () => void;
     onPrivacyClick?: () => void;
     isLoading: boolean;
@@ -66,7 +70,7 @@ const ChevronDownIcon = ({ className = 'w-5 h-5' }) => (
 
 
 
-const HomePage: React.FC<HomePageProps> = ({ loggedInAgent: _loggedInAgent, therapists, onSetUserLocation, onBook, onIncrementAnalytics, onLoginClick, onAgentPortalClick, onMassageTypesClick, onTermsClick, onPrivacyClick, t }) => {
+const HomePage: React.FC<HomePageProps> = ({ loggedInAgent: _loggedInAgent, therapists, onSetUserLocation, onBook, onIncrementAnalytics, onAgentPortalClick, onMassageTypesClick, onHotelPortalClick, onVillaPortalClick, onTherapistPortalClick, onMassagePlacePortalClick, onAdminPortalClick, onTermsClick, onPrivacyClick, t }) => {
     // Safety check for translations
     if (!t || !t.home) {
         console.error('HomePage: Missing translations object or t.home', { t });
@@ -132,6 +136,16 @@ const HomePage: React.FC<HomePageProps> = ({ loggedInAgent: _loggedInAgent, ther
             }
         };
         fetchCustomLinks();
+
+        // Listen for drawer toggle events from footer
+        const handleToggleDrawer = () => {
+            setIsMenuOpen(prev => !prev);
+        };
+        window.addEventListener('toggleDrawer', handleToggleDrawer);
+        
+        return () => {
+            window.removeEventListener('toggleDrawer', handleToggleDrawer);
+        };
     }, []);
 
     // Removed unused processedTherapists and processedPlaces
@@ -199,7 +213,7 @@ const HomePage: React.FC<HomePageProps> = ({ loggedInAgent: _loggedInAgent, ther
 
                                 {/* Hotel Login */}
                                 <button 
-                                    onClick={() => { onLoginClick(); setIsMenuOpen(false); }} 
+                                    onClick={() => { onHotelPortalClick(); setIsMenuOpen(false); }} 
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-blue-500 group"
                                 >
                                     <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl shadow-lg bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600 border-2 border-white transform hover:scale-105 transition-transform">
@@ -215,7 +229,7 @@ const HomePage: React.FC<HomePageProps> = ({ loggedInAgent: _loggedInAgent, ther
 
                                 {/* Villa Login */}
                                 <button 
-                                    onClick={() => { onLoginClick(); setIsMenuOpen(false); }} 
+                                    onClick={() => { onVillaPortalClick(); setIsMenuOpen(false); }} 
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-green-500 group"
                                 >
                                     <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl shadow-lg bg-gradient-to-br from-green-400 via-green-500 to-green-600 border-2 border-white transform hover:scale-105 transition-transform">
@@ -231,7 +245,7 @@ const HomePage: React.FC<HomePageProps> = ({ loggedInAgent: _loggedInAgent, ther
 
                                 {/* Therapists Login */}
                                 <button 
-                                    onClick={() => { onLoginClick(); setIsMenuOpen(false); }} 
+                                    onClick={() => { onTherapistPortalClick(); setIsMenuOpen(false); }} 
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-orange-500 group"
                                 >
                                     <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl shadow-lg bg-gradient-to-br from-orange-400 via-yellow-300 to-orange-600 border-2 border-white transform hover:scale-105 transition-transform">
@@ -247,7 +261,7 @@ const HomePage: React.FC<HomePageProps> = ({ loggedInAgent: _loggedInAgent, ther
 
                                 {/* Massage Spa Login */}
                                 <button 
-                                    onClick={() => { onLoginClick(); setIsMenuOpen(false); }} 
+                                    onClick={() => { onMassagePlacePortalClick(); setIsMenuOpen(false); }} 
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-pink-500 group"
                                 >
                                     <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl shadow-lg bg-gradient-to-br from-pink-400 via-pink-500 to-pink-600 border-2 border-white transform hover:scale-105 transition-transform">
@@ -274,6 +288,24 @@ const HomePage: React.FC<HomePageProps> = ({ loggedInAgent: _loggedInAgent, ther
                                             Agent
                                         </h3>
                                         <p className="text-xs text-gray-500">Login / Register</p>
+                                    </div>
+                                </button>
+
+                                {/* Admin Portal */}
+                                <button 
+                                    onClick={() => { onAdminPortalClick(); setIsMenuOpen(false); }} 
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-red-500 group"
+                                >
+                                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl shadow-lg bg-gradient-to-br from-red-500 via-red-600 to-red-700 border-2 border-white transform hover:scale-105 transition-transform">
+                                        <svg className="w-6 h-6 text-white drop-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                        </svg>
+                                    </div>
+                                    <div className="flex-grow">
+                                        <h3 className="font-semibold text-gray-800 group-hover:text-red-600 transition-colors">
+                                            Admin
+                                        </h3>
+                                        <p className="text-xs text-gray-500">System Administration</p>
                                     </div>
                                 </button>
 

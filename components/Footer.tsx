@@ -38,20 +38,6 @@ const UserIcon = ({ className = 'w-6 h-6' }) => (
     </svg>
 );
 
-// Search Icon
-const SearchIcon = ({ className = 'w-6 h-6' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-    </svg>
-);
-
-// Heart Icon
-const HeartIcon = ({ className = 'w-6 h-6' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-    </svg>
-);
-
 // Dashboard Icon for Therapist Footer
 const DashboardIcon = ({ className = 'w-6 h-6' }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -375,31 +361,24 @@ const Footer: React.FC<FooterProps> = ({
                     <span className="text-xs mt-1 text-black">Home</span>
                 </button>
 
-                {/* Search */}
+                {/* Join */}
                 <button 
-                    onClick={onSearchClick || onHomeClick}
+                    onClick={onMenuClick}
                     className="flex flex-col items-center justify-center flex-1 h-full"
                 >
-                    <SearchIcon className="w-6 h-6 text-orange-500" />
-                    <span className="text-xs mt-1 text-black">Search</span>
+                    <UserIcon className="w-6 h-6 text-orange-500" />
+                    <span className="text-xs mt-1 text-black">Join</span>
                 </button>
 
-                {/* Bookings */}
+                {/* Alerts */}
                 <button 
-                    onClick={onBookingsClick}
-                    className="flex flex-col items-center justify-center flex-1 h-full"
+                    onClick={onNotificationsClick}
+                    className="flex flex-col items-center justify-center flex-1 h-full relative"
                 >
-                    <CalendarIcon className="w-6 h-6 text-orange-500" />
-                    <span className="text-xs mt-1 text-black">Bookings</span>
-                </button>
-
-                {/* Favorites */}
-                <button 
-                    onClick={onProfileClick}
-                    className="flex flex-col items-center justify-center flex-1 h-full"
-                >
-                    <HeartIcon className="w-6 h-6 text-orange-500" />
-                    <span className="text-xs mt-1 text-black">Saved</span>
+                    <div className="relative">
+                        <BellIcon className="w-6 h-6 text-orange-500" />
+                    </div>
+                    <span className="text-xs mt-1 text-black">Alerts</span>
                 </button>
 
                 {/* Profile */}
