@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { User, UserLocation, Agent, Place, Therapist, Analytics } from '../types';
 import LocationModal from '../components/LocationModal';
 import TherapistCard from '../components/TherapistCard';
+import RatingModal from '../components/RatingModal';
 import { MASSAGE_TYPES_CATEGORIZED } from '../constants';
 import HomeIcon from '../components/icons/HomeIcon';
 import MapPinIcon from '../components/icons/MapPinIcon';
@@ -10,7 +11,7 @@ import CloseIcon from '../components/icons/CloseIcon';
 import BriefcaseIcon from '../components/icons/BriefcaseIcon';
 import UserSolidIcon from '../components/icons/UserSolidIcon';
 import AddToHomeScreenPrompt from '../components/AddToHomeScreenPrompt';
-import { customLinksService } from '../lib/appwriteService';
+import { customLinksService, reviewService } from '../lib/appwriteService';
 
 
 interface HomePageProps {
@@ -84,6 +85,37 @@ const HomePage: React.FC<HomePageProps> = ({ loggedInAgent: _loggedInAgent, ther
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [selectedMassageType, setSelectedMassageType] = useState('all');
     const [customLinks, setCustomLinks] = useState<any[]>([]);
+    const [showRatingModal, setShowRatingModal] = useState(false);
+    const [selectedTherapist, setSelectedTherapist] = useState<Therapist | null>(null);
+
+    const handleOpenRatingModal = (therapist: Therapist) => {
+        setSelectedTherapist(therapist);
+        setShowRatingModal(true);
+    };
+
+    const handleCloseRatingModal = () => {
+        setShowRatingModal(false);
+        setSelectedTherapist(null);
+    };
+
+    const handleSubmitReview = async () => {
+        if (!selectedTherapist) return;
+
+        try {
+            const therapistId = selectedTherapist.id || (selectedTherapist as any).$id;
+            await reviewService.create({
+                providerId: Number(therapistId),
+                providerType: 'therapist',
+                providerName: selectedTherapist.name,
+                rating: 0, // Will be set by RatingModal
+                whatsapp: '', // Will be set by RatingModal
+                status: 'pending'
+            });
+            handleCloseRatingModal();
+        } catch (error) {
+            console.error('Error submitting review:', error);
+        }
+    };
 
     useEffect(() => {
         setIsLocationModalOpen(true);
@@ -373,7 +405,7 @@ const HomePage: React.FC<HomePageProps> = ({ loggedInAgent: _loggedInAgent, ther
                                 <TherapistCard
                                     key={therapist.id || therapist.$id}
                                     therapist={therapist}
-                                    onRate={() => {}}
+                                    onRate={() => handleOpenRatingModal(therapist)}
                                     onBook={() => onBook(therapist, 'therapist')}
                                     onIncrementAnalytics={(metric) => onIncrementAnalytics(therapist.id || therapist.$id, 'therapist', metric)}
                                     t={t}
@@ -385,6 +417,27 @@ const HomePage: React.FC<HomePageProps> = ({ loggedInAgent: _loggedInAgent, ther
                             </div>
                         )}
                     </div>
+                )}
+
+                {/* Rating Modal */}
+                {showRatingModal && selectedTherapist && (
+                    <RatingModal
+                        onClose={handleCloseRatingModal}
+                        onSubmit={handleSubmitReview}
+                        itemName={selectedTherapist.name}
+                        itemType="therapist"
+                        itemId={selectedTherapist.id || (selectedTherapist as any).$id}
+                        t={{
+                            title: t.ratingModal?.title || 'Rate {itemName}',
+                            prompt: t.ratingModal?.prompt || 'How was your experience?',
+                            whatsappLabel: t.ratingModal?.whatsappLabel || 'WhatsApp Number',
+                            whatsappPlaceholder: t.ratingModal?.whatsappPlaceholder || 'Enter your WhatsApp number',
+                            submitButton: t.ratingModal?.submitButton || 'Submit Review',
+                            selectRatingError: t.ratingModal?.selectRatingError || 'Please select a rating',
+                            whatsappRequiredError: t.ratingModal?.whatsappRequiredError || 'WhatsApp number is required',
+                            confirmationV2: t.ratingModal?.confirmationV2 || 'Thank you for your review! It will be visible once approved by admin.'
+                        }}
+                    />
                 )}
 
                 {activeTab === 'places' && (

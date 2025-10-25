@@ -108,6 +108,35 @@ const ConfirmTherapistsPage: React.FC = () => {
     }
   };
 
+  const handleDelete = async (therapistId: string, therapistName: string) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to permanently DELETE "${therapistName}"?\n\nThis action CANNOT be undone and will remove:\n- Profile and all data\n- Reviews and ratings\n- Membership history\n- Profile images\n\nType "DELETE" to confirm.`
+    );
+    
+    if (!confirmed) return;
+
+    const doubleConfirm = window.prompt(
+      `To confirm deletion of "${therapistName}", type DELETE in capital letters:`
+    );
+
+    if (doubleConfirm !== 'DELETE') {
+      alert('Deletion cancelled - confirmation text did not match.');
+      return;
+    }
+
+    setUpdatingId(therapistId);
+    try {
+      await therapistService.delete(therapistId);
+      await fetchTherapists();
+      alert(`Therapist "${therapistName}" has been permanently deleted.`);
+    } catch (error: any) {
+      console.error('Error deleting therapist:', error);
+      alert('Error deleting therapist: ' + (error.message || 'Unknown error'));
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
@@ -235,6 +264,14 @@ const ConfirmTherapistsPage: React.FC = () => {
                         >
                           {updatingId === therapist.$id ? 'Activating...' : 'Activate'}
                         </Button>
+                        <Button
+                          variant="secondary"
+                          className="px-4 py-1.5 text-sm whitespace-nowrap flex-shrink-0 bg-red-600 hover:bg-red-700 text-white"
+                          disabled={updatingId === therapist.$id}
+                          onClick={() => handleDelete(therapist.$id, therapist.name)}
+                        >
+                          🗑️ Delete
+                        </Button>
                       </div>
                     ) : (
                       <div className="flex flex-col sm:flex-row gap-2 w-full">
@@ -267,6 +304,14 @@ const ConfirmTherapistsPage: React.FC = () => {
                           }}
                         >
                           Renew
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          className="px-4 py-1.5 text-sm whitespace-nowrap flex-shrink-0 bg-red-600 hover:bg-red-700 text-white"
+                          disabled={updatingId === therapist.$id}
+                          onClick={() => handleDelete(therapist.$id, therapist.name)}
+                        >
+                          🗑️ Delete
                         </Button>
                       </div>
                     )}

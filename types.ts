@@ -104,6 +104,12 @@ export interface Therapist {
     location: string;
     coordinates: CoordinatesString; // JSON string for Appwrite
     activeMembershipDate: string;
+    membershipStartDate?: string; // Date when therapist first became active
+    membershipExpiryDate?: string; // Date when current membership expires
+    lastMembershipUpdateDate?: string; // Date of last membership renewal
+    totalActiveMembershipMonths?: number; // Total months of active membership
+    badgeEligible?: boolean; // Whether badge is currently active (considers grace period)
+    yearsOfExperience?: number; // Years of professional massage experience
     analytics: AnalyticsString; // JSON string for Appwrite
     agentId?: number;
     hotelVillaServiceStatus?: HotelVillaServiceStatus;

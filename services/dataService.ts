@@ -2,14 +2,7 @@ import { APP_CONFIG } from '../config';
 import { Therapist, Place, User, Agent, HotelVillaServiceStatus } from '../types';
 import { AvailabilityStatus } from '../types';
 import { stringifyPricing, stringifyMassageTypes, stringifyCoordinates, stringifyAnalytics } from '../utils/appwriteHelpers';
-
-// Import Appwrite services (only used if DATA_SOURCE is 'appwrite')
-let appwriteServices: any = null;
-if (APP_CONFIG.DATA_SOURCE === 'appwrite') {
-    import('../lib/appwriteService').then(services => {
-        appwriteServices = services;
-    });
-}
+import { therapistService, placeService, agentService } from '../lib/appwriteService';
 
 // Main image URLs from ImageKit for therapists
 const THERAPIST_MAIN_IMAGES = [
@@ -174,7 +167,12 @@ export const dataService = {
         if (APP_CONFIG.DATA_SOURCE === 'mock') {
             return generateMockTherapists();
         } else {
-            return appwriteServices?.therapistService.getAll() || [];
+            try {
+                return await therapistService.getAll() || [];
+            } catch (error) {
+                console.error('Error in dataService.getTherapists:', error);
+                return [];
+            }
         }
     },
 
@@ -183,7 +181,7 @@ export const dataService = {
             const therapists = generateMockTherapists();
             return therapists.find(t => t.id.toString() === id) || null;
         } else {
-            return appwriteServices?.therapistService.getById(id) || null;
+            return therapistService.getById(id) || null;
         }
     },
 
@@ -193,7 +191,7 @@ export const dataService = {
             // In mock mode, we can't persist data, so just return the created therapist
             return newTherapist;
         } else {
-            return appwriteServices?.therapistService.create(therapist);
+            return therapistService.create(therapist);
         }
     },
 
@@ -204,7 +202,7 @@ export const dataService = {
             if (!existing) throw new Error('Therapist not found');
             return { ...existing, ...updates };
         } else {
-            return appwriteServices?.therapistService.update(id, updates);
+            return therapistService.update(id, updates);
         }
     },
 
@@ -213,7 +211,7 @@ export const dataService = {
         if (APP_CONFIG.DATA_SOURCE === 'mock') {
             return generateMockPlaces();
         } else {
-            return appwriteServices?.placeService.getAll() || [];
+            return placeService.getAll() || [];
         }
     },
 
@@ -222,7 +220,7 @@ export const dataService = {
             const places = generateMockPlaces();
             return places.find(p => p.id.toString() === id) || null;
         } else {
-            return appwriteServices?.placeService.getById(id) || null;
+            return placeService.getById(id) || null;
         }
     },
 
@@ -231,7 +229,7 @@ export const dataService = {
             const newPlace = { ...place, id: Date.now() };
             return newPlace;
         } else {
-            return appwriteServices?.placeService.create(place);
+            return placeService.create(place);
         }
     },
 
@@ -242,7 +240,7 @@ export const dataService = {
             if (!existing) throw new Error('Place not found');
             return { ...existing, ...updates };
         } else {
-            return appwriteServices?.placeService.update(id, updates);
+            return placeService.update(id, updates);
         }
     },
 
@@ -272,7 +270,7 @@ export const dataService = {
                 }
             ];
         } else {
-            return appwriteServices?.agentService.getAll() || [];
+            return agentService.getAll() || [];
         }
     },
 

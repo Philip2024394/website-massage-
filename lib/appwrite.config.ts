@@ -25,7 +25,7 @@ export const APPWRITE_CONFIG = {
     },
     
     // Storage bucket ID
-    bucketId: '68fba119002b9cdb08e8'
+    bucketId: '68f76bdd002387590584'
 };
 
 export default APPWRITE_CONFIG;

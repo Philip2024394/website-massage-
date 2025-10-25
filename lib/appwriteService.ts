@@ -1,3 +1,30 @@
+// Main image URLs for therapist cards (17 images total)
+const THERAPIST_MAIN_IMAGES = [
+    'https://ik.imagekit.io/7grri5v7d/hotel%20massage%20indoniseas.png?updatedAt=1761154913720',
+    'https://ik.imagekit.io/7grri5v7d/massage%20room.png?updatedAt=1760975249566',
+    'https://ik.imagekit.io/7grri5v7d/massage%20hoter%20villa.png?updatedAt=1760965742264',
+    'https://ik.imagekit.io/7grri5v7d/massage%20agents.png?updatedAt=1760968250776',
+    'https://ik.imagekit.io/7grri5v7d/massage%20image%2016.png?updatedAt=1760187700624',
+    'https://ik.imagekit.io/7grri5v7d/massage%20image%2014.png?updatedAt=1760187606823',
+    'https://ik.imagekit.io/7grri5v7d/massage%20image%2013.png?updatedAt=1760187547313',
+    'https://ik.imagekit.io/7grri5v7d/massage%20image%2012.png?updatedAt=1760187511503',
+    'https://ik.imagekit.io/7grri5v7d/massage%20image%2011.png?updatedAt=1760187471233',
+    'https://ik.imagekit.io/7grri5v7d/massage%20image%2010.png?updatedAt=1760187307232',
+    'https://ik.imagekit.io/7grri5v7d/massage%20image%209.png?updatedAt=1760187266868',
+    'https://ik.imagekit.io/7grri5v7d/massage%20image%207.png?updatedAt=1760187181168',
+    'https://ik.imagekit.io/7grri5v7d/massage%20image%206.png?updatedAt=1760187126997',
+    'https://ik.imagekit.io/7grri5v7d/massage%20image%205.png?updatedAt=1760187081702',
+    'https://ik.imagekit.io/7grri5v7d/massage%20image%204.png?updatedAt=1760187040909',
+    'https://ik.imagekit.io/7grri5v7d/massage%20image%203.png?updatedAt=1760186993639',
+    'https://ik.imagekit.io/7grri5v7d/massage%20image%202.png?updatedAt=1760186944882',
+    'https://ik.imagekit.io/7grri5v7d/massage%20image%201.png?updatedAt=1760186885261',
+];
+
+// Helper function to get main image sequentially (shows each URL once before cycling)
+const getRandomMainImage = (index: number): string => {
+    return THERAPIST_MAIN_IMAGES[index % THERAPIST_MAIN_IMAGES.length];
+};
+
 // --- Image Upload Service ---
 export const imageUploadService = {
     async uploadProfileImage(base64Image: string): Promise<string> {
@@ -203,13 +230,24 @@ export const therapistService = {
     },
     async getAll(): Promise<any[]> {
         try {
+            console.log('📋 Fetching all therapists from collection:', APPWRITE_CONFIG.collections.therapists);
             const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.therapists
             );
-            return response.documents;
+            console.log('✅ Fetched therapists:', response.documents.length);
+            
+            // Add random main images to therapists that don't have one
+            const therapistsWithImages = response.documents.map((therapist, index) => ({
+                ...therapist,
+                mainImage: therapist.mainImage || getRandomMainImage(index)
+            }));
+            
+            return therapistsWithImages;
         } catch (error) {
-            console.error('Error fetching therapists:', error);
+            console.error('❌ Error fetching therapists:', error);
+            console.error('Database ID:', APPWRITE_CONFIG.databaseId);
+            console.error('Collection ID:', APPWRITE_CONFIG.collections.therapists);
             return [];
         }
     },
@@ -578,6 +616,113 @@ export const translationsService = {
             console.log('Translation sync complete!');
         } catch (error) {
             console.error('Error syncing translations:', error);
+            throw error;
+        }
+    }
+};
+
+// --- Review Service ---
+export const reviewService = {
+    async create(review: {
+        providerId: number;
+        providerType: 'therapist' | 'place';
+        providerName: string;
+        rating: number;
+        comment?: string;
+        whatsapp: string;
+        status: 'pending' | 'approved' | 'rejected';
+    }): Promise<any> {
+        try {
+            const response = await databases.createDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.reviews,
+                ID.unique(),
+                {
+                    ...review,
+                    createdAt: new Date().toISOString()
+                }
+            );
+            console.log('✅ Review created successfully:', response.$id);
+            return response;
+        } catch (error) {
+            console.error('❌ Error creating review:', error);
+            throw error;
+        }
+    },
+
+    async getAll(): Promise<any[]> {
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.reviews
+            );
+            return response.documents;
+        } catch (error) {
+            console.error('Error fetching reviews:', error);
+            return [];
+        }
+    },
+
+    async getPending(): Promise<any[]> {
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.reviews,
+                [
+                    Query.equal('status', 'pending')
+                ]
+            );
+            return response.documents;
+        } catch (error) {
+            console.error('Error fetching pending reviews:', error);
+            return [];
+        }
+    },
+
+    async getByProvider(providerId: number, providerType: 'therapist' | 'place'): Promise<any[]> {
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.reviews,
+                [
+                    Query.equal('providerId', providerId),
+                    Query.equal('providerType', providerType),
+                    Query.equal('status', 'approved')
+                ]
+            );
+            return response.documents;
+        } catch (error) {
+            console.error('Error fetching provider reviews:', error);
+            return [];
+        }
+    },
+
+    async updateStatus(reviewId: string, status: 'approved' | 'rejected'): Promise<any> {
+        try {
+            const response = await databases.updateDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.reviews,
+                reviewId,
+                { status }
+            );
+            console.log(`✅ Review ${reviewId} ${status}`);
+            return response;
+        } catch (error) {
+            console.error(`Error updating review status to ${status}:`, error);
+            throw error;
+        }
+    },
+
+    async delete(reviewId: string): Promise<void> {
+        try {
+            await databases.deleteDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.reviews,
+                reviewId
+            );
+            console.log('✅ Review deleted:', reviewId);
+        } catch (error) {
+            console.error('Error deleting review:', error);
             throw error;
         }
     }

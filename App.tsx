@@ -80,6 +80,18 @@ const App: React.FC = () => {
                 dataService.getPlaces()
             ]);
             
+            console.log('🏠 HomePage: Fetched therapists:', therapistsData?.length);
+            therapistsData?.forEach((t: any) => {
+                console.log(`  👤 ${t.name}:`, {
+                    profilePicture: t.profilePicture?.substring(0, 60) + '...',
+                    isLive: t.isLive,
+                    id: t.id || t.$id
+                });
+            });
+            
+            const liveTherapists = therapistsData?.filter((t: any) => t.isLive === true);
+            console.log('✅ Live therapists count:', liveTherapists?.length);
+            
             setTherapists(therapistsData || []);
             setPlaces(placesData || []);
         } catch (error) {
@@ -111,9 +123,16 @@ const App: React.FC = () => {
         setIsHotelLoggedIn(true);
         setIsVillaLoggedIn(true);
         setLoggedInProvider({ id: 'dev', type: 'therapist' });
-    setLoggedInAgent({ id: 0, name: 'Dev Agent', email: 'dev@dev.com', agentCode: 'DEV', hasAcceptedTerms: true });
+        setLoggedInAgent({ id: 0, name: 'Dev Agent', email: 'dev@dev.com', agentCode: 'DEV', hasAcceptedTerms: true });
         setPage('adminDashboard'); // Default to admin, change as needed
-        fetchPublicData();
+        
+        // Always fetch public data on mount
+        fetchPublicData().catch(err => {
+            console.error('Error fetching initial data:', err);
+            setTherapists([]);
+            setPlaces([]);
+        });
+        
         setIsLoading(false);
     }, [fetchPublicData]);
 
@@ -143,9 +162,23 @@ const App: React.FC = () => {
     };
 
     const handleLogout = async () => {
-        // TODO: Implement logout with Appwrite
-        setUser(null);
-        setPage('home');
+        try {
+            // TODO: Implement logout with Appwrite
+            setUser(null);
+            setIsAdminLoggedIn(false);
+            setIsHotelLoggedIn(false);
+            setIsVillaLoggedIn(false);
+            setLoggedInProvider(null);
+            setLoggedInAgent(null);
+            
+            // Reload public data to ensure we have therapists
+            await fetchPublicData();
+            
+            setPage('home');
+        } catch (error) {
+            console.error('Error during logout:', error);
+            setPage('home');
+        }
     };
     
     const handleSelectPlace = (place: Place) => {
@@ -278,6 +311,15 @@ const App: React.FC = () => {
                 return;
             }
             
+            // First, try to fetch existing therapist data
+            let existingTherapist: any = null;
+            try {
+                existingTherapist = await therapistService.getById(therapistId);
+                console.log('📖 Found existing therapist profile:', existingTherapist);
+            } catch (error) {
+                console.log('📝 No existing profile found, will create new one');
+            }
+            
             const updateData: any = {
                 ...therapistData,
                 profilePicture: profilePicture, // Ensure it's within 512 char limit
@@ -286,28 +328,26 @@ const App: React.FC = () => {
                 hotelId: '', // Required by schema but not used for therapists (only for hotel/villa services)
                 pricing: typeof therapistData.pricing === 'string' ? therapistData.pricing : JSON.stringify(therapistData.pricing),
                 analytics: typeof therapistData.analytics === 'string' ? therapistData.analytics : JSON.stringify(therapistData.analytics),
-                specialization: therapistData.massageTypes || '[]', // Add required specialization field
+                specialization: 'Massage Therapist', // Simple string under 128 chars (massageTypes contains the detailed list)
                 yearsOfExperience: (therapistData as any).yearsOfExperience || 0, // Add required yearsOfExperience field
                 isLicensed: (therapistData as any).isLicensed || false, // Add required isLicensed field
                 availability: '[]', // Required by Appwrite schema (empty array for therapists who use status instead)
                 hourlyRate: 100, // Required by schema (50-500 range) - therapists use pricing for 60/90/120 min sessions instead
             };
             
-            // Try to update first, if document doesn't exist, create it
-            try {
+            // If profile exists, preserve important fields that shouldn't be overwritten
+            if (existingTherapist) {
+                console.log('✏️ Updating existing profile, preserving isLive, email, rating, reviewCount, activeMembershipDate');
                 await therapistService.update(therapistId, updateData);
-            } catch (error: any) {
-                // If document not found, create new one
-                if (error.message?.includes('not be found') || error.code === 404) {
-                    const createData = {
-                        ...updateData,
-                        isLive: false,
-                        email: `therapist${therapistId}@indostreet.com`, // Placeholder email
-                    };
-                    await therapistService.create(createData);
-                } else {
-                    throw error;
-                }
+            } else {
+                // Create new profile with default values for admin-controlled fields
+                console.log('➕ Creating new profile with isLive=false (requires admin activation)');
+                const createData = {
+                    ...updateData,
+                    isLive: false, // New profiles require admin activation
+                    email: `therapist${therapistId}@indostreet.com`, // Placeholder email
+                };
+                await therapistService.create(createData);
             }
             
             alert('Profile saved successfully!');

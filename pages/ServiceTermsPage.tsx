@@ -111,6 +111,65 @@ const ServiceTermsPage: React.FC<ServiceTermsPageProps> = ({ onBack, t, contactN
                     <p className="text-sm leading-relaxed">{t.intellectualProperty.content}</p>
                 </div>
                 
+                <div className="space-y-2 bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <h3 className="font-bold text-gray-800 text-lg">🏆 {t.verifiedProBadge?.title || "Verified Pro Badge Program"}</h3>
+                    <p className="text-sm leading-relaxed font-semibold text-green-900">{t.verifiedProBadge?.subtitle || "Earn Recognition for Excellence and Commitment"}</p>
+                    
+                    <div className="mt-4 space-y-3">
+                        <div>
+                            <h4 className="font-semibold text-gray-800 text-sm mb-2">✅ {t.verifiedProBadge?.howToEarn?.title || "How to Earn the Badge:"}</h4>
+                            <ul className="list-disc list-inside space-y-1 text-sm ml-4">
+                                <li>{t.verifiedProBadge?.howToEarn?.requirement1 || "Complete 3 months of active membership (can be 3 consecutive months or accumulative 1-month memberships)"}</li>
+                                <li>{t.verifiedProBadge?.howToEarn?.requirement2 || "Maintain a rating of 4.0 stars or higher"}</li>
+                                <li>{t.verifiedProBadge?.howToEarn?.requirement3 || "Keep your membership continuously active"}</li>
+                            </ul>
+                        </div>
+                        
+                        <div className="bg-yellow-50 p-3 rounded border border-yellow-200">
+                            <h4 className="font-semibold text-gray-800 text-sm mb-2">⏰ {t.verifiedProBadge?.continuity?.title || "Membership Continuity Requirement:"}</h4>
+                            <ul className="list-disc list-inside space-y-1 text-sm ml-4">
+                                <li className="text-red-700 font-medium">{t.verifiedProBadge?.continuity?.renewal || "You will receive a renewal reminder 7 days before your membership expires"}</li>
+                                <li className="text-red-700 font-medium">{t.verifiedProBadge?.continuity?.warning || "If membership is not renewed within 7 days before expiry, your badge display will expire"}</li>
+                                <li>{t.verifiedProBadge?.continuity?.gracePeriod || "Grace Period: You have 5 days after membership expiry to renew and keep your badge active"}</li>
+                                <li className="text-red-700 font-medium">{t.verifiedProBadge?.continuity?.reset || "If membership lapses beyond the 5-day grace period, your badge will be RESET and you will need to complete 3 months of membership again"}</li>
+                                <li className="text-green-700 font-medium">{t.verifiedProBadge?.continuity?.maintain || "To maintain your badge: Renew your membership before it expires or within the 5-day grace period"}</li>
+                            </ul>
+                        </div>
+                        
+                        <div>
+                            <h4 className="font-semibold text-gray-800 text-sm mb-2">⚠️ {t.verifiedProBadge?.howToLose?.title || "Badge Removal:"}</h4>
+                            <ul className="list-disc list-inside space-y-1 text-sm ml-4">
+                                <li>{t.verifiedProBadge?.howToLose?.condition1 || "Your badge will be automatically removed if your rating falls below 4.0 stars"}</li>
+                                <li>{t.verifiedProBadge?.howToLose?.condition2 || "Membership lapse beyond 5-day grace period resets badge progress"}</li>
+                                <li>{t.verifiedProBadge?.howToLose?.condition3 || "The badge is visible to all clients on your profile card"}</li>
+                            </ul>
+                        </div>
+                        
+                        <div>
+                            <h4 className="font-semibold text-gray-800 text-sm mb-2">🔄 {t.verifiedProBadge?.howToRegain?.title || "Regaining Your Badge:"}</h4>
+                            <ul className="list-disc list-inside space-y-1 text-sm ml-4">
+                                <li>{t.verifiedProBadge?.howToRegain?.rating || "Rating Recovery: Once your rating returns to 4.0 stars or above, your badge will automatically reappear"}</li>
+                                <li>{t.verifiedProBadge?.howToRegain?.membership || "Membership Lapse: If your membership lapsed beyond grace period, you must complete 3 new months of active membership"}</li>
+                                <li>{t.verifiedProBadge?.howToRegain?.note || "Your progress is only preserved if you renew within the grace period"}</li>
+                            </ul>
+                        </div>
+                        
+                        <div className="bg-blue-50 p-3 rounded border border-blue-200">
+                            <h4 className="font-semibold text-gray-800 text-sm mb-2">📧 {t.verifiedProBadge?.notifications?.title || "Renewal Notifications:"}</h4>
+                            <p className="text-xs text-gray-700">{t.verifiedProBadge?.notifications?.content || "You will receive notifications at the following times to help you maintain your badge:"}</p>
+                            <ul className="list-disc list-inside space-y-1 text-xs ml-4 mt-2">
+                                <li>{t.verifiedProBadge?.notifications?.day7 || "7 days before expiry: First reminder to renew membership"}</li>
+                                <li>{t.verifiedProBadge?.notifications?.day3 || "3 days before expiry: Second reminder"}</li>
+                                <li>{t.verifiedProBadge?.notifications?.day1 || "1 day before expiry: Final reminder"}</li>
+                                <li>{t.verifiedProBadge?.notifications?.expiry || "On expiry day: Grace period notification (5 days to renew)"}</li>
+                                <li>{t.verifiedProBadge?.notifications?.grace || "Daily reminders during 5-day grace period"}</li>
+                            </ul>
+                        </div>
+                        
+                        <p className="text-xs text-gray-600 italic mt-3">{t.verifiedProBadge?.note || "The Verified Pro badge demonstrates your commitment to quality service and helps you stand out to potential clients. Maintain continuous membership to keep your badge active."}</p>
+                    </div>
+                </div>
+                
                 <div className="space-y-2 pt-4 border-t-2 border-orange-200">
                     <h3 className="font-bold text-gray-800 text-lg">{t.disclaimerTitle}</h3>
                     <p className="text-sm leading-relaxed">{t.disclaimerContent}</p>

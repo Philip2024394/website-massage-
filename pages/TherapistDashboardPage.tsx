@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { Therapist, Pricing, Booking, Notification } from '../types';
 import { AvailabilityStatus, BookingStatus, HotelVillaServiceStatus } from '../types';
 import { parsePricing, parseCoordinates, parseMassageTypes, stringifyPricing, stringifyCoordinates, stringifyMassageTypes, stringifyAnalytics } from '../utils/appwriteHelpers';
+import { therapistService } from '../lib/appwriteService';
 import Button from '../components/Button';
 import ImageUpload from '../components/ImageUpload';
 import HotelVillaOptIn from '../components/HotelVillaOptIn';
@@ -88,48 +89,71 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
     const [mapsApiLoaded, setMapsApiLoaded] = useState(false);
     const [activeTab, setActiveTab] = useState('profile');
     const [showConfirmation, setShowConfirmation] = useState(false);
+    const [showImageRequirementModal, setShowImageRequirementModal] = useState(false);
+    const [pendingImageUrl, setPendingImageUrl] = useState('');
 
     const locationInputRef = useRef<HTMLInputElement>(null);
     
     const fetchTherapistData = useCallback(async () => {
-        // Mock implementation - replace with your actual data fetching logic
         setIsLoading(true);
         
-        // Mock therapist data
-        const mockTherapist = {
-            id: therapistId,
-            name: 'Sample Therapist',
-            description: '',
-            profilePicture: '',
-            whatsappNumber: '',
-            massageTypes: stringifyMassageTypes([]),
-            pricing: stringifyPricing({ "60": 0, "90": 0, "120": 0 }),
-            location: '',
-            coordinates: stringifyCoordinates({ lat: 0, lng: 0 }),
-            status: AvailabilityStatus.Offline,
-            isLive: false,
-            rating: 0,
-            reviewCount: 0,
-            activeMembershipDate: new Date().toISOString().split('T')[0],
-            email: 'sample@email.com',
-            distance: 0,
-            analytics: stringifyAnalytics({ impressions: 0, profileViews: 0, whatsappClicks: 0 }),
-        };
+        console.log('📖 Fetching therapist data for ID:', therapistId);
+        // Try to fetch existing therapist data from Appwrite
+        const existingTherapist = await therapistService.getById(therapistId.toString());
         
-        setTherapist(mockTherapist);
-        setName(mockTherapist.name || '');
-        setDescription(mockTherapist.description || '');
-        setProfilePicture(mockTherapist.profilePicture || '');
-        console.log('📷 Initial profilePicture from mockTherapist:', mockTherapist.profilePicture);
-        setWhatsappNumber(mockTherapist.whatsappNumber || '');
-        setYearsOfExperience((mockTherapist as any).yearsOfExperience || 0);
-        setMassageTypes(parseMassageTypes(mockTherapist.massageTypes));
-        setPricing(parsePricing(mockTherapist.pricing));
-        setLocation(mockTherapist.location || '');
-        setCoordinates(parseCoordinates(mockTherapist.coordinates));
-        setStatus(mockTherapist.status || AvailabilityStatus.Offline);
-        setIsLicensed((mockTherapist as any).isLicensed || false);
-        setLicenseNumber((mockTherapist as any).licenseNumber || '');
+        if (existingTherapist) {
+            console.log('✅ Found existing therapist profile:', existingTherapist);
+            setTherapist(existingTherapist);
+            setName(existingTherapist.name || '');
+            setDescription(existingTherapist.description || '');
+            setProfilePicture(existingTherapist.profilePicture || '');
+            console.log('📷 Loaded profilePicture from database:', existingTherapist.profilePicture);
+            setWhatsappNumber(existingTherapist.whatsappNumber || '');
+            setYearsOfExperience((existingTherapist as any).yearsOfExperience || 0);
+            setMassageTypes(parseMassageTypes(existingTherapist.massageTypes));
+            setPricing(parsePricing(existingTherapist.pricing));
+            setLocation(existingTherapist.location || '');
+            setCoordinates(parseCoordinates(existingTherapist.coordinates));
+            setStatus(existingTherapist.status || AvailabilityStatus.Offline);
+            setIsLicensed((existingTherapist as any).isLicensed || false);
+            setLicenseNumber((existingTherapist as any).licenseNumber || '');
+        } else {
+            console.log('📝 No existing profile found, starting with empty form');
+            // No existing profile - start with empty data
+            const emptyTherapist = {
+                id: therapistId,
+                name: '',
+                description: '',
+                profilePicture: '',
+                whatsappNumber: '',
+                massageTypes: stringifyMassageTypes([]),
+                pricing: stringifyPricing({ "60": 0, "90": 0, "120": 0 }),
+                location: '',
+                coordinates: stringifyCoordinates({ lat: 0, lng: 0 }),
+                status: AvailabilityStatus.Offline,
+                isLive: false,
+                rating: 0,
+                reviewCount: 0,
+                activeMembershipDate: new Date().toISOString().split('T')[0],
+                email: `therapist${therapistId}@indostreet.com`,
+                distance: 0,
+                analytics: stringifyAnalytics({ impressions: 0, profileViews: 0, whatsappClicks: 0 }),
+            };
+            
+            setTherapist(emptyTherapist);
+            setName('');
+            setDescription('');
+            setProfilePicture('');
+            setWhatsappNumber('');
+            setYearsOfExperience(0);
+            setMassageTypes([]);
+            setPricing({ "60": 0, "90": 0, "120": 0 });
+            setLocation('');
+            setCoordinates({ lat: 0, lng: 0 });
+            setStatus(AvailabilityStatus.Offline);
+            setIsLicensed(false);
+            setLicenseNumber('');
+        }
         
         setIsLoading(false);
     }, [therapistId]);
@@ -355,11 +379,87 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                 const handleProfilePictureChange = (imageUrl: string) => {
                     console.log('🖼️ Profile picture changed to:', imageUrl);
                     console.log('🖼️ URL length:', imageUrl.length);
-                    setProfilePicture(imageUrl);
+                    // Show warning modal when therapist uploads image
+                    setPendingImageUrl(imageUrl);
+                    setShowImageRequirementModal(true);
+                };
+
+                const handleAcceptImageRequirement = () => {
+                    setProfilePicture(pendingImageUrl);
+                    setShowImageRequirementModal(false);
+                    setPendingImageUrl('');
+                };
+
+                const handleRejectImageRequirement = () => {
+                    setShowImageRequirementModal(false);
+                    setPendingImageUrl('');
+                    // Image is not set if they reject
                 };
                 
                 return (
                      <div className="space-y-6">
+                         {/* Image Requirement Modal */}
+                         {showImageRequirementModal && (
+                            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                                <div className="bg-white rounded-lg max-w-md w-full p-6 space-y-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                            <span className="text-2xl">⚠️</span>
+                                        </div>
+                                        <h3 className="text-lg font-bold text-gray-900">Profile Image Requirements</h3>
+                                    </div>
+                                    
+                                    <div className="space-y-3 text-sm text-gray-700">
+                                        <p className="font-semibold text-red-700">
+                                            ⚠️ IMPORTANT: Required for Active Account
+                                        </p>
+                                        
+                                        <div className="bg-yellow-50 border-l-4 border-yellow-500 p-3 space-y-2">
+                                            <p className="font-semibold">Your profile image MUST show:</p>
+                                            <ul className="list-disc list-inside space-y-1 ml-2">
+                                                <li>Front OR side view of your face</li>
+                                                <li>Clear, well-lit photo</li>
+                                                <li>Professional appearance</li>
+                                                <li>Recent photo (no older than 6 months)</li>
+                                            </ul>
+                                        </div>
+                                        
+                                        <div className="bg-red-50 border-l-4 border-red-500 p-3 space-y-2">
+                                            <p className="font-bold text-red-900">⛔ Account Suspension Policy:</p>
+                                            <ul className="list-disc list-inside space-y-1 ml-2 text-red-800">
+                                                <li>Uploading improper images (logos, graphics, unrelated photos)</li>
+                                                <li>Using photos that do not show your face clearly</li>
+                                                <li>Using someone else's photo</li>
+                                            </ul>
+                                            <p className="font-bold text-red-900 mt-2">
+                                                ⚠️ Will result in IMMEDIATE account suspension WITHOUT NOTICE
+                                            </p>
+                                        </div>
+                                        
+                                        <p className="text-xs text-gray-600 italic">
+                                            By uploading this image, you confirm that it meets all requirements and is a genuine photo of yourself.
+                                        </p>
+                                    </div>
+                                    
+                                    <div className="flex gap-3 pt-2">
+                                        <Button
+                                            onClick={handleRejectImageRequirement}
+                                            variant="secondary"
+                                            className="flex-1"
+                                        >
+                                            Cancel
+                                        </Button>
+                                        <Button
+                                            onClick={handleAcceptImageRequirement}
+                                            className="flex-1 bg-green-600 hover:bg-green-700"
+                                        >
+                                            I Understand & Confirm
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                         )}
+                         
                          <ImageUpload
                             id="profile-picture-upload"
                             label={t.uploadProfilePic}

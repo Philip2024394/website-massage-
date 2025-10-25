@@ -68,15 +68,38 @@ const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook
     const [showBusyModal, setShowBusyModal] = useState(false);
     
     // Debug: Log profile picture URL
-    console.log('🎴 TherapistCard rendering for:', therapist.name, 'ProfilePicture:', therapist.profilePicture?.substring(0, 100) + '...');
+    console.log('🎴 TherapistCard rendering for:', therapist.name);
+    console.log('📸 ProfilePicture URL:', therapist.profilePicture);
+    console.log('📸 URL Length:', therapist.profilePicture?.length);
+    console.log('📸 Is Valid URL:', therapist.profilePicture?.startsWith('http'));
+    console.log('📊 Status:', therapist.status);
+    
+    // Map any status value to valid AvailabilityStatus
+    let validStatus = AvailabilityStatus.Offline;
+    const statusStr = String(therapist.status || '');
+    
+    if (statusStr === 'Available' || statusStr === AvailabilityStatus.Available) {
+        validStatus = AvailabilityStatus.Available;
+    } else if (statusStr === 'Busy' || statusStr === AvailabilityStatus.Busy) {
+        validStatus = AvailabilityStatus.Busy;
+    } else if (statusStr === 'Offline' || statusStr === AvailabilityStatus.Offline) {
+        validStatus = AvailabilityStatus.Offline;
+    }
+    // Default to Offline for any other value (like 'active', null, undefined)
+    
+    // Ensure therapist has a valid status
+    const therapistWithStatus = {
+        ...therapist,
+        status: validStatus
+    };
     
     // Get the display status (may differ from actual status)
-    const displayStatus = getDisplayStatus(therapist);
+    const displayStatus = getDisplayStatus(therapistWithStatus);
     const style = statusStyles[displayStatus];
     
-    // Parse Appwrite string fields
-    const pricing = parsePricing(therapist.pricing);
-    const massageTypes = parseMassageTypes(therapist.massageTypes);
+    // Parse Appwrite string fields with fallbacks
+    const pricing = parsePricing(therapist.pricing) || { "60": 0, "90": 0, "120": 0 };
+    const massageTypes = parseMassageTypes(therapist.massageTypes) || [];
     
     // Get main image from therapist data
     const mainImage = (therapist as any).mainImage;
@@ -99,70 +122,105 @@ const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook
     };
 
     return (
-        <div className="bg-white rounded-xl shadow-md overflow-hidden">
+        <div className="bg-white rounded-xl shadow-md overflow-visible relative">
             {/* Main Image Banner */}
-            {mainImage && (
-                <div className="h-32 w-full bg-gradient-to-r from-orange-400 to-orange-600 overflow-hidden">
-                    <img 
-                        src={mainImage} 
-                        alt={`${therapist.name} cover`} 
-                        className="w-full h-full object-cover"
-                    />
-                </div>
-            )}
-            
-            {/* Content */}
-            <div className="p-4 flex flex-col gap-4">
-                <div className="flex items-start gap-4">
-                    {/* Profile Picture - Left Side */}
-                    <img 
-                        className="w-20 h-20 rounded-full object-cover border-2 border-white shadow-lg bg-gray-100" 
-                        style={{ marginTop: mainImage ? '-3rem' : '0' }}
-                        src={therapist.profilePicture || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="80" height="80"%3E%3Crect fill="%23e5e7eb" width="80" height="80"/%3E%3Cpath fill="%239ca3af" d="M40 20c5.5 0 10 4.5 10 10s-4.5 10-10 10-10-4.5-10-10 4.5-10 10-10zm0 26c6.7 0 20 3.4 20 10v4H20v-4c0-6.6 13.3-10 20-10z"/%3E%3C/svg%3E'} 
-                        alt={therapist.name}
-                        onError={(e) => {
-                            console.error('Failed to load profile image for:', therapist.name);
-                            e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="80" height="80"%3E%3Crect fill="%23e5e7eb" width="80" height="80"/%3E%3Cpath fill="%239ca3af" d="M40 20c5.5 0 10 4.5 10 10s-4.5 10-10 10-10-4.5-10-10 4.5-10 10-10zm0 26c6.7 0 20 3.4 20 10v4H20v-4c0-6.6 13.3-10 20-10z"/%3E%3C/svg%3E';
-                        }}
-                    />
-                    <div className="flex-grow">
-                        <div className="flex justify-between items-start">
-                            <div>
-                               <h3 className="text-lg font-bold text-gray-900">{therapist.name}</h3>
-                                <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${style.bg} ${style.text} mt-1`}>
-                                    <span className="relative mr-1.5">
-                                        {displayStatus === AvailabilityStatus.Available && (
-                                            <span className="absolute inset-0 w-4 h-4 -left-1 -top-1 rounded-full bg-green-400 opacity-40 animate-ping"></span>
-                                        )}
-                                        <span className={`w-2 h-2 rounded-full block ${style.dot}`}></span>
-                                    </span>
-                                    {displayStatus}
-                                </div>
-                            </div>
-                            <div className="flex items-center text-sm text-gray-500 gap-1">
-                                <LocationPinIcon className="w-4 h-4 text-gray-400"/>
-                                <span>{therapist.distance}km</span>
-                            </div>
-                        </div>
-                         <p className="text-sm text-gray-600 mt-2">{therapist.description}</p>
+            <div className="h-48 w-full bg-gradient-to-r from-orange-400 to-orange-600 overflow-hidden relative rounded-t-xl">
+                <img 
+                    src={mainImage || 'https://ik.imagekit.io/7grri5v7d/massage%20image%201.png?updatedAt=1760186885261'} 
+                    alt={`${therapist.name} cover`} 
+                    className="w-full h-full object-cover"
+                />
+                {/* Verified Pro Badge - Top Left Corner */}
+                {/* Badge requirements: */}
+                {/* 1. 3+ months active membership (cumulative) */}
+                {/* 2. 4.0+ star rating */}
+                {/* 3. Active membership OR within 5-day grace period */}
+                {/* Badge resets if membership lapses beyond 5-day grace period */}
+                {((therapist.totalActiveMembershipMonths ?? 0) >= 3 && 
+                  (therapist.rating ?? 0) >= 4.0 && 
+                  (therapist.badgeEligible ?? false)) && (
+                    <div className="absolute top-2 left-2 flex items-center gap-1 bg-black/70 backdrop-blur-md rounded-full px-3 py-1.5 shadow-lg">
+                        <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
+                        </svg>
+                        <span className="font-semibold text-white text-xs">Verified Pro</span>
                     </div>
-                </div>
-            
-            <div className="flex items-center justify-between">
+                )}
+                {/* Star Rating - Top Right Corner of Main Image */}
                 <div 
-                    className="flex items-center gap-1 cursor-pointer"
+                    className="absolute top-2 right-2 flex items-center gap-1 bg-black/70 backdrop-blur-md rounded-full px-3 py-1.5 shadow-lg cursor-pointer"
                     onClick={() => onRate(therapist)}
                     aria-label={`Rate ${therapist.name}`}
                     role="button"
                 >
-                    <StarIcon className="w-5 h-5 text-yellow-400"/>
-                    <span className="font-bold text-gray-700">{therapist.rating.toFixed(1)}</span>
-                    <span className="text-sm text-gray-500">({therapist.reviewCount} reviews)</span>
+                    <StarIcon className="w-4 h-4 text-yellow-400"/>
+                    <span className="font-bold text-white text-sm">{(therapist.rating || 0).toFixed(1)}</span>
+                    <span className="text-xs text-gray-300">({therapist.reviewCount || 0})</span>
                 </div>
             </div>
+            
+            {/* Profile Picture - Positioned below banner, overlapping */}
+            <div className="absolute top-40 left-4 z-10">
+                <img 
+                    className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg bg-gray-100" 
+                    src={therapist.profilePicture || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="80" height="80"%3E%3Crect fill="%23e5e7eb" width="80" height="80"/%3E%3Cpath fill="%239ca3af" d="M40 20c5.5 0 10 4.5 10 10s-4.5 10-10 10-10-4.5-10-10 4.5-10 10-10zm0 26c6.7 0 20 3.4 20 10v4H20v-4c0-6.6 13.3-10 20-10z"/%3E%3C/svg%3E'} 
+                    alt={therapist.name}
+                    onLoad={() => {
+                        console.log('✅ Image loaded successfully for:', therapist.name);
+                    }}
+                    onError={(e) => {
+                        console.error('❌ Failed to load profile image for:', therapist.name);
+                        console.error('❌ Image URL was:', therapist.profilePicture);
+                        console.error('❌ Error event:', e);
+                        e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="80" height="80"%3E%3Crect fill="%23e5e7eb" width="80" height="80"/%3E%3Cpath fill="%239ca3af" d="M40 20c5.5 0 10 4.5 10 10s-4.5 10-10 10-10-4.5-10-10 4.5-10 10-10zm0 26c6.7 0 20 3.4 20 10v4H20v-4c0-6.6 13.3-10 20-10z"/%3E%3C/svg%3E';
+                    }}
+                />
+            </div>
+            
+            {/* Therapist Name and Distance - Positioned to the right of profile picture */}
+            <div className="absolute top-52 left-28 right-4 z-10">
+                <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-bold text-gray-900">{therapist.name}</h3>
+                    <div className="flex items-center text-sm text-gray-500 gap-1">
+                        <LocationPinIcon className="w-4 h-4 text-red-500"/>
+                        <span>{therapist.distance}km</span>
+                    </div>
+                </div>
+                <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${style.bg} ${style.text} mt-1`}>
+                    <span className="relative mr-1.5">
+                        {displayStatus === AvailabilityStatus.Available && (
+                            <span className="absolute inset-0 w-4 h-4 -left-1 -top-1 rounded-full bg-green-400 opacity-40 animate-ping"></span>
+                        )}
+                        <span className={`w-2 h-2 rounded-full block ${style.dot}`}></span>
+                    </span>
+                    {displayStatus}
+                </div>
+            </div>
+            
+            {/* Content */}
+            <div className="p-4 pt-12 flex flex-col gap-4">
+                <div className="flex items-start gap-4">
+                    <div className="flex-grow">
+                        <div className="flex justify-between items-start">
+                            <div className="flex-grow">
+                            </div>
+                        </div>
+                         <p className="text-sm text-gray-600 mt-10">{therapist.description}</p>
+                    </div>
+                </div>
 
             <div>
-                <h4 className="text-sm font-semibold text-gray-700 mb-1.5">Massage Types</h4>
+                <div className="flex justify-between items-center mb-3">
+                    <h4 className="text-sm font-semibold text-gray-700">Massage Types</h4>
+                    {therapist.yearsOfExperience && (
+                        <span className="text-sm font-semibold text-gray-700 flex items-center gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                            </svg>
+                            {therapist.yearsOfExperience} Years Experience
+                        </span>
+                    )}
+                </div>
                 <div className="flex flex-wrap gap-2">
                     {massageTypes.map(type => (
                         <span key={type} className="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded-full">{type}</span>
@@ -199,6 +257,16 @@ const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook
                 >
                     <CalendarIcon className="w-5 h-5"/>
                     <span>Schedule</span>
+                </button>
+            </div>
+
+            {/* Leave Review Link */}
+            <div className="text-center mt-3">
+                <button
+                    onClick={() => onRate(therapist)}
+                    className="text-sm text-orange-600 hover:text-orange-700 font-semibold underline"
+                >
+                    Reviews Help The Community
                 </button>
             </div>
             </div>

@@ -1,7 +1,7 @@
 // App configuration
 export const APP_CONFIG = {
     // Set to 'mock' to use mock data, 'appwrite' to use Appwrite backend
-    DATA_SOURCE: 'mock' as 'mock' | 'appwrite',
+    DATA_SOURCE: 'appwrite' as 'mock' | 'appwrite',
     
     // Appwrite configuration
     APPWRITE: {
