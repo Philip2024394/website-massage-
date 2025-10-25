@@ -75,12 +75,6 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin, onBack, t
                         >
                             {isLoading ? 'Signing in...' : t.button}
                         </button>
-                        
-                        <div className="text-center">
-                            <p className="text-sm text-white/70">
-                                Demo: indostreet2024
-                            </p>
-                        </div>
                     </div>
                 </div>
             </div>

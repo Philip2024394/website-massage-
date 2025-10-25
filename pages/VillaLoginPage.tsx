@@ -119,12 +119,6 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onVillaLogin, onBack })
                             {isLoading ? 'Signing In...' : 'Sign In'}
                         </button>
                     </form>
-
-                    <div className="mt-6 text-center">
-                        <p className="text-sm text-white/70">
-                            Demo: villa123 / indostreet2024
-                        </p>
-                    </div>
                 </div>
             </div>
         </div>

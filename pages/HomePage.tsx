@@ -381,13 +381,13 @@ const HomePage: React.FC<HomePageProps> = ({ loggedInAgent: _loggedInAgent, ther
                                 <option value="all">{t.home.massageType}</option>
                                 {MASSAGE_TYPES_CATEGORIZED.map(category => (
                                     <optgroup label={category.category} key={category.category}>
-                                        {category.types.map(type => (
-                                            <option key={type} value={type}>{type}</option>
+                                        {category.types.map((type, index) => (
+                                            <option key={`${category.category}-${type}-${index}`} value={type}>{type}</option>
                                         ))}
                                     </optgroup>
                                 ))}
                             </select>
-                            <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"/>
+            <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"/>
                         </div>
                         <button onClick={onMassageTypesClick} className="ml-3 text-orange-500 font-semibold text-sm whitespace-nowrap hover:text-orange-600 transition-colors">
                             Massage Directory

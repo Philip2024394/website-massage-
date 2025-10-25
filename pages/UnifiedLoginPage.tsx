@@ -34,47 +34,6 @@ const UnifiedLoginPage: React.FC = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-
-  // Demo quick-login for design: instantly log in as any type
-  const handleDemoLogin = (role: string) => {
-    // For design/demo: route to the correct dashboard page
-    switch (role) {
-      case 'user':
-        window.location.href = '/'; // HomePage
-        break;
-      case 'therapist':
-        window.location.href = '/#therapistDashboard';
-        break;
-      case 'place':
-        window.location.href = '/#placeDashboard';
-        break;
-      case 'hotel':
-        window.location.href = '/#hotelDashboard';
-        break;
-      case 'villa':
-        window.location.href = '/#villaDashboard';
-        break;
-      case 'agent':
-        window.location.href = '/#agentDashboard';
-        break;
-      case 'admin':
-        window.location.href = '/#adminDashboard';
-        break;
-      default:
-        window.location.href = '/';
-    }
-  };
-
-  const demoRoles = [
-    { id: 'user', label: 'User Dashboard' },
-    { id: 'therapist', label: 'Therapist Dashboard' },
-    { id: 'place', label: 'Massage Place Dashboard' },
-    { id: 'hotel', label: 'Hotel Dashboard' },
-    { id: 'villa', label: 'Villa Dashboard' },
-    { id: 'agent', label: 'Agent Dashboard' },
-    { id: 'admin', label: 'Admin Dashboard' },
-  ];
-
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const handleSubmit = async (e: React.FormEvent) => {
@@ -156,39 +115,6 @@ const UnifiedLoginPage: React.FC = () => {
         </span>
       </button>
       <div className="bg-white/90 rounded-xl shadow-lg p-8 w-full max-w-md backdrop-blur-md">
-        {/* DEV ONLY: Direct admin dashboard access */}
-        {process.env.NODE_ENV !== 'production' && (
-          <div className="mb-4 text-center">
-            <button
-              type="button"
-              className="inline-block bg-orange-600 text-white px-4 py-2 rounded font-bold shadow hover:bg-orange-700 transition"
-              style={{ marginBottom: 16 }}
-              onClick={() => {
-                // Set admin state in localStorage and reload to trigger admin dashboard
-                localStorage.setItem('isAdminLoggedIn', 'true');
-                window.location.reload();
-              }}
-            >
-              Go to Admin Dashboard (DEV ONLY)
-            </button>
-          </div>
-        )}
-        {/* DEMO: Quick login for design */}
-        <div className="mb-6">
-          <div className="font-semibold text-center mb-2 text-orange-600">Quick Dashboard Access (Design Only)</div>
-          <div className="flex flex-wrap gap-2 justify-center">
-            {demoRoles.map(role => (
-              <button
-                key={role.id}
-                type="button"
-                className="bg-orange-500 text-white px-3 py-1 rounded hover:bg-orange-600 text-xs font-semibold"
-                onClick={() => handleDemoLogin(role.id)}
-              >
-                {role.label}
-              </button>
-            ))}
-          </div>
-        </div>
         <h2 className="text-2xl font-bold mb-6 text-center">Login / Create Account</h2>
   {error && <div className="text-red-500 text-center mb-2">{error}</div>}
   {success && <div className="text-green-600 text-center mb-2">{success}</div>}

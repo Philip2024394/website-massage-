@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import Button from '../components/Button';
 
-interface HotelLoginPageProps {
-    onSuccess: (hotelId: string) => void;
+interface AgentLoginPageProps {
+    onSuccess: (agentId: string) => void;
     onBack: () => void;
     t: any;
 }
 
-const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack, t }) => {
+const AgentLoginPage: React.FC<AgentLoginPageProps> = ({ onSuccess, onBack, t }) => {
     const [isSignUp, setIsSignUp] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -21,7 +21,7 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack, t })
 
         try {
             if (isSignUp) {
-                const response = await fetch('/api/auth/hotel/signup', {
+                const response = await fetch('/api/auth/agent/signup', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
@@ -33,7 +33,7 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack, t })
                 setError('Account created! Please sign in.');
                 setPassword('');
             } else {
-                const response = await fetch('/api/auth/hotel/signin', {
+                const response = await fetch('/api/auth/agent/signin', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
@@ -42,7 +42,7 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack, t })
                 if (!response.ok) throw new Error('Sign in failed');
                 
                 const data = await response.json();
-                onSuccess(data.hotelId);
+                onSuccess(data.agentId);
             }
         } catch (err: any) {
             setError(err.message || 'Authentication failed');
@@ -52,18 +52,18 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack, t })
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-gradient-to-br from-purple-50 to-purple-100 flex items-center justify-center p-4">
             <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8">
                 <div className="text-center mb-8">
-                    <h1 className="text-4xl font-bold text-blue-600 mb-2">IndaStreet</h1>
-                    <p className="text-gray-600">Hotel Portal</p>
+                    <h1 className="text-4xl font-bold text-purple-600 mb-2">IndaStreet</h1>
+                    <p className="text-gray-600">Agent Portal</p>
                 </div>
 
                 <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
                     <button
                         onClick={() => setIsSignUp(false)}
                         className={`flex-1 py-2 px-4 rounded-md transition-all ${
-                            !isSignUp ? 'bg-white shadow text-blue-600 font-semibold' : 'text-gray-600'
+                            !isSignUp ? 'bg-white shadow text-purple-600 font-semibold' : 'text-gray-600'
                         }`}
                     >
                         Sign In
@@ -71,7 +71,7 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack, t })
                     <button
                         onClick={() => setIsSignUp(true)}
                         className={`flex-1 py-2 px-4 rounded-md transition-all ${
-                            isSignUp ? 'bg-white shadow text-blue-600 font-semibold' : 'text-gray-600'
+                            isSignUp ? 'bg-white shadow text-purple-600 font-semibold' : 'text-gray-600'
                         }`}
                     >
                         Sign Up
@@ -93,8 +93,8 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack, t })
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="hotel@indastreet.com"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            placeholder="agent@indastreet.com"
                             required
                         />
                     </div>
@@ -107,7 +107,7 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack, t })
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                             placeholder="••••••••"
                             required
                             minLength={8}
@@ -117,7 +117,7 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack, t })
                     <Button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 mt-6"
+                        className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 mt-6"
                     >
                         {loading ? 'Processing...' : isSignUp ? 'Create Account' : 'Sign In'}
                     </Button>
@@ -134,4 +134,4 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack, t })
     );
 };
 
-export default HotelLoginPage;
+export default AgentLoginPage;

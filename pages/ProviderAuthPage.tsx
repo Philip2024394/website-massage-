@@ -213,11 +213,6 @@ const ProviderAuthPage: React.FC<ProviderAuthPageProps> = ({ mode, providerType,
                                 </button>
                             )}
                         </div>
-                        <div className="text-center mt-2">
-                            <p className="text-sm text-white/70">
-                                Demo: {providerType}@example.com / password123
-                            </p>
-                        </div>
                     </form>
                 </div>
             </div>

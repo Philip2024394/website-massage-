@@ -12,6 +12,7 @@ import LandingPage from './pages/LandingPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import AdminLoginPage from './pages/AdminLoginPage';
 import RegistrationChoicePage from './pages/RegistrationChoicePage';
+import TherapistLoginPage from './pages/TherapistLoginPage';
 import TherapistDashboardPage from './pages/TherapistDashboardPage';
 import TherapistStatusPage from './pages/TherapistStatusPage';
 import PlaceDashboardPage from './pages/PlaceDashboardPage';
@@ -28,14 +29,14 @@ import NotificationsPage from './pages/NotificationsPage';
 import MassageTypesPage from './pages/MassageTypesPage';
 import HotelDashboardPage from './pages/HotelDashboardPage';
 import VillaDashboardPage from './pages/VillaDashboardPage';
-import JoinIndoStreetPage from './pages/JoinIndoStreetPage';
 // import UnifiedLoginPage from './pages/UnifiedLoginPage';
 import { translations } from './translations/index.ts';
 import { therapistService, placeService, agentService } from './lib/appwriteService';
 
-type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistStatus' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'agentAuth' | 'agentDashboard' | 'agentTerms' | 'serviceTerms' | 'privacy' | 'membership' | 'booking' | 'bookings' | 'notifications' | 'massageTypes' | 'hotelLogin' | 'hotelDashboard' | 'villaLogin' | 'villaDashboard' | 'unifiedLogin' | 'joinIndoStreet';
+type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistStatus' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'agentAuth' | 'agentDashboard' | 'agentTerms' | 'serviceTerms' | 'privacy' | 'membership' | 'booking' | 'bookings' | 'notifications' | 'massageTypes' | 'hotelLogin' | 'hotelDashboard' | 'villaLogin' | 'villaDashboard' | 'unifiedLogin' | 'therapistLogin';
 type Language = 'en' | 'id';
 type LoggedInProvider = { id: number | string; type: 'therapist' | 'place' }; // Support both number and string IDs for Appwrite compatibility
+type LoggedInUser = { id: string; type: 'admin' | 'hotel' | 'villa' | 'agent' };
 
 const App: React.FC = () => {
     const [user, setUser] = useState<User | null>(null);
@@ -44,6 +45,7 @@ const App: React.FC = () => {
     const [language, setLanguage] = useState<Language>('en');
     const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
     const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
+    const [loggedInUser, setLoggedInUser] = useState<LoggedInUser | null>(null);
     
     const [therapists, setTherapists] = useState<Therapist[]>([]);
     const [places, setPlaces] = useState<Place[]>([]);
@@ -195,6 +197,7 @@ const App: React.FC = () => {
     };
     
     const handleNavigateToAuth = () => setPage('unifiedLogin');
+    const handleNavigateToTherapistLogin = () => setPage('therapistLogin');
 
     const handleNavigateToRegistrationChoice = () => setPage('registrationChoice');
     const handleNavigateToServiceTerms = () => setPage('serviceTerms');
@@ -233,38 +236,39 @@ const App: React.FC = () => {
         setPage('providerAuth');
     };
 
-    const _handleProviderLogin = async (email: string): Promise<{success: boolean, message: string}> => {
-        try {
-            const therapists = await therapistService.getAll();
-            const therapist = therapists.find((t: any) => t.email === email);
-            
-            if (therapist) {
-                const providerData = { id: therapist.$id, type: 'therapist' as const };
-                setLoggedInProvider(providerData);
-                localStorage.setItem('loggedInProvider', JSON.stringify(providerData));
-                setPage('therapistStatus');
-                setProviderAuthInfo(null);
-                return { success: true, message: '' };
-            }
-
-            const places = await placeService.getAll();
-            const place = places.find((p: any) => p.email === email);
-            
-            if (place) {
-                const providerData = { id: place.$id, type: 'place' as const };
-                setLoggedInProvider(providerData);
-                localStorage.setItem('loggedInProvider', JSON.stringify(providerData));
-                setPage('placeDashboard');
-                setProviderAuthInfo(null);
-                return { success: true, message: '' };
-            }
-            
-            return { success: false, message: 'Invalid email. Please check and try again.' };
-        } catch (error: any) {
-            console.error('Login error:', error);
-            return { success: false, message: error.message || 'Login failed' };
-        }
-    };
+    // Unused function - kept for future implementation
+    // const handleProviderLogin = async (email: string): Promise<{success: boolean, message: string}> => {
+    //     try {
+    //         const therapists = await therapistService.getAll();
+    //         const therapist = therapists.find((t: any) => t.email === email);
+    //         
+    //         if (therapist) {
+    //             const providerData = { id: therapist.$id, type: 'therapist' as const };
+    //             setLoggedInProvider(providerData);
+    //             localStorage.setItem('loggedInProvider', JSON.stringify(providerData));
+    //             setPage('therapistStatus');
+    //             setProviderAuthInfo(null);
+    //             return { success: true, message: '' };
+    //         }
+    //
+    //         const places = await placeService.getAll();
+    //         const place = places.find((p: any) => p.email === email);
+    //         
+    //         if (place) {
+    //             const providerData = { id: place.$id, type: 'place' as const };
+    //             setLoggedInProvider(providerData);
+    //             localStorage.setItem('loggedInProvider', JSON.stringify(providerData));
+    //             setPage('placeDashboard');
+    //             setProviderAuthInfo(null);
+    //             return { success: true, message: '' };
+    //         }
+    //         
+    //         return { success: false, message: 'Invalid email. Please check and try again.' };
+    //     } catch (error: any) {
+    //         console.error('Login error:', error);
+    //         return { success: false, message: error.message || 'Login failed' };
+    //     }
+    // };
 
 
     const handleProviderLogout = () => {
@@ -570,10 +574,14 @@ const App: React.FC = () => {
         }
 
         switch (page) {
-            case 'landing': return <LandingPage onLanguageSelect={handleLanguageSelect} onJoinClick={() => setPage('joinIndoStreet')} />;
-            case 'joinIndoStreet': return <JoinIndoStreetPage />;
+            case 'landing': return <LandingPage onLanguageSelect={handleLanguageSelect} />;
             // case 'auth': return <AuthPage onAuthSuccess={() => setPage('home')} onBack={handleBackToHome} t={t.auth} />;
             case 'unifiedLogin': return <UnifiedLoginPage />;
+            case 'therapistLogin': return <TherapistLoginPage onSuccess={(therapistId) => {
+                // Handle therapist login success - set logged in state and navigate to dashboard
+                setLoggedInProvider({ id: therapistId, type: 'therapist' });
+                setPage('therapistDashboard');
+            }} onBack={handleBackToHome} />;
             case 'home':
                 return <HomePage 
                             user={user} 
@@ -584,7 +592,7 @@ const App: React.FC = () => {
                             onSetUserLocation={handleSetUserLocation}
                             onSelectPlace={handleSelectPlace} 
                             onLogout={handleLogout}
-                            onLoginClick={handleNavigateToAuth}
+                            onLoginClick={handleNavigateToTherapistLogin}
                             onCreateProfileClick={handleNavigateToRegistrationChoice}
                             onAgentPortalClick={loggedInAgent ? () => setPage('agentDashboard') : handleNavigateToAgentAuth}
                             onBook={handleNavigateToBooking}
@@ -604,6 +612,7 @@ const App: React.FC = () => {
                 therapist={therapists.find(t => t.id === loggedInProvider.id) || null}
                 onStatusChange={handleTherapistStatusChange}
                 onNavigateToDashboard={handleNavigateToTherapistDashboard}
+                onNavigateToHome={handleBackToHome}
                 t={t.providerDashboard}
             /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice}/>;
             case 'therapistDashboard': return loggedInProvider ? <TherapistDashboardPage 
@@ -623,7 +632,7 @@ const App: React.FC = () => {
                 onNavigateToNotifications={handleNavigateToNotifications}
                 onUpdateBookingStatus={handleUpdateBookingStatus}
                 t={t.providerDashboard} 
-                placeId={loggedInProvider.id}
+                placeId={typeof loggedInProvider.id === 'string' ? parseInt(loggedInProvider.id) : loggedInProvider.id}
                 bookings={bookings.filter(b => b.providerId === loggedInProvider.id && b.providerType === 'place')}
                 notifications={notifications.filter(n => n.providerId === loggedInProvider.id)}
             /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice} />;
@@ -661,6 +670,7 @@ const App: React.FC = () => {
             case 'membership': return loggedInProvider ? <MembershipPage onPackageSelect={handleSelectMembershipPackage} onBack={handleBackToProviderDashboard} t={t.membershipPage} /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice}/>;
             case 'booking': return providerForBooking ? <BookingPage provider={providerForBooking.provider} providerType={providerForBooking.type} onBook={handleCreateBooking} onBack={handleBackToHome} bookings={bookings.filter(b => b.providerId === providerForBooking.provider.id)} t={t.bookingPage} /> : <HomePage user={user} loggedInAgent={loggedInAgent} therapists={therapists} places={places} userLocation={userLocation} onSetUserLocation={handleSetUserLocation} onSelectPlace={handleSelectPlace} onLogout={handleLogout} onLoginClick={handleNavigateToAuth} onCreateProfileClick={handleNavigateToRegistrationChoice} onAgentPortalClick={loggedInAgent ? () => setPage('agentDashboard') : handleNavigateToAgentAuth} onBook={handleNavigateToBooking} onIncrementAnalytics={handleIncrementAnalytics} onMassageTypesClick={() => setPage('massageTypes')} onHotelPortalClick={handleNavigateToHotelLogin} isLoading={isLoading} t={t} />;
             case 'notifications': return loggedInProvider ? <NotificationsPage notifications={notifications.filter(n => n.providerId === loggedInProvider.id)} onMarkAsRead={handleMarkNotificationAsRead} onBack={handleBackToProviderDashboard} t={t.notificationsPage} /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice}/>;
+            case 'bookings': return loggedInProvider ? <NotificationsPage notifications={notifications.filter(n => n.providerId === loggedInProvider.id)} onMarkAsRead={handleMarkNotificationAsRead} onBack={handleBackToProviderDashboard} t={t.notificationsPage} /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice}/>;
             case 'massageTypes': return <MassageTypesPage onBack={handleBackToHome} />;
             // case 'hotelLogin': return <HotelLoginPage onHotelLogin={handleHotelLogin} onBack={handleBackToHome} />;
             case 'hotelDashboard': return isHotelLoggedIn ? <HotelDashboardPage onLogout={handleHotelLogout} /> : null;
@@ -671,9 +681,11 @@ const App: React.FC = () => {
     };
     
     // Determine user role for footer
-    const getUserRole = (): 'user' | 'therapist' | 'place' | null => {
-        if (!loggedInProvider) return null;
-        return loggedInProvider.type;
+    const getUserRole = (): 'user' | 'therapist' | 'place' | 'admin' | 'hotel' | 'villa' | 'agent' | null => {
+        if (loggedInUser) return loggedInUser.type;
+        if (loggedInProvider) return loggedInProvider.type;
+        if (user) return 'user';
+        return null;
     };
 
     // Calculate unread notifications for providers
@@ -691,11 +703,65 @@ const App: React.FC = () => {
         ? notifications.some(n => n.providerId === loggedInProvider.id && !n.isRead && n.message.includes('WhatsApp'))
         : false;
 
-        const showFooter = ['home', 'therapistStatus', 'therapistDashboard', 'placeDashboard'].includes(page);
+    // Determine if footer should be shown
+    const pagesWithoutFooter = ['landing', 'auth', 'adminLogin', 'unifiedLogin', 'therapistLogin', 'hotelLogin', 'villaLogin', 
+                                 'adminAuth', 'therapistLogin', 'placeLogin', 'agentLogin'];
+    const showFooter = !pagesWithoutFooter.includes(page);
+
+    // Footer navigation handlers
+    const handleFooterHome = () => {
+        if (loggedInUser) {
+            switch(loggedInUser.type) {
+                case 'admin': setPage('adminDashboard'); break;
+                case 'hotel': setPage('hotelDashboard'); break;
+                case 'villa': setPage('villaDashboard'); break;
+                case 'agent': setPage('agentDashboard'); break;
+            }
+        } else if (loggedInProvider) {
+            setPage(loggedInProvider.type === 'therapist' ? 'therapistStatus' : 'placeDashboard');
+        } else {
+            setPage('home');
+        }
+    };
+
+    const handleFooterDashboard = () => {
+        if (loggedInUser) {
+            switch(loggedInUser.type) {
+                case 'admin': setPage('adminDashboard'); break;
+                case 'hotel': setPage('hotelDashboard'); break;
+                case 'villa': setPage('villaDashboard'); break;
+                case 'agent': setPage('agentDashboard'); break;
+            }
+        } else if (loggedInProvider) {
+            setPage(loggedInProvider.type === 'therapist' ? 'therapistDashboard' : 'placeDashboard');
+        }
+    };
+
+    const handleFooterProfile = () => {
+        if (loggedInProvider) {
+            setPage(loggedInProvider.type === 'therapist' ? 'therapistDashboard' : 'placeDashboard');
+        }
+    };
+
+    const handleFooterMenu = () => {
+        // Handle menu/settings navigation
+        if (loggedInUser?.type === 'hotel' || loggedInUser?.type === 'villa') {
+            // Navigate to QR menu builder
+            setPage('home'); // Replace with actual QR menu page when created
+        }
+    };
+
+    const handleFooterSearch = () => {
+        setPage('home');
+    };
+
+    // Pages that need full screen without container
+    const fullScreenPages = ['therapistLogin', 'landing'];
+    const isFullScreen = fullScreenPages.includes(page);
 
     return (
-        <div className="max-w-md mx-auto min-h-screen bg-white shadow-lg flex flex-col">
-            <div className="flex-grow pb-16">
+        <div className={isFullScreen ? "min-h-screen flex flex-col" : "max-w-md mx-auto min-h-screen bg-white shadow-lg flex flex-col"}>
+            <div className={isFullScreen ? "flex-grow" : "flex-grow pb-16"}>
                 {renderPage()}
             </div>
             {showFooter && (
@@ -705,10 +771,13 @@ const App: React.FC = () => {
                     unreadNotifications={unreadNotifications}
                     hasNewBookings={hasNewBookings}
                     hasWhatsAppClick={hasWhatsAppClick}
-                    onHomeClick={() => setPage(loggedInProvider ? (loggedInProvider.type === 'therapist' ? 'therapistStatus' : 'placeDashboard') : 'home')}
+                    onHomeClick={handleFooterHome}
                     onNotificationsClick={() => setPage('notifications')}
                     onBookingsClick={() => setPage('bookings')}
-                    onProfileClick={() => setPage(loggedInProvider ? (loggedInProvider.type === 'therapist' ? 'therapistDashboard' : 'placeDashboard') : 'home')}
+                    onProfileClick={handleFooterProfile}
+                    onDashboardClick={handleFooterDashboard}
+                    onMenuClick={handleFooterMenu}
+                    onSearchClick={handleFooterSearch}
                     t={t} 
                 />
             )}

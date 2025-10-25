@@ -24,3 +24,9 @@ export const PLACE_SERVICES = [
     'Acupressure', 'Reflexology', 'Aromatherapy', 'Yoga & Pilates', 
     'Cupping Therapy', 'Physical Therapy', 'Sauna', 'Jacuzzi', 'Steam Room'
 ];
+
+export const ADDITIONAL_SERVICES = [
+    'Facials', 'Body Scrubs', 'Body Wraps', 'Hair Salon', 'Beautician', 
+    'Acupressure', 'Reflexology', 'Aromatherapy', 'Yoga & Pilates', 
+    'Cupping Therapy', 'Physical Therapy', 'Sauna', 'Jacuzzi', 'Steam Room'
+];

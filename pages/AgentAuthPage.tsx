@@ -140,12 +140,6 @@ const AgentAuthPage: React.FC<AgentAuthPageProps> = ({ onRegister, onLogin, onBa
                                 {switchText}
                             </button>
                         </div>
-                        
-                        <div className="text-center">
-                            <p className="text-sm text-white/70">
-                                Demo: agent@example.com / password123
-                            </p>
-                        </div>
                     </form>
                 </div>
             </div>

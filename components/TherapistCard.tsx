@@ -130,25 +130,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook
                     alt={`${therapist.name} cover`} 
                     className="w-full h-full object-cover"
                 />
-                {/* Verified Pro Badge - Top Left Corner */}
-                {/* Badge requirements: */}
-                {/* 1. 3+ months active membership (cumulative) */}
-                {/* 2. 4.0+ star rating */}
-                {/* 3. Active membership OR within 5-day grace period */}
-                {/* Badge resets if membership lapses beyond 5-day grace period */}
-                {((therapist.totalActiveMembershipMonths ?? 0) >= 3 && 
-                  (therapist.rating ?? 0) >= 4.0 && 
-                  (therapist.badgeEligible ?? false)) && (
-                    <div className="absolute top-2 left-2 flex items-center gap-1 bg-black/70 backdrop-blur-md rounded-full px-3 py-1.5 shadow-lg">
-                        <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
-                        </svg>
-                        <span className="font-semibold text-white text-xs">Verified Pro</span>
-                    </div>
-                )}
-                {/* Star Rating - Top Right Corner of Main Image */}
+                {/* Star Rating - Top Left Corner */}
                 <div 
-                    className="absolute top-2 right-2 flex items-center gap-1 bg-black/70 backdrop-blur-md rounded-full px-3 py-1.5 shadow-lg cursor-pointer"
+                    className="absolute top-2 left-2 flex items-center gap-1 bg-black/70 backdrop-blur-md rounded-full px-3 py-1.5 shadow-lg cursor-pointer"
                     onClick={() => onRate(therapist)}
                     aria-label={`Rate ${therapist.name}`}
                     role="button"
@@ -157,6 +141,22 @@ const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook
                     <span className="font-bold text-white text-sm">{(therapist.rating || 0).toFixed(1)}</span>
                     <span className="text-xs text-gray-300">({therapist.reviewCount || 0})</span>
                 </div>
+                
+                {/* Qualified Therapist Badge - Top Right Corner */}
+                {/* Badge requirements: */}
+                {/* 1. 3+ consecutive months of paid membership */}
+                {/* 2. 4.0+ star rating */}
+                {/* 3. Max 5-day grace period between renewals */}
+                {((therapist.totalActiveMembershipMonths ?? 0) >= 3 && 
+                  (therapist.rating ?? 0) >= 4.0 && 
+                  (therapist.badgeEligible ?? false)) && (
+                    <div className="absolute top-2 right-2 flex items-center gap-1 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full px-3 py-1.5 shadow-lg">
+                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
+                        </svg>
+                        <span className="font-semibold text-white text-xs">Qualified</span>
+                    </div>
+                )}
             </div>
             
             {/* Profile Picture - Positioned below banner, overlapping */}
@@ -253,7 +253,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook
                 </button>
                  <button 
                     onClick={() => onBook(therapist)} 
-                    className="w-1/2 flex items-center justify-center gap-2 bg-brand-orange text-white font-bold py-3 px-4 rounded-lg hover:bg-orange-600 transition-colors duration-300"
+                    className="w-1/2 flex items-center justify-center gap-2 bg-orange-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-orange-600 transition-colors duration-300"
                 >
                     <CalendarIcon className="w-5 h-5"/>
                     <span>Schedule</span>

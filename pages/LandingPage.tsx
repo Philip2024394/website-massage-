@@ -3,12 +3,11 @@ import Button from '../components/Button';
 
 interface LandingPageProps {
     onLanguageSelect: (lang: 'en' | 'id') => void;
-    onJoinClick?: () => void;
 }
 
 const imageSrc = 'https://ik.imagekit.io/7grri5v7d/indo%20street%20massage.png?updatedAt=1760119669463';
 
-const LandingPage: React.FC<LandingPageProps> = ({ onLanguageSelect, onJoinClick }) => {
+const LandingPage: React.FC<LandingPageProps> = ({ onLanguageSelect }) => {
     const [imageLoaded, setImageLoaded] = useState(false);
 
     useEffect(() => {
@@ -31,31 +30,22 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLanguageSelect, onJoinClick
                     opacity: imageLoaded ? 1 : 0,
                 }}
             />
-            <div className="relative z-10 flex-grow flex flex-col items-center justify-center bg-black bg-opacity-50 text-white p-4 text-center">
-                                <h1 className="text-5xl font-bold">
-                                    <span className="text-white">Indo</span>
-                                    <span className="text-orange-400">Street</span>
-                                </h1>
-                <p className="text-xl mt-2 mb-12">Your personal wellness companion.</p>
+            <div className="relative z-10 flex-grow flex flex-col items-center justify-center bg-black bg-opacity-50 text-white p-4 sm:p-6 text-center">
+                <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold">
+                    <span className="text-white">Indo</span>
+                    <span className="text-orange-400">Street</span>
+                </h1>
+                <p className="text-lg sm:text-xl mt-2 mb-8 sm:mb-12 px-4">Your personal wellness companion.</p>
                 
-                <div className="w-full max-w-xs space-y-4">
-                    <h2 className="text-lg font-semibold">Please select your language:</h2>
+                <div className="w-full max-w-xs px-4 space-y-3 sm:space-y-4">
+                    <h2 className="text-base sm:text-lg font-semibold">Please select your language:</h2>
                     <Button onClick={() => onLanguageSelect('en')} variant="primary">English</Button>
                     <Button onClick={() => onLanguageSelect('id')} variant="primary">Bahasa Indonesia</Button>
                 </div>
-            </div>
-            
-            {/* Footer */}
-            <div className="absolute bottom-0 left-0 right-0 z-20 bg-black bg-opacity-70 text-white py-4">
-                <div className="text-center">
-                    <button
-                        onClick={onJoinClick}
-                        className="mb-3 px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-full font-semibold transition-colors duration-200"
-                    >
-                        Join IndoStreet
-                    </button>
-                    <p className="text-sm mb-2">© 2025 IndoStreet. All rights reserved.</p>
-                    <p className="text-xs text-gray-300">Your trusted home massage service platform</p>
+                
+                {/* Small copyright text */}
+                <div className="absolute bottom-4 left-0 right-0 text-center px-4">
+                    <p className="text-xs sm:text-sm text-gray-300">© 2025 IndoStreet. All rights reserved.</p>
                 </div>
             </div>
         </div>
