@@ -28,13 +28,60 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: true,
     minify: 'esbuild',
+    chunkSizeWarningLimit: 1000, // Increase limit to reduce warnings
     rollupOptions: {
       output: {
-        manualChunks: {
+        manualChunks: (id) => {
           // Split vendor chunks for better caching
-          vendor: ['react', 'react-dom'],
-          router: ['react-router-dom'],
-          ui: ['framer-motion', 'react-icons'],
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'vendor';
+            }
+            if (id.includes('react-router')) {
+              return 'router';
+            }
+            if (id.includes('framer-motion') || id.includes('react-icons') || id.includes('lucide-react')) {
+              return 'ui';
+            }
+            if (id.includes('appwrite')) {
+              return 'appwrite';
+            }
+            if (id.includes('qrcode')) {
+              return 'qrcode';
+            }
+            // Other node_modules go to vendor-misc
+            return 'vendor-misc';
+          }
+          
+          // Split analytics service into separate chunk
+          if (id.includes('services/analyticsService')) {
+            return 'analytics';
+          }
+          
+          // Split commission service into separate chunk
+          if (id.includes('services/commissionPaymentService')) {
+            return 'commission';
+          }
+          
+          // Split dashboard pages
+          if (id.includes('pages/HotelDashboardPage') || 
+              id.includes('pages/VillaDashboardPage')) {
+            return 'dashboard-hotel-villa';
+          }
+          
+          if (id.includes('pages/TherapistDashboardPage') || 
+              id.includes('pages/PlaceDashboardPage')) {
+            return 'dashboard-provider';
+          }
+          
+          if (id.includes('pages/AdminDashboardPage') || 
+              id.includes('pages/PlatformAnalyticsPage')) {
+            return 'dashboard-admin';
+          }
+          
+          if (id.includes('pages/AgentDashboardPage')) {
+            return 'dashboard-agent';
+          }
         },
       },
     },
