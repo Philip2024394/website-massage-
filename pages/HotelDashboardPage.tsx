@@ -2,12 +2,10 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { Building, Image as ImageIcon, Link as LinkIcon, LogOut, Menu, MessageSquare, Phone, QrCode, Star, Tag, User, Users, X } from 'lucide-react';
 import { Therapist, Place, HotelVillaServiceStatus } from '../types';
 import { parsePricing } from '../utils/appwriteHelpers';
-import ImageUpload from '../components/ImageUpload';
 import { analyticsService } from '../services/analyticsService';
 import { databases, ID } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 // import Header from '../components/dashboard/Header';
-import StatCard from '../components/dashboard/StatCard';
 import TabButton from '../components/dashboard/TabButton';
 import Section from '../components/dashboard/Section';
 
@@ -38,6 +36,18 @@ interface HotelDashboardPageProps {
 }
 
 const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, therapists = [], places = [], hotelId = '1' }) => {
+    // Therapist banner images pool for randomization (must be defined before useMemo)
+    const therapistBannerImages = [
+        'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?q=80&w=1200&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=1200&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1519823551278-64ac92734fb1?q=80&w=1200&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1600959907703-125ba1374a12?q=80&w=1200&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=1200&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=1200&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?q=80&w=1200&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=1200&auto=format&fit=crop',
+    ];
+
     const [activeTab, setActiveTab] = useState<'analytics' | 'discounts' | 'profile' | 'menu' | 'feedback' | 'concierge' | 'commissions'>('analytics');
     const [customWelcomeMessage, setCustomWelcomeMessage] = useState('Welcome to our exclusive wellness experience');
     const [selectedLanguage, setSelectedLanguage] = useState('en');
@@ -91,8 +101,8 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                 } catch (e) {
                     massageTypes = [];
                 }
-                // Get image - use existing or random from pool
-                let image = (type === 'therapist' ? (item as any).profilePicture : (item as any).mainImage) || placeholderImage;
+                // Get image - use mainImage for both therapists and places (same as home page)
+                let image = (item as any).mainImage || placeholderImage;
                 // If no image, assign random from banner pool
                 if (!image || image === placeholderImage) {
                     image = therapistBannerImages[Math.floor(Math.random() * therapistBannerImages.length)];
@@ -181,13 +191,6 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
         });
     }, [providers, mockProviders]);
 
-    const stats = useMemo(() => {
-        const count = providers.length;
-        const avg = count ? Math.round(providers.reduce((s, p) => s + p.discount, 0) / count) : 0;
-        const top = count ? Math.max(...providers.map(p => p.discount)) : 0;
-        return { partners: count, avgDiscount: avg, topDiscount: top };
-    }, [providers]);
-
     // Hotel profile / shared menu header data (local preview)
     const [mainImage, setMainImage] = useState<string | null>(null);
     const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -199,18 +202,6 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
     const [qrLink, setQrLink] = useState('');
     const [previewOpen, setPreviewOpen] = useState(false);
     const [showLandingPage, setShowLandingPage] = useState(true);
-
-    // Therapist banner images pool for randomization
-    const therapistBannerImages = [
-        'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?q=80&w=1200&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=1200&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1519823551278-64ac92734fb1?q=80&w=1200&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1600959907703-125ba1374a12?q=80&w=1200&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=1200&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=1200&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?q=80&w=1200&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=1200&auto=format&fit=crop',
-    ];
 
     // Generate unique QR link for this hotel
     useEffect(() => {

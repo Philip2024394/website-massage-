@@ -67,13 +67,6 @@ const statusStyles: { [key in AvailabilityStatus]: { text: string; bg: string; d
 const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook, onIncrementAnalytics }) => {
     const [showBusyModal, setShowBusyModal] = useState(false);
     
-    // Debug: Log profile picture URL
-    console.log('🎴 TherapistCard rendering for:', therapist.name);
-    console.log('📸 ProfilePicture URL:', therapist.profilePicture);
-    console.log('📸 URL Length:', therapist.profilePicture?.length);
-    console.log('📸 Is Valid URL:', therapist.profilePicture?.startsWith('http'));
-    console.log('📊 Status:', therapist.status);
-    
     // Map any status value to valid AvailabilityStatus
     let validStatus = AvailabilityStatus.Offline;
     const statusStr = String(therapist.status || '');
@@ -163,15 +156,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook
             <div className="absolute top-40 left-4 z-10">
                 <img 
                     className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg bg-gray-100" 
-                    src={therapist.profilePicture || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="80" height="80"%3E%3Crect fill="%23e5e7eb" width="80" height="80"/%3E%3Cpath fill="%239ca3af" d="M40 20c5.5 0 10 4.5 10 10s-4.5 10-10 10-10-4.5-10-10 4.5-10 10-10zm0 26c6.7 0 20 3.4 20 10v4H20v-4c0-6.6 13.3-10 20-10z"/%3E%3C/svg%3E'} 
+                    src={(therapist.profilePicture && therapist.profilePicture.startsWith('http')) ? therapist.profilePicture : 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="80" height="80"%3E%3Crect fill="%23e5e7eb" width="80" height="80"/%3E%3Cpath fill="%239ca3af" d="M40 20c5.5 0 10 4.5 10 10s-4.5 10-10 10-10-4.5-10-10 4.5-10 10-10zm0 26c6.7 0 20 3.4 20 10v4H20v-4c0-6.6 13.3-10 20-10z"/%3E%3C/svg%3E'} 
                     alt={therapist.name}
-                    onLoad={() => {
-                        console.log('✅ Image loaded successfully for:', therapist.name);
-                    }}
                     onError={(e) => {
-                        console.error('❌ Failed to load profile image for:', therapist.name);
-                        console.error('❌ Image URL was:', therapist.profilePicture);
-                        console.error('❌ Error event:', e);
                         e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="80" height="80"%3E%3Crect fill="%23e5e7eb" width="80" height="80"/%3E%3Cpath fill="%239ca3af" d="M40 20c5.5 0 10 4.5 10 10s-4.5 10-10 10-10-4.5-10-10 4.5-10 10-10zm0 26c6.7 0 20 3.4 20 10v4H20v-4c0-6.6 13.3-10 20-10z"/%3E%3C/svg%3E';
                     }}
                 />

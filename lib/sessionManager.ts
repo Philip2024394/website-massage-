@@ -51,21 +51,25 @@ export async function restoreSession(): Promise<SessionUser | null> {
  */
 async function determineUserType(userId: string, email: string): Promise<SessionUser | null> {
     try {
-        // Check Admin
-        const admins = await databases.listDocuments(
-            DATABASE_ID,
-            COLLECTIONS.ADMINS,
-            [Query.equal('email', email)]
-        );
-        if (admins.documents.length > 0) {
-            const admin = admins.documents[0];
-            return {
-                type: 'admin',
-                id: userId,
-                email,
-                documentId: admin.$id,
-                data: admin
-            };
+        // Check Admin (with error handling for missing collection)
+        try {
+            const admins = await databases.listDocuments(
+                DATABASE_ID,
+                COLLECTIONS.ADMINS || 'admins_collection_id',
+                [Query.equal('email', email)]
+            );
+            if (admins.documents.length > 0) {
+                const admin = admins.documents[0];
+                return {
+                    type: 'admin',
+                    id: userId,
+                    email,
+                    documentId: admin.$id,
+                    data: admin
+                };
+            }
+        } catch (adminError: any) {
+            console.warn('⚠️ Admins collection not found, skipping admin check');
         }
 
         // Check Hotels

@@ -1,4 +1,4 @@
-// Main image URLs for therapist cards (17 images total)
+// Main image URLs for therapist cards on HOME PAGE (keep original)
 const THERAPIST_MAIN_IMAGES = [
     'https://ik.imagekit.io/7grri5v7d/hotel%20massage%20indoniseas.png?updatedAt=1761154913720',
     'https://ik.imagekit.io/7grri5v7d/massage%20room.png?updatedAt=1760975249566',
@@ -20,9 +20,25 @@ const THERAPIST_MAIN_IMAGES = [
     'https://ik.imagekit.io/7grri5v7d/massage%20image%201.png?updatedAt=1760186885261',
 ];
 
-// Helper function to get main image sequentially (shows each URL once before cycling)
+// Live menu image URLs for hotel/villa therapist cards (7 images - random selection)
+const LIVE_MENU_THERAPIST_IMAGES = [
+    'https://ik.imagekit.io/7grri5v7d/massage%20image%2015.png?updatedAt=1760187650860',
+    'https://ik.imagekit.io/7grri5v7d/massage%20image%2014.png?updatedAt=1760187606823',
+    'https://ik.imagekit.io/7grri5v7d/massage%20image%2012.png?updatedAt=1760187511503',
+    'https://ik.imagekit.io/7grri5v7d/massage%20image%2011.png?updatedAt=1760187471233',
+    'https://ik.imagekit.io/7grri5v7d/massage%20image%209.png?updatedAt=1760187266868',
+    'https://ik.imagekit.io/7grri5v7d/massage%20image%206.png?updatedAt=1760187126997',
+    'https://ik.imagekit.io/7grri5v7d/massage%20image%202.png?updatedAt=1760186944882',
+];
+
+// Helper function to get main image sequentially for home page
 const getRandomMainImage = (index: number): string => {
     return THERAPIST_MAIN_IMAGES[index % THERAPIST_MAIN_IMAGES.length];
+};
+
+// Helper function to get random live menu image
+export const getRandomLiveMenuImage = (): string => {
+    return LIVE_MENU_THERAPIST_IMAGES[Math.floor(Math.random() * LIVE_MENU_THERAPIST_IMAGES.length)];
 };
 
 // --- Image Upload Service ---

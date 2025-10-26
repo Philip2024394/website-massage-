@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import type { Therapist, Place } from '../types';
 import PlaceCard from '../components/PlaceCard';
 import TherapistCard from '../components/TherapistCard';
+import { getRandomLiveMenuImage } from '../lib/appwriteService';
 
 interface VenueProfile {
     id: string;
@@ -47,8 +48,14 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
         setLoading(false);
     }, [venueId]);
 
-    // Filter only live providers
-    const liveTherapists = therapists.filter(t => t.isLive);
+    // Filter only live providers and add random live menu images
+    const liveTherapists = useMemo(() => {
+        return therapists.filter(t => t.isLive).map(therapist => ({
+            ...therapist,
+            mainImage: (therapist as any).mainImage || getRandomLiveMenuImage()
+        }));
+    }, [therapists]);
+    
     const livePlaces = places.filter(p => p.isLive);
 
     if (loading) {

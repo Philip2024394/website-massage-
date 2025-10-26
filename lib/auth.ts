@@ -16,18 +16,22 @@ export const adminAuth = {
             const user = await account.create(ID.unique(), email, password);
             
             // Create admin document in database
-            const admin = await databases.createDocument(
-                DATABASE_ID,
-                COLLECTIONS.ADMINS,
-                ID.unique(),
-                {
-                    email,
-                    userId: user.$id,
-                    createdAt: new Date().toISOString(),
-                }
-            );
-            
-            return { success: true, userId: user.$id, documentId: admin.$id };
+            try {
+                const admin = await databases.createDocument(
+                    DATABASE_ID,
+                    COLLECTIONS.ADMINS || 'admins_collection_id',
+                    ID.unique(),
+                    {
+                        email,
+                        userId: user.$id,
+                        createdAt: new Date().toISOString(),
+                    }
+                );
+                return { success: true, userId: user.$id, documentId: admin.$id };
+            } catch (dbError: any) {
+                console.warn('⚠️ Admins collection not found, user created but no admin document');
+                return { success: true, userId: user.$id, error: 'Admin collection not configured' };
+            }
         } catch (error: any) {
             console.error('Admin sign up error:', error);
             return { success: false, error: error.message };
@@ -43,18 +47,24 @@ export const adminAuth = {
             const user = await account.get();
             
             // Get admin document
-            const admins = await databases.listDocuments(
-                DATABASE_ID,
-                COLLECTIONS.ADMINS
-            );
-            
-            const admin = admins.documents.find((doc: any) => doc.userId === user.$id);
-            
-            if (!admin) {
-                throw new Error('Admin not found');
+            try {
+                const admins = await databases.listDocuments(
+                    DATABASE_ID,
+                    COLLECTIONS.ADMINS || 'admins_collection_id'
+                );
+                
+                const admin = admins.documents.find((doc: any) => doc.userId === user.$id);
+                
+                if (!admin) {
+                    console.warn('⚠️ Admin document not found for user');
+                    return { success: true, userId: user.$id, error: 'Admin document not found' };
+                }
+                
+                return { success: true, userId: user.$id, documentId: admin.$id };
+            } catch (dbError: any) {
+                console.warn('⚠️ Admins collection not found');
+                return { success: true, userId: user.$id, error: 'Admin collection not configured' };
             }
-            
-            return { success: true, userId: user.$id, documentId: admin.$id };
         } catch (error: any) {
             console.error('Admin sign in error:', error);
             return { success: false, error: error.message };

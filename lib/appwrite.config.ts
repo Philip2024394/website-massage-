@@ -8,6 +8,7 @@ export const APPWRITE_CONFIG = {
     
     // Collection IDs from your Appwrite database
     collections: {
+        admins: 'admins_collection_id',
         therapists: 'therapists_collection_id',
         places: 'places_collection_id',
         agents: 'agents_collection_id',

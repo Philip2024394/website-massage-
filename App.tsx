@@ -93,6 +93,7 @@ const App: React.FC = () => {
             console.log('🏠 HomePage: Fetched therapists:', therapistsData?.length);
             therapistsData?.forEach((t: any) => {
                 console.log(`  👤 ${t.name}:`, {
+                    mainImage: t.mainImage?.substring(0, 60) + '...',
                     profilePicture: t.profilePicture?.substring(0, 60) + '...',
                     isLive: t.isLive,
                     id: t.id || t.$id
