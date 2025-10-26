@@ -344,27 +344,34 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         </div>
 
                         {/* Custom Welcome Message */}
-                        <div className="mt-8 p-6 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border border-purple-100">
-                            <div className="flex items-center gap-2 mb-4">
-                                <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-                                    <MessageSquare className="w-5 h-5 text-purple-600" />
+                        <div className="mt-8 p-6 bg-gradient-to-br from-gray-900 via-gray-800 to-black rounded-xl border border-orange-500/30 backdrop-blur-sm shadow-2xl relative overflow-hidden">
+                            {/* Glass effect overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent pointer-events-none"></div>
+                            
+                            <div className="relative z-10">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg ring-2 ring-orange-500/20">
+                                        <MessageSquare className="w-6 h-6 text-white" />
+                                    </div>
+                                    <h3 className="text-xl font-bold bg-gradient-to-r from-orange-400 to-orange-200 bg-clip-text text-transparent">
+                                        Custom Welcome Message
+                                    </h3>
                                 </div>
-                                <h3 className="text-lg font-bold text-gray-900">Custom Welcome Message</h3>
-                            </div>
-                            <p className="text-sm text-gray-600 mb-4">
-                                Create a personalized greeting that appears on your guest menu. Make your guests feel special with a warm, customized welcome.
-                            </p>
-                            <textarea
-                                className="w-full p-4 border border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 min-h-[100px]"
-                                placeholder="e.g., Welcome to Paradise Resort! Enjoy exclusive wellness services designed just for you..."
-                                value={customWelcomeMessage}
-                                onChange={(e) => setCustomWelcomeMessage(e.target.value)}
-                            />
-                            <div className="mt-3 flex items-center justify-between">
-                                <span className="text-xs text-gray-500">{customWelcomeMessage.length} / 500 characters</span>
-                                <button className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors">
-                                    Preview Message
-                                </button>
+                                <p className="text-sm text-gray-300 mb-4 leading-relaxed">
+                                    Create a personalized greeting that appears on your guest menu. Make your guests feel special with a warm, customized welcome.
+                                </p>
+                                <textarea
+                                    className="w-full p-4 bg-white/5 backdrop-blur-md border border-orange-500/30 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 min-h-[100px] text-white placeholder-gray-400 shadow-inner"
+                                    placeholder="e.g., Welcome to Paradise Resort! Enjoy exclusive wellness services designed just for you..."
+                                    value={customWelcomeMessage}
+                                    onChange={(e) => setCustomWelcomeMessage(e.target.value)}
+                                />
+                                <div className="mt-4 flex items-center justify-between">
+                                    <span className="text-xs text-gray-400 font-medium">{customWelcomeMessage.length} / 500 characters</span>
+                                    <button className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg text-sm font-semibold hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-orange-500/50 transform hover:scale-105">
+                                        Preview Message
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
