@@ -22,6 +22,7 @@ export const COLLECTIONS = {
     BOOKINGS: 'BOOKINGS_COLLECTION_ID',
     REVIEWS: 'REVIEWS_COLLECTION_ID',
     ANALYTICS: 'analytics',
+    ANALYTICS_EVENTS: 'analytics_events',
     ADMINS: 'admins',
     HOTELS: 'HOTELS_COLLECTION_ID',
     VILLAS: 'villas',

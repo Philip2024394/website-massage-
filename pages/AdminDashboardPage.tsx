@@ -7,14 +7,15 @@ import ConfirmTherapistsPage from './ConfirmTherapistsPage';
 import ConfirmPlacesPage from './ConfirmPlacesPage';
 import DrawerButtonsPage from './DrawerButtonsPage';
 import AgentCommissionPage from './AgentCommissionPage';
+import PlatformAnalyticsPage from './PlatformAnalyticsPage';
 import { authService } from '../lib/appwriteService';
 
 interface AdminDashboardPageProps {
     onLogout: () => void;
 }
-type DashboardPage = 'confirm-therapists' | 'confirm-places' | 'drawer-buttons' | 'agent-commission';
+type DashboardPage = 'platform-analytics' | 'confirm-therapists' | 'confirm-places' | 'drawer-buttons' | 'agent-commission';
 const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout'>> = ({ onLogout }) => {
-  const [activePage, setActivePage] = useState<DashboardPage>('confirm-therapists');
+  const [activePage, setActivePage] = useState<DashboardPage>('platform-analytics');
 
   useEffect(() => {
     // Initialize anonymous session for Appwrite access
@@ -33,6 +34,7 @@ const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout'>> = 
       <DashboardHeader onLogout={onLogout} />
       <TopNav active={activePage} onNavigate={setActivePage} />
       <main className="max-w-5xl mx-auto px-4 py-8">
+        {activePage === 'platform-analytics' && <PlatformAnalyticsPage />}
         {activePage === 'confirm-therapists' && <ConfirmTherapistsPage />}
         {activePage === 'confirm-places' && <ConfirmPlacesPage />}
         {activePage === 'drawer-buttons' && <DrawerButtonsPage />}

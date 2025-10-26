@@ -1,12 +1,13 @@
 import React from 'react';
 
-type DashboardPage = 'confirm-therapists' | 'confirm-places' | 'drawer-buttons' | 'agent-commission';
+type DashboardPage = 'platform-analytics' | 'confirm-therapists' | 'confirm-places' | 'drawer-buttons' | 'agent-commission';
 interface TopNavProps {
   active: DashboardPage;
   onNavigate: (page: DashboardPage) => void;
 }
 
 const links: { label: string; page: DashboardPage }[] = [
+  { label: '📊 Platform Analytics', page: 'platform-analytics' },
   { label: 'Confirm Therapists', page: 'confirm-therapists' },
   { label: 'Confirm Places', page: 'confirm-places' },
   { label: 'Drawer Buttons', page: 'drawer-buttons' },
