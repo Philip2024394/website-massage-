@@ -51,10 +51,12 @@ interface EmployerJobPosting {
 
 interface BrowseJobsPageProps {
     onBack: () => void;
+    onPostJob: () => void;
     t: any;
 }
 
-const BrowseJobsPage: React.FC<BrowseJobsPageProps> = ({ onBack, t }) => {
+const BrowseJobsPage: React.FC<BrowseJobsPageProps> = ({ onBack, onPostJob, t }) => {
+    const [viewMode, setViewMode] = useState<'listed' | 'wanted'>('listed'); // Jobs Listed vs Jobs Wanted
     const [activeTab, setActiveTab] = useState<'therapists' | 'employers'>('therapists');
     const [therapistListings, setTherapistListings] = useState<TherapistJobListing[]>([]);
     const [employerPostings, setEmployerPostings] = useState<EmployerJobPosting[]>([]);
@@ -130,7 +132,7 @@ const BrowseJobsPage: React.FC<BrowseJobsPageProps> = ({ onBack, t }) => {
             {/* Header */}
             <header className="bg-white shadow-sm sticky top-0 z-10">
                 <div className="max-w-7xl mx-auto px-4 py-4">
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4 mb-4">
                         <button
                             onClick={onBack}
                             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -144,53 +146,63 @@ const BrowseJobsPage: React.FC<BrowseJobsPageProps> = ({ onBack, t }) => {
                             <p className="text-sm text-gray-600">Find therapists or post job openings</p>
                         </div>
                     </div>
-                </div>
-            </header>
 
-            {/* Tabs */}
-            <div className="bg-white border-b sticky top-[72px] z-10">
-                <div className="max-w-7xl mx-auto px-4">
-                    <div className="flex gap-8">
+                    {/* Toggle: Jobs Listed vs Jobs Wanted */}
+                    <div className="flex justify-center mb-4">
+                        <div className="inline-flex bg-gray-200 rounded-full p-1">
+                            <button
+                                onClick={() => setViewMode('listed')}
+                                className={`px-6 py-2 rounded-full font-medium transition-all ${
+                                    viewMode === 'listed'
+                                        ? 'bg-orange-500 text-white shadow-md'
+                                        : 'text-gray-600 hover:text-gray-900'
+                                }`}
+                            >
+                                Jobs Listed
+                            </button>
+                            <button
+                                onClick={() => setViewMode('wanted')}
+                                className={`px-6 py-2 rounded-full font-medium transition-all ${
+                                    viewMode === 'wanted'
+                                        ? 'bg-orange-500 text-white shadow-md'
+                                        : 'text-gray-600 hover:text-gray-900'
+                                }`}
+                            >
+                                Jobs Wanted
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Action Buttons: Massage Jobs & Massage Offers */}
+                    <div className="flex gap-3 justify-center">
                         <button
-                            onClick={() => setActiveTab('therapists')}
-                            className={`py-4 px-2 border-b-2 font-medium transition-colors ${
-                                activeTab === 'therapists'
-                                    ? 'border-orange-500 text-orange-600'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                            }`}
+                            onClick={onPostJob}
+                            className="flex items-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg shadow-md transition-colors"
                         >
-                            <span className="flex items-center gap-2">
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
-                                Available Therapists ({therapistListings.length})
-                            </span>
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                            Massage Jobs
                         </button>
                         <button
-                            onClick={() => setActiveTab('employers')}
-                            className={`py-4 px-2 border-b-2 font-medium transition-colors ${
-                                activeTab === 'employers'
-                                    ? 'border-blue-500 text-blue-600'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                            }`}
+                            onClick={onPostJob}
+                            className="flex items-center gap-2 px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-medium rounded-lg shadow-md transition-colors"
                         >
-                            <span className="flex items-center gap-2">
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                </svg>
-                                Job Openings ({employerPostings.length})
-                            </span>
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            Massage Offers
                         </button>
                     </div>
                 </div>
-            </div>
+            </header>
 
             {/* Search Bar */}
             <div className="max-w-7xl mx-auto px-4 py-6">
                 <div className="relative">
                     <input
                         type="text"
-                        placeholder={activeTab === 'therapists' ? 'Search therapists by name, skills, or location...' : 'Search jobs by company, title, or location...'}
+                        placeholder={viewMode === 'listed' ? 'Search employer job postings...' : 'Search available therapists...'}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full px-4 py-3 pl-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
@@ -208,7 +220,8 @@ const BrowseJobsPage: React.FC<BrowseJobsPageProps> = ({ onBack, t }) => {
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
                         <p className="text-gray-600 mt-4">Loading listings...</p>
                     </div>
-                ) : activeTab === 'therapists' ? (
+                ) : viewMode === 'wanted' ? (
+                    // Jobs Wanted - Show Therapist Listings
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredTherapistListings.map((listing) => (
                             <div key={listing.$id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
@@ -284,6 +297,7 @@ const BrowseJobsPage: React.FC<BrowseJobsPageProps> = ({ onBack, t }) => {
                         )}
                     </div>
                 ) : (
+                    // Jobs Listed - Show Employer Job Postings
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {filteredEmployerPostings.map((posting) => (
                             <div key={posting.$id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
