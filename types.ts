@@ -7,8 +7,19 @@ export enum AvailabilityStatus {
 export enum BookingStatus {
     Pending = 'Pending',
     Confirmed = 'Confirmed',
+    OnTheWay = 'OnTheWay',
     Cancelled = 'Cancelled',
-    Completed = 'Completed'
+    Completed = 'Completed',
+    TimedOut = 'TimedOut',
+    Reassigned = 'Reassigned'
+}
+
+export enum ProviderResponseStatus {
+    AwaitingResponse = 'AwaitingResponse',
+    Confirmed = 'Confirmed',
+    OnTheWay = 'OnTheWay',
+    Declined = 'Declined',
+    TimedOut = 'TimedOut'
 }
 
 export enum NotificationType {
@@ -275,6 +286,30 @@ export interface Booking {
     service: '60' | '90' | '120';
     startTime: string; // ISO string
     status: BookingStatus;
+    
+    // Hotel/Villa guest booking fields
+    guestName?: string;
+    roomNumber?: string;
+    hotelVillaId?: number;
+    hotelVillaName?: string;
+    guestLanguage?: string; // 'en', 'id', 'zh', 'ja', 'ko', 'ru', 'fr', 'de'
+    chargeToRoom?: boolean;
+    
+    // Provider response tracking
+    providerResponseStatus?: ProviderResponseStatus;
+    providerResponseTime?: string; // ISO string when provider confirmed/declined
+    confirmationDeadline?: string; // ISO string - 25 minutes from booking creation
+    
+    // Fallback system
+    isReassigned?: boolean;
+    originalProviderId?: number;
+    fallbackProviderIds?: number[]; // List of providers who were offered this booking
+    
+    // Timestamps
+    createdAt?: string;
+    confirmedAt?: string;
+    completedAt?: string;
+    cancelledAt?: string;
 }
 
 export interface Notification {
