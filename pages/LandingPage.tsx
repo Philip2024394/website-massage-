@@ -11,11 +11,16 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLanguageSelect }) => {
     const [imageLoaded, setImageLoaded] = useState(false);
 
     useEffect(() => {
+        console.log('🖼️ LandingPage: Attempting to load image:', imageSrc);
         const img = new Image();
         img.src = imageSrc;
-        img.onload = () => setImageLoaded(true);
-        img.onerror = () => {
-            console.error(`Failed to preload landing page image at: ${imageSrc}. It might be unavailable or blocked.`);
+        img.onload = () => {
+            console.log('✅ LandingPage: Image loaded successfully');
+            setImageLoaded(true);
+        };
+        img.onerror = (error) => {
+            console.error(`❌ LandingPage: Failed to load image at: ${imageSrc}`, error);
+            console.error('Image might be unavailable, blocked by CORS, or URL is incorrect.');
             // Fallback: if preloading fails, still try to show the page.
             setImageLoaded(true);
         };

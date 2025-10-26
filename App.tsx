@@ -720,6 +720,16 @@ const App: React.FC = () => {
                             onTherapistPortalClick={handleNavigateToTherapistLogin}
                             onMassagePlacePortalClick={handleNavigateToMassagePlaceLogin}
                             onAdminPortalClick={handleNavigateToAdminLogin}
+                            onBrowseJobsClick={() => setPage('browseJobs')}
+                            onEmployerJobPostingClick={() => setPage('employerJobPosting')}
+                            onMassageJobsClick={() => {
+                                console.log('🚀 App: Setting page to massageJobs');
+                                setPage('massageJobs');
+                            }}
+                            onTherapistJobsClick={() => {
+                                console.log('🚀 App: Setting page to therapistJobs');
+                                setPage('therapistJobs');
+                            }}
                             onTermsClick={handleNavigateToServiceTerms}
                             onPrivacyClick={handleNavigateToPrivacyPolicy}
                             isLoading={isLoading}
@@ -836,8 +846,14 @@ const App: React.FC = () => {
                         onAdminPortalClick={handleNavigateToAdminLogin}
                         onBrowseJobsClick={() => setPage('browseJobs')}
                         onEmployerJobPostingClick={() => setPage('employerJobPosting')}
-                        onMassageJobsClick={() => setPage('massageJobs')}
-                        onTherapistJobsClick={() => setPage('therapistJobs')}
+                        onMassageJobsClick={() => {
+                            console.log('🚀 App: Setting page to massageJobs');
+                            setPage('massageJobs');
+                        }}
+                        onTherapistJobsClick={() => {
+                            console.log('🚀 App: Setting page to therapistJobs');
+                            setPage('therapistJobs');
+                        }}
                         onTermsClick={handleNavigateToServiceTerms}
                         onPrivacyClick={handleNavigateToPrivacyPolicy}
                         isLoading={isLoading}

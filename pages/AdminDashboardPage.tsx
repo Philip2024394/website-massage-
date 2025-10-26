@@ -1,19 +1,21 @@
 
 
 import React, { useState, useEffect } from 'react';
-import { BarChart, Users, Building, Settings, Percent, LogOut } from 'lucide-react';
+import { BarChart, Users, Building, Settings, Percent, LogOut, CreditCard, DollarSign } from 'lucide-react';
 import ConfirmTherapistsPage from './ConfirmTherapistsPage';
 import ConfirmPlacesPage from './ConfirmPlacesPage';
 import DrawerButtonsPage from './DrawerButtonsPage';
 import AgentCommissionPage from './AgentCommissionPage';
 import PlatformAnalyticsPage from './PlatformAnalyticsPage';
+import BankDetailsManagementPage from './BankDetailsManagementPage';
+import PaymentTransactionsPage from './PaymentTransactionsPage';
 import { authService } from '../lib/appwriteService';
 import TabButton from '../components/dashboard/TabButton';
 
 interface AdminDashboardPageProps {
     onLogout: () => void;
 }
-type DashboardPage = 'platform-analytics' | 'confirm-therapists' | 'confirm-places' | 'drawer-buttons' | 'agent-commission';
+type DashboardPage = 'platform-analytics' | 'confirm-therapists' | 'confirm-places' | 'drawer-buttons' | 'agent-commission' | 'bank-details' | 'payment-transactions';
 const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout'>> = ({ onLogout }) => {
   const [activePage, setActivePage] = useState<DashboardPage>('platform-analytics');
 
@@ -70,16 +72,28 @@ const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout'>> = 
             onClick={() => setActivePage('confirm-places')}
           />
           <TabButton
-            icon={<Settings />}
-            label="Settings"
-            isActive={activePage === 'drawer-buttons'}
-            onClick={() => setActivePage('drawer-buttons')}
+            icon={<CreditCard />}
+            label="Bank Details"
+            isActive={activePage === 'bank-details'}
+            onClick={() => setActivePage('bank-details')}
+          />
+          <TabButton
+            icon={<DollarSign />}
+            label="Payments"
+            isActive={activePage === 'payment-transactions'}
+            onClick={() => setActivePage('payment-transactions')}
           />
           <TabButton
             icon={<Percent />}
             label="Commissions"
             isActive={activePage === 'agent-commission'}
             onClick={() => setActivePage('agent-commission')}
+          />
+          <TabButton
+            icon={<Settings />}
+            label="Settings"
+            isActive={activePage === 'drawer-buttons'}
+            onClick={() => setActivePage('drawer-buttons')}
           />
         </div>
       </nav>
@@ -89,6 +103,8 @@ const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout'>> = 
         {activePage === 'platform-analytics' && <PlatformAnalyticsPage />}
         {activePage === 'confirm-therapists' && <ConfirmTherapistsPage />}
         {activePage === 'confirm-places' && <ConfirmPlacesPage />}
+        {activePage === 'bank-details' && <BankDetailsManagementPage />}
+        {activePage === 'payment-transactions' && <PaymentTransactionsPage />}
         {activePage === 'drawer-buttons' && <DrawerButtonsPage />}
         {activePage === 'agent-commission' && <AgentCommissionPage />}
       </main>

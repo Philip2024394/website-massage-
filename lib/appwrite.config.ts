@@ -29,6 +29,8 @@ export const APPWRITE_CONFIG = {
         analyticsEvents: 'analytics_events',
         therapistJobListings: 'therapist_job_listings',
         employerJobPostings: 'employer_job_postings',
+        bankDetails: 'bank_details',
+        paymentTransactions: 'payment_transactions',
     },
     
     // Storage bucket ID
