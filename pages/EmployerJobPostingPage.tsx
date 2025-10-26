@@ -5,6 +5,13 @@ import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 
 const EmployerJobPostingPage: React.FC = () => {
     const [formData, setFormData] = useState({
+        jobTitle: 'Massage Therapist Position',
+        jobDescription: '',
+        employmentType: 'full-time' as 'full-time' | 'part-time' | 'contract' | 'freelance',
+        location: '',
+        salaryRangeMin: 0,
+        salaryRangeMax: 0,
+        applicationDeadline: '',
         businessName: '',
         businessType: 'hotel' as 'hotel' | 'spa' | 'wellness-center' | 'home-service' | 'resort' | 'other',
         contactPerson: '',
@@ -21,8 +28,10 @@ const EmployerJobPostingPage: React.FC = () => {
         workType: 'full-time' as 'full-time' | 'part-time' | 'contract',
         requirements: [] as string[],
         benefits: [] as string[],
-        jobDescription: '',
         startDate: '',
+        status: 'active',
+        views: 0,
+        applications: 0,
     });
 
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -69,7 +78,7 @@ const EmployerJobPostingPage: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
-        if (!formData.businessName || !formData.contactEmail || !formData.city) {
+        if (!formData.businessName || !formData.contactEmail || !formData.city || !formData.jobTitle || !formData.jobDescription) {
             alert('Please fill in all required fields.');
             return;
         }
@@ -81,11 +90,34 @@ const EmployerJobPostingPage: React.FC = () => {
                 APPWRITE_CONFIG.collections.employerJobPostings || 'employer_job_postings',
                 ID.unique(),
                 {
-                    ...formData,
+                    jobTitle: formData.jobTitle,
+                    jobDescription: formData.jobDescription,
+                    employmentType: formData.employmentType,
+                    location: formData.location || null,
+                    salaryRangeMin: formData.salaryRangeMin || null,
+                    salaryRangeMax: formData.salaryRangeMax || null,
+                    applicationDeadline: formData.applicationDeadline ? new Date(formData.applicationDeadline).toISOString() : null,
+                    businessName: formData.businessName,
+                    businessType: formData.businessType,
+                    contactPerson: formData.contactPerson,
+                    contactEmail: formData.contactEmail,
+                    contactPhone: formData.contactPhone || null,
+                    country: formData.country,
+                    city: formData.city,
+                    positionTitle: formData.positionTitle,
+                    numberOfPositions: formData.numberOfPositions,
+                    salaryMin: formData.salaryMin || null,
+                    salaryMax: formData.salaryMax || null,
+                    accommodationProvided: formData.accommodationProvided,
+                    accommodationDetails: formData.accommodationDetails || null,
+                    workType: formData.workType,
+                    requirements: formData.requirements,
+                    benefits: formData.benefits,
+                    startDate: formData.startDate || null,
                     postedDate: new Date().toISOString(),
-                    status: 'active',
-                    views: 0,
-                    applications: 0,
+                    status: formData.status || null,
+                    views: formData.views,
+                    applications: formData.applications,
                 }
             );
 
@@ -143,6 +175,108 @@ const EmployerJobPostingPage: React.FC = () => {
 
             <div className="max-w-4xl mx-auto px-4 py-6">
                 <form onSubmit={handleSubmit} className="space-y-6">
+                    {/* Job Information */}
+                    <div className="bg-white border-2 border-gray-200 rounded-xl p-6 space-y-4">
+                        <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                            <Briefcase className="w-5 h-5 text-orange-500" />
+                            Job Information
+                        </h2>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-900 mb-2">
+                                Job Title *
+                            </label>
+                            <input
+                                type="text"
+                                required
+                                value={formData.jobTitle}
+                                onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
+                                placeholder="e.g., Massage Therapist"
+                                maxLength={128}
+                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-900 mb-2">
+                                Job Description * (Max 1000 characters)
+                            </label>
+                            <textarea
+                                required
+                                value={formData.jobDescription}
+                                onChange={(e) => setFormData({ ...formData, jobDescription: e.target.value.slice(0, 1000) })}
+                                placeholder="Describe the role, responsibilities, and requirements..."
+                                rows={6}
+                                maxLength={1000}
+                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                            />
+                            <p className="text-xs text-gray-500 mt-1">{formData.jobDescription.length}/1000 characters</p>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-900 mb-2">
+                                Employment Type *
+                            </label>
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                {(['full-time', 'part-time', 'contract', 'freelance'] as const).map((type) => (
+                                    <button
+                                        key={type}
+                                        type="button"
+                                        onClick={() => setFormData({ ...formData, employmentType: type })}
+                                        className={`px-4 py-3 rounded-lg font-medium transition-all capitalize ${
+                                            formData.employmentType === type
+                                                ? 'bg-orange-500 text-white'
+                                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                        }`}
+                                    >
+                                        {type.replace('-', ' ')}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="grid sm:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-900 mb-2">
+                                    Salary Range Min (Rp)
+                                </label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    value={formData.salaryRangeMin || ''}
+                                    onChange={(e) => setFormData({ ...formData, salaryRangeMin: parseInt(e.target.value) || 0 })}
+                                    placeholder="e.g., 5000000"
+                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-900 mb-2">
+                                    Salary Range Max (Rp)
+                                </label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    value={formData.salaryRangeMax || ''}
+                                    onChange={(e) => setFormData({ ...formData, salaryRangeMax: parseInt(e.target.value) || 0 })}
+                                    placeholder="e.g., 8000000"
+                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-900 mb-2">
+                                Application Deadline (Optional)
+                            </label>
+                            <input
+                                type="date"
+                                value={formData.applicationDeadline}
+                                onChange={(e) => setFormData({ ...formData, applicationDeadline: e.target.value })}
+                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                            />
+                        </div>
+                    </div>
+
                     {/* Business Information */}
                     <div className="bg-white border-2 border-gray-200 rounded-xl p-6 space-y-4">
                         <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
