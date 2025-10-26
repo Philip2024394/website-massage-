@@ -35,7 +35,7 @@ const HotelVillaOptIn: React.FC<HotelVillaOptInProps> = ({
 
     const handleUpdateDiscounts = () => {
         if (localHotelDiscount < 20 || localVillaDiscount < 20) {
-            alert('Minimum discount is 20% for both hotel and villa services');
+            alert('Minimum commission rate is 20% for both hotel and villa services. You can offer higher rates to attract more bookings.');
             return;
         }
         if (localServiceRadius < 7) {
@@ -52,7 +52,7 @@ const HotelVillaOptIn: React.FC<HotelVillaOptInProps> = ({
             <div className="mb-6">
                 <div className="mb-4">
                     <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">Hotel & Villa Services</h3>
-                    <p className="text-sm text-gray-600">Offer your services to hotel and villa guests with special discounts</p>
+                    <p className="text-sm text-gray-600">Set your commission rate for hotel and villa partnerships (minimum 20%, you can offer higher)</p>
                 </div>
                 <div className="flex items-center justify-between bg-gray-50 p-4 rounded-lg">
                     <span className={`text-sm font-medium ${isOptedIn ? 'text-green-600' : 'text-gray-500'}`}>
@@ -78,7 +78,7 @@ const HotelVillaOptIn: React.FC<HotelVillaOptInProps> = ({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="bg-orange-50 p-4 rounded-lg">
                             <div className="flex items-center justify-between mb-2">
-                                <h4 className="font-medium text-gray-800">Hotel Discount</h4>
+                                <h4 className="font-medium text-gray-800">Hotel Commission</h4>
                                 <span className="text-2xl font-bold text-orange-600">{localHotelDiscount}%</span>
                             </div>
                             {isEditing ? (
@@ -97,13 +97,13 @@ const HotelVillaOptIn: React.FC<HotelVillaOptInProps> = ({
                                     </div>
                                 </div>
                             ) : (
-                                <p className="text-sm text-gray-600">Discount for hotel guests</p>
+                                <p className="text-sm text-gray-600">Commission you pay to hotels</p>
                             )}
                         </div>
 
                         <div className="bg-blue-50 p-4 rounded-lg">
                             <div className="flex items-center justify-between mb-2">
-                                <h4 className="font-medium text-gray-800">Villa Discount</h4>
+                                <h4 className="font-medium text-gray-800">Villa Commission</h4>
                                 <span className="text-2xl font-bold text-blue-600">{localVillaDiscount}%</span>
                             </div>
                             {isEditing ? (
@@ -122,7 +122,7 @@ const HotelVillaOptIn: React.FC<HotelVillaOptInProps> = ({
                                     </div>
                                 </div>
                             ) : (
-                                <p className="text-sm text-gray-600">Discount for villa guests</p>
+                                <p className="text-sm text-gray-600">Commission you pay to villas</p>
                             )}
                         </div>
                     </div>
@@ -164,6 +164,7 @@ const HotelVillaOptIn: React.FC<HotelVillaOptInProps> = ({
                                 <li>Exclusive partnerships with premium properties</li>
                                 <li>Higher booking volume potential</li>
                                 <li>Access to QR code menu systems</li>
+                                <li>You set your own commission rate (20% minimum, higher rates may attract more partnerships)</li>
                             </ul>
                         </div>
                         <div className="flex flex-col sm:flex-row gap-2">
@@ -187,7 +188,7 @@ const HotelVillaOptIn: React.FC<HotelVillaOptInProps> = ({
                                     onClick={() => setIsEditing(true)}
                                     className="w-full px-4 py-3 text-sm bg-orange-500 text-white rounded-md hover:bg-orange-600 font-medium"
                                 >
-                                    Edit Discounts
+                                    Edit Commission Rates
                                 </button>
                             )}
                         </div>
@@ -201,7 +202,7 @@ const HotelVillaOptIn: React.FC<HotelVillaOptInProps> = ({
                     <h4 className="text-lg font-medium text-gray-800 mb-2">Partner with Hotels & Villas</h4>
                     <p className="text-gray-600 mb-4 max-w-md mx-auto">
                         Join our exclusive network and offer your services to guests at premium hotels and villas. 
-                        Set your own discount rates (minimum 20%) and reach a wider audience.
+                        Set your commission rate (minimum 20%, you can offer higher to attract more partnerships) and reach a wider audience.
                     </p>
                     <button
                         onClick={handleToggleOptIn}

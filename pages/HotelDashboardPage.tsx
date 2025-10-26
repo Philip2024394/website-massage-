@@ -5,6 +5,7 @@ import { parsePricing } from '../utils/appwriteHelpers';
 import { analyticsService } from '../services/analyticsService';
 import { databases, ID } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
+import QRCodeGenerator from 'qrcode';
 // import Header from '../components/dashboard/Header';
 import TabButton from '../components/dashboard/TabButton';
 
@@ -201,6 +202,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
 
     const [qrOpen, setQrOpen] = useState(false);
     const [qrLink, setQrLink] = useState('');
+    const [qrCodeDataUrl, setQrCodeDataUrl] = useState('');
     const [previewOpen, setPreviewOpen] = useState(false);
     const [showLandingPage, setShowLandingPage] = useState(true);
 
@@ -210,6 +212,26 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
         const uniqueLink = `${baseUrl}/hotel/${hotelId}/menu`;
         setQrLink(uniqueLink);
     }, [hotelId]);
+
+    // Generate QR code when qrLink changes
+    useEffect(() => {
+        if (qrLink) {
+            QRCodeGenerator.toDataURL(qrLink, {
+                width: 400,
+                margin: 2,
+                color: {
+                    dark: '#000000',
+                    light: '#FFFFFF'
+                }
+            })
+            .then(url => {
+                setQrCodeDataUrl(url);
+            })
+            .catch(err => {
+                console.error('Error generating QR code:', err);
+            });
+        }
+    }, [qrLink]);
 
     // Load hotel profile data from Appwrite on mount
     useEffect(() => {
@@ -1205,7 +1227,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                                     </div>
                                     <div>
                                         <p className="text-xs text-gray-600">Avg Commission</p>
-                                        <h3 className="text-2xl font-bold text-gray-900">12%</h3>
+                                        <h3 className="text-2xl font-bold text-gray-900">20%</h3>
                                     </div>
                                 </div>
                                 <p className="text-sm text-gray-600">Per booking</p>
@@ -1234,10 +1256,10 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                                     </thead>
                                     <tbody>
                                         {[
-                                            { date: 'Oct 25, 2025', provider: 'Ayu Prameswari', service: '90 min', amount: 350000, rate: 12, commission: 42000, status: 'paid' },
-                                            { date: 'Oct 25, 2025', provider: 'Serenity Spa', service: '120 min', amount: 520000, rate: 12, commission: 62400, status: 'paid' },
-                                            { date: 'Oct 26, 2025', provider: 'Made Wijaya', service: '60 min', amount: 250000, rate: 12, commission: 30000, status: 'pending' },
-                                            { date: 'Oct 26, 2025', provider: 'Ayu Prameswari', service: '120 min', amount: 450000, rate: 12, commission: 54000, status: 'pending' },
+                                            { date: 'Oct 25, 2025', provider: 'Ayu Prameswari', service: '90 min', amount: 350000, rate: 20, commission: 70000, status: 'paid' },
+                                            { date: 'Oct 25, 2025', provider: 'Serenity Spa', service: '120 min', amount: 520000, rate: 20, commission: 104000, status: 'paid' },
+                                            { date: 'Oct 26, 2025', provider: 'Made Wijaya', service: '60 min', amount: 250000, rate: 20, commission: 50000, status: 'pending' },
+                                            { date: 'Oct 26, 2025', provider: 'Ayu Prameswari', service: '120 min', amount: 450000, rate: 20, commission: 90000, status: 'pending' },
                                         ].map((transaction, idx) => (
                                             <tr key={idx} className="border-b hover:bg-gray-50">
                                                 <td className="py-4 px-4 text-sm text-gray-600">{transaction.date}</td>
@@ -1268,7 +1290,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                                     <div>
                                         <p className="text-sm font-semibold text-gray-900">Commission Structure</p>
                                         <p className="text-xs text-gray-600 mt-1">
-                                            You earn <strong className="text-orange-600">12% commission</strong> on all completed bookings. Commissions are calculated automatically and paid out monthly. Pending commissions will be processed within 48 hours of service completion.
+                                            You earn <strong className="text-orange-600">20% commission</strong> on all completed bookings. Commissions are calculated automatically and paid immediately after each therapist completes their service with the guest.
                                         </p>
                                     </div>
                                 </div>
@@ -1287,7 +1309,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                 {/* Mobile: Hotel Name & Logo */}
                 <div className="flex items-center justify-between mb-2 sm:mb-0">
                     <h1 className="text-base sm:text-2xl font-bold text-gray-800">
-                        <span className="text-gray-900">Indo</span><span className="text-orange-500">street</span>
+                        <span className="text-gray-900">Inda</span><span className="text-orange-500">Street</span>
                     </h1>
                     <div className="flex items-center gap-1 sm:gap-4">
                         <button
@@ -1375,7 +1397,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
 
             {/* QR Modal */}
             {qrOpen && (
-                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setQrOpen(false)}>
+                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[9999] flex items-center justify-center p-4" onClick={() => setQrOpen(false)}>
                     <div className="bg-white rounded-3xl p-8 w-full max-w-lg shadow-2xl" onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-between items-center mb-6">
                             <div>
@@ -1388,11 +1410,17 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         </div>
                         <div className="flex flex-col items-center">
                             <div className="p-6 bg-gradient-to-br from-orange-50 to-white rounded-2xl border-4 border-orange-100 shadow-lg">
-                                <img 
-                                    src={`https://chart.googleapis.com/chart?chs=400x400&cht=qr&chl=${encodeURIComponent(qrLink)}&choe=UTF-8`} 
-                                    alt="QR code" 
-                                    className="w-64 h-64 md:w-80 md:h-80" 
-                                />
+                                {qrCodeDataUrl ? (
+                                    <img 
+                                        src={qrCodeDataUrl} 
+                                        alt="QR code" 
+                                        className="w-64 h-64 md:w-80 md:h-80" 
+                                    />
+                                ) : (
+                                    <div className="w-64 h-64 md:w-80 md:h-80 flex items-center justify-center">
+                                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+                                    </div>
+                                )}
                             </div>
                             <p className="text-xs text-gray-500 mt-4 text-center break-all bg-gray-50 p-3 rounded-lg max-w-full">
                                 {qrLink}
