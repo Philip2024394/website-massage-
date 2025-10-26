@@ -38,6 +38,7 @@ import { therapistService, placeService, agentService } from './lib/appwriteServ
 import GuestAlertsPage from './pages/GuestAlertsPage';
 import FloatingWebsiteButton from './components/FloatingWebsiteButton';
 import HotelVillaMenuPage from './pages/HotelVillaMenuPage';
+import { restoreSession, logout as sessionLogout, saveSessionCache } from './lib/sessionManager';
 
 type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistStatus' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'agentAuth' | 'agentDashboard' | 'agentTerms' | 'serviceTerms' | 'privacy' | 'membership' | 'booking' | 'bookings' | 'notifications' | 'massageTypes' | 'hotelLogin' | 'hotelDashboard' | 'villaLogin' | 'villaDashboard' | 'unifiedLogin' | 'therapistLogin' | 'massagePlaceLogin' | 'hotelVillaMenu';
 type Language = 'en' | 'id';
@@ -127,22 +128,86 @@ const App: React.FC = () => {
 
 
     useEffect(() => {
-        // Fetch public data on mount
-        fetchPublicData().catch(err => {
-            console.error('Error fetching initial data:', err);
-            setTherapists([]);
-            setPlaces([]);
-        });
+        // Initialize app: restore session and fetch data
+        const initializeApp = async () => {
+            console.log('🚀 Initializing app...');
+            
+            try {
+                // Restore session if exists
+                const sessionUser = await restoreSession();
+                
+                if (sessionUser) {
+                    console.log('✅ Restoring session for:', sessionUser.type);
+                    
+                    // Restore state based on user type
+                    switch (sessionUser.type) {
+                        case 'admin':
+                            setIsAdminLoggedIn(true);
+                            setPage('adminDashboard');
+                            saveSessionCache(sessionUser);
+                            break;
+                            
+                        case 'hotel':
+                            setIsHotelLoggedIn(true);
+                            setLoggedInUser({ id: sessionUser.documentId, type: 'hotel' });
+                            setPage('hotelDashboard');
+                            saveSessionCache(sessionUser);
+                            break;
+                            
+                        case 'villa':
+                            setIsVillaLoggedIn(true);
+                            setLoggedInUser({ id: sessionUser.documentId, type: 'villa' });
+                            setPage('villaDashboard');
+                            saveSessionCache(sessionUser);
+                            break;
+                            
+                        case 'agent':
+                            setLoggedInAgent(sessionUser.data);
+                            setPage('agentDashboard');
+                            saveSessionCache(sessionUser);
+                            break;
+                            
+                        case 'therapist':
+                            setLoggedInProvider({ id: sessionUser.documentId, type: 'therapist' });
+                            setPage('therapistStatus');
+                            saveSessionCache(sessionUser);
+                            break;
+                            
+                        case 'place':
+                            setLoggedInProvider({ id: sessionUser.documentId, type: 'place' });
+                            setPage('placeDashboard');
+                            saveSessionCache(sessionUser);
+                            break;
+                            
+                        case 'user':
+                            setUser({ id: sessionUser.documentId, name: sessionUser.email } as any);
+                            setPage('home');
+                            saveSessionCache(sessionUser);
+                            break;
+                    }
+                } else {
+                    console.log('📭 No session to restore, starting fresh');
+                }
+                
+                // Fetch public data
+                await fetchPublicData();
+                
+                // Check URL parameters for venue menu
+                const params = new URLSearchParams(window.location.search);
+                const venueId = params.get('venue');
+                if (venueId) {
+                    setVenueMenuId(venueId);
+                    setPage('hotelVillaMenu');
+                }
+                
+            } catch (error) {
+                console.error('Error initializing app:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
         
-        // Check URL parameters for venue menu
-        const params = new URLSearchParams(window.location.search);
-        const venueId = params.get('venue');
-        if (venueId) {
-            setVenueMenuId(venueId);
-            setPage('hotelVillaMenu');
-        }
-        
-        setIsLoading(false);
+        initializeApp();
     }, [fetchPublicData]);
 
     useEffect(() => {
@@ -172,18 +237,23 @@ const App: React.FC = () => {
 
     const handleLogout = async () => {
         try {
-            // TODO: Implement logout with Appwrite
+            // Logout from Appwrite and clear session
+            await sessionLogout();
+            
+            // Clear all app state
             setUser(null);
             setIsAdminLoggedIn(false);
             setIsHotelLoggedIn(false);
             setIsVillaLoggedIn(false);
             setLoggedInProvider(null);
             setLoggedInAgent(null);
+            setImpersonatedAgent(null);
             
             // Reload public data to ensure we have therapists
             await fetchPublicData();
             
             setPage('home');
+            console.log('✅ Logout successful');
         } catch (error) {
             console.error('Error during logout:', error);
             setPage('home');
@@ -221,23 +291,30 @@ const App: React.FC = () => {
         setPage('adminDashboard');
     };
     
-    const handleHotelLogout = () => {
+    const handleHotelLogout = async () => {
+        await sessionLogout();
         setIsHotelLoggedIn(false);
+        setLoggedInUser(null);
         setPage('home');
+        console.log('✅ Hotel logout successful');
     };
     
-    const handleVillaLogout = () => {
+    const handleVillaLogout = async () => {
+        await sessionLogout();
         setIsVillaLoggedIn(false);
+        setLoggedInUser(null);
         setPage('home');
+        console.log('✅ Villa logout successful');
     };
     
     const handleAdminLogout = async () => {
-        // TODO: Implement with Appwrite authService.logout()
-        // const supabase = getSupabase();
-        // if (supabase) await supabase.auth.signOut();
+        // Logout from Appwrite and clear session
+        await sessionLogout();
+        
         setIsAdminLoggedIn(false);
         setImpersonatedAgent(null);
         setPage('home');
+        console.log('✅ Admin logout successful');
     }
 
 
