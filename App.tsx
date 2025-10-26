@@ -37,8 +37,9 @@ import { translations } from './translations/index.ts';
 import { therapistService, placeService, agentService } from './lib/appwriteService';
 import GuestAlertsPage from './pages/GuestAlertsPage';
 import FloatingWebsiteButton from './components/FloatingWebsiteButton';
+import HotelVillaMenuPage from './pages/HotelVillaMenuPage';
 
-type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistStatus' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'agentAuth' | 'agentDashboard' | 'agentTerms' | 'serviceTerms' | 'privacy' | 'membership' | 'booking' | 'bookings' | 'notifications' | 'massageTypes' | 'hotelLogin' | 'hotelDashboard' | 'villaLogin' | 'villaDashboard' | 'unifiedLogin' | 'therapistLogin' | 'massagePlaceLogin';
+type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistStatus' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'agentAuth' | 'agentDashboard' | 'agentTerms' | 'serviceTerms' | 'privacy' | 'membership' | 'booking' | 'bookings' | 'notifications' | 'massageTypes' | 'hotelLogin' | 'hotelDashboard' | 'villaLogin' | 'villaDashboard' | 'unifiedLogin' | 'therapistLogin' | 'massagePlaceLogin' | 'hotelVillaMenu';
 type Language = 'en' | 'id';
 type LoggedInProvider = { id: number | string; type: 'therapist' | 'place' }; // Support both number and string IDs for Appwrite compatibility
 type LoggedInUser = { id: string; type: 'admin' | 'hotel' | 'villa' | 'agent' };
@@ -75,6 +76,7 @@ const App: React.FC = () => {
     // Hotel/Villa state
     const [isHotelLoggedIn, setIsHotelLoggedIn] = useState(false);
     const [isVillaLoggedIn, setIsVillaLoggedIn] = useState(false);
+    const [venueMenuId, setVenueMenuId] = useState<string>('');
     
     // App config state
     const appContactNumber = '6281392000050';
@@ -131,6 +133,14 @@ const App: React.FC = () => {
             setTherapists([]);
             setPlaces([]);
         });
+        
+        // Check URL parameters for venue menu
+        const params = new URLSearchParams(window.location.search);
+        const venueId = params.get('venue');
+        if (venueId) {
+            setVenueMenuId(venueId);
+            setPage('hotelVillaMenu');
+        }
         
         setIsLoading(false);
     }, [fetchPublicData]);
@@ -689,6 +699,7 @@ const App: React.FC = () => {
             case 'villaLogin': return <VillaLoginPage onVillaLogin={() => { setIsVillaLoggedIn(true); setPage('villaDashboard'); }} onBack={handleBackToHome} />;
             case 'villaDashboard': return isVillaLoggedIn ? <VillaDashboardPage onLogout={handleVillaLogout} /> : <VillaLoginPage onVillaLogin={() => { setIsVillaLoggedIn(true); setPage('villaDashboard'); }} onBack={handleBackToHome} />;
             case 'massagePlaceLogin': return <MassagePlaceLoginPage onSuccess={(_placeId) => { /* handle massage place login */ }} onBack={handleBackToHome} t={t} />;
+            case 'hotelVillaMenu': return <HotelVillaMenuPage venueId={venueMenuId} therapists={therapists} places={places} onBook={handleNavigateToBooking} />;
             default:
                 return providerForBooking ? (
                     <BookingPage
