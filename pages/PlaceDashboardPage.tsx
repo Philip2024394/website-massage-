@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { Place, Pricing, Booking, Notification } from '../types';
 import { BookingStatus, HotelVillaServiceStatus } from '../types';
-import { User, FileText, Phone, DollarSign, MapPin, Calendar, TrendingUp, Hotel, FileCheck, LogOut, Clock } from 'lucide-react';
+import { User, Calendar, TrendingUp, Hotel, FileCheck, LogOut } from 'lucide-react';
 import Button from '../components/Button';
 import ImageUpload from '../components/ImageUpload';
 import HotelVillaOptIn from '../components/HotelVillaOptIn';
