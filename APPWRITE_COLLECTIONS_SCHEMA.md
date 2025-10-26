@@ -367,17 +367,24 @@
 
 | Attribute | Type | Required | Description |
 |-----------|------|----------|-------------|
-| therapistId | String | ✅ | Therapist reference |
-| therapistName | String | ✅ | Cached name |
+| listingId | Integer | ✅ | Unique listing identifier (1-1000000) |
+| jobTitle | String (128) | ✅ | Job title / position sought |
+| jobDescription | String (500) | ✅ | Brief description of experience & goals |
+| requiredLicenses | String (256) | ❌ | Licenses & certifications |
+| applicationDeadline | DateTime | ❌ | Optional deadline for applications |
+| jobType | String (64) | ✅ | Type: job-seeking/available/etc. |
+| location | String (128) | ❌ | Current location |
+| therapistId | String (100) | ✅ | Therapist reference |
+| therapistName | String (255) | ✅ | Cached name |
 | willingToRelocateDomestic | Boolean | ✅ | Indonesia relocation |
 | willingToRelocateInternational | Boolean | ✅ | International relocation |
-| availability | String | ✅ | full-time/part-time/both |
-| minimumSalary | String | ✅ | Monthly salary (Rupiah) |
-| preferredLocations | String (JSON) | ✅ | Array of cities |
-| accommodation | String | ✅ | required/preferred/not-required |
+| availability | String (50) | ✅ | full-time/part-time/both |
+| minimumSalary | String (100) | ✅ | Monthly salary (Rupiah) |
+| preferredLocations | String[] (2000) | ✅ | Array of cities |
+| accommodation | String (50) | ✅ | required/preferred/not-required |
 | experienceYears | Integer | ❌ | Years experience |
-| specializations | String (JSON) | ❌ | Massage types |
-| languages | String (JSON) | ❌ | Languages spoken |
+| specializations | String[] (2000) | ❌ | Massage types array |
+| languages | String[] (500) | ❌ | Languages spoken array |
 | isActive | Boolean | ✅ | Listing status |
 | listingDate | DateTime | ✅ | Registration date |
 | expiryDate | DateTime | ✅ | 1 year from listing |
