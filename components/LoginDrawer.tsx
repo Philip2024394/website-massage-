@@ -97,7 +97,7 @@ const LoginDrawer: React.FC<LoginDrawerProps> = ({ isOpen, onClose, onLoginSelec
                 </div>
 
                 {/* Login Options */}
-                <div className="p-4 overflow-y-auto h-full pb-20">
+                <div className="p-4 overflow-y-auto" style={{ height: 'calc(100vh - 140px)', paddingBottom: '6rem' }}>
                     <div className="space-y-3">
                         {loginOptions.map((option) => {
                             const IconComponent = option.icon;
