@@ -91,6 +91,21 @@ export interface GuestFeedback {
     createdAt: string;
 }
 
+export enum CommissionPaymentStatus {
+    Pending = 'pending', // Service completed, awaiting payment proof
+    AwaitingVerification = 'awaiting_verification', // Provider uploaded payment proof
+    Verified = 'verified', // Hotel/Villa confirmed payment received
+    Rejected = 'rejected', // Hotel/Villa rejected payment proof
+    Cancelled = 'cancelled' // Booking was cancelled
+}
+
+export enum CommissionPaymentMethod {
+    BankTransfer = 'bank_transfer',
+    Cash = 'cash',
+    MobilePayment = 'mobile_payment', // e-wallet, etc.
+    Other = 'other'
+}
+
 export interface CommissionRecord {
     id: number;
     hotelVillaId: number;
@@ -101,9 +116,17 @@ export interface CommissionRecord {
     serviceAmount: number;
     commissionRate: number;
     commissionAmount: number;
-    status: 'pending' | 'paid' | 'cancelled';
+    status: CommissionPaymentStatus;
+    paymentMethod?: CommissionPaymentMethod;
+    paymentProofImage?: string; // URL to uploaded screenshot
+    paymentProofUploadedAt?: string;
+    verifiedBy?: number; // Hotel/Villa user ID who verified
+    verifiedAt?: string;
+    rejectionReason?: string;
     bookingDate: string;
     paidDate?: string;
+    createdAt: string;
+    updatedAt: string;
 }
 
 export interface GuestCheckIn {
@@ -132,6 +155,17 @@ export interface Hotel {
     analytics?: HotelVillaAnalytics;
     conciergeEnabled?: boolean;
     roomBillingEnabled?: boolean;
+    
+    // Bank details for commission payments
+    bankName?: string;
+    bankAccountNumber?: string;
+    bankAccountName?: string;
+    bankSwiftCode?: string;
+    mobilePaymentNumber?: string; // For e-wallets
+    mobilePaymentType?: string; // 'GoPay', 'OVO', 'Dana', etc.
+    preferredPaymentMethod?: 'bank_transfer' | 'cash' | 'mobile_payment';
+    paymentInstructions?: string; // Custom instructions for providers
+    
     createdAt?: string;
 }
 
@@ -151,6 +185,17 @@ export interface Villa {
     analytics?: HotelVillaAnalytics;
     conciergeEnabled?: boolean;
     roomBillingEnabled?: boolean;
+    
+    // Bank details for commission payments
+    bankName?: string;
+    bankAccountNumber?: string;
+    bankAccountName?: string;
+    bankSwiftCode?: string;
+    mobilePaymentNumber?: string; // For e-wallets
+    mobilePaymentType?: string; // 'GoPay', 'OVO', 'Dana', etc.
+    preferredPaymentMethod?: 'bank_transfer' | 'cash' | 'mobile_payment';
+    paymentInstructions?: string; // Custom instructions for providers
+    
     createdAt?: string;
 }
 

@@ -31,5 +31,6 @@ export const COLLECTIONS = {
     CUSTOM_LINKS: 'CUSTOM_LINKS_COLLECTION_ID',
     IMAGE_ASSETS: 'image_assets',
     LOGIN_BACKGROUNDS: 'login_backgrounds',
-    TRANSLATIONS: 'translations_collection_id'
+    TRANSLATIONS: 'translations_collection_id',
+    COMMISSION_RECORDS: 'commission_records'
 };

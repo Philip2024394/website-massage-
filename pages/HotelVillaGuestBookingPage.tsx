@@ -2,86 +2,18 @@ import React, { useState, useMemo } from 'react';
 import type { Therapist, Place, Booking } from '../types';
 import { BookingStatus, ProviderResponseStatus } from '../types';
 import Button from '../components/Button';
+import { useAutoTranslation } from '../hooks/useAutoTranslation';
+import type { LanguageCode } from '../services/autoTranslationService';
 
 interface HotelVillaGuestBookingPageProps {
     provider: Therapist | Place;
     providerType: 'therapist' | 'place';
     hotelVillaId: number;
     hotelVillaName: string;
-    selectedLanguage: string;
+    selectedLanguage: LanguageCode;
     onBookingSubmit: (bookingData: Partial<Booking>) => Promise<void>;
     onBack: () => void;
 }
-
-const LANGUAGES: Record<string, any> = {
-    en: {
-        bookAppointment: 'Book Appointment',
-        guestDetails: 'Guest Details',
-        guestName: 'Guest Name',
-        guestNamePlaceholder: 'Enter your name',
-        roomNumber: 'Room Number',
-        roomNumberPlaceholder: 'e.g. 201',
-        selectDate: 'Select Date',
-        selectTime: 'Select Time',
-        selectDuration: 'Select Service Duration',
-        min60: '60 Minutes',
-        min90: '90 Minutes',
-        min120: '120 Minutes',
-        chargeToRoom: 'Charge to my room',
-        confirmBooking: 'Confirm Booking',
-        back: 'Back',
-        fillAllFields: 'Please fill in all required fields',
-        oneHourNotice: 'Bookings require at least 1 hour advance notice',
-        noAvailableSlots: 'No available time slots for selected date',
-        providerDetails: 'Provider Details',
-        bookingWith: 'Booking with'
-    },
-    id: {
-        bookAppointment: 'Pesan Janji Temu',
-        guestDetails: 'Detail Tamu',
-        guestName: 'Nama Tamu',
-        guestNamePlaceholder: 'Masukkan nama Anda',
-        roomNumber: 'Nomor Kamar',
-        roomNumberPlaceholder: 'mis. 201',
-        selectDate: 'Pilih Tanggal',
-        selectTime: 'Pilih Waktu',
-        selectDuration: 'Pilih Durasi Layanan',
-        min60: '60 Menit',
-        min90: '90 Menit',
-        min120: '120 Menit',
-        chargeToRoom: 'Tagih ke kamar saya',
-        confirmBooking: 'Konfirmasi Pemesanan',
-        back: 'Kembali',
-        fillAllFields: 'Harap isi semua kolom yang diperlukan',
-        oneHourNotice: 'Pemesanan memerlukan pemberitahuan minimal 1 jam',
-        noAvailableSlots: 'Tidak ada slot waktu tersedia untuk tanggal yang dipilih',
-        providerDetails: 'Detail Penyedia',
-        bookingWith: 'Booking dengan'
-    },
-    zh: {
-        bookAppointment: '预约',
-        guestDetails: '客人详情',
-        guestName: '客人姓名',
-        guestNamePlaceholder: '输入您的姓名',
-        roomNumber: '房间号',
-        roomNumberPlaceholder: '例如 201',
-        selectDate: '选择日期',
-        selectTime: '选择时间',
-        selectDuration: '选择服务时长',
-        min60: '60分钟',
-        min90: '90分钟',
-        min120: '120分钟',
-        chargeToRoom: '记账到房间',
-        confirmBooking: '确认预订',
-        back: '返回',
-        fillAllFields: '请填写所有必填字段',
-        oneHourNotice: '预订需要至少提前1小时',
-        noAvailableSlots: '所选日期没有可用时段',
-        providerDetails: '服务提供者详情',
-        bookingWith: '预订'
-    },
-    // Add other languages as needed (ja, ko, ru, fr, de)
-};
 
 const HotelVillaGuestBookingPage: React.FC<HotelVillaGuestBookingPageProps> = ({
     provider,
@@ -92,7 +24,8 @@ const HotelVillaGuestBookingPage: React.FC<HotelVillaGuestBookingPageProps> = ({
     onBookingSubmit,
     onBack
 }) => {
-    const t = LANGUAGES[selectedLanguage] || LANGUAGES.en;
+    // Use auto-translation hook
+    const { t } = useAutoTranslation(selectedLanguage);
     
     const [guestName, setGuestName] = useState('');
     const [roomNumber, setRoomNumber] = useState('');
@@ -150,7 +83,7 @@ const HotelVillaGuestBookingPage: React.FC<HotelVillaGuestBookingPageProps> = ({
     const handleSubmit = async () => {
         // Validation
         if (!guestName.trim() || !roomNumber.trim() || !selectedTime) {
-            setError(t.fillAllFields);
+            setError(t('fillAllFields', 'Please fill in all required fields'));
             return;
         }
 
@@ -219,9 +152,9 @@ const HotelVillaGuestBookingPage: React.FC<HotelVillaGuestBookingPageProps> = ({
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                         </svg>
-                        <span>{t.back}</span>
+                        <span>{t('back', 'Back')}</span>
                     </button>
-                    <h1 className="text-2xl md:text-3xl font-bold">{t.bookAppointment}</h1>
+                    <h1 className="text-2xl md:text-3xl font-bold">{t('bookAppointment', 'Book Appointment')}</h1>
                     <p className="text-blue-100 mt-2">{hotelVillaName}</p>
                 </div>
             </header>
@@ -230,7 +163,7 @@ const HotelVillaGuestBookingPage: React.FC<HotelVillaGuestBookingPageProps> = ({
                 {/* Provider Info Card */}
                 <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 border-l-4 border-blue-500">
                     <h2 className="text-sm font-semibold text-gray-500 mb-2 uppercase tracking-wide">
-                        {t.bookingWith}
+                        {t('bookingWith', 'Booking with')}
                     </h2>
                     <h3 className="text-2xl font-bold text-gray-800">{provider.name}</h3>
                     <div className="flex items-center gap-2 mt-2 text-gray-600">
@@ -245,33 +178,33 @@ const HotelVillaGuestBookingPage: React.FC<HotelVillaGuestBookingPageProps> = ({
 
                 {/* Guest Details */}
                 <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-                    <h2 className="text-lg font-bold text-gray-800 mb-4">{t.guestDetails}</h2>
+                    <h2 className="text-lg font-bold text-gray-800 mb-4">{t('guestDetails', 'Guest Details')}</h2>
                     
                     <div className="space-y-4">
                         <div>
                             <label htmlFor="guestName" className="block text-sm font-semibold text-gray-700 mb-2">
-                                {t.guestName} <span className="text-red-500">*</span>
+                                {t('guestName', 'Guest Name')} <span className="text-red-500">*</span>
                             </label>
                             <input
                                 id="guestName"
                                 type="text"
                                 value={guestName}
                                 onChange={(e) => setGuestName(e.target.value)}
-                                placeholder={t.guestNamePlaceholder}
+                                placeholder={t('guestNamePlaceholder', 'Enter your name')}
                                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all"
                             />
                         </div>
 
                         <div>
                             <label htmlFor="roomNumber" className="block text-sm font-semibold text-gray-700 mb-2">
-                                {t.roomNumber} <span className="text-red-500">*</span>
+                                {t('roomNumber', 'Room Number')} <span className="text-red-500">*</span>
                             </label>
                             <input
                                 id="roomNumber"
                                 type="text"
                                 value={roomNumber}
                                 onChange={(e) => setRoomNumber(e.target.value)}
-                                placeholder={t.roomNumberPlaceholder}
+                                placeholder={t('roomNumberPlaceholder', 'e.g. 201')}
                                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all"
                             />
                         </div>
@@ -281,7 +214,7 @@ const HotelVillaGuestBookingPage: React.FC<HotelVillaGuestBookingPageProps> = ({
                 {/* Date Selection */}
                 <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
                     <label htmlFor="bookingDate" className="block text-sm font-semibold text-gray-700 mb-2">
-                        {t.selectDate} <span className="text-red-500">*</span>
+                        {t('selectDate', 'Select Date')} <span className="text-red-500">*</span>
                     </label>
                     <input
                         id="bookingDate"
@@ -297,13 +230,13 @@ const HotelVillaGuestBookingPage: React.FC<HotelVillaGuestBookingPageProps> = ({
                 {/* Time Selection */}
                 <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
                     <h3 className="text-sm font-semibold text-gray-700 mb-3">
-                        {t.selectTime} <span className="text-red-500">*</span>
+                        {t('selectTime', 'Select Time')} <span className="text-red-500">*</span>
                     </h3>
                     <p className="text-xs text-blue-600 mb-3 flex items-center gap-2">
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        {t.oneHourNotice}
+                        {t('oneHourNotice', 'Bookings require at least 1 hour advance notice')}
                     </p>
                     
                     {availableTimeSlots.length > 0 ? (
@@ -324,7 +257,7 @@ const HotelVillaGuestBookingPage: React.FC<HotelVillaGuestBookingPageProps> = ({
                         </div>
                     ) : (
                         <p className="text-sm text-gray-500 text-center py-6 bg-gray-50 rounded-lg">
-                            {t.noAvailableSlots}
+                            {t('noAvailableSlots', 'No available time slots for selected date')}
                         </p>
                     )}
                 </div>
@@ -332,7 +265,7 @@ const HotelVillaGuestBookingPage: React.FC<HotelVillaGuestBookingPageProps> = ({
                 {/* Duration Selection */}
                 <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
                     <h3 className="text-sm font-semibold text-gray-700 mb-3">
-                        {t.selectDuration} <span className="text-red-500">*</span>
+                        {t('selectDuration', 'Select Service Duration')} <span className="text-red-500">*</span>
                     </h3>
                     <div className="grid grid-cols-3 gap-3">
                         {(['60', '90', '120'] as const).map(duration => (
@@ -361,7 +294,7 @@ const HotelVillaGuestBookingPage: React.FC<HotelVillaGuestBookingPageProps> = ({
                             onChange={(e) => setChargeToRoom(e.target.checked)}
                             className="w-5 h-5 text-blue-600 border-2 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
                         />
-                        <span className="ml-3 text-gray-700 font-medium">{t.chargeToRoom}</span>
+                        <span className="ml-3 text-gray-700 font-medium">{t('chargeToRoom', 'Charge to my room')}</span>
                     </label>
                 </div>
 
@@ -391,7 +324,7 @@ const HotelVillaGuestBookingPage: React.FC<HotelVillaGuestBookingPageProps> = ({
                             Processing...
                         </span>
                     ) : (
-                        t.confirmBooking
+                        t('confirmBooking', 'Confirm Booking')
                     )}
                 </button>
             </main>
