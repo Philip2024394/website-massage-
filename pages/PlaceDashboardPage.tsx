@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { Place, Pricing, Booking, Notification } from '../types';
 import { BookingStatus, HotelVillaServiceStatus } from '../types';
+import { User, FileText, Phone, DollarSign, MapPin, Calendar, TrendingUp, Hotel, FileCheck, LogOut, Clock } from 'lucide-react';
 import Button from '../components/Button';
 import ImageUpload from '../components/ImageUpload';
 import HotelVillaOptIn from '../components/HotelVillaOptIn';
@@ -13,13 +14,8 @@ import ClockIcon from '../components/icons/ClockIcon';
 import NotificationBell from '../components/NotificationBell';
 import CustomCheckbox from '../components/CustomCheckbox';
 import { MASSAGE_TYPES_CATEGORIZED, ADDITIONAL_SERVICES } from '../constants/rootConstants';
+import TabButton from '../components/dashboard/TabButton';
 
-// Logout Icon
-const LogoutIcon = ({ className = 'w-6 h-6' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-    </svg>
-);
 
 interface PlaceDashboardPageProps {
     onSave: (data: Omit<Place, 'id' | 'isLive' | 'rating' | 'reviewCount' | 'email'>) => void;
@@ -34,10 +30,10 @@ interface PlaceDashboardPageProps {
 }
 
 const AnalyticsCard: React.FC<{ title: string; value: number; description: string }> = ({ title, value, description }) => (
-    <div className="bg-white p-4 rounded-lg shadow">
+    <div className="bg-white border-2 border-gray-200 rounded-xl p-6 hover:border-orange-300 transition-all">
         <h4 className="text-sm font-medium text-gray-500">{title}</h4>
-        <p className="text-3xl font-bold text-gray-900 mt-1">{value.toLocaleString()}</p>
-        <p className="text-xs text-gray-500 mt-1">{description}</p>
+        <p className="text-4xl font-bold text-orange-600 mt-2">{value.toLocaleString()}</p>
+        <p className="text-xs text-gray-500 mt-2">{description}</p>
     </div>
 );
 
@@ -46,29 +42,29 @@ const BookingCard: React.FC<{ booking: Booking; onUpdateStatus: (id: number, sta
      const isUpcoming = new Date(booking.startTime) > new Date();
 
     const statusColors = {
-        [BookingStatus.Pending]: 'bg-yellow-100 text-yellow-800',
-        [BookingStatus.Confirmed]: 'bg-green-100 text-green-800',
-        [BookingStatus.OnTheWay]: 'bg-blue-100 text-blue-800',
-        [BookingStatus.Cancelled]: 'bg-red-100 text-red-800',
-        [BookingStatus.Completed]: 'bg-gray-100 text-gray-800',
-        [BookingStatus.TimedOut]: 'bg-red-100 text-red-800',
-        [BookingStatus.Reassigned]: 'bg-purple-100 text-purple-800',
+        [BookingStatus.Pending]: 'bg-yellow-100 text-yellow-800 border-yellow-300',
+        [BookingStatus.Confirmed]: 'bg-green-100 text-green-800 border-green-300',
+        [BookingStatus.OnTheWay]: 'bg-blue-100 text-blue-800 border-blue-300',
+        [BookingStatus.Cancelled]: 'bg-red-100 text-red-800 border-red-300',
+        [BookingStatus.Completed]: 'bg-gray-100 text-gray-800 border-gray-300',
+        [BookingStatus.TimedOut]: 'bg-red-100 text-red-800 border-red-300',
+        [BookingStatus.Reassigned]: 'bg-purple-100 text-purple-800 border-purple-300',
     };
 
     return (
-        <div className="bg-white p-4 rounded-lg shadow space-y-3">
-            <div className="flex justify-between items-start">
+        <div className="bg-white border-2 border-gray-200 rounded-xl p-6 hover:border-orange-300 transition-all">
+            <div className="flex justify-between items-start mb-3">
                 <div>
-                    <p className="font-bold text-gray-800">{booking.userName}</p>
-                    <p className="text-sm text-gray-600">{t.service}: {booking.service} min</p>
+                    <p className="font-bold text-gray-900 text-lg">{booking.userName}</p>
+                    <p className="text-sm text-gray-600 mt-1">{t.service}: {booking.service} min</p>
                 </div>
-                <span className={`px-2 py-1 text-xs font-semibold rounded-full ${statusColors[booking.status]}`}>{booking.status}</span>
+                <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${statusColors[booking.status]}`}>{booking.status}</span>
             </div>
             <p className="text-sm text-gray-600">{t.date}: {new Date(booking.startTime).toLocaleString()}</p>
             {isPending && isUpcoming && (
-                 <div className="flex gap-2 pt-2 border-t">
-                    <Button onClick={() => onUpdateStatus(booking.id, BookingStatus.Confirmed)} className="text-sm py-1.5">{t.confirm}</Button>
-                    <Button onClick={() => onUpdateStatus(booking.id, BookingStatus.Cancelled)} variant="secondary" className="text-sm py-1.5">{t.cancel}</Button>
+                 <div className="flex gap-2 pt-4 mt-4 border-t">
+                    <button onClick={() => onUpdateStatus(booking.id, BookingStatus.Confirmed)} className="flex-1 bg-orange-500 text-white font-semibold py-2.5 px-4 rounded-lg hover:bg-orange-600 transition-all">{t.confirm}</button>
+                    <button onClick={() => onUpdateStatus(booking.id, BookingStatus.Cancelled)} className="flex-1 bg-white text-gray-700 font-semibold py-2.5 px-4 rounded-lg border-2 border-gray-300 hover:bg-gray-50 transition-all">{t.cancel}</button>
                 </div>
             )}
         </div>
@@ -291,22 +287,43 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             case 'bookings':
                  return (
                     <div className="space-y-6">
-                        <div>
-                            <h3 className="text-lg font-semibold text-gray-800 mb-2">{t.bookings.upcoming}</h3>
-                            {upcomingBookings.length > 0 ? (
-                                <div className="space-y-3">
-                                    {upcomingBookings.map(b => <BookingCard key={b.id} booking={b} onUpdateStatus={onUpdateBookingStatus} t={t.bookings} />)}
-                                </div>
-                            ) : <p className="text-sm text-gray-500">{t.bookings.noUpcoming}</p>}
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                                <Calendar className="w-5 h-5 text-orange-600" />
+                            </div>
+                            <div>
+                                <h2 className="text-2xl font-bold text-gray-900">{t.bookings.upcoming}</h2>
+                                <p className="text-xs text-gray-500">Manage your upcoming bookings</p>
+                            </div>
                         </div>
-                         <div>
-                            <h3 className="text-lg font-semibold text-gray-800 mb-2">{t.bookings.past}</h3>
-                            {pastBookings.length > 0 ? (
-                                <div className="space-y-3">
-                                    {pastBookings.map(b => <BookingCard key={b.id} booking={b} onUpdateStatus={onUpdateBookingStatus} t={t.bookings} />)}
-                                </div>
-                            ) : <p className="text-sm text-gray-500">{t.bookings.noPast}</p>}
+                        {upcomingBookings.length > 0 ? (
+                            <div className="grid gap-4">
+                                {upcomingBookings.map(b => <BookingCard key={b.id} booking={b} onUpdateStatus={onUpdateBookingStatus} t={t.bookings} />)}
+                            </div>
+                        ) : (
+                            <div className="bg-white border-2 border-gray-200 rounded-xl p-12 text-center">
+                                <p className="text-gray-500">{t.bookings.noUpcoming}</p>
+                            </div>
+                        )}
+                        
+                        <div className="flex items-center gap-3 mt-8">
+                            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                                <Calendar className="w-5 h-5 text-orange-600" />
+                            </div>
+                            <div>
+                                <h2 className="text-2xl font-bold text-gray-900">{t.bookings.past}</h2>
+                                <p className="text-xs text-gray-500">View past bookings</p>
+                            </div>
                         </div>
+                        {pastBookings.length > 0 ? (
+                            <div className="grid gap-4">
+                                {pastBookings.map(b => <BookingCard key={b.id} booking={b} onUpdateStatus={onUpdateBookingStatus} t={t.bookings} />)}
+                            </div>
+                        ) : (
+                            <div className="bg-white border-2 border-gray-200 rounded-xl p-12 text-center">
+                                <p className="text-gray-500">{t.bookings.noPast}</p>
+                            </div>
+                        )}
                     </div>
                 );
             case 'analytics':
@@ -320,10 +337,21 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                     }
                 })();
                 return (
-                    <div className="space-y-4">
-                        <AnalyticsCard title={t.analytics.impressions} value={analytics.impressions ?? 0} description={t.analytics.impressionsDesc} />
-                        <AnalyticsCard title={t.analytics.profileViews} value={analytics.profileViews ?? 0} description={t.analytics.profileViewsDesc} />
-                        <AnalyticsCard title={t.analytics.whatsappClicks} value={analytics.whatsappClicks ?? 0} description={t.analytics.whatsappClicksDesc} />
+                    <div className="space-y-6">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                                <TrendingUp className="w-5 h-5 text-orange-600" />
+                            </div>
+                            <div>
+                                <h2 className="text-2xl font-bold text-gray-900">{t.analytics.title || 'Analytics'}</h2>
+                                <p className="text-xs text-gray-500">Track your performance metrics</p>
+                            </div>
+                        </div>
+                        <div className="grid gap-4">
+                            <AnalyticsCard title={t.analytics.impressions} value={analytics.impressions ?? 0} description={t.analytics.impressionsDesc} />
+                            <AnalyticsCard title={t.analytics.profileViews} value={analytics.profileViews ?? 0} description={t.analytics.profileViewsDesc} />
+                            <AnalyticsCard title={t.analytics.whatsappClicks} value={analytics.whatsappClicks ?? 0} description={t.analytics.whatsappClicksDesc} />
+                        </div>
                     </div>
                 );
             case 'hotelVilla':
@@ -576,37 +604,75 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 p-4">
-             <header className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">Massage Place Dashboard</h1>
-                 <div className="flex items-center gap-4">
-                    <NotificationBell count={unreadNotificationsCount} onClick={onNavigateToNotifications} />
-                    <button 
-                        onClick={onLogout}
-                        className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                        title="Logout"
-                    >
-                        <LogoutIcon className="w-6 h-6 text-gray-600" />
-                    </button>
+        <div className="min-h-screen bg-gray-50">
+            {/* Header */}
+            <header className="bg-white shadow-sm px-2 sm:px-3 py-2 sm:py-3 sticky top-0 z-30">
+                <div className="max-w-7xl mx-auto flex justify-between items-center">
+                    <h1 className="text-base sm:text-2xl font-bold">
+                        <span className="text-gray-900">Inda</span>
+                        <span className="text-orange-500">Street</span>
+                    </h1>
+                    <div className="flex items-center gap-2">
+                        <NotificationBell count={unreadNotificationsCount} onClick={onNavigateToNotifications} />
+                        <button
+                            onClick={onLogout}
+                            className="flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-all"
+                        >
+                            <LogOut className="w-4 h-4" />
+                            <span className="hidden sm:inline">Logout</span>
+                        </button>
+                    </div>
                 </div>
             </header>
 
-            <div className={`p-4 rounded-lg mb-6 text-center text-sm font-medium ${place?.isLive ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                {place?.isLive ? t.profileLive : t.pendingApproval}
-            </div>
-            
-            <div className="mb-6">
-                <div className="flex border-b border-gray-200">
-                    <button onClick={() => setActiveTab('profile')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'profile' ? 'border-b-2 border-brand-green text-brand-green' : 'text-gray-500'}`}>{t.tabs.profile}</button>
-                    <button onClick={() => setActiveTab('bookings')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'bookings' ? 'border-b-2 border-brand-green text-brand-green' : 'text-gray-500'}`}>{t.tabs.bookings}</button>
-                    <button onClick={() => setActiveTab('analytics')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'analytics' ? 'border-b-2 border-brand-green text-brand-green' : 'text-gray-500'}`}>{t.tabs.analytics}</button>
-                    <button onClick={() => setActiveTab('hotelVilla')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'hotelVilla' ? 'border-b-2 border-orange-500 text-orange-500' : 'text-gray-500'}`}>Hotel & Villa</button>
-                    <button onClick={() => setActiveTab('terms')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'terms' ? 'border-b-2 border-brand-orange text-brand-orange' : 'text-gray-500'}`}>Terms</button>
+            {/* Tab Navigation */}
+            <nav className="bg-white border-b sticky top-[52px] sm:top-[60px] z-20">
+                <div className="max-w-7xl mx-auto px-2 sm:px-3 flex gap-1 sm:gap-2 overflow-x-auto scrollbar-hide py-2">
+                    <TabButton
+                        icon={<User className="w-4 h-4" />}
+                        label={t.tabs?.profile || 'Profile'}
+                        isActive={activeTab === 'profile'}
+                        onClick={() => setActiveTab('profile')}
+                    />
+                    <TabButton
+                        icon={<Calendar className="w-4 h-4" />}
+                        label={t.tabs?.bookings || 'Bookings'}
+                        isActive={activeTab === 'bookings'}
+                        onClick={() => setActiveTab('bookings')}
+                        badge={upcomingBookings.length}
+                    />
+                    <TabButton
+                        icon={<TrendingUp className="w-4 h-4" />}
+                        label={t.tabs?.analytics || 'Analytics'}
+                        isActive={activeTab === 'analytics'}
+                        onClick={() => setActiveTab('analytics')}
+                    />
+                    <TabButton
+                        icon={<Hotel className="w-4 h-4" />}
+                        label="Hotel/Villa"
+                        isActive={activeTab === 'hotelVilla'}
+                        onClick={() => setActiveTab('hotelVilla')}
+                    />
+                    <TabButton
+                        icon={<FileCheck className="w-4 h-4" />}
+                        label="Terms"
+                        isActive={activeTab === 'terms'}
+                        onClick={() => setActiveTab('terms')}
+                    />
+                </div>
+            </nav>
+
+            {/* Status Banner */}
+            <div className="max-w-7xl mx-auto px-2 sm:px-4 pt-4">
+                <div className={`rounded-xl p-4 text-center text-sm font-medium ${place?.isLive ? 'bg-green-100 border-2 border-green-300 text-green-800' : 'bg-yellow-100 border-2 border-yellow-300 text-yellow-800'}`}>
+                    {place?.isLive ? t.profileLive : t.pendingApproval}
                 </div>
             </div>
 
-            {renderContent()}
-
+            {/* Content Area */}
+            <main className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-6">
+                {renderContent()}
+            </main>
         </div>
     );
 };
