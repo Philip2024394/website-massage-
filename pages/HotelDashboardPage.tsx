@@ -118,6 +118,21 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
         setQrOpen(true);
     };
 
+    const downloadQR = () => {
+        const qrUrl = `https://chart.googleapis.com/chart?chs=600x600&cht=qr&chl=${encodeURIComponent(qrLink)}&choe=UTF-8`;
+        const link = document.createElement('a');
+        link.href = qrUrl;
+        link.download = `${hotelName.replace(/\s+/g, '-')}-menu-qr.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const shareWhatsApp = () => {
+        const message = `Check out our wellness menu: ${qrLink}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+    };
+
     const DiscountCard: React.FC<{ data: ProviderCard }> = ({ data: p }) => {
         const menuUrl = typeof window !== 'undefined' ? window.location.href : '';
         const providerMenuUrl = `${menuUrl}?provider=${encodeURIComponent(`${p.type}-${p.id}`)}`;
@@ -328,24 +343,55 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
 
             {/* QR Modal */}
             {qrOpen && (
-                <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setQrOpen(false)}>
-                    <div className="bg-white rounded-2xl p-8 w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setQrOpen(false)}>
+                    <div className="bg-white rounded-3xl p-8 w-full max-w-lg shadow-2xl" onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-bold text-gray-800">Share Your Menu</h3>
-                            <button onClick={() => setQrOpen(false)} className="text-gray-400 hover:text-gray-600"><X size={24}/></button>
+                            <div>
+                                <h3 className="text-2xl font-bold text-gray-900">Share Your Menu</h3>
+                                <p className="text-sm text-gray-500 mt-1">Scan or share this QR code with guests</p>
+                            </div>
+                            <button onClick={() => setQrOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
+                                <X size={24}/>
+                            </button>
                         </div>
                         <div className="flex flex-col items-center">
-                            <div className="p-4 bg-white rounded-lg border-4 border-gray-100">
-                                <img src={`https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl=${encodeURIComponent(qrLink)}&choe=UTF-8`} alt="QR code" className="w-64 h-64" />
+                            <div className="p-6 bg-gradient-to-br from-orange-50 to-white rounded-2xl border-4 border-orange-100 shadow-lg">
+                                <img 
+                                    src={`https://chart.googleapis.com/chart?chs=400x400&cht=qr&chl=${encodeURIComponent(qrLink)}&choe=UTF-8`} 
+                                    alt="QR code" 
+                                    className="w-64 h-64 md:w-80 md:h-80" 
+                                />
                             </div>
-                            <p className="text-sm text-gray-500 mt-4 text-center break-all bg-gray-50 p-2 rounded-md">{qrLink}</p>
-                            <div className="mt-6 w-full grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <button onClick={() => navigator.clipboard.writeText(qrLink)} className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 text-gray-800 rounded-lg font-semibold hover:bg-gray-200 transition-colors">
-                                    <LinkIcon size={16} /> Copy Link
+                            <p className="text-xs text-gray-500 mt-4 text-center break-all bg-gray-50 p-3 rounded-lg max-w-full">
+                                {qrLink}
+                            </p>
+                            <div className="mt-6 w-full space-y-3">
+                                <button 
+                                    onClick={downloadQR} 
+                                    className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-bold hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+                                >
+                                    <QrCode size={20} /> Download QR Code
                                 </button>
-                                <button onClick={() => window.open(`mailto:?subject=Guest%20Menu&body=${encodeURIComponent(qrLink)}`)} className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition-colors">
-                                    <MessageSquare size={16} /> Email
-                                </button>
+                                <div className="grid grid-cols-3 gap-3">
+                                    <button 
+                                        onClick={() => navigator.clipboard.writeText(qrLink)} 
+                                        className="flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 text-gray-800 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+                                    >
+                                        <LinkIcon size={16} /> Copy
+                                    </button>
+                                    <button 
+                                        onClick={shareWhatsApp} 
+                                        className="flex items-center justify-center gap-2 px-4 py-3 bg-green-500 text-white rounded-xl font-semibold hover:bg-green-600 transition-colors"
+                                    >
+                                        <MessageSquare size={16} /> WhatsApp
+                                    </button>
+                                    <button 
+                                        onClick={() => window.open(`mailto:?subject=Guest%20Menu&body=${encodeURIComponent(qrLink)}`)} 
+                                        className="flex items-center justify-center gap-2 px-4 py-3 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition-colors"
+                                    >
+                                        <MessageSquare size={16} /> Email
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>

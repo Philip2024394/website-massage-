@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { Place, Pricing, Booking, Notification } from '../types';
-import { BookingStatus, HotelVillaServiceStatus, AvailabilityStatus } from '../types';
+import { BookingStatus, HotelVillaServiceStatus } from '../types';
 import Button from '../components/Button';
 import ImageUpload from '../components/ImageUpload';
 import HotelVillaOptIn from '../components/HotelVillaOptIn';
@@ -12,14 +12,22 @@ import MapPinIcon from '../components/icons/MapPinIcon';
 import ClockIcon from '../components/icons/ClockIcon';
 import NotificationBell from '../components/NotificationBell';
 import CustomCheckbox from '../components/CustomCheckbox';
-import { PLACE_SERVICES } from '../constants';
+import { MASSAGE_TYPES_CATEGORIZED, ADDITIONAL_SERVICES } from '../constants';
+
+// Logout Icon
+const LogoutIcon = ({ className = 'w-6 h-6' }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+    </svg>
+);
 
 interface PlaceDashboardPageProps {
     onSave: (data: Omit<Place, 'id' | 'isLive' | 'rating' | 'reviewCount' | 'email'>) => void;
     onLogout: () => void;
     onNavigateToNotifications: () => void;
     onUpdateBookingStatus: (bookingId: number, status: BookingStatus) => void;
-    placeId: number | string; // Support both for Appwrite compatibility
+    placeId: number;
+    place?: Place | null;
     bookings: Booking[];
     notifications: Notification[];
     t: any;
@@ -65,8 +73,8 @@ const BookingCard: React.FC<{ booking: Booking; onUpdateStatus: (id: number, sta
 }
 
 
-const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogout, onNavigateToNotifications, onUpdateBookingStatus, placeId, bookings, notifications, t }) => {
-    const [place, setPlace] = useState<Place | null>(null);
+const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogout, onNavigateToNotifications, onUpdateBookingStatus, placeId: _placeId, place: placeProp, bookings, notifications, t }) => {
+    const [place] = useState<Place | null>(placeProp || null);
     const [isLoading, setIsLoading] = useState(true);
 
     const [name, setName] = useState('');
@@ -77,6 +85,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     const [pricing, setPricing] = useState<Pricing>({ 60: 0, 90: 0, 120: 0 });
     const [location, setLocation] = useState('');
     const [massageTypes, setMassageTypes] = useState<string[]>([]);
+    const [additionalServices, setAdditionalServices] = useState<string[]>([]);
     const [coordinates, setCoordinates] = useState({ lat: 0, lng: 0 });
     const [openingTime, setOpeningTime] = useState('09:00');
     const [closingTime, setClosingTime] = useState('21:00');
@@ -85,53 +94,32 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
 
     const locationInputRef = useRef<HTMLInputElement>(null);
 
-    const fetchPlaceData = useCallback(async () => {
-        setIsLoading(true);
-        
-        // Mock place data for demonstration
-        // In production, this would fetch from your data service
-        const mockPlaceData = {
-            id: 1,
-            name: 'Sample Place',
-            description: 'A beautiful wellness center',
-            mainImage: 'https://via.placeholder.com/400x250/F97316/FFFFFF?text=Sample+Place',
-            thumbnailImages: ['https://via.placeholder.com/150/F97316/FFFFFF?text=1'],
-            whatsappNumber: '6281234567890',
-            pricing: JSON.stringify({ 60: 200000, 90: 280000, 120: 360000 }),
-            location: 'Jakarta',
-            coordinates: JSON.stringify({ lat: -6.2088, lng: 106.8456 }),
-            massageTypes: 'Relaxation,Deep Tissue',
-            openingTime: '09:00',
-            closingTime: '21:00',
-            email: 'info@sampleplace.com',
-            distance: 0,
-            rating: 4.5,
-            reviewCount: 32,
-            isLive: true,
-            status: AvailabilityStatus.Available,
-            analytics: '{ "impressions": 245, "profileViews": 89, "whatsappClicks": 23 }',
-            activeMembershipDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-        };
-        
-        setPlace(mockPlaceData);
-        setName(mockPlaceData.name || '');
-        setDescription(mockPlaceData.description || '');
-        setMainImage(mockPlaceData.mainImage || '');
-        setThumbnailImages([...(mockPlaceData.thumbnailImages || []), '', '', ''].slice(0, 3));
-        setWhatsappNumber(mockPlaceData.whatsappNumber || '');
-        setPricing(JSON.parse(mockPlaceData.pricing) || { 60: 0, 90: 0, 120: 0 });
-        setLocation(mockPlaceData.location || '');
-        setCoordinates(JSON.parse(mockPlaceData.coordinates) || { lat: 0, lng: 0 });
-        setMassageTypes(mockPlaceData.massageTypes.split(',') || []);
-        setOpeningTime(mockPlaceData.openingTime || '09:00');
-        setClosingTime(mockPlaceData.closingTime || '21:00');
-        
-        setIsLoading(false);
-    }, [placeId]);
-
+    // Note: Place data should be passed via props or fetched from Appwrite
+    // For now, using mock data structure
     useEffect(() => {
-        fetchPlaceData();
-    }, [fetchPlaceData]);
+        // Initialize with default values if place prop exists
+        if (place) {
+            setName(place.name || '');
+            setDescription(place.description || '');
+            setMainImage(place.mainImage || '');
+            setThumbnailImages([...(place.thumbnailImages || []), '', '', ''].slice(0, 3));
+            setWhatsappNumber(place.whatsappNumber || '');
+            
+            // Parse JSON strings from Appwrite
+            try {
+                setPricing(typeof place.pricing === 'string' ? JSON.parse(place.pricing) : place.pricing || { '60': 0, '90': 0, '120': 0 });
+                setCoordinates(typeof place.coordinates === 'string' ? JSON.parse(place.coordinates) : place.coordinates || { lat: 0, lng: 0 });
+                setMassageTypes(typeof place.massageTypes === 'string' ? JSON.parse(place.massageTypes) : place.massageTypes || []);
+            } catch (e) {
+                console.error('Error parsing place data:', e);
+            }
+            
+            setLocation(place.location || '');
+            setOpeningTime(place.openingTime || '09:00');
+            setClosingTime(place.closingTime || '21:00');
+        }
+        setIsLoading(false);
+    }, [place]);
 
 
     useEffect(() => {
@@ -198,34 +186,13 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             distance: 0, // dummy value
             activeMembershipDate: place?.activeMembershipDate || '',
             password: place?.password,
-            analytics: typeof place?.analytics === 'string' ? place.analytics : JSON.stringify(place?.analytics || { impressions: 0, profileViews: 0, whatsappClicks: 0 }),
+            analytics: JSON.stringify(place?.analytics || { impressions: 0, profileViews: 0, whatsappClicks: 0 }),
         });
     };
     
     const handlePriceChange = (duration: keyof Pricing, value: string) => {
-        // Remove 'k' or 'K' and spaces
-        let cleanValue = value.replace(/[kK\s]/g, '');
-        
-        // Remove leading zeros
-        cleanValue = cleanValue.replace(/^0+/, '') || '0';
-        
-        // Parse the number
-        let numValue = parseInt(cleanValue, 10);
-        
-        // If value ended with 'k', multiply by 1000
-        if (/[kK]/.test(value)) {
-            numValue = numValue * 1000;
-        }
-        
+        const numValue = parseInt(value, 10);
         setPricing(prev => ({ ...prev, [duration]: isNaN(numValue) ? 0 : numValue }));
-    };
-    
-    const formatPriceDisplay = (value: number): string => {
-        if (value === 0) return '';
-        if (value >= 1000) {
-            return (value / 1000).toString() + 'k';
-        }
-        return value.toString();
     };
     
     const handleThumbnailChange = (index: number, value: string) => {
@@ -239,6 +206,14 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             prev.includes(type)
                 ? prev.filter(t => t !== type)
                 : [...prev, type]
+        );
+    };
+
+    const handleAdditionalServiceChange = (service: string) => {
+        setAdditionalServices(prev =>
+            prev.includes(service)
+                ? prev.filter(s => s !== service)
+                : [...prev, service]
         );
     };
 
@@ -292,6 +267,13 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
 
     const renderContent = () => {
         switch (activeTab) {
+            case 'terms':
+                return (
+                    <div className="bg-white p-6 rounded-lg shadow">
+                        <h2 className="text-xl font-bold mb-4">Terms and Conditions</h2>
+                        <p className="text-gray-600">Terms content will be displayed here.</p>
+                    </div>
+                );
             case 'bookings':
                  return (
                     <div className="space-y-6">
@@ -314,32 +296,26 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                     </div>
                 );
             case 'analytics':
-                 return (
+                const analytics = (() => {
+                    try {
+                        return typeof place?.analytics === 'string' 
+                            ? JSON.parse(place.analytics) 
+                            : (place?.analytics || { impressions: 0, profileViews: 0, whatsappClicks: 0 });
+                    } catch {
+                        return { impressions: 0, profileViews: 0, whatsappClicks: 0 };
+                    }
+                })();
+                return (
                     <div className="space-y-4">
-                        <AnalyticsCard title={t.analytics.impressions} value={(() => {
-                            try {
-                                const analytics = typeof place?.analytics === 'string' ? JSON.parse(place.analytics) : place?.analytics;
-                                return analytics?.impressions ?? 0;
-                            } catch { return 0; }
-                        })()} description={t.analytics.impressionsDesc} />
-                        <AnalyticsCard title={t.analytics.profileViews} value={(() => {
-                            try {
-                                const analytics = typeof place?.analytics === 'string' ? JSON.parse(place.analytics) : place?.analytics;
-                                return analytics?.profileViews ?? 0;
-                            } catch { return 0; }
-                        })()} description={t.analytics.profileViewsDesc} />
-                        <AnalyticsCard title={t.analytics.whatsappClicks} value={(() => {
-                            try {
-                                const analytics = typeof place?.analytics === 'string' ? JSON.parse(place.analytics) : place?.analytics;
-                                return analytics?.whatsappClicks ?? 0;
-                            } catch { return 0; }
-                        })()} description={t.analytics.whatsappClicksDesc} />
+                        <AnalyticsCard title={t.analytics.impressions} value={analytics.impressions ?? 0} description={t.analytics.impressionsDesc} />
+                        <AnalyticsCard title={t.analytics.profileViews} value={analytics.profileViews ?? 0} description={t.analytics.profileViewsDesc} />
+                        <AnalyticsCard title={t.analytics.whatsappClicks} value={analytics.whatsappClicks ?? 0} description={t.analytics.whatsappClicksDesc} />
                     </div>
                 );
             case 'hotelVilla':
-                const handleHotelVillaUpdate = (status: HotelVillaServiceStatus, hotelDiscount: number, villaDiscount: number) => {
+                const handleHotelVillaUpdate = (status: HotelVillaServiceStatus, hotelDiscount: number, villaDiscount: number, serviceRadius: number) => {
                     // Update place data with hotel-villa preferences
-                    console.log('Hotel-Villa preferences updated:', { status, hotelDiscount, villaDiscount });
+                    console.log('Hotel-Villa preferences updated:', { status, hotelDiscount, villaDiscount, serviceRadius });
                     // In a real app, this would save to the backend
                 };
                 
@@ -348,6 +324,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                         currentStatus={place?.hotelVillaServiceStatus || HotelVillaServiceStatus.NotOptedIn}
                         hotelDiscount={place?.hotelDiscount || 20}
                         villaDiscount={place?.villaDiscount || 20}
+                        serviceRadius={place?.serviceRadius || 7}
                         onUpdate={handleHotelVillaUpdate}
                     />
                 );
@@ -383,9 +360,46 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                 <div className="absolute top-3.5 left-0 pl-3 flex items-center pointer-events-none">
                                     <DocumentTextIcon className="h-5 w-5 text-gray-400" />
                                 </div>
-                                <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className="mt-1 block w-full pl-10 pr-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-green focus:border-brand-green text-gray-900" />
+                                <textarea 
+                                    value={description} 
+                                    onChange={e => {
+                                        if (e.target.value.length <= 250) {
+                                            setDescription(e.target.value);
+                                        }
+                                    }} 
+                                    rows={3} 
+                                    maxLength={250}
+                                    className="mt-1 block w-full pl-10 pr-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-green focus:border-brand-green text-gray-900" 
+                                />
+                                <p className="text-xs text-gray-500 mt-1">
+                                    {description.length}/250 characters
+                                </p>
                             </div>
                         </div>
+                        
+                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg p-4">
+                            <div className="flex items-center gap-2 mb-3">
+                                <svg className="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                </svg>
+                                <label className="text-sm font-semibold text-green-800">Qualified Business Badge</label>
+                            </div>
+                            <div className="bg-white/50 rounded-lg p-3 space-y-2">
+                                <div className="text-xs text-green-800">
+                                    <p className="font-semibold mb-2">Badge Requirements:</p>
+                                    <ul className="space-y-1 ml-4 list-disc">
+                                        <li>3 consecutive months of paid membership</li>
+                                        <li>Maximum 5-day grace period between renewals</li>
+                                        <li>Maintain a rating of 4.0 stars or higher</li>
+                                    </ul>
+                                </div>
+                                <div className="text-xs text-green-700 bg-green-100 rounded p-2 mt-2">
+                                    <p className="font-semibold">📢 Membership Reminder:</p>
+                                    <p className="mt-1">You will receive a WhatsApp notification 7 days before your membership expires with renewal instructions and badge status.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div>
                             <label className="block text-sm font-medium text-gray-900">{t.whatsappLabel}</label>
                             {renderInput(whatsappNumber, setWhatsappNumber, PhoneIcon, '6281234567890')}
@@ -411,14 +425,36 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-900">{t.massageTypesLabel}</label>
+                            <div className="mt-2 p-3 bg-white border border-gray-200 rounded-lg space-y-4">
+                                {MASSAGE_TYPES_CATEGORIZED.map(category => (
+                                    <div key={category.category}>
+                                        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{category.category}</h4>
+                                        <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-2">
+                                            {category.types.map(type => (
+                                                <CustomCheckbox
+                                                    key={type}
+                                                    label={type}
+                                                    checked={massageTypes.includes(type)}
+                                                    onChange={() => handleMassageTypeChange(type)}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        
+                        {/* Additional Services Section */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-900">Additional Services</label>
                             <div className="mt-2 p-3 bg-white border border-gray-200 rounded-lg">
                                 <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-                                    {PLACE_SERVICES.map(type => (
+                                    {ADDITIONAL_SERVICES.map((service: string) => (
                                         <CustomCheckbox
-                                            key={type}
-                                            label={type}
-                                            checked={massageTypes.includes(type)}
-                                            onChange={() => handleMassageTypeChange(type)}
+                                            key={service}
+                                            label={service}
+                                            checked={additionalServices.includes(service)}
+                                            onChange={() => handleAdditionalServiceChange(service)}
                                         />
                                     ))}
                                 </div>
@@ -434,9 +470,15 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                         </div>
                                         <input ref={locationInputRef} type="text" value={location} onChange={e => setLocation(e.target.value)} placeholder={t.locationPlaceholder} className="mt-1 block w-full pl-10 pr-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-green focus:border-brand-green text-gray-900" />
                                     </div>
-                                    <Button onClick={handleSetLocation} variant="secondary" className="flex items-center justify-center gap-2 mt-2 text-sm py-2">
+                                    <Button 
+                                        onClick={handleSetLocation} 
+                                        variant="secondary" 
+                                        className={`flex items-center justify-center gap-2 mt-2 text-sm py-2 ${
+                                            location ? 'bg-green-500 hover:bg-green-600 text-white' : ''
+                                        }`}
+                                    >
                                         <MapPinIcon className="w-4 h-4" />
-                                        <span>{t.setLocation}</span>
+                                        <span>{location ? 'Location Set ✓' : t.setLocation}</span>
                                     </Button>
                                 </>
                             ) : (
@@ -452,21 +494,21 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                 <label className="block text-xs font-medium text-gray-900">{t['60min']}</label>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
-                                    <input type="text" value={formatPriceDisplay(pricing['60'])} onChange={e => handlePriceChange('60', e.target.value)} placeholder="e.g., 250k" className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
+                                    <input type="number" value={pricing['60']} onChange={e => handlePriceChange('60', e.target.value)} className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
                                     </div>
                                 </div>
                                 <div>
                                 <label className="block text-xs font-medium text-gray-900">{t['90min']}</label>
                                     <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
-                                    <input type="text" value={formatPriceDisplay(pricing['90'])} onChange={e => handlePriceChange('90', e.target.value)} placeholder="e.g., 350k" className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
+                                    <input type="number" value={pricing['90']} onChange={e => handlePriceChange('90', e.target.value)} className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
                                     </div>
                                 </div>
                                 <div>
                                 <label className="block text-xs font-medium text-gray-900">{t['120min']}</label>
                                     <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
-                                    <input type="text" value={formatPriceDisplay(pricing['120'])} onChange={e => handlePriceChange('120', e.target.value)} placeholder="e.g., 450k" className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
+                                    <input type="number" value={pricing['120']} onChange={e => handlePriceChange('120', e.target.value)} className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
                                     </div>
                                 </div>
                             </div>
@@ -483,10 +525,16 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     return (
         <div className="min-h-screen bg-gray-50 p-4">
              <header className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">{t.placeTitle}</h1>
+                <h1 className="text-2xl font-bold text-gray-800">Massage Place Dashboard</h1>
                  <div className="flex items-center gap-4">
                     <NotificationBell count={unreadNotificationsCount} onClick={onNavigateToNotifications} />
-                    <Button onClick={onLogout} variant="secondary" className="w-auto px-4 py-2 text-sm">{t.logoutButton}</Button>
+                    <button 
+                        onClick={onLogout}
+                        className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                        title="Logout"
+                    >
+                        <LogoutIcon className="w-6 h-6 text-gray-600" />
+                    </button>
                 </div>
             </header>
 
@@ -499,7 +547,8 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                     <button onClick={() => setActiveTab('profile')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'profile' ? 'border-b-2 border-brand-green text-brand-green' : 'text-gray-500'}`}>{t.tabs.profile}</button>
                     <button onClick={() => setActiveTab('bookings')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'bookings' ? 'border-b-2 border-brand-green text-brand-green' : 'text-gray-500'}`}>{t.tabs.bookings}</button>
                     <button onClick={() => setActiveTab('analytics')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'analytics' ? 'border-b-2 border-brand-green text-brand-green' : 'text-gray-500'}`}>{t.tabs.analytics}</button>
-                    <button onClick={() => setActiveTab('hotelVilla')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'hotelVilla' ? 'border-b-2 border-brand-green text-brand-green' : 'text-gray-500'}`}>Hotel & Villa</button>
+                    <button onClick={() => setActiveTab('hotelVilla')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'hotelVilla' ? 'border-b-2 border-orange-500 text-orange-500' : 'text-gray-500'}`}>Hotel & Villa</button>
+                    <button onClick={() => setActiveTab('terms')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'terms' ? 'border-b-2 border-brand-orange text-brand-orange' : 'text-gray-500'}`}>Terms</button>
                 </div>
             </div>
 

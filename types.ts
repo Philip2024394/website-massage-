@@ -115,6 +115,7 @@ export interface Therapist {
     hotelVillaServiceStatus?: HotelVillaServiceStatus;
     hotelDiscount?: number; // minimum 20%
     villaDiscount?: number; // minimum 20%
+    serviceRadius?: number; // minimum 7km - how far they will travel for hotel/villa services
 }
 
 export interface Place {
@@ -142,6 +143,7 @@ export interface Place {
     hotelVillaServiceStatus?: HotelVillaServiceStatus;
     hotelDiscount?: number; // minimum 20%
     villaDiscount?: number; // minimum 20%
+    serviceRadius?: number; // minimum 7km - how far they will travel for hotel/villa services
 }
 
 export interface User {

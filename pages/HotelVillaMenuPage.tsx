@@ -76,17 +76,17 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
     return (
         <div className="min-h-screen bg-gradient-to-b from-orange-50 via-white to-orange-50">
             {/* Banner Section */}
-            <div className="relative h-64 md:h-80 overflow-hidden">
+            <div className="relative h-72 md:h-96 overflow-hidden">
                 <img 
                     src={venue.bannerImage} 
                     alt={venue.name}
                     className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent"></div>
                 
                 {/* Logo */}
-                <div className="absolute bottom-0 left-0 right-0 flex justify-center transform translate-y-1/2">
-                    <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white shadow-2xl overflow-hidden bg-white">
+                <div className="absolute bottom-0 left-0 right-0 flex justify-center transform translate-y-1/2 z-10">
+                    <div className="w-28 h-28 md:w-36 md:h-36 rounded-full border-6 border-white shadow-2xl overflow-hidden bg-white ring-4 ring-orange-100">
                         <img 
                             src={venue.logoImage} 
                             alt={`${venue.name} logo`}
@@ -97,36 +97,36 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
             </div>
 
             {/* Venue Info Section */}
-            <div className="pt-16 pb-6 px-4 text-center bg-white shadow-sm">
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+            <div className="pt-20 pb-8 px-4 text-center bg-white shadow-md">
+                <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 tracking-tight">
                     {venue.name}
                 </h1>
-                <div className="max-w-2xl mx-auto space-y-2">
-                    <p className="text-gray-600 flex items-center justify-center gap-2">
-                        <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="max-w-2xl mx-auto space-y-3">
+                    <p className="text-gray-600 flex items-center justify-center gap-2 text-base md:text-lg">
+                        <svg className="w-6 h-6 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
-                        {venue.address}
+                        <span className="font-medium">{venue.address}</span>
                     </p>
-                    <p className="text-gray-600 flex items-center justify-center gap-2">
-                        <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <p className="text-gray-600 flex items-center justify-center gap-2 text-base md:text-lg">
+                        <svg className="w-6 h-6 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                         </svg>
-                        {venue.contactNumber}
+                        <span className="font-semibold">{venue.contactNumber}</span>
                     </p>
                 </div>
             </div>
 
             {/* Welcome Message */}
-            <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white py-6 px-4">
+            <div className="bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 text-white py-8 px-4 shadow-lg">
                 <div className="max-w-4xl mx-auto text-center">
-                    <h2 className="text-2xl md:text-3xl font-bold mb-2">
+                    <h2 className="text-3xl md:text-4xl font-bold mb-3">
                         Welcome to Our Wellness Menu
                     </h2>
-                    <p className="text-orange-100 text-sm md:text-base">
+                    <p className="text-orange-50 text-base md:text-lg leading-relaxed max-w-3xl mx-auto">
                         Browse our exclusive selection of professional therapists and wellness centers. 
-                        Note the ID number and contact our front desk to book your perfect relaxation experience.
+                        <span className="block mt-2 font-semibold">Note the ID number and contact our front desk to book your perfect relaxation experience.</span>
                     </p>
                 </div>
             </div>
@@ -181,7 +181,7 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {liveTherapists.map((therapist) => (
-                                    <div key={therapist.id} className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+                                    <div key={therapist.id} className="bg-white rounded-3xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] border border-gray-100">
                                         <TherapistCard
                                             therapist={therapist}
                                             onRate={() => {}}
@@ -190,11 +190,13 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
                                             t={{}}
                                         />
                                         {/* ID Number Badge */}
-                                        <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-3 text-center">
-                                            <p className="text-white text-sm font-medium mb-1">Booking ID</p>
-                                            <p className="text-white text-2xl font-bold tracking-wider">
+                                        <div className="bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 px-6 py-4 text-center relative overflow-hidden">
+                                            <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
+                                            <p className="text-white/90 text-sm font-semibold mb-1 tracking-wide relative z-10">BOOKING ID</p>
+                                            <p className="text-white text-3xl md:text-4xl font-bold tracking-wider relative z-10 drop-shadow-lg">
                                                 #{String(therapist.id).padStart(4, '0')}
                                             </p>
+                                            <p className="text-white/80 text-xs mt-2 relative z-10">Show this number to our front desk</p>
                                         </div>
                                     </div>
                                 ))}
@@ -213,18 +215,20 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {livePlaces.map((place) => (
-                                    <div key={place.id} className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+                                    <div key={place.id} className="bg-white rounded-3xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] border border-gray-100">
                                         <PlaceCard
                                             place={place}
                                             onClick={() => onBook(place, 'place')}
                                             onRate={() => {}}
                                         />
                                         {/* ID Number Badge */}
-                                        <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-3 text-center">
-                                            <p className="text-white text-sm font-medium mb-1">Booking ID</p>
-                                            <p className="text-white text-2xl font-bold tracking-wider">
+                                        <div className="bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 px-6 py-4 text-center relative overflow-hidden">
+                                            <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
+                                            <p className="text-white/90 text-sm font-semibold mb-1 tracking-wide relative z-10">BOOKING ID</p>
+                                            <p className="text-white text-3xl md:text-4xl font-bold tracking-wider relative z-10 drop-shadow-lg">
                                                 #{String(place.id).padStart(4, '0')}
                                             </p>
+                                            <p className="text-white/80 text-xs mt-2 relative z-10">Show this number to our front desk</p>
                                         </div>
                                     </div>
                                 ))}
@@ -235,18 +239,21 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
             </div>
 
             {/* Footer */}
-            <div className="bg-gray-900 text-white py-8 px-4 mt-16">
+            <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white py-12 px-4 mt-20 border-t-4 border-orange-500">
                 <div className="max-w-4xl mx-auto text-center">
-                    <div className="mb-4">
-                        <h3 className="text-xl font-bold mb-2">
+                    <div className="mb-6">
+                        <h3 className="text-3xl font-bold mb-3">
                             <span className="text-white">Inda</span>
                             <span className="text-orange-400">Street</span>
                         </h3>
-                        <p className="text-gray-400 text-sm">Professional Wellness Services</p>
+                        <p className="text-gray-300 text-base font-medium">Professional Wellness Services</p>
+                        <p className="text-gray-400 text-sm mt-2">Connecting you with Bali's finest therapists and wellness centers</p>
                     </div>
-                    <p className="text-gray-500 text-xs">
-                        Powered by IndaStreet © {new Date().getFullYear()}
-                    </p>
+                    <div className="border-t border-gray-700 pt-6">
+                        <p className="text-gray-500 text-sm">
+                            Powered by IndaStreet © {new Date().getFullYear()} | All Rights Reserved
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>

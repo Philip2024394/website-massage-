@@ -5,18 +5,21 @@ interface HotelVillaOptInProps {
     currentStatus: HotelVillaServiceStatus;
     hotelDiscount: number;
     villaDiscount: number;
-    onUpdate: (status: HotelVillaServiceStatus, hotelDiscount: number, villaDiscount: number) => void;
+    serviceRadius: number;
+    onUpdate: (status: HotelVillaServiceStatus, hotelDiscount: number, villaDiscount: number, serviceRadius: number) => void;
 }
 
 const HotelVillaOptIn: React.FC<HotelVillaOptInProps> = ({ 
     currentStatus, 
     hotelDiscount, 
     villaDiscount, 
+    serviceRadius,
     onUpdate 
 }) => {
     const [isOptedIn, setIsOptedIn] = useState(currentStatus !== HotelVillaServiceStatus.NotOptedIn);
     const [localHotelDiscount, setLocalHotelDiscount] = useState(hotelDiscount || 20);
     const [localVillaDiscount, setLocalVillaDiscount] = useState(villaDiscount || 20);
+    const [localServiceRadius, setLocalServiceRadius] = useState(serviceRadius || 7);
     const [isEditing, setIsEditing] = useState(false);
 
     const handleToggleOptIn = () => {
@@ -24,9 +27,9 @@ const HotelVillaOptIn: React.FC<HotelVillaOptInProps> = ({
         setIsOptedIn(newOptIn);
         
         if (newOptIn) {
-            onUpdate(HotelVillaServiceStatus.OptedIn, localHotelDiscount, localVillaDiscount);
+            onUpdate(HotelVillaServiceStatus.OptedIn, localHotelDiscount, localVillaDiscount, localServiceRadius);
         } else {
-            onUpdate(HotelVillaServiceStatus.NotOptedIn, 0, 0);
+            onUpdate(HotelVillaServiceStatus.NotOptedIn, 0, 0, 0);
         }
     };
 
@@ -35,8 +38,12 @@ const HotelVillaOptIn: React.FC<HotelVillaOptInProps> = ({
             alert('Minimum discount is 20% for both hotel and villa services');
             return;
         }
+        if (localServiceRadius < 7) {
+            alert('Minimum service radius is 7 kilometers');
+            return;
+        }
         
-        onUpdate(HotelVillaServiceStatus.OptedIn, localHotelDiscount, localVillaDiscount);
+        onUpdate(HotelVillaServiceStatus.OptedIn, localHotelDiscount, localVillaDiscount, localServiceRadius);
         setIsEditing(false);
     };
 
@@ -118,6 +125,35 @@ const HotelVillaOptIn: React.FC<HotelVillaOptInProps> = ({
                                 <p className="text-sm text-gray-600">Discount for villa guests</p>
                             )}
                         </div>
+                    </div>
+
+                    <div className="bg-green-50 p-4 rounded-lg mt-4">
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                                <span className="text-xl">📍</span>
+                                <h4 className="font-medium text-gray-800">Service Radius</h4>
+                            </div>
+                            <span className="text-2xl font-bold text-green-600">{localServiceRadius} km</span>
+                        </div>
+                        {isEditing ? (
+                            <div>
+                                <input
+                                    type="range"
+                                    min="7"
+                                    max="50"
+                                    value={localServiceRadius}
+                                    onChange={(e) => setLocalServiceRadius(Number(e.target.value))}
+                                    className="w-full h-2 bg-green-200 rounded-lg appearance-none cursor-pointer"
+                                />
+                                <div className="flex justify-between text-xs text-gray-600 mt-1">
+                                    <span>7 km</span>
+                                    <span>50 km</span>
+                                </div>
+                                <p className="text-xs text-gray-600 mt-2">How far you'll travel for hotel & villa services</p>
+                            </div>
+                        ) : (
+                            <p className="text-sm text-gray-600">Maximum travel distance for services</p>
+                        )}
                     </div>
 
                     <div className="mt-6 pt-4 border-t border-gray-200">

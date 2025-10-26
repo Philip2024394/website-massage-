@@ -372,9 +372,9 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                     </div>
                 );
             case 'hotelVilla':
-                const handleHotelVillaUpdate = (status: HotelVillaServiceStatus, hotelDiscount: number, villaDiscount: number) => {
+                const handleHotelVillaUpdate = (status: HotelVillaServiceStatus, hotelDiscount: number, villaDiscount: number, serviceRadius: number) => {
                     // Update therapist data with hotel-villa preferences
-                    console.log('Hotel-Villa preferences updated:', { status, hotelDiscount, villaDiscount });
+                    console.log('Hotel-Villa preferences updated:', { status, hotelDiscount, villaDiscount, serviceRadius });
                     // In a real app, this would save to the backend
                 };
                 
@@ -383,6 +383,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                         currentStatus={therapist?.hotelVillaServiceStatus || HotelVillaServiceStatus.NotOptedIn}
                         hotelDiscount={therapist?.hotelDiscount || 20}
                         villaDiscount={therapist?.villaDiscount || 20}
+                        serviceRadius={therapist?.serviceRadius || 7}
                         onUpdate={handleHotelVillaUpdate}
                     />
                 );
