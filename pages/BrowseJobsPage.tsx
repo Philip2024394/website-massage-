@@ -52,7 +52,7 @@ interface EmployerJobPosting {
 interface BrowseJobsPageProps {
     onBack: () => void;
     onPostJob: () => void;
-    t: any;
+    t?: any;
 }
 
 const BrowseJobsPage: React.FC<BrowseJobsPageProps> = ({ onBack, onPostJob }) => {
@@ -61,6 +61,8 @@ const BrowseJobsPage: React.FC<BrowseJobsPageProps> = ({ onBack, onPostJob }) =>
     const [employerPostings, setEmployerPostings] = useState<EmployerJobPosting[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+
+    console.log('🔍 BrowseJobsPage mounted - viewMode:', viewMode);
 
     useEffect(() => {
         fetchListings();

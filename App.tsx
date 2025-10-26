@@ -798,7 +798,7 @@ const App: React.FC = () => {
             case 'massagePlaceLogin': return <MassagePlaceLoginPage onSuccess={(_placeId) => { /* handle massage place login */ }} onBack={handleBackToHome} t={t} />;
             case 'hotelVillaMenu': return <HotelVillaMenuPage venueId={venueMenuId} therapists={therapists} places={places} onBook={handleNavigateToBooking} />;
             case 'employerJobPosting': return <EmployerJobPostingPage />;
-            case 'browseJobs': return <BrowseJobsPage onBack={handleBackToHome} onPostJob={() => setPage('employerJobPosting')} t={t} />;
+            case 'browseJobs': return <BrowseJobsPage onBack={handleBackToHome} onPostJob={() => setPage('employerJobPosting')} />;
             default:
                 return providerForBooking ? (
                     <BookingPage
