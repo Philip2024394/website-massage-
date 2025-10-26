@@ -39,6 +39,7 @@ interface HomePageProps {
     onTherapistJobsClick?: () => void;
     onTermsClick?: () => void;
     onPrivacyClick?: () => void;
+    onNavigate?: (page: string) => void;
     isLoading: boolean;
     t: any;
 }
@@ -73,7 +74,28 @@ const ChevronDownIcon = ({ className = 'w-5 h-5' }) => (
 
 
 
-const HomePage: React.FC<HomePageProps> = ({ loggedInAgent: _loggedInAgent, therapists, onSetUserLocation, onBook, onIncrementAnalytics, onAgentPortalClick, onMassageTypesClick, onHotelPortalClick, onVillaPortalClick, onTherapistPortalClick, onMassagePlacePortalClick, onAdminPortalClick, onBrowseJobsClick, onEmployerJobPostingClick, onMassageJobsClick, onTherapistJobsClick, onTermsClick, onPrivacyClick, t }) => {
+const HomePage: React.FC<HomePageProps> = ({ 
+    loggedInAgent: _loggedInAgent, 
+    therapists, 
+    onSetUserLocation, 
+    onBook, 
+    onIncrementAnalytics, 
+    onAgentPortalClick, 
+    onMassageTypesClick, 
+    onHotelPortalClick, 
+    onVillaPortalClick, 
+    onTherapistPortalClick, 
+    onMassagePlacePortalClick, 
+    onAdminPortalClick, 
+    onBrowseJobsClick: _onBrowseJobsClick, 
+    onEmployerJobPostingClick: _onEmployerJobPostingClick, 
+    onMassageJobsClick, 
+    onTherapistJobsClick, 
+    onTermsClick, 
+    onPrivacyClick, 
+    onNavigate, 
+    t 
+}) => {
     // Safety check for translations
     if (!t || !t.home) {
         console.error('HomePage: Missing translations object or t.home', { t });
@@ -252,6 +274,110 @@ const HomePage: React.FC<HomePageProps> = ({ loggedInAgent: _loggedInAgent, ther
                                             Therapist For Contract
                                         </h3>
                                         <p className="text-xs text-gray-500">Find qualified therapists</p>
+                                    </div>
+                                </button>
+
+                                {/* Company Section */}
+                                <div className="border-t border-gray-300 my-3"></div>
+                                <div className="px-2 py-2">
+                                    <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Company</h3>
+                                </div>
+                                <button 
+                                    onClick={() => { onNavigate?.('about'); setIsMenuOpen(false); }} 
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-blue-500 group"
+                                >
+                                    <span className="text-2xl">🏢</span>
+                                    <div className="flex-grow">
+                                        <h3 className="font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">About Us</h3>
+                                        <p className="text-xs text-gray-500">Our story & mission</p>
+                                    </div>
+                                </button>
+                                <button 
+                                    onClick={() => { onNavigate?.('how-it-works'); setIsMenuOpen(false); }} 
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-green-500 group"
+                                >
+                                    <span className="text-2xl">❓</span>
+                                    <div className="flex-grow">
+                                        <h3 className="font-semibold text-gray-800 group-hover:text-green-600 transition-colors">How It Works</h3>
+                                        <p className="text-xs text-gray-500">For all user types</p>
+                                    </div>
+                                </button>
+                                <button 
+                                    onClick={() => { onNavigate?.('blog'); setIsMenuOpen(false); }} 
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-purple-500 group"
+                                >
+                                    <span className="text-2xl">📰</span>
+                                    <div className="flex-grow">
+                                        <h3 className="font-semibold text-gray-800 group-hover:text-purple-600 transition-colors">Blog</h3>
+                                        <p className="text-xs text-gray-500">Massage tips & guides</p>
+                                    </div>
+                                </button>
+                                <button 
+                                    onClick={() => { onNavigate?.('contact'); setIsMenuOpen(false); }} 
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-gray-500 group"
+                                >
+                                    <span className="text-2xl">📧</span>
+                                    <div className="flex-grow">
+                                        <h3 className="font-semibold text-gray-800 group-hover:text-gray-600 transition-colors">Contact Us</h3>
+                                        <p className="text-xs text-gray-500">Get in touch</p>
+                                    </div>
+                                </button>
+
+                                {/* Locations Section */}
+                                <div className="border-t border-gray-300 my-3"></div>
+                                <div className="px-2 py-2">
+                                    <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Locations</h3>
+                                </div>
+                                <button 
+                                    onClick={() => { onNavigate?.('massage-bali'); setIsMenuOpen(false); }} 
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-pink-500 group"
+                                >
+                                    <span className="text-2xl">🌺</span>
+                                    <div className="flex-grow">
+                                        <h3 className="font-semibold text-gray-800 group-hover:text-pink-600 transition-colors">Massage in Bali</h3>
+                                        <p className="text-xs text-gray-500">440+ therapists</p>
+                                    </div>
+                                </button>
+
+                                {/* Services Section */}
+                                <div className="border-t border-gray-300 my-3"></div>
+                                <div className="px-2 py-2">
+                                    <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Services</h3>
+                                </div>
+                                <button 
+                                    onClick={() => { onNavigate?.('balinese-massage'); setIsMenuOpen(false); }} 
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-teal-500 group"
+                                >
+                                    <span className="text-2xl">🌿</span>
+                                    <div className="flex-grow">
+                                        <h3 className="font-semibold text-gray-800 group-hover:text-teal-600 transition-colors">Balinese Massage</h3>
+                                        <p className="text-xs text-gray-500">Traditional relaxation</p>
+                                    </div>
+                                </button>
+                                <button 
+                                    onClick={() => { onNavigate?.('deep-tissue-massage'); setIsMenuOpen(false); }} 
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-indigo-500 group"
+                                >
+                                    <span className="text-2xl">💪</span>
+                                    <div className="flex-grow">
+                                        <h3 className="font-semibold text-gray-800 group-hover:text-indigo-600 transition-colors">Deep Tissue Massage</h3>
+                                        <p className="text-xs text-gray-500">Therapeutic relief</p>
+                                    </div>
+                                </button>
+
+                                {/* Help Section */}
+                                <div className="border-t border-gray-300 my-3"></div>
+                                <div className="px-2 py-2">
+                                    <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Help & Support</h3>
+                                </div>
+                                <button 
+                                    onClick={() => { onNavigate?.('faq'); setIsMenuOpen(false); }} 
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-yellow-500 group"
+                                >
+                                    <span className="text-2xl">❔</span>
+                                    <div className="flex-grow">
+                                        <h3 className="font-semibold text-gray-800 group-hover:text-yellow-600 transition-colors">FAQ</h3>
+                                        <p className="text-xs text-gray-500">Common questions</p>
                                     </div>
                                 </button>
 
