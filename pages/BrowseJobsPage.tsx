@@ -55,9 +55,8 @@ interface BrowseJobsPageProps {
     t: any;
 }
 
-const BrowseJobsPage: React.FC<BrowseJobsPageProps> = ({ onBack, onPostJob, t }) => {
+const BrowseJobsPage: React.FC<BrowseJobsPageProps> = ({ onBack, onPostJob }) => {
     const [viewMode, setViewMode] = useState<'listed' | 'wanted'>('listed'); // Jobs Listed vs Jobs Wanted
-    const [activeTab, setActiveTab] = useState<'therapists' | 'employers'>('therapists');
     const [therapistListings, setTherapistListings] = useState<TherapistJobListing[]>([]);
     const [employerPostings, setEmployerPostings] = useState<EmployerJobPosting[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -65,12 +64,13 @@ const BrowseJobsPage: React.FC<BrowseJobsPageProps> = ({ onBack, onPostJob, t })
 
     useEffect(() => {
         fetchListings();
-    }, [activeTab]);
+    }, [viewMode]);
 
     const fetchListings = async () => {
         setIsLoading(true);
         try {
-            if (activeTab === 'therapists') {
+            if (viewMode === 'wanted') {
+                // Fetch therapist job listings (therapists wanting jobs)
                 const response = await databases.listDocuments(
                     DATABASE_ID,
                     COLLECTIONS.therapistJobListings,
@@ -82,6 +82,7 @@ const BrowseJobsPage: React.FC<BrowseJobsPageProps> = ({ onBack, onPostJob, t })
                 );
                 setTherapistListings(response.documents as unknown as TherapistJobListing[]);
             } else {
+                // Fetch employer job postings (companies listing jobs)
                 const response = await databases.listDocuments(
                     DATABASE_ID,
                     COLLECTIONS.employerJobPostings,
