@@ -191,12 +191,14 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
         });
     }, [providers, mockProviders]);
 
-    // Hotel profile / shared menu header data (local preview)
+    // Hotel profile / shared menu header data (persisted in Appwrite)
     const [mainImage, setMainImage] = useState<string | null>(null);
     const [profileImage, setProfileImage] = useState<string | null>(null);
     const [hotelName, setHotelName] = useState<string>('');
     const [hotelAddress, setHotelAddress] = useState<string>('');
     const [hotelPhone, setHotelPhone] = useState<string>('');
+    const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+    const [hotelDocumentId, setHotelDocumentId] = useState<string | null>(null);
 
     const [qrOpen, setQrOpen] = useState(false);
     const [qrLink, setQrLink] = useState('');
@@ -208,6 +210,46 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
         const baseUrl = window.location.origin;
         const uniqueLink = `${baseUrl}/hotel/${hotelId}/menu`;
         setQrLink(uniqueLink);
+    }, [hotelId]);
+
+    // Load hotel profile data from Appwrite on mount
+    useEffect(() => {
+        const loadHotelProfile = async () => {
+            try {
+                setIsLoadingProfile(true);
+                
+                // Try to fetch existing hotel document by hotelId
+                const response = await databases.listDocuments(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.hotels,
+                    [
+                        // Query.equal('hotelId', hotelId) // Uncomment when you add hotelId field
+                    ]
+                );
+                
+                if (response.documents.length > 0) {
+                    // Load existing data
+                    const hotelData = response.documents[0];
+                    setHotelDocumentId(hotelData.$id);
+                    setHotelName(hotelData.name || '');
+                    setHotelAddress(hotelData.address || '');
+                    setHotelPhone(hotelData.contactNumber || '');
+                    setMainImage(hotelData.bannerImage || null);
+                    setProfileImage(hotelData.logoImage || null);
+                    setCustomWelcomeMessage(hotelData.welcomeMessage || 'Welcome to our exclusive wellness experience');
+                    setSelectedLanguage(hotelData.defaultLanguage || 'en');
+                    console.log('✅ Loaded hotel profile from Appwrite:', hotelData);
+                } else {
+                    console.log('ℹ️ No existing hotel profile found, will create on first save');
+                }
+            } catch (error) {
+                console.error('❌ Error loading hotel profile:', error);
+            } finally {
+                setIsLoadingProfile(false);
+            }
+        };
+        
+        loadHotelProfile();
     }, [hotelId]);
     
     // Booking modal state
@@ -221,22 +263,59 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
     const [bookingTime, setBookingTime] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
 
-    const handleSaveAndPreview = () => {
-        // Auto-save all profile data
-        console.log('Saving profile data:', {
-            mainImage,
-            profileImage,
-            hotelName,
-            hotelAddress,
-            hotelPhone,
-            customWelcomeMessage,
-            selectedLanguage
-        });
-        
-        // TODO: Add actual save logic to Appwrite here
-        // For now, just show success message and open preview
-        setShowLandingPage(true);
-        setPreviewOpen(true);
+    const handleSaveAndPreview = async () => {
+        try {
+            setIsProcessing(true);
+            
+            const hotelData = {
+                name: hotelName || 'Hotel',
+                address: hotelAddress || '',
+                contactNumber: hotelPhone || '',
+                bannerImage: mainImage || '',
+                logoImage: profileImage || '',
+                welcomeMessage: customWelcomeMessage,
+                defaultLanguage: selectedLanguage,
+                type: 'hotel',
+                updatedAt: new Date().toISOString()
+            };
+            
+            if (hotelDocumentId) {
+                // Update existing document
+                await databases.updateDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.hotels,
+                    hotelDocumentId,
+                    hotelData
+                );
+                console.log('✅ Hotel profile updated successfully');
+            } else {
+                // Create new document
+                const newDoc = await databases.createDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.hotels,
+                    ID.unique(),
+                    {
+                        ...hotelData,
+                        hotelId: hotelId,
+                        createdAt: new Date().toISOString()
+                    }
+                );
+                setHotelDocumentId(newDoc.$id);
+                console.log('✅ Hotel profile created successfully');
+            }
+            
+            // Show success message
+            alert('✅ Profile saved successfully!');
+            
+            // Open preview
+            setShowLandingPage(true);
+            setPreviewOpen(true);
+        } catch (error) {
+            console.error('❌ Error saving hotel profile:', error);
+            alert('❌ Error saving profile. Please try again.');
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
     const handleOrderNow = (provider: ProviderCard, duration: DurationKey) => {
@@ -557,6 +636,16 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                             </div>
                         </div>
                         
+                        {/* Loading State */}
+                        {isLoadingProfile ? (
+                            <div className="flex items-center justify-center py-20">
+                                <div className="text-center">
+                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+                                    <p className="text-gray-600">Loading profile data...</p>
+                                </div>
+                            </div>
+                        ) : (
+                            <>
                         {/* Banner and Profile Image - Like Therapist Card */}
                         <div className="relative">
                             {/* Banner Image Upload - Full Width */}
@@ -629,7 +718,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         </div>
                         
                         {/* Add spacing for overlapping profile image */}
-                        <div className="mt-[170px]"></div>
+                        <div className="mt-16"></div>
                         
                         <div>
                             <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
@@ -673,30 +762,6 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                             />
                         </div>
 
-                        {/* Custom Welcome Message */}
-                        <div className="p-6 bg-white rounded-xl border-2 border-gray-300 shadow-sm">
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
-                                    <MessageSquare className="w-6 h-6 text-orange-600" />
-                                </div>
-                                <h3 className="text-xl font-bold text-gray-900">
-                                    Custom Welcome Message
-                                </h3>
-                            </div>
-                            <p className="text-sm text-gray-600 mb-4 leading-relaxed">
-                                Create a personalized greeting that appears on your guest menu. Make your guests feel special with a warm, customized welcome.
-                            </p>
-                            <textarea
-                                className="w-full p-4 bg-white border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 min-h-[100px] text-gray-900 placeholder-gray-400"
-                                placeholder="e.g., Welcome to Paradise Resort! Enjoy exclusive wellness services designed just for you..."
-                                value={customWelcomeMessage}
-                                onChange={(e) => setCustomWelcomeMessage(e.target.value)}
-                            />
-                            <div className="mt-4">
-                                <span className="text-xs text-gray-500 font-medium">{customWelcomeMessage.length} / 500 characters</span>
-                            </div>
-                        </div>
-
                         {/* Multi-Language Support */}
                         <div>
                             <h3 className="text-lg font-bold text-gray-900 mb-2">Multi-Language Support</h3>
@@ -733,15 +798,27 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         <div className="flex justify-end pt-4 border-t border-gray-200">
                             <button 
                                 onClick={handleSaveAndPreview}
-                                className="bg-orange-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-orange-600 transition-all shadow-md hover:shadow-lg flex items-center gap-2"
+                                disabled={isProcessing}
+                                className="bg-orange-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-orange-600 transition-all shadow-md hover:shadow-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                                Preview Menu
+                                {isProcessing ? (
+                                    <>
+                                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                                        Saving...
+                                    </>
+                                ) : (
+                                    <>
+                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                        Save & Preview Menu
+                                    </>
+                                )}
                             </button>
                         </div>
+                        </>
+                        )}
                     </div>
                 );
             case 'menu':
@@ -1167,7 +1244,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                 <div className="space-y-1">
                     {/* First Row */}
                     <div 
-                        className="flex gap-1 overflow-x-auto pb-1 -mx-2 px-2" 
+                        className="flex gap-1 overflow-x-auto pb-1" 
                         style={{
                             scrollbarWidth: 'none', 
                             msOverflowStyle: 'none',
@@ -1203,7 +1280,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                     
                     {/* Second Row */}
                     <div 
-                        className="flex gap-1 overflow-x-auto pb-1 -mx-2 px-2" 
+                        className="flex gap-1 overflow-x-auto pb-1" 
                         style={{
                             scrollbarWidth: 'none', 
                             msOverflowStyle: 'none',
@@ -1312,46 +1389,46 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         <div className="overflow-y-auto max-h-[90vh]">
                             {showLandingPage ? (
                                 /* Landing Page - Language Selection */
-                                <div className="p-8">
-                                    {/* Massage Icon */}
-                                    <div className="flex justify-center mb-6">
-                                        <div className="w-24 h-24 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center shadow-xl">
-                                            <svg className="w-14 h-14 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                                                <path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74l-3.43-.72c-.08-.01-.15-.03-.24-.03-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z"/>
-                                            </svg>
-                                        </div>
+                                <div className="relative min-h-screen">
+                                    {/* Background Image */}
+                                    <div className="absolute inset-0">
+                                        <img 
+                                            src="https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4199000d2acdf338/view?project=68f23b11000d25eb3664"
+                                            alt="Massage background"
+                                            className="w-full h-full object-cover"
+                                        />
                                     </div>
 
+                                    {/* Content */}
+                                    <div className="relative p-4 sm:p-8">
+
                                     {/* Hotel Info */}
-                                    <div className="text-center mb-8">
-                                        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                                    <div className="text-center mb-6 sm:mb-8 mt-20 sm:mt-32">
+                                        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-2 sm:mb-3">
                                             {hotelName || 'Hotel Massage'}
                                         </h1>
-                                        <h2 className="text-xl font-semibold text-orange-600 mb-1">
-                                            Massage Directory
+                                        <h2 className="text-2xl sm:text-3xl font-semibold text-yellow-600">
+                                            Massage Directory Room Service
                                         </h2>
-                                        <p className="text-lg text-gray-600">
-                                            Room Service
-                                        </p>
                                     </div>
 
                                     {/* Language Selection */}
                                     <div className="mb-6">
-                                        <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">
+                                        <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4 text-center">
                                             Select Your Language
                                         </h3>
-                                        <div className="grid grid-cols-3 gap-3">
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 max-w-lg mx-auto">
                                             {[
-                                                { code: 'en', flag: '🇬🇧', name: 'English' },
-                                                { code: 'id', flag: '🇮🇩', name: 'Indonesian' },
-                                                { code: 'zh', flag: '🇨🇳', name: 'Chinese' },
-                                                { code: 'ja', flag: '🇯🇵', name: 'Japanese' },
-                                                { code: 'ko', flag: '🇰🇷', name: 'Korean' },
-                                                { code: 'ru', flag: '🇷🇺', name: 'Russian' },
-                                                { code: 'fr', flag: '🇫🇷', name: 'French' },
-                                                { code: 'de', flag: '🇩🇪', name: 'German' },
-                                                { code: 'es', flag: '🇪🇸', name: 'Spanish' }
+                                                { code: 'en', flag: 'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe465d0003abec873e/view?project=68f23b11000d25eb3664', name: 'English' },
+                                                { code: 'id', flag: 'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe465e001e949c568b/view?project=68f23b11000d25eb3664', name: 'Indonesian' },
+                                                { code: 'zh', flag: 'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe465f002a12d99ed7/view?project=68f23b11000d25eb3664', name: 'Chinese' },
+                                                { code: 'ja', flag: 'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe46600031867275b5/view?project=68f23b11000d25eb3664', name: 'Japanese' },
+                                                { code: 'kp', flag: 'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4661003cb293c3b6/view?project=68f23b11000d25eb3664', name: 'North Korean' },
+                                                { code: 'ko', flag: 'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4663000b35ef92d7/view?project=68f23b11000d25eb3664', name: 'Korean' },
+                                                { code: 'ru', flag: 'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4664001947c227e6/view?project=68f23b11000d25eb3664', name: 'Russian' },
+                                                { code: 'fr', flag: 'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe46650025458f2175/view?project=68f23b11000d25eb3664', name: 'French' },
+                                                { code: 'de', flag: 'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe466600307d55fcb3/view?project=68f23b11000d25eb3664', name: 'German' },
+                                                { code: 'es', flag: 'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4667003c1bf2059c/view?project=68f23b11000d25eb3664', name: 'Spanish' }
                                             ].map(lang => (
                                                 <button
                                                     key={lang.code}
@@ -1359,23 +1436,24 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                                                         setSelectedLanguage(lang.code);
                                                         setShowLandingPage(false);
                                                     }}
-                                                    className="flex flex-col items-center gap-2 p-4 bg-white border-2 border-gray-200 rounded-xl hover:border-yellow-400 hover:shadow-lg transition-all transform hover:scale-105"
+                                                    className="flex flex-col items-center gap-1 sm:gap-2 p-2 sm:p-3 bg-transparent hover:bg-yellow-50/30 rounded-xl transition-all transform hover:scale-105"
                                                 >
-                                                    <span className="text-4xl">{lang.flag}</span>
-                                                    <span className="text-xs font-medium text-gray-700">{lang.name}</span>
+                                                    <img src={lang.flag} alt={lang.name} className="w-10 h-10 sm:w-12 sm:h-12 object-cover rounded-lg" />
+                                                    <span className="text-xs font-medium text-yellow-600">{lang.name}</span>
                                                 </button>
                                             ))}
                                         </div>
                                     </div>
 
                                     {/* Footer Info */}
-                                    <div className="text-center mt-8 pt-6 border-t border-gray-200">
-                                        <p className="text-sm text-gray-500">
+                                    <div className="text-center mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-200">
+                                        <p className="text-xs sm:text-sm text-gray-500">
                                             Please Allow 1 Hour For Therapist Arrival
                                         </p>
-                                        <p className="text-sm text-gray-600 mt-2 italic">
+                                        <p className="text-xs sm:text-sm text-gray-600 mt-2 italic">
                                             Enjoy Your Massage
                                         </p>
+                                    </div>
                                     </div>
                                 </div>
                             ) : (

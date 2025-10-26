@@ -14,6 +14,8 @@
     "type-check": "tsc --noEmit",
     "save": "git add -A && git commit -m \"chore(save): workspace snapshot\" && git push origin main",
     "sync:translations": "tsx scripts/syncTranslations.ts",
+    "migrate:images": "tsx scripts/migrateImagesToAppwrite.ts",
+    "migrate:flags": "tsx scripts/migrateFlagImages.ts",
     "mobile:android": "cd mobile && npx react-native run-android",
     "mobile:ios": "cd mobile && npx react-native run-ios",
     "mobile:start": "cd mobile && npx react-native start"

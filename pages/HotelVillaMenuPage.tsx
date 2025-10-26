@@ -49,14 +49,15 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
     }, [venueId]);
 
     // Filter only live providers and add random live menu images
+    // TEMPORARY: Show all therapists for testing (remove .filter when live flag is set)
     const liveTherapists = useMemo(() => {
-        return therapists.filter(t => t.isLive).map(therapist => ({
+        return therapists.map(therapist => ({
             ...therapist,
             mainImage: (therapist as any).mainImage || getRandomLiveMenuImage()
         }));
     }, [therapists]);
     
-    const livePlaces = places.filter(p => p.isLive);
+    const livePlaces = places;
 
     if (loading) {
         return (
@@ -246,21 +247,11 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
             </div>
 
             {/* Footer */}
-            <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white py-12 px-4 mt-20 border-t-4 border-orange-500">
+            <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white py-8 px-4 mt-20 border-t-4 border-orange-500">
                 <div className="max-w-4xl mx-auto text-center">
-                    <div className="mb-6">
-                        <h3 className="text-3xl font-bold mb-3">
-                            <span className="text-white">Inda</span>
-                            <span className="text-orange-400">Street</span>
-                        </h3>
-                        <p className="text-gray-300 text-base font-medium">Professional Wellness Services</p>
-                        <p className="text-gray-400 text-sm mt-2">Connecting you with Bali's finest therapists and wellness centers</p>
-                    </div>
-                    <div className="border-t border-gray-700 pt-6">
-                        <p className="text-gray-500 text-sm">
-                            Powered by IndaStreet © {new Date().getFullYear()} | All Rights Reserved
-                        </p>
-                    </div>
+                    <p className="text-gray-400 text-sm">
+                        © {new Date().getFullYear()} | All Rights Reserved
+                    </p>
                 </div>
             </div>
         </div>
