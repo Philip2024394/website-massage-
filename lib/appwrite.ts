@@ -15,16 +15,16 @@ export { client };
 // Database and Collection IDs
 export const DATABASE_ID = '68f76ee1000e64ca8d05';
 export const COLLECTIONS = {
-    THERAPISTS: 'THERAPISTS_COLLECTION_ID',
-    PLACES: 'PLACES_COLLECTION_ID',
-    USERS: 'USERS_COLLECTI',
-    AGENTS: 'AGENTS_COLLECTION_ID',
+    THERAPISTS: 'therapists_collection_id',
+    PLACES: 'places_collection_id',
+    USERS: 'users_collection_id',
+    AGENTS: 'agents_collection_id',
     BOOKINGS: 'BOOKINGS_COLLECTION_ID',
     REVIEWS: 'REVIEWS_COLLECTION_ID',
     ANALYTICS: 'analytics',
     ANALYTICS_EVENTS: 'analytics_events',
     ADMINS: 'admins',
-    HOTELS: 'HOTELS_COLLECTION_ID',
+    HOTELS: 'hotels_collection_id',
     VILLAS: 'villas',
     NOTIFICATIONS: 'NOTIFICATIONS_COLLECTION_ID',
     MASSAGE_TYPES: 'MASSAGE_TYPES_COLLECTION_ID',

@@ -8,14 +8,14 @@ export const APPWRITE_CONFIG = {
     
     // Collection IDs from your Appwrite database
     collections: {
-        therapists: 'THERAPISTS_COLLECTION_ID',
-        places: 'PLACES_COLLECTION_ID',
-        agents: 'AGENTS_COLLECTION_ID',
+        therapists: 'therapists_collection_id',
+        places: 'places_collection_id',
+        agents: 'agents_collection_id',
         bookings: 'BOOKINGS_COLLECTION_ID',
         reviews: 'REVIEWS_COLLECTION_ID',
         notifications: 'NOTIFICATIONS_COLLECTION_ID',
-        users: 'USERS_COLLECTION_ID',
-        hotels: 'HOTELS_COLLECTION_ID',
+        users: 'users_collection_id',
+        hotels: 'hotels_collection_id',
         massageTypes: 'MASSAGE_TYPES_COLLECTION_ID',
         membershipPricing: 'MEMBERSHIP_PRICING_COLLECTION_ID',
         imageAssets: 'image_assets',
