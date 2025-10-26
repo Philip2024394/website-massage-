@@ -1399,133 +1399,107 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
             {/* QR Modal - Professional Design with Hotel Branding */}
             {qrOpen && (
                 <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[9999] flex items-center justify-center p-4" onClick={() => setQrOpen(false)}>
-                    <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-white rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
                         {/* Header with Orange Gradient */}
-                        <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-5">
+                        <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-3">
                             <div className="flex justify-between items-start">
                                 <div>
-                                    <h3 className="text-2xl font-bold text-white">Guest Menu QR Code</h3>
-                                    <p className="text-orange-100 text-sm mt-1">Share this with your guests for easy access</p>
+                                    <h3 className="text-xl font-bold text-white">Guest Menu QR Code</h3>
+                                    <p className="text-orange-100 text-xs mt-0.5">Share with your guests</p>
                                 </div>
                                 <button 
                                     onClick={() => setQrOpen(false)} 
                                     className="text-white/80 hover:text-white transition-colors p-1 hover:bg-white/20 rounded-lg"
                                 >
-                                    <X size={24}/>
+                                    <X size={20}/>
                                 </button>
                             </div>
                         </div>
 
                         {/* QR Code Display Area */}
-                        <div className="p-8">
+                        <div className="p-6">
                             <div className="flex flex-col items-center">
                                 {/* QR Code Container with Brand Design */}
                                 <div className="relative">
                                     {/* Decorative corners */}
-                                    <div className="absolute -top-3 -left-3 w-12 h-12 border-t-4 border-l-4 border-orange-500 rounded-tl-xl"></div>
-                                    <div className="absolute -top-3 -right-3 w-12 h-12 border-t-4 border-r-4 border-orange-500 rounded-tr-xl"></div>
-                                    <div className="absolute -bottom-3 -left-3 w-12 h-12 border-b-4 border-l-4 border-orange-500 rounded-bl-xl"></div>
-                                    <div className="absolute -bottom-3 -right-3 w-12 h-12 border-b-4 border-r-4 border-orange-500 rounded-br-xl"></div>
+                                    <div className="absolute -top-2 -left-2 w-8 h-8 border-t-4 border-l-4 border-orange-500 rounded-tl-xl"></div>
+                                    <div className="absolute -top-2 -right-2 w-8 h-8 border-t-4 border-r-4 border-orange-500 rounded-tr-xl"></div>
+                                    <div className="absolute -bottom-2 -left-2 w-8 h-8 border-b-4 border-l-4 border-orange-500 rounded-bl-xl"></div>
+                                    <div className="absolute -bottom-2 -right-2 w-8 h-8 border-b-4 border-r-4 border-orange-500 rounded-br-xl"></div>
                                     
                                     {/* QR Code with White Background */}
-                                    <div className="bg-white p-8 rounded-xl border-2 border-gray-200 shadow-lg">
+                                    <div className="bg-white p-6 rounded-xl border-2 border-gray-200 shadow-lg">
                                         {qrCodeDataUrl ? (
-                                            <div className="space-y-4">
+                                            <div className="space-y-3">
                                                 <div className="flex justify-center">
                                                     <img 
                                                         src={qrCodeDataUrl} 
                                                         alt="QR code" 
-                                                        className="w-72 h-72 object-contain" 
+                                                        className="w-64 h-64 object-contain" 
                                                         style={{ imageRendering: 'pixelated' }}
                                                     />
                                                 </div>
                                                 {/* Hotel Name Below QR Code */}
-                                                <div className="text-center pt-4 border-t-2 border-gray-200">
+                                                <div className="text-center pt-3 border-t-2 border-gray-200">
                                                     <div className="text-xs text-gray-500 mb-1">Scan to view menu for</div>
-                                                    <div className="text-xl font-bold">
+                                                    <div className="text-lg font-bold">
                                                         <span className="text-gray-900">Inda</span>
                                                         <span className="text-orange-500">Street</span>
                                                     </div>
-                                                    <div className="text-lg font-semibold text-gray-700 mt-1">
+                                                    <div className="text-base font-semibold text-gray-700 mt-0.5">
                                                         {hotelName || 'Your Hotel'}
                                                     </div>
                                                 </div>
                                             </div>
                                         ) : (
-                                            <div className="w-72 h-72 flex items-center justify-center">
+                                            <div className="w-64 h-64 flex items-center justify-center">
                                                 <div className="text-center">
                                                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
-                                                    <p className="text-sm text-gray-500 mt-4">Generating QR code...</p>
+                                                    <p className="text-sm text-gray-500 mt-4">Generating...</p>
                                                 </div>
                                             </div>
                                         )}
                                     </div>
                                 </div>
 
-                                {/* URL Display */}
-                                <div className="mt-6 w-full">
-                                    <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-4">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <LinkIcon size={16} className="text-gray-500" />
-                                            <span className="text-xs font-medium text-gray-600">Direct Link:</span>
-                                        </div>
-                                        <p className="text-sm text-gray-700 break-all font-mono">
-                                            {qrLink}
-                                        </p>
-                                    </div>
-                                </div>
-
                                 {/* Action Buttons */}
-                                <div className="mt-6 w-full space-y-3">
+                                <div className="mt-5 w-full space-y-2">
                                     <button 
                                         onClick={downloadQR} 
-                                        className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-bold hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+                                        className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-bold hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl"
                                     >
-                                        <QrCode size={20} /> 
+                                        <QrCode size={18} /> 
                                         <span>Download QR Code</span>
                                     </button>
                                     
-                                    <div className="grid grid-cols-3 gap-3">
+                                    <div className="grid grid-cols-3 gap-2">
                                         <button 
                                             onClick={() => {
                                                 navigator.clipboard.writeText(qrLink);
-                                                alert('Link copied to clipboard!');
+                                                alert('Link copied!');
                                             }} 
-                                            className="flex flex-col items-center justify-center gap-2 px-4 py-3 bg-gray-100 text-gray-800 rounded-xl font-semibold hover:bg-gray-200 transition-colors border-2 border-gray-200"
+                                            className="flex flex-col items-center justify-center gap-1.5 px-3 py-2.5 bg-gray-100 text-gray-800 rounded-lg font-semibold hover:bg-gray-200 transition-colors border-2 border-gray-200"
                                         >
-                                            <LinkIcon size={18} />
-                                            <span className="text-xs">Copy Link</span>
+                                            <LinkIcon size={16} />
+                                            <span className="text-xs">Copy</span>
                                         </button>
                                         <button 
                                             onClick={shareWhatsApp} 
-                                            className="flex flex-col items-center justify-center gap-2 px-4 py-3 bg-green-500 text-white rounded-xl font-semibold hover:bg-green-600 transition-colors"
+                                            className="flex flex-col items-center justify-center gap-1.5 px-3 py-2.5 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition-colors"
                                         >
-                                            <MessageSquare size={18} />
+                                            <MessageSquare size={16} />
                                             <span className="text-xs">WhatsApp</span>
                                         </button>
                                         <button 
-                                            onClick={() => window.open(`mailto:?subject=Guest%20Menu%20-%20${encodeURIComponent(hotelName || 'Hotel')}&body=${encodeURIComponent(qrLink)}`)} 
-                                            className="flex flex-col items-center justify-center gap-2 px-4 py-3 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition-colors"
+                                            onClick={() => window.open(`mailto:?subject=Menu%20-%20${encodeURIComponent(hotelName || 'Hotel')}&body=${encodeURIComponent(qrLink)}`)} 
+                                            className="flex flex-col items-center justify-center gap-1.5 px-3 py-2.5 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition-colors"
                                         >
-                                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                                 <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
                                                 <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
                                             </svg>
                                             <span className="text-xs">Email</span>
                                         </button>
-                                    </div>
-                                </div>
-
-                                {/* Info Note */}
-                                <div className="mt-6 bg-orange-50 border border-orange-200 rounded-lg p-4 w-full">
-                                    <div className="flex items-start gap-3">
-                                        <div className="w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                            <span className="text-white text-xs font-bold">i</span>
-                                        </div>
-                                        <div className="text-xs text-orange-900">
-                                            <p className="font-semibold mb-1">For Development Testing:</p>
-                                            <p>The QR code will work in development mode. Scan it with your phone's camera to access the guest menu at <span className="font-mono bg-orange-100 px-1 rounded">localhost:5173</span> (make sure your phone is on the same network).</p>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
