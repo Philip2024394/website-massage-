@@ -27,6 +27,8 @@ export const APPWRITE_CONFIG = {
         commissionRecords: 'commission_records',
         attributes: 'attributes',
         analyticsEvents: 'analytics_events',
+        therapistJobListings: 'therapist_job_listings',
+        employerJobPostings: 'employer_job_postings',
     },
     
     // Storage bucket ID

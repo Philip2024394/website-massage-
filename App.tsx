@@ -32,6 +32,7 @@ import VillaDashboardPage from './pages/VillaDashboardPage';
 import HotelLoginPage from './pages/HotelLoginPage';
 import VillaLoginPage from './pages/VillaLoginPage';
 import MassagePlaceLoginPage from './pages/MassagePlaceLoginPage';
+import EmployerJobPostingPage from './pages/EmployerJobPostingPage';
 // import UnifiedLoginPage from './pages/UnifiedLoginPage';
 import { translations } from './translations/index.ts';
 import { therapistService, placeService, agentService } from './lib/appwriteService';
@@ -40,7 +41,7 @@ import FloatingWebsiteButton from './components/FloatingWebsiteButton';
 import HotelVillaMenuPage from './pages/HotelVillaMenuPage';
 import { restoreSession, logout as sessionLogout, saveSessionCache } from './lib/sessionManager';
 
-type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistStatus' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'agentAuth' | 'agentDashboard' | 'agentTerms' | 'serviceTerms' | 'privacy' | 'membership' | 'booking' | 'bookings' | 'notifications' | 'massageTypes' | 'hotelLogin' | 'hotelDashboard' | 'villaLogin' | 'villaDashboard' | 'unifiedLogin' | 'therapistLogin' | 'massagePlaceLogin' | 'hotelVillaMenu';
+type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistStatus' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'agentAuth' | 'agentDashboard' | 'agentTerms' | 'serviceTerms' | 'privacy' | 'membership' | 'booking' | 'bookings' | 'notifications' | 'massageTypes' | 'hotelLogin' | 'hotelDashboard' | 'villaLogin' | 'villaDashboard' | 'unifiedLogin' | 'therapistLogin' | 'massagePlaceLogin' | 'hotelVillaMenu' | 'employerJobPosting';
 type Language = 'en' | 'id';
 type LoggedInProvider = { id: number | string; type: 'therapist' | 'place' }; // Support both number and string IDs for Appwrite compatibility
 type LoggedInUser = { id: string; type: 'admin' | 'hotel' | 'villa' | 'agent' };
@@ -795,6 +796,7 @@ const App: React.FC = () => {
             case 'villaDashboard': return isVillaLoggedIn ? <VillaDashboardPage onLogout={handleVillaLogout} /> : <VillaLoginPage onVillaLogin={() => { setIsVillaLoggedIn(true); setPage('villaDashboard'); }} onBack={handleBackToHome} />;
             case 'massagePlaceLogin': return <MassagePlaceLoginPage onSuccess={(_placeId) => { /* handle massage place login */ }} onBack={handleBackToHome} t={t} />;
             case 'hotelVillaMenu': return <HotelVillaMenuPage venueId={venueMenuId} therapists={therapists} places={places} onBook={handleNavigateToBooking} />;
+            case 'employerJobPosting': return <EmployerJobPostingPage />;
             default:
                 return providerForBooking ? (
                     <BookingPage

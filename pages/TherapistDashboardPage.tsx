@@ -3,7 +3,7 @@ import type { Therapist, Pricing, Booking, Notification } from '../types';
 import { AvailabilityStatus, BookingStatus, HotelVillaServiceStatus } from '../types';
 import { parsePricing, parseCoordinates, parseMassageTypes, stringifyPricing, stringifyCoordinates, stringifyMassageTypes, stringifyAnalytics } from '../utils/appwriteHelpers';
 import { therapistService } from '../lib/appwriteService';
-import { User, Calendar, TrendingUp, Hotel, FileCheck, LogOut, Bell } from 'lucide-react';
+import { User, Calendar, TrendingUp, Hotel, FileCheck, LogOut, Bell, Briefcase } from 'lucide-react';
 import Button from '../components/Button';
 import ImageUpload from '../components/ImageUpload';
 import HotelVillaOptIn from '../components/HotelVillaOptIn';
@@ -17,6 +17,7 @@ import CustomCheckbox from '../components/CustomCheckbox';
 import { MASSAGE_TYPES_CATEGORIZED } from '../constants/rootConstants';
 import TherapistTermsPage from './TherapistTermsPage';
 import TabButton from '../components/dashboard/TabButton';
+import TherapistJobOpportunitiesPage from './TherapistJobOpportunitiesPage';
 
 
 interface TherapistDashboardPageProps {
@@ -343,6 +344,15 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
 
     const renderContent = () => {
         switch (activeTab) {
+            case 'jobOpportunities':
+                return (
+                    <TherapistJobOpportunitiesPage
+                        therapistId={therapistId}
+                        therapistName={therapist?.name || ''}
+                        isActiveMember={therapist?.activeMembershipDate ? new Date(therapist.activeMembershipDate) > new Date() : false}
+                        onClose={() => setActiveTab('profile')}
+                    />
+                );
             case 'bookings':
                 return (
                     <div className="space-y-6">
@@ -882,6 +892,12 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                         label="Hotel/Villa"
                         isActive={activeTab === 'hotelVilla'}
                         onClick={() => setActiveTab('hotelVilla')}
+                    />
+                    <TabButton
+                        icon={<Briefcase className="w-4 h-4" />}
+                        label="Job Opportunities"
+                        isActive={activeTab === 'jobOpportunities'}
+                        onClick={() => setActiveTab('jobOpportunities')}
                     />
                     <TabButton
                         icon={<FileCheck className="w-4 h-4" />}
