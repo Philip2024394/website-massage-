@@ -396,28 +396,34 @@
 
 | Attribute | Type | Required | Description |
 |-----------|------|----------|-------------|
-| businessName | String | ✅ | Company name |
-| businessType | String | ✅ | hotel/spa/wellness-center/resort/home-service/other |
-| contactPerson | String | ✅ | HR manager name |
-| contactEmail | String | ✅ | Contact email |
-| contactPhone | String | ❌ | Phone number |
-| country | String | ✅ | Indonesia/international |
-| city | String | ✅ | City/location |
-| positionTitle | String | ✅ | Job title |
-| numberOfPositions | Integer | ✅ | Openings count |
-| salaryMin | String | ❌ | Minimum salary |
-| salaryMax | String | ❌ | Maximum salary |
+| jobTitle | String (128) | ✅ | Main job title |
+| jobDescription | String (1000) | ✅ | Detailed job description |
+| employmentType | String (64) | ✅ | full-time/part-time/contract/freelance |
+| location | String (128) | ❌ | Specific location/address |
+| salaryRangeMin | Integer | ❌ | Minimum salary (min: 0) |
+| salaryRangeMax | Integer | ❌ | Maximum salary (min: 0) |
+| applicationDeadline | DateTime | ❌ | Application deadline |
+| businessName | String (255) | ✅ | Company name |
+| businessType | String (100) | ✅ | hotel/spa/wellness-center/resort/home-service/other |
+| contactPerson | String (255) | ✅ | HR manager name |
+| contactEmail | String (255) | ✅ | Contact email |
+| contactPhone | String (50) | ❌ | Phone number |
+| country | String (100) | ✅ | Indonesia/international |
+| city | String (255) | ✅ | City/location |
+| positionTitle | String (255) | ✅ | Alternative position title |
+| numberOfPositions | Integer | ✅ | Number of openings |
+| salaryMin | String (100) | ❌ | Minimum salary (string format) |
+| salaryMax | String (100) | ❌ | Maximum salary (string format) |
 | accommodationProvided | Boolean | ✅ | Accommodation offered |
-| accommodationDetails | String | ❌ | Details text |
-| workType | String | ✅ | full-time/part-time/contract |
-| requirements | String (JSON) | ❌ | Array of requirements |
-| benefits | String (JSON) | ❌ | Array of benefits |
-| jobDescription | String | ❌ | Full description |
-| startDate | String | ❌ | Expected start |
+| accommodationDetails | String (1000) | ❌ | Accommodation details |
+| workType | String (50) | ✅ | full-time/part-time/contract |
+| requirements | String[] (2000) | ❌ | Array of requirements |
+| benefits | String[] (2000) | ❌ | Array of benefits |
+| startDate | String (100) | ❌ | Expected start date |
 | postedDate | DateTime | ✅ | Posted timestamp |
-| status | String | ✅ | active/filled/closed |
-| views | Integer | ❌ | View counter |
-| applications | Integer | ❌ | Application count |
+| status | String (50) | ❌ | active/filled/closed |
+| views | Integer | ❌ | View counter (default: 0) |
+| applications | Integer | ❌ | Application count (default: 0) |
 
 ---
 
