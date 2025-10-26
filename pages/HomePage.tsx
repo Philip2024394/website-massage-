@@ -3,7 +3,7 @@ import type { User, UserLocation, Agent, Place, Therapist, Analytics } from '../
 import LocationModal from '../components/LocationModal';
 import TherapistCard from '../components/TherapistCard';
 import RatingModal from '../components/RatingModal';
-import { MASSAGE_TYPES_CATEGORIZED } from '../constants';
+import { MASSAGE_TYPES_CATEGORIZED } from '../constants/rootConstants';
 import HomeIcon from '../components/icons/HomeIcon';
 import MapPinIcon from '../components/icons/MapPinIcon';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';

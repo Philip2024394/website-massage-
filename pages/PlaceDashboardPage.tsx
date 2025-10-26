@@ -12,7 +12,7 @@ import MapPinIcon from '../components/icons/MapPinIcon';
 import ClockIcon from '../components/icons/ClockIcon';
 import NotificationBell from '../components/NotificationBell';
 import CustomCheckbox from '../components/CustomCheckbox';
-import { MASSAGE_TYPES_CATEGORIZED, ADDITIONAL_SERVICES } from '../constants';
+import { MASSAGE_TYPES_CATEGORIZED, ADDITIONAL_SERVICES } from '../constants/rootConstants';
 
 // Logout Icon
 const LogoutIcon = ({ className = 'w-6 h-6' }) => (

@@ -14,7 +14,7 @@ import CurrencyRpIcon from '../components/icons/CurrencyRpIcon';
 import MapPinIcon from '../components/icons/MapPinIcon';
 import CustomCheckbox from '../components/CustomCheckbox';
 import LogoutIcon from '../components/icons/LogoutIcon';
-import { MASSAGE_TYPES_CATEGORIZED } from '../constants';
+import { MASSAGE_TYPES_CATEGORIZED } from '../constants/rootConstants';
 import TherapistTermsPage from './TherapistTermsPage';
 
 

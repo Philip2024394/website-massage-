@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MASSAGE_TYPES_CATEGORIZED } from '../constants';
+import { MASSAGE_TYPES_CATEGORIZED } from '../constants/rootConstants';
 
 interface MassageTypesPageProps {
     onBack: () => void;
