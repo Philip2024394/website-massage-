@@ -218,6 +218,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
         
         // TODO: Add actual save logic to Appwrite here
         // For now, just show success message and open preview
+        setShowLandingPage(true);
         setPreviewOpen(true);
     };
 
@@ -1348,12 +1349,9 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                                         <p className="text-sm text-gray-500">
                                             Please Allow 1 Hour For Therapist Arrival
                                         </p>
-                                        {hotelPhone && (
-                                            <p className="text-sm text-gray-600 mt-2 flex items-center justify-center gap-2">
-                                                <Phone className="w-4 h-4 text-orange-500" />
-                                                {hotelPhone}
-                                            </p>
-                                        )}
+                                        <p className="text-sm text-gray-600 mt-2 italic">
+                                            Enjoy Your Massage
+                                        </p>
                                     </div>
                                 </div>
                             ) : (
@@ -1450,7 +1448,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                                                 )}
                                                 
                                                 {/* Languages Spoken */}
-                                                {provider.languages && provider.languages.length > 0 && (
+                                                {provider.languages && Array.isArray(provider.languages) && provider.languages.length > 0 && (
                                                     <div className="mb-4">
                                                         <p className="text-xs font-semibold text-gray-700 mb-2">Therapist Speaks:</p>
                                                         <div className="flex flex-wrap gap-1.5">

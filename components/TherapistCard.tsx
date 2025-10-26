@@ -229,7 +229,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook
             </div>
 
             {/* Languages Spoken */}
-            {therapist.languages && therapist.languages.length > 0 && (
+            {therapist.languages && Array.isArray(therapist.languages) && therapist.languages.length > 0 && (
                 <div>
                     <h4 className="text-sm font-semibold text-gray-700 mb-2">Therapist Speaks</h4>
                     <div className="flex flex-wrap gap-2">

@@ -71,7 +71,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate }) => {
                                 </div>
 
                                 {/* Languages Spoken */}
-                                {place.languages && place.languages.length > 0 && (
+                                {place.languages && Array.isArray(place.languages) && place.languages.length > 0 && (
                                     <div className="mt-3">
                                         <h4 className="text-xs font-semibold text-gray-700 mb-1.5">Languages</h4>
                                         <div className="flex flex-wrap gap-1.5">
