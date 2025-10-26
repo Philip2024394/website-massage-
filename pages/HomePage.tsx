@@ -35,6 +35,8 @@ interface HomePageProps {
     onAdminPortalClick: () => void;
     onBrowseJobsClick?: () => void;
     onEmployerJobPostingClick?: () => void;
+    onMassageJobsClick?: () => void;
+    onTherapistJobsClick?: () => void;
     onTermsClick?: () => void;
     onPrivacyClick?: () => void;
     isLoading: boolean;
@@ -71,7 +73,7 @@ const ChevronDownIcon = ({ className = 'w-5 h-5' }) => (
 
 
 
-const HomePage: React.FC<HomePageProps> = ({ loggedInAgent: _loggedInAgent, therapists, onSetUserLocation, onBook, onIncrementAnalytics, onAgentPortalClick, onMassageTypesClick, onHotelPortalClick, onVillaPortalClick, onTherapistPortalClick, onMassagePlacePortalClick, onAdminPortalClick, onBrowseJobsClick, onEmployerJobPostingClick, onTermsClick, onPrivacyClick, t }) => {
+const HomePage: React.FC<HomePageProps> = ({ loggedInAgent: _loggedInAgent, therapists, onSetUserLocation, onBook, onIncrementAnalytics, onAgentPortalClick, onMassageTypesClick, onHotelPortalClick, onVillaPortalClick, onTherapistPortalClick, onMassagePlacePortalClick, onAdminPortalClick, onBrowseJobsClick, onEmployerJobPostingClick, onMassageJobsClick, onTherapistJobsClick, onTermsClick, onPrivacyClick, t }) => {
     // Safety check for translations
     if (!t || !t.home) {
         console.error('HomePage: Missing translations object or t.home', { t });
@@ -313,39 +315,39 @@ const HomePage: React.FC<HomePageProps> = ({ loggedInAgent: _loggedInAgent, ther
                                     <h3 className="text-xs font-semibold text-white/60 uppercase tracking-wider">Job Marketplace</h3>
                                 </div>
 
-                                {/* Browse Jobs */}
+                                {/* Massage Jobs (Employer Postings) */}
                                 <button 
-                                    onClick={() => { onBrowseJobsClick?.(); setIsMenuOpen(false); }} 
-                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-teal-500 group"
+                                    onClick={() => { onMassageJobsClick?.(); setIsMenuOpen(false); }} 
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-blue-500 group"
                                 >
-                                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl shadow-lg bg-gradient-to-br from-teal-400 via-teal-500 to-teal-600 border-2 border-white transform hover:scale-105 transition-transform">
+                                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl shadow-lg bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600 border-2 border-white transform hover:scale-105 transition-transform">
                                         <svg className="w-6 h-6 text-white drop-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                         </svg>
                                     </div>
                                     <div className="flex-grow">
-                                        <h3 className="font-semibold text-gray-800 group-hover:text-teal-600 transition-colors">
-                                            Browse Jobs
+                                        <h3 className="font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
+                                            Massage Jobs
                                         </h3>
-                                        <p className="text-xs text-gray-500">Find therapists & job openings</p>
+                                        <p className="text-xs text-gray-500">Browse job openings</p>
                                     </div>
                                 </button>
 
-                                {/* Post a Job */}
+                                {/* Therapist Jobs (Looking for Work) */}
                                 <button 
-                                    onClick={() => { onEmployerJobPostingClick?.(); setIsMenuOpen(false); }} 
-                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-indigo-500 group"
+                                    onClick={() => { onTherapistJobsClick?.(); setIsMenuOpen(false); }} 
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-green-500 group"
                                 >
-                                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl shadow-lg bg-gradient-to-br from-indigo-400 via-indigo-500 to-indigo-600 border-2 border-white transform hover:scale-105 transition-transform">
+                                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl shadow-lg bg-gradient-to-br from-green-400 via-green-500 to-green-600 border-2 border-white transform hover:scale-105 transition-transform">
                                         <svg className="w-6 h-6 text-white drop-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                         </svg>
                                     </div>
                                     <div className="flex-grow">
-                                        <h3 className="font-semibold text-gray-800 group-hover:text-indigo-600 transition-colors">
-                                            Post a Job
+                                        <h3 className="font-semibold text-gray-800 group-hover:text-green-600 transition-colors">
+                                            Therapists Looking for Jobs
                                         </h3>
-                                        <p className="text-xs text-gray-500">Hire massage therapists</p>
+                                        <p className="text-xs text-gray-500">Find qualified therapists</p>
                                     </div>
                                 </button>
 
