@@ -19,7 +19,7 @@ const AgentPage: React.FC<AgentPageProps> = ({ onBack, onNavigateToAgentAuth, t:
 
     const handleWhatsAppClick = () => {
         const number = contactNumber;
-        const message = encodeURIComponent('Hi! I would like more information about becoming an IndoStreet Agent for Massage Therapists and Massage Places');
+        const message = encodeURIComponent('Hi! I would like more information about becoming an IndaStreet Agent for Massage Therapists and Massage Places');
         window.open(`https://wa.me/${number}?text=${message}`, '_blank');
     };
 
@@ -67,7 +67,7 @@ const AgentPage: React.FC<AgentPageProps> = ({ onBack, onNavigateToAgentAuth, t:
                     <div className="text-4xl mb-3">⭐</div>
                     <h3 className="text-2xl md:text-3xl font-bold mb-3">Represent Excellence</h3>
                     <p className="text-orange-100 text-lg mb-4 max-w-2xl mx-auto">
-                        As an IndoStreet Agent, you'll represent Indonesia's most trusted premium wellness platform, 
+                        As an IndaStreet Agent, you'll represent Indonesia's most trusted premium wellness platform, 
                         connecting professional massage therapists and spas with customers who value quality and convenience.
                     </p>
                     <div className="inline-block bg-white text-orange-600 px-6 py-2 rounded-full font-semibold">
@@ -96,7 +96,7 @@ const AgentPage: React.FC<AgentPageProps> = ({ onBack, onNavigateToAgentAuth, t:
                                 <div>
                                     <h4 className="text-xl font-bold text-green-900 mb-2">New Member Commission</h4>
                                     <p className="text-green-800 leading-relaxed">
-                                        Earn a generous 20% commission on every new therapist and massage place you onboard to IndoStreet. 
+                                        Earn a generous 20% commission on every new therapist and massage place you onboard to IndaStreet. 
                                         Each partnership you create builds your income stream.
                                     </p>
                                 </div>
@@ -195,7 +195,7 @@ const AgentPage: React.FC<AgentPageProps> = ({ onBack, onNavigateToAgentAuth, t:
                         <h4 className="text-xl font-bold text-gray-900 mb-3">Open to All Indonesians</h4>
                         <p className="text-gray-600 leading-relaxed">
                             This opportunity is for everyone! Students, professionals, stay-at-home parents, retirees - 
-                            anyone with ambition and drive can succeed as an IndoStreet Agent.
+                            anyone with ambition and drive can succeed as an IndaStreet Agent.
                         </p>
                     </div>
                 </div>
@@ -230,7 +230,7 @@ const AgentPage: React.FC<AgentPageProps> = ({ onBack, onNavigateToAgentAuth, t:
                 >
                     <h3 className="text-2xl md:text-3xl font-bold mb-4">Ready to Start Your Journey?</h3>
                     <p className="text-gray-300 mb-6 max-w-2xl mx-auto text-lg leading-relaxed">
-                        Join the exclusive IndoStreet Agent program today and start building your independent business 
+                        Join the exclusive IndaStreet Agent program today and start building your independent business 
                         with unlimited earning potential across Indonesia
                     </p>
                     <div className="inline-block bg-orange-500 text-white px-6 py-3 rounded-full text-base font-bold animate-pulse shadow-lg">

@@ -4,6 +4,8 @@ import { Therapist, Place, HotelVillaServiceStatus } from '../types';
 import { parsePricing } from '../utils/appwriteHelpers';
 import ImageUpload from '../components/ImageUpload';
 import { analyticsService } from '../services/analyticsService';
+import { databases, ID } from '../lib/appwrite';
+import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 // import Header from '../components/dashboard/Header';
 import StatCard from '../components/dashboard/StatCard';
 import TabButton from '../components/dashboard/TabButton';
@@ -23,6 +25,9 @@ interface ProviderCard {
     discount: number; // percent
     whatsappNumber?: string;
     description: string;
+    massageTypes: string[];
+    status?: 'Available' | 'Busy' | 'Offline';
+    languages?: string[];
 }
 
 interface HotelDashboardPageProps {
@@ -79,6 +84,12 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
             const discount = (item as any).hotelDiscount || 0;
             if (status === HotelVillaServiceStatus.OptedIn && discount > 0) {
                 const pricing = parsePricing(item.pricing) as Record<DurationKey, number>;
+                let massageTypes: string[] = [];
+                try {
+                    massageTypes = JSON.parse(item.massageTypes || '[]');
+                } catch (e) {
+                    massageTypes = [];
+                }
                 list.push({
                     id: item.id,
                     name: item.name,
@@ -91,6 +102,9 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                     discount,
                     whatsappNumber: (item as any).whatsappNumber,
                     description: (item as any).description,
+                    massageTypes,
+                    status: (item as any).status || 'Available',
+                    languages: item.languages || [],
                 });
             }
         };
@@ -113,6 +127,25 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
             discount: 15,
             whatsappNumber: '+628123456789',
             description: 'Certified Balinese therapist specializing in deep tissue and relaxation massage.',
+            massageTypes: ['Deep Tissue', 'Swedish', 'Hot Stone', 'Aromatherapy', 'Balinese'],
+            status: 'Available',
+            languages: ['id', 'en', 'ja'],
+        },
+        {
+            id: 't-002',
+            name: 'Made Santika',
+            type: 'therapist',
+            image: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=1200&auto=format&fit=crop',
+            location: 'Ubud, Bali',
+            rating: 4.8,
+            reviewCount: 95,
+            pricing: { '60': 280000, '90': 380000, '120': 480000 },
+            discount: 20,
+            whatsappNumber: '+628123456790',
+            description: 'Expert in traditional Balinese massage with 10 years experience.',
+            massageTypes: ['Balinese', 'Deep Tissue', 'Reflexology'],
+            status: 'Busy',
+            languages: ['id', 'en', 'zh', 'ko'],
         },
         {
             id: 'p-001',
@@ -125,10 +158,21 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
             pricing: { '60': 300000, '90': 420000, '120': 520000 },
             discount: 20,
             description: 'Modern wellness center offering aromatherapy and traditional Balinese treatments.',
+            massageTypes: ['Aromatherapy', 'Balinese', 'Reflexology', 'Thai Massage'],
+            status: 'Available',
+            languages: ['id', 'en', 'zh', 'ja', 'ko', 'ru'],
         },
     ];
 
-    const displayProviders = providers.length ? providers : mockProviders;
+    // Sort providers: Available first, then Busy
+    const displayProviders = useMemo(() => {
+        const providerList = providers.length ? providers : mockProviders;
+        return [...providerList].sort((a, b) => {
+            if (a.status === 'Available' && b.status !== 'Available') return -1;
+            if (a.status !== 'Available' && b.status === 'Available') return 1;
+            return 0;
+        });
+    }, [providers, mockProviders]);
 
     const stats = useMemo(() => {
         const count = providers.length;
@@ -147,6 +191,18 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
     const [qrOpen, setQrOpen] = useState(false);
     const [qrLink, setQrLink] = useState('');
     const [previewOpen, setPreviewOpen] = useState(false);
+    const [showLandingPage, setShowLandingPage] = useState(true);
+    
+    // Booking modal state
+    const [bookingOpen, setBookingOpen] = useState(false);
+    const [selectedProvider, setSelectedProvider] = useState<ProviderCard | null>(null);
+    const [selectedDuration, setSelectedDuration] = useState<DurationKey>('60');
+    const [guestName, setGuestName] = useState('');
+    const [roomNumber, setRoomNumber] = useState('');
+    const [bookingConfirmed, setBookingConfirmed] = useState(false);
+    const [bookingId, setBookingId] = useState('');
+    const [bookingTime, setBookingTime] = useState('');
+    const [isProcessing, setIsProcessing] = useState(false);
 
     const handleSaveAndPreview = () => {
         // Auto-save all profile data
@@ -163,6 +219,93 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
         // TODO: Add actual save logic to Appwrite here
         // For now, just show success message and open preview
         setPreviewOpen(true);
+    };
+
+    const handleOrderNow = (provider: ProviderCard, duration: DurationKey) => {
+        setSelectedProvider(provider);
+        setSelectedDuration(duration);
+        setBookingOpen(true);
+        setBookingConfirmed(false);
+        setGuestName('');
+        setRoomNumber('');
+    };
+
+    const handleProceedBooking = async () => {
+        if (!guestName || !roomNumber || !selectedProvider) return;
+
+        setIsProcessing(true);
+
+        try {
+            // Generate booking ID and timestamp
+            const newBookingId = `BK${Date.now().toString().slice(-8)}`;
+            const currentTime = new Date().toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            setBookingId(newBookingId);
+            setBookingTime(currentTime);
+
+            // Create booking in Appwrite database
+            // This will automatically notify the therapist through your app
+            const bookingData = {
+                bookingId: newBookingId,
+                therapistId: String(selectedProvider.id),
+                therapistName: selectedProvider.name,
+                userId: '1', // TODO: Get actual guest/user ID from session
+                hotelId: '1', // TODO: Get actual hotel ID from auth/props
+                hotelName: hotelName || 'Hotel',
+                hotelLocation: hotelAddress || 'Address not set',
+                guestName,
+                roomNumber,
+                roomType: 'Standard', // TODO: Get actual room type if available
+                numberOfGuests: 1, // Default to 1, can be updated if needed
+                duration: selectedDuration,
+                price: selectedProvider.pricing[selectedDuration],
+                bookingTime: currentTime,
+                bookingDateTime: new Date().toISOString(),
+                checkInDate: new Date().toISOString(), // Booking date
+                checkOutDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Next day
+                status: 'pending', // Therapist needs to confirm
+                createdAt: new Date().toISOString(),
+                confirmedAt: null,
+                completedAt: null
+            };
+
+            // Save to Appwrite
+            await databases.createDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.hotelBookings,
+                ID.unique(),
+                bookingData
+            );
+
+            console.log('Booking created successfully:', newBookingId);
+            
+            // The therapist will see this booking in their app dashboard
+            // They'll get a real-time notification to confirm "On The Way"
+            
+            // Show success to guest
+            setBookingConfirmed(true);
+        } catch (error) {
+            console.error('Booking error:', error);
+            alert('Booking failed. Please try again.');
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    const closeBookingModal = () => {
+        setBookingOpen(false);
+        setSelectedProvider(null);
+        setGuestName('');
+        setRoomNumber('');
+        setBookingConfirmed(false);
+        setBookingId('');
+        setBookingTime('');
     };
 
     const openQrFor = (link: string) => {
@@ -468,7 +611,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         </div>
                         
                         {/* Add spacing for overlapping profile image */}
-                        <div className="mt-[120px]"></div>
+                        <div className="mt-[170px]"></div>
                         
                         <div>
                             <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
@@ -1128,83 +1271,261 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
             {/* Menu Preview Modal */}
             {previewOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-hidden shadow-2xl">
-                        {/* Preview Header */}
-                        <div className="bg-orange-500 text-white p-4 flex items-center justify-between sticky top-0">
-                            <h3 className="font-bold text-lg">Guest Menu Preview</h3>
-                            <button 
-                                onClick={() => setPreviewOpen(false)}
-                                className="p-2 hover:bg-orange-600 rounded-lg transition-colors"
-                            >
-                                <X size={20} />
-                            </button>
-                        </div>
-
+                    <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-hidden shadow-2xl relative">
+                        {/* Floating Close Button */}
+                        <button 
+                            onClick={() => {
+                                setPreviewOpen(false);
+                                setShowLandingPage(true);
+                            }}
+                            className="absolute top-4 right-4 z-50 p-2 bg-yellow-400 rounded-full shadow-lg hover:bg-yellow-500 transition-colors"
+                        >
+                            <X size={20} className="text-gray-900" />
+                        </button>
+                        
                         {/* Preview Content - Scrollable */}
-                        <div className="overflow-y-auto max-h-[calc(90vh-140px)]">
-                            {/* Banner Image */}
-                            {mainImage && (
-                                <div className="relative h-48 bg-gray-200">
-                                    <img src={mainImage} alt="Hotel Banner" className="w-full h-full object-cover" />
-                                    {/* Profile Image Overlay */}
-                                    {profileImage && (
-                                        <div className="absolute bottom-0 left-4 transform translate-y-1/2">
-                                            <img 
-                                                src={profileImage} 
-                                                alt="Hotel Logo" 
-                                                className="w-20 h-20 rounded-full border-4 border-white shadow-lg object-cover"
-                                            />
+                        <div className="overflow-y-auto max-h-[90vh]">
+                            {showLandingPage ? (
+                                /* Landing Page - Language Selection */
+                                <div className="p-8">
+                                    {/* Massage Icon */}
+                                    <div className="flex justify-center mb-6">
+                                        <div className="w-24 h-24 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center shadow-xl">
+                                            <svg className="w-14 h-14 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                                <path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74l-3.43-.72c-.08-.01-.15-.03-.24-.03-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z"/>
+                                            </svg>
                                         </div>
-                                    )}
-                                </div>
-                            )}
+                                    </div>
 
-                            {/* Hotel Info */}
-                            <div className={`p-4 ${mainImage && profileImage ? 'pt-12' : 'pt-4'}`}>
-                                <h2 className="text-2xl font-bold text-gray-900 mb-1">
-                                    {hotelName || 'Your Hotel Name'}
-                                </h2>
-                                {hotelAddress && (
-                                    <p className="text-sm text-gray-600 mb-2">{hotelAddress}</p>
-                                )}
-                                {hotelPhone && (
-                                    <p className="text-sm text-gray-500 mb-4">📞 {hotelPhone}</p>
-                                )}
-
-                                {/* Welcome Message */}
-                                {customWelcomeMessage && (
-                                    <div className="bg-orange-50 border-l-4 border-orange-500 p-4 rounded-r-lg mb-6">
-                                        <p className="text-sm text-gray-800 italic">
-                                            "{customWelcomeMessage}"
+                                    {/* Hotel Info */}
+                                    <div className="text-center mb-8">
+                                        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                                            {hotelName || 'Hotel Massage'}
+                                        </h1>
+                                        <h2 className="text-xl font-semibold text-orange-600 mb-1">
+                                            Massage Directory
+                                        </h2>
+                                        <p className="text-lg text-gray-600">
+                                            Room Service
                                         </p>
                                     </div>
-                                )}
+
+                                    {/* Language Selection */}
+                                    <div className="mb-6">
+                                        <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">
+                                            Select Your Language
+                                        </h3>
+                                        <div className="grid grid-cols-3 gap-3">
+                                            {[
+                                                { code: 'en', flag: '🇬🇧', name: 'English' },
+                                                { code: 'id', flag: '🇮🇩', name: 'Indonesian' },
+                                                { code: 'zh', flag: '🇨🇳', name: 'Chinese' },
+                                                { code: 'ja', flag: '🇯🇵', name: 'Japanese' },
+                                                { code: 'ko', flag: '🇰🇷', name: 'Korean' },
+                                                { code: 'ru', flag: '🇷🇺', name: 'Russian' },
+                                                { code: 'fr', flag: '🇫🇷', name: 'French' },
+                                                { code: 'de', flag: '🇩🇪', name: 'German' },
+                                                { code: 'es', flag: '🇪🇸', name: 'Spanish' }
+                                            ].map(lang => (
+                                                <button
+                                                    key={lang.code}
+                                                    onClick={() => {
+                                                        setSelectedLanguage(lang.code);
+                                                        setShowLandingPage(false);
+                                                    }}
+                                                    className="flex flex-col items-center gap-2 p-4 bg-white border-2 border-gray-200 rounded-xl hover:border-yellow-400 hover:shadow-lg transition-all transform hover:scale-105"
+                                                >
+                                                    <span className="text-4xl">{lang.flag}</span>
+                                                    <span className="text-xs font-medium text-gray-700">{lang.name}</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Footer Info */}
+                                    <div className="text-center mt-8 pt-6 border-t border-gray-200">
+                                        <p className="text-sm text-gray-500">
+                                            Please Allow 1 Hour For Therapist Arrival
+                                        </p>
+                                        {hotelPhone && (
+                                            <p className="text-sm text-gray-600 mt-2 flex items-center justify-center gap-2">
+                                                <Phone className="w-4 h-4 text-orange-500" />
+                                                {hotelPhone}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            ) : (
+                                /* Therapist Menu */
+                                <>
+                            {/* Hotel Info */}
+                            <div className="p-4 pt-4">
+                                <h2 className="text-xl font-bold text-gray-900 mb-1 text-center">
+                                    Massage Therapist
+                                </h2>
+                                <p className="text-xs text-gray-500 text-center mb-6">
+                                    Please Allow 1 Hour For Therapist Arrival To Your Room
+                                </p>
 
                                 {/* Menu Title */}
-                                <h3 className="text-xl font-bold text-gray-900 mb-4">Wellness Services</h3>
+                                <h3 className="text-xl font-bold text-gray-900 mb-4">Hotel Therapist</h3>
 
-                                {/* Sample Service Cards */}
-                                <div className="space-y-4">
-                                    {displayProviders.slice(0, 3).map((provider, idx) => (
-                                        <div key={idx} className="border-2 border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-shadow">
-                                            <div className="flex gap-4 p-4">
+                                {/* Sample Service Cards - Same Style as Home Page */}
+                                <div className="space-y-6">
+                                    {displayProviders.slice(0, 10).map((provider, idx) => (
+                                        <div key={idx} className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 relative">
+                                            {/* Banner Image */}
+                                            <div className="relative h-48">
                                                 <img 
                                                     src={provider.image} 
                                                     alt={provider.name}
-                                                    className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
+                                                    className="w-full h-full object-cover"
                                                 />
-                                                <div className="flex-1 min-w-0">
-                                                    <h4 className="font-bold text-gray-900 mb-1 truncate">{provider.name}</h4>
-                                                    <p className="text-xs text-gray-500 mb-2">{provider.location}</p>
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-sm font-bold text-orange-600">
-                                                            {provider.discount}% OFF
-                                                        </span>
-                                                        <span className="text-xs text-gray-400">•</span>
-                                                        <span className="text-xs text-gray-600">
-                                                            ⭐ {provider.rating}
-                                                        </span>
+                                                {/* Star Rating Badge */}
+                                                <div className="absolute top-2 left-2 flex items-center gap-1 bg-black/70 backdrop-blur-md rounded-full px-3 py-1.5 shadow-lg">
+                                                    <Star className="w-4 h-4 text-yellow-400 fill-yellow-400"/>
+                                                    <span className="font-bold text-white text-sm">{provider.rating.toFixed(1)}</span>
+                                                    <span className="text-xs text-gray-300">({provider.reviewCount})</span>
+                                                </div>
+                                                
+                                                {/* Status Badge - Top Right */}
+                                                <div className={`absolute top-2 right-2 flex items-center gap-1.5 px-3 py-1.5 rounded-full shadow-lg ${
+                                                    provider.status === 'Available' 
+                                                        ? 'bg-green-500/90 backdrop-blur-md' 
+                                                        : 'bg-red-500/90 backdrop-blur-md'
+                                                }`}>
+                                                    {provider.status === 'Available' ? (
+                                                        <>
+                                                            <span className="relative flex h-2.5 w-2.5">
+                                                                <span className="absolute inline-flex h-full w-full rounded-full bg-white opacity-60"></span>
+                                                                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+                                                            </span>
+                                                            <span className="text-xs font-bold text-white">Available</span>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <span className="h-2.5 w-2.5 rounded-full bg-white"></span>
+                                                            <span className="text-xs font-bold text-white">Busy</span>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            
+                                            {/* Profile Picture Overlay */}
+                                            <div className="absolute top-40 left-4 z-10">
+                                                <div className="w-20 h-20 rounded-full border-4 border-white shadow-lg bg-gray-200 overflow-hidden relative">
+                                                    <img 
+                                                        src={provider.image}
+                                                        alt={provider.name}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                </div>
+                                            </div>
+                                            
+                                            {/* Name Only */}
+                                            <div className="absolute top-52 left-28 right-4 z-10">
+                                                <h4 className="text-lg font-bold text-gray-900">{provider.name}</h4>
+                                            </div>
+                                            
+                                            {/* Content */}
+                                            <div className="p-4 pt-14">
+                                                <p className="text-sm text-gray-600 mb-3">{provider.description}</p>
+                                                
+                                                {/* Massage Types */}
+                                                {provider.massageTypes && provider.massageTypes.length > 0 && (
+                                                    <div className="mb-4">
+                                                        <p className="text-xs font-semibold text-gray-700 mb-2">Services Offered:</p>
+                                                        <div className="flex flex-wrap gap-1.5">
+                                                            {provider.massageTypes.map((type, idx) => (
+                                                                <span 
+                                                                    key={idx}
+                                                                    className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full font-medium"
+                                                                >
+                                                                    {type}
+                                                                </span>
+                                                            ))}
+                                                        </div>
                                                     </div>
+                                                )}
+                                                
+                                                {/* Languages Spoken */}
+                                                {provider.languages && provider.languages.length > 0 && (
+                                                    <div className="mb-4">
+                                                        <p className="text-xs font-semibold text-gray-700 mb-2">Therapist Speaks:</p>
+                                                        <div className="flex flex-wrap gap-1.5">
+                                                            {provider.languages.map((lang, idx) => {
+                                                                const langMap: Record<string, {flag: string, name: string}> = {
+                                                                    'en': {flag: '🇬🇧', name: 'English'},
+                                                                    'id': {flag: '🇮🇩', name: 'Indonesian'},
+                                                                    'zh': {flag: '🇨🇳', name: 'Chinese'},
+                                                                    'ja': {flag: '🇯🇵', name: 'Japanese'},
+                                                                    'ko': {flag: '🇰🇷', name: 'Korean'},
+                                                                    'ru': {flag: '🇷🇺', name: 'Russian'},
+                                                                    'fr': {flag: '🇫🇷', name: 'French'},
+                                                                    'de': {flag: '🇩🇪', name: 'German'},
+                                                                    'es': {flag: '🇪🇸', name: 'Spanish'}
+                                                                };
+                                                                const langInfo = langMap[lang] || {flag: '🌐', name: lang};
+                                                                return (
+                                                                    <span 
+                                                                        key={idx}
+                                                                        className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-gray-800 text-xs font-medium rounded-full flex items-center gap-1"
+                                                                    >
+                                                                        <span className="text-sm">{langInfo.flag}</span>
+                                                                        <span>{langInfo.name}</span>
+                                                                    </span>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                
+                                                {/* Pricing - Clickable */}
+                                                <div className="grid grid-cols-3 gap-2 text-center text-sm mb-4">
+                                                    <button 
+                                                        onClick={() => handleOrderNow(provider, '60')}
+                                                        className="bg-black/70 backdrop-blur-md p-2 rounded-lg hover:bg-black/80 transition-all border-2 border-yellow-400 shadow-lg shadow-yellow-400/50"
+                                                    >
+                                                        <p className="text-yellow-400">60 min</p>
+                                                        <p className="font-bold text-white">Rp {(provider.pricing['60'] / 1000).toFixed(0)}K</p>
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => handleOrderNow(provider, '90')}
+                                                        className="bg-black/70 backdrop-blur-md p-2 rounded-lg hover:bg-black/80 transition-all border-2 border-yellow-400 shadow-lg shadow-yellow-400/50"
+                                                    >
+                                                        <p className="text-yellow-400">90 min</p>
+                                                        <p className="font-bold text-white">Rp {(provider.pricing['90'] / 1000).toFixed(0)}K</p>
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => handleOrderNow(provider, '120')}
+                                                        className="bg-black/70 backdrop-blur-md p-2 rounded-lg hover:bg-black/80 transition-all border-2 border-yellow-400 shadow-lg shadow-yellow-400/50"
+                                                    >
+                                                        <p className="text-yellow-400">120 min</p>
+                                                        <p className="font-bold text-white">Rp {(provider.pricing['120'] / 1000).toFixed(0)}K</p>
+                                                    </button>
+                                                </div>
+                                                
+                                                {/* Action Buttons */}
+                                                <div className="flex gap-2">
+                                                    <button 
+                                                        onClick={() => handleOrderNow(provider, '60')}
+                                                        className="flex-1 bg-yellow-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-yellow-600 transition-colors flex items-center justify-center gap-2"
+                                                    >
+                                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                                        </svg>
+                                                        Order Now
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => handleOrderNow(provider, '60')}
+                                                        className="flex-1 bg-yellow-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-yellow-600 transition-colors flex items-center justify-center gap-2"
+                                                    >
+                                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                        </svg>
+                                                        Schedule
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
@@ -1218,9 +1539,12 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                                     </p>
                                 </div>
                             </div>
+                            </>
+                            )}
                         </div>
 
                         {/* Preview Footer */}
+                        {!showLandingPage && (
                         <div className="border-t border-gray-200 p-4 bg-gray-50">
                             <button 
                                 onClick={() => setPreviewOpen(false)}
@@ -1229,6 +1553,149 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                                 Close Preview
                             </button>
                         </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Booking Modal */}
+            {bookingOpen && selectedProvider && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
+                        {!bookingConfirmed ? (
+                            <>
+                                {/* Booking Form */}
+                                <div className="p-6">
+                                    <div className="flex justify-between items-center mb-6">
+                                        <h2 className="text-2xl font-bold text-gray-900">Complete Booking</h2>
+                                        <button 
+                                            onClick={closeBookingModal}
+                                            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                        >
+                                            <X className="w-6 h-6 text-gray-600" />
+                                        </button>
+                                    </div>
+
+                                    {/* Therapist Info */}
+                                    <div className="flex items-center gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
+                                        <img 
+                                            src={selectedProvider.image} 
+                                            alt={selectedProvider.name}
+                                            className="w-16 h-16 rounded-full object-cover border-2 border-orange-500"
+                                        />
+                                        <div className="flex-1">
+                                            <h3 className="font-bold text-lg text-gray-900">{selectedProvider.name}</h3>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <Star className="w-4 h-4 text-yellow-400 fill-yellow-400"/>
+                                                <span className="text-sm text-gray-600">{selectedProvider.rating.toFixed(1)}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Selected Service */}
+                                    <div className="mb-6 p-4 bg-orange-50 rounded-lg border border-orange-200">
+                                        <div className="flex justify-between items-center">
+                                            <div>
+                                                <p className="text-sm text-gray-600">Duration</p>
+                                                <p className="font-bold text-lg text-orange-600">{selectedDuration} minutes</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-sm text-gray-600">Price</p>
+                                                <p className="font-bold text-lg text-orange-600">
+                                                    Rp {(selectedProvider.pricing[selectedDuration] / 1000).toFixed(0)}K
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Guest Information Form */}
+                                    <div className="space-y-4 mb-6">
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                                Guest Name
+                                            </label>
+                                            <input 
+                                                type="text"
+                                                value={guestName}
+                                                onChange={(e) => setGuestName(e.target.value)}
+                                                placeholder="Enter your name"
+                                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                                Room Number
+                                            </label>
+                                            <input 
+                                                type="text"
+                                                value={roomNumber}
+                                                onChange={(e) => setRoomNumber(e.target.value)}
+                                                placeholder="Enter your room number"
+                                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Proceed Button */}
+                                    <button 
+                                        onClick={handleProceedBooking}
+                                        disabled={!guestName || !roomNumber || isProcessing}
+                                        className="w-full bg-orange-500 text-white font-bold py-4 rounded-lg hover:bg-orange-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                    >
+                                        {isProcessing ? (
+                                            <>
+                                                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                Processing...
+                                            </>
+                                        ) : (
+                                            'Proceed'
+                                        )}
+                                    </button>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                {/* Confirmation Message */}
+                                <div className="p-8 text-center">
+                                    <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <svg className="w-10 h-10 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </div>
+                                    
+                                    <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                                        Massage Booked Successfully!
+                                    </h2>
+                                    
+                                    <p className="text-gray-600 mb-6">
+                                        Your massage therapist will arrive at your room shortly.
+                                    </p>
+
+                                    {/* Booking Details */}
+                                    <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left">
+                                        <div className="flex justify-between items-center mb-3 pb-3 border-b border-gray-200">
+                                            <span className="text-sm text-gray-600">Booking ID:</span>
+                                            <span className="font-bold text-gray-900">{bookingId}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-sm text-gray-600">Booking Time:</span>
+                                            <span className="font-semibold text-gray-900 text-sm">{bookingTime}</span>
+                                        </div>
+                                    </div>
+
+                                    <button 
+                                        onClick={closeBookingModal}
+                                        className="w-full bg-orange-500 text-white font-bold py-3 rounded-lg hover:bg-orange-600 transition-colors"
+                                    >
+                                        Done
+                                    </button>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             )}

@@ -365,7 +365,7 @@ const HomePage: React.FC<HomePageProps> = ({ loggedInAgent: _loggedInAgent, ther
                                 </button>
                             </div>
                             <p className="text-xs text-center text-gray-500">
-                                © 2025 IndoStreet Massage
+                                © 2025 IndaStreet Massage
                             </p>
                         </div>
                     </div>

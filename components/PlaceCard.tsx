@@ -69,6 +69,35 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate }) => {
                                                 <span>{place.distance}km</span>
                                         </div>
                                 </div>
+
+                                {/* Languages Spoken */}
+                                {place.languages && place.languages.length > 0 && (
+                                    <div className="mt-3">
+                                        <h4 className="text-xs font-semibold text-gray-700 mb-1.5">Languages</h4>
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {place.languages.map(lang => {
+                                                const langMap: Record<string, {flag: string, name: string}> = {
+                                                    'en': {flag: '🇬🇧', name: 'English'},
+                                                    'id': {flag: '🇮🇩', name: 'Indonesian'},
+                                                    'zh': {flag: '🇨🇳', name: 'Chinese'},
+                                                    'ja': {flag: '🇯🇵', name: 'Japanese'},
+                                                    'ko': {flag: '🇰🇷', name: 'Korean'},
+                                                    'ru': {flag: '🇷🇺', name: 'Russian'},
+                                                    'fr': {flag: '🇫🇷', name: 'French'},
+                                                    'de': {flag: '🇩🇪', name: 'German'},
+                                                    'es': {flag: '🇪🇸', name: 'Spanish'}
+                                                };
+                                                const langInfo = langMap[lang] || {flag: '🌐', name: lang};
+                                                return (
+                                                    <span key={lang} className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-gray-800 text-xs font-medium rounded-full flex items-center gap-1">
+                                                        <span className="text-sm">{langInfo.flag}</span>
+                                                    </span>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
+
                                 {/* Price structure for 60, 90, 120 min */}
                                 {place.pricing && (
                                     (() => {

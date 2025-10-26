@@ -259,6 +259,7 @@ export interface Therapist {
     hotelDiscount?: number; // minimum 20%
     villaDiscount?: number; // minimum 20%
     serviceRadius?: number; // minimum 7km - how far they will travel for hotel/villa services
+    languages?: string[]; // Languages spoken: ['en', 'id', 'zh', 'ja', 'ko', 'ru', 'fr', 'de', 'es']
 }
 
 export interface Place {
@@ -287,6 +288,7 @@ export interface Place {
     hotelDiscount?: number; // minimum 20%
     villaDiscount?: number; // minimum 20%
     serviceRadius?: number; // minimum 7km - how far they will travel for hotel/villa services
+    languages?: string[]; // Languages spoken: ['en', 'id', 'zh', 'ja', 'ko', 'ru', 'fr', 'de', 'es']
 }
 
 export interface User {

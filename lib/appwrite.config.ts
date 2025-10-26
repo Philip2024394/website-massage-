@@ -12,6 +12,7 @@ export const APPWRITE_CONFIG = {
         places: 'places_collection_id',
         agents: 'agents_collection_id',
         bookings: 'bookings_collection_id',
+        hotelBookings: 'hotel_bookings',
         reviews: 'reviews_collection_id',
         notifications: 'notifications_collection_id',
         users: 'users_collection_id',

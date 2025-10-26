@@ -189,7 +189,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook
                 <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${style.bg} ${style.text} mt-1`}>
                     <span className="relative mr-1.5">
                         {displayStatus === AvailabilityStatus.Available && (
-                            <span className="absolute inset-0 w-4 h-4 -left-1 -top-1 rounded-full bg-green-400 opacity-40 animate-ping"></span>
+                            <span className="absolute inset-0 w-4 h-4 -left-1 -top-1 rounded-full bg-white opacity-60"></span>
                         )}
                         <span className={`w-2 h-2 rounded-full block ${style.dot}`}></span>
                     </span>
@@ -227,6 +227,35 @@ const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook
                     ))}
                 </div>
             </div>
+
+            {/* Languages Spoken */}
+            {therapist.languages && therapist.languages.length > 0 && (
+                <div>
+                    <h4 className="text-sm font-semibold text-gray-700 mb-2">Therapist Speaks</h4>
+                    <div className="flex flex-wrap gap-2">
+                        {therapist.languages.map(lang => {
+                            const langMap: Record<string, {flag: string, name: string}> = {
+                                'en': {flag: '🇬🇧', name: 'English'},
+                                'id': {flag: '🇮🇩', name: 'Indonesian'},
+                                'zh': {flag: '🇨🇳', name: 'Chinese'},
+                                'ja': {flag: '🇯🇵', name: 'Japanese'},
+                                'ko': {flag: '🇰🇷', name: 'Korean'},
+                                'ru': {flag: '🇷🇺', name: 'Russian'},
+                                'fr': {flag: '🇫🇷', name: 'French'},
+                                'de': {flag: '🇩🇪', name: 'German'},
+                                'es': {flag: '🇪🇸', name: 'Spanish'}
+                            };
+                            const langInfo = langMap[lang] || {flag: '🌐', name: lang};
+                            return (
+                                <span key={lang} className="px-2.5 py-1 bg-blue-50 border border-blue-200 text-gray-800 text-xs font-medium rounded-full flex items-center gap-1">
+                                    <span className="text-base">{langInfo.flag}</span>
+                                    <span>{langInfo.name}</span>
+                                </span>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
 
             <div className="grid grid-cols-3 gap-2 text-center text-sm text-gray-600">
                 <div className="bg-brand-orange-light p-2 rounded-lg">

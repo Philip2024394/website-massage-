@@ -1,5 +1,5 @@
 {
-  "name": "indostreet-massage-platform",
+  "name": "indastreet-massage-platform",
   "version": "2.0.0",
   "description": "Modular massage booking platform with separate apps for each user type",
   "type": "module",
@@ -82,7 +82,7 @@
     "mobile",
     "spa"
   ],
-  "author": "IndoStreet Team",
+  "author": "IndaStreet Team",
   "license": "MIT",
   "repository": {
     "type": "git",

@@ -57,6 +57,7 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) =>
                 // Create hotel record with default values for required fields
                 const hotelData = {
                     id: user.$id,
+                    userId: user.$id, // Add this for login lookup
                     hotelId: hotelId,
                     hotelName: hotelName,
                     hotelAddress: 'To be updated',
