@@ -12,20 +12,18 @@ const TabButton: React.FC<TabButtonProps> = ({ label, icon, isActive, onClick, b
     return (
         <button
             onClick={onClick}
-            className={`w-full flex items-center justify-between py-3 px-4 rounded-lg transition-colors duration-200 ${
+            className={`flex-shrink-0 flex items-center gap-1 sm:gap-2 py-1.5 px-2 sm:px-4 rounded-lg transition-all duration-200 text-[10px] sm:text-sm font-semibold whitespace-nowrap ${
                 isActive
-                    ? 'bg-brand-50 text-brand-600 font-semibold'
-                    : 'text-gray-600 hover:bg-gray-100'
+                    ? 'bg-orange-500 text-white shadow-lg'
+                    : 'bg-white text-gray-600 hover:bg-orange-50 hover:text-orange-600 border border-gray-200'
             }`}
         >
-            <div className="flex items-center gap-3">
-                <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl shadow-lg bg-gradient-to-br from-orange-400 via-pink-400 to-purple-500 border-2 border-white transform hover:scale-105 transition-transform">
-                    {icon}
-                </span>
-                <span className="font-semibold drop-shadow text-base">{label}</span>
-            </div>
+            <span className={`${isActive ? 'text-white' : 'text-orange-500'}`}>
+                {icon}
+            </span>
+            <span>{label}</span>
             {badge !== undefined && badge > 0 && (
-                <span className="bg-brand-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center">
+                <span className="bg-white text-orange-500 text-[9px] sm:text-xs font-bold rounded-full h-3.5 w-3.5 sm:h-5 sm:w-5 flex items-center justify-center ml-0.5 sm:ml-1">
                     {badge}
                 </span>
             )}

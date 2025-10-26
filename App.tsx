@@ -149,14 +149,14 @@ const App: React.FC = () => {
                             
                         case 'hotel':
                             setIsHotelLoggedIn(true);
-                            setLoggedInUser({ id: sessionUser.documentId, type: 'hotel' });
+                            _setLoggedInUser({ id: sessionUser.documentId, type: 'hotel' });
                             setPage('hotelDashboard');
                             saveSessionCache(sessionUser);
                             break;
                             
                         case 'villa':
                             setIsVillaLoggedIn(true);
-                            setLoggedInUser({ id: sessionUser.documentId, type: 'villa' });
+                            _setLoggedInUser({ id: sessionUser.documentId, type: 'villa' });
                             setPage('villaDashboard');
                             saveSessionCache(sessionUser);
                             break;
@@ -294,7 +294,7 @@ const App: React.FC = () => {
     const handleHotelLogout = async () => {
         await sessionLogout();
         setIsHotelLoggedIn(false);
-        setLoggedInUser(null);
+        _setLoggedInUser(null);
         setPage('home');
         console.log('✅ Hotel logout successful');
     };
@@ -302,7 +302,7 @@ const App: React.FC = () => {
     const handleVillaLogout = async () => {
         await sessionLogout();
         setIsVillaLoggedIn(false);
-        setLoggedInUser(null);
+        _setLoggedInUser(null);
         setPage('home');
         console.log('✅ Villa logout successful');
     };
@@ -925,8 +925,8 @@ const App: React.FC = () => {
     const fullScreenPages = ['therapistLogin', 'landing', 'therapistStatus', 'hotelLogin', 'villaLogin', 'adminLogin', 'massagePlaceLogin', 'agentLogin'];
     const isFullScreen = fullScreenPages.includes(page);
     
-    // Hide FloatingWebsiteButton on login pages
-    const loginPages = ['therapistLogin', 'hotelLogin', 'villaLogin', 'adminLogin', 'massagePlaceLogin', 'agentLogin'];
+    // Hide FloatingWebsiteButton on login pages and landing page
+    const loginPages = ['landing', 'therapistLogin', 'hotelLogin', 'villaLogin', 'adminLogin', 'massagePlaceLogin', 'agentLogin'];
     const showFloatingButton = !loginPages.includes(page);
 
     return (

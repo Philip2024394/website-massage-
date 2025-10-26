@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import Button from '../components/Button';
+import { authService } from '../lib/appwriteService';
+import { databases, ID } from '../lib/appwrite';
+import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 
 interface HotelLoginPageProps {
     onSuccess: (hotelId: string) => void;
@@ -13,10 +16,11 @@ const HomeIcon: React.FC<{className?: string}> = ({ className }) => (
     </svg>
 );
 
-const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess: _onSuccess, onBack }) => {
+const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) => {
     const [isSignUp, setIsSignUp] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [hotelName, setHotelName] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -26,11 +30,86 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess: _onSuccess, 
         setLoading(true);
 
         try {
-            // TODO: Implement actual authentication with Appwrite backend
-            // Authentication is being configured
-            setError('Authentication is being configured. Please contact admin.');
+            // First, logout any existing session
+            try {
+                await authService.logout();
+            } catch (err) {
+                // Ignore error if no session exists
+            }
+
+            if (isSignUp) {
+                // Create account
+                if (!hotelName.trim()) {
+                    setError('Hotel name is required');
+                    setLoading(false);
+                    return;
+                }
+
+                // Register with Appwrite
+                await authService.register(email, password, hotelName);
+                
+                // Get the current user
+                const user = await authService.getCurrentUser();
+                
+                // Generate hotel ID
+                const hotelId = Math.floor(Math.random() * 1000000);
+                
+                // Create hotel record with default values for required fields
+                const hotelData = {
+                    id: user.$id,
+                    hotelId: hotelId,
+                    hotelName: hotelName,
+                    hotelAddress: 'To be updated',
+                    totalRooms: 1,
+                    availableRooms: 1,
+                    pricePerNight: 0,
+                    name: hotelName,
+                    email: email,
+                    address: 'To be updated',
+                    contactNumber: 'To be updated',
+                    type: 'hotel',
+                    amenities: null,
+                    phoneNumber: null,
+                    profilePicture: null,
+                    mainImage: null
+                };
+                
+                const hotelDoc = await databases.createDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.hotels,
+                    ID.unique(),
+                    hotelData
+                );
+                
+                setError('✅ Account created successfully! Redirecting to dashboard...');
+                setTimeout(() => {
+                    onSuccess(hotelDoc.$id);
+                }, 1500);
+            } else {
+                // Login
+                const user = await authService.login(email, password);
+                
+                // Find hotel record
+                const response = await databases.listDocuments(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.hotels,
+                    []
+                );
+                
+                const hotel = response.documents.find((h: any) => h.userId === user.$id);
+                
+                if (!hotel) {
+                    setError('Hotel account not found. Please create an account first.');
+                    await authService.logout();
+                    setLoading(false);
+                    return;
+                }
+                
+                onSuccess(hotel.$id);
+            }
         } catch (err: any) {
-            setError(err.message || 'Authentication failed');
+            console.error('Authentication error:', err);
+            setError(err.message || 'Authentication failed. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -94,6 +173,22 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess: _onSuccess, 
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-4">
+                    {isSignUp && (
+                        <div>
+                            <label className="block text-sm font-medium text-white/90 mb-2">
+                                Hotel Name
+                            </label>
+                            <input
+                                type="text"
+                                value={hotelName}
+                                onChange={(e) => setHotelName(e.target.value)}
+                                className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
+                                placeholder="Enter your hotel name"
+                                required={isSignUp}
+                            />
+                        </div>
+                    )}
+                    
                     <div>
                         <label className="block text-sm font-medium text-white/90 mb-2">
                             Email

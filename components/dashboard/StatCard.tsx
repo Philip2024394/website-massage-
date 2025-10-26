@@ -21,8 +21,8 @@ const colorClasses = {
         text: 'text-purple-600 dark:text-purple-400',
     },
     blue: {
-        bg: 'bg-blue-100 dark:bg-blue-900/50',
-        text: 'text-blue-600 dark:text-blue-400',
+        bg: 'bg-gray-900 dark:bg-gray-950',
+        text: 'text-white dark:text-gray-100',
     },
 };
 

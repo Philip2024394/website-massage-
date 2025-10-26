@@ -5,7 +5,6 @@ import TherapistCard from '../components/TherapistCard';
 import RatingModal from '../components/RatingModal';
 import { MASSAGE_TYPES_CATEGORIZED } from '../constants/rootConstants';
 import HomeIcon from '../components/icons/HomeIcon';
-import MapPinIcon from '../components/icons/MapPinIcon';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import CloseIcon from '../components/icons/CloseIcon';
 import BriefcaseIcon from '../components/icons/BriefcaseIcon';
@@ -166,12 +165,9 @@ const HomePage: React.FC<HomePageProps> = ({ loggedInAgent: _loggedInAgent, ther
              <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">
-                        <span className="text-black">Indo</span><span className="text-orange-500">street</span>
+                        <span className="text-black">Inda</span><span className="text-orange-500">Street</span>
                     </h1>
                     <div className="flex items-center gap-4 text-gray-600">
-                        <button onClick={() => setIsLocationModalOpen(true)} title="Set Your Location">
-                            <MapPinIcon className="w-6 h-6" />
-                        </button>
                         <button onClick={() => setIsMenuOpen(true)} title="Menu">
                            <BurgerMenuIcon className="w-6 h-6" />
                         </button>

@@ -32,7 +32,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLanguageSelect }) => {
             />
             <div className="relative z-10 flex-grow flex flex-col items-center justify-center bg-black bg-opacity-50 text-white p-4 sm:p-6 text-center">
                 <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold">
-                    <span className="text-white">Indo</span>
+                    <span className="text-white">Inda</span>
                     <span className="text-orange-400">Street</span>
                 </h1>
                 <p className="text-lg sm:text-xl mt-2 mb-8 sm:mb-12 px-4">Your personal wellness companion.</p>
@@ -41,11 +41,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLanguageSelect }) => {
                     <h2 className="text-base sm:text-lg font-semibold">Please select your language:</h2>
                     <Button onClick={() => onLanguageSelect('en')} variant="primary">English</Button>
                     <Button onClick={() => onLanguageSelect('id')} variant="primary">Bahasa Indonesia</Button>
-                </div>
-                
-                {/* Small copyright text */}
-                <div className="absolute bottom-4 left-0 right-0 text-center px-4">
-                    <p className="text-xs sm:text-sm text-gray-300">© 2025 IndoStreet. All rights reserved.</p>
                 </div>
             </div>
         </div>
