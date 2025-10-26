@@ -56,6 +56,93 @@ export interface HotelVillaMenu {
     updatedAt: string;
 }
 
+export interface HotelVillaAnalytics {
+    totalQRScans: number;
+    uniqueGuestViews: number;
+    providerViews: number;
+    bookingsMade: number;
+    topProvider?: string;
+    peakHours: string[];
+    monthlyScans: number;
+    weeklyScans: number;
+}
+
+export interface GuestFeedback {
+    id: number;
+    hotelVillaId: number;
+    providerId: number;
+    providerType: 'therapist' | 'place';
+    providerName: string;
+    guestRoomNumber?: string;
+    rating: number;
+    comment?: string;
+    serviceDate: string;
+    createdAt: string;
+}
+
+export interface CommissionRecord {
+    id: number;
+    hotelVillaId: number;
+    bookingId: number;
+    providerId: number;
+    providerType: 'therapist' | 'place';
+    providerName: string;
+    serviceAmount: number;
+    commissionRate: number;
+    commissionAmount: number;
+    status: 'pending' | 'paid' | 'cancelled';
+    bookingDate: string;
+    paidDate?: string;
+}
+
+export interface GuestCheckIn {
+    id: number;
+    hotelVillaId: number;
+    roomNumber: string;
+    guestName: string;
+    checkInDate: string;
+    checkOutDate: string;
+    allowRoomCharges: boolean;
+}
+
+export interface Hotel {
+    id: number | string;
+    name: string;
+    email: string;
+    password?: string;
+    brandLogo?: string;
+    bannerImage?: string;
+    address: string;
+    phone: string;
+    description?: string;
+    customWelcomeMessage?: string;
+    languages?: string[]; // ['en', 'id', 'zh', 'ja']
+    commissionRate?: number; // percentage
+    analytics?: HotelVillaAnalytics;
+    conciergeEnabled?: boolean;
+    roomBillingEnabled?: boolean;
+    createdAt?: string;
+}
+
+export interface Villa {
+    id: number | string;
+    name: string;
+    email: string;
+    password?: string;
+    brandLogo?: string;
+    bannerImage?: string;
+    address: string;
+    phone: string;
+    description?: string;
+    customWelcomeMessage?: string;
+    languages?: string[]; // ['en', 'id', 'zh', 'ja']
+    commissionRate?: number; // percentage
+    analytics?: HotelVillaAnalytics;
+    conciergeEnabled?: boolean;
+    roomBillingEnabled?: boolean;
+    createdAt?: string;
+}
+
 export interface Review {
     id: number;
     providerId: number;

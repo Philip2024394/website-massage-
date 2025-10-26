@@ -48,7 +48,9 @@
     "dist",
     "build", 
     "mobile",
-    "vite.config.ts"
+    "vite.config.ts",
+    "*-backup.*",
+    "*-new.*"
   ],
   "references": [
     { "path": "./tsconfig.node.json" }

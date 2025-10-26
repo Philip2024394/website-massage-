@@ -33,6 +33,7 @@ interface VillaDashboardPageProps {
 const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({ onLogout, therapists = [], places = [] }) => {
     const [activeTab, setActiveTab] = useState<'branding' | 'menu'>('branding');
     const [isSidebarOpen, setSidebarOpen] = useState(false);
+    const [allowRoomCharges, setAllowRoomCharges] = useState(false);
 
     const placeholderImage =
         'https://images.unsplash.com/photo-1570129477492-45c003edd2be?q=80&w=1200&auto=format&fit=crop';
@@ -198,6 +199,79 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({ onLogout, thera
                                 <div className="mt-4">
                                     <input className="w-full p-3 border rounded-lg" placeholder="Contact Phone (optional)" value={villaPhone} onChange={(e) => setVillaPhone(e.target.value)} />
                                 </div>
+                                
+                                {/* Room Billing Toggle */}
+                                <div className="mt-8 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                                    <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                                    </svg>
+                                                </div>
+                                                <h3 className="text-lg font-bold text-gray-900">Guest Billing Integration</h3>
+                                            </div>
+                                            <p className="text-sm text-gray-600 leading-relaxed">
+                                                Allow guests to charge massage services directly to their villa account. When enabled, guests can provide their booking reference and charges will be added to their final bill.
+                                            </p>
+                                            <div className="mt-3 flex items-center gap-2 text-xs text-blue-700">
+                                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                                </svg>
+                                                <span className="font-medium">Requires integration with your Property Management System (PMS)</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex-shrink-0">
+                                            <button
+                                                onClick={() => setAllowRoomCharges(!allowRoomCharges)}
+                                                className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors shadow-inner ${
+                                                    allowRoomCharges ? 'bg-gradient-to-r from-blue-500 to-indigo-500' : 'bg-gray-300'
+                                                }`}
+                                            >
+                                                <span
+                                                    className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform ${
+                                                        allowRoomCharges ? 'translate-x-7' : 'translate-x-1'
+                                                    }`}
+                                                />
+                                            </button>
+                                            <div className={`mt-2 text-xs font-semibold text-center ${allowRoomCharges ? 'text-blue-600' : 'text-gray-500'}`}>
+                                                {allowRoomCharges ? 'Enabled' : 'Disabled'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {allowRoomCharges && (
+                                        <div className="mt-4 p-4 bg-white rounded-lg border border-blue-200">
+                                            <h4 className="text-sm font-semibold text-gray-900 mb-2">Integration Settings</h4>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="PMS System Name (e.g., Opera, Mews)" 
+                                                    className="p-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                />
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="API Endpoint URL" 
+                                                    className="p-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                />
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="API Key" 
+                                                    className="p-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                />
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="Department Code" 
+                                                    className="p-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                />
+                                            </div>
+                                            <button className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+                                                Test Connection
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+
                                 <div className="mt-6 text-right">
                                     <button className="bg-brand-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-brand-600">Save Changes</button>
                                 </div>
