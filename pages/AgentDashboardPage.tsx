@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import type { Agent, Therapist, Place, AdminMessage } from '../types';
-import Button from '../components/Button';
-import LogoutIcon from '../components/icons/LogoutIcon';
+import { Users, RefreshCw, DollarSign, MessageSquare, User as UserIcon, LogOut, Code, TrendingUp } from 'lucide-react';
 import ImageUpload from '../components/ImageUpload';
+import TabButton from '../components/dashboard/TabButton';
 
 interface AgentDashboardPageProps {
     agent: Agent;
@@ -36,18 +36,13 @@ const AgentDashboardPage: React.FC<AgentDashboardPageProps> = ({ agent, onLogout
     const [contactNumber, setContactNumber] = useState(agent.contactNumber || '');
     const [homeAddress, setHomeAddress] = useState(agent.homeAddress || '');
 
-
     useEffect(() => {
         const fetchClients = async () => {
-            // Mock implementation - replace with your actual data fetching logic
             setIsLoading(true);
-            
-            // Mock data - replace with actual API calls
             const mockClients: any[] = [];
             setClients(mockClients);
             setIsLoading(false);
         };
-
         fetchClients();
     }, [agent.id]);
 
@@ -55,7 +50,6 @@ const AgentDashboardPage: React.FC<AgentDashboardPageProps> = ({ agent, onLogout
         const now = new Date();
         const oneWeekFromNow = new Date();
         oneWeekFromNow.setDate(now.getDate() + 7);
-
         return clients.filter(client => {
             const expiryDate = new Date(client.activeMembershipDate);
             return expiryDate >= now && expiryDate <= oneWeekFromNow;
@@ -99,183 +93,383 @@ const AgentDashboardPage: React.FC<AgentDashboardPageProps> = ({ agent, onLogout
     const currentCommission = agent.tier === 'Toptier' ? 23 : 20;
 
     const ClientCard: React.FC<{ client: Therapist | Place }> = ({ client }) => (
-        <div className="bg-white p-4 rounded-lg shadow-md">
-            <h4 className="font-bold text-gray-800">{client.name}</h4>
-            <p className="text-sm text-gray-600">{client.email}</p>
+        <div className="bg-white border-2 border-gray-200 rounded-xl p-6 hover:border-orange-300 transition-all">
+            <h4 className="font-bold text-gray-800 text-lg">{client.name}</h4>
+            <p className="text-sm text-gray-600 mt-1">{client.email}</p>
             <p className="text-xs text-gray-500 mt-2 font-medium">{t.clients.membershipExpires.replace('{date}', formatDate(client.activeMembershipDate))}</p>
         </div>
     );
     
     const RenewalCard: React.FC<{ client: Therapist | Place }> = ({ client }) => (
-        <div className="bg-white p-4 rounded-lg shadow-md flex justify-between items-center">
+        <div className="bg-white border-2 border-gray-200 rounded-xl p-6 hover:border-orange-300 transition-all flex justify-between items-center">
             <div>
-                <h4 className="font-bold text-gray-800">{client.name}</h4>
-                <p className="text-sm text-red-600 font-semibold">Expires: {formatDate(client.activeMembershipDate)}</p>
+                <h4 className="font-bold text-gray-800 text-lg">{client.name}</h4>
+                <p className="text-sm text-red-600 font-semibold mt-1">Expires: {formatDate(client.activeMembershipDate)}</p>
             </div>
-            <a href={`https://wa.me/${client.whatsappNumber}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-green-500 text-white text-xs font-bold py-2 px-3 rounded-lg hover:bg-green-600 transition-colors">
-                <WhatsAppIcon className="w-4 h-4" />
+            <a href={`https://wa.me/${client.whatsappNumber}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-green-500 text-white text-sm font-bold py-2.5 px-4 rounded-lg hover:bg-green-600 transition-colors">
+                <WhatsAppIcon className="w-5 h-5" />
                 <span>{t.renewals.contact}</span>
             </a>
         </div>
     );
 
     return (
-        <div className="min-h-screen bg-gray-100 p-4">
-            {isAdminView && (
-                <div className="bg-yellow-200 text-yellow-900 text-center p-3 rounded-lg mb-4 shadow">
-                    <p className="font-bold text-sm">{t.messages.impersonationBanner.replace('{agentName}', agent.name)}</p>
-                    <button onClick={onStopImpersonating} className="text-sm font-semibold underline hover:text-yellow-800 mt-1">{t.messages.returnToAdmin}</button>
+        <div className="min-h-screen bg-gray-50">
+            {/* Header */}
+            <header className="bg-white shadow-sm px-2 sm:px-3 py-2 sm:py-3 sticky top-0 z-30">
+                <div className="max-w-7xl mx-auto flex justify-between items-center">
+                    <h1 className="text-base sm:text-2xl font-bold">
+                        <span className="text-gray-900">Inda</span>
+                        <span className="text-orange-500">Street</span>
+                    </h1>
+                    {!isAdminView && (
+                        <button
+                            onClick={onLogout}
+                            className="flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-all"
+                        >
+                            <LogOut className="w-4 h-4" />
+                            <span className="hidden sm:inline">Logout</span>
+                        </button>
+                    )}
                 </div>
-            )}
-            <header className="flex justify-between items-center mb-6">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-800">{t.title}</h1>
-                    <p className="text-sm text-gray-600 flex items-center">
-                        Welcome, {agent.name}!
-                        <span className={`ml-2 font-bold px-2 py-0.5 rounded-full text-xs ${agent.tier === 'Toptier' ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-700'}`}>
-                            {agent.tier === 'Toptier' ? t.earnings.toptierTier : t.earnings.standardTier}
-                        </span>
-                    </p>
-                </div>
-                {!isAdminView && (
-                    <button 
-                        onClick={onLogout} 
-                        className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors border border-gray-300" 
-                        title="Logout"
-                    >
-                        <LogoutIcon className="w-5 h-5 text-gray-700" />
-                        <span className="text-sm font-medium text-gray-700">{t.logout}</span>
-                    </button>
-                )}
             </header>
-            
-            <div className="mb-6">
-                <p className="text-sm text-center bg-blue-100 text-blue-800 p-3 rounded-lg">
-                    <strong>Your Agent Code:</strong> <span className="font-mono bg-blue-200 px-2 py-1 rounded">{agent.agentCode}</span>
-                </p>
-            </div>
 
-            <div className="flex bg-gray-200 rounded-full p-1 mb-6 text-center">
-                <button onClick={() => handleTabClick('clients')} className={`flex-1 py-2 px-2 rounded-full text-xs sm:text-sm font-semibold transition-colors duration-300 ${activeTab === 'clients' ? 'bg-brand-green text-white shadow' : 'text-gray-600'}`}>
-                    {t.tabs.clients}
-                </button>
-                <button onClick={() => handleTabClick('renewals')} className={`flex-1 py-2 px-2 rounded-full text-xs sm:text-sm font-semibold transition-colors duration-300 relative ${activeTab === 'renewals' ? 'bg-brand-green text-white shadow' : 'text-gray-600'}`}>
-                    {t.tabs.renewals}
-                    {renewalsDue.length > 0 && <span className="absolute top-0 right-1 block h-3 w-3 rounded-full bg-red-500 ring-2 ring-white"></span>}
-                </button>
-                <button onClick={() => handleTabClick('earnings')} className={`flex-1 py-2 px-2 rounded-full text-xs sm:text-sm font-semibold transition-colors duration-300 ${activeTab === 'earnings' ? 'bg-brand-green text-white shadow' : 'text-gray-600'}`}>
-                    {t.tabs.earnings}
-                </button>
-                 <button onClick={() => handleTabClick('messages')} className={`flex-1 py-2 px-2 rounded-full text-xs sm:text-sm font-semibold transition-colors duration-300 relative ${activeTab === 'messages' ? 'bg-brand-green text-white shadow' : 'text-gray-600'}`}>
-                    {t.tabs.messages}
-                    {!isAdminView && unreadMessagesCount > 0 && <span className="absolute top-0 right-1 block h-3 w-3 rounded-full bg-red-500 ring-2 ring-white"></span>}
-                </button>
-                <button onClick={() => handleTabClick('profile')} className={`flex-1 py-2 px-2 rounded-full text-xs sm:text-sm font-semibold transition-colors duration-300 ${activeTab === 'profile' ? 'bg-brand-green text-white shadow' : 'text-gray-600'}`}>
-                    {t.tabs.profile}
-                </button>
-            </div>
+            {/* Main Container */}
+            <div className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-6">
+                {/* Admin Impersonation Banner */}
+                {isAdminView && (
+                    <div className="bg-yellow-100 border-2 border-yellow-400 rounded-xl p-4 mb-6">
+                        <p className="font-bold text-sm text-yellow-900">{t.messages.impersonationBanner.replace('{agentName}', agent.name)}</p>
+                        <button onClick={onStopImpersonating} className="text-sm font-semibold underline hover:text-yellow-800 mt-1">{t.messages.returnToAdmin}</button>
+                    </div>
+                )}
 
-            {isLoading ? (
-                 <div className="flex justify-center items-center h-48"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-green"></div></div>
-            ) : (
-                <div>
-                    {activeTab === 'clients' && (
-                        <div className="space-y-4">
-                             <h2 className="text-xl font-semibold text-gray-700">{t.clients.therapists}</h2>
-                             {clients.filter(c => 'status' in c).length > 0 ? clients.filter(c => 'status' in c).map(c => <ClientCard key={c.id} client={c} />) : <p className="text-sm text-gray-500">{t.clients.noClients}</p>}
-                             
-                             <h2 className="text-xl font-semibold text-gray-700 mt-6">{t.clients.places}</h2>
-                             {clients.filter(c => 'openingTime' in c).length > 0 ? clients.filter(c => 'openingTime' in c).map(c => <ClientCard key={c.id} client={c} />) : <p className="text-sm text-gray-500">{t.clients.noClients}</p>}
+                {/* Welcome Section */}
+                <div className="space-y-6 mb-6">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                            <UserIcon className="w-5 h-5 text-orange-600" />
                         </div>
-                    )}
-                    {activeTab === 'renewals' && (
-                         <div className="space-y-4">
-                            <h2 className="text-xl font-semibold text-gray-700">{t.renewals.title}</h2>
-                            {renewalsDue.length > 0 ? renewalsDue.map(c => <RenewalCard key={c.id} client={c} />) : <p className="text-sm text-gray-500">{t.renewals.noRenewals}</p>}
-                         </div>
-                    )}
-                    {activeTab === 'earnings' && (
-                        <div className="bg-white p-6 rounded-lg shadow-md space-y-6">
-                            <h2 className="text-xl font-semibold text-gray-700">{t.earnings.title}</h2>
-                            <div className="text-center bg-gray-50 p-4 rounded-lg">
-                                <p className="text-gray-600">{t.earnings.totalSignups}</p>
-                                <p className="text-4xl font-bold text-brand-green">{clients.length}</p>
+                        <div>
+                            <h2 className="text-2xl font-bold text-gray-900">Welcome, {agent.name}!</h2>
+                            <div className="flex items-center gap-2 mt-1">
+                                <p className="text-xs text-gray-500">Agent Dashboard</p>
+                                <span className={`font-bold px-2 py-0.5 rounded-full text-xs ${agent.tier === 'Toptier' ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-700'}`}>
+                                    {agent.tier === 'Toptier' ? t.earnings.toptierTier : t.earnings.standardTier}
+                                </span>
                             </div>
-                            <div>
-                                <h4 className="font-semibold text-gray-800">{t.earnings.commissionInfo}</h4>
-                                <ul className="list-disc list-inside text-sm text-gray-600 mt-2 space-y-1">
-                                    <li><strong>{currentCommission}%</strong> for all new sign-ups {agent.tier === 'Toptier' && <span className="font-semibold">(20% base + 3% bonus)</span>}.</li>
-                                    <li>{t.earnings.commissionRecurring}</li>
-                                </ul>
-                            </div>
-                            <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded-r-lg">
-                                <h4 className="font-bold text-green-800">{t.earnings.toptierInfoTitle}</h4>
-                                <p className="text-sm text-green-700 mt-1">{t.earnings.toptierInfoContent}</p>
-                            </div>
-                            <p className="text-xs text-gray-500 text-center pt-4 border-t">{t.earnings.note}</p>
                         </div>
-                    )}
-                    {activeTab === 'messages' && (
-                        <div className="bg-white p-4 rounded-lg shadow-md">
-                            <h2 className="text-xl font-semibold text-gray-700 mb-4">{t.messages.adminMessageTitle}</h2>
-                             {!isAdminView && unreadMessagesCount > 0 && <p className="text-sm font-semibold text-red-600 mb-4">{t.messages.unreadMessages}</p>}
-                            <div className="space-y-3 h-64 overflow-y-auto mb-4 border rounded-lg p-3 bg-gray-50">
-                                {messages.length > 0 ? messages.map(msg => (
-                                    <div key={msg.id} className="bg-blue-100 p-3 rounded-lg">
-                                        <p className="text-sm text-gray-800">{msg.message}</p>
-                                        <p className="text-xs text-gray-500 text-right mt-1">{new Date(msg.createdAt).toLocaleString()}</p>
-                                    </div>
-                                )) : <p className="text-sm text-gray-500 text-center py-8">{t.messages.noMessages}</p>}
-                            </div>
-                            {isAdminView && (
-                                <div className="flex gap-2">
-                                    <input 
-                                        type="text"
-                                        value={newMessage}
-                                        onChange={e => setNewMessage(e.target.value)}
-                                        placeholder={t.messages.adminChatPlaceholder}
-                                        className="flex-grow w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-green focus:border-brand-green"
-                                        onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                                    />
-                                    <Button onClick={handleSendMessage} className="w-auto px-4">{t.messages.sendButton}</Button>
-                                </div>
-                            )}
+                    </div>
+
+                    {/* Agent Code Display */}
+                    <div className="bg-white border-2 border-gray-200 rounded-xl p-6">
+                        <div className="flex items-center gap-3 mb-3">
+                            <Code className="w-5 h-5 text-orange-600" />
+                            <h3 className="text-lg font-bold text-gray-900">Your Agent Code</h3>
                         </div>
-                    )}
-                    {activeTab === 'profile' && !isAdminView && (
-                         <div className="bg-white p-6 rounded-lg shadow-md space-y-4">
-                            <h2 className="text-xl font-semibold text-gray-700">{t.profile.title}</h2>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">{t.profile.bankName}</label>
-                                <input type="text" value={bankName} onChange={e => setBankName(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm" />
-                            </div>
-                             <div>
-                                <label className="block text-sm font-medium text-gray-700">{t.profile.accountNumber}</label>
-                                <input type="text" value={bankAccountNumber} onChange={e => setBankAccountNumber(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">{t.profile.accountName}</label>
-                                <input type="text" value={bankAccountName} onChange={e => setBankAccountName(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm" />
-                            </div>
-                             <div>
-                                <label className="block text-sm font-medium text-gray-700">{t.profile.contactNumber}</label>
-                                <input type="tel" value={contactNumber} onChange={e => setContactNumber(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">{t.profile.homeAddress}</label>
-                                <textarea value={homeAddress} onChange={e => setHomeAddress(e.target.value)} rows={3} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm" />
-                            </div>
-                            <ImageUpload
-                                id="id-card-upload"
-                                label={t.profile.idCard}
-                                currentImage={idCardImage}
-                                onImageChange={setIdCardImage}
-                            />
-                            <Button onClick={handleProfileSave}>{t.profile.saveButton}</Button>
-                         </div>
-                    )}
+                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 inline-block">
+                            <span className="font-mono text-xl font-bold text-orange-600">{agent.agentCode}</span>
+                        </div>
+                    </div>
                 </div>
-            )}
+
+                {/* Tab Navigation */}
+                <nav className="bg-white border-2 border-gray-200 rounded-xl mb-6 p-2">
+                    <div className="flex gap-1 sm:gap-2 overflow-x-auto scrollbar-hide">
+                        <TabButton
+                            icon={<Users />}
+                            label={t.tabs.clients}
+                            isActive={activeTab === 'clients'}
+                            onClick={() => handleTabClick('clients')}
+                        />
+                        <TabButton
+                            icon={<RefreshCw />}
+                            label={t.tabs.renewals}
+                            isActive={activeTab === 'renewals'}
+                            onClick={() => handleTabClick('renewals')}
+                            badge={renewalsDue.length > 0 ? renewalsDue.length : undefined}
+                        />
+                        <TabButton
+                            icon={<DollarSign />}
+                            label={t.tabs.earnings}
+                            isActive={activeTab === 'earnings'}
+                            onClick={() => handleTabClick('earnings')}
+                        />
+                        <TabButton
+                            icon={<MessageSquare />}
+                            label={t.tabs.messages}
+                            isActive={activeTab === 'messages'}
+                            onClick={() => handleTabClick('messages')}
+                            badge={!isAdminView && unreadMessagesCount > 0 ? unreadMessagesCount : undefined}
+                        />
+                        <TabButton
+                            icon={<UserIcon />}
+                            label={t.tabs.profile}
+                            isActive={activeTab === 'profile'}
+                            onClick={() => handleTabClick('profile')}
+                        />
+                    </div>
+                </nav>
+
+                {/* Tab Content */}
+                {isLoading ? (
+                    <div className="flex justify-center items-center h-64">
+                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+                    </div>
+                ) : (
+                    <div>
+                        {/* CLIENTS TAB */}
+                        {activeTab === 'clients' && (
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                                        <Users className="w-5 h-5 text-orange-600" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-2xl font-bold text-gray-900">{t.clients.therapists}</h2>
+                                        <p className="text-xs text-gray-500">Manage therapist clients</p>
+                                    </div>
+                                </div>
+                                {clients.filter(c => 'status' in c).length > 0 ? (
+                                    <div className="grid gap-4">
+                                        {clients.filter(c => 'status' in c).map(c => <ClientCard key={c.id} client={c} />)}
+                                    </div>
+                                ) : (
+                                    <div className="bg-white border-2 border-gray-200 rounded-xl p-12 text-center">
+                                        <p className="text-gray-500">{t.clients.noClients}</p>
+                                    </div>
+                                )}
+                                
+                                <div className="flex items-center gap-3 mt-8">
+                                    <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                                        <Users className="w-5 h-5 text-orange-600" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-2xl font-bold text-gray-900">{t.clients.places}</h2>
+                                        <p className="text-xs text-gray-500">Manage massage place clients</p>
+                                    </div>
+                                </div>
+                                {clients.filter(c => 'openingTime' in c).length > 0 ? (
+                                    <div className="grid gap-4">
+                                        {clients.filter(c => 'openingTime' in c).map(c => <ClientCard key={c.id} client={c} />)}
+                                    </div>
+                                ) : (
+                                    <div className="bg-white border-2 border-gray-200 rounded-xl p-12 text-center">
+                                        <p className="text-gray-500">{t.clients.noClients}</p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* RENEWALS TAB */}
+                        {activeTab === 'renewals' && (
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                                        <RefreshCw className="w-5 h-5 text-orange-600" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-2xl font-bold text-gray-900">{t.renewals.title}</h2>
+                                        <p className="text-xs text-gray-500">Clients with upcoming renewals</p>
+                                    </div>
+                                </div>
+                                {renewalsDue.length > 0 ? (
+                                    <div className="grid gap-4">
+                                        {renewalsDue.map(c => <RenewalCard key={c.id} client={c} />)}
+                                    </div>
+                                ) : (
+                                    <div className="bg-white border-2 border-gray-200 rounded-xl p-12 text-center">
+                                        <p className="text-gray-500">{t.renewals.noRenewals}</p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* EARNINGS TAB */}
+                        {activeTab === 'earnings' && (
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                                        <TrendingUp className="w-5 h-5 text-orange-600" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-2xl font-bold text-gray-900">{t.earnings.title}</h2>
+                                        <p className="text-xs text-gray-500">Commission breakdown and earnings</p>
+                                    </div>
+                                </div>
+                                
+                                <div className="bg-white border-2 border-gray-200 rounded-xl p-6 space-y-6">
+                                    {/* Total Signups */}
+                                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-6 text-center">
+                                        <p className="text-gray-600 text-sm mb-2">{t.earnings.totalSignups}</p>
+                                        <p className="text-5xl font-bold text-orange-600">{clients.length}</p>
+                                    </div>
+                                    
+                                    {/* Commission Info */}
+                                    <div>
+                                        <h4 className="font-semibold text-gray-900 text-lg mb-3">{t.earnings.commissionInfo}</h4>
+                                        <ul className="space-y-3">
+                                            <li className="flex items-start gap-2">
+                                                <div className="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                    <span className="text-orange-600 text-xs">✓</span>
+                                                </div>
+                                                <span className="text-gray-700"><strong>{currentCommission}%</strong> for all new sign-ups {agent.tier === 'Toptier' && <span className="font-semibold text-green-600">(20% base + 3% bonus)</span>}</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <div className="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                    <span className="text-orange-600 text-xs">✓</span>
+                                                </div>
+                                                <span className="text-gray-700">{t.earnings.commissionRecurring}</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    
+                                    {/* Toptier Info */}
+                                    <div className="bg-green-50 border-2 border-green-300 rounded-xl p-4">
+                                        <h4 className="font-bold text-green-800 flex items-center gap-2">
+                                            <span className="text-xl">🏆</span>
+                                            {t.earnings.toptierInfoTitle}
+                                        </h4>
+                                        <p className="text-sm text-green-700 mt-2">{t.earnings.toptierInfoContent}</p>
+                                    </div>
+                                    
+                                    <p className="text-xs text-gray-500 text-center pt-4 border-t">{t.earnings.note}</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* MESSAGES TAB */}
+                        {activeTab === 'messages' && (
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                                        <MessageSquare className="w-5 h-5 text-orange-600" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-2xl font-bold text-gray-900">{t.messages.adminMessageTitle}</h2>
+                                        <p className="text-xs text-gray-500">Communication with admin</p>
+                                    </div>
+                                </div>
+                                
+                                <div className="bg-white border-2 border-gray-200 rounded-xl p-6">
+                                    {!isAdminView && unreadMessagesCount > 0 && (
+                                        <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                                            <p className="text-sm font-semibold text-red-600">{t.messages.unreadMessages}</p>
+                                        </div>
+                                    )}
+                                    
+                                    <div className="space-y-3 h-96 overflow-y-auto mb-4 border-2 border-gray-200 rounded-lg p-4 bg-gray-50">
+                                        {messages.length > 0 ? messages.map(msg => (
+                                            <div key={msg.id} className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                                <p className="text-sm text-gray-800">{msg.message}</p>
+                                                <p className="text-xs text-gray-500 text-right mt-2">{new Date(msg.createdAt).toLocaleString()}</p>
+                                            </div>
+                                        )) : (
+                                            <div className="flex items-center justify-center h-full">
+                                                <p className="text-gray-500">{t.messages.noMessages}</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                    
+                                    {isAdminView && (
+                                        <div className="flex gap-2">
+                                            <input 
+                                                type="text"
+                                                value={newMessage}
+                                                onChange={e => setNewMessage(e.target.value)}
+                                                placeholder={t.messages.adminChatPlaceholder}
+                                                className="flex-grow px-4 py-3 bg-white border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                                onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                                            />
+                                            <button 
+                                                onClick={handleSendMessage}
+                                                className="px-6 py-3 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 transition-all"
+                                            >
+                                                {t.messages.sendButton}
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* PROFILE TAB */}
+                        {activeTab === 'profile' && !isAdminView && (
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                                        <UserIcon className="w-5 h-5 text-orange-600" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-2xl font-bold text-gray-900">{t.profile.title}</h2>
+                                        <p className="text-xs text-gray-500">Update your account information</p>
+                                    </div>
+                                </div>
+                                
+                                <div className="bg-white border-2 border-gray-200 rounded-xl p-6 space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-900 mb-2">{t.profile.bankName}</label>
+                                        <input 
+                                            type="text" 
+                                            value={bankName} 
+                                            onChange={e => setBankName(e.target.value)} 
+                                            className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500" 
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-900 mb-2">{t.profile.accountNumber}</label>
+                                        <input 
+                                            type="text" 
+                                            value={bankAccountNumber} 
+                                            onChange={e => setBankAccountNumber(e.target.value)} 
+                                            className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500" 
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-900 mb-2">{t.profile.accountName}</label>
+                                        <input 
+                                            type="text" 
+                                            value={bankAccountName} 
+                                            onChange={e => setBankAccountName(e.target.value)} 
+                                            className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500" 
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-900 mb-2">{t.profile.contactNumber}</label>
+                                        <input 
+                                            type="tel" 
+                                            value={contactNumber} 
+                                            onChange={e => setContactNumber(e.target.value)} 
+                                            className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500" 
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-900 mb-2">{t.profile.homeAddress}</label>
+                                        <textarea 
+                                            value={homeAddress} 
+                                            onChange={e => setHomeAddress(e.target.value)} 
+                                            rows={3} 
+                                            className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500" 
+                                        />
+                                    </div>
+                                    <ImageUpload
+                                        id="id-card-upload"
+                                        label={t.profile.idCard}
+                                        currentImage={idCardImage}
+                                        onImageChange={setIdCardImage}
+                                    />
+                                    <button 
+                                        onClick={handleProfileSave}
+                                        className="w-full px-6 py-3 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 transition-all"
+                                    >
+                                        {t.profile.saveButton}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
         </div>
     );
 };
