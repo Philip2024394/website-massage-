@@ -20,6 +20,13 @@ const TherapistJobOpportunitiesPage: React.FC<TherapistJobOpportunitiesPageProps
     const [isLoading, setIsLoading] = useState(true);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [formData, setFormData] = useState({
+        listingId: 0,
+        jobTitle: 'Massage Therapist - Job Opportunity',
+        jobDescription: 'Seeking full-time massage therapy position',
+        requiredLicenses: '',
+        applicationDeadline: '',
+        jobType: 'job-seeking' as string,
+        location: '',
         willingToRelocateDomestic: false,
         willingToRelocateInternational: false,
         availability: 'full-time' as 'full-time' | 'part-time' | 'both',
@@ -50,6 +57,13 @@ const TherapistJobOpportunitiesPage: React.FC<TherapistJobOpportunitiesPageProps
                 setIsOptedIn(true);
                 // Populate form with existing data
                 setFormData({
+                    listingId: existing.listingId || 0,
+                    jobTitle: existing.jobTitle || 'Massage Therapist - Job Opportunity',
+                    jobDescription: existing.jobDescription || 'Seeking full-time massage therapy position',
+                    requiredLicenses: existing.requiredLicenses || '',
+                    applicationDeadline: existing.applicationDeadline || '',
+                    jobType: existing.jobType || 'job-seeking',
+                    location: existing.location || '',
                     willingToRelocateDomestic: existing.willingToRelocateDomestic || false,
                     willingToRelocateInternational: existing.willingToRelocateInternational || false,
                     availability: existing.availability || 'full-time',
@@ -91,7 +105,17 @@ const TherapistJobOpportunitiesPage: React.FC<TherapistJobOpportunitiesPageProps
 
     const saveJobListing = async () => {
         try {
+            // Generate unique listingId
+            const listingId = Date.now();
+            
             const listingData = {
+                listingId,
+                jobTitle: formData.jobTitle,
+                jobDescription: formData.jobDescription,
+                requiredLicenses: formData.requiredLicenses || null,
+                applicationDeadline: formData.applicationDeadline ? new Date(formData.applicationDeadline).toISOString() : null,
+                jobType: formData.jobType,
+                location: formData.location || null,
                 therapistId: therapistId.toString(),
                 therapistName,
                 willingToRelocateDomestic: formData.willingToRelocateDomestic,
@@ -100,7 +124,7 @@ const TherapistJobOpportunitiesPage: React.FC<TherapistJobOpportunitiesPageProps
                 minimumSalary: formData.minimumSalary,
                 preferredLocations: formData.preferredLocations,
                 accommodation: formData.accommodation,
-                experienceYears: formData.experienceYears,
+                experienceYears: formData.experienceYears || null,
                 specializations: formData.specializations,
                 languages: formData.languages,
                 isActive: true,
@@ -226,6 +250,52 @@ const TherapistJobOpportunitiesPage: React.FC<TherapistJobOpportunitiesPageProps
                 {/* Form */}
                 <div className="bg-white border-2 border-gray-200 rounded-xl p-6 space-y-6">
                     <h2 className="text-lg font-bold text-gray-900">Your Preferences</h2>
+
+                    {/* Job Title & Description */}
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-900 mb-2">
+                                Job Title / Looking For
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.jobTitle}
+                                onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
+                                placeholder="e.g., Massage Therapist - Hotel Position"
+                                maxLength={128}
+                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-900 mb-2">
+                                Brief Description (Max 500 characters)
+                            </label>
+                            <textarea
+                                value={formData.jobDescription}
+                                onChange={(e) => setFormData({ ...formData, jobDescription: e.target.value.slice(0, 500) })}
+                                placeholder="Describe your experience, skills, and what you're looking for..."
+                                rows={4}
+                                maxLength={500}
+                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                            />
+                            <p className="text-xs text-gray-500 mt-1">{formData.jobDescription.length}/500 characters</p>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-900 mb-2">
+                                Licenses & Certifications (Optional)
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.requiredLicenses}
+                                onChange={(e) => setFormData({ ...formData, requiredLicenses: e.target.value })}
+                                placeholder="e.g., Certified Thai Massage, SPA License"
+                                maxLength={256}
+                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                            />
+                        </div>
+                    </div>
 
                     {/* Relocation Willingness */}
                     <div className="space-y-3">
