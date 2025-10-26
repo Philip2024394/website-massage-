@@ -13,7 +13,7 @@ const HomeIcon: React.FC<{className?: string}> = ({ className }) => (
     </svg>
 );
 
-const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) => {
+const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess: _onSuccess, onBack }) => {
     const [isSignUp, setIsSignUp] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -26,30 +26,9 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) =>
         setLoading(true);
 
         try {
-            if (isSignUp) {
-                const response = await fetch('/api/auth/hotel/signup', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-                
-                if (!response.ok) throw new Error('Sign up failed');
-                
-                setIsSignUp(false);
-                setError('Account created! Please sign in.');
-                setPassword('');
-            } else {
-                const response = await fetch('/api/auth/hotel/signin', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-                
-                if (!response.ok) throw new Error('Sign in failed');
-                
-                const data = await response.json();
-                onSuccess(data.hotelId);
-            }
+            // TODO: Implement actual authentication with Appwrite backend
+            // Authentication is being configured
+            setError('Authentication is being configured. Please contact admin.');
         } catch (err: any) {
             setError(err.message || 'Authentication failed');
         } finally {

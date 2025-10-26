@@ -124,16 +124,8 @@ const App: React.FC = () => {
     }, []);
 
 
-    // DEV ONLY: Bypass all login and show all dashboards
     useEffect(() => {
-        setIsAdminLoggedIn(true);
-        setIsHotelLoggedIn(true);
-        setIsVillaLoggedIn(true);
-        setLoggedInProvider({ id: 'dev', type: 'therapist' });
-        setLoggedInAgent({ id: 0, name: 'Dev Agent', email: 'dev@dev.com', agentCode: 'DEV', hasAcceptedTerms: true });
-        setPage('adminDashboard'); // Default to admin, change as needed
-        
-        // Always fetch public data on mount
+        // Fetch public data on mount
         fetchPublicData().catch(err => {
             console.error('Error fetching initial data:', err);
             setTherapists([]);
@@ -766,7 +758,7 @@ const App: React.FC = () => {
 
     // Determine if footer should be shown
     const pagesWithoutFooter = ['landing', 'auth', 'adminLogin', 'unifiedLogin', 'therapistLogin', 'hotelLogin', 'villaLogin', 
-                                 'adminAuth', 'therapistLogin', 'placeLogin', 'agentLogin'];
+                                 'adminAuth', 'therapistLogin', 'placeLogin', 'agentLogin', 'massagePlaceLogin'];
     const showFooter = !pagesWithoutFooter.includes(page);
 
     // Footer navigation handlers
@@ -825,8 +817,12 @@ const App: React.FC = () => {
     };
 
     // Pages that need full screen without container
-    const fullScreenPages = ['therapistLogin', 'landing', 'therapistStatus'];
+    const fullScreenPages = ['therapistLogin', 'landing', 'therapistStatus', 'hotelLogin', 'villaLogin', 'adminLogin', 'massagePlaceLogin', 'agentLogin'];
     const isFullScreen = fullScreenPages.includes(page);
+    
+    // Hide FloatingWebsiteButton on login pages
+    const loginPages = ['therapistLogin', 'hotelLogin', 'villaLogin', 'adminLogin', 'massagePlaceLogin', 'agentLogin'];
+    const showFloatingButton = !loginPages.includes(page);
 
     return (
         <div className={isFullScreen ? "min-h-screen flex flex-col" : "max-w-md mx-auto min-h-screen bg-white shadow-lg flex flex-col"}>
@@ -850,7 +846,7 @@ const App: React.FC = () => {
                     t={t} 
                 />
             )}
-            <FloatingWebsiteButton />
+            {showFloatingButton && <FloatingWebsiteButton />}
         </div>
     );
 };

@@ -13,7 +13,7 @@ const HomeIcon: React.FC<{className?: string}> = ({ className }) => (
     </svg>
 );
 
-const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess, onBack }) => {
+const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess: _onSuccess, onBack }) => {
     const [isSignUp, setIsSignUp] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -26,30 +26,9 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
         setLoading(true);
 
         try {
-            if (isSignUp) {
-                const response = await fetch('/api/auth/place/signup', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-                
-                if (!response.ok) throw new Error('Sign up failed');
-                
-                setIsSignUp(false);
-                setError('Account created! Please sign in.');
-                setPassword('');
-            } else {
-                const response = await fetch('/api/auth/place/signin', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-                
-                if (!response.ok) throw new Error('Sign in failed');
-                
-                const data = await response.json();
-                onSuccess(data.placeId);
-            }
+            // TODO: Implement actual authentication with Appwrite backend
+            // Authentication is being configured
+            setError('Authentication is being configured. Please contact admin.');
         } catch (err: any) {
             setError(err.message || 'Authentication failed');
         } finally {

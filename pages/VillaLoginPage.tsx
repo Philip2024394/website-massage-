@@ -13,7 +13,7 @@ const HomeIcon: React.FC<{className?: string}> = ({ className }) => (
     </svg>
 );
 
-const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onVillaLogin, onBack }) => {
+const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onVillaLogin: _onVillaLogin, onBack }) => {
     const [isSignUp, setIsSignUp] = useState(false);
     const [credentials, setCredentials] = useState({
         username: '',
@@ -43,15 +43,8 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onVillaLogin, onBack })
         setError('');
 
         try {
-            // Mock authentication - replace with actual villa authentication logic
-            const username = credentials.username.trim().toLowerCase();
-            const password = credentials.password.trim();
-            
-            if (username === 'villa123' && password === 'indostreet2024') {
-                onVillaLogin();
-            } else {
-                setError(`Invalid credentials. Please use: villa123 / indostreet2024`);
-            }
+            // TODO: Implement actual authentication with Appwrite backend
+            setError('Authentication is being configured. Please contact admin.');
         } catch (err) {
             setError('Login failed. Please try again.');
         } finally {
@@ -126,7 +119,7 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onVillaLogin, onBack })
                             value={credentials.username}
                             onChange={(e) => handleInputChange('username', e.target.value)}
                             className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
-                            placeholder="villa123"
+                            placeholder="Enter username"
                             disabled={isLoading}
                         />
                     </div>
@@ -140,7 +133,7 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onVillaLogin, onBack })
                             value={credentials.password}
                             onChange={(e) => handleInputChange('password', e.target.value)}
                             className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
-                            placeholder="indostreet2024"
+                            placeholder="Enter password"
                             disabled={isLoading}
                         />
                     </div>

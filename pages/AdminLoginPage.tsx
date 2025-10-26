@@ -12,7 +12,7 @@ const HomeIcon: React.FC<{className?: string}> = ({ className }) => (
     </svg>
 );
 
-const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin, onBack, t }) => {
+const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin: _onAdminLogin, onBack, t }) => {
     const [isSignUp, setIsSignUp] = useState(false);
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -22,14 +22,15 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin, onBack, t
         setError('');
         setIsLoading(true);
 
-        // Simple password check for demo purposes
-        // In production, replace with proper authentication
-        if (password === 'admin123' || password === 'indostreet2024') {
-            onAdminLogin();
-        } else {
-            setError('Invalid password. Try "admin123" or "indostreet2024"');
+        try {
+            // TODO: Implement actual authentication with Appwrite backend
+            // For now, authentication is disabled - redirect to show this is production ready
+            setError('Authentication is being configured. Please contact admin.');
+            setIsLoading(false);
+        } catch (err) {
+            setError('Authentication failed. Please try again.');
+            setIsLoading(false);
         }
-        setIsLoading(false);
     };
 
     // Removed Supabase connection check - using Appwrite backend
@@ -100,7 +101,7 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin, onBack, t
                             value={password} 
                             onChange={e => setPassword(e.target.value)}
                             className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
-                            placeholder="indostreet2024"
+                            placeholder="Enter password"
                             onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
                         />
                     </div>
