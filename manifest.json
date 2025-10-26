@@ -1,16 +1,23 @@
 {
-  "short_name": "2Go Massage",
-  "name": "2Go Massage Indonesia",
-  "description": "A two-sided marketplace connecting customers with massage therapists and establishments.",
+  "short_name": "IndaStreet",
+  "name": "IndaStreet - Pijat Panggilan Bali",
+  "description": "Platform layanan pijat panggilan terpercaya di Bali. Temukan terapis pijat profesional, spa massage, traditional Balinese massage. Booking mudah 24/7.",
+  "categories": ["health", "lifestyle", "wellness"],
+  "lang": "id",
+  "dir": "ltr",
   "icons": [
     {
       "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23f97316'/><text x='50' y='60' font-family='Arial' font-size='40' fill='white' text-anchor='middle'>I</text></svg>",
       "type": "image/svg+xml",
-      "sizes": "any"
+      "sizes": "any",
+      "purpose": "any maskable"
     }
   ],
   "start_url": ".",
+  "scope": "/",
   "display": "standalone",
-  "theme_color": "#16a34a",
-  "background_color": "#ffffff"
+  "orientation": "portrait-primary",
+  "theme_color": "#f97316",
+  "background_color": "#ffffff",
+  "screenshots": []
 }

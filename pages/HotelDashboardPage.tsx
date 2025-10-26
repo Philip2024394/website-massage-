@@ -1431,11 +1431,14 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                                     <div className="bg-white p-8 rounded-xl border-2 border-gray-200 shadow-lg">
                                         {qrCodeDataUrl ? (
                                             <div className="space-y-4">
-                                                <img 
-                                                    src={qrCodeDataUrl} 
-                                                    alt="QR code" 
-                                                    className="w-72 h-72 mx-auto" 
-                                                />
+                                                <div className="flex justify-center">
+                                                    <img 
+                                                        src={qrCodeDataUrl} 
+                                                        alt="QR code" 
+                                                        className="w-72 h-72 object-contain" 
+                                                        style={{ imageRendering: 'pixelated' }}
+                                                    />
+                                                </div>
                                                 {/* Hotel Name Below QR Code */}
                                                 <div className="text-center pt-4 border-t-2 border-gray-200">
                                                     <div className="text-xs text-gray-500 mb-1">Scan to view menu for</div>
