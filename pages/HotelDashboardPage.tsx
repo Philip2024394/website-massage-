@@ -1,8 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Building, Image as ImageIcon, Link as LinkIcon, LogOut, Menu, MessageSquare, Phone, QrCode, Star, Tag, User, Users, X } from 'lucide-react';
 import { Therapist, Place, HotelVillaServiceStatus } from '../types';
 import { parsePricing } from '../utils/appwriteHelpers';
 import ImageUpload from '../components/ImageUpload';
+import { analyticsService } from '../services/analyticsService';
 // import Header from '../components/dashboard/Header';
 import StatCard from '../components/dashboard/StatCard';
 import TabButton from '../components/dashboard/TabButton';
@@ -35,7 +36,38 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
     const [allowRoomCharges, setAllowRoomCharges] = useState(false);
     const [customWelcomeMessage, setCustomWelcomeMessage] = useState('Welcome to our exclusive wellness experience');
     const [selectedLanguage, setSelectedLanguage] = useState('en');
-    // Removed sidebar state as sidebar is no longer used
+    
+    // Real analytics state
+    const [analytics, setAnalytics] = useState<any>(null);
+    const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(true);
+    
+    // Fetch real analytics data
+    useEffect(() => {
+        const fetchAnalytics = async () => {
+            try {
+                setIsLoadingAnalytics(true);
+                const hotelId = 1; // TODO: Get actual hotel ID from props/auth
+                const endDate = new Date().toISOString();
+                const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(); // Last 30 days
+                
+                const data = await analyticsService.getHotelVillaAnalytics(
+                    hotelId,
+                    'hotel',
+                    startDate,
+                    endDate
+                );
+                setAnalytics(data);
+            } catch (error) {
+                console.error('Error fetching analytics:', error);
+            } finally {
+                setIsLoadingAnalytics(false);
+            }
+        };
+        
+        if (activeTab === 'analytics') {
+            fetchAnalytics();
+        }
+    }, [activeTab]);
 
     const placeholderImage =
         'https://images.unsplash.com/photo-1600959907703-125ba1374a12?q=80&w=1200&auto=format&fit=crop';
@@ -202,11 +234,13 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                                         </div>
                                         <span className="text-xs font-semibold text-blue-600 bg-blue-200 px-3 py-1 rounded-full">This Month</span>
                                     </div>
-                                    <h3 className="text-3xl font-bold text-gray-900">1,247</h3>
+                                    <h3 className="text-3xl font-bold text-gray-900">
+                                        {isLoadingAnalytics ? '...' : (analytics?.totalQRScans || 0).toLocaleString()}
+                                    </h3>
                                     <p className="text-sm text-gray-600 mt-1">QR Code Scans</p>
                                     <div className="mt-4 flex items-center text-sm">
-                                        <span className="text-green-600 font-semibold">↑ 12%</span>
-                                        <span className="text-gray-500 ml-2">vs last month</span>
+                                        <span className="text-blue-600 font-semibold">Real-time</span>
+                                        <span className="text-gray-500 ml-2">Last 30 days</span>
                                     </div>
                                 </div>
 
@@ -217,11 +251,13 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                                         </div>
                                         <span className="text-xs font-semibold text-purple-600 bg-purple-200 px-3 py-1 rounded-full">Unique</span>
                                     </div>
-                                    <h3 className="text-3xl font-bold text-gray-900">892</h3>
+                                    <h3 className="text-3xl font-bold text-gray-900">
+                                        {isLoadingAnalytics ? '...' : (analytics?.uniqueGuestViews || 0).toLocaleString()}
+                                    </h3>
                                     <p className="text-sm text-gray-600 mt-1">Guest Views</p>
                                     <div className="mt-4 flex items-center text-sm">
-                                        <span className="text-green-600 font-semibold">↑ 8%</span>
-                                        <span className="text-gray-500 ml-2">vs last month</span>
+                                        <span className="text-purple-600 font-semibold">Real-time</span>
+                                        <span className="text-gray-500 ml-2">Last 30 days</span>
                                     </div>
                                 </div>
 
@@ -234,11 +270,13 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                                         </div>
                                         <span className="text-xs font-semibold text-orange-600 bg-orange-200 px-3 py-1 rounded-full">Total</span>
                                     </div>
-                                    <h3 className="text-3xl font-bold text-gray-900">143</h3>
+                                    <h3 className="text-3xl font-bold text-gray-900">
+                                        {isLoadingAnalytics ? '...' : (analytics?.totalBookings || 0).toLocaleString()}
+                                    </h3>
                                     <p className="text-sm text-gray-600 mt-1">Bookings Made</p>
                                     <div className="mt-4 flex items-center text-sm">
-                                        <span className="text-green-600 font-semibold">↑ 24%</span>
-                                        <span className="text-gray-500 ml-2">vs last month</span>
+                                        <span className="text-orange-600 font-semibold">Real-time</span>
+                                        <span className="text-gray-500 ml-2">Last 30 days</span>
                                     </div>
                                 </div>
 

@@ -564,7 +564,7 @@ const App: React.FC = () => {
         setPage('booking');
     };
 
-    const handleCreateBooking = (bookingData: Omit<Booking, 'id' | 'status' | 'userId' | 'userName'>) => {
+    const handleCreateBooking = async (bookingData: Omit<Booking, 'id' | 'status' | 'userId' | 'userName'>) => {
         const newBooking: Booking = {
             ...bookingData,
             id: Date.now(),
@@ -573,6 +573,27 @@ const App: React.FC = () => {
             userName: user!.name,
         };
         setBookings(prev => [...prev, newBooking]);
+
+        // Track booking completion in analytics
+        try {
+            const { analyticsService } = await import('./services/analyticsService');
+            
+            // Calculate amount from service duration
+            // bookingData.service is '60', '90', or '120'
+            // We'll use a default amount for now since we don't have pricing here
+            const defaultPricing = { '60': 200000, '90': 300000, '120': 400000 };
+            const amount = defaultPricing[newBooking.service as '60' | '90' | '120'] || 200000;
+            
+            await analyticsService.trackBookingCompleted(
+                newBooking.id,
+                newBooking.providerId,
+                newBooking.providerType as 'therapist' | 'place',
+                amount,
+                user?.id.toString()
+            );
+        } catch (err) {
+            console.error('Analytics tracking error:', err);
+        }
 
         alert(t.bookingPage.bookingSuccessTitle + '\n' + t.bookingPage.bookingSuccessMessage.replace('{name}', newBooking.providerName));
         setPage('home');

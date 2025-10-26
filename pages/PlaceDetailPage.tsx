@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { Place, Analytics } from '../types';
 import Button from '../components/Button';
+import { analyticsService } from '../services/analyticsService';
 
 interface PlaceDetailPageProps {
     place: Place;
@@ -25,10 +26,26 @@ const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({ place, onBack, onBook
     const pricing = typeof place.pricing === 'string' ? JSON.parse(place.pricing) : place.pricing;
 
     useEffect(() => {
+        // Track real analytics
+        analyticsService.trackProfileView(
+            place.id,
+            'place',
+            undefined // userId if available
+        ).catch(err => console.error('Analytics tracking error:', err));
+        
+        // Keep legacy tracking for backwards compatibility
         onIncrementAnalytics('profileViews');
-    }, []);
+    }, [place.id]);
 
     const openWhatsApp = () => {
+        // Track real analytics
+        analyticsService.trackWhatsAppClick(
+            place.id,
+            'place',
+            undefined // userId if available
+        ).catch(err => console.error('Analytics tracking error:', err));
+        
+        // Keep legacy tracking
         onIncrementAnalytics('whatsappClicks');
         window.open(`https://wa.me/${place.whatsappNumber}`, '_blank');
     };
