@@ -34,9 +34,10 @@ interface HotelDashboardPageProps {
     onLogout: () => void;
     therapists?: Therapist[];
     places?: Place[];
+    hotelId?: string;
 }
 
-const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, therapists = [], places = [] }) => {
+const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, therapists = [], places = [], hotelId = '1' }) => {
     const [activeTab, setActiveTab] = useState<'analytics' | 'discounts' | 'profile' | 'menu' | 'feedback' | 'concierge' | 'commissions'>('analytics');
     const [customWelcomeMessage, setCustomWelcomeMessage] = useState('Welcome to our exclusive wellness experience');
     const [selectedLanguage, setSelectedLanguage] = useState('en');
@@ -90,11 +91,17 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                 } catch (e) {
                     massageTypes = [];
                 }
+                // Get image - use existing or random from pool
+                let image = (type === 'therapist' ? (item as any).profilePicture : (item as any).mainImage) || placeholderImage;
+                // If no image, assign random from banner pool
+                if (!image || image === placeholderImage) {
+                    image = therapistBannerImages[Math.floor(Math.random() * therapistBannerImages.length)];
+                }
                 list.push({
                     id: item.id,
                     name: item.name,
                     type,
-                    image: (type === 'therapist' ? (item as any).profilePicture : (item as any).mainImage) || placeholderImage,
+                    image,
                     location: (item as any).location,
                     rating: (item as any).rating,
                     reviewCount: (item as any).reviewCount,
@@ -111,15 +118,15 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
         therapists.forEach(t => add(t, 'therapist'));
         places.forEach(p => add(p, 'place'));
         return list;
-    }, [therapists, places]);
+    }, [therapists, places, therapistBannerImages]);
 
     // Mock providers for preview when no data is available
-    const mockProviders: ProviderCard[] = [
+    const mockProviders: ProviderCard[] = useMemo(() => [
         {
             id: 't-001',
             name: 'Ayu Prameswari',
             type: 'therapist',
-            image: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?q=80&w=1200&auto=format&fit=crop',
+            image: therapistBannerImages[0],
             location: 'Kuta, Bali',
             rating: 4.9,
             reviewCount: 128,
@@ -135,7 +142,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
             id: 't-002',
             name: 'Made Santika',
             type: 'therapist',
-            image: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=1200&auto=format&fit=crop',
+            image: therapistBannerImages[1],
             location: 'Ubud, Bali',
             rating: 4.8,
             reviewCount: 95,
@@ -151,7 +158,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
             id: 'p-001',
             name: 'Serenity Spa & Wellness',
             type: 'place',
-            image: 'https://images.unsplash.com/photo-1519823551278-64ac92734fb1?q=80&w=1200&auto=format&fit=crop',
+            image: therapistBannerImages[2],
             location: 'Seminyak, Bali',
             rating: 4.7,
             reviewCount: 256,
@@ -162,7 +169,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
             status: 'Available',
             languages: ['id', 'en', 'zh', 'ja', 'ko', 'ru'],
         },
-    ];
+    ], [therapistBannerImages]);
 
     // Sort providers: Available first, then Busy
     const displayProviders = useMemo(() => {
@@ -192,6 +199,25 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
     const [qrLink, setQrLink] = useState('');
     const [previewOpen, setPreviewOpen] = useState(false);
     const [showLandingPage, setShowLandingPage] = useState(true);
+
+    // Therapist banner images pool for randomization
+    const therapistBannerImages = [
+        'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?q=80&w=1200&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=1200&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1519823551278-64ac92734fb1?q=80&w=1200&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1600959907703-125ba1374a12?q=80&w=1200&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=1200&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=1200&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?q=80&w=1200&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=1200&auto=format&fit=crop',
+    ];
+
+    // Generate unique QR link for this hotel
+    useEffect(() => {
+        const baseUrl = window.location.origin;
+        const uniqueLink = `${baseUrl}/hotel/${hotelId}/menu`;
+        setQrLink(uniqueLink);
+    }, [hotelId]);
     
     // Booking modal state
     const [bookingOpen, setBookingOpen] = useState(false);
@@ -735,7 +761,14 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         actions={
                             <div className="flex items-center gap-2">
                                 <button
-                                    onClick={() => navigator.clipboard.writeText(window.location.href)}
+                                    onClick={() => setQrOpen(true)}
+                                    className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors text-sm font-semibold flex items-center gap-2"
+                                >
+                                    <QrCode size={16} />
+                                    Generate QR Code
+                                </button>
+                                <button
+                                    onClick={() => navigator.clipboard.writeText(qrLink)}
                                     className="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium flex items-center gap-2"
                                 >
                                     <LinkIcon size={16} />
