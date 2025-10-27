@@ -133,6 +133,9 @@ const EmployerJobPostingPage: React.FC = () => {
 
         setIsSubmitting(true);
         try {
+            console.log('Submitting job with massage types:', formData.massageTypes);
+            console.log('Submitting job with languages:', formData.requiredLanguages);
+            
             await databases.createDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.employerJobPostings || 'employer_job_postings',
@@ -172,13 +175,15 @@ const EmployerJobPostingPage: React.FC = () => {
                 }
             );
 
+            console.log('Job posted successfully!');
             setSubmitSuccess(true);
             setTimeout(() => {
                 window.location.href = '/';
             }, 3000);
         } catch (error) {
             console.error('Error posting job:', error);
-            alert('Failed to post job. Please try again.');
+            console.error('Error details:', JSON.stringify(error, null, 2));
+            alert('Failed to post job. Please check console for details.');
         } finally {
             setIsSubmitting(false);
         }
