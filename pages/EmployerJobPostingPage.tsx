@@ -28,6 +28,8 @@ const EmployerJobPostingPage: React.FC = () => {
         workType: 'full-time' as 'full-time' | 'part-time' | 'contract',
         requirements: [] as string[],
         benefits: [] as string[],
+        massageTypes: [] as string[],
+        requiredLanguages: [] as string[],
         startDate: '',
         status: 'active',
         views: 0,
@@ -82,6 +84,45 @@ const EmployerJobPostingPage: React.FC = () => {
         'Uniform',
     ];
 
+    const massageTypes = [
+        'Traditional Massage',
+        'Sports Massage',
+        'Deep Tissue',
+        'Swedish Massage',
+        'Thai Massage',
+        'Hot Stone',
+        'Aromatherapy',
+        'Reflexology',
+        'Shiatsu',
+        'Prenatal',
+        'Balinese',
+        'Trigger Point',
+        'Lymphatic Drainage',
+        'Myofascial Release',
+        'Lomi Lomi',
+        'Indian Head',
+        'Cupping',
+        'Oil Massage',
+        'Four Hands',
+    ];
+
+    const availableLanguages = [
+        'English',
+        'Indonesian (Bahasa Indonesia)',
+        'Mandarin Chinese',
+        'Japanese',
+        'Korean',
+        'French',
+        'German',
+        'Spanish',
+        'Russian',
+        'Arabic',
+        'Dutch',
+        'Italian',
+        'Thai',
+        'Vietnamese',
+    ];
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
@@ -120,6 +161,8 @@ const EmployerJobPostingPage: React.FC = () => {
                     workType: formData.workType,
                     requirements: formData.requirements,
                     benefits: formData.benefits,
+                    massageTypes: formData.massageTypes,
+                    requiredLanguages: formData.requiredLanguages,
                     startDate: formData.startDate || null,
                     postedDate: new Date().toISOString(),
                     status: formData.status || null,
@@ -663,6 +706,60 @@ const EmployerJobPostingPage: React.FC = () => {
                                     }`}
                                 >
                                     {benefit}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Massage Types Required */}
+                    <div className="bg-white border-2 border-gray-200 rounded-xl p-6 space-y-4">
+                        <h2 className="text-lg font-bold text-gray-900">Massage Types Required</h2>
+                        <p className="text-sm text-gray-600">Select the massage types the therapist must be skilled in</p>
+                        <div className="flex flex-wrap gap-2">
+                            {massageTypes.map((type) => (
+                                <button
+                                    key={type}
+                                    type="button"
+                                    onClick={() => {
+                                        const newTypes = formData.massageTypes.includes(type)
+                                            ? formData.massageTypes.filter(t => t !== type)
+                                            : [...formData.massageTypes, type];
+                                        setFormData({ ...formData, massageTypes: newTypes });
+                                    }}
+                                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                                        formData.massageTypes.includes(type)
+                                            ? 'bg-blue-500 text-white'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    }`}
+                                >
+                                    {type}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Languages Required */}
+                    <div className="bg-white border-2 border-gray-200 rounded-xl p-6 space-y-4">
+                        <h2 className="text-lg font-bold text-gray-900">Languages Required</h2>
+                        <p className="text-sm text-gray-600">Select the languages the therapist must speak</p>
+                        <div className="flex flex-wrap gap-2">
+                            {availableLanguages.map((lang) => (
+                                <button
+                                    key={lang}
+                                    type="button"
+                                    onClick={() => {
+                                        const newLangs = formData.requiredLanguages.includes(lang)
+                                            ? formData.requiredLanguages.filter(l => l !== lang)
+                                            : [...formData.requiredLanguages, lang];
+                                        setFormData({ ...formData, requiredLanguages: newLangs });
+                                    }}
+                                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                                        formData.requiredLanguages.includes(lang)
+                                            ? 'bg-green-500 text-white'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    }`}
+                                >
+                                    {lang}
                                 </button>
                             ))}
                         </div>

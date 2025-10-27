@@ -22,6 +22,8 @@ interface EmployerJobPosting {
     accommodationProvided: boolean;
     requirements: string[];
     benefits: string[];
+    massageTypes?: string[];
+    requiredLanguages?: string[];
     contactWhatsApp: string;
     isActive: boolean;
     imageUrl?: string;
@@ -461,6 +463,34 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({ onBack, onPostJob }) 
                                             </div>
                                         )}
                                     </div>
+
+                                    {/* Massage Types Required */}
+                                    {posting.massageTypes && posting.massageTypes.length > 0 && (
+                                        <div className="mb-4">
+                                            <p className="text-xs font-semibold text-gray-500 mb-2">MASSAGE TYPES REQUIRED:</p>
+                                            <div className="flex flex-wrap gap-2">
+                                                {posting.massageTypes.map((type, idx) => (
+                                                    <span key={idx} className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full border border-blue-200">
+                                                        {type}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Languages Required */}
+                                    {posting.requiredLanguages && posting.requiredLanguages.length > 0 && (
+                                        <div className="mb-4">
+                                            <p className="text-xs font-semibold text-gray-500 mb-2">LANGUAGES REQUIRED:</p>
+                                            <div className="flex flex-wrap gap-2">
+                                                {posting.requiredLanguages.map((lang, idx) => (
+                                                    <span key={idx} className="px-3 py-1 bg-green-50 text-green-700 text-xs font-medium rounded-full border border-green-200">
+                                                        {lang}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
 
                                     {/* Benefits */}
                                     {posting.benefits.length > 0 && (

@@ -22,6 +22,8 @@ interface TherapistJobListing {
     accommodation: 'required' | 'preferred' | 'not-required';
     specializations: string[];
     languages: string[];
+    massageTypes?: string[];
+    requiredLanguages?: string[];
     yearsOfExperience: number;
     contactWhatsApp: string;
     isActive: boolean;
@@ -299,7 +301,7 @@ const TherapistJobsPage: React.FC<TherapistJobsPageProps> = ({ onBack, onRegiste
                                             <h3 className="text-xl font-bold text-gray-900 mb-1">
                                                 {unlockedListings.has(listing.$id) ? listing.therapistName : "Register To Display"}
                                             </h3>
-                                            <p className="text-orange-600 font-semibold text-sm">{listing.jobTitle}</p>
+                                            <p className="text-orange-600 font-semibold text-sm">Position: {listing.jobTitle}</p>
                                         </div>
                                         <span className="px-3 py-1 bg-orange-500 text-white text-xs font-semibold rounded-full">
                                             Available
@@ -308,6 +310,34 @@ const TherapistJobsPage: React.FC<TherapistJobsPageProps> = ({ onBack, onRegiste
 
                                     {/* Description */}
                                     <p className="text-gray-700 text-sm mb-4 line-clamp-3">{listing.jobDescription}</p>
+
+                                    {/* Massage Types Required */}
+                                    {listing.massageTypes && listing.massageTypes.length > 0 && (
+                                        <div className="mb-4">
+                                            <p className="text-xs font-semibold text-gray-500 mb-2">MASSAGE TYPES REQUIRED:</p>
+                                            <div className="flex flex-wrap gap-2">
+                                                {listing.massageTypes.map((type, idx) => (
+                                                    <span key={idx} className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full border border-blue-200">
+                                                        {type}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Languages Required */}
+                                    {listing.requiredLanguages && listing.requiredLanguages.length > 0 && (
+                                        <div className="mb-4">
+                                            <p className="text-xs font-semibold text-gray-500 mb-2">LANGUAGES REQUIRED:</p>
+                                            <div className="flex flex-wrap gap-2">
+                                                {listing.requiredLanguages.map((lang, idx) => (
+                                                    <span key={idx} className="px-3 py-1 bg-green-50 text-green-700 text-xs font-medium rounded-full border border-green-200">
+                                                        {lang}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
 
                                     {/* Details */}
                                     <div className="space-y-2 mb-4">
