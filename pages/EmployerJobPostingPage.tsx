@@ -257,11 +257,11 @@ const EmployerJobPostingPage: React.FC = () => {
 
             <div className="max-w-4xl mx-auto px-4 py-6">
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Job Information */}
+                    {/* Let's Find A Team Member */}
                     <div className="bg-white border-2 border-gray-200 rounded-xl p-6 space-y-4">
                         <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
                             <Briefcase className="w-5 h-5 text-orange-500" />
-                            Job Information
+                            Let's Find A Team Member
                         </h2>
 
                         <div>
