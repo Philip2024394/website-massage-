@@ -31,7 +31,7 @@ const EmployerJobPostingPage: React.FC = () => {
     };
 
     const [formData, setFormData] = useState({
-        jobTitle: 'Massage Therapist Position',
+        jobTitle: '',
         jobDescription: '',
         employmentType: 'full-time' as 'full-time' | 'part-time' | 'contract' | 'freelance',
         location: '',
@@ -266,17 +266,37 @@ const EmployerJobPostingPage: React.FC = () => {
 
                         <div>
                             <label className="block text-sm font-medium text-gray-900 mb-2">
-                                Job Title *
+                                Job Title (Therapist Specialty) *
                             </label>
-                            <input
-                                type="text"
+                            <select
                                 required
                                 value={formData.jobTitle}
                                 onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
-                                placeholder="e.g., Massage Therapist"
-                                maxLength={128}
-                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                            />
+                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white"
+                            >
+                                <option value="">Select a therapist specialty...</option>
+                                <option value="Traditional Massage Therapist">Traditional Massage Therapist</option>
+                                <option value="Sports Massage Therapist">Sports Massage Therapist</option>
+                                <option value="Deep Tissue Massage Therapist">Deep Tissue Massage Therapist</option>
+                                <option value="Swedish Massage Therapist">Swedish Massage Therapist</option>
+                                <option value="Thai Massage Therapist">Thai Massage Therapist</option>
+                                <option value="Hot Stone Massage Therapist">Hot Stone Massage Therapist</option>
+                                <option value="Aromatherapy Massage Therapist">Aromatherapy Massage Therapist</option>
+                                <option value="Reflexology Therapist">Reflexology Therapist</option>
+                                <option value="Shiatsu Massage Therapist">Shiatsu Massage Therapist</option>
+                                <option value="Prenatal Massage Therapist">Prenatal Massage Therapist</option>
+                                <option value="Balinese Massage Therapist">Balinese Massage Therapist</option>
+                                <option value="Trigger Point Therapist">Trigger Point Therapist</option>
+                                <option value="Lymphatic Drainage Therapist">Lymphatic Drainage Therapist</option>
+                                <option value="Myofascial Release Therapist">Myofascial Release Therapist</option>
+                                <option value="Lomi Lomi Massage Therapist">Lomi Lomi Massage Therapist</option>
+                                <option value="Indian Head Massage Therapist">Indian Head Massage Therapist</option>
+                                <option value="Cupping Therapist">Cupping Therapist</option>
+                                <option value="Oil Massage Therapist">Oil Massage Therapist</option>
+                                <option value="Four Hands Massage Therapist">Four Hands Massage Therapist</option>
+                                <option value="Spa Therapist (Multi-Skilled)">Spa Therapist (Multi-Skilled)</option>
+                                <option value="Wellness Therapist">Wellness Therapist</option>
+                            </select>
                         </div>
 
                         <div>
