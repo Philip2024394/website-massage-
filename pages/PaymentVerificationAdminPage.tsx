@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CheckCircle, XCircle, Eye, Clock, Search, Filter } from 'lucide-react';
-import { databases, Query } from '../lib/appwrite';
+import { Query } from 'appwrite';
+import { databases } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 
 const DATABASE_ID = APPWRITE_CONFIG.databaseId;

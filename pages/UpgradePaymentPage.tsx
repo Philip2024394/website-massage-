@@ -114,7 +114,7 @@ const UpgradePaymentPage: React.FC<UpgradePaymentPageProps> = ({ onBack }) => {
                     phoneNumber: formData.phoneNumber,
                     amount: parseInt(formData.amount),
                     paymentMethod: formData.paymentMethod,
-                    bankAccount: bankAccounts[formData.paymentMethod].accountNumber,
+                    bankAccount: formData.paymentMethod !== 'other' ? bankAccounts[formData.paymentMethod as keyof typeof bankAccounts].accountNumber : 'Other payment method',
                     transferDate: formData.transferDate,
                     referenceNumber: formData.referenceNumber,
                     paymentCode: paymentCode,
@@ -169,7 +169,7 @@ const UpgradePaymentPage: React.FC<UpgradePaymentPageProps> = ({ onBack }) => {
         );
     }
 
-    const selectedBank = bankAccounts[formData.paymentMethod];
+    const selectedBank = formData.paymentMethod !== 'other' ? bankAccounts[formData.paymentMethod as keyof typeof bankAccounts] : null;
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 py-8">
@@ -209,61 +209,69 @@ const UpgradePaymentPage: React.FC<UpgradePaymentPageProps> = ({ onBack }) => {
                         <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-orange-200">
                             <h3 className="text-lg font-bold text-gray-900 mb-4">Transfer to:</h3>
                             
-                            <div className="space-y-3 mb-4">
-                                <div>
-                                    <label className="text-sm text-gray-600">Bank</label>
-                                    <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
-                                        <span className="font-semibold text-gray-900">{selectedBank.name}</span>
+                            {selectedBank ? (
+                                <div className="space-y-3 mb-4">
+                                    <div>
+                                        <label className="text-sm text-gray-600">Bank</label>
+                                        <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
+                                            <span className="font-semibold text-gray-900">{selectedBank.name}</span>
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div>
-                                    <label className="text-sm text-gray-600">Account Number</label>
-                                    <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
-                                        <span className="font-mono font-bold text-lg text-gray-900">{selectedBank.accountNumber}</span>
-                                        <button
-                                            onClick={() => copyToClipboard(selectedBank.accountNumber)}
-                                            className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
-                                        >
-                                            <Copy className="w-5 h-5 text-orange-500" />
-                                        </button>
+                                    <div>
+                                        <label className="text-sm text-gray-600">Account Number</label>
+                                        <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
+                                            <span className="font-mono font-bold text-lg text-gray-900">{selectedBank.accountNumber}</span>
+                                            <button
+                                                onClick={() => copyToClipboard(selectedBank.accountNumber)}
+                                                className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
+                                            >
+                                                <Copy className="w-5 h-5 text-orange-500" />
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div>
-                                    <label className="text-sm text-gray-600">Account Name</label>
-                                    <div className="bg-gray-50 p-3 rounded-lg">
-                                        <span className="font-semibold text-gray-900">{selectedBank.accountName}</span>
+                                    <div>
+                                        <label className="text-sm text-gray-600">Account Name</label>
+                                        <div className="bg-gray-50 p-3 rounded-lg">
+                                            <span className="font-semibold text-gray-900">{selectedBank.accountName}</span>
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div>
-                                    <label className="text-sm text-gray-600">Amount</label>
-                                    <div className="flex items-center justify-between bg-orange-50 p-3 rounded-lg border-2 border-orange-200">
-                                        <span className="font-bold text-xl text-orange-600">Rp 50,000</span>
-                                        <button
-                                            onClick={() => copyToClipboard('50000')}
-                                            className="p-2 hover:bg-orange-100 rounded-lg transition-colors"
-                                        >
-                                            <Copy className="w-5 h-5 text-orange-500" />
-                                        </button>
+                                    <div>
+                                        <label className="text-sm text-gray-600">Amount</label>
+                                        <div className="flex items-center justify-between bg-orange-50 p-3 rounded-lg border-2 border-orange-200">
+                                            <span className="font-bold text-xl text-orange-600">Rp 50,000</span>
+                                            <button
+                                                onClick={() => copyToClipboard('50000')}
+                                                className="p-2 hover:bg-orange-100 rounded-lg transition-colors"
+                                            >
+                                                <Copy className="w-5 h-5 text-orange-500" />
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div>
-                                    <label className="text-sm text-gray-600">Payment Code (Optional)</label>
-                                    <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
-                                        <span className="font-mono font-semibold text-gray-900">{paymentCode}</span>
-                                        <button
-                                            onClick={() => copyToClipboard(paymentCode)}
-                                            className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
-                                        >
-                                            <Copy className="w-5 h-5 text-orange-500" />
-                                        </button>
+                                    <div>
+                                        <label className="text-sm text-gray-600">Payment Code (Optional)</label>
+                                        <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
+                                            <span className="font-mono font-semibold text-gray-900">{paymentCode}</span>
+                                            <button
+                                                onClick={() => copyToClipboard(paymentCode)}
+                                                className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
+                                            >
+                                                <Copy className="w-5 h-5 text-orange-500" />
+                                                </button>
+                                        </div>
+                                        <p className="text-xs text-gray-500 mt-1">Include this in transfer notes for faster verification</p>
                                     </div>
-                                    <p className="text-xs text-gray-500 mt-1">Include this in transfer notes for faster verification</p>
                                 </div>
-                            </div>
+                            ) : (
+                                <div className="space-y-3 mb-4">
+                                    <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
+                                        <p className="text-sm text-yellow-800">Please select a payment method below to see bank details.</p>
+                                    </div>
+                                </div>
+                            )}
 
                             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                                 <p className="text-sm text-blue-700">

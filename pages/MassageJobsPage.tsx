@@ -33,9 +33,10 @@ interface EmployerJobPosting {
 interface MassageJobsPageProps {
     onBack: () => void;
     onPostJob: () => void;
+    onNavigateToPayment: () => void;
 }
 
-const MassageJobsPage: React.FC<MassageJobsPageProps> = ({ onBack, onPostJob }) => {
+const MassageJobsPage: React.FC<MassageJobsPageProps> = ({ onBack, onPostJob, onNavigateToPayment }) => {
     const [jobPostings, setJobPostings] = useState<EmployerJobPosting[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
@@ -509,7 +510,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({ onBack, onPostJob }) 
 
                                     {/* Apply Button - Unlock with Upgrade */}
                                     <button
-                                        onClick={() => window.location.hash = '#jobUnlockPayment'}
+                                        onClick={onNavigateToPayment}
                                         className="relative w-full py-3 px-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg flex items-center justify-center gap-2 shadow-lg transition-all duration-300 hover:shadow-green-500/50 hover:shadow-2xl animate-pulse-glow"
                                         style={{
                                             boxShadow: '0 0 20px rgba(34, 197, 94, 0.4), 0 0 40px rgba(34, 197, 94, 0.2)'
