@@ -323,25 +323,22 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({ onBack, onPostJob }) 
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {filteredPostings.map((posting) => (
+                        {filteredPostings.map((posting) => {
+                            // Use mobile corporate massage image for job postings
+                            const jobImageUrl = (posting as any).imageurl || 'https://ik.imagekit.io/7grri5v7d/massage%20villa%20service%20indonisea.png?updatedAt=1761583264188';
+                            
+                            return (
                             <div key={posting.$id} className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border-l-4 border-orange-500">
                                 {/* Main Image - Full Width */}
-                                {(posting as any).imageurl && (
-                                    <div className="relative w-full h-48 overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 group">
-                                        <img 
-                                            src={(posting as any).imageurl} 
-                                            alt={posting.businessName}
-                                            className="w-full h-full object-cover"
-                                        />
-                                        {/* Employment Type Badge on Image - Black Frosted Glass */}
-                                        <div className="absolute top-4 right-4">
-                                            <span className="px-4 py-2 bg-black/70 backdrop-blur-md text-white text-sm font-bold rounded-lg shadow-2xl border border-white/20">
-                                                {posting.employmentType}
-                                            </span>
-                                        </div>
-
-                                        {/* Social Share Buttons */}
-                                        <div className="absolute top-4 left-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                                <div className="relative w-full h-48 overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
+                                    <img 
+                                        src={jobImageUrl} 
+                                        alt={posting.businessName}
+                                        className="w-full h-full object-cover"
+                                    />
+                                    
+                                    {/* Social Share Buttons - Left Side (Always Visible) */}
+                                    <div className="absolute top-1/2 -translate-y-1/2 left-4 flex flex-col gap-3 z-10">
                                             {/* WhatsApp */}
                                             <button
                                                 onClick={(e) => {
@@ -410,13 +407,27 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({ onBack, onPostJob }) 
 
                                         {/* Location on Image - Bottom Right */}
                                         <div className="absolute bottom-4 right-4 flex items-center gap-2 text-white drop-shadow-lg">
-                                            <svg className="w-5 h-5 text-white drop-shadow-md" fill="currentColor" viewBox="0 0 24 24">
-                                                <path fillRule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+                                            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z"/>
                                             </svg>
-                                            <span className="font-semibold text-sm drop-shadow-md">{posting.location}</span>
-                                        </div>
+                                        </button>
                                     </div>
-                                )}
+
+                                    {/* Employment Type Badge - Top Right */}
+                                    <div className="absolute top-4 right-4">
+                                        <span className="px-4 py-2 bg-black/70 backdrop-blur-md text-white text-sm font-bold rounded-lg shadow-2xl border border-white/20">
+                                            {posting.employmentType}
+                                        </span>
+                                    </div>
+
+                                    {/* Location - Bottom Right */}
+                                    <div className="absolute bottom-4 right-4 flex items-center gap-2 text-white drop-shadow-lg">
+                                        <svg className="w-5 h-5 text-white drop-shadow-md" fill="currentColor" viewBox="0 0 24 24">
+                                            <path fillRule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+                                        </svg>
+                                        <span className="font-semibold text-sm drop-shadow-md">{posting.location}</span>
+                                    </div>
+                                </div>
                                 
                                 <div className="p-6">
                                     {/* Header */}
@@ -426,11 +437,6 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({ onBack, onPostJob }) 
                                             <p className="text-orange-600 font-semibold">{posting.businessName}</p>
                                             <p className="text-sm text-gray-500">{posting.businessType.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}</p>
                                         </div>
-                                        {!(posting as any).imageurl && (
-                                            <span className="px-4 py-2 bg-black/70 backdrop-blur-md text-white text-sm font-bold rounded-lg shadow-lg border border-gray-300/20">
-                                                {posting.employmentType}
-                                            </span>
-                                        )}
                                     </div>
 
                                     {/* Description */}
@@ -497,7 +503,8 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({ onBack, onPostJob }) 
                                     </button>
                                 </div>
                             </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </div>

@@ -96,6 +96,16 @@ const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook
     
     // Get main image from therapist data
     const mainImage = (therapist as any).mainImage;
+    
+    // Check if therapist offers Mobile Corporate massage
+    const isMobileCorporate = massageTypes.some(type => 
+        type.toLowerCase().includes('mobile') || type.toLowerCase().includes('corporate')
+    );
+    
+    // Use corporate image if mobile/corporate massage type exists, otherwise use therapist's mainImage or fallback
+    const displayImage = isMobileCorporate 
+        ? 'https://ik.imagekit.io/7grri5v7d/massage%20villa%20service%20indonisea.png?updatedAt=1761583264188'
+        : (mainImage || 'https://ik.imagekit.io/7grri5v7d/massage%20image%201.png?updatedAt=1760186885261');
 
     const openWhatsApp = () => {
         // If displaying as Busy, show confirmation modal
@@ -119,7 +129,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook
             {/* Main Image Banner */}
             <div className="h-48 w-full bg-gradient-to-r from-orange-400 to-orange-600 overflow-hidden relative rounded-t-xl">
                 <img 
-                    src={mainImage || 'https://ik.imagekit.io/7grri5v7d/massage%20image%201.png?updatedAt=1760186885261'} 
+                    src={displayImage} 
                     alt={`${therapist.name} cover`} 
                     className="w-full h-full object-cover"
                 />

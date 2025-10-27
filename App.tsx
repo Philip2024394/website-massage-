@@ -844,7 +844,7 @@ const App: React.FC = () => {
             case 'hotelVillaMenu': return <HotelVillaMenuPage venueId={venueMenuId} therapists={therapists} places={places} onBook={handleNavigateToBooking} />;
             case 'employerJobPosting': return <EmployerJobPostingPage />;
             case 'browseJobs': return <BrowseJobsPage onBack={handleBackToHome} onPostJob={() => setPage('employerJobPosting')} />;
-            case 'massageJobs': return <MassageJobsPage onBack={handleBackToHome} onPostJob={() => setPage('employerJobPosting')} />;
+            case 'massageJobs': return <MassageJobsPage onBack={handleBackToHome} onPostJob={() => setPage('employerJobPosting')} onNavigateToPayment={() => setPage('jobUnlockPayment')} />;
             case 'therapistJobs': return <TherapistJobsPage onBack={handleBackToHome} onRegisterListing={() => setPage('therapistDashboard')} />;
             case 'jobUnlockPayment': return <JobUnlockPaymentPage />;
             case 'adminBankSettings': return <AdminBankSettingsPage />;
