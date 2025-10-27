@@ -1,9 +1,20 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+
+const BurgerMenuIcon = ({ className = 'w-6 h-6' }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+);
+
+const CloseIcon = ({ className = 'w-6 h-6' }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+    </svg>
+);
 
 const MassageBaliPage: React.FC = () => {
-    const navigate = useNavigate();
     const [selectedArea, setSelectedArea] = useState<string>('all');
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const areas = [
         { id: 'seminyak', name: 'Seminyak', count: 87, type: 'Luxury Beach Resort' },
@@ -79,7 +90,61 @@ const MassageBaliPage: React.FC = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50">
+        <div className="min-h-screen bg-gray-50">
+            <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
+                <div className="flex justify-between items-center">
+                    <h1 className="text-2xl font-bold text-gray-800">
+                        <span className="text-orange-500">IndaStreet</span>
+                    </h1>
+                    <div className="flex items-center gap-4 text-gray-600">
+                        <button onClick={() => setIsMenuOpen(true)} title="Menu">
+                           <BurgerMenuIcon className="w-6 h-6" />
+                        </button>
+                    </div>
+                </div>
+            </header>
+            
+            {/* Side Drawer */}
+            {isMenuOpen && (
+                <div className="fixed inset-0 z-50" role="dialog" aria-modal="true">
+                    <div 
+                        className="absolute inset-0 bg-black bg-opacity-50 transition-opacity" 
+                        onClick={() => setIsMenuOpen(false)}
+                        aria-hidden="true"
+                    ></div>
+    
+                    <div className={`absolute right-0 top-0 bottom-0 w-[70%] sm:w-80 bg-gradient-to-br from-white via-gray-50 to-gray-100 shadow-2xl flex flex-col transform transition-transform ease-in-out duration-300 ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+                        <div className="p-6 flex justify-between items-center">
+                            <h2 className="font-bold text-2xl">
+                                <span className="text-black">inda</span>
+                                <span className="text-orange-500">Street</span>
+                            </h2>
+                            <button 
+                                onClick={() => setIsMenuOpen(false)} 
+                                className="text-gray-600 hover:bg-gray-200 p-2 rounded-full transition-all" 
+                                aria-label="Close menu"
+                            >
+                                <CloseIcon />
+                            </button>
+                        </div>
+
+                        <nav className="flex-grow overflow-y-auto p-4">
+                            <div className="space-y-2">
+                                <button 
+                                    onClick={() => window.location.href = '/'} 
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-orange-500 group"
+                                >
+                                    <span className="text-2xl">🏠</span>
+                                    <div className="flex-grow">
+                                        <h3 className="font-semibold text-gray-800 group-hover:text-orange-600 transition-colors">Back to Home</h3>
+                                        <p className="text-xs text-gray-500">Return to main page</p>
+                                    </div>
+                                </button>
+                            </div>
+                        </nav>
+                    </div>
+                </div>
+            )}
             {/* Hero Section */}
             <div className="relative bg-gradient-to-r from-green-600 to-blue-600 text-white py-24 overflow-hidden">
                 <div className="absolute inset-0 opacity-10">
@@ -98,13 +163,13 @@ const MassageBaliPage: React.FC = () => {
                     </p>
                     <div className="flex flex-wrap gap-4 justify-center">
                         <button 
-                            onClick={() => navigate('/therapists')}
+                            onClick={() => {/* TODO: Add navigation */}}
                             className="px-8 py-4 bg-white text-green-700 font-bold rounded-lg hover:bg-green-50 transition-colors shadow-lg text-lg"
                         >
                             Browse Therapists
                         </button>
                         <button 
-                            onClick={() => navigate('/booking')}
+                            onClick={() => {/* Navigate to booking */}}
                             className="px-8 py-4 border-2 border-white text-white font-bold rounded-lg hover:bg-white hover:text-green-700 transition-colors text-lg"
                         >
                             Book Now
@@ -189,7 +254,7 @@ const MassageBaliPage: React.FC = () => {
                                         <div className="flex items-center justify-between">
                                             <span className="text-green-600 font-bold">{type.price}</span>
                                             <button 
-                                                onClick={() => navigate('/therapists')}
+                                                onClick={() => {/* TODO: Add navigation */}}
                                                 className="text-blue-600 hover:text-blue-700 font-bold text-sm"
                                             >
                                                 Find Therapist →
@@ -242,7 +307,7 @@ const MassageBaliPage: React.FC = () => {
                                     </div>
                                 </div>
                                 <button 
-                                    onClick={() => navigate('/therapists')}
+                                    onClick={() => {/* TODO: Add navigation */}}
                                     className="w-full py-2 bg-gradient-to-r from-green-500 to-blue-500 text-white font-bold rounded-lg hover:from-green-600 hover:to-blue-600 transition-colors"
                                 >
                                     View Profile
@@ -396,7 +461,7 @@ const MassageBaliPage: React.FC = () => {
                         Browse 440+ verified therapists across Bali and book your perfect massage experience today
                     </p>
                     <button 
-                        onClick={() => navigate('/therapists')}
+                        onClick={() => {/* TODO: Add navigation */}}
                         className="px-12 py-4 bg-white text-orange-600 font-bold rounded-lg hover:bg-orange-50 transition-colors shadow-lg text-lg"
                     >
                         Find Your Therapist Now

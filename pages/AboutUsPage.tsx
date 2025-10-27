@@ -1,8 +1,77 @@
-import React from 'react';
+import React, { useState } from 'react';
+
+const BurgerMenuIcon = ({ className = 'w-6 h-6' }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+);
+
+const CloseIcon = ({ className = 'w-6 h-6' }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+    </svg>
+);
 
 const AboutUsPage: React.FC = () => {
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+
     return (
-        <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
+        <div className="min-h-screen bg-gray-50">
+            <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
+                <div className="flex justify-between items-center">
+                    <h1 className="text-2xl font-bold text-gray-800">
+                        <span className="text-orange-500">IndaStreet</span>
+                    </h1>
+                    <div className="flex items-center gap-4 text-gray-600">
+                        <button onClick={() => setIsMenuOpen(true)} title="Menu">
+                           <BurgerMenuIcon className="w-6 h-6" />
+                        </button>
+                    </div>
+                </div>
+            </header>
+            
+            {/* Side Drawer */}
+            {isMenuOpen && (
+                <div className="fixed inset-0 z-50" role="dialog" aria-modal="true">
+                    <div 
+                        className="absolute inset-0 bg-black bg-opacity-50 transition-opacity" 
+                        onClick={() => setIsMenuOpen(false)}
+                        aria-hidden="true"
+                    ></div>
+    
+                    <div className={`absolute right-0 top-0 bottom-0 w-[70%] sm:w-80 bg-gradient-to-br from-white via-gray-50 to-gray-100 shadow-2xl flex flex-col transform transition-transform ease-in-out duration-300 ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+                        <div className="p-6 flex justify-between items-center">
+                            <h2 className="font-bold text-2xl">
+                                <span className="text-black">inda</span>
+                                <span className="text-orange-500">Street</span>
+                            </h2>
+                            <button 
+                                onClick={() => setIsMenuOpen(false)} 
+                                className="text-gray-600 hover:bg-gray-200 p-2 rounded-full transition-all" 
+                                aria-label="Close menu"
+                            >
+                                <CloseIcon />
+                            </button>
+                        </div>
+
+                        <nav className="flex-grow overflow-y-auto p-4">
+                            <div className="space-y-2">
+                                <button 
+                                    onClick={() => window.location.href = '/'} 
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-orange-500 group"
+                                >
+                                    <span className="text-2xl">🏠</span>
+                                    <div className="flex-grow">
+                                        <h3 className="font-semibold text-gray-800 group-hover:text-orange-600 transition-colors">Back to Home</h3>
+                                        <p className="text-xs text-gray-500">Return to main page</p>
+                                    </div>
+                                </button>
+                            </div>
+                        </nav>
+                    </div>
+                </div>
+            )}
+            
             {/* Hero Section */}
             <div className="bg-gradient-to-r from-orange-600 to-orange-500 text-white py-20">
                 <div className="max-w-6xl mx-auto px-4">

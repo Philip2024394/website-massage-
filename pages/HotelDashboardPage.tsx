@@ -1310,7 +1310,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                 {/* Mobile: Hotel Name & Logo */}
                 <div className="flex items-center justify-between mb-2 sm:mb-0">
                     <h1 className="text-base sm:text-2xl font-bold text-gray-800">
-                        <span className="text-gray-900">Inda</span><span className="text-orange-500">Street</span>
+                        <span className="text-orange-500">IndaStreet</span>
                     </h1>
                     <div className="flex items-center gap-1 sm:gap-4">
                         <button

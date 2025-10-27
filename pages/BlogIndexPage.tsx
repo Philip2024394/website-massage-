@@ -1,5 +1,17 @@
 import React, { useState } from 'react';
 
+const BurgerMenuIcon = ({ className = 'w-6 h-6' }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+);
+
+const CloseIcon = ({ className = 'w-6 h-6' }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+    </svg>
+);
+
 interface BlogPost {
     id: string;
     title: string;
@@ -10,10 +22,16 @@ interface BlogPost {
     author: string;
     image: string;
     featured: boolean;
+    slug: string;
 }
 
-const BlogIndexPage: React.FC = () => {
+interface BlogIndexPageProps {
+    onNavigate?: (page: string) => void;
+}
+
+const BlogIndexPage: React.FC<BlogIndexPageProps> = ({ onNavigate }) => {
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const categories = [
         { id: 'all', name: 'All Articles', count: 24 },
@@ -32,8 +50,9 @@ const BlogIndexPage: React.FC = () => {
             readTime: '8 min read',
             date: 'Oct 20, 2025',
             author: 'Dr. Ketut Wijaya',
-            image: '🌺',
-            featured: true
+            image: 'https://ik.imagekit.io/7grri5v7d/bali%20message.png?updatedAt=1761560198622',
+            featured: true,
+            slug: 'bali-spa-industry-trends-2025'
         },
         {
             id: '2',
@@ -43,8 +62,9 @@ const BlogIndexPage: React.FC = () => {
             readTime: '12 min read',
             date: 'Oct 15, 2025',
             author: 'Made Surya',
-            image: '💆',
-            featured: true
+            image: 'https://ik.imagekit.io/7grri5v7d/bali%20messages.png?updatedAt=1761560397225',
+            featured: true,
+            slug: 'top-10-massage-techniques'
         },
         {
             id: '3',
@@ -54,8 +74,9 @@ const BlogIndexPage: React.FC = () => {
             readTime: '10 min read',
             date: 'Oct 10, 2025',
             author: 'Wayan Putra',
-            image: '🎯',
-            featured: true
+            image: 'https://ik.imagekit.io/7grri5v7d/massage%20buisness%20indonisea.png?updatedAt=1761560581906',
+            featured: true,
+            slug: 'massage-career-indonesia'
         },
         {
             id: '4',
@@ -65,8 +86,9 @@ const BlogIndexPage: React.FC = () => {
             readTime: '7 min read',
             date: 'Oct 5, 2025',
             author: 'Dr. Sarah Chen',
-            image: '🔬',
-            featured: false
+            image: 'https://ik.imagekit.io/7grri5v7d/massage%20buisness%20indonisea%20jogja.png?updatedAt=1761560769019',
+            featured: false,
+            slug: 'benefits-regular-massage-therapy'
         },
         {
             id: '5',
@@ -76,8 +98,9 @@ const BlogIndexPage: React.FC = () => {
             readTime: '9 min read',
             date: 'Sep 28, 2025',
             author: 'Komang Dewi',
-            image: '🏨',
-            featured: false
+            image: 'https://ik.imagekit.io/7grri5v7d/massage%20sfatt%20indonisea.png?updatedAt=1761560942135',
+            featured: false,
+            slug: 'hiring-massage-therapists-guide'
         },
         {
             id: '6',
@@ -87,8 +110,9 @@ const BlogIndexPage: React.FC = () => {
             readTime: '11 min read',
             date: 'Sep 20, 2025',
             author: 'I Nyoman Rai',
-            image: '🌿',
-            featured: false
+            image: 'https://ik.imagekit.io/7grri5v7d/massage%20jogja.png?updatedAt=1761561097008',
+            featured: false,
+            slug: 'traditional-balinese-massage'
         },
         {
             id: '7',
@@ -98,8 +122,9 @@ const BlogIndexPage: React.FC = () => {
             readTime: '6 min read',
             date: 'Sep 15, 2025',
             author: 'Kadek Ayu',
-            image: '📈',
-            featured: false
+            image: 'https://ik.imagekit.io/7grri5v7d/massage%20jogja%20indonisea.png?updatedAt=1761561233215',
+            featured: false,
+            slug: 'spa-tourism-indonesia'
         },
         {
             id: '8',
@@ -109,8 +134,9 @@ const BlogIndexPage: React.FC = () => {
             readTime: '8 min read',
             date: 'Sep 10, 2025',
             author: 'Putu Sari',
-            image: '🌸',
-            featured: false
+            image: 'https://ik.imagekit.io/7grri5v7d/massage%20jogja%20indonisea%20spa.png?updatedAt=1761561397701',
+            featured: false,
+            slug: 'aromatherapy-massage-oils'
         },
         {
             id: '9',
@@ -120,8 +146,9 @@ const BlogIndexPage: React.FC = () => {
             readTime: '7 min read',
             date: 'Sep 5, 2025',
             author: 'Gede Wira',
-            image: '💰',
-            featured: false
+            image: 'https://ik.imagekit.io/7grri5v7d/jogja%20massage.png?updatedAt=1761561572184',
+            featured: false,
+            slug: 'pricing-guide-massage-therapists'
         },
         {
             id: '10',
@@ -131,8 +158,9 @@ const BlogIndexPage: React.FC = () => {
             readTime: '9 min read',
             date: 'Aug 30, 2025',
             author: 'Made Alit',
-            image: '💪',
-            featured: false
+            image: 'https://ik.imagekit.io/7grri5v7d/jogja%20massages.png?updatedAt=1761561725353',
+            featured: false,
+            slug: 'deep-tissue-vs-swedish-massage'
         },
         {
             id: '11',
@@ -142,8 +170,9 @@ const BlogIndexPage: React.FC = () => {
             readTime: '10 min read',
             date: 'Aug 25, 2025',
             author: 'Ketut Maya',
-            image: '📱',
-            featured: false
+            image: 'https://ik.imagekit.io/7grri5v7d/jogja%20massages%20indonisea.png?updatedAt=1761561981004',
+            featured: false,
+            slug: 'online-presence-massage-therapist'
         },
         {
             id: '12',
@@ -153,8 +182,9 @@ const BlogIndexPage: React.FC = () => {
             readTime: '8 min read',
             date: 'Aug 20, 2025',
             author: 'Wayan Surya',
-            image: '🧘',
-            featured: false
+            image: 'https://ik.imagekit.io/7grri5v7d/udun%20massage%20indonisea.png?updatedAt=1761562212712',
+            featured: false,
+            slug: 'wellness-tourism-ubud'
         },
     ];
 
@@ -165,15 +195,68 @@ const BlogIndexPage: React.FC = () => {
     const featuredPosts = blogPosts.filter(post => post.featured);
 
     return (
+        <div className="min-h-screen bg-gray-50">
+            <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
+                <div className="flex justify-between items-center">
+                    <h1 className="text-2xl font-bold text-gray-800">
+                        <span className="text-orange-500">IndaStreet</span>
+                    </h1>
+                    <div className="flex items-center gap-4 text-gray-600">
+                        <button onClick={() => setIsMenuOpen(true)} title="Menu">
+                           <BurgerMenuIcon className="w-6 h-6" />
+                        </button>
+                    </div>
+                </div>
+            </header>
+            
+            {/* Side Drawer */}
+            {isMenuOpen && (
+                <div className="fixed inset-0 z-50" role="dialog" aria-modal="true">
+                    <div 
+                        className="absolute inset-0 bg-black bg-opacity-50 transition-opacity" 
+                        onClick={() => setIsMenuOpen(false)}
+                        aria-hidden="true"
+                    ></div>
+    
+                    <div className={`absolute right-0 top-0 bottom-0 w-[70%] sm:w-80 bg-gradient-to-br from-white via-gray-50 to-gray-100 shadow-2xl flex flex-col transform transition-transform ease-in-out duration-300 ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+                        <div className="p-6 flex justify-between items-center">
+                            <h2 className="font-bold text-2xl">
+                                <span className="text-black">inda</span>
+                                <span className="text-orange-500">Street</span>
+                            </h2>
+                            <button 
+                                onClick={() => setIsMenuOpen(false)} 
+                                className="text-gray-600 hover:bg-gray-200 p-2 rounded-full transition-all" 
+                                aria-label="Close menu"
+                            >
+                                <CloseIcon />
+                            </button>
+                        </div>
+
+                        <nav className="flex-grow overflow-y-auto p-4">
+                            <div className="space-y-2">
+                                <button 
+                                    onClick={() => { onNavigate?.('home'); setIsMenuOpen(false); }} 
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-orange-500 group"
+                                >
+                                    <span className="text-2xl">🏠</span>
+                                    <div className="flex-grow">
+                                        <h3 className="font-semibold text-gray-800 group-hover:text-orange-600 transition-colors">Back to Home</h3>
+                                        <p className="text-xs text-gray-500">Return to main page</p>
+                                    </div>
+                                </button>
+                            </div>
+                        </nav>
+                    </div>
+                </div>
+            )}
+
         <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
             {/* Hero Section */}
-            <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white py-20">
-                <div className="max-w-6xl mx-auto px-4 text-center">
-                    <h1 className="text-5xl font-bold mb-6">IndaStreet Wellness Blog</h1>
-                    <p className="text-xl text-purple-100 max-w-3xl mx-auto">
-                        Industry insights, professional tips, and wellness knowledge for Indonesia's massage community
-                    </p>
-                </div>
+            <div 
+                className="relative h-96 bg-cover bg-center"
+                style={{ backgroundImage: "url('https://ik.imagekit.io/7grri5v7d/massage%20therapist%20indonisea.png?updatedAt=1761563061042')" }}
+            >
             </div>
 
             <div className="max-w-6xl mx-auto px-4 py-16">
@@ -184,13 +267,16 @@ const BlogIndexPage: React.FC = () => {
                             <button
                                 key={cat.id}
                                 onClick={() => setSelectedCategory(cat.id)}
-                                className={`px-6 py-3 rounded-full font-bold transition-all ${
+                                className={`flex items-center gap-2 py-2 px-4 rounded-lg transition-all duration-200 text-sm font-semibold whitespace-nowrap ${
                                     selectedCategory === cat.id
-                                        ? 'bg-purple-600 text-white shadow-lg'
-                                        : 'bg-white text-gray-700 hover:bg-purple-50 shadow'
+                                        ? 'bg-orange-500 text-white shadow-lg'
+                                        : 'bg-white text-gray-600 hover:bg-orange-50 hover:text-orange-600 border border-gray-200'
                                 }`}
                             >
-                                {cat.name} ({cat.count})
+                                <span>{cat.name}</span>
+                                <span className={`${selectedCategory === cat.id ? 'bg-white text-orange-500' : 'bg-orange-100 text-orange-600'} text-xs font-bold rounded-full h-5 w-auto min-w-[20px] px-1.5 flex items-center justify-center`}>
+                                    {cat.count}
+                                </span>
                             </button>
                         ))}
                     </div>
@@ -203,8 +289,12 @@ const BlogIndexPage: React.FC = () => {
                         <div className="grid md:grid-cols-3 gap-8">
                             {featuredPosts.map((post) => (
                                 <div key={post.id} className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
-                                    <div className="bg-gradient-to-br from-purple-500 to-blue-500 h-48 flex items-center justify-center text-8xl">
-                                        {post.image}
+                                    <div className="bg-gradient-to-br from-purple-500 to-blue-500 h-48 flex items-center justify-center text-8xl overflow-hidden">
+                                        {post.image.startsWith('http') ? (
+                                            <img src={post.image} alt={post.title} className="w-full h-full object-cover" />
+                                        ) : (
+                                            post.image
+                                        )}
                                     </div>
                                     <div className="p-6">
                                         <div className="flex items-center gap-2 mb-3">
@@ -225,7 +315,10 @@ const BlogIndexPage: React.FC = () => {
                                             <span>{post.date}</span>
                                             <span>{post.readTime}</span>
                                         </div>
-                                        <button className="w-full py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold rounded-lg hover:from-purple-700 hover:to-blue-700 transition-colors">
+                                        <button 
+                                            onClick={() => onNavigate?.(`blog/${post.slug}`)}
+                                            className="w-full py-2 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 transition-colors"
+                                        >
                                             Read Article
                                         </button>
                                     </div>
@@ -243,8 +336,12 @@ const BlogIndexPage: React.FC = () => {
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredPosts.map((post) => (
                             <div key={post.id} className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
-                                <div className="bg-gradient-to-br from-blue-400 to-purple-400 h-32 flex items-center justify-center text-6xl">
-                                    {post.image}
+                                <div className="bg-gradient-to-br from-blue-400 to-purple-400 h-32 flex items-center justify-center text-6xl overflow-hidden">
+                                    {post.image.startsWith('http') ? (
+                                        <img src={post.image} alt={post.title} className="w-full h-full object-cover" />
+                                    ) : (
+                                        post.image
+                                    )}
                                 </div>
                                 <div className="p-5">
                                     <div className="mb-2">
@@ -262,7 +359,10 @@ const BlogIndexPage: React.FC = () => {
                                         <span>{post.date}</span>
                                         <span>{post.readTime}</span>
                                     </div>
-                                    <button className="w-full py-2 bg-purple-600 text-white font-bold rounded-lg hover:bg-purple-700 transition-colors text-sm">
+                                    <button 
+                                        onClick={() => onNavigate?.(`blog/${post.slug}`)}
+                                        className="w-full py-2 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 transition-colors text-sm"
+                                    >
                                         Read More
                                     </button>
                                 </div>
@@ -272,20 +372,33 @@ const BlogIndexPage: React.FC = () => {
                 </div>
 
                 {/* Newsletter Signup */}
-                <div className="mt-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl p-12 text-white text-center">
-                    <h2 className="text-3xl font-bold mb-4">Stay Updated with Wellness Industry Insights</h2>
-                    <p className="text-xl text-orange-100 mb-8 max-w-2xl mx-auto">
-                        Get weekly articles, industry trends, and professional tips delivered to your inbox
-                    </p>
-                    <div className="max-w-md mx-auto flex gap-3">
-                        <input
-                            type="email"
-                            placeholder="Enter your email"
-                            className="flex-1 px-4 py-3 rounded-lg text-gray-900"
-                        />
-                        <button className="px-8 py-3 bg-white text-orange-600 font-bold rounded-lg hover:bg-orange-50 transition-colors">
-                            Subscribe
-                        </button>
+                <div className="mt-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl overflow-hidden">
+                    <div className="grid md:grid-cols-2 gap-0">
+                        {/* Left side - Image */}
+                        <div className="h-64 md:h-auto">
+                            <img 
+                                src="https://ik.imagekit.io/7grri5v7d/udun%20massage%20indoniseas.png?updatedAt=1761562429353" 
+                                alt="Wellness Industry Insights" 
+                                className="w-full h-full object-cover"
+                            />
+                        </div>
+                        {/* Right side - Content */}
+                        <div className="p-8 md:p-12 text-white flex flex-col justify-center">
+                            <h2 className="text-2xl md:text-3xl font-bold mb-3 md:mb-4">Stay Updated with Wellness Industry Insights</h2>
+                            <p className="text-base md:text-xl text-orange-100 mb-6 md:mb-8">
+                                Get weekly articles, industry trends, and professional tips delivered to your inbox
+                            </p>
+                            <div className="flex flex-col sm:flex-row gap-3">
+                                <input
+                                    type="email"
+                                    placeholder="Enter your email"
+                                    className="flex-1 px-4 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-white"
+                                />
+                                <button className="px-8 py-3 bg-white text-orange-600 font-bold rounded-lg hover:bg-orange-50 transition-colors whitespace-nowrap">
+                                    Subscribe
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -301,6 +414,7 @@ const BlogIndexPage: React.FC = () => {
                     </div>
                 </div>
             </div>
+        </div>
         </div>
     );
 };
