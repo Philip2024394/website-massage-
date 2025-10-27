@@ -81,7 +81,11 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({ onBack, onPostJob, on
                     Query.limit(100)
                 ]
             );
-            setJobPostings(response.documents as unknown as EmployerJobPosting[]);
+            const postings = response.documents as unknown as EmployerJobPosting[];
+            console.log('Fetched job postings:', postings);
+            console.log('First posting massage types:', postings[0]?.massageTypes);
+            console.log('First posting languages:', postings[0]?.requiredLanguages);
+            setJobPostings(postings);
         } catch (error) {
             console.error('Error fetching job postings:', error);
         } finally {
@@ -437,14 +441,8 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({ onBack, onPostJob, on
 
                                     {/* Details Grid */}
                                     <div className="grid grid-cols-1 gap-3 mb-4">
-                                        <div className="flex items-center gap-2 text-sm">
-                                            <svg className="w-5 h-5 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                                                <path fillRule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
-                                            </svg>
-                                            <span className="text-gray-700 font-medium">{posting.location}</span>
-                                        </div>
                                         <div className="text-sm">
-                                            <p className="text-xs font-semibold text-gray-500 mb-1">CONFIRMATION ON REQUEST</p>
+                                            <p className="text-xs font-semibold text-gray-500 mb-1">SALARY RANGE</p>
                                             <span className="text-gray-700 font-medium">
                                                 {formatSalary(posting.salaryRangeMin)} - {formatSalary(posting.salaryRangeMax)}
                                             </span>
