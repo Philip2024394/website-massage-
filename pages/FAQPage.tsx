@@ -18,7 +18,11 @@ interface FAQ {
     category: string;
 }
 
-const FAQPage: React.FC = () => {
+interface FAQPageProps {
+    onNavigate?: (page: string) => void;
+}
+
+const FAQPage: React.FC<FAQPageProps> = ({ onNavigate }) => {
     const [activeCategory, setActiveCategory] = useState<string>('therapist');
     const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -262,10 +266,16 @@ const FAQPage: React.FC = () => {
 
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
             {/* Hero Section */}
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-20">
-                <div className="max-w-6xl mx-auto px-4 text-center">
-                    <h1 className="text-5xl font-bold mb-6">Frequently Asked Questions</h1>
-                    <p className="text-xl text-blue-100 max-w-3xl mx-auto">
+            <div 
+                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-20 relative bg-cover bg-center"
+                style={{
+                    backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/support%20indastreet%20questions.png?updatedAt=1761571465546)',
+                }}
+            >
+                <div className="absolute inset-0 bg-black/20"></div>
+                <div className="max-w-6xl mx-auto px-4 text-center relative z-10">
+                    <h1 className="text-5xl font-bold mb-6 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">Frequently Asked Questions</h1>
+                    <p className="text-xl text-white max-w-3xl mx-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
                         Everything you need to know about using IndaStreet
                     </p>
                 </div>
@@ -275,25 +285,117 @@ const FAQPage: React.FC = () => {
                 {/* Category Tabs */}
                 <div className="mb-12">
                     <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
-                        {categories.map((cat) => (
-                            <button
-                                key={cat.id}
-                                onClick={() => {
-                                    setActiveCategory(cat.id);
-                                    setExpandedFAQ(null);
-                                }}
-                                className={`p-4 rounded-xl font-bold transition-all text-center ${
-                                    activeCategory === cat.id
-                                        ? 'bg-blue-600 text-white shadow-lg'
-                                        : 'bg-white text-gray-700 hover:bg-blue-50 shadow'
-                                }`}
-                            >
-                                <div className="text-3xl mb-2">{cat.icon}</div>
-                                <div className="text-sm">{cat.name}</div>
-                            </button>
-                        ))}
+                        {categories.map((cat) => {
+                            const getBackgroundImage = (): string | undefined => {
+                                if (cat.id === 'therapist') return 'url(https://ik.imagekit.io/7grri5v7d/massage%20places%20indonisea.png?updatedAt=1761571657409)';
+                                if (cat.id === 'hotel') return 'url(https://ik.imagekit.io/7grri5v7d/massage%20places%20indonisea%20hotels.png?updatedAt=1761571807411)';
+                                if (cat.id === 'employer') return 'url(https://ik.imagekit.io/7grri5v7d/massage%20jobs.png?updatedAt=1761571942696)';
+                                if (cat.id === 'payment') return 'url(https://ik.imagekit.io/7grri5v7d/massage%20payments.png?updatedAt=1761572192739)';
+                                return undefined;
+                            };
+
+                            const hasBackgroundImage = ['therapist', 'hotel', 'employer', 'payment'].includes(cat.id);
+                            const bgImage = getBackgroundImage();
+
+                            return (
+                                <button
+                                    key={cat.id}
+                                    onClick={() => {
+                                        setActiveCategory(cat.id);
+                                        setExpandedFAQ(null);
+                                    }}
+                                    className={`p-4 rounded-xl font-bold transition-all text-center ${
+                                        activeCategory === cat.id
+                                            ? 'bg-blue-600 text-white shadow-lg'
+                                            : 'bg-white text-gray-700 hover:bg-blue-50 shadow'
+                                    }`}
+                                    style={hasBackgroundImage && bgImage ? {
+                                        backgroundImage: bgImage,
+                                        backgroundSize: 'cover',
+                                        backgroundPosition: 'center',
+                                        position: 'relative'
+                                    } : {}}
+                                >
+                                    {hasBackgroundImage ? (
+                                        <>
+                                            <div className="absolute inset-0 bg-blue-600/30 rounded-xl"></div>
+                                            <div className="relative z-10 text-white font-bold drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">{cat.name}</div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div className="text-3xl mb-2">{cat.icon}</div>
+                                            <div className="text-sm">{cat.name}</div>
+                                        </>
+                                    )}
+                                </button>
+                            );
+                        })}
                     </div>
                 </div>
+
+                {/* Therapist Learn More Banner */}
+                {activeCategory === 'therapist' && onNavigate && (
+                    <div className="mb-8 bg-gradient-to-r from-teal-600 to-blue-600 rounded-2xl p-8 text-center text-white shadow-lg">
+                        <h3 className="text-2xl font-bold mb-3">Want to Learn More About Joining as a Therapist?</h3>
+                        <p className="text-white/90 mb-6 max-w-2xl mx-auto">
+                            Discover membership packages, income potential, platform features, and success stories from 500+ therapists already on IndaStreet
+                        </p>
+                        <button 
+                            onClick={() => onNavigate('therapist-info')}
+                            className="px-8 py-3 bg-white text-teal-600 font-bold rounded-lg hover:bg-gray-100 transition-colors shadow-lg"
+                        >
+                            View Complete Therapist Guide →
+                        </button>
+                    </div>
+                )}
+
+                {/* Hotel Learn More Banner */}
+                {activeCategory === 'hotel' && onNavigate && (
+                    <div className="mb-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-center text-white shadow-lg">
+                        <h3 className="text-2xl font-bold mb-3">Want to Learn More About Hotel & Villa Partnership?</h3>
+                        <p className="text-white/90 mb-6 max-w-2xl mx-auto">
+                            Discover how to find verified therapists, manage bookings, and enhance your spa services with IndaStreet
+                        </p>
+                        <button 
+                            onClick={() => onNavigate('hotel-info')}
+                            className="px-8 py-3 bg-white text-blue-600 font-bold rounded-lg hover:bg-gray-100 transition-colors shadow-lg"
+                        >
+                            View Complete Hotel Guide →
+                        </button>
+                    </div>
+                )}
+
+                {/* Employer Learn More Banner */}
+                {activeCategory === 'employer' && onNavigate && (
+                    <div className="mb-8 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-8 text-center text-white shadow-lg">
+                        <h3 className="text-2xl font-bold mb-3">Looking to Hire Professional Therapists?</h3>
+                        <p className="text-white/90 mb-6 max-w-2xl mx-auto">
+                            Access our "Therapist For Contract" marketplace and find qualified professionals seeking full-time employment
+                        </p>
+                        <button 
+                            onClick={() => onNavigate('employer-info')}
+                            className="px-8 py-3 bg-white text-purple-600 font-bold rounded-lg hover:bg-gray-100 transition-colors shadow-lg"
+                        >
+                            View Hiring Guide →
+                        </button>
+                    </div>
+                )}
+
+                {/* Payment Learn More Banner */}
+                {activeCategory === 'payment' && onNavigate && (
+                    <div className="mb-8 bg-gradient-to-r from-green-600 to-teal-600 rounded-2xl p-8 text-center text-white shadow-lg">
+                        <h3 className="text-2xl font-bold mb-3">Questions About Payments?</h3>
+                        <p className="text-white/90 mb-6 max-w-2xl mx-auto">
+                            Learn about membership payments, bank transfer process, refunds, and billing information
+                        </p>
+                        <button 
+                            onClick={() => onNavigate('payment-info')}
+                            className="px-8 py-3 bg-white text-green-600 font-bold rounded-lg hover:bg-gray-100 transition-colors shadow-lg"
+                        >
+                            View Payment Guide →
+                        </button>
+                    </div>
+                )}
 
                 {/* FAQ List */}
                 <div className="space-y-4">

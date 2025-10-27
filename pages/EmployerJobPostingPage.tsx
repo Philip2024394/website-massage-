@@ -32,6 +32,7 @@ const EmployerJobPostingPage: React.FC = () => {
         status: 'active',
         views: 0,
         applications: 0,
+        imageUrl: '',
     });
 
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -66,13 +67,19 @@ const EmployerJobPostingPage: React.FC = () => {
     ];
 
     const commonBenefits = [
-        'Accommodation provided',
-        'Meals included',
-        'Health insurance',
-        'Visa sponsorship',
-        'Performance bonuses',
-        'Training & development',
-        'Paid vacation',
+        'Competitive & Transparent Earnings',
+        'Accommodation',
+        'Transportation',
+        'Daily Meals',
+        'Living Allowances',
+        'Training',
+        'Professional Development',
+        'Registered Employment',
+        'Safety & Security',
+        'Target Bonus',
+        'Equipment & Supplies',
+        'Sick Pay',
+        'Uniform',
     ];
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -118,6 +125,7 @@ const EmployerJobPostingPage: React.FC = () => {
                     status: formData.status || null,
                     views: formData.views,
                     applications: formData.applications,
+                    imageurl: formData.imageUrl || null,
                 }
             );
 
@@ -238,29 +246,49 @@ const EmployerJobPostingPage: React.FC = () => {
                         <div className="grid sm:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-900 mb-2">
-                                    Salary Range Min (Rp)
+                                    Salary From
                                 </label>
-                                <input
-                                    type="number"
-                                    min="0"
+                                <select
                                     value={formData.salaryRangeMin || ''}
                                     onChange={(e) => setFormData({ ...formData, salaryRangeMin: parseInt(e.target.value) || 0 })}
-                                    placeholder="e.g., 5000000"
                                     className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                />
+                                >
+                                    <option value="">Select minimum salary</option>
+                                    <option value="0">To be discussed</option>
+                                    <option value="3000000">Up to 3jt</option>
+                                    <option value="4000000">Up to 4jt</option>
+                                    <option value="5000000">Up to 5jt</option>
+                                    <option value="6000000">Up to 6jt</option>
+                                    <option value="7000000">Up to 7jt</option>
+                                    <option value="8000000">Up to 8jt</option>
+                                    <option value="9000000">Up to 9jt</option>
+                                    <option value="10000000">Up to 10jt</option>
+                                    <option value="11000000">Up to 11jt</option>
+                                    <option value="12000000">Above 11jt</option>
+                                </select>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-900 mb-2">
-                                    Salary Range Max (Rp)
+                                    Salary To
                                 </label>
-                                <input
-                                    type="number"
-                                    min="0"
+                                <select
                                     value={formData.salaryRangeMax || ''}
                                     onChange={(e) => setFormData({ ...formData, salaryRangeMax: parseInt(e.target.value) || 0 })}
-                                    placeholder="e.g., 8000000"
                                     className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                />
+                                >
+                                    <option value="">Select maximum salary</option>
+                                    <option value="0">To be discussed</option>
+                                    <option value="3000000">Up to 3jt</option>
+                                    <option value="4000000">Up to 4jt</option>
+                                    <option value="5000000">Up to 5jt</option>
+                                    <option value="6000000">Up to 6jt</option>
+                                    <option value="7000000">Up to 7jt</option>
+                                    <option value="8000000">Up to 8jt</option>
+                                    <option value="9000000">Up to 9jt</option>
+                                    <option value="10000000">Up to 10jt</option>
+                                    <option value="11000000">Up to 11jt</option>
+                                    <option value="12000000">Above 11jt</option>
+                                </select>
                             </div>
                         </div>
 
@@ -296,6 +324,35 @@ const EmployerJobPostingPage: React.FC = () => {
                                 placeholder="e.g., Paradise Resort & Spa"
                                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                             />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-900 mb-2">
+                                Business Logo / Image URL
+                            </label>
+                            <input
+                                type="url"
+                                value={formData.imageUrl}
+                                onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                                placeholder="e.g., https://ik.imagekit.io/your-image.png"
+                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                            />
+                            <p className="text-xs text-gray-500 mt-1">Optional: Add a logo or image for your job posting (will appear as a badge on the card)</p>
+                            {formData.imageUrl && (
+                                <div className="mt-3">
+                                    <p className="text-xs font-semibold text-gray-700 mb-2">Preview:</p>
+                                    <div className="relative w-16 h-16 rounded-lg overflow-hidden shadow-lg backdrop-blur-md bg-black/40 border border-white/20 p-1">
+                                        <img 
+                                            src={formData.imageUrl} 
+                                            alt="Preview"
+                                            className="w-full h-full object-cover rounded-md"
+                                            onError={(e) => {
+                                                e.currentTarget.src = 'https://via.placeholder.com/64?text=Invalid';
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <div>
@@ -446,12 +503,29 @@ const EmployerJobPostingPage: React.FC = () => {
                                 <label className="block text-sm font-medium text-gray-900 mb-2">
                                     Position Title
                                 </label>
-                                <input
-                                    type="text"
+                                <select
                                     value={formData.positionTitle}
                                     onChange={(e) => setFormData({ ...formData, positionTitle: e.target.value })}
                                     className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                />
+                                >
+                                    <option value="">Select position type</option>
+                                    <optgroup label="General Positions">
+                                        <option value="Therapist">Therapist</option>
+                                        <option value="Specialist">Specialist</option>
+                                        <option value="Training Provided">Training Provided</option>
+                                        <option value="Freelance">Freelance</option>
+                                    </optgroup>
+                                    <optgroup label="Specialized Roles">
+                                        <option value="Lead / Senior Therapist">Lead / Senior Therapist</option>
+                                        <option value="Spa & Wellness Therapist">Spa & Wellness Therapist</option>
+                                        <option value="Mobile Therapist">Mobile Therapist</option>
+                                        <option value="Resident / In-House Therapist">Resident / In-House Therapist</option>
+                                        <option value="Clinical / Medical Therapist">Clinical / Medical Therapist</option>
+                                    </optgroup>
+                                    <optgroup label="Management & Supervision">
+                                        <option value="Management & Supervision">Management & Supervision</option>
+                                    </optgroup>
+                                </select>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-900 mb-2">

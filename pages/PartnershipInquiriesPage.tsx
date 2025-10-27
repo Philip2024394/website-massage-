@@ -23,8 +23,8 @@ const PartnershipInquiriesPage: React.FC<PartnershipInquiriesPageProps> = ({ onN
         <div className="min-h-screen bg-gray-50">
             <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
                 <div className="flex justify-between items-center">
-                    <h1 className="text-2xl font-bold text-gray-800">
-                        <span className="text-orange-500">IndaStreet</span>
+                    <h1 className="text-2xl font-bold">
+                        <span className="text-gray-800">Inda</span><span className="text-orange-500">Street</span>
                     </h1>
                     <div className="flex items-center gap-4 text-gray-600">
                         <button onClick={() => setIsMenuOpen(true)} title="Menu">
@@ -81,12 +81,12 @@ const PartnershipInquiriesPage: React.FC<PartnershipInquiriesPageProps> = ({ onN
                 <div 
                     className="bg-gradient-to-r from-purple-600 to-blue-600 text-white py-20 relative bg-cover bg-center"
                     style={{
-                        backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/indastreet%20partners.png?updatedAt=1761568366041)',
+                        backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/hotel%20staffs.png?updatedAt=1761578921097)',
                     }}
                 >
                     <div className="absolute inset-0 bg-black/20"></div>
                     <div className="max-w-6xl mx-auto px-4 text-center relative z-10">
-                        <h1 className="text-5xl font-bold mb-6 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">🤝 Partnership Opportunities</h1>
+                        <h1 className="text-5xl font-bold mb-6 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">Partnership Opportunities</h1>
                         <p className="text-xl text-white max-w-3xl mx-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
                             Join IndaStreet and grow your wellness business across Indonesia
                         </p>
@@ -97,8 +97,12 @@ const PartnershipInquiriesPage: React.FC<PartnershipInquiriesPageProps> = ({ onN
                     {/* Partnership Types */}
                     <div className="grid md:grid-cols-3 gap-8 mb-16">
                         <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
-                            <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
-                                <span className="text-3xl">🏨</span>
+                            <div className="w-16 h-16 rounded-full overflow-hidden mb-4 flex items-center justify-center">
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/hotel%20and%20villa.png?updatedAt=1761578465491" 
+                                    alt="Hotel & Villa Partners"
+                                    className="w-full h-full object-cover"
+                                />
                             </div>
                             <h3 className="text-xl font-bold text-gray-900 mb-3">Hotel & Villa Partners</h3>
                             <p className="text-gray-600 mb-4">
@@ -112,8 +116,12 @@ const PartnershipInquiriesPage: React.FC<PartnershipInquiriesPageProps> = ({ onN
                         </div>
 
                         <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
-                            <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mb-4">
-                                <span className="text-3xl">💆</span>
+                            <div className="w-16 h-16 rounded-full overflow-hidden mb-4 flex items-center justify-center">
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/indostreet%203.png?updatedAt=1761578364603" 
+                                    alt="Therapist Partners"
+                                    className="w-full h-full object-cover"
+                                />
                             </div>
                             <h3 className="text-xl font-bold text-gray-900 mb-3">Therapist Partners</h3>
                             <p className="text-gray-600 mb-4">
@@ -127,8 +135,12 @@ const PartnershipInquiriesPage: React.FC<PartnershipInquiriesPageProps> = ({ onN
                         </div>
 
                         <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
-                            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
-                                <span className="text-3xl">🏢</span>
+                            <div className="w-16 h-16 rounded-full overflow-hidden mb-4 flex items-center justify-center">
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/indostreet%201.png?updatedAt=1761578176120" 
+                                    alt="Corporate Partners"
+                                    className="w-full h-full object-cover"
+                                />
                             </div>
                             <h3 className="text-xl font-bold text-gray-900 mb-3">Corporate Partners</h3>
                             <p className="text-gray-600 mb-4">
@@ -182,8 +194,12 @@ const PartnershipInquiriesPage: React.FC<PartnershipInquiriesPageProps> = ({ onN
                         <div className="grid md:grid-cols-2 gap-8">
                             <div className="bg-white rounded-xl p-6 shadow-md">
                                 <div className="flex items-center mb-4">
-                                    <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mr-4">
-                                        <span className="text-2xl">🏨</span>
+                                    <div className="w-12 h-12 rounded-full overflow-hidden mr-4 flex-shrink-0">
+                                        <img 
+                                            src="https://ik.imagekit.io/7grri5v7d/hotel_staff-removebg-preview.png?updatedAt=1761577900471" 
+                                            alt="Sunset Villa Bali"
+                                            className="w-full h-full object-cover"
+                                        />
                                     </div>
                                     <div>
                                         <h4 className="font-bold text-gray-900">Sunset Villa Bali</h4>
@@ -191,14 +207,18 @@ const PartnershipInquiriesPage: React.FC<PartnershipInquiriesPageProps> = ({ onN
                                     </div>
                                 </div>
                                 <p className="text-gray-600 italic">
-                                    "IndaStreet's QR menu system increased our guest satisfaction scores by 35% and generated IDR 45 million in commissions in just 6 months!"
+                                    "IndaStreet's QR menu system increased our guest satisfaction scores by 35% and generated IDR 22 million in commissions in just 6 months!"
                                 </p>
                             </div>
 
                             <div className="bg-white rounded-xl p-6 shadow-md">
                                 <div className="flex items-center mb-4">
-                                    <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center mr-4">
-                                        <span className="text-2xl">💆</span>
+                                    <div className="w-12 h-12 rounded-full overflow-hidden mr-4 flex-shrink-0">
+                                        <img 
+                                            src="https://ik.imagekit.io/7grri5v7d/indastreet_person-removebg-preview.png?updatedAt=1761577698634" 
+                                            alt="Made Wayan"
+                                            className="w-full h-full object-cover"
+                                        />
                                     </div>
                                     <div>
                                         <h4 className="font-bold text-gray-900">Made Wayan</h4>
@@ -216,7 +236,7 @@ const PartnershipInquiriesPage: React.FC<PartnershipInquiriesPageProps> = ({ onN
                     <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 p-8">
                         <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">Start Your Partnership Journey</h2>
                         <p className="text-gray-600 text-center mb-8">
-                            Fill out the form below or email us at <a href="mailto:partnerships@indastreet.com" className="text-purple-600 font-bold">partnerships@indastreet.com</a>
+                            Fill out the form below or email us at <a href="mailto:indastreet.id@gmail.com" className="text-orange-600 font-bold">indastreet.id@gmail.com</a>
                         </p>
                         
                         <div className="max-w-2xl mx-auto">
@@ -286,7 +306,7 @@ const PartnershipInquiriesPage: React.FC<PartnershipInquiriesPageProps> = ({ onN
 
                                 <button
                                     type="submit"
-                                    className="w-full py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold rounded-lg hover:from-purple-700 hover:to-blue-700 transition-colors shadow-lg"
+                                    className="w-full py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold rounded-lg hover:from-orange-600 hover:to-orange-700 transition-colors shadow-lg"
                                 >
                                     Submit Partnership Inquiry
                                 </button>
