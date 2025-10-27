@@ -38,6 +38,7 @@ const EmployerJobPostingPage: React.FC = () => {
         salaryRangeMin: 0,
         salaryRangeMax: 0,
         applicationDeadline: '',
+        cvRequired: false,
         businessName: '',
         businessType: 'hotel' as 'hotel' | 'spa' | 'wellness-center' | 'home-service' | 'resort' | 'other',
         contactPerson: '',
@@ -174,6 +175,7 @@ const EmployerJobPostingPage: React.FC = () => {
                     salaryRangeMin: formData.salaryRangeMin || null,
                     salaryRangeMax: formData.salaryRangeMax || null,
                     applicationDeadline: formData.applicationDeadline ? new Date(formData.applicationDeadline).toISOString() : null,
+                    cvRequired: formData.cvRequired,
                     businessName: formData.businessName,
                     businessType: formData.businessType,
                     contactPerson: formData.contactPerson,
@@ -396,6 +398,34 @@ const EmployerJobPostingPage: React.FC = () => {
                                 onChange={(e) => setFormData({ ...formData, applicationDeadline: e.target.value })}
                                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                             />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-900 mb-2">
+                                CV Required? *
+                            </label>
+                            <div className="flex gap-4">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="radio"
+                                        name="cvRequired"
+                                        checked={formData.cvRequired === true}
+                                        onChange={() => setFormData({ ...formData, cvRequired: true })}
+                                        className="w-4 h-4 text-orange-500 focus:ring-orange-500"
+                                    />
+                                    <span className="text-gray-700 font-medium">Yes</span>
+                                </label>
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="radio"
+                                        name="cvRequired"
+                                        checked={formData.cvRequired === false}
+                                        onChange={() => setFormData({ ...formData, cvRequired: false })}
+                                        className="w-4 h-4 text-orange-500 focus:ring-orange-500"
+                                    />
+                                    <span className="text-gray-700 font-medium">No</span>
+                                </label>
+                            </div>
                         </div>
                     </div>
 
