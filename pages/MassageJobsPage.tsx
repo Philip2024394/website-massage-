@@ -464,7 +464,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({ onBack, onPostJob, on
                                     </div>
 
                                     {/* Massage Types Required - Show up to 4 */}
-                                    {posting.massageTypes && posting.massageTypes.length > 0 && (
+                                    {posting.massageTypes && posting.massageTypes.length > 0 ? (
                                         <div className="mb-4">
                                             <p className="text-xs font-semibold text-gray-500 mb-2">MASSAGE TYPES REQUIRED:</p>
                                             <div className="flex flex-wrap gap-2">
@@ -480,10 +480,14 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({ onBack, onPostJob, on
                                                 )}
                                             </div>
                                         </div>
+                                    ) : (
+                                        <div className="mb-4">
+                                            <p className="text-xs font-semibold text-orange-500 mb-2">⚠️ No massage types specified for this posting</p>
+                                        </div>
                                     )}
 
                                     {/* Languages Required - Show up to 3 */}
-                                    {posting.requiredLanguages && posting.requiredLanguages.length > 0 && (
+                                    {posting.requiredLanguages && posting.requiredLanguages.length > 0 ? (
                                         <div className="mb-4">
                                             <p className="text-xs font-semibold text-gray-500 mb-2">LANGUAGES REQUIRED:</p>
                                             <div className="flex flex-wrap gap-2">
@@ -498,6 +502,10 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({ onBack, onPostJob, on
                                                     </span>
                                                 )}
                                             </div>
+                                        </div>
+                                    ) : (
+                                        <div className="mb-4">
+                                            <p className="text-xs font-semibold text-orange-500 mb-2">⚠️ No languages specified for this posting</p>
                                         </div>
                                     )}
 
