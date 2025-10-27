@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-type Page = 'home' | 'registrationChoice' | 'contact';
+type Page = 'home' | 'registrationChoice' | 'contact' | 'about' | 'faq';
 
 interface AboutUsPageProps {
     onNavigate: (page: Page) => void;
