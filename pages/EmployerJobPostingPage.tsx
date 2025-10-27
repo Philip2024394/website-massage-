@@ -4,6 +4,32 @@ import { databases, ID } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 
 const EmployerJobPostingPage: React.FC = () => {
+    // Array of professional massage/spa images - will cycle through all before repeating
+    const jobPostingImages = [
+        'https://ik.imagekit.io/7grri5v7d/jungle%20massage.png?updatedAt=1761594798827',
+        'https://ik.imagekit.io/7grri5v7d/massage%20solo.png?updatedAt=1761593342541',
+        'https://ik.imagekit.io/7grri5v7d/bali%20massage%20indonisea%20new%20job.png?updatedAt=1761591600248',
+        'https://ik.imagekit.io/7grri5v7d/bali%20massage%20indonisea.png?updatedAt=1761591108161',
+        'https://ik.imagekit.io/7grri5v7d/bali%20massage.png?updatedAt=1761590994932',
+        'https://ik.imagekit.io/7grri5v7d/massage%20villa%20service%20indonisea.png?updatedAt=1761583264188',
+        'https://ik.imagekit.io/7grri5v7d/massage%20online.png?updatedAt=1761582970960',
+        'https://ik.imagekit.io/7grri5v7d/massage%20jobs.png?updatedAt=1761571942696',
+        'https://ik.imagekit.io/7grri5v7d/massage%20places%20indonisea.png?updatedAt=1761571657409',
+        'https://ik.imagekit.io/7grri5v7d/hotel%20massage%20indoniseas.png?updatedAt=1761154913720',
+        'https://ik.imagekit.io/7grri5v7d/massage%20room.png?updatedAt=1760975249566',
+        'https://ik.imagekit.io/7grri5v7d/massage%20agents.png?updatedAt=1760968250776',
+        'https://ik.imagekit.io/7grri5v7d/massage%20hoter%20villa.png?updatedAt=1760965742264',
+        'https://ik.imagekit.io/7grri5v7d/massage%20image%2016.png?updatedAt=1760187700624',
+        'https://ik.imagekit.io/7grri5v7d/massage%20image%2014.png?updatedAt=1760187606823',
+    ];
+
+    // Function to get sequential image based on timestamp to ensure variety
+    const getRandomImage = () => {
+        const timestamp = Date.now();
+        const index = timestamp % jobPostingImages.length;
+        return jobPostingImages[index];
+    };
+
     const [formData, setFormData] = useState({
         jobTitle: 'Massage Therapist Position',
         jobDescription: '',
@@ -34,7 +60,7 @@ const EmployerJobPostingPage: React.FC = () => {
         status: 'active',
         views: 0,
         applications: 0,
-        imageUrl: '',
+        imageUrl: getRandomImage(),
     });
 
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -372,35 +398,6 @@ const EmployerJobPostingPage: React.FC = () => {
                                 placeholder="e.g., Paradise Resort & Spa"
                                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                             />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-900 mb-2">
-                                Business Logo / Image URL
-                            </label>
-                            <input
-                                type="url"
-                                value={formData.imageUrl}
-                                onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                                placeholder="e.g., https://ik.imagekit.io/your-image.png"
-                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                            />
-                            <p className="text-xs text-gray-500 mt-1">Optional: Add a logo or image for your job posting (will appear as a badge on the card)</p>
-                            {formData.imageUrl && (
-                                <div className="mt-3">
-                                    <p className="text-xs font-semibold text-gray-700 mb-2">Preview:</p>
-                                    <div className="relative w-16 h-16 rounded-lg overflow-hidden shadow-lg backdrop-blur-md bg-black/40 border border-white/20 p-1">
-                                        <img 
-                                            src={formData.imageUrl} 
-                                            alt="Preview"
-                                            className="w-full h-full object-cover rounded-md"
-                                            onError={(e) => {
-                                                e.currentTarget.src = 'https://via.placeholder.com/64?text=Invalid';
-                                            }}
-                                        />
-                                    </div>
-                                </div>
-                            )}
                         </div>
 
                         <div>
