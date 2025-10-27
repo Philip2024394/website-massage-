@@ -41,6 +41,7 @@ const EmployerJobPostingPage: React.FC = () => {
         cvRequired: false,
         businessName: '',
         businessType: 'hotel' as 'hotel' | 'spa' | 'wellness-center' | 'home-service' | 'resort' | 'other',
+        customBusinessType: '',
         contactPerson: '',
         contactEmail: '',
         contactPhone: '',
@@ -81,18 +82,16 @@ const EmployerJobPostingPage: React.FC = () => {
         'Medan', 'Semarang', 'Makassar', 'Lombok', 'Ubud'
     ];
 
-    const internationalLocations = [
-        'Dubai, UAE', 'Singapore', 'Hong Kong', 'Phuket, Thailand', 'Kuala Lumpur, Malaysia',
-        'Maldives', 'Sydney, Australia', 'Tokyo, Japan', 'Seoul, South Korea'
-    ];
-
     const commonRequirements = [
         'Certified massage therapist',
         'Minimum 2 years experience',
-        'English speaking',
         'Balinese massage expertise',
         'Professional appearance',
         'Customer service skills',
+        'Letter From Last Employer',
+        'Police Report',
+        'Own Transport',
+        'Own Accommodation',
     ];
 
     const commonBenefits = [
@@ -112,6 +111,11 @@ const EmployerJobPostingPage: React.FC = () => {
     ];
 
     const massageTypes = [
+        'Traditional Indonesian Massage',
+        'Balinese Massage',
+        'Javanese Massage',
+        'Boreh (Balinese Body Scrub)',
+        'Urut Traditional Massage',
         'Traditional Massage',
         'Sports Massage',
         'Deep Tissue',
@@ -122,7 +126,6 @@ const EmployerJobPostingPage: React.FC = () => {
         'Reflexology',
         'Shiatsu',
         'Prenatal',
-        'Balinese',
         'Trigger Point',
         'Lymphatic Drainage',
         'Myofascial Release',
@@ -459,7 +462,7 @@ const EmployerJobPostingPage: React.FC = () => {
                                     <button
                                         key={type.value}
                                         type="button"
-                                        onClick={() => setFormData({ ...formData, businessType: type.value as any })}
+                                        onClick={() => setFormData({ ...formData, businessType: type.value as any, customBusinessType: '' })}
                                         className={`px-4 py-3 rounded-lg font-medium transition-all ${
                                             formData.businessType === type.value
                                                 ? 'bg-orange-500 text-white'
@@ -470,6 +473,19 @@ const EmployerJobPostingPage: React.FC = () => {
                                     </button>
                                 ))}
                             </div>
+                            {formData.businessType === 'other' && (
+                                <div className="mt-3">
+                                    <input
+                                        type="text"
+                                        required
+                                        value={formData.customBusinessType}
+                                        onChange={(e) => setFormData({ ...formData, customBusinessType: e.target.value })}
+                                        placeholder="Enter your business type..."
+                                        maxLength={50}
+                                        className="w-full px-4 py-3 border-2 border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                    />
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -494,6 +510,31 @@ const EmployerJobPostingPage: React.FC = () => {
                             />
                         </div>
 
+                        <div>
+                            <label className="block text-sm font-medium text-gray-900 mb-2">
+                                <Phone className="w-4 h-4 inline mr-1" />
+                                Phone Number *
+                            </label>
+                            <div className="flex gap-2">
+                                <div className="w-20 px-4 py-3 bg-gray-100 border-2 border-gray-300 rounded-lg flex items-center justify-center font-medium text-gray-700">
+                                    +62
+                                </div>
+                                <input
+                                    type="tel"
+                                    required
+                                    value={formData.contactPhone}
+                                    onChange={(e) => {
+                                        const value = e.target.value.replace(/[^0-9]/g, '');
+                                        setFormData({ ...formData, contactPhone: value });
+                                    }}
+                                    placeholder="812 3456 7890"
+                                    maxLength={15}
+                                    className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                />
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">Enter number without country code (e.g., 812 3456 7890)</p>
+                        </div>
+
                         <div className="grid sm:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-900 mb-2">
@@ -509,19 +550,6 @@ const EmployerJobPostingPage: React.FC = () => {
                                     className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                                 />
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-900 mb-2">
-                                    <Phone className="w-4 h-4 inline mr-1" />
-                                    Phone
-                                </label>
-                                <input
-                                    type="tel"
-                                    value={formData.contactPhone}
-                                    onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
-                                    placeholder="+62 xxx xxx xxx"
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                />
-                            </div>
                         </div>
                     </div>
 
@@ -533,14 +561,39 @@ const EmployerJobPostingPage: React.FC = () => {
                         </h2>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-900 mb-2">Country</label>
+                            <label className="block text-sm font-medium text-gray-900 mb-2">Country *</label>
                             <select
+                                required
                                 value={formData.country}
                                 onChange={(e) => setFormData({ ...formData, country: e.target.value, city: '' })}
                                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                             >
                                 <option value="Indonesia">Indonesia</option>
-                                <option value="international">International</option>
+                                <option value="Singapore">Singapore</option>
+                                <option value="Malaysia">Malaysia</option>
+                                <option value="Thailand">Thailand</option>
+                                <option value="Philippines">Philippines</option>
+                                <option value="Vietnam">Vietnam</option>
+                                <option value="Cambodia">Cambodia</option>
+                                <option value="Myanmar">Myanmar</option>
+                                <option value="Laos">Laos</option>
+                                <option value="Brunei">Brunei</option>
+                                <option value="Australia">Australia</option>
+                                <option value="New Zealand">New Zealand</option>
+                                <option value="Japan">Japan</option>
+                                <option value="South Korea">South Korea</option>
+                                <option value="China">China</option>
+                                <option value="Hong Kong">Hong Kong</option>
+                                <option value="Taiwan">Taiwan</option>
+                                <option value="India">India</option>
+                                <option value="United Arab Emirates">United Arab Emirates</option>
+                                <option value="Saudi Arabia">Saudi Arabia</option>
+                                <option value="Qatar">Qatar</option>
+                                <option value="Maldives">Maldives</option>
+                                <option value="United Kingdom">United Kingdom</option>
+                                <option value="United States">United States</option>
+                                <option value="Canada">Canada</option>
+                                <option value="Other">Other</option>
                             </select>
                         </div>
 
@@ -566,23 +619,21 @@ const EmployerJobPostingPage: React.FC = () => {
                                     ))}
                                 </div>
                             ) : (
-                                <div className="flex flex-wrap gap-2">
-                                    {internationalLocations.map((location) => (
-                                        <button
-                                            key={location}
-                                            type="button"
-                                            onClick={() => setFormData({ ...formData, city: location })}
-                                            className={`px-3 py-2 rounded-lg font-medium transition-all ${
-                                                formData.city === location
-                                                    ? 'bg-orange-500 text-white'
-                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                            }`}
-                                        >
-                                            {location}
-                                        </button>
-                                    ))}
-                                </div>
+                                <input
+                                    type="text"
+                                    required
+                                    value={formData.city}
+                                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                                    placeholder="Enter city name (e.g., Bangkok, Dubai, Singapore)"
+                                    maxLength={85}
+                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                />
                             )}
+                            <p className="text-xs text-gray-500 mt-1">
+                                {formData.country === 'Indonesia' 
+                                    ? 'Select a city from the options above' 
+                                    : `Maximum 85 characters (${formData.city.length}/85)`}
+                            </p>
                         </div>
                     </div>
 
@@ -659,8 +710,13 @@ const EmployerJobPostingPage: React.FC = () => {
                         <div>
                             <label className="block text-sm font-medium text-gray-900 mb-2">
                                 <DollarSign className="w-4 h-4 inline mr-1" />
-                                Salary Range (Monthly)
+                                Salary Range (Monthly in Indonesian Rupiah)
                             </label>
+                            {formData.country !== 'Indonesia' && (
+                                <p className="text-sm text-orange-600 mb-2 font-medium">
+                                    ⚠️ Please convert your currency to Indonesian Rupiah using Google Currency Converter
+                                </p>
+                            )}
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="relative">
                                     <span className="absolute left-3 top-3 text-gray-500">Rp</span>
@@ -815,18 +871,6 @@ const EmployerJobPostingPage: React.FC = () => {
                                 </button>
                             ))}
                         </div>
-                    </div>
-
-                    {/* Job Description */}
-                    <div className="bg-white border-2 border-gray-200 rounded-xl p-6 space-y-4">
-                        <h2 className="text-lg font-bold text-gray-900">Job Description</h2>
-                        <textarea
-                            value={formData.jobDescription}
-                            onChange={(e) => setFormData({ ...formData, jobDescription: e.target.value })}
-                            placeholder="Describe the role, responsibilities, and what makes this opportunity special..."
-                            rows={6}
-                            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                        />
                     </div>
 
                     {/* Submit */}
