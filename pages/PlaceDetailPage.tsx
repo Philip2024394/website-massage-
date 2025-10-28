@@ -38,6 +38,11 @@ const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({ place, onBack, onBook
     }, [place.id]);
 
     const openWhatsApp = () => {
+        // Play click sound
+        const audio = new Audio('/sounds/success-notification.mp3');
+        audio.volume = 0.3; // Quiet click sound
+        audio.play().catch(err => console.log('Sound play failed:', err));
+
         // Track real analytics
         analyticsService.trackWhatsAppClick(
             place.id,

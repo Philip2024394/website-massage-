@@ -100,18 +100,30 @@ const AgentDashboardPage: React.FC<AgentDashboardPageProps> = ({ agent, onLogout
         </div>
     );
     
-    const RenewalCard: React.FC<{ client: Therapist | Place }> = ({ client }) => (
-        <div className="bg-white border-2 border-gray-200 rounded-xl p-6 hover:border-orange-300 transition-all flex justify-between items-center">
-            <div>
-                <h4 className="font-bold text-gray-800 text-lg">{client.name}</h4>
-                <p className="text-sm text-red-600 font-semibold mt-1">Expires: {formatDate(client.activeMembershipDate)}</p>
+    const RenewalCard: React.FC<{ client: Therapist | Place }> = ({ client }) => {
+        const handleWhatsAppClick = () => {
+            // Play click sound
+            const audio = new Audio('/sounds/success-notification.mp3');
+            audio.volume = 0.3;
+            audio.play().catch(err => console.log('Sound play failed:', err));
+            
+            // Open WhatsApp
+            window.open(`https://wa.me/${client.whatsappNumber}`, '_blank');
+        };
+        
+        return (
+            <div className="bg-white border-2 border-gray-200 rounded-xl p-6 hover:border-orange-300 transition-all flex justify-between items-center">
+                <div>
+                    <h4 className="font-bold text-gray-800 text-lg">{client.name}</h4>
+                    <p className="text-sm text-red-600 font-semibold mt-1">Expires: {formatDate(client.activeMembershipDate)}</p>
+                </div>
+                <button onClick={handleWhatsAppClick} className="flex items-center gap-2 bg-green-500 text-white text-sm font-bold py-2.5 px-4 rounded-lg hover:bg-green-600 transition-colors">
+                    <WhatsAppIcon className="w-5 h-5" />
+                    <span>{t.renewals.contact}</span>
+                </button>
             </div>
-            <a href={`https://wa.me/${client.whatsappNumber}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-green-500 text-white text-sm font-bold py-2.5 px-4 rounded-lg hover:bg-green-600 transition-colors">
-                <WhatsAppIcon className="w-5 h-5" />
-                <span>{t.renewals.contact}</span>
-            </a>
-        </div>
-    );
+        );
+    };
 
     return (
         <div className="min-h-screen bg-gray-50">

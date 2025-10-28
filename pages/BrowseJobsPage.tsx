@@ -126,6 +126,11 @@ const BrowseJobsPage: React.FC<BrowseJobsPageProps> = ({ onBack, onPostJob }) =>
     };
 
     const handleContactWhatsApp = (whatsapp: string, name: string) => {
+        // Play click sound
+        const audio = new Audio('/sounds/success-notification.mp3');
+        audio.volume = 0.3;
+        audio.play().catch(err => console.log('Sound play failed:', err));
+        
         const message = encodeURIComponent(`Hi, I'm interested in your job listing on IndaStreet. My name is ${name}`);
         window.open(`https://wa.me/${whatsapp}?text=${message}`, '_blank');
     };

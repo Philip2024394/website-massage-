@@ -696,6 +696,11 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                             </div>
                             <Button 
                                 onClick={() => {
+                                    // Play click sound
+                                    const audio = new Audio('/sounds/success-notification.mp3');
+                                    audio.volume = 0.3;
+                                    audio.play().catch(err => console.log('Sound play failed:', err));
+                                    
                                     const adminNumber = '6281392000050';
                                     const message = `Hello IndoStreet Admin, this is a test message from therapist ${name || 'Therapist'} (ID: ${therapistId}). My WhatsApp number is +62${whatsappNumber}.`;
                                     window.open(`https://wa.me/${adminNumber}?text=${encodeURIComponent(message)}`, '_blank');

@@ -213,6 +213,12 @@ const MembershipPaymentPage: React.FC<MembershipPaymentPageProps> = ({
                 `⏰ Submitted: ${new Date().toLocaleString()}\n\n` +
                 `Please review and approve in Admin Dashboard.`
             );
+            
+            // Play click sound
+            const audio = new Audio('/sounds/success-notification.mp3');
+            audio.volume = 0.3;
+            audio.play().catch(err => console.log('Sound play failed:', err));
+            
             window.open(`https://wa.me/${whatsappNumber}?text=${message}`, '_blank');
 
             setStep('success');

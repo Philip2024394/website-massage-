@@ -108,6 +108,11 @@ const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook
         : (mainImage || 'https://ik.imagekit.io/7grri5v7d/massage%20image%201.png?updatedAt=1760186885261');
 
     const openWhatsApp = () => {
+        // Play click sound
+        const audio = new Audio('/sounds/success-notification.mp3');
+        audio.volume = 0.3; // Quiet click sound
+        audio.play().catch(err => console.log('Sound play failed:', err));
+
         // If displaying as Busy, show confirmation modal
         if (displayStatus === AvailabilityStatus.Busy) {
             setShowBusyModal(true);
@@ -119,6 +124,11 @@ const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook
     };
     
     const handleConfirmBusyContact = () => {
+        // Play click sound
+        const audio = new Audio('/sounds/success-notification.mp3');
+        audio.volume = 0.3;
+        audio.play().catch(err => console.log('Sound play failed:', err));
+
         onIncrementAnalytics('whatsappClicks');
         window.open(`https://wa.me/${therapist.whatsappNumber}`, '_blank');
         setShowBusyModal(false);

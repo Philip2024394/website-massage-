@@ -18,6 +18,11 @@ interface AgentPageProps {
 const AgentPage: React.FC<AgentPageProps> = ({ onBack, onNavigateToAgentAuth, t: _t, contactNumber }) => {
 
     const handleWhatsAppClick = () => {
+        // Play click sound
+        const audio = new Audio('/sounds/success-notification.mp3');
+        audio.volume = 0.3;
+        audio.play().catch(err => console.log('Sound play failed:', err));
+        
         const number = contactNumber;
         const message = encodeURIComponent('Hi! I would like more information about becoming an IndaStreet Agent for Massage Therapists and Massage Places');
         window.open(`https://wa.me/${number}?text=${message}`, '_blank');

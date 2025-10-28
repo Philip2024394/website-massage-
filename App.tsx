@@ -655,6 +655,12 @@ const App: React.FC = () => {
         const message = encodeURIComponent(
             `Hi, I would like to purchase the ${packageName} membership for ${price}.\n\nMy registered email is: ${provider?.email}`
         );
+        
+        // Play click sound
+        const audio = new Audio('/sounds/success-notification.mp3');
+        audio.volume = 0.3;
+        audio.play().catch(err => console.log('Sound play failed:', err));
+        
         window.open(`https://wa.me/${number}?text=${message}`, '_blank');
     };
 
