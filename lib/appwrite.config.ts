@@ -33,6 +33,7 @@ export const APPWRITE_CONFIG = {
         paymentTransactions: 'payment_transactions',
         messages: 'messages_collection_id', // NEW: In-app messaging
         packages: 'packages_collection_id', // NEW: Pricing packages
+        pushSubscriptions: 'push_subscriptions', // NEW: Push notification subscriptions
     },
     
     // Storage bucket ID

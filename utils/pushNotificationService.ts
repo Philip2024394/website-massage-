@@ -141,7 +141,7 @@ class PushNotificationService {
                     // Public VAPID key - Generated on Oct 28, 2025
                     // Private key stored securely (never commit to Git)
                     'BB8rimksoyDeYgm99Ku_wJogwAiL8b3eS8SlU5SBLNC3xiiwZykMVfD8oFIBXgRg1EjZ-ng7Mk7AON6xmRMVUk4'
-                )
+                ) as unknown as BufferSource
             });
 
             console.log('✅ Push subscription created:', subscription);
@@ -287,13 +287,13 @@ class PushNotificationService {
                 icon,
                 badge,
                 tag,
-                vibrate,
                 requireInteraction: true, // Notification stays until dismissed
                 data: {
                     url: '/', // URL to open when clicked
                     notificationId: notification.$id,
                     type: notification.type,
-                    sound // Pass sound to service worker
+                    sound, // Pass sound to service worker
+                    vibrate // Pass vibrate pattern to service worker
                 },
                 actions: [
                     {
@@ -378,7 +378,7 @@ class PushNotificationService {
     /**
      * Check if provider is subscribed
      */
-    async isSubscribed(providerId: number): Promise<boolean> {
+    async isSubscribed(_providerId: number): Promise<boolean> {
         try {
             if (!this.swRegistration) {
                 return false;
@@ -423,11 +423,11 @@ class PushNotificationService {
             body: 'This is a test notification from IndaStreet!',
             icon: '/icon-192.png',
             badge: '/icon-192.png',
-            vibrate: [200, 100, 200],
             requireInteraction: false,
             data: {
                 url: '/',
-                sound: '/sounds/success-notification.mp3'
+                sound: '/sounds/success-notification.mp3',
+                vibrate: [200, 100, 200]
             }
         });
 

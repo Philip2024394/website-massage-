@@ -38,6 +38,9 @@ import MassageJobsPage from './pages/MassageJobsPage';
 import TherapistJobsPage from './pages/TherapistJobsPage';
 import JobUnlockPaymentPage from './pages/JobUnlockPaymentPage';
 import AdminBankSettingsPage from './pages/AdminBankSettingsPage';
+// UX Enhancement Components
+import CookieConsent from './components/CookieConsent';
+import WelcomePopup from './components/WelcomePopup';
 // SEO Pages
 import AboutUsPage from './pages/AboutUsPage';
 import HowItWorksPage from './pages/HowItWorksPage';
@@ -795,7 +798,10 @@ const App: React.FC = () => {
                 return <HomePage 
                             user={user} 
                             loggedInAgent={loggedInAgent}
-                            loggedInProvider={loggedInProvider}
+                            loggedInProvider={loggedInProvider ? {
+                                id: typeof loggedInProvider.id === 'string' ? parseInt(loggedInProvider.id) : loggedInProvider.id,
+                                type: loggedInProvider.type
+                            } : null}
                             therapists={therapists}
                             places={places}
                             userLocation={userLocation}
@@ -829,7 +835,14 @@ const App: React.FC = () => {
                             onNavigate={(page) => setPage(page as Page)}
                             isLoading={isLoading}
                             t={t} />;
-            case 'detail': return selectedPlace && <PlaceDetailPage place={selectedPlace} onBack={handleBackToHome} onBook={(place) => handleNavigateToBooking(place, 'place')} onIncrementAnalytics={(metric) => handleIncrementAnalytics(selectedPlace.id, 'place', metric)} loggedInProviderId={loggedInProvider?.id} t={t.detail} />;
+            case 'detail': return selectedPlace && <PlaceDetailPage 
+                place={selectedPlace} 
+                onBack={handleBackToHome} 
+                onBook={(place) => handleNavigateToBooking(place, 'place')} 
+                onIncrementAnalytics={(metric) => handleIncrementAnalytics(selectedPlace.id, 'place', metric)} 
+                loggedInProviderId={typeof loggedInProvider?.id === 'string' ? parseInt(loggedInProvider.id) : loggedInProvider?.id} 
+                t={t.detail} 
+            />;
             // case 'adminLogin': return <AdminLoginPage onAdminLogin={handleAdminLogin} onBack={handleBackToHome} t={t.adminLogin} />;
             case 'adminDashboard': return isAdminLoggedIn ? <AdminDashboardPage onLogout={handleAdminLogout} /> : <AdminLoginPage onAdminLogin={handleAdminLogin} onBack={handleBackToHome} t={t.adminLogin} />;
             case 'registrationChoice': return <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice} />;
@@ -1119,6 +1132,10 @@ const App: React.FC = () => {
                 />
             )}
             {showFloatingButton && <FloatingWebsiteButton />}
+            
+            {/* UX Enhancement Components */}
+            <CookieConsent />
+            <WelcomePopup />
         </div>
     );
 };

@@ -244,6 +244,9 @@ export const therapistService = {
             throw error;
         }
     },
+    async getTherapists(): Promise<any[]> {
+        return this.getAll();
+    },
     async getAll(): Promise<any[]> {
         try {
             console.log('📋 Fetching all therapists from collection:', APPWRITE_CONFIG.collections.therapists);
@@ -335,6 +338,9 @@ export const placeService = {
             console.error('Error creating place:', error);
             throw error;
         }
+    },
+    async getPlaces(): Promise<any[]> {
+        return this.getAll();
     },
     async getAll(): Promise<any[]> {
         try {

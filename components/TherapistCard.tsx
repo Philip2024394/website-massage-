@@ -116,9 +116,10 @@ const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook
         audio.play().catch(err => console.log('Sound play failed:', err));
 
         // Send notification to therapist ONLY if it's not them clicking their own button
-        if (loggedInProviderId !== therapist.id) {
+        const therapistIdNum = typeof therapist.id === 'string' ? parseInt(therapist.id) : therapist.id;
+        if (loggedInProviderId !== therapistIdNum) {
             notificationService.createWhatsAppContactNotification(
-                therapist.id,
+                therapistIdNum,
                 therapist.name
             ).catch(err => console.log('Notification failed:', err));
         } else {
@@ -142,9 +143,10 @@ const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook
         audio.play().catch(err => console.log('Sound play failed:', err));
 
         // Send notification to therapist ONLY if it's not them clicking their own button
-        if (loggedInProviderId !== therapist.id) {
+        const therapistIdNum = typeof therapist.id === 'string' ? parseInt(therapist.id) : therapist.id;
+        if (loggedInProviderId !== therapistIdNum) {
             notificationService.createWhatsAppContactNotification(
-                therapist.id,
+                therapistIdNum,
                 therapist.name
             ).catch(err => console.log('Notification failed:', err));
         } else {

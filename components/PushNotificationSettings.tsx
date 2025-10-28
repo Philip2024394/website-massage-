@@ -181,13 +181,12 @@ const PushNotificationSettings: React.FC<PushNotificationSettingsProps> = ({
                             <p className="text-sm text-gray-600 mb-3">
                                 For the best notification experience, install IndaStreet to your home screen.
                             </p>
-                            <Button
+                            <button
                                 onClick={handleInstallApp}
-                                variant="outline"
-                                size="sm"
+                                className="w-full bg-white text-orange-500 border-2 border-orange-500 hover:bg-orange-50 focus:ring-orange-500 font-bold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-300"
                             >
                                 📲 Install App
-                            </Button>
+                            </button>
                         </div>
                     </div>
                 </div>

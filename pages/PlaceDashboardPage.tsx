@@ -78,6 +78,9 @@ const BookingCard: React.FC<{ booking: Booking; onUpdateStatus: (id: number, sta
 const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogout, onNavigateToNotifications, onUpdateBookingStatus, placeId: _placeId, place: placeProp, bookings, notifications, t }) => {
     const [place] = useState<Place | null>(placeProp || null);
     const [isLoading, setIsLoading] = useState(true);
+    
+    // Use _placeId consistently
+    const placeId = _placeId;
 
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
