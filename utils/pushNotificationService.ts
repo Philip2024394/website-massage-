@@ -133,14 +133,14 @@ class PushNotificationService {
             }
 
             // Subscribe to push notifications
-            // Note: For Appwrite, we use Web Push API without VAPID keys
+            // Note: For Appwrite, we use Web Push API with VAPID keys
             // The service worker will handle notifications via Appwrite Realtime
             const subscription = await this.swRegistration.pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: this.urlBase64ToUint8Array(
-                    // Public VAPID key - you'll need to generate this
-                    // For now, using a placeholder. Generate real keys with: npx web-push generate-vapid-keys
-                    'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U'
+                    // Public VAPID key - Generated on Oct 28, 2025
+                    // Private key stored securely (never commit to Git)
+                    'BB8rimksoyDeYgm99Ku_wJogwAiL8b3eS8SlU5SBLNC3xiiwZykMVfD8oFIBXgRg1EjZ-ng7Mk7AON6xmRMVUk4'
                 )
             });
 
