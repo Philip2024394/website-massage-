@@ -1596,3 +1596,267 @@ export const adminMessageService = {
     }
 };
 
+// Hotel/Villa Booking Service
+export const hotelVillaBookingService = {
+    /**
+     * Create a new hotel/villa guest booking
+     */
+    async createBooking(bookingData: any): Promise<any> {
+        try {
+            const booking = await databases.createDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.hotelBookings,
+                ID.unique(),
+                {
+                    ...bookingData,
+                    status: 'pending',
+                    providerResponseStatus: 'awaiting_response',
+                    isReassigned: false,
+                    fallbackProviderIds: [],
+                    createdAt: new Date().toISOString()
+                }
+            );
+            
+            console.log('✅ Hotel/Villa booking created:', booking.$id);
+            return booking;
+        } catch (error) {
+            console.error('Error creating hotel/villa booking:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Get all bookings for a hotel/villa
+     */
+    async getBookingsByVenue(venueId: string): Promise<any[]> {
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.hotelBookings,
+                [
+                    Query.equal('hotelVillaId', venueId),
+                    Query.orderDesc('$createdAt'),
+                    Query.limit(100)
+                ]
+            );
+            return response.documents;
+        } catch (error) {
+            console.error('Error fetching venue bookings:', error);
+            return [];
+        }
+    },
+
+    /**
+     * Get all bookings for a provider
+     */
+    async getBookingsByProvider(providerId: string, providerType: string): Promise<any[]> {
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.hotelBookings,
+                [
+                    Query.equal('providerId', providerId),
+                    Query.equal('providerType', providerType),
+                    Query.orderDesc('$createdAt'),
+                    Query.limit(100)
+                ]
+            );
+            return response.documents;
+        } catch (error) {
+            console.error('Error fetching provider bookings:', error);
+            return [];
+        }
+    },
+
+    /**
+     * Get booking by ID
+     */
+    async getBookingById(bookingId: string): Promise<any> {
+        try {
+            const booking = await databases.getDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.hotelBookings,
+                bookingId
+            );
+            return booking;
+        } catch (error) {
+            console.error('Error fetching booking:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Update booking status
+     */
+    async updateBooking(bookingId: string, updates: any): Promise<any> {
+        try {
+            const booking = await databases.updateDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.hotelBookings,
+                bookingId,
+                updates
+            );
+            console.log('✅ Booking updated:', bookingId);
+            return booking;
+        } catch (error) {
+            console.error('Error updating booking:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Provider confirms the booking
+     */
+    async confirmBooking(bookingId: string): Promise<any> {
+        try {
+            const booking = await this.updateBooking(bookingId, {
+                providerResponseStatus: 'confirmed',
+                providerResponseTime: new Date().toISOString(),
+                status: 'confirmed',
+                confirmedAt: new Date().toISOString()
+            });
+            console.log('✅ Booking confirmed:', bookingId);
+            return booking;
+        } catch (error) {
+            console.error('Error confirming booking:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Provider indicates on the way
+     */
+    async setOnTheWay(bookingId: string): Promise<any> {
+        try {
+            const booking = await this.updateBooking(bookingId, {
+                providerResponseStatus: 'on_the_way',
+                providerResponseTime: new Date().toISOString(),
+                status: 'on_the_way'
+            });
+            console.log('✅ Provider on the way:', bookingId);
+            return booking;
+        } catch (error) {
+            console.error('Error setting on the way:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Provider declines the booking
+     */
+    async declineBooking(bookingId: string): Promise<any> {
+        try {
+            const booking = await this.updateBooking(bookingId, {
+                providerResponseStatus: 'declined',
+                providerResponseTime: new Date().toISOString(),
+                status: 'declined'
+            });
+            console.log('✅ Booking declined:', bookingId);
+            return booking;
+        } catch (error) {
+            console.error('Error declining booking:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Complete a booking
+     */
+    async completeBooking(bookingId: string): Promise<any> {
+        try {
+            const booking = await this.updateBooking(bookingId, {
+                status: 'completed',
+                completedAt: new Date().toISOString()
+            });
+            console.log('✅ Booking completed:', bookingId);
+            return booking;
+        } catch (error) {
+            console.error('Error completing booking:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Cancel a booking
+     */
+    async cancelBooking(bookingId: string, reason?: string): Promise<any> {
+        try {
+            const booking = await this.updateBooking(bookingId, {
+                status: 'cancelled',
+                cancelledAt: new Date().toISOString(),
+                cancellationReason: reason || 'Cancelled by user'
+            });
+            console.log('✅ Booking cancelled:', bookingId);
+            return booking;
+        } catch (error) {
+            console.error('Error cancelling booking:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Find alternative providers within radius
+     * Note: venueId reserved for future geolocation filtering
+     */
+    async findAlternativeProviders(
+        _venueId: string,
+        excludeIds: string[],
+        providerType: 'therapist' | 'place'
+    ): Promise<any[]> {
+        try {
+            const collectionId = providerType === 'therapist' 
+                ? APPWRITE_CONFIG.collections.therapists 
+                : APPWRITE_CONFIG.collections.places;
+
+            // Query for available providers
+            // Note: Distance filtering would require geolocation implementation
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                collectionId,
+                [
+                    Query.equal('status', 'available'),
+                    Query.equal('hotelVillaServiceStatus', 'active'),
+                    Query.limit(10)
+                ]
+            );
+
+            // Filter out excluded IDs (since Query.notIn might not be available)
+            const providers = response.documents.filter(
+                (provider: any) => !excludeIds.includes(provider.$id)
+            );
+
+            return providers;
+        } catch (error) {
+            console.error('Error finding alternative providers:', error);
+            return [];
+        }
+    },
+
+    /**
+     * Reassign booking to new provider
+     */
+    async reassignBooking(bookingId: string, newProviderId: string, newProviderName: string): Promise<any> {
+        try {
+            // Calculate new confirmation deadline (25 minutes)
+            const newDeadline = new Date();
+            newDeadline.setMinutes(newDeadline.getMinutes() + 25);
+
+            const booking = await this.updateBooking(bookingId, {
+                providerId: newProviderId,
+                providerName: newProviderName,
+                isReassigned: true,
+                providerResponseStatus: 'awaiting_response',
+                confirmationDeadline: newDeadline.toISOString(),
+                status: 'pending'
+            });
+
+            console.log('✅ Booking reassigned:', bookingId, 'to', newProviderName);
+            return booking;
+        } catch (error) {
+            console.error('Error reassigning booking:', error);
+            throw error;
+        }
+    }
+};
+
+

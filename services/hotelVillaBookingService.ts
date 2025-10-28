@@ -10,52 +10,26 @@
  */
 
 import { Booking, BookingStatus, ProviderResponseStatus, AvailabilityStatus, Therapist, Place } from '../types';
+import { hotelVillaBookingService as appwriteBookingService } from '../lib/appwriteService';
 
 export class HotelVillaBookingService {
-    private static timeoutTrackers: Map<number, NodeJS.Timeout> = new Map();
+    private static timeoutTrackers: Map<string, NodeJS.Timeout> = new Map();
 
     /**
      * Create a new hotel/villa guest booking
      */
     static async createBooking(bookingData: Partial<Booking>): Promise<Booking> {
         try {
-            // TODO: Replace with actual Appwrite database call
-            // const booking = await databases.createDocument(
-            //     DATABASE_ID,
-            //     BOOKINGS_COLLECTION_ID,
-            //     ID.unique(),
-            //     bookingData
-            // );
-
-            // Mock booking creation
-            const newBooking: Booking = {
-                id: Date.now(),
-                providerId: bookingData.providerId!,
-                providerType: bookingData.providerType!,
-                providerName: bookingData.providerName!,
-                userId: 'hotel_guest',
-                userName: bookingData.guestName!,
-                service: bookingData.service!,
-                startTime: bookingData.startTime!,
-                status: BookingStatus.Pending,
-                guestName: bookingData.guestName,
-                roomNumber: bookingData.roomNumber,
-                hotelVillaId: bookingData.hotelVillaId,
-                hotelVillaName: bookingData.hotelVillaName,
-                guestLanguage: bookingData.guestLanguage,
-                chargeToRoom: bookingData.chargeToRoom,
-                providerResponseStatus: ProviderResponseStatus.AwaitingResponse,
-                confirmationDeadline: bookingData.confirmationDeadline,
-                isReassigned: false,
-                fallbackProviderIds: [],
-                createdAt: new Date().toISOString()
-            };
+            // Create booking in Appwrite
+            const newBooking = await appwriteBookingService.createBooking(bookingData);
 
             // Send initial notifications
             await this.sendBookingNotifications(newBooking, 'created');
 
             // Start timeout monitoring
-            this.startTimeoutMonitoring(newBooking);
+            if (newBooking.confirmationDeadline) {
+                this.startTimeoutMonitoring(newBooking);
+            }
 
             return newBooking;
         } catch (error) {
@@ -67,26 +41,19 @@ export class HotelVillaBookingService {
     /**
      * Provider confirms the booking
      */
-    static async confirmBooking(bookingId: number): Promise<void> {
+    static async confirmBooking(bookingId: string): Promise<void> {
         try {
-            // TODO: Update booking in Appwrite
-            const updates = {
-                providerResponseStatus: ProviderResponseStatus.Confirmed,
-                providerResponseTime: new Date().toISOString(),
-                status: BookingStatus.Confirmed,
-                confirmedAt: new Date().toISOString()
-            };
+            // Update booking in Appwrite
+            await appwriteBookingService.confirmBooking(bookingId);
 
             // Cancel timeout monitoring
             this.cancelTimeout(bookingId);
 
             // Auto-set provider status to Busy
+            // TODO: Implement provider status update
             // await this.updateProviderStatus(providerId, providerType, AvailabilityStatus.Busy);
 
-            // Send confirmation notifications
-            // await this.sendBookingNotifications(booking, 'confirmed');
-
-            console.log(`Booking ${bookingId} confirmed, provider set to Busy`);
+            console.log(`✅ Booking ${bookingId} confirmed, provider set to Busy`);
         } catch (error) {
             console.error('Error confirming booking:', error);
             throw error;
@@ -96,25 +63,15 @@ export class HotelVillaBookingService {
     /**
      * Provider indicates they are on the way
      */
-    static async setOnTheWay(bookingId: number): Promise<void> {
+    static async setOnTheWay(bookingId: string): Promise<void> {
         try {
-            const updates = {
-                providerResponseStatus: ProviderResponseStatus.OnTheWay,
-                providerResponseTime: new Date().toISOString(),
-                status: BookingStatus.OnTheWay,
-                confirmedAt: new Date().toISOString()
-            };
+            // Update booking in Appwrite
+            await appwriteBookingService.setOnTheWay(bookingId);
 
             // Cancel timeout monitoring
             this.cancelTimeout(bookingId);
 
-            // Auto-set provider status to Busy
-            // await this.updateProviderStatus(providerId, providerType, AvailabilityStatus.Busy);
-
-            // Send notifications
-            // await this.sendBookingNotifications(booking, 'onTheWay');
-
-            console.log(`Provider on the way for booking ${bookingId}, status set to Busy`);
+            console.log(`✅ Provider on the way for booking ${bookingId}`);
         } catch (error) {
             console.error('Error setting on the way status:', error);
             throw error;
@@ -124,20 +81,18 @@ export class HotelVillaBookingService {
     /**
      * Provider declines the booking
      */
-    static async declineBooking(bookingId: number): Promise<void> {
+    static async declineBooking(bookingId: string): Promise<void> {
         try {
-            const updates = {
-                providerResponseStatus: ProviderResponseStatus.Declined,
-                providerResponseTime: new Date().toISOString()
-            };
+            // Update booking in Appwrite
+            await appwriteBookingService.declineBooking(bookingId);
 
             // Cancel current timeout
             this.cancelTimeout(bookingId);
 
             // Immediately trigger fallback
-            // await this.triggerFallbackSystem(bookingId);
+            await this.triggerFallbackSystem(bookingId);
 
-            console.log(`Booking ${bookingId} declined, triggering fallback`);
+            console.log(`✅ Booking ${bookingId} declined, triggering fallback`);
         } catch (error) {
             console.error('Error declining booking:', error);
             throw error;
@@ -147,7 +102,7 @@ export class HotelVillaBookingService {
     /**
      * Start 25-minute timeout monitoring
      */
-    private static startTimeoutMonitoring(booking: Booking): void {
+    private static startTimeoutMonitoring(booking: any): void {
         if (!booking.confirmationDeadline) return;
 
         const deadline = new Date(booking.confirmationDeadline);
@@ -156,38 +111,38 @@ export class HotelVillaBookingService {
 
         if (msUntilDeadline > 0) {
             const timeoutId = setTimeout(() => {
-                this.handleTimeout(booking.id);
+                this.handleTimeout(booking.$id || booking.id);
             }, msUntilDeadline);
 
-            this.timeoutTrackers.set(booking.id, timeoutId);
-            console.log(`Timeout monitoring started for booking ${booking.id}: ${msUntilDeadline}ms`);
+            this.timeoutTrackers.set(booking.$id || booking.id, timeoutId);
+            console.log(`⏰ Timeout monitoring started for booking ${booking.$id || booking.id}: ${msUntilDeadline}ms`);
         }
     }
 
     /**
      * Cancel timeout monitoring
      */
-    private static cancelTimeout(bookingId: number): void {
+    private static cancelTimeout(bookingId: string): void {
         const timeoutId = this.timeoutTrackers.get(bookingId);
         if (timeoutId) {
             clearTimeout(timeoutId);
             this.timeoutTrackers.delete(bookingId);
-            console.log(`Timeout cancelled for booking ${bookingId}`);
+            console.log(`⏹️ Timeout cancelled for booking ${bookingId}`);
         }
     }
 
     /**
      * Handle timeout - trigger fallback system
      */
-    private static async handleTimeout(bookingId: number): Promise<void> {
+    private static async handleTimeout(bookingId: string): Promise<void> {
         console.log(`⏰ Timeout reached for booking ${bookingId}, triggering fallback...`);
         
         try {
             // Mark original booking as timed out
-            const updates = {
-                providerResponseStatus: ProviderResponseStatus.TimedOut,
-                status: BookingStatus.TimedOut
-            };
+            await appwriteBookingService.updateBooking(bookingId, {
+                providerResponseStatus: 'timed_out',
+                status: 'timed_out'
+            });
 
             // Trigger fallback to find alternative providers
             await this.triggerFallbackSystem(bookingId);
@@ -199,35 +154,34 @@ export class HotelVillaBookingService {
     /**
      * Fallback System: Find next available provider within 10km
      */
-    private static async triggerFallbackSystem(bookingId: number): Promise<void> {
+    private static async triggerFallbackSystem(bookingId: string): Promise<void> {
         try {
-            // TODO: Fetch booking details from database
-            // const booking = await fetchBooking(bookingId);
+            // Fetch booking details from Appwrite
+            const booking = await appwriteBookingService.getBookingById(bookingId);
             
-            // Mock booking for demonstration
-            const booking: Partial<Booking> = {
-                id: bookingId,
-                hotelVillaId: 1,
-                providerId: 100,
-                providerType: 'therapist',
-                fallbackProviderIds: []
-            };
+            if (!booking) {
+                console.error('Booking not found:', bookingId);
+                return;
+            }
 
             // Find alternative providers within 10km
-            const alternativeProviders = await this.findAlternativeProviders(
-                booking.hotelVillaId!,
-                booking.providerId!,
-                booking.providerType!,
-                booking.fallbackProviderIds || []
+            const alternativeProviders = await appwriteBookingService.findAlternativeProviders(
+                booking.hotelVillaId,
+                booking.fallbackProviderIds || [],
+                booking.providerType
             );
 
             if (alternativeProviders.length > 0) {
                 // Reassign to first available provider
                 const newProvider = alternativeProviders[0];
                 
-                await this.reassignBooking(bookingId, newProvider);
+                await appwriteBookingService.reassignBooking(
+                    bookingId,
+                    newProvider.$id,
+                    newProvider.name
+                );
                 
-                console.log(`✅ Booking ${bookingId} reassigned to provider ${newProvider.id}`);
+                console.log(`✅ Booking ${bookingId} reassigned to provider ${newProvider.name}`);
             } else {
                 // No alternatives found - notify hotel and guest
                 await this.notifyNoProvidersAvailable(bookingId);
@@ -241,105 +195,46 @@ export class HotelVillaBookingService {
 
     /**
      * Find alternative providers within 10km radius
+     * @deprecated - Now handled by appwriteBookingService
      */
     private static async findAlternativeProviders(
-        hotelVillaId: number,
-        originalProviderId: number,
+        hotelVillaId: string,
+        originalProviderId: string,
         providerType: 'therapist' | 'place',
-        excludeIds: number[]
+        excludeIds: string[]
     ): Promise<Array<Therapist | Place>> {
-        try {
-            // TODO: Replace with actual Appwrite query
-            // Query for providers:
-            // 1. Within 10km of hotel/villa
-            // 2. Status = Available
-            // 3. Not in excludeIds
-            // 4. Same type as original provider
-            // 5. Has opted in to hotel/villa services
-
-            /*
-            const providers = await databases.listDocuments(
-                DATABASE_ID,
-                providerType === 'therapist' ? THERAPISTS_COLLECTION : PLACES_COLLECTION,
-                [
-                    Query.equal('status', AvailabilityStatus.Available),
-                    Query.equal('hotelVillaServiceStatus', 'active'),
-                    Query.notEqual('$id', [originalProviderId, ...excludeIds]),
-                    Query.lessThanEqual('distance', 10) // 10km radius
-                ]
-            );
-            */
-
-            // Mock data for demonstration
-            const mockProviders: Therapist[] = [];
-            
-            return mockProviders;
-        } catch (error) {
-            console.error('Error finding alternative providers:', error);
-            return [];
-        }
+        // Delegate to Appwrite service
+        return appwriteBookingService.findAlternativeProviders(
+            hotelVillaId,
+            [originalProviderId, ...excludeIds],
+            providerType
+        );
     }
 
     /**
      * Reassign booking to new provider
+     * @deprecated - Now handled by appwriteBookingService
      */
-    private static async reassignBooking(bookingId: number, newProvider: Therapist | Place): Promise<void> {
-        try {
-            // Calculate new confirmation deadline (25 minutes from now)
-            const newDeadline = new Date();
-            newDeadline.setMinutes(newDeadline.getMinutes() + 25);
-
-            const updates = {
-                providerId: newProvider.id,
-                providerName: newProvider.name,
-                isReassigned: true,
-                providerResponseStatus: ProviderResponseStatus.AwaitingResponse,
-                confirmationDeadline: newDeadline.toISOString(),
-                status: BookingStatus.Pending,
-                // Add original provider to fallback list
-                fallbackProviderIds: [] // This should append the original provider ID
-            };
-
-            // TODO: Update in database
-            // await databases.updateDocument(DATABASE_ID, BOOKINGS_COLLECTION, bookingId, updates);
-
-            // Send notification to new provider
-            // await this.sendBookingNotifications(updatedBooking, 'reassigned');
-
-            // Start new timeout monitoring
-            const mockBooking: Booking = {
-                id: bookingId,
-                confirmationDeadline: newDeadline.toISOString()
-            } as Booking;
-            
-            this.startTimeoutMonitoring(mockBooking);
-
-            console.log(`Booking ${bookingId} reassigned to ${newProvider.name}`);
-        } catch (error) {
-            console.error('Error reassigning booking:', error);
-        }
+    private static async reassignBooking(bookingId: string, newProvider: any): Promise<void> {
+        return appwriteBookingService.reassignBooking(
+            bookingId,
+            newProvider.$id || newProvider.id,
+            newProvider.name
+        );
     }
 
     /**
      * Update provider availability status
      */
     private static async updateProviderStatus(
-        providerId: number,
+        providerId: string,
         providerType: 'therapist' | 'place',
         status: AvailabilityStatus
     ): Promise<void> {
         try {
-            // TODO: Update provider status in Appwrite
-            /*
-            await databases.updateDocument(
-                DATABASE_ID,
-                providerType === 'therapist' ? THERAPISTS_COLLECTION : PLACES_COLLECTION,
-                providerId,
-                { status }
-            );
-            */
-
-            console.log(`Provider ${providerId} status updated to ${status}`);
+            // TODO: Implement provider status update via Appwrite
+            // This will be handled in a future phase
+            console.log(`📝 Provider ${providerId} status would be updated to ${status}`);
         } catch (error) {
             console.error('Error updating provider status:', error);
         }
@@ -370,16 +265,15 @@ export class HotelVillaBookingService {
     /**
      * Notify hotel and guest that no providers are available
      */
-    private static async notifyNoProvidersAvailable(bookingId: number): Promise<void> {
+    private static async notifyNoProvidersAvailable(bookingId: string): Promise<void> {
         try {
-            // TODO: Send notifications
             console.log(`📧 Notifying hotel and guest: No providers available for booking ${bookingId}`);
             
-            // Update booking status
-            const updates = {
-                status: BookingStatus.Cancelled,
-                cancelledAt: new Date().toISOString()
-            };
+            // Update booking status to cancelled
+            await appwriteBookingService.cancelBooking(
+                bookingId,
+                'No providers available within service area'
+            );
         } catch (error) {
             console.error('Error notifying no providers available:', error);
         }
@@ -388,17 +282,15 @@ export class HotelVillaBookingService {
     /**
      * Complete a booking and auto-return provider to Available status
      */
-    static async completeBooking(bookingId: number, providerId: number, providerType: 'therapist' | 'place'): Promise<void> {
+    static async completeBooking(bookingId: string, providerId: string, providerType: 'therapist' | 'place'): Promise<void> {
         try {
-            const updates = {
-                status: BookingStatus.Completed,
-                completedAt: new Date().toISOString()
-            };
+            // Complete booking in Appwrite
+            await appwriteBookingService.completeBooking(bookingId);
 
             // Auto-set provider back to Available
             await this.updateProviderStatus(providerId, providerType, AvailabilityStatus.Available);
 
-            console.log(`Booking ${bookingId} completed, provider ${providerId} set to Available`);
+            console.log(`✅ Booking ${bookingId} completed, provider ${providerId} set to Available`);
         } catch (error) {
             console.error('Error completing booking:', error);
             throw error;
