@@ -76,6 +76,7 @@ import GuestAlertsPage from './pages/GuestAlertsPage';
 import FloatingWebsiteButton from './components/FloatingWebsiteButton';
 import HotelVillaMenuPage from './pages/HotelVillaMenuPage';
 import { restoreSession, logout as sessionLogout, saveSessionCache } from './lib/sessionManager';
+import { soundNotificationService } from './utils/soundNotificationService';
 
 type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistStatus' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'agentAuth' | 'agentDashboard' | 'agentTerms' | 'serviceTerms' | 'privacy' | 'membership' | 'booking' | 'bookings' | 'notifications' | 'massageTypes' | 'hotelLogin' | 'hotelDashboard' | 'villaLogin' | 'villaDashboard' | 'unifiedLogin' | 'therapistLogin' | 'massagePlaceLogin' | 'hotelVillaMenu' | 'employerJobPosting' | 'jobPostingPayment' | 'browseJobs' | 'massageJobs' | 'therapistJobs' | 'jobUnlockPayment' | 'adminBankSettings' | 'about' | 'how-it-works' | 'massage-bali' | 'blog' | 'blog/bali-spa-industry-trends-2025' | 'blog/top-10-massage-techniques' | 'blog/massage-career-indonesia' | 'blog/benefits-regular-massage-therapy' | 'blog/hiring-massage-therapists-guide' | 'blog/traditional-balinese-massage' | 'blog/spa-tourism-indonesia' | 'blog/aromatherapy-massage-oils' | 'blog/pricing-guide-massage-therapists' | 'blog/deep-tissue-vs-swedish-massage' | 'blog/online-presence-massage-therapist' | 'blog/wellness-tourism-ubud' | 'faq' | 'balinese-massage' | 'deep-tissue-massage' | 'contact' | 'quick-support' | 'partnership-inquiries' | 'press-media' | 'career-opportunities' | 'therapist-info' | 'hotel-info' | 'employer-info' | 'payment-info';
 type Language = 'en' | 'id';
@@ -257,6 +258,20 @@ const App: React.FC = () => {
             fetchAdminData();
         }
     }, [isAdminLoggedIn, fetchAdminData]);
+
+    // Service Worker: Listen for sound playback messages from background
+    useEffect(() => {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.addEventListener('message', (event) => {
+                if (event.data.type === 'PLAY_NOTIFICATION_SOUND') {
+                    // Play sound in main thread when service worker requests it
+                    const soundUrl = event.data.soundUrl;
+                    console.log('🔊 App: Playing notification sound from service worker:', soundUrl);
+                    soundNotificationService.playSound(soundUrl);
+                }
+            });
+        }
+    }, []);
 
     useEffect(() => {
         // TODO: Fetch admin messages from Appwrite when ready
