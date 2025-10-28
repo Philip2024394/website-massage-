@@ -1608,12 +1608,27 @@ export const hotelVillaBookingService = {
                 APPWRITE_CONFIG.collections.hotelBookings,
                 ID.unique(),
                 {
-                    ...bookingData,
-                    status: 'pending',
-                    providerResponseStatus: 'awaiting_response',
-                    isReassigned: false,
-                    fallbackProviderIds: [],
-                    createdAt: new Date().toISOString()
+                    userId: bookingData.userId || 'guest',
+                    hotelId: bookingData.hotelVillaId || bookingData.hotelId,
+                    bookingDateTime: bookingData.startTime || new Date().toISOString(),
+                    checkInDate: bookingData.checkInDate || bookingData.startTime || new Date().toISOString(),
+                    checkOutDate: bookingData.checkOutDate || bookingData.endTime || new Date().toISOString(),
+                    numberOfGuests: bookingData.numberOfGuests || 1,
+                    roomType: bookingData.roomType || 'standard',
+                    bookingId: bookingData.bookingId || `BK${Date.now()}`,
+                    therapistId: bookingData.providerId || '',
+                    therapistName: bookingData.providerName || '',
+                    hotelName: bookingData.hotelVillaName || bookingData.hotelName || '',
+                    hotelLocation: bookingData.hotelLocation || '',
+                    guestName: bookingData.guestName || bookingData.userName || '',
+                    roomNumber: bookingData.roomNumber || '',
+                    duration: bookingData.duration || '60',
+                    bookingTime: bookingData.startTime || new Date().toISOString(),
+                    status: bookingData.status || 'pending',
+                    price: bookingData.price || 0,
+                    createdAt: new Date().toISOString(),
+                    confirmedAt: null,
+                    completedAt: null
                 }
             );
             
@@ -1634,7 +1649,7 @@ export const hotelVillaBookingService = {
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.hotelBookings,
                 [
-                    Query.equal('hotelVillaId', venueId),
+                    Query.equal('hotelId', venueId),
                     Query.orderDesc('$createdAt'),
                     Query.limit(100)
                 ]
@@ -1647,16 +1662,15 @@ export const hotelVillaBookingService = {
     },
 
     /**
-     * Get all bookings for a provider
+     * Get all bookings for a provider/therapist
      */
-    async getBookingsByProvider(providerId: string, providerType: string): Promise<any[]> {
+    async getBookingsByProvider(providerId: string, _providerType?: string): Promise<any[]> {
         try {
             const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.hotelBookings,
                 [
-                    Query.equal('providerId', providerId),
-                    Query.equal('providerType', providerType),
+                    Query.equal('therapistId', providerId),
                     Query.orderDesc('$createdAt'),
                     Query.limit(100)
                 ]
@@ -1710,8 +1724,6 @@ export const hotelVillaBookingService = {
     async confirmBooking(bookingId: string): Promise<any> {
         try {
             const booking = await this.updateBooking(bookingId, {
-                providerResponseStatus: 'confirmed',
-                providerResponseTime: new Date().toISOString(),
                 status: 'confirmed',
                 confirmedAt: new Date().toISOString()
             });
@@ -1729,8 +1741,6 @@ export const hotelVillaBookingService = {
     async setOnTheWay(bookingId: string): Promise<any> {
         try {
             const booking = await this.updateBooking(bookingId, {
-                providerResponseStatus: 'on_the_way',
-                providerResponseTime: new Date().toISOString(),
                 status: 'on_the_way'
             });
             console.log('✅ Provider on the way:', bookingId);
@@ -1747,8 +1757,6 @@ export const hotelVillaBookingService = {
     async declineBooking(bookingId: string): Promise<any> {
         try {
             const booking = await this.updateBooking(bookingId, {
-                providerResponseStatus: 'declined',
-                providerResponseTime: new Date().toISOString(),
                 status: 'declined'
             });
             console.log('✅ Booking declined:', bookingId);
@@ -1782,11 +1790,9 @@ export const hotelVillaBookingService = {
     async cancelBooking(bookingId: string, reason?: string): Promise<any> {
         try {
             const booking = await this.updateBooking(bookingId, {
-                status: 'cancelled',
-                cancelledAt: new Date().toISOString(),
-                cancellationReason: reason || 'Cancelled by user'
+                status: 'cancelled'
             });
-            console.log('✅ Booking cancelled:', bookingId);
+            console.log('✅ Booking cancelled:', bookingId, reason ? `- ${reason}` : '');
             return booking;
         } catch (error) {
             console.error('Error cancelling booking:', error);
@@ -1837,16 +1843,9 @@ export const hotelVillaBookingService = {
      */
     async reassignBooking(bookingId: string, newProviderId: string, newProviderName: string): Promise<any> {
         try {
-            // Calculate new confirmation deadline (25 minutes)
-            const newDeadline = new Date();
-            newDeadline.setMinutes(newDeadline.getMinutes() + 25);
-
             const booking = await this.updateBooking(bookingId, {
-                providerId: newProviderId,
-                providerName: newProviderName,
-                isReassigned: true,
-                providerResponseStatus: 'awaiting_response',
-                confirmationDeadline: newDeadline.toISOString(),
+                therapistId: newProviderId,
+                therapistName: newProviderName,
                 status: 'pending'
             });
 
