@@ -34,7 +34,19 @@ const RegistrationChoicePage: React.FC<RegistrationChoicePageProps> = ({ onSelec
 
             <div className="w-full max-w-sm mx-auto text-center relative z-10">
                 <h1 className="text-3xl font-bold text-white mb-2">{t.title}</h1>
-                <p className="text-white mt-2 mb-8">{t.prompt}</p>
+                <p className="text-white mt-2 mb-4">{t.prompt}</p>
+
+                {/* Free Membership Banner */}
+                <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-4 mb-6 shadow-lg border-2 border-white">
+                    <div className="flex items-center justify-center gap-2 mb-1">
+                        <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        <h3 className="text-2xl font-bold text-white">FREE TO JOIN!</h3>
+                    </div>
+                    <p className="text-white font-semibold text-lg">1 Month Free Membership</p>
+                    <p className="text-green-100 text-sm mt-1">Get started with all premium features at no cost</p>
+                </div>
 
                 <div className="space-y-4">
                     <Button onClick={() => onSelect('therapist')} className="py-4 text-lg">

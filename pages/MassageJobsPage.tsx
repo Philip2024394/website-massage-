@@ -21,6 +21,7 @@ interface EmployerJobPosting {
     businessType: string;
     numberOfPositions: number;
     accommodationProvided: boolean;
+    transportationProvided?: string;
     requirements: string[];
     benefits: string[];
     massageTypes?: string[];
@@ -28,6 +29,9 @@ interface EmployerJobPosting {
     contactWhatsApp: string;
     isActive: boolean;
     imageUrl?: string;
+    country?: string;
+    flightsPaidByEmployer?: boolean;
+    visaArrangedByEmployer?: boolean;
     $createdAt: string;
 }
 
@@ -462,12 +466,40 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({ onBack, onPostJob, on
                                                 <span className="text-orange-700 font-semibold">Accommodation Provided</span>
                                             </div>
                                         )}
+                                        {posting.transportationProvided && posting.transportationProvided !== 'none' && (
+                                            <div className="flex items-center gap-2 text-sm">
+                                                <svg className="w-5 h-5 text-purple-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                                </svg>
+                                                <span className="text-purple-700 font-semibold">
+                                                    {posting.transportationProvided === 'flight' && 'Flight Paid'}
+                                                    {posting.transportationProvided === 'local-transport' && 'Local Transport Paid'}
+                                                    {posting.transportationProvided === 'both' && 'Flight & Transport Paid'}
+                                                </span>
+                                            </div>
+                                        )}
                                         {posting.cvRequired && (
                                             <div className="flex items-center gap-2 text-sm">
                                                 <svg className="w-5 h-5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                                 </svg>
                                                 <span className="text-blue-700 font-semibold">CV Required</span>
+                                            </div>
+                                        )}
+                                        {posting.flightsPaidByEmployer && (
+                                            <div className="flex items-center gap-2 text-sm">
+                                                <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                </svg>
+                                                <span className="text-green-700 font-semibold">Flights Paid By Employer</span>
+                                            </div>
+                                        )}
+                                        {posting.visaArrangedByEmployer && (
+                                            <div className="flex items-center gap-2 text-sm">
+                                                <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                </svg>
+                                                <span className="text-green-700 font-semibold">Visa Arranged By Employer</span>
                                             </div>
                                         )}
                                     </div>

@@ -96,7 +96,22 @@ const TherapistInfoPage: React.FC<TherapistInfoPageProps> = ({ onNavigate }) => 
                 <div className="max-w-6xl mx-auto px-4 py-16">
                     {/* Why Join IndaStreet */}
                     <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 p-8 mb-16">
-                        <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Why Join IndaStreet as a Therapist?</h2>
+                        <h2 className="text-3xl font-bold text-gray-900 mb-2 text-center">Why Join IndaStreet as a Therapist?</h2>
+                        
+                        {/* Free Membership Banner */}
+                        <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-4 mb-8 mx-auto max-w-md">
+                            <div className="text-center">
+                                <div className="flex items-center justify-center gap-2 mb-1">
+                                    <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                    </svg>
+                                    <h3 className="text-2xl font-bold text-white">FREE TO JOIN!</h3>
+                                </div>
+                                <p className="text-white font-semibold text-lg">Get 1 Month Free Membership</p>
+                                <p className="text-green-100 text-sm mt-1">Start building your client base at no cost</p>
+                            </div>
+                        </div>
+
                         <div className="grid md:grid-cols-3 gap-8">
                             <div className="text-center">
                                 <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mb-4 mx-auto">
@@ -132,13 +147,32 @@ const TherapistInfoPage: React.FC<TherapistInfoPageProps> = ({ onNavigate }) => 
 
                     {/* Membership Packages */}
                     <div className="mb-16">
-                        <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Affordable Membership Packages</h2>
+                        <h2 className="text-3xl font-bold text-gray-900 mb-2 text-center">Affordable Membership Packages</h2>
+                        <p className="text-center text-green-600 font-semibold text-lg mb-8">🎉 First Month FREE for all new members!</p>
                         <div className="grid md:grid-cols-4 gap-6">
+                            <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border-2 border-green-500 relative">
+                                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-4 py-1 rounded-full text-sm font-bold">
+                                    FREE
+                                </div>
+                                <div className="text-center">
+                                    <h3 className="text-xl font-bold text-gray-900 mb-2">1st Month</h3>
+                                    <div className="text-3xl font-bold text-green-600 mb-2">FREE</div>
+                                    <div className="text-sm text-gray-500 line-through mb-4">IDR 100K</div>
+                                    <p className="text-sm text-gray-600 mb-4">Perfect for getting started</p>
+                                    <ul className="text-left text-sm text-gray-600 space-y-2">
+                                        <li>✓ Profile verification</li>
+                                        <li>✓ Booking dashboard</li>
+                                        <li>✓ WhatsApp integration</li>
+                                        <li>✓ Search visibility</li>
+                                    </ul>
+                                </div>
+                            </div>
+
                             <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border-2 border-gray-200">
                                 <div className="text-center">
-                                    <h3 className="text-xl font-bold text-gray-900 mb-2">1 Month</h3>
+                                    <h3 className="text-xl font-bold text-gray-900 mb-2">After 1st Month</h3>
                                     <div className="text-3xl font-bold text-teal-600 mb-4">IDR 100K</div>
-                                    <p className="text-sm text-gray-600 mb-4">Perfect for trying out</p>
+                                    <p className="text-sm text-gray-600 mb-4">Continue with monthly</p>
                                     <ul className="text-left text-sm text-gray-600 space-y-2">
                                         <li>✓ Profile verification</li>
                                         <li>✓ Booking dashboard</li>

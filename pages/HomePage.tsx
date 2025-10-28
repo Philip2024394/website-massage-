@@ -19,6 +19,7 @@ interface HomePageProps {
     therapists: any[];
     places: any[];
     userLocation: UserLocation | null;
+    selectedMassageType?: string; // Add optional prop for external control
     onSetUserLocation: (location: UserLocation) => void;
     onSelectPlace: (place: Place) => void;
     onBook: (provider: Therapist | Place, type: 'therapist' | 'place') => void;
@@ -77,6 +78,7 @@ const ChevronDownIcon = ({ className = 'w-5 h-5' }) => (
 const HomePage: React.FC<HomePageProps> = ({ 
     loggedInAgent: _loggedInAgent, 
     therapists, 
+    selectedMassageType: propSelectedMassageType, // Get from prop
     onSetUserLocation, 
     onBook, 
     onIncrementAnalytics, 
@@ -112,10 +114,17 @@ const HomePage: React.FC<HomePageProps> = ({
     const [activeTab, setActiveTab] = useState('home');
     const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [selectedMassageType, setSelectedMassageType] = useState('all');
+    const [selectedMassageType, setSelectedMassageType] = useState(propSelectedMassageType || 'all');
     const [customLinks, setCustomLinks] = useState<any[]>([]);
     const [showRatingModal, setShowRatingModal] = useState(false);
     const [selectedTherapist, setSelectedTherapist] = useState<Therapist | null>(null);
+
+    // Update selectedMassageType when prop changes
+    useEffect(() => {
+        if (propSelectedMassageType) {
+            setSelectedMassageType(propSelectedMassageType);
+        }
+    }, [propSelectedMassageType]);
 
     const handleOpenRatingModal = (therapist: Therapist) => {
         setSelectedTherapist(therapist);
@@ -191,7 +200,10 @@ const HomePage: React.FC<HomePageProps> = ({
              <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">
-                        <span className="text-orange-500">IndaStreet</span>
+                        <span className="text-black">Inda</span>
+                        <span className="text-orange-500">
+                            <span className="inline-block animate-float">S</span>treet
+                        </span>
                     </h1>
                     <div className="flex items-center gap-4 text-gray-600">
                         <button onClick={() => setIsMenuOpen(true)} title="Menu">
@@ -668,6 +680,20 @@ const HomePage: React.FC<HomePageProps> = ({
                 />
             )}
             {/* Rating modal removed for design mock */}
+            
+            <style>{`
+                @keyframes float {
+                    0%, 100% {
+                        transform: translateY(0px);
+                    }
+                    50% {
+                        transform: translateY(-8px);
+                    }
+                }
+                .animate-float {
+                    animation: float 2s ease-in-out infinite;
+                }
+            `}</style>
         </div>
     );
 };

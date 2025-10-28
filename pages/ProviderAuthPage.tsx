@@ -111,6 +111,20 @@ const ProviderAuthPage: React.FC<ProviderAuthPageProps> = ({ mode, providerType,
 
     return (
         <div className="min-h-screen flex flex-col justify-center p-4 relative" style={{ backgroundImage: "url('https://ik.imagekit.io/7grri5v7d/massage%20rooms.png?updatedAt=1761150670027')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
+            {/* Free Membership Badge */}
+            {mode === 'register' && (
+                <div className="absolute top-4 right-4 z-20">
+                    <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-full px-4 py-2 shadow-lg animate-pulse">
+                        <p className="text-white font-bold text-sm flex items-center gap-2">
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            </svg>
+                            FREE 1st Month!
+                        </p>
+                    </div>
+                </div>
+            )}
+            
             {/* Membership Expiry Popup */}
             {showExpiryPopup && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">

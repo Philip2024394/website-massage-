@@ -33,6 +33,7 @@ import HotelLoginPage from './pages/HotelLoginPage';
 import VillaLoginPage from './pages/VillaLoginPage';
 import MassagePlaceLoginPage from './pages/MassagePlaceLoginPage';
 import EmployerJobPostingPage from './pages/EmployerJobPostingPage';
+import JobPostingPaymentPage from './pages/JobPostingPaymentPage';
 import BrowseJobsPage from './pages/BrowseJobsPage';
 import MassageJobsPage from './pages/MassageJobsPage';
 import TherapistJobsPage from './pages/TherapistJobsPage';
@@ -76,7 +77,7 @@ import FloatingWebsiteButton from './components/FloatingWebsiteButton';
 import HotelVillaMenuPage from './pages/HotelVillaMenuPage';
 import { restoreSession, logout as sessionLogout, saveSessionCache } from './lib/sessionManager';
 
-type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistStatus' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'agentAuth' | 'agentDashboard' | 'agentTerms' | 'serviceTerms' | 'privacy' | 'membership' | 'booking' | 'bookings' | 'notifications' | 'massageTypes' | 'hotelLogin' | 'hotelDashboard' | 'villaLogin' | 'villaDashboard' | 'unifiedLogin' | 'therapistLogin' | 'massagePlaceLogin' | 'hotelVillaMenu' | 'employerJobPosting' | 'browseJobs' | 'massageJobs' | 'therapistJobs' | 'jobUnlockPayment' | 'adminBankSettings' | 'about' | 'how-it-works' | 'massage-bali' | 'blog' | 'blog/bali-spa-industry-trends-2025' | 'blog/top-10-massage-techniques' | 'blog/massage-career-indonesia' | 'blog/benefits-regular-massage-therapy' | 'blog/hiring-massage-therapists-guide' | 'blog/traditional-balinese-massage' | 'blog/spa-tourism-indonesia' | 'blog/aromatherapy-massage-oils' | 'blog/pricing-guide-massage-therapists' | 'blog/deep-tissue-vs-swedish-massage' | 'blog/online-presence-massage-therapist' | 'blog/wellness-tourism-ubud' | 'faq' | 'balinese-massage' | 'deep-tissue-massage' | 'contact' | 'quick-support' | 'partnership-inquiries' | 'press-media' | 'career-opportunities' | 'therapist-info' | 'hotel-info' | 'employer-info' | 'payment-info';
+type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistStatus' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'agentAuth' | 'agentDashboard' | 'agentTerms' | 'serviceTerms' | 'privacy' | 'membership' | 'booking' | 'bookings' | 'notifications' | 'massageTypes' | 'hotelLogin' | 'hotelDashboard' | 'villaLogin' | 'villaDashboard' | 'unifiedLogin' | 'therapistLogin' | 'massagePlaceLogin' | 'hotelVillaMenu' | 'employerJobPosting' | 'jobPostingPayment' | 'browseJobs' | 'massageJobs' | 'therapistJobs' | 'jobUnlockPayment' | 'adminBankSettings' | 'about' | 'how-it-works' | 'massage-bali' | 'blog' | 'blog/bali-spa-industry-trends-2025' | 'blog/top-10-massage-techniques' | 'blog/massage-career-indonesia' | 'blog/benefits-regular-massage-therapy' | 'blog/hiring-massage-therapists-guide' | 'blog/traditional-balinese-massage' | 'blog/spa-tourism-indonesia' | 'blog/aromatherapy-massage-oils' | 'blog/pricing-guide-massage-therapists' | 'blog/deep-tissue-vs-swedish-massage' | 'blog/online-presence-massage-therapist' | 'blog/wellness-tourism-ubud' | 'faq' | 'balinese-massage' | 'deep-tissue-massage' | 'contact' | 'quick-support' | 'partnership-inquiries' | 'press-media' | 'career-opportunities' | 'therapist-info' | 'hotel-info' | 'employer-info' | 'payment-info';
 type Language = 'en' | 'id';
 type LoggedInProvider = { id: number | string; type: 'therapist' | 'place' }; // Support both number and string IDs for Appwrite compatibility
 type LoggedInUser = { id: string; type: 'admin' | 'hotel' | 'villa' | 'agent' };
@@ -89,6 +90,7 @@ const App: React.FC = () => {
     const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
     const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
     const [loggedInUser, _setLoggedInUser] = useState<LoggedInUser | null>(null);
+    const [jobPostingId, setJobPostingId] = useState<string>('');
     
     const [therapists, setTherapists] = useState<Therapist[]>([]);
     const [places, setPlaces] = useState<Place[]>([]);
@@ -114,6 +116,9 @@ const App: React.FC = () => {
     const [isHotelLoggedIn, setIsHotelLoggedIn] = useState(false);
     const [isVillaLoggedIn, setIsVillaLoggedIn] = useState(false);
     const [venueMenuId, setVenueMenuId] = useState<string>('');
+    
+    // Massage type filter state
+    const [selectedMassageType, setSelectedMassageType] = useState<string>('all');
     
     // App config state
     const appContactNumber = '6281392000050';
@@ -738,6 +743,7 @@ const App: React.FC = () => {
                             therapists={therapists}
                             places={places}
                             userLocation={userLocation}
+                            selectedMassageType={selectedMassageType}
                             onSetUserLocation={handleSetUserLocation}
                             onSelectPlace={handleSelectPlace} 
                             onLogout={handleLogout}
@@ -835,14 +841,25 @@ const App: React.FC = () => {
             case 'booking': return providerForBooking ? <BookingPage provider={providerForBooking.provider} providerType={providerForBooking.type} onBook={handleCreateBooking} onBack={handleBackToHome} bookings={bookings.filter(b => b.providerId === providerForBooking.provider.id)} t={t.bookingPage} /> : <HomePage user={user} loggedInAgent={loggedInAgent} therapists={therapists} places={places} userLocation={userLocation} onSetUserLocation={handleSetUserLocation} onSelectPlace={handleSelectPlace} onLogout={handleLogout} onLoginClick={handleNavigateToAuth} onCreateProfileClick={handleNavigateToRegistrationChoice} onAgentPortalClick={loggedInAgent ? () => setPage('agentDashboard') : handleNavigateToAgentAuth} onBook={handleNavigateToBooking} onIncrementAnalytics={handleIncrementAnalytics} onMassageTypesClick={() => setPage('massageTypes')} onHotelPortalClick={handleNavigateToHotelLogin} onVillaPortalClick={handleNavigateToVillaLogin} onTherapistPortalClick={handleNavigateToTherapistLogin} onMassagePlacePortalClick={handleNavigateToMassagePlaceLogin} onAdminPortalClick={handleNavigateToAdminLogin} onBrowseJobsClick={() => setPage('browseJobs')} onEmployerJobPostingClick={() => setPage('employerJobPosting')} onMassageJobsClick={() => setPage('massageJobs')} onTherapistJobsClick={() => setPage('therapistJobs')} onTermsClick={handleNavigateToServiceTerms} onPrivacyClick={handleNavigateToPrivacyPolicy} onNavigate={(page) => setPage(page as Page)} isLoading={isLoading} t={t} />;
             case 'notifications': return loggedInProvider ? <NotificationsPage notifications={notifications.filter(n => n.providerId === loggedInProvider.id)} onMarkAsRead={handleMarkNotificationAsRead} onBack={handleBackToProviderDashboard} t={t.notificationsPage} /> : <GuestAlertsPage onBack={handleBackToHome} t={t} />;
             case 'bookings': return loggedInProvider ? <NotificationsPage notifications={notifications.filter(n => n.providerId === loggedInProvider.id)} onMarkAsRead={handleMarkNotificationAsRead} onBack={handleBackToProviderDashboard} t={t.notificationsPage} /> : <GuestAlertsPage onBack={handleBackToHome} t={t} />;
-            case 'massageTypes': return <MassageTypesPage onBack={handleBackToHome} />;
+            case 'massageTypes': return <MassageTypesPage 
+                onBack={handleBackToHome}
+                onFindTherapists={(massageType) => {
+                    setSelectedMassageType(massageType);
+                    setPage('home');
+                }}
+                onFindPlaces={(massageType) => {
+                    setSelectedMassageType(massageType);
+                    setPage('home');
+                }} 
+            />;
             case 'hotelLogin': return <HotelLoginPage onSuccess={(_hotelId) => { setIsHotelLoggedIn(true); setPage('hotelDashboard'); }} onBack={handleBackToHome} t={t} />;
             case 'hotelDashboard': return isHotelLoggedIn ? <HotelDashboardPage onLogout={handleHotelLogout} /> : <HotelLoginPage onSuccess={(_hotelId) => { setIsHotelLoggedIn(true); setPage('hotelDashboard'); }} onBack={handleBackToHome} t={t} />;
             case 'villaLogin': return <VillaLoginPage onVillaLogin={() => { setIsVillaLoggedIn(true); setPage('villaDashboard'); }} onBack={handleBackToHome} />;
             case 'villaDashboard': return isVillaLoggedIn ? <VillaDashboardPage onLogout={handleVillaLogout} /> : <VillaLoginPage onVillaLogin={() => { setIsVillaLoggedIn(true); setPage('villaDashboard'); }} onBack={handleBackToHome} />;
             case 'massagePlaceLogin': return <MassagePlaceLoginPage onSuccess={(_placeId) => { /* handle massage place login */ }} onBack={handleBackToHome} t={t} />;
             case 'hotelVillaMenu': return <HotelVillaMenuPage venueId={venueMenuId} therapists={therapists} places={places} onBook={handleNavigateToBooking} />;
-            case 'employerJobPosting': return <EmployerJobPostingPage />;
+            case 'employerJobPosting': return <EmployerJobPostingPage onNavigateToPayment={(jobId) => { setJobPostingId(jobId); setPage('jobPostingPayment'); }} />;
+            case 'jobPostingPayment': return <JobPostingPaymentPage jobId={jobPostingId} onBack={() => setPage('employerJobPosting')} />;
             case 'browseJobs': return <BrowseJobsPage onBack={handleBackToHome} onPostJob={() => setPage('employerJobPosting')} />;
             case 'massageJobs': return <MassageJobsPage onBack={handleBackToHome} onPostJob={() => setPage('employerJobPosting')} onNavigateToPayment={() => setPage('jobUnlockPayment')} />;
             case 'therapistJobs': return <TherapistJobsPage onBack={handleBackToHome} onRegisterListing={() => setPage('therapistDashboard')} />;

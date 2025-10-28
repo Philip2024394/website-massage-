@@ -4,7 +4,7 @@ interface AddToHomeScreenPromptProps {
     t: any;
 }
 
-const AddToHomeScreenPrompt: React.FC<AddToHomeScreenPromptProps> = ({ t }) => {
+const AddToHomeScreenPrompt: React.FC<AddToHomeScreenPromptProps> = ({ t: _t }) => {
     const [isVisible, setIsVisible] = useState(false);
     
     useEffect(() => {
@@ -20,54 +20,96 @@ const AddToHomeScreenPrompt: React.FC<AddToHomeScreenPromptProps> = ({ t }) => {
         }
     }, []);
 
+    // Auto-dismiss after 15 seconds
+    useEffect(() => {
+        if (isVisible) {
+            const autoDismissTimer = setTimeout(() => {
+                setIsVisible(false);
+            }, 15000); // 15 seconds
+            
+            return () => clearTimeout(autoDismissTimer);
+        }
+    }, [isVisible]);
+
+    // Close prompt when user clicks anywhere on the page
+    useEffect(() => {
+        if (isVisible) {
+            const handlePageClick = (e: MouseEvent) => {
+                // Check if click is outside the prompt
+                const target = e.target as HTMLElement;
+                const promptElement = document.getElementById('a2hs-prompt');
+                if (promptElement && !promptElement.contains(target)) {
+                    setIsVisible(false);
+                }
+            };
+
+            // Add click listener to document
+            document.addEventListener('click', handlePageClick);
+            
+            return () => {
+                document.removeEventListener('click', handlePageClick);
+            };
+        }
+    }, [isVisible]);
+
     const dismiss = () => {
         localStorage.setItem('a2hs-dismissed', 'true');
         setIsVisible(false);
-    };
-
-    const getInstructions = () => {
-        const userAgent = window.navigator.userAgent;
-        const isIOS = /iPad|iPhone|iPod/.test(userAgent);
-        
-        if (isIOS) {
-            return (
-                <>
-                    <p>{t.iosInstruction}</p>
-                    <div className="flex justify-center items-center gap-1 font-semibold mt-1">
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 12U6 6 10 2 14 6 16 12M10 2V13M14 17H6"/></svg>
-                        <span className="text-xs">&#8594;</span>
-                        <span>{t.iosAction}</span>
-                    </div>
-                </>
-            );
-        }
-        // Generic instructions for Android/Chrome
-        return <p>{t.androidInstruction}</p>;
     };
 
     if (!isVisible) return null;
 
     return (
         <div className="fixed bottom-4 left-4 right-4 max-w-md mx-auto z-50">
-            <div className="bg-white p-4 rounded-xl shadow-lg border border-gray-200 animate-fade-in-up">
+            <div 
+                id="a2hs-prompt"
+                className="bg-white p-5 rounded-2xl shadow-2xl border-2 border-orange-200 animate-fade-in-up"
+            >
                 <div className="flex items-start gap-3">
-                    <img src="/logo192.png" alt="App Logo" className="w-12 h-12 rounded-lg" />
+                    {/* App Download Image */}
+                    <img 
+                        src="https://ik.imagekit.io/7grri5v7d/indastreet%20app%20button.png?updatedAt=1761609465200" 
+                        alt="Download IndaStreet App" 
+                        className="w-16 h-16 rounded-lg object-cover flex-shrink-0" 
+                    />
                     <div className="flex-grow">
-                        <h3 className="font-bold text-gray-800">{t.title}</h3>
-                        <div className="text-sm text-gray-600 mt-1">{getInstructions()}</div>
+                        <h3 className="font-bold text-gray-800 text-lg mb-2">Add to Home Screen</h3>
+                        <div className="text-sm text-gray-600">
+                            <p className="mb-1">Tap the menu button and select</p>
+                            <p className="font-semibold text-orange-600">"Add to Home Screen"</p>
+                        </div>
                     </div>
-                    <button onClick={dismiss} className="text-gray-400 hover:text-gray-600 flex-shrink-0" aria-label="Close">
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    <button 
+                        onClick={dismiss} 
+                        className="text-gray-400 hover:text-gray-600 flex-shrink-0 transition-colors" 
+                        aria-label="Close"
+                    >
+                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
                     </button>
                 </div>
+                
+                {/* Progress bar for 15 second countdown */}
+                <div className="mt-3 h-1 bg-gray-200 rounded-full overflow-hidden">
+                    <div className="h-full bg-orange-500 animate-countdown"></div>
+                </div>
             </div>
-             <style>{`
+            
+            <style>{`
                 @keyframes fade-in-up {
                     from { opacity: 0; transform: translateY(20px); }
                     to { opacity: 1; transform: translateY(0); }
                 }
                 .animate-fade-in-up {
                     animation: fade-in-up 0.5s ease-out forwards;
+                }
+                @keyframes countdown {
+                    from { width: 100%; }
+                    to { width: 0%; }
+                }
+                .animate-countdown {
+                    animation: countdown 15s linear forwards;
                 }
             `}</style>
         </div>

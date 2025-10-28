@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
-import { Building2, MapPin, DollarSign, Home, Briefcase, Users, Phone, Mail, X } from 'lucide-react';
+import { Building2, MapPin, DollarSign, Home, Briefcase, Phone, Mail, X } from 'lucide-react';
 import { databases, ID } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 
-const EmployerJobPostingPage: React.FC = () => {
+interface EmployerJobPostingPageProps {
+    onNavigateToPayment?: (jobId: string) => void;
+}
+
+const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({ onNavigateToPayment }) => {
     // Array of professional massage/spa images - will cycle through all before repeating
     const jobPostingImages = [
         'https://ik.imagekit.io/7grri5v7d/jungle%20massage.png?updatedAt=1761594798827',
@@ -53,6 +57,7 @@ const EmployerJobPostingPage: React.FC = () => {
         salaryMax: '',
         accommodationProvided: false,
         accommodationDetails: '',
+        transportationProvided: 'none' as 'none' | 'flight' | 'local-transport' | 'both',
         workType: 'full-time' as 'full-time' | 'part-time' | 'contract',
         requirements: [] as string[],
         benefits: [] as string[],
@@ -63,10 +68,11 @@ const EmployerJobPostingPage: React.FC = () => {
         views: 0,
         applications: 0,
         imageUrl: getRandomImage(),
+        flightsPaidByEmployer: false,
+        visaArrangedByEmployer: false,
     });
 
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [submitSuccess, setSubmitSuccess] = useState(false);
 
     const businessTypes = [
         { value: 'hotel', label: 'Hotel' },
@@ -166,51 +172,65 @@ const EmployerJobPostingPage: React.FC = () => {
             console.log('Submitting job with massage types:', formData.massageTypes);
             console.log('Submitting job with languages:', formData.requiredLanguages);
             
-            await databases.createDocument(
+            // NOTE: All Appwrite attributes have been added! Sending complete data.
+            // Appwrite field names (lowercase): whatsappsent, whatsappsentat, massagetypes
+            const response = await databases.createDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.employerJobPostings || 'employer_job_postings',
                 ID.unique(),
                 {
+                    // ✅ Core required fields
                     jobTitle: formData.jobTitle,
                     jobDescription: formData.jobDescription,
-                    employmentType: formData.employmentType,
-                    location: formData.location || null,
-                    salaryRangeMin: formData.salaryRangeMin || null,
-                    salaryRangeMax: formData.salaryRangeMax || null,
-                    applicationDeadline: formData.applicationDeadline ? new Date(formData.applicationDeadline).toISOString() : null,
-                    cvRequired: formData.cvRequired,
                     businessName: formData.businessName,
-                    businessType: formData.businessType,
-                    contactPerson: formData.contactPerson,
                     contactEmail: formData.contactEmail,
-                    contactPhone: formData.contactPhone || null,
                     country: formData.country,
                     city: formData.city,
-                    positionTitle: formData.positionTitle,
-                    numberOfPositions: formData.numberOfPositions,
-                    salaryMin: formData.salaryMin || null,
-                    salaryMax: formData.salaryMax || null,
-                    accommodationProvided: formData.accommodationProvided,
-                    accommodationDetails: formData.accommodationDetails || null,
-                    workType: formData.workType,
-                    requirements: formData.requirements,
-                    benefits: formData.benefits,
-                    massageTypes: formData.massageTypes,
-                    requiredLanguages: formData.requiredLanguages,
-                    startDate: formData.startDate || null,
+                    status: 'pending_payment',
                     postedDate: new Date().toISOString(),
-                    status: formData.status || null,
-                    views: formData.views,
-                    applications: formData.applications,
-                    imageurl: formData.imageUrl || null,
+                    
+                    // ✅ Required fields with defaults
+                    businessType: formData.businessType === 'other' ? formData.customBusinessType : formData.businessType,
+                    positionTitle: formData.positionTitle || formData.jobTitle,
+                    workType: formData.workType || 'full-time',
+                    employmentType: formData.employmentType || 'full-time',
+                    contactPerson: formData.contactPerson || 'HR Manager',
+                    numberOfPositions: formData.numberOfPositions || 1,
+                    accommodationProvided: formData.accommodationProvided || false,
+                    imageurl: formData.imageUrl || '',
+                    whatsappsentat: '', // Will be updated when WhatsApp is clicked
+                    
+                    // ✅ Optional fields
+                    ...(formData.location && { location: formData.location }),
+                    ...(formData.contactPhone && { contactPhone: formData.contactPhone }),
+                    ...(formData.salaryMin && { salaryMin: formData.salaryMin }),
+                    ...(formData.salaryMax && { salaryMax: formData.salaryMax }),
+                    ...(formData.accommodationDetails && { accommodationDetails: formData.accommodationDetails }),
+                    ...(formData.startDate && { startDate: formData.startDate }),
+                    ...(formData.applicationDeadline && { applicationDeadline: new Date(formData.applicationDeadline).toISOString() }),
+                    
+                    // ✅ Array fields (use lowercase Appwrite names)
+                    ...(formData.massageTypes && formData.massageTypes.length > 0 && { massagetypes: formData.massageTypes }),
+                    ...(formData.requirements && formData.requirements.length > 0 && { requirements: formData.requirements }),
+                    ...(formData.benefits && formData.benefits.length > 0 && { benefits: formData.benefits }),
+                    ...(formData.requiredLanguages && formData.requiredLanguages.length > 0 && { requiredLanguages: formData.requiredLanguages }),
+                    
+                    // ✅ Salary range fields (integer type in Appwrite)
+                    ...(formData.salaryRangeMin && { salaryRangeMin: formData.salaryRangeMin }),
+                    ...(formData.salaryRangeMax && { salaryRangeMax: formData.salaryRangeMax }),
+                    
+                    // ✅ Analytics fields (defaults)
+                    views: 0,
+                    applications: 0,
                 }
             );
 
-            console.log('Job posted successfully!');
-            setSubmitSuccess(true);
-            setTimeout(() => {
-                window.location.href = '/';
-            }, 3000);
+            console.log('Job posted successfully!', response.$id);
+            
+            // Navigate to payment page instead of showing success
+            if (onNavigateToPayment) {
+                onNavigateToPayment(response.$id);
+            }
         } catch (error) {
             console.error('Error posting job:', error);
             console.error('Error details:', JSON.stringify(error, null, 2));
@@ -220,25 +240,6 @@ const EmployerJobPostingPage: React.FC = () => {
         }
     };
 
-    if (submitSuccess) {
-        return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-                <div className="bg-white border-2 border-green-300 rounded-2xl p-8 max-w-md text-center">
-                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Users className="w-8 h-8 text-green-600" />
-                    </div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Job Posted Successfully!</h2>
-                    <p className="text-gray-600 mb-4">
-                        Your job opening is now visible to qualified therapists on IndaStreet.
-                    </p>
-                    <p className="text-sm text-gray-500">
-                        Redirecting to homepage...
-                    </p>
-                </div>
-            </div>
-        );
-    }
-
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Header */}
@@ -247,7 +248,6 @@ const EmployerJobPostingPage: React.FC = () => {
                     <div>
                         <h1 className="text-xl font-bold">
                             <span className="text-gray-900">Post Job</span>
-                            <span className="text-orange-500"> Opening</span>
                         </h1>
                         <p className="text-xs text-gray-500 mt-0.5">Find qualified massage therapists</p>
                     </div>
@@ -325,7 +325,10 @@ const EmployerJobPostingPage: React.FC = () => {
                                 Employment Type *
                             </label>
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                                {(['full-time', 'part-time', 'contract', 'freelance'] as const).map((type) => (
+                                {(formData.country !== 'Indonesia' 
+                                    ? (['full-time', 'contract'] as const)
+                                    : (['full-time', 'part-time', 'contract', 'freelance'] as const)
+                                ).map((type) => (
                                     <button
                                         key={type}
                                         type="button"
@@ -535,21 +538,19 @@ const EmployerJobPostingPage: React.FC = () => {
                             <p className="text-xs text-gray-500 mt-1">Enter number without country code (e.g., 812 3456 7890)</p>
                         </div>
 
-                        <div className="grid sm:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-900 mb-2">
-                                    <Mail className="w-4 h-4 inline mr-1" />
-                                    Email *
-                                </label>
-                                <input
-                                    type="email"
-                                    required
-                                    value={formData.contactEmail}
-                                    onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
-                                    placeholder="hr@company.com"
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                />
-                            </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-900 mb-2">
+                                <Mail className="w-4 h-4 inline mr-1" />
+                                Email *
+                            </label>
+                            <input
+                                type="email"
+                                required
+                                value={formData.contactEmail}
+                                onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
+                                placeholder="hr@company.com"
+                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                            />
                         </div>
                     </div>
 
@@ -768,6 +769,89 @@ const EmployerJobPostingPage: React.FC = () => {
                                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                             />
                         )}
+
+                        {/* Transportation/Flight Options */}
+                        <div className="pt-4 border-t-2 border-gray-200">
+                            <label className="block text-sm font-medium text-gray-900 mb-3">
+                                Transportation Provided
+                            </label>
+                            <div className="grid grid-cols-2 gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setFormData({ ...formData, transportationProvided: 'none' })}
+                                    className={`px-4 py-3 rounded-lg font-medium transition-all ${
+                                        formData.transportationProvided === 'none'
+                                            ? 'bg-gray-400 text-white'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    }`}
+                                >
+                                    None
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setFormData({ ...formData, transportationProvided: 'flight' })}
+                                    className={`px-4 py-3 rounded-lg font-medium transition-all ${
+                                        formData.transportationProvided === 'flight'
+                                            ? 'bg-blue-500 text-white'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    }`}
+                                >
+                                    Flight Paid
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setFormData({ ...formData, transportationProvided: 'local-transport' })}
+                                    className={`px-4 py-3 rounded-lg font-medium transition-all ${
+                                        formData.transportationProvided === 'local-transport'
+                                            ? 'bg-green-500 text-white'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    }`}
+                                >
+                                    Local Transport Paid
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setFormData({ ...formData, transportationProvided: 'both' })}
+                                    className={`px-4 py-3 rounded-lg font-medium transition-all ${
+                                        formData.transportationProvided === 'both'
+                                            ? 'bg-orange-500 text-white'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    }`}
+                                >
+                                    Both Flight & Transport
+                                </button>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-2">
+                                Select if you provide flight tickets or transportation for therapist traveling across Indonesia
+                            </p>
+                        </div>
+
+                        {/* International Position Benefits - Only show for non-Indonesia */}
+                        {formData.country !== 'Indonesia' && (
+                            <div className="space-y-3 pt-4 border-t-2 border-gray-200">
+                                <p className="text-sm font-semibold text-gray-700 mb-3">International Benefits</p>
+                                
+                                <label className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-orange-300 cursor-pointer transition-colors">
+                                    <input
+                                        type="checkbox"
+                                        checked={formData.flightsPaidByEmployer}
+                                        onChange={(e) => setFormData({ ...formData, flightsPaidByEmployer: e.target.checked })}
+                                        className="w-5 h-5 text-orange-500 rounded focus:ring-orange-500"
+                                    />
+                                    <span className="font-medium text-gray-900">Flights Paid By Employer</span>
+                                </label>
+
+                                <label className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-orange-300 cursor-pointer transition-colors">
+                                    <input
+                                        type="checkbox"
+                                        checked={formData.visaArrangedByEmployer}
+                                        onChange={(e) => setFormData({ ...formData, visaArrangedByEmployer: e.target.checked })}
+                                        className="w-5 h-5 text-orange-500 rounded focus:ring-orange-500"
+                                    />
+                                    <span className="font-medium text-gray-900">Visa Arranged By Employer</span>
+                                </label>
+                            </div>
+                        )}
                     </div>
 
                     {/* Requirements & Benefits */}
@@ -883,7 +967,7 @@ const EmployerJobPostingPage: React.FC = () => {
                                 : 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl'
                         }`}
                     >
-                        {isSubmitting ? 'Posting Job...' : 'Post Job Opening'}
+                        {isSubmitting ? 'Submitting...' : 'Post Job'}
                     </button>
                 </form>
             </div>
