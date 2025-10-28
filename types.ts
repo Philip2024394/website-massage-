@@ -248,6 +248,17 @@ export interface Therapist {
     coordinates: CoordinatesString; // JSON string for Appwrite
     activeMembershipDate: string;
     membershipStartDate?: string; // Date when therapist first became active
+    
+    // Verification badge fields
+    isVerified?: boolean;
+    verifiedAt?: string;
+    verificationBadge?: 'verified' | null;
+    verificationRevokedAt?: string;
+    verificationRevokedReason?: string;
+    
+    // Dynamic pricing support
+    hasPackages?: boolean;
+    discountPercentage?: number; // Overall discount for promotions
     membershipExpiryDate?: string; // Date when current membership expires
     lastMembershipUpdateDate?: string; // Date of last membership renewal
     totalActiveMembershipMonths?: number; // Total months of active membership
@@ -287,6 +298,17 @@ export interface Place {
     hotelVillaServiceStatus?: HotelVillaServiceStatus;
     hotelDiscount?: number; // minimum 20%
     villaDiscount?: number; // minimum 20%
+    
+    // Verification badge fields
+    isVerified?: boolean;
+    verifiedAt?: string;
+    verificationBadge?: 'verified' | null;
+    verificationRevokedAt?: string;
+    verificationRevokedReason?: string;
+    
+    // Dynamic pricing support
+    hasPackages?: boolean;
+    discountPercentage?: number; // Overall discount for promotions
     serviceRadius?: number; // minimum 7km - how far they will travel for hotel/villa services
     languages?: string[]; // Languages spoken: ['en', 'id', 'zh', 'ja', 'ko', 'ru', 'fr', 'de', 'es']
 }

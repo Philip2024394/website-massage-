@@ -743,3 +743,724 @@ export const reviewService = {
         }
     }
 };
+
+// ============================================================================
+// BOOKING SERVICE - Real-time booking with Appwrite backend
+// ============================================================================
+export const bookingService = {
+    async create(booking: {
+        providerId: string;  // Changed to string to match Appwrite
+        providerType: 'therapist' | 'place';
+        providerName: string;
+        userId?: string;
+        userName?: string;
+        service: '60' | '90' | '120';
+        startTime: string;
+        duration?: number;  // Duration in minutes
+        totalCost?: number;
+        paymentMethod?: string;
+        hotelId?: string;
+        hotelGuestName?: string;
+        hotelRoomNumber?: string;
+    }): Promise<any> {
+        try {
+            const bookingId = ID.unique();
+            const response = await databases.createDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.bookings,
+                bookingId,
+                {
+                    bookingId: bookingId,
+                    bookingDate: new Date().toISOString(),
+                    providerId: booking.providerId,
+                    providerType: booking.providerType,
+                    providerName: booking.providerName,
+                    service: booking.service,
+                    startTime: booking.startTime,
+                    userId: booking.userId || null,
+                    userName: booking.userName || null,
+                    hotelId: booking.hotelId || null,
+                    hotelGuestName: booking.hotelGuestName || null,
+                    hotelRoomNumber: booking.hotelRoomNumber || null,
+                    status: 'Pending',
+                    duration: booking.duration || parseInt(booking.service),
+                    totalCost: booking.totalCost || 0,
+                    paymentMethod: booking.paymentMethod || 'Unpaid'
+                }
+            );
+            console.log('✅ Booking created successfully:', response.$id);
+            
+            // Create notification for provider
+            await notificationService.create({
+                providerId: parseInt(booking.providerId),
+                message: `New booking request from ${booking.userName || booking.hotelGuestName || 'Guest'} for ${booking.service} minutes`,
+                type: 'booking_request',
+                bookingId: response.$id
+            });
+            
+            return response;
+        } catch (error) {
+            console.error('❌ Error creating booking:', error);
+            throw error;
+        }
+    },
+
+    async getById(bookingId: string): Promise<any> {
+        try {
+            const response = await databases.getDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.bookings,
+                bookingId
+            );
+            return response;
+        } catch (error) {
+            console.error('Error fetching booking:', error);
+            throw error;
+        }
+    },
+
+    async getByUser(userId: string): Promise<any[]> {
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.bookings,
+                [
+                    Query.equal('userId', userId),
+                    Query.orderDesc('$createdAt'),
+                    Query.limit(100)
+                ]
+            );
+            return response.documents;
+        } catch (error) {
+            console.error('Error fetching user bookings:', error);
+            return [];
+        }
+    },
+
+    async getByProvider(providerId: string, providerType: 'therapist' | 'place'): Promise<any[]> {
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.bookings,
+                [
+                    Query.equal('providerId', providerId),
+                    Query.equal('providerType', providerType),
+                    Query.orderDesc('$createdAt'),
+                    Query.limit(100)
+                ]
+            );
+            return response.documents;
+        } catch (error) {
+            console.error('Error fetching provider bookings:', error);
+            return [];
+        }
+    },
+
+    async updateStatus(
+        bookingId: string, 
+        status: 'Pending' | 'Confirmed' | 'Completed' | 'Cancelled'
+    ): Promise<any> {
+        try {
+            const response = await databases.updateDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.bookings,
+                bookingId,
+                { status }
+            );
+            console.log(`✅ Booking ${bookingId} status updated to ${status}`);
+            return response;
+        } catch (error) {
+            console.error(`Error updating booking status to ${status}:`, error);
+            throw error;
+        }
+    },
+
+    async updatePayment(
+        bookingId: string,
+        paymentMethod: string,
+        totalCost: number
+    ): Promise<any> {
+        try {
+            const response = await databases.updateDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.bookings,
+                bookingId,
+                {
+                    paymentMethod,
+                    totalCost
+                }
+            );
+            console.log(`✅ Booking ${bookingId} payment updated`);
+            return response;
+        } catch (error) {
+            console.error('Error updating booking payment:', error);
+            throw error;
+        }
+    },
+
+    async getPending(providerId: string): Promise<any[]> {
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.bookings,
+                [
+                    Query.equal('providerId', providerId),
+                    Query.equal('status', 'Pending')
+                ]
+            );
+            return response.documents;
+        } catch (error) {
+            console.error('Error fetching pending bookings:', error);
+            return [];
+        }
+    },
+
+    async getByHotel(hotelId: string): Promise<any[]> {
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.bookings,
+                [
+                    Query.equal('hotelId', hotelId),
+                    Query.orderDesc('$createdAt'),
+                    Query.limit(100)
+                ]
+            );
+            return response.documents;
+        } catch (error) {
+            console.error('Error fetching hotel bookings:', error);
+            return [];
+        }
+    },
+
+    async delete(bookingId: string): Promise<void> {
+        try {
+            await databases.deleteDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.bookings,
+                bookingId
+            );
+            console.log('✅ Booking deleted:', bookingId);
+        } catch (error) {
+            console.error('Error deleting booking:', error);
+            throw error;
+        }
+    }
+};
+
+// ============================================================================
+// NOTIFICATION SERVICE - Push notifications and in-app alerts
+// ============================================================================
+export const notificationService = {
+    async create(notification: {
+        providerId: number;
+        message: string;
+        type: 'booking_request' | 'booking_confirmed' | 'booking_cancelled' | 'payment_received' | 'review_received' | 'promotion' | 'system';
+        bookingId?: string;
+    }): Promise<any> {
+        try {
+            const response = await databases.createDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.notifications,
+                ID.unique(),
+                {
+                    ...notification,
+                    isRead: false,
+                    createdAt: new Date().toISOString()
+                }
+            );
+            console.log('✅ Notification created:', response.$id);
+            
+            // TODO: Integrate with push notification service (Firebase/OneSignal)
+            // await this.sendPushNotification(notification.providerId, notification.message);
+            
+            return response;
+        } catch (error) {
+            console.error('❌ Error creating notification:', error);
+            throw error;
+        }
+    },
+
+    async getByProvider(providerId: number): Promise<any[]> {
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.notifications,
+                [
+                    Query.equal('providerId', providerId),
+                    Query.orderDesc('createdAt'),
+                    Query.limit(50)
+                ]
+            );
+            return response.documents;
+        } catch (error) {
+            console.error('Error fetching notifications:', error);
+            return [];
+        }
+    },
+
+    async getUnread(providerId: number): Promise<any[]> {
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.notifications,
+                [
+                    Query.equal('providerId', providerId),
+                    Query.equal('isRead', false),
+                    Query.orderDesc('createdAt')
+                ]
+            );
+            return response.documents;
+        } catch (error) {
+            console.error('Error fetching unread notifications:', error);
+            return [];
+        }
+    },
+
+    async markAsRead(notificationId: string): Promise<any> {
+        try {
+            const response = await databases.updateDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.notifications,
+                notificationId,
+                { isRead: true }
+            );
+            console.log('✅ Notification marked as read:', notificationId);
+            return response;
+        } catch (error) {
+            console.error('Error marking notification as read:', error);
+            throw error;
+        }
+    },
+
+    async markAllAsRead(providerId: number): Promise<void> {
+        try {
+            const unreadNotifications = await this.getUnread(providerId);
+            await Promise.all(
+                unreadNotifications.map(notification => 
+                    this.markAsRead(notification.$id)
+                )
+            );
+            console.log('✅ All notifications marked as read');
+        } catch (error) {
+            console.error('Error marking all notifications as read:', error);
+            throw error;
+        }
+    },
+
+    async delete(notificationId: string): Promise<void> {
+        try {
+            await databases.deleteDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.notifications,
+                notificationId
+            );
+            console.log('✅ Notification deleted:', notificationId);
+        } catch (error) {
+            console.error('Error deleting notification:', error);
+            throw error;
+        }
+    }
+};
+
+// ============================================================================
+// MESSAGING SERVICE - In-app chat between users and providers
+// ============================================================================
+export const messagingService = {
+    async sendMessage(message: {
+        conversationId: string;
+        senderId: string;
+        senderType: 'user' | 'therapist' | 'place';
+        senderName: string;
+        receiverId: string;
+        receiverType: 'user' | 'therapist' | 'place';
+        receiverName: string;
+        content: string;
+        bookingId?: string;
+    }): Promise<any> {
+        try {
+            const response = await databases.createDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.messages || 'messages_collection_id', // Add to config
+                ID.unique(),
+                {
+                    ...message,
+                    isRead: false,
+                    createdAt: new Date().toISOString()
+                }
+            );
+            console.log('✅ Message sent:', response.$id);
+            
+            // Create notification for receiver
+            await notificationService.create({
+                providerId: parseInt(message.receiverId),
+                message: `New message from ${message.senderName}`,
+                type: 'system',
+                bookingId: message.bookingId
+            });
+            
+            return response;
+        } catch (error) {
+            console.error('❌ Error sending message:', error);
+            throw error;
+        }
+    },
+
+    async getConversation(conversationId: string): Promise<any[]> {
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.messages || 'messages_collection_id',
+                [
+                    Query.equal('conversationId', conversationId),
+                    Query.orderAsc('createdAt'),
+                    Query.limit(100)
+                ]
+            );
+            return response.documents;
+        } catch (error) {
+            console.error('Error fetching conversation:', error);
+            return [];
+        }
+    },
+
+    async getUserConversations(userId: string): Promise<any[]> {
+        try {
+            // Get all messages where user is sender or receiver
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.messages || 'messages_collection_id',
+                [
+                    Query.or([
+                        Query.equal('senderId', userId),
+                        Query.equal('receiverId', userId)
+                    ]),
+                    Query.orderDesc('createdAt'),
+                    Query.limit(100)
+                ]
+            );
+            
+            // Group by conversationId and get latest message per conversation
+            const conversations = new Map();
+            response.documents.forEach((msg: any) => {
+                if (!conversations.has(msg.conversationId)) {
+                    conversations.set(msg.conversationId, msg);
+                }
+            });
+            
+            return Array.from(conversations.values());
+        } catch (error) {
+            console.error('Error fetching user conversations:', error);
+            return [];
+        }
+    },
+
+    async markAsRead(messageId: string): Promise<any> {
+        try {
+            const response = await databases.updateDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.messages || 'messages_collection_id',
+                messageId,
+                { isRead: true }
+            );
+            return response;
+        } catch (error) {
+            console.error('Error marking message as read:', error);
+            throw error;
+        }
+    }
+};
+
+// ============================================================================
+// PRICING SERVICE - Dynamic pricing with discounts and packages
+// ============================================================================
+export const pricingService = {
+    async getPricing(
+        _providerId: number, // Reserved for future provider-specific pricing
+        _providerType: 'therapist' | 'place', // Reserved for future provider-specific pricing
+        serviceType: '60' | '90' | '120',
+        options?: {
+            isHotelGuest?: boolean;
+            agentReferral?: boolean;
+            promotionCode?: string;
+            dayOfWeek?: number; // 0-6, Sunday-Saturday
+            timeOfDay?: number; // Hour 0-23
+        }
+    ): Promise<{
+        basePrice: number;
+        discounts: Array<{ type: string; amount: number; reason: string }>;
+        surcharges: Array<{ type: string; amount: number; reason: string }>;
+        finalPrice: number;
+        commission: number;
+        providerEarnings: number;
+    }> {
+        try {
+            // Base prices (in IDR)
+            const basePrices: Record<string, number> = {
+                '60': 200000,
+                '90': 300000,
+                '120': 400000
+            };
+            
+            let basePrice = basePrices[serviceType];
+            const discounts: Array<{ type: string; amount: number; reason: string }> = [];
+            const surcharges: Array<{ type: string; amount: number; reason: string }> = [];
+            
+            // Apply hotel guest discount (10%)
+            if (options?.isHotelGuest) {
+                discounts.push({
+                    type: 'hotel_guest',
+                    amount: basePrice * 0.10,
+                    reason: 'Hotel Guest Discount'
+                });
+            }
+            
+            // Apply agent referral discount (5%)
+            if (options?.agentReferral) {
+                discounts.push({
+                    type: 'agent_referral',
+                    amount: basePrice * 0.05,
+                    reason: 'Agent Referral Discount'
+                });
+            }
+            
+            // Weekend surcharge (Friday-Sunday, +15%)
+            if (options?.dayOfWeek && [5, 6, 0].includes(options.dayOfWeek)) {
+                surcharges.push({
+                    type: 'weekend',
+                    amount: basePrice * 0.15,
+                    reason: 'Weekend Premium'
+                });
+            }
+            
+            // Peak hours surcharge (6PM-10PM, +20%)
+            if (options?.timeOfDay && options.timeOfDay >= 18 && options.timeOfDay < 22) {
+                surcharges.push({
+                    type: 'peak_hours',
+                    amount: basePrice * 0.20,
+                    reason: 'Peak Hours Premium'
+                });
+            }
+            
+            // Early bird discount (6AM-9AM, -10%)
+            if (options?.timeOfDay && options.timeOfDay >= 6 && options.timeOfDay < 9) {
+                discounts.push({
+                    type: 'early_bird',
+                    amount: basePrice * 0.10,
+                    reason: 'Early Bird Special'
+                });
+            }
+            
+            // Calculate final price
+            const totalDiscounts = discounts.reduce((sum, d) => sum + d.amount, 0);
+            const totalSurcharges = surcharges.reduce((sum, s) => sum + s.amount, 0);
+            const finalPrice = Math.round(basePrice - totalDiscounts + totalSurcharges);
+            
+            // Platform commission (15%)
+            const commission = Math.round(finalPrice * 0.15);
+            const providerEarnings = finalPrice - commission;
+            
+            return {
+                basePrice,
+                discounts,
+                surcharges,
+                finalPrice,
+                commission,
+                providerEarnings
+            };
+        } catch (error) {
+            console.error('Error calculating pricing:', error);
+            throw error;
+        }
+    },
+
+    async createPackage(packageData: {
+        name: string;
+        description: string;
+        providerId: number;
+        providerType: 'therapist' | 'place';
+        services: Array<{ type: '60' | '90' | '120'; quantity: number }>;
+        discountPercentage: number;
+        validUntil?: string;
+    }): Promise<any> {
+        try {
+            const response = await databases.createDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.packages || 'packages_collection_id', // Add to config
+                ID.unique(),
+                {
+                    ...packageData,
+                    isActive: true,
+                    createdAt: new Date().toISOString()
+                }
+            );
+            console.log('✅ Package created:', response.$id);
+            return response;
+        } catch (error) {
+            console.error('❌ Error creating package:', error);
+            throw error;
+        }
+    },
+
+    async getActivePackages(providerId: number): Promise<any[]> {
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.packages || 'packages_collection_id',
+                [
+                    Query.equal('providerId', providerId),
+                    Query.equal('isActive', true)
+                ]
+            );
+            return response.documents;
+        } catch (error) {
+            console.error('Error fetching packages:', error);
+            return [];
+        }
+    }
+};
+
+// ============================================================================
+// VERIFICATION SERVICE - Verified badge for therapists/places
+// ============================================================================
+export const verificationService = {
+    async checkEligibility(providerId: number, providerType: 'therapist' | 'place'): Promise<{
+        isEligible: boolean;
+        reason: string;
+        accountAge: number; // in days
+        completedBookings: number;
+        averageRating: number;
+    }> {
+        try {
+            // Get provider data
+            const provider = providerType === 'therapist' 
+                ? await therapistService.getById(providerId.toString())
+                : await placeService.getById(providerId.toString());
+            
+            if (!provider) {
+                return {
+                    isEligible: false,
+                    reason: 'Provider not found',
+                    accountAge: 0,
+                    completedBookings: 0,
+                    averageRating: 0
+                };
+            }
+            
+            // Calculate account age
+            const createdAt = new Date(provider.createdAt || provider.$createdAt);
+            const accountAge = Math.floor((Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
+            
+            // Get completed bookings
+            const bookings = await bookingService.getByProvider(providerId.toString(), providerType);
+            const completedBookings = bookings.filter((b: any) => b.status === 'Completed').length;
+            
+            // Get reviews and calculate average rating
+            const reviews = await reviewService.getByProvider(providerId, providerType);
+            const averageRating = reviews.length > 0
+                ? reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length
+                : 0;
+            
+            // Verification criteria
+            const minAccountAge = 90; // 3 months
+            const minBookings = 10;
+            const minRating = 4.0;
+            
+            const isEligible = 
+                accountAge >= minAccountAge &&
+                completedBookings >= minBookings &&
+                averageRating >= minRating;
+            
+            let reason = '';
+            if (!isEligible) {
+                if (accountAge < minAccountAge) {
+                    reason = `Account must be ${minAccountAge} days old (currently ${accountAge} days)`;
+                } else if (completedBookings < minBookings) {
+                    reason = `Need ${minBookings} completed bookings (currently ${completedBookings})`;
+                } else if (averageRating < minRating) {
+                    reason = `Need ${minRating} average rating (currently ${averageRating.toFixed(1)})`;
+                }
+            } else {
+                reason = 'Eligible for verification badge';
+            }
+            
+            return {
+                isEligible,
+                reason,
+                accountAge,
+                completedBookings,
+                averageRating
+            };
+        } catch (error) {
+            console.error('Error checking verification eligibility:', error);
+            throw error;
+        }
+    },
+
+    async applyForVerification(providerId: number, providerType: 'therapist' | 'place'): Promise<any> {
+        try {
+            const eligibility = await this.checkEligibility(providerId, providerType);
+            
+            if (!eligibility.isEligible) {
+                throw new Error(`Not eligible for verification: ${eligibility.reason}`);
+            }
+            
+            // Update provider with verified badge
+            const updateData = {
+                isVerified: true,
+                verifiedAt: new Date().toISOString(),
+                verificationBadge: 'verified'
+            };
+            
+            if (providerType === 'therapist') {
+                await therapistService.update(providerId.toString(), updateData);
+            } else {
+                await placeService.update(providerId.toString(), updateData);
+            }
+            
+            console.log(`✅ Provider ${providerId} verified`);
+            
+            // Create notification
+            await notificationService.create({
+                providerId,
+                message: 'Congratulations! Your profile has been verified with a verified badge.',
+                type: 'system'
+            });
+            
+            return { success: true, ...eligibility };
+        } catch (error) {
+            console.error('Error applying for verification:', error);
+            throw error;
+        }
+    },
+
+    async revokeVerification(providerId: number, providerType: 'therapist' | 'place', reason: string): Promise<void> {
+        try {
+            const updateData = {
+                isVerified: false,
+                verifiedAt: null,
+                verificationBadge: null,
+                verificationRevokedAt: new Date().toISOString(),
+                verificationRevokedReason: reason
+            };
+            
+            if (providerType === 'therapist') {
+                await therapistService.update(providerId.toString(), updateData);
+            } else {
+                await placeService.update(providerId.toString(), updateData);
+            }
+            
+            console.log(`✅ Verification revoked for provider ${providerId}`);
+            
+            // Create notification
+            await notificationService.create({
+                providerId,
+                message: `Your verification badge has been revoked. Reason: ${reason}`,
+                type: 'system'
+            });
+        } catch (error) {
+            console.error('Error revoking verification:', error);
+            throw error;
+        }
+    }
+};

@@ -31,6 +31,8 @@ export const APPWRITE_CONFIG = {
         employerJobPostings: 'employer_job_postings',
         bankDetails: 'bank_details',
         paymentTransactions: 'payment_transactions',
+        messages: 'messages_collection_id', // NEW: In-app messaging
+        packages: 'packages_collection_id', // NEW: Pricing packages
     },
     
     // Storage bucket ID
