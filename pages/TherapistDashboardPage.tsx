@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { Therapist, Pricing, Booking, Notification } from '../types';
 import { AvailabilityStatus, BookingStatus, HotelVillaServiceStatus } from '../types';
 import { parsePricing, parseCoordinates, parseMassageTypes, stringifyPricing, stringifyCoordinates, stringifyMassageTypes, stringifyAnalytics } from '../utils/appwriteHelpers';
-import { therapistService } from '../lib/appwriteService';
+import { therapistService, notificationService } from '../lib/appwriteService';
+import { soundNotificationService } from '../utils/soundNotificationService';
 import { User, Calendar, TrendingUp, Hotel, FileCheck, LogOut, Bell, Briefcase } from 'lucide-react';
 import Button from '../components/Button';
 import ImageUpload from '../components/ImageUpload';
@@ -210,6 +211,42 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
             };
         }
     }, []);
+
+    // Poll for WhatsApp contact notifications
+    useEffect(() => {
+        if (!therapistId) return;
+
+        let lastNotificationCount = 0;
+
+        const checkForWhatsAppNotifications = async () => {
+            try {
+                const unreadNotifications = await notificationService.getUnread(Number(therapistId));
+                
+                // Filter for WhatsApp contact notifications
+                const whatsappNotifications = unreadNotifications.filter(
+                    (n: any) => n.type === 'whatsapp_contact'
+                );
+
+                // If we have more WhatsApp notifications than before, play sound
+                if (whatsappNotifications.length > lastNotificationCount) {
+                    console.log('📱 New WhatsApp contact notification received!');
+                    await soundNotificationService.showWhatsAppContactNotification();
+                }
+
+                lastNotificationCount = whatsappNotifications.length;
+            } catch (error) {
+                console.error('Error checking notifications:', error);
+            }
+        };
+
+        // Check immediately
+        checkForWhatsAppNotifications();
+
+        // Then poll every 10 seconds
+        const interval = setInterval(checkForWhatsAppNotifications, 10000);
+
+        return () => clearInterval(interval);
+    }, [therapistId]);
 
     useEffect(() => {
         if (mapsApiLoaded && locationInputRef.current) {

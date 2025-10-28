@@ -16,6 +16,7 @@ import { customLinksService, reviewService } from '../lib/appwriteService';
 interface HomePageProps {
     user: User | null;
     loggedInAgent: Agent | null;
+    loggedInProvider?: { id: number; type: 'therapist' | 'place' } | null; // Add logged in provider
     therapists: any[];
     places: any[];
     userLocation: UserLocation | null;
@@ -76,7 +77,8 @@ const ChevronDownIcon = ({ className = 'w-5 h-5' }) => (
 
 
 const HomePage: React.FC<HomePageProps> = ({ 
-    loggedInAgent: _loggedInAgent, 
+    loggedInAgent: _loggedInAgent,
+    loggedInProvider, 
     therapists, 
     selectedMassageType: propSelectedMassageType, // Get from prop
     onSetUserLocation, 
@@ -628,6 +630,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                     onRate={() => handleOpenRatingModal(therapist)}
                                     onBook={() => onBook(therapist, 'therapist')}
                                     onIncrementAnalytics={(metric) => onIncrementAnalytics(therapist.id || therapist.$id, 'therapist', metric)}
+                                    loggedInProviderId={loggedInProvider?.id}
                                     t={t}
                                 />
                             ))}

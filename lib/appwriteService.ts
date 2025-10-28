@@ -955,7 +955,7 @@ export const notificationService = {
     async create(notification: {
         providerId: number;
         message: string;
-        type: 'booking_request' | 'booking_confirmed' | 'booking_cancelled' | 'payment_received' | 'review_received' | 'promotion' | 'system';
+        type: 'booking_request' | 'booking_confirmed' | 'booking_cancelled' | 'payment_received' | 'review_received' | 'promotion' | 'system' | 'whatsapp_contact';
         bookingId?: string;
     }): Promise<any> {
         try {
@@ -1045,6 +1045,24 @@ export const notificationService = {
         } catch (error) {
             console.error('Error marking all notifications as read:', error);
             throw error;
+        }
+    },
+
+    // Create WhatsApp contact notification
+    async createWhatsAppContactNotification(providerId: number, providerName: string): Promise<any> {
+        try {
+            const notification = await this.create({
+                providerId,
+                message: `Someone clicked "Chat Now" to contact you on WhatsApp!`,
+                type: 'whatsapp_contact'
+            });
+            
+            console.log(`📱 WhatsApp contact notification created for provider ${providerName} (ID: ${providerId})`);
+            return notification;
+        } catch (error) {
+            console.error('Error creating WhatsApp contact notification:', error);
+            // Don't throw - we don't want to break the WhatsApp flow if notification fails
+            return null;
         }
     },
 

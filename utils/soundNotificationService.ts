@@ -234,6 +234,27 @@ export const soundNotificationService = {
     },
 
     /**
+     * Show WhatsApp contact notification
+     * When someone clicks "Chat Now" button on therapist/place card
+     */
+    async showWhatsAppContactNotification(): Promise<void> {
+        await this.showNotification(
+            '📱 New WhatsApp Contact!',
+            {
+                body: 'Someone clicked "Chat Now" to contact you on WhatsApp. Check your WhatsApp messages!',
+                icon: '/icon-192.png',
+                badge: '/icon-192.png',
+                tag: 'whatsapp-contact',
+                requireInteraction: true, // Keep notification visible
+                data: {
+                    type: 'whatsapp_contact'
+                }
+            },
+            'message' // Use message sound
+        );
+    },
+
+    /**
      * Show alert notification
      * @param title Alert title
      * @param message Alert message

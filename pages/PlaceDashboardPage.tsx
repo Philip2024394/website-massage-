@@ -15,6 +15,8 @@ import NotificationBell from '../components/NotificationBell';
 import CustomCheckbox from '../components/CustomCheckbox';
 import { MASSAGE_TYPES_CATEGORIZED, ADDITIONAL_SERVICES } from '../constants/rootConstants';
 import TabButton from '../components/dashboard/TabButton';
+import { notificationService } from '../lib/appwriteService';
+import { soundNotificationService } from '../utils/soundNotificationService';
 
 
 interface PlaceDashboardPageProps {
@@ -121,6 +123,42 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         }
         setIsLoading(false);
     }, [place]);
+
+    // Poll for WhatsApp contact notifications
+    useEffect(() => {
+        if (!placeId) return;
+
+        let lastNotificationCount = 0;
+
+        const checkForWhatsAppNotifications = async () => {
+            try {
+                const unreadNotifications = await notificationService.getUnread(placeId);
+                
+                // Filter for WhatsApp contact notifications
+                const whatsappNotifications = unreadNotifications.filter(
+                    (n: any) => n.type === 'whatsapp_contact'
+                );
+
+                // If we have more WhatsApp notifications than before, play sound
+                if (whatsappNotifications.length > lastNotificationCount) {
+                    console.log('📱 New WhatsApp contact notification received!');
+                    await soundNotificationService.showWhatsAppContactNotification();
+                }
+
+                lastNotificationCount = whatsappNotifications.length;
+            } catch (error) {
+                console.error('Error checking notifications:', error);
+            }
+        };
+
+        // Check immediately
+        checkForWhatsAppNotifications();
+
+        // Then poll every 10 seconds
+        const interval = setInterval(checkForWhatsAppNotifications, 10000);
+
+        return () => clearInterval(interval);
+    }, [placeId]);
 
 
     useEffect(() => {

@@ -746,6 +746,7 @@ const App: React.FC = () => {
                 return <HomePage 
                             user={user} 
                             loggedInAgent={loggedInAgent}
+                            loggedInProvider={loggedInProvider}
                             therapists={therapists}
                             places={places}
                             userLocation={userLocation}
@@ -779,7 +780,7 @@ const App: React.FC = () => {
                             onNavigate={(page) => setPage(page as Page)}
                             isLoading={isLoading}
                             t={t} />;
-            case 'detail': return selectedPlace && <PlaceDetailPage place={selectedPlace} onBack={handleBackToHome} onBook={(place) => handleNavigateToBooking(place, 'place')} onIncrementAnalytics={(metric) => handleIncrementAnalytics(selectedPlace.id, 'place', metric)} t={t.detail} />;
+            case 'detail': return selectedPlace && <PlaceDetailPage place={selectedPlace} onBack={handleBackToHome} onBook={(place) => handleNavigateToBooking(place, 'place')} onIncrementAnalytics={(metric) => handleIncrementAnalytics(selectedPlace.id, 'place', metric)} loggedInProviderId={loggedInProvider?.id} t={t.detail} />;
             // case 'adminLogin': return <AdminLoginPage onAdminLogin={handleAdminLogin} onBack={handleBackToHome} t={t.adminLogin} />;
             case 'adminDashboard': return isAdminLoggedIn ? <AdminDashboardPage onLogout={handleAdminLogout} /> : <AdminLoginPage onAdminLogin={handleAdminLogin} onBack={handleBackToHome} t={t.adminLogin} />;
             case 'registrationChoice': return <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice} />;

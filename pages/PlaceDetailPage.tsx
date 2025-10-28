@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { Place, Analytics } from '../types';
 import Button from '../components/Button';
 import { analyticsService } from '../services/analyticsService';
+import { notificationService } from '../lib/appwriteService';
 
 interface PlaceDetailPageProps {
     place: Place;
@@ -9,6 +10,7 @@ interface PlaceDetailPageProps {
     onBook: (place: Place) => void;
     onIncrementAnalytics: (metric: keyof Analytics) => void;
     t: any;
+    loggedInProviderId?: number; // To prevent self-notification
 }
 
 const WhatsAppIcon: React.FC<{className?: string}> = ({ className }) => (
@@ -18,7 +20,7 @@ const WhatsAppIcon: React.FC<{className?: string}> = ({ className }) => (
 );
 
 
-const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({ place, onBack, onBook, onIncrementAnalytics, t }) => {
+const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({ place, onBack, onBook, onIncrementAnalytics, t, loggedInProviderId }) => {
     const [currentMainImage, setCurrentMainImage] = useState(place.mainImage);
 
     // Parse JSON strings
@@ -42,6 +44,19 @@ const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({ place, onBack, onBook
         const audio = new Audio('/sounds/success-notification.mp3');
         audio.volume = 0.3; // Quiet click sound
         audio.play().catch(err => console.log('Sound play failed:', err));
+
+        // Convert place.id to number for comparison
+        const placeIdNumber = typeof place.id === 'string' ? parseInt(place.id) : place.id;
+
+        // Send notification to place ONLY if it's not them clicking their own button
+        if (loggedInProviderId !== placeIdNumber) {
+            notificationService.createWhatsAppContactNotification(
+                placeIdNumber,
+                place.name
+            ).catch(err => console.log('Notification failed:', err));
+        } else {
+            console.log('🔇 Skipping self-notification (you clicked your own button)');
+        }
 
         // Track real analytics
         analyticsService.trackWhatsAppClick(

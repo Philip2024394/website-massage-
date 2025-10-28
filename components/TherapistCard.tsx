@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { Therapist, Analytics } from '../types';
 import { AvailabilityStatus } from '../types';
 import { parsePricing, parseMassageTypes } from '../utils/appwriteHelpers';
+import { notificationService } from '../lib/appwriteService';
 
 interface TherapistCardProps {
     therapist: Therapist;
@@ -9,6 +10,7 @@ interface TherapistCardProps {
     onBook: (therapist: Therapist) => void;
     onIncrementAnalytics: (metric: keyof Analytics) => void;
     t: any;
+    loggedInProviderId?: number; // To prevent self-notification
 }
 
 // Utility function to determine display status
@@ -64,7 +66,7 @@ const statusStyles: { [key in AvailabilityStatus]: { text: string; bg: string; d
     [AvailabilityStatus.Offline]: { text: 'text-gray-700', bg: 'bg-gray-100', dot: 'bg-gray-500' },
 };
 
-const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook, onIncrementAnalytics }) => {
+const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook, onIncrementAnalytics, loggedInProviderId }) => {
     const [showBusyModal, setShowBusyModal] = useState(false);
     
     // Map any status value to valid AvailabilityStatus
@@ -113,6 +115,16 @@ const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook
         audio.volume = 0.3; // Quiet click sound
         audio.play().catch(err => console.log('Sound play failed:', err));
 
+        // Send notification to therapist ONLY if it's not them clicking their own button
+        if (loggedInProviderId !== therapist.id) {
+            notificationService.createWhatsAppContactNotification(
+                therapist.id,
+                therapist.name
+            ).catch(err => console.log('Notification failed:', err));
+        } else {
+            console.log('🔇 Skipping self-notification (you clicked your own button)');
+        }
+
         // If displaying as Busy, show confirmation modal
         if (displayStatus === AvailabilityStatus.Busy) {
             setShowBusyModal(true);
@@ -128,6 +140,16 @@ const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook
         const audio = new Audio('/sounds/success-notification.mp3');
         audio.volume = 0.3;
         audio.play().catch(err => console.log('Sound play failed:', err));
+
+        // Send notification to therapist ONLY if it's not them clicking their own button
+        if (loggedInProviderId !== therapist.id) {
+            notificationService.createWhatsAppContactNotification(
+                therapist.id,
+                therapist.name
+            ).catch(err => console.log('Notification failed:', err));
+        } else {
+            console.log('🔇 Skipping self-notification (you clicked your own button)');
+        }
 
         onIncrementAnalytics('whatsappClicks');
         window.open(`https://wa.me/${therapist.whatsappNumber}`, '_blank');
