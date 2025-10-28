@@ -293,20 +293,20 @@ class PushNotificationService {
                     notificationId: notification.$id,
                     type: notification.type,
                     sound, // Pass sound to service worker
-                    vibrate // Pass vibrate pattern to service worker
-                },
-                actions: [
-                    {
-                        action: 'open',
-                        title: 'Open App',
-                        icon: '/icon-192.png'
-                    },
-                    {
-                        action: 'dismiss',
-                        title: 'Dismiss',
-                        icon: '/icon-192.png'
-                    }
-                ]
+                    vibrate, // Pass vibrate pattern to service worker
+                    actions: [ // Pass actions to service worker
+                        {
+                            action: 'open',
+                            title: 'Open App',
+                            icon: '/icon-192.png'
+                        },
+                        {
+                            action: 'dismiss',
+                            title: 'Dismiss',
+                            icon: '/icon-192.png'
+                        }
+                    ]
+                }
             });
 
             console.log('✅ Background notification shown');
