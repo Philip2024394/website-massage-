@@ -1,5 +1,8 @@
 // File deleted as part of unified login refactor.
 import React, { useState } from 'react';
+import { account, databases } from '../lib/appwrite';
+import { APPWRITE_CONFIG } from '../lib/appwrite.config';
+import { Query } from 'appwrite';
 
 
 interface VillaLoginPageProps {
@@ -16,8 +19,9 @@ const HomeIcon: React.FC<{className?: string}> = ({ className }) => (
 const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onVillaLogin: _onVillaLogin, onBack }) => {
     const [isSignUp, setIsSignUp] = useState(false);
     const [credentials, setCredentials] = useState({
-        username: '',
-        password: ''
+        email: '',
+        password: '',
+        villaName: ''
     });
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -34,7 +38,7 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onVillaLogin: _onVillaL
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         
-        if (!credentials.username || !credentials.password) {
+        if (!credentials.email || !credentials.password) {
             setError('Please fill in all fields');
             return;
         }
@@ -43,11 +47,90 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onVillaLogin: _onVillaL
         setError('');
 
         try {
-            // TODO: Implement actual authentication with Appwrite backend
-            setError('Authentication is being configured. Please contact admin.');
-        } catch (err) {
-            setError('Login failed. Please try again.');
-        } finally {
+            // Login with Appwrite
+            await account.createEmailPasswordSession(credentials.email, credentials.password);
+            
+            // Verify this account is associated with a villa
+            // Villas are stored in the hotels collection with type: 'villa'
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.hotels,
+                [Query.equal('email', credentials.email), Query.equal('type', 'villa')]
+            );
+            
+            const villa = response.documents[0];
+            
+            if (!villa) {
+                // Not a villa account
+                await account.deleteSession('current');
+                setError('No villa account found with this email');
+                setIsLoading(false);
+                return;
+            }
+            
+            // Store villa session
+            localStorage.setItem('villaLoggedIn', 'true');
+            localStorage.setItem('villaData', JSON.stringify(villa));
+            
+            console.log('✅ Villa login successful:', villa.name);
+            _onVillaLogin();
+        } catch (err: any) {
+            console.error('Villa login error:', err);
+            setError(err.message || 'Login failed. Please try again.');
+            setIsLoading(false);
+        }
+    };
+
+    const handleSignUp = async (e: React.FormEvent) => {
+        e.preventDefault();
+        
+        if (!credentials.email || !credentials.password || !credentials.villaName) {
+            setError('Please fill in all fields');
+            return;
+        }
+
+        if (credentials.password.length < 8) {
+            setError('Password must be at least 8 characters');
+            return;
+        }
+
+        setIsLoading(true);
+        setError('');
+
+        try {
+            // Create Appwrite account
+            await account.create(
+                'unique()',
+                credentials.email,
+                credentials.password,
+                credentials.villaName
+            );
+
+            // Login automatically
+            await account.createEmailPasswordSession(credentials.email, credentials.password);
+            
+            // Create villa profile in database (hotels collection with type: villa)
+            const newVilla = await databases.createDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.hotels,
+                'unique()',
+                {
+                    name: credentials.villaName,
+                    email: credentials.email,
+                    type: 'villa',
+                    status: 'pending',
+                    createdAt: new Date().toISOString()
+                }
+            );
+            
+            localStorage.setItem('villaLoggedIn', 'true');
+            localStorage.setItem('villaData', JSON.stringify(newVilla));
+            
+            console.log('✅ Villa account created:', newVilla.name);
+            _onVillaLogin();
+        } catch (err: any) {
+            console.error('Villa signup error:', err);
+            setError(err.message || 'Account creation failed. Please try again.');
             setIsLoading(false);
         }
     };
@@ -109,17 +192,32 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onVillaLogin: _onVillaL
                     </div>
                 )}
 
-                <form onSubmit={handleLogin} className="space-y-4">
+                <form onSubmit={isSignUp ? handleSignUp : handleLogin} className="space-y-4">
+                    {isSignUp && (
+                        <div>
+                            <label className="block text-sm font-medium text-white/90 mb-2">
+                                Villa Name
+                            </label>
+                            <input
+                                type="text"
+                                value={credentials.villaName}
+                                onChange={(e) => handleInputChange('villaName', e.target.value)}
+                                className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
+                                placeholder="Enter villa name"
+                                disabled={isLoading}
+                            />
+                        </div>
+                    )}
                     <div>
                         <label className="block text-sm font-medium text-white/90 mb-2">
-                            Username
+                            Email
                         </label>
                         <input
-                            type="text"
-                            value={credentials.username}
-                            onChange={(e) => handleInputChange('username', e.target.value)}
+                            type="email"
+                            value={credentials.email}
+                            onChange={(e) => handleInputChange('email', e.target.value)}
                             className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
-                            placeholder="Enter username"
+                            placeholder="villa@email.com"
                             disabled={isLoading}
                         />
                     </div>
@@ -129,7 +227,7 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onVillaLogin: _onVillaL
                             Password
                         </label>
                         <input
-                            type="text"
+                            type="password"
                             value={credentials.password}
                             onChange={(e) => handleInputChange('password', e.target.value)}
                             className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"

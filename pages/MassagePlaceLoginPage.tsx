@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import Button from '../components/Button';
+import { account } from '../lib/appwrite';
+import { placeService } from '../lib/appwriteService';
 
 interface MassagePlaceLoginPageProps {
     onSuccess: (placeId: string) => void;
@@ -17,22 +19,104 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
     const [isSignUp, setIsSignUp] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [placeName, setPlaceName] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         setLoading(true);
 
         try {
-            // TODO: Implement actual authentication with Appwrite backend
-            // Authentication is being configured
-            setError('Authentication is being configured. Please contact admin.');
+            if (!email || !password) {
+                setError('Please fill in all fields');
+                setLoading(false);
+                return;
+            }
+
+            // Login with Appwrite
+            await account.createEmailPasswordSession(email, password);
+            
+            // Verify this account is associated with a massage place
+            const places = await placeService.getAll();
+            const place = places.find((p: any) => p.email === email);
+            
+            if (!place) {
+                // Not a massage place account
+                await account.deleteSession('current');
+                setError('No massage place account found with this email');
+                setLoading(false);
+                return;
+            }
+            
+            // Store place session
+            localStorage.setItem('placeLoggedIn', 'true');
+            localStorage.setItem('placeData', JSON.stringify(place));
+            
+            console.log('✅ Massage place login successful:', place.name);
+            _onSuccess(place.$id || place.id);
         } catch (err: any) {
-            setError(err.message || 'Authentication failed');
-        } finally {
+            console.error('Massage place login error:', err);
+            setError(err.message || 'Login failed. Please try again.');
             setLoading(false);
+        }
+    };
+
+    const handleSignUp = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+        setLoading(true);
+
+        try {
+            if (!email || !password || !placeName) {
+                setError('Please fill in all fields');
+                setLoading(false);
+                return;
+            }
+
+            if (password.length < 8) {
+                setError('Password must be at least 8 characters');
+                setLoading(false);
+                return;
+            }
+
+            // Create Appwrite account
+            await account.create(
+                'unique()',
+                email,
+                password,
+                placeName
+            );
+
+            // Login automatically
+            await account.createEmailPasswordSession(email, password);
+            
+            // Create place profile in database
+            const newPlace = await placeService.create({
+                name: placeName,
+                email: email,
+                status: 'pending',
+                createdAt: new Date().toISOString()
+            });
+            
+            localStorage.setItem('placeLoggedIn', 'true');
+            localStorage.setItem('placeData', JSON.stringify(newPlace));
+            
+            console.log('✅ Massage place account created:', newPlace.name);
+            _onSuccess(newPlace.$id || newPlace.id);
+        } catch (err: any) {
+            console.error('Massage place signup error:', err);
+            setError(err.message || 'Account creation failed. Please try again.');
+            setLoading(false);
+        }
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        if (isSignUp) {
+            handleSignUp(e);
+        } else {
+            handleLogin(e);
         }
     };
 
@@ -94,6 +178,21 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-4">
+                    {isSignUp && (
+                        <div>
+                            <label className="block text-sm font-medium text-white/90 mb-2">
+                                Place Name
+                            </label>
+                            <input
+                                type="text"
+                                value={placeName}
+                                onChange={(e) => setPlaceName(e.target.value)}
+                                className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
+                                placeholder="Enter massage place name"
+                                required={isSignUp}
+                            />
+                        </div>
+                    )}
                     <div>
                         <label className="block text-sm font-medium text-white/90 mb-2">
                             Email
@@ -113,7 +212,7 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
                             Password
                         </label>
                         <input
-                            type="text"
+                            type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"

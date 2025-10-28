@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { account } from '../lib/appwrite';
 
 interface AdminLoginPageProps {
     onAdminLogin: () => void;
@@ -14,6 +15,7 @@ const HomeIcon: React.FC<{className?: string}> = ({ className }) => (
 
 const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin: _onAdminLogin, onBack, t }) => {
     const [isSignUp, setIsSignUp] = useState(false);
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -23,17 +25,77 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin: _onAdminL
         setIsLoading(true);
 
         try {
-            // TODO: Implement actual authentication with Appwrite backend
-            // For now, authentication is disabled - redirect to show this is production ready
-            setError('Authentication is being configured. Please contact admin.');
-            setIsLoading(false);
-        } catch (err) {
-            setError('Authentication failed. Please try again.');
+            // Admin login using Appwrite authentication
+            // Default admin email: admin@indastreet.com
+            const adminEmail = email || 'admin@indastreet.com';
+            
+            if (!password) {
+                setError('Please enter a password');
+                setIsLoading(false);
+                return;
+            }
+
+            // Create session with Appwrite
+            await account.createEmailPasswordSession(adminEmail, password);
+            
+            // Store admin session
+            localStorage.setItem('adminLoggedIn', 'true');
+            
+            console.log('✅ Admin login successful');
+            _onAdminLogin();
+        } catch (err: any) {
+            console.error('Admin login error:', err);
+            setError(err.message || 'Invalid credentials. Please try again.');
             setIsLoading(false);
         }
     };
 
-    // Removed Supabase connection check - using Appwrite backend
+    const handleSignUp = async () => {
+        setError('');
+        setIsLoading(true);
+
+        try {
+            if (!email || !password) {
+                setError('Please enter both email and password');
+                setIsLoading(false);
+                return;
+            }
+
+            if (password.length < 8) {
+                setError('Password must be at least 8 characters');
+                setIsLoading(false);
+                return;
+            }
+
+            // Create new admin account
+            await account.create(
+                'unique()',
+                email,
+                password,
+                'Admin User'
+            );
+
+            // Automatically login after signup
+            await account.createEmailPasswordSession(email, password);
+            
+            localStorage.setItem('adminLoggedIn', 'true');
+            
+            console.log('✅ Admin account created and logged in');
+            _onAdminLogin();
+        } catch (err: any) {
+            console.error('Admin signup error:', err);
+            setError(err.message || 'Account creation failed. Please try again.');
+            setIsLoading(false);
+        }
+    };
+
+    const handleSubmit = () => {
+        if (isSignUp) {
+            handleSignUp();
+        } else {
+            handleLogin();
+        }
+    };
 
     return (
         <div 
@@ -93,20 +155,39 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin: _onAdminL
                 )}
 
                 <div className="space-y-4">
+                    {isSignUp && (
+                        <div>
+                            <label htmlFor="email" className="block text-sm font-medium text-white/90 mb-2">Email</label>
+                            <input 
+                                id="email"
+                                type="email" 
+                                value={email} 
+                                onChange={e => setEmail(e.target.value)}
+                                className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
+                                placeholder="admin@indastreet.com"
+                                onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+                            />
+                        </div>
+                    )}
                     <div>
                         <label htmlFor="password" className="block text-sm font-medium text-white/90 mb-2">{t.prompt}</label>
                         <input 
                             id="password"
-                            type="text" 
+                            type="password" 
                             value={password} 
                             onChange={e => setPassword(e.target.value)}
                             className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
                             placeholder="Enter password"
-                            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
                         />
                     </div>
+                    {!isSignUp && (
+                        <p className="text-xs text-white/70 mt-2">
+                            Default admin: admin@indastreet.com
+                        </p>
+                    )}
                     <button
-                        onClick={handleLogin}
+                        onClick={handleSubmit}
                         disabled={isLoading}
                         className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 mt-6 shadow-lg rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium"
                     >
