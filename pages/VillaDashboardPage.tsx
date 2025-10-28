@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Building, Image as ImageIcon, Link as LinkIcon, LogOut, Menu, MessageSquare, Phone, QrCode, Star, Tag, User, Users, X } from 'lucide-react';
+import { Building, Image as ImageIcon, Link as LinkIcon, LogOut, Menu, MessageSquare, Phone, QrCode, Star, Tag, User, Users, X, Bell } from 'lucide-react';
 import { Therapist, Place, HotelVillaServiceStatus } from '../types';
 import { parsePricing } from '../utils/appwriteHelpers';
 import ImageUpload from '../components/ImageUpload';
@@ -7,6 +7,7 @@ import Header from '../components/dashboard/Header';
 import StatCard from '../components/dashboard/StatCard';
 import TabButton from '../components/dashboard/TabButton';
 import Section from '../components/dashboard/Section';
+import PushNotificationSettings from '../components/PushNotificationSettings';
 
 type DurationKey = '60' | '90' | '120';
 type ProviderType = 'therapist' | 'place';
@@ -31,7 +32,7 @@ interface VillaDashboardPageProps {
 }
 
 const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({ onLogout, therapists = [], places = [] }) => {
-    const [activeTab, setActiveTab] = useState<'branding' | 'menu'>('branding');
+    const [activeTab, setActiveTab] = useState<'branding' | 'menu' | 'notifications'>('branding');
     const [isSidebarOpen, setSidebarOpen] = useState(false);
     const [allowRoomCharges, setAllowRoomCharges] = useState(false);
 
@@ -334,6 +335,18 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({ onLogout, thera
                         )}
                     </Section>
                 );
+            case 'notifications':
+                return (
+                    <Section
+                        title="Push Notifications"
+                        description="Get alerts even when browsing other apps or phone is locked"
+                    >
+                        <PushNotificationSettings 
+                            providerId={1} 
+                            providerType="place" 
+                        />
+                    </Section>
+                );
         }
     };
 
@@ -362,6 +375,12 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({ onLogout, thera
                         isActive={activeTab === 'menu'}
                         onClick={() => setActiveTab('menu')}
                         badge={providers.length}
+                    />
+                    <TabButton
+                        icon={<Bell size={20} />}
+                        label="Notifications"
+                        isActive={activeTab === 'notifications'}
+                        onClick={() => setActiveTab('notifications')}
                     />
                 </nav>
                 <div className="mt-auto absolute bottom-6 left-6 right-6">

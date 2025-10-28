@@ -19,6 +19,7 @@ import { MASSAGE_TYPES_CATEGORIZED } from '../constants/rootConstants';
 import TherapistTermsPage from './TherapistTermsPage';
 import TabButton from '../components/dashboard/TabButton';
 import TherapistJobOpportunitiesPage from './TherapistJobOpportunitiesPage';
+import PushNotificationSettings from '../components/PushNotificationSettings';
 
 
 interface TherapistDashboardPageProps {
@@ -482,6 +483,24 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                         onUpdate={handleHotelVillaUpdate}
                     />
                 );
+            case 'notifications':
+                return (
+                    <div className="space-y-6">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                                <Bell className="w-5 h-5 text-orange-600" />
+                            </div>
+                            <div>
+                                <h2 className="text-2xl font-bold text-gray-900">Push Notifications</h2>
+                                <p className="text-xs text-gray-500">Get alerts even when browsing other apps or phone is locked</p>
+                            </div>
+                        </div>
+                        <PushNotificationSettings 
+                            providerId={typeof therapistId === 'string' ? parseInt(therapistId) : therapistId} 
+                            providerType="therapist" 
+                        />
+                    </div>
+                );
             case 'terms':
                 return <TherapistTermsPage />;
             case 'profile':
@@ -934,6 +953,12 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                         label="Hotel/Villa"
                         isActive={activeTab === 'hotelVilla'}
                         onClick={() => setActiveTab('hotelVilla')}
+                    />
+                    <TabButton
+                        icon={<Bell className="w-4 h-4" />}
+                        label="Notifications"
+                        isActive={activeTab === 'notifications'}
+                        onClick={() => setActiveTab('notifications')}
                     />
                     <TabButton
                         icon={<Briefcase className="w-4 h-4" />}

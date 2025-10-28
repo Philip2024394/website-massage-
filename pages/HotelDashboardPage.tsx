@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { Building, Image as ImageIcon, Link as LinkIcon, LogOut, Menu, MessageSquare, Phone, QrCode, Star, Tag, User, Users, X } from 'lucide-react';
+import { Building, Image as ImageIcon, Link as LinkIcon, LogOut, Menu, MessageSquare, Phone, QrCode, Star, Tag, User, Users, X, Bell } from 'lucide-react';
 import { Therapist, Place, HotelVillaServiceStatus } from '../types';
 import { parsePricing } from '../utils/appwriteHelpers';
 import { analyticsService } from '../services/analyticsService';
@@ -8,6 +8,7 @@ import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import QRCodeGenerator from 'qrcode';
 // import Header from '../components/dashboard/Header';
 import TabButton from '../components/dashboard/TabButton';
+import PushNotificationSettings from '../components/PushNotificationSettings';
 
 type DurationKey = '60' | '90' | '120';
 type ProviderType = 'therapist' | 'place';
@@ -48,7 +49,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
         'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=1200&auto=format&fit=crop',
     ];
 
-    const [activeTab, setActiveTab] = useState<'analytics' | 'discounts' | 'profile' | 'menu' | 'feedback' | 'concierge' | 'commissions'>('analytics');
+    const [activeTab, setActiveTab] = useState<'analytics' | 'discounts' | 'profile' | 'menu' | 'feedback' | 'concierge' | 'commissions' | 'notifications'>('analytics');
     const [customWelcomeMessage, setCustomWelcomeMessage] = useState('Welcome to our exclusive wellness experience');
     const [selectedLanguage, setSelectedLanguage] = useState('en');
     
@@ -1299,6 +1300,24 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         </div>
                     </div>
                 );
+            case 'notifications':
+                return (
+                    <div className="space-y-6">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                                <Bell className="w-5 h-5 text-orange-600" />
+                            </div>
+                            <div>
+                                <h2 className="text-2xl font-bold text-gray-900">Push Notifications</h2>
+                                <p className="text-xs text-gray-500">Get alerts even when browsing other apps or phone is locked</p>
+                            </div>
+                        </div>
+                        <PushNotificationSettings 
+                            providerId={parseInt(hotelId)} 
+                            providerType="place" 
+                        />
+                    </div>
+                );
         }
     };
 
@@ -1387,6 +1406,12 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                             label="Commissions"
                             isActive={activeTab === 'commissions'}
                             onClick={() => setActiveTab('commissions')}
+                        />
+                        <TabButton
+                            icon={<Bell size={14} className="sm:w-5 sm:h-5" />}
+                            label="Notifications"
+                            isActive={activeTab === 'notifications'}
+                            onClick={() => setActiveTab('notifications')}
                         />
                     </div>
                 </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { Place, Pricing, Booking, Notification } from '../types';
 import { BookingStatus, HotelVillaServiceStatus } from '../types';
-import { User, Calendar, TrendingUp, Hotel, FileCheck, LogOut } from 'lucide-react';
+import { User, Calendar, TrendingUp, Hotel, FileCheck, LogOut, Bell } from 'lucide-react';
 import Button from '../components/Button';
 import ImageUpload from '../components/ImageUpload';
 import HotelVillaOptIn from '../components/HotelVillaOptIn';
@@ -17,6 +17,7 @@ import { MASSAGE_TYPES_CATEGORIZED, ADDITIONAL_SERVICES } from '../constants/roo
 import TabButton from '../components/dashboard/TabButton';
 import { notificationService } from '../lib/appwriteService';
 import { soundNotificationService } from '../utils/soundNotificationService';
+import PushNotificationSettings from '../components/PushNotificationSettings';
 
 
 interface PlaceDashboardPageProps {
@@ -408,6 +409,24 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                         onUpdate={handleHotelVillaUpdate}
                     />
                 );
+            case 'notifications':
+                return (
+                    <div className="space-y-6">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                                <Bell className="w-5 h-5 text-orange-600" />
+                            </div>
+                            <div>
+                                <h2 className="text-2xl font-bold text-gray-900">Push Notifications</h2>
+                                <p className="text-xs text-gray-500">Get alerts even when browsing other apps or phone is locked</p>
+                            </div>
+                        </div>
+                        <PushNotificationSettings 
+                            providerId={placeId} 
+                            providerType="place" 
+                        />
+                    </div>
+                );
             case 'profile':
             default:
                 return (
@@ -690,6 +709,12 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                         label="Hotel/Villa"
                         isActive={activeTab === 'hotelVilla'}
                         onClick={() => setActiveTab('hotelVilla')}
+                    />
+                    <TabButton
+                        icon={<Bell className="w-4 h-4" />}
+                        label="Notifications"
+                        isActive={activeTab === 'notifications'}
+                        onClick={() => setActiveTab('notifications')}
                     />
                     <TabButton
                         icon={<FileCheck className="w-4 h-4" />}
