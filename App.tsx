@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import type { User, Place, Therapist, UserLocation, Booking, Notification, Analytics, Agent, AdminMessage } from './types';
 import { BookingStatus } from './types';
-import { dataService } from './services/dataService';
 // import AuthPage from './pages/AuthPage';
 import UnifiedLoginPage from './pages/UnifiedLoginPage';
 import HomePage from './pages/HomePage';
@@ -71,7 +70,7 @@ import OnlinePresenceMassageTherapistPage from './pages/blog/OnlinePresenceMassa
 import WellnessTourismUbudPage from './pages/blog/WellnessTourismUbudPage';
 // import UnifiedLoginPage from './pages/UnifiedLoginPage';
 import { translations } from './translations/index.ts';
-import { therapistService, placeService, agentService } from './lib/appwriteService';
+import { therapistService, placeService, agentService, adminMessageService } from './lib/appwriteService';
 import GuestAlertsPage from './pages/GuestAlertsPage';
 import FloatingWebsiteButton from './components/FloatingWebsiteButton';
 import HotelVillaMenuPage from './pages/HotelVillaMenuPage';
@@ -128,8 +127,8 @@ const App: React.FC = () => {
         try {
             setIsLoading(true);
             const [therapistsData, placesData] = await Promise.all([
-                dataService.getTherapists(),
-                dataService.getPlaces()
+                therapistService.getTherapists(),
+                placeService.getPlaces()
             ]);
             
             console.log('🏠 HomePage: Fetched therapists:', therapistsData?.length);
@@ -157,16 +156,22 @@ const App: React.FC = () => {
     }, []);
 
     const fetchAdminData = useCallback(async () => {
-        // TODO: Integrate with Appwrite backend
-        // For now, using local dataService
-        setIsLoading(true);
-        const therapistsData = await dataService.getTherapists();
-        const placesData = await dataService.getPlaces();
+        try {
+            setIsLoading(true);
+            const [therapistsData, placesData] = await Promise.all([
+                therapistService.getTherapists(),
+                placeService.getPlaces()
+            ]);
 
-        setAllAdminTherapists(therapistsData || []);
-        setAllAdminPlaces(placesData || []);
-
-        setIsLoading(false);
+            setAllAdminTherapists(therapistsData || []);
+            setAllAdminPlaces(placesData || []);
+        } catch (error) {
+            console.error('Error fetching admin data:', error);
+            setAllAdminTherapists([]);
+            setAllAdminPlaces([]);
+        } finally {
+            setIsLoading(false);
+        }
     }, []);
 
 
@@ -274,9 +279,22 @@ const App: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        // TODO: Fetch admin messages from Appwrite when ready
-        // For now, admin messages are disabled
-        setAdminMessages([]);
+        const fetchAdminMessages = async () => {
+            if (loggedInAgent || impersonatedAgent) {
+                try {
+                    const agentId = (impersonatedAgent || loggedInAgent)?.$id || '';
+                    const messages = await adminMessageService.getMessages(agentId);
+                    setAdminMessages(messages);
+                } catch (error) {
+                    console.error('Error fetching admin messages:', error);
+                    setAdminMessages([]);
+                }
+            } else {
+                setAdminMessages([]);
+            }
+        };
+        
+        fetchAdminMessages();
     }, [loggedInAgent, impersonatedAgent]);
 
 
@@ -637,26 +655,42 @@ const App: React.FC = () => {
     };
 
     const handleSendAdminMessage = async (message: string) => {
-        // TODO: Implement with Appwrite messaging service
         if (!impersonatedAgent) return;
         
-        const newMessage = {
-            id: Date.now(),
-            agentId: impersonatedAgent.id,
-            message,
-            isRead: false,
-            createdAt: new Date().toISOString()
-        };
-        setAdminMessages(prev => [...prev, newMessage]);
-        console.log('TODO: Send message to Appwrite', message);
+        try {
+            const agentId = impersonatedAgent.$id || impersonatedAgent.id?.toString() || '';
+            const agentName = impersonatedAgent.name || '';
+            
+            await adminMessageService.sendMessage({
+                senderId: agentId,
+                senderName: agentName,
+                senderType: 'agent',
+                receiverId: 'admin',
+                message: message
+            });
+            
+            // Refresh messages
+            const messages = await adminMessageService.getMessages(agentId);
+            setAdminMessages(messages);
+        } catch (error) {
+            console.error('Error sending admin message:', error);
+            alert('Failed to send message. Please try again.');
+        }
     };
 
     const handleMarkMessagesAsRead = async () => {
-        // TODO: Implement with Appwrite messaging service
         if (!loggedInAgent) return;
         
-        setAdminMessages(prev => prev.map(m => ({ ...m, isRead: true })));
-        console.log('TODO: Mark messages as read in Appwrite');
+        try {
+            const agentId = loggedInAgent.$id || loggedInAgent.id?.toString() || '';
+            await adminMessageService.markAsRead(agentId);
+            
+            // Refresh messages
+            const messages = await adminMessageService.getMessages(agentId);
+            setAdminMessages(messages);
+        } catch (error) {
+            console.error('Error marking messages as read:', error);
+        }
     };
 
     // Supabase functions removed - using Appwrite as backend

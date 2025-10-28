@@ -1,6 +1,6 @@
 // File deleted as part of unified login refactor.
 import React, { useState, useEffect } from 'react';
-import { dataService } from '../services/dataService';
+import { therapistService, placeService } from '../lib/appwriteService';
 
 
 interface ProviderAuthPageProps {
@@ -27,11 +27,11 @@ const ProviderAuthPage: React.FC<ProviderAuthPageProps> = ({ mode, providerType,
 				try {
 					let profile = null;
 					if (providerType === 'therapist') {
-						profile = await dataService.getTherapists();
-						profile = profile.find((t: any) => t.email === email);
+						const allTherapists = await therapistService.getTherapists();
+						profile = allTherapists?.find((t: any) => t.email === email);
 					} else {
-						profile = await dataService.getPlaces();
-						profile = profile.find((p: any) => p.email === email);
+						const allPlaces = await placeService.getPlaces();
+						profile = allPlaces?.find((p: any) => p.email === email);
 					}
 					if (profile && profile.activeMembershipDate) {
 						setMembershipExpiry(new Date(profile.activeMembershipDate));
