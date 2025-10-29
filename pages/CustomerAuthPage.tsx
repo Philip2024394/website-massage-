@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { authService, userService } from '../lib/appwriteService';
+import { LogIn, UserPlus } from 'lucide-react';
 
 interface CustomerAuthPageProps {
   onSuccess: (user: any, isNewUser?: boolean) => void;
@@ -176,9 +177,16 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack }
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-orange-500 text-white py-4 rounded-lg hover:bg-orange-600 transition-all duration-300 font-bold text-lg shadow-lg hover:shadow-xl disabled:opacity-50"
+              className="w-full bg-orange-500 text-white py-4 rounded-lg hover:bg-orange-600 transition-all duration-300 font-bold text-lg shadow-lg hover:shadow-xl disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              {isLoading ? '⏳ Logging in...' : '🔓 Login'}
+              {isLoading ? (
+                '⏳ Logging in...'
+              ) : (
+                <>
+                  <LogIn className="w-5 h-5" />
+                  Login
+                </>
+              )}
             </button>
           </form>
         ) : (
@@ -258,9 +266,16 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack }
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-orange-500 text-white py-4 rounded-lg hover:bg-orange-600 transition-all duration-300 font-bold text-lg shadow-lg hover:shadow-xl disabled:opacity-50"
+              className="w-full bg-orange-500 text-white py-4 rounded-lg hover:bg-orange-600 transition-all duration-300 font-bold text-lg shadow-lg hover:shadow-xl disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              {isLoading ? '⏳ Creating Account...' : '✨ Create Account'}
+              {isLoading ? (
+                '⏳ Creating Account...'
+              ) : (
+                <>
+                  <UserPlus className="w-5 h-5" />
+                  Create Account
+                </>
+              )}
             </button>
           </form>
         )}

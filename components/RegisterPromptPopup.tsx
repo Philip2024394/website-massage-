@@ -20,11 +20,11 @@ const RegisterPromptPopup: React.FC<RegisterPromptPopupProps> = ({
     const translations = {
         en: {
             booking: {
-                title: "Create Account To Continue",
+                title: "Create Account",
                 message: "Please register an account to use our booking services and enjoy exclusive benefits!"
             },
             chat: {
-                title: "Create Account To Continue",
+                title: "Create Account",
                 message: "Please register an account to access our chat feature and communicate with therapists!"
             },
             registerButton: "Create Account",

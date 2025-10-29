@@ -92,7 +92,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     onIncrementAnalytics,
     onShowRegisterPrompt,
     isCustomerLoggedIn = false,
-    t,
+    t: _t,
     loggedInProviderId
 }) => {
     const [showBusyModal, setShowBusyModal] = useState(false);

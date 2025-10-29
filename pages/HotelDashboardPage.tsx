@@ -766,11 +766,11 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         <div>
                             <label className="flex items-center gap-2 text-sm font-medium text-gray-400 mb-2">
                                 <Building className="w-4 h-4 text-gray-400" />
-                                Hotel/Villa Name
+                                Hotel Name
                             </label>
                             <input 
                                 className="w-full p-3 border-2 border-gray-300 rounded-lg text-base font-medium focus:ring-2 focus:ring-orange-500 focus:border-orange-500" 
-                                placeholder="Your Hotel/Villa Name" 
+                                placeholder="Your Hotel Name" 
                                 value={hotelName} 
                                 onChange={(e) => setHotelName(e.target.value)} 
                             />

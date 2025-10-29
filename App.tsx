@@ -99,8 +99,12 @@ import FloatingWebsiteButton from './components/FloatingWebsiteButton';
 import HotelVillaMenuPage from './pages/HotelVillaMenuPage';
 import { restoreSession, logout as sessionLogout, saveSessionCache } from './lib/sessionManager';
 import { soundNotificationService } from './utils/soundNotificationService';
+// Coin Shop Pages
+import CoinShopPage from './pages/CoinShopPage';
+import AdminShopManagementPage from './pages/AdminShopManagementPage';
+import RewardBannersTestPage from './pages/RewardBannersTestPage';
 
-type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistStatus' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'agentAuth' | 'agentDashboard' | 'agentTerms' | 'serviceTerms' | 'privacy' | 'cookies-policy' | 'membership' | 'booking' | 'bookings' | 'notifications' | 'massageTypes' | 'hotelLogin' | 'hotelDashboard' | 'villaLogin' | 'villaDashboard' | 'unifiedLogin' | 'therapistLogin' | 'massagePlaceLogin' | 'hotelVillaMenu' | 'employerJobPosting' | 'jobPostingPayment' | 'browseJobs' | 'massageJobs' | 'therapistJobs' | 'jobUnlockPayment' | 'adminBankSettings' | 'customerAuth' | 'customerDashboard' | 'chatList' | 'about' | 'how-it-works' | 'massage-bali' | 'blog' | 'blog/bali-spa-industry-trends-2025' | 'blog/top-10-massage-techniques' | 'blog/massage-career-indonesia' | 'blog/benefits-regular-massage-therapy' | 'blog/hiring-massage-therapists-guide' | 'blog/traditional-balinese-massage' | 'blog/spa-tourism-indonesia' | 'blog/aromatherapy-massage-oils' | 'blog/pricing-guide-massage-therapists' | 'blog/deep-tissue-vs-swedish-massage' | 'blog/online-presence-massage-therapist' | 'blog/wellness-tourism-ubud' | 'faq' | 'balinese-massage' | 'deep-tissue-massage' | 'contact' | 'quick-support' | 'partnership-inquiries' | 'press-media' | 'career-opportunities' | 'therapist-info' | 'hotel-info' | 'employer-info' | 'payment-info';
+type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistStatus' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'agentAuth' | 'agentDashboard' | 'agentTerms' | 'serviceTerms' | 'privacy' | 'cookies-policy' | 'membership' | 'booking' | 'bookings' | 'notifications' | 'massageTypes' | 'hotelLogin' | 'hotelDashboard' | 'villaLogin' | 'villaDashboard' | 'unifiedLogin' | 'therapistLogin' | 'massagePlaceLogin' | 'hotelVillaMenu' | 'employerJobPosting' | 'jobPostingPayment' | 'browseJobs' | 'massageJobs' | 'therapistJobs' | 'jobUnlockPayment' | 'adminBankSettings' | 'customerAuth' | 'customerDashboard' | 'chatList' | 'about' | 'how-it-works' | 'massage-bali' | 'blog' | 'blog/bali-spa-industry-trends-2025' | 'blog/top-10-massage-techniques' | 'blog/massage-career-indonesia' | 'blog/benefits-regular-massage-therapy' | 'blog/hiring-massage-therapists-guide' | 'blog/traditional-balinese-massage' | 'blog/spa-tourism-indonesia' | 'blog/aromatherapy-massage-oils' | 'blog/pricing-guide-massage-therapists' | 'blog/deep-tissue-vs-swedish-massage' | 'blog/online-presence-massage-therapist' | 'blog/wellness-tourism-ubud' | 'faq' | 'balinese-massage' | 'deep-tissue-massage' | 'contact' | 'quick-support' | 'partnership-inquiries' | 'press-media' | 'career-opportunities' | 'therapist-info' | 'hotel-info' | 'employer-info' | 'payment-info' | 'coin-shop' | 'admin-shop-management' | 'reward-banners-test';
 type Language = 'en' | 'id';
 type LoggedInProvider = { id: number | string; type: 'therapist' | 'place' }; // Support both number and string IDs for Appwrite compatibility
 type LoggedInUser = { id: string; type: 'admin' | 'hotel' | 'villa' | 'agent' };
@@ -1347,8 +1351,8 @@ const App: React.FC = () => {
             />;
             case 'hotelLogin': return <HotelLoginPage onSuccess={(_hotelId) => { setIsHotelLoggedIn(true); setPage('hotelDashboard'); }} onBack={handleBackToHome} t={t} />;
             case 'hotelDashboard': return isHotelLoggedIn ? <HotelDashboardPage onLogout={handleHotelLogout} /> : <HotelLoginPage onSuccess={(_hotelId) => { setIsHotelLoggedIn(true); setPage('hotelDashboard'); }} onBack={handleBackToHome} t={t} />;
-            case 'villaLogin': return <VillaLoginPage onVillaLogin={() => { setIsVillaLoggedIn(true); setPage('villaDashboard'); }} onBack={handleBackToHome} />;
-            case 'villaDashboard': return isVillaLoggedIn ? <VillaDashboardPage onLogout={handleVillaLogout} /> : <VillaLoginPage onVillaLogin={() => { setIsVillaLoggedIn(true); setPage('villaDashboard'); }} onBack={handleBackToHome} />;
+            case 'villaLogin': return <VillaLoginPage onSuccess={(_villaId) => { setIsVillaLoggedIn(true); setPage('villaDashboard'); }} onBack={handleBackToHome} t={t} />;
+            case 'villaDashboard': return isVillaLoggedIn ? <VillaDashboardPage onLogout={handleVillaLogout} /> : <VillaLoginPage onSuccess={(_villaId) => { setIsVillaLoggedIn(true); setPage('villaDashboard'); }} onBack={handleBackToHome} t={t} />;
             case 'massagePlaceLogin': return <MassagePlaceLoginPage onSuccess={(_placeId) => { /* handle massage place login */ }} onBack={handleBackToHome} t={t} />;
             case 'hotelVillaMenu': return <HotelVillaMenuPage venueId={venueMenuId} therapists={therapists} places={places} onBook={handleNavigateToBooking} />;
             case 'employerJobPosting': return <EmployerJobPostingPage onNavigateToPayment={(jobId) => { setJobPostingId(jobId); setPage('jobPostingPayment'); }} />;
@@ -1361,7 +1365,7 @@ const App: React.FC = () => {
             // SEO Pages
             case 'about': return <AboutUsPage onNavigate={(page) => setPage(page as Page)} />;
             case 'how-it-works': return <HowItWorksPage />;
-            case 'massage-bali': return <MassageBaliPage />;
+            case 'massage-bali': return <MassageBaliPage onNavigate={(page) => setPage(page as Page)} />;
             case 'blog': return <BlogIndexPage onNavigate={(page) => setPage(page as Page)} />;
             case 'blog/bali-spa-industry-trends-2025': return <BaliSpaIndustryTrends2025Page onNavigate={(page) => setPage(page as Page)} />;
             case 'blog/top-10-massage-techniques': return <Top10MassageTechniquesPage onNavigate={(page) => setPage(page as Page)} />;
@@ -1387,6 +1391,9 @@ const App: React.FC = () => {
             case 'hotel-info': return <HotelInfoPage onNavigate={(page) => setPage(page as Page)} />;
             case 'employer-info': return <EmployerInfoPage onNavigate={(page) => setPage(page as Page)} />;
             case 'payment-info': return <PaymentInfoPage onNavigate={(page) => setPage(page as Page)} />;
+            case 'coin-shop': return <CoinShopPage onNavigate={(page) => setPage(page as Page)} currentUser={loggedInUser ? { id: loggedInUser.id, name: 'User', type: loggedInUser.type as any } : undefined} />;
+            case 'admin-shop-management': return <AdminShopManagementPage onNavigate={(page) => setPage(page as Page)} />;
+            case 'reward-banners-test': return <RewardBannersTestPage />;
             default:
                 return providerForBooking ? (
                     <BookingPage

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { account } from '../lib/appwrite';
+import { LogIn, UserPlus } from 'lucide-react';
 
 interface AdminLoginPageProps {
     onAdminLogin: () => void;
@@ -199,9 +200,21 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin: _onAdminL
                     <button
                         onClick={handleSubmit}
                         disabled={isLoading}
-                        className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 mt-6 shadow-lg rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium"
+                        className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 px-4 mt-6 shadow-lg rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium flex items-center justify-center gap-2"
                     >
-                        {isLoading ? 'Processing...' : isSignUp ? 'Create Account' : t.button}
+                        {isLoading ? (
+                            'Processing...'
+                        ) : isSignUp ? (
+                            <>
+                                <UserPlus className="w-5 h-5" />
+                                Create Account
+                            </>
+                        ) : (
+                            <>
+                                <LogIn className="w-5 h-5" />
+                                {t.button}
+                            </>
+                        )}
                     </button>
                 </div>
             </div>

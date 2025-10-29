@@ -6,6 +6,7 @@ import BriefcaseIcon from '../components/icons/BriefcaseIcon';
 import HomeIcon from '../components/icons/HomeIcon';
 import MapPinIcon from '../components/icons/MapPinIcon';
 import DocumentTextIcon from '../components/icons/DocumentTextIcon';
+import { LogIn, UserPlus } from 'lucide-react';
 
 const loginOptions = [
   { id: 'user', label: 'User', icon: UserSolidIcon },
@@ -178,9 +179,19 @@ const UnifiedLoginPage: React.FC = () => {
             </button>
             <button
               type="submit"
-              className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 font-semibold"
+              className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 font-semibold flex items-center justify-center gap-2"
             >
-              {mode === 'login' ? 'Login' : 'Register'}
+              {mode === 'login' ? (
+                <>
+                  <LogIn className="w-5 h-5" />
+                  Login
+                </>
+              ) : (
+                <>
+                  <UserPlus className="w-5 h-5" />
+                  Register
+                </>
+              )}
             </button>
           </div>
         </form>

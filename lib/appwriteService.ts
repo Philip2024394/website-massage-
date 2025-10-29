@@ -215,6 +215,8 @@ export const customLinksService = {
 // Appwrite service - Real implementation
 import { Client, Databases, Account, Query, Storage, ID } from 'appwrite';
 import { APPWRITE_CONFIG } from './appwrite.config';
+import type { AgentVisit } from '../types';
+
 
 // Initialize Appwrite Client
 const client = new Client()
@@ -1894,5 +1896,708 @@ export const hotelVillaBookingService = {
         }
     }
 };
+
+// ================================
+// Agent Visit Service
+// ================================
+
+export const agentVisitService = {
+    /**
+     * Create a new agent visit record
+     */
+    async createVisit(visit: AgentVisit): Promise<AgentVisit> {
+        try {
+            const response = await databases.createDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.agentVisits,
+                ID.unique(),
+                {
+                    agentId: visit.agentId.toString(),
+                    agentName: visit.agentName,
+                    agentCode: visit.agentCode,
+                    providerName: visit.providerName,
+                    providerType: visit.providerType,
+                    whatsappNumber: visit.whatsappNumber,
+                    visitDate: visit.visitDate,
+                    locationLat: visit.location.lat,
+                    locationLng: visit.location.lng,
+                    locationAddress: visit.location.address,
+                    locationTimestamp: visit.location.timestamp,
+                    meetingNotes: visit.meetingNotes,
+                    callbackDate: visit.callbackDate || '',
+                    membershipAgreed: visit.membershipAgreed,
+                    status: visit.status,
+                    createdAt: visit.createdAt,
+                    updatedAt: visit.updatedAt || ''
+                }
+            );
+
+            console.log('✅ Agent visit created:', response.$id);
+            
+            return {
+                ...visit,
+                $id: response.$id
+            };
+        } catch (error) {
+            console.error('Error creating agent visit:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Get all visits by a specific agent
+     */
+    async getVisitsByAgent(agentId: string): Promise<AgentVisit[]> {
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.agentVisits,
+                [
+                    Query.equal('agentId', agentId),
+                    Query.orderDesc('createdAt'),
+                    Query.limit(100)
+                ]
+            );
+
+            return response.documents.map((doc: any) => ({
+                $id: doc.$id,
+                agentId: doc.agentId,
+                agentName: doc.agentName,
+                agentCode: doc.agentCode,
+                providerName: doc.providerName,
+                providerType: doc.providerType,
+                whatsappNumber: doc.whatsappNumber,
+                visitDate: doc.visitDate,
+                location: {
+                    lat: doc.locationLat,
+                    lng: doc.locationLng,
+                    address: doc.locationAddress,
+                    timestamp: doc.locationTimestamp
+                },
+                meetingNotes: doc.meetingNotes,
+                callbackDate: doc.callbackDate || undefined,
+                membershipAgreed: doc.membershipAgreed,
+                status: doc.status,
+                createdAt: doc.createdAt,
+                updatedAt: doc.updatedAt || undefined
+            }));
+        } catch (error) {
+            console.error('Error fetching agent visits:', error);
+            return [];
+        }
+    },
+
+    /**
+     * Get all visits (Admin only)
+     */
+    async getAllVisits(filters?: {
+        agentId?: string;
+        providerType?: 'therapist' | 'place';
+        membershipAgreed?: string;
+        status?: string;
+        dateFrom?: string;
+        dateTo?: string;
+    }): Promise<AgentVisit[]> {
+        try {
+            const queries: string[] = [
+                Query.orderDesc('createdAt'),
+                Query.limit(500)
+            ];
+
+            // Add filters if provided
+            if (filters?.agentId) {
+                queries.push(Query.equal('agentId', filters.agentId));
+            }
+            if (filters?.providerType) {
+                queries.push(Query.equal('providerType', filters.providerType));
+            }
+            if (filters?.membershipAgreed && filters.membershipAgreed !== 'all') {
+                queries.push(Query.equal('membershipAgreed', filters.membershipAgreed));
+            }
+            if (filters?.status && filters.status !== 'all') {
+                queries.push(Query.equal('status', filters.status));
+            }
+
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.agentVisits,
+                queries
+            );
+
+            let visits = response.documents.map((doc: any) => ({
+                $id: doc.$id,
+                agentId: doc.agentId,
+                agentName: doc.agentName,
+                agentCode: doc.agentCode,
+                providerName: doc.providerName,
+                providerType: doc.providerType,
+                whatsappNumber: doc.whatsappNumber,
+                visitDate: doc.visitDate,
+                location: {
+                    lat: doc.locationLat,
+                    lng: doc.locationLng,
+                    address: doc.locationAddress,
+                    timestamp: doc.locationTimestamp
+                },
+                meetingNotes: doc.meetingNotes,
+                callbackDate: doc.callbackDate || undefined,
+                membershipAgreed: doc.membershipAgreed,
+                status: doc.status,
+                createdAt: doc.createdAt,
+                updatedAt: doc.updatedAt || undefined
+            }));
+
+            // Client-side date filtering (since Appwrite Query might not support date range)
+            if (filters?.dateFrom) {
+                visits = visits.filter(visit => 
+                    new Date(visit.visitDate) >= new Date(filters.dateFrom!)
+                );
+            }
+            if (filters?.dateTo) {
+                visits = visits.filter(visit => 
+                    new Date(visit.visitDate) <= new Date(filters.dateTo!)
+                );
+            }
+
+            return visits;
+        } catch (error) {
+            console.error('Error fetching all visits:', error);
+            return [];
+        }
+    },
+
+    /**
+     * Update a visit record
+     */
+    async updateVisit(visitId: string, data: Partial<AgentVisit>): Promise<AgentVisit> {
+        try {
+            const updateData: any = {};
+
+            if (data.providerName) updateData.providerName = data.providerName;
+            if (data.providerType) updateData.providerType = data.providerType;
+            if (data.whatsappNumber) updateData.whatsappNumber = data.whatsappNumber;
+            if (data.meetingNotes) updateData.meetingNotes = data.meetingNotes;
+            if (data.callbackDate !== undefined) updateData.callbackDate = data.callbackDate || '';
+            if (data.membershipAgreed) updateData.membershipAgreed = data.membershipAgreed;
+            if (data.status) updateData.status = data.status;
+
+            updateData.updatedAt = new Date().toISOString();
+
+            const response = await databases.updateDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.agentVisits,
+                visitId,
+                updateData
+            );
+
+            console.log('✅ Agent visit updated:', visitId);
+
+            return {
+                $id: response.$id,
+                agentId: response.agentId,
+                agentName: response.agentName,
+                agentCode: response.agentCode,
+                providerName: response.providerName,
+                providerType: response.providerType,
+                whatsappNumber: response.whatsappNumber,
+                visitDate: response.visitDate,
+                location: {
+                    lat: response.locationLat,
+                    lng: response.locationLng,
+                    address: response.locationAddress,
+                    timestamp: response.locationTimestamp
+                },
+                meetingNotes: response.meetingNotes,
+                callbackDate: response.callbackDate || undefined,
+                membershipAgreed: response.membershipAgreed,
+                status: response.status,
+                createdAt: response.createdAt,
+                updatedAt: response.updatedAt || undefined
+            };
+        } catch (error) {
+            console.error('Error updating visit:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Delete a visit record (Admin only)
+     */
+    async deleteVisit(visitId: string): Promise<void> {
+        try {
+            await databases.deleteDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.agentVisits,
+                visitId
+            );
+            console.log('✅ Agent visit deleted:', visitId);
+        } catch (error) {
+            console.error('Error deleting visit:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Get visit statistics for an agent
+     */
+    async getAgentStats(agentId: string): Promise<{
+        totalVisits: number;
+        completedVisits: number;
+        pendingVisits: number;
+        followupRequired: number;
+        membershipsSigned: {
+            '1month': number;
+            '3month': number;
+            '6month': number;
+            '1year': number;
+        };
+    }> {
+        try {
+            const visits = await this.getVisitsByAgent(agentId);
+
+            const stats = {
+                totalVisits: visits.length,
+                completedVisits: visits.filter(v => v.status === 'completed').length,
+                pendingVisits: visits.filter(v => v.status === 'pending').length,
+                followupRequired: visits.filter(v => v.status === 'followup_required').length,
+                membershipsSigned: {
+                    '1month': visits.filter(v => v.membershipAgreed === '1month').length,
+                    '3month': visits.filter(v => v.membershipAgreed === '3month').length,
+                    '6month': visits.filter(v => v.membershipAgreed === '6month').length,
+                    '1year': visits.filter(v => v.membershipAgreed === '1year').length
+                }
+            };
+
+            return stats;
+        } catch (error) {
+            console.error('Error getting agent stats:', error);
+            return {
+                totalVisits: 0,
+                completedVisits: 0,
+                pendingVisits: 0,
+                followupRequired: 0,
+                membershipsSigned: {
+                    '1month': 0,
+                    '3month': 0,
+                    '6month': 0,
+                    '1year': 0
+                }
+            };
+        }
+    }
+};
+
+// --- Coin Shop Service ---
+import { ShopItem, ShopCoinTransaction, ShopOrder, UserCoins } from '../types';
+
+const COIN_SHOP_DATABASE_ID = '68f23b11000d25eb3664'; // Your database ID
+
+// Collection IDs
+const SHOP_ITEMS_COLLECTION_ID = 'shopitems';
+const COIN_TRANSACTIONS_COLLECTION_ID = 'cointransactions';
+const SHOP_ORDERS_COLLECTION_ID = 'shoporders';
+const USER_COINS_COLLECTION_ID = 'usercoins';
+
+// Shop Items Service
+export const shopItemService = {
+    async getActiveItems(): Promise<ShopItem[]> {
+        try {
+            const response = await databases.listDocuments(
+                COIN_SHOP_DATABASE_ID,
+                SHOP_ITEMS_COLLECTION_ID,
+                [Query.equal('isActive', true)]
+            );
+            return response.documents as unknown as ShopItem[];
+        } catch (error) {
+            console.error('Error getting active items:', error);
+            return [];
+        }
+    },
+
+    async getAllItems(): Promise<ShopItem[]> {
+        try {
+            const response = await databases.listDocuments(
+                COIN_SHOP_DATABASE_ID,
+                SHOP_ITEMS_COLLECTION_ID
+            );
+            return response.documents as unknown as ShopItem[];
+        } catch (error) {
+            console.error('Error getting all items:', error);
+            return [];
+        }
+    },
+
+    async createItem(item: Partial<ShopItem>): Promise<ShopItem> {
+        try {
+            const response = await databases.createDocument(
+                COIN_SHOP_DATABASE_ID,
+                SHOP_ITEMS_COLLECTION_ID,
+                ID.unique(),
+                {
+                    name: item.name,
+                    description: item.description,
+                    coinPrice: item.coinPrice,
+                    imageUrl: item.imageUrl,
+                    category: item.category,
+                    stockQuantity: item.stockQuantity,
+                    isActive: item.isActive ?? true,
+                    estimatedDelivery: item.estimatedDelivery || '6-10 days',
+                    disclaimer: item.disclaimer || 'Design may vary slightly from displayed image'
+                }
+            );
+            return response as unknown as ShopItem;
+        } catch (error) {
+            console.error('Error creating item:', error);
+            throw error;
+        }
+    },
+
+    async updateItem(itemId: string, updates: Partial<ShopItem>): Promise<ShopItem> {
+        try {
+            const response = await databases.updateDocument(
+                COIN_SHOP_DATABASE_ID,
+                SHOP_ITEMS_COLLECTION_ID,
+                itemId,
+                updates
+            );
+            return response as unknown as ShopItem;
+        } catch (error) {
+            console.error('Error updating item:', error);
+            throw error;
+        }
+    },
+
+    async deleteItem(itemId: string): Promise<void> {
+        try {
+            await databases.deleteDocument(
+                COIN_SHOP_DATABASE_ID,
+                SHOP_ITEMS_COLLECTION_ID,
+                itemId
+            );
+        } catch (error) {
+            console.error('Error deleting item:', error);
+            throw error;
+        }
+    },
+
+    async updateStock(itemId: string, quantity: number): Promise<void> {
+        try {
+            await this.updateItem(itemId, { stockQuantity: quantity });
+        } catch (error) {
+            console.error('Error updating stock:', error);
+            throw error;
+        }
+    }
+};
+
+// Coin Service
+export const coinService = {
+    async getUserCoins(userId: string): Promise<UserCoins | null> {
+        try {
+            const response = await databases.listDocuments(
+                COIN_SHOP_DATABASE_ID,
+                USER_COINS_COLLECTION_ID,
+                [Query.equal('userId', userId)]
+            );
+            
+            if (response.documents.length > 0) {
+                return response.documents[0] as unknown as UserCoins;
+            }
+            return null;
+        } catch (error) {
+            console.error('Error getting user coins:', error);
+            return null;
+        }
+    },
+
+    async initializeUserCoins(userId: string, userType: UserCoins['userType'], userName: string): Promise<UserCoins> {
+        try {
+            // Check if already exists
+            const existing = await this.getUserCoins(userId);
+            if (existing) {
+                return existing;
+            }
+
+            const response = await databases.createDocument(
+                COIN_SHOP_DATABASE_ID,
+                USER_COINS_COLLECTION_ID,
+                ID.unique(),
+                {
+                    userId,
+                    userType,
+                    userName,
+                    totalCoins: 0,
+                    lifetimeEarned: 0,
+                    lifetimeSpent: 0
+                }
+            );
+            
+            return response as unknown as UserCoins;
+        } catch (error) {
+            console.error('Error initializing user coins:', error);
+            throw error;
+        }
+    },
+
+    async addCoins(
+        userId: string,
+        userType: UserCoins['userType'],
+        userName: string,
+        amount: number,
+        description: string,
+        relatedId?: string
+    ): Promise<ShopCoinTransaction> {
+        try {
+            // Get or create user coins
+            let userCoin = await this.getUserCoins(userId);
+            if (!userCoin) {
+                userCoin = await this.initializeUserCoins(userId, userType, userName);
+            }
+            
+            const balanceBefore = userCoin.totalCoins;
+            const balanceAfter = balanceBefore + amount;
+            
+            // Create transaction
+            const transaction = await databases.createDocument(
+                COIN_SHOP_DATABASE_ID,
+                COIN_TRANSACTIONS_COLLECTION_ID,
+                ID.unique(),
+                {
+                    userId,
+                    userType,
+                    userName,
+                    transactionType: 'earn',
+                    amount,
+                    description,
+                    relatedId: relatedId || '',
+                    balanceBefore,
+                    balanceAfter
+                }
+            );
+            
+            // Update user coins
+            await databases.updateDocument(
+                COIN_SHOP_DATABASE_ID,
+                USER_COINS_COLLECTION_ID,
+                userCoin.$id!,
+                {
+                    totalCoins: balanceAfter,
+                    lifetimeEarned: userCoin.lifetimeEarned + amount
+                }
+            );
+            
+            return transaction as unknown as ShopCoinTransaction;
+        } catch (error) {
+            console.error('Error adding coins:', error);
+            throw error;
+        }
+    },
+
+    async deductCoins(
+        userId: string,
+        userType: UserCoins['userType'],
+        userName: string,
+        amount: number,
+        description: string,
+        relatedId?: string
+    ): Promise<ShopCoinTransaction> {
+        try {
+            const userCoin = await this.getUserCoins(userId);
+            if (!userCoin) {
+                throw new Error('User coins not found');
+            }
+            
+            if (userCoin.totalCoins < amount) {
+                throw new Error('Insufficient coins');
+            }
+            
+            const balanceBefore = userCoin.totalCoins;
+            const balanceAfter = balanceBefore - amount;
+            
+            // Create transaction
+            const transaction = await databases.createDocument(
+                COIN_SHOP_DATABASE_ID,
+                COIN_TRANSACTIONS_COLLECTION_ID,
+                ID.unique(),
+                {
+                    userId,
+                    userType,
+                    userName,
+                    transactionType: 'spend',
+                    amount: -amount,
+                    description,
+                    relatedId: relatedId || '',
+                    balanceBefore,
+                    balanceAfter
+                }
+            );
+            
+            // Update user coins
+            await databases.updateDocument(
+                COIN_SHOP_DATABASE_ID,
+                USER_COINS_COLLECTION_ID,
+                userCoin.$id!,
+                {
+                    totalCoins: balanceAfter,
+                    lifetimeSpent: userCoin.lifetimeSpent + amount
+                }
+            );
+            
+            return transaction as unknown as ShopCoinTransaction;
+        } catch (error) {
+            console.error('Error deducting coins:', error);
+            throw error;
+        }
+    },
+
+    async getTransactionHistory(userId: string): Promise<ShopCoinTransaction[]> {
+        try {
+            const response = await databases.listDocuments(
+                COIN_SHOP_DATABASE_ID,
+                COIN_TRANSACTIONS_COLLECTION_ID,
+                [
+                    Query.equal('userId', userId),
+                    Query.orderDesc('$createdAt')
+                ]
+            );
+            
+            return response.documents as unknown as ShopCoinTransaction[];
+        } catch (error) {
+            console.error('Error getting transaction history:', error);
+            return [];
+        }
+    }
+};
+
+// Shop Order Service
+export const shopOrderService = {
+    async createOrder(order: Partial<ShopOrder>): Promise<ShopOrder> {
+        try {
+            // Get order count to generate order number
+            const response = await databases.listDocuments(
+                COIN_SHOP_DATABASE_ID,
+                SHOP_ORDERS_COLLECTION_ID
+            );
+            
+            const orderNumber = `ORD-${new Date().getFullYear()}-${String(response.total + 1).padStart(4, '0')}`;
+            
+            const newOrder = await databases.createDocument(
+                COIN_SHOP_DATABASE_ID,
+                SHOP_ORDERS_COLLECTION_ID,
+                ID.unique(),
+                {
+                    orderNumber,
+                    userId: order.userId,
+                    userType: order.userType,
+                    userName: order.userName,
+                    userEmail: order.userEmail || '',
+                    userPhone: order.userPhone || '',
+                    shippingAddress: JSON.stringify(order.shippingAddress),
+                    items: JSON.stringify(order.items),
+                    totalCoins: order.totalCoins,
+                    status: 'pending',
+                    estimatedDelivery: order.estimatedDelivery || '6-10 days',
+                    trackingNumber: '',
+                    notes: order.notes || ''
+                }
+            );
+            
+            return newOrder as unknown as ShopOrder;
+        } catch (error) {
+            console.error('Error creating order:', error);
+            throw error;
+        }
+    },
+
+    async getOrdersByUser(userId: string): Promise<ShopOrder[]> {
+        try {
+            const response = await databases.listDocuments(
+                COIN_SHOP_DATABASE_ID,
+                SHOP_ORDERS_COLLECTION_ID,
+                [
+                    Query.equal('userId', userId),
+                    Query.orderDesc('$createdAt')
+                ]
+            );
+            
+            return response.documents.map(doc => ({
+                ...doc,
+                shippingAddress: JSON.parse(doc.shippingAddress as string),
+                items: JSON.parse(doc.items as string)
+            })) as unknown as ShopOrder[];
+        } catch (error) {
+            console.error('Error getting user orders:', error);
+            return [];
+        }
+    },
+
+    async getAllOrders(): Promise<ShopOrder[]> {
+        try {
+            const response = await databases.listDocuments(
+                COIN_SHOP_DATABASE_ID,
+                SHOP_ORDERS_COLLECTION_ID,
+                [Query.orderDesc('$createdAt')]
+            );
+            
+            return response.documents.map(doc => ({
+                ...doc,
+                shippingAddress: JSON.parse(doc.shippingAddress as string),
+                items: JSON.parse(doc.items as string)
+            })) as unknown as ShopOrder[];
+        } catch (error) {
+            console.error('Error getting all orders:', error);
+            return [];
+        }
+    },
+
+    async updateOrderStatus(orderId: string, status: ShopOrder['status']): Promise<ShopOrder> {
+        try {
+            const updates: any = { status };
+            
+            if (status === 'shipped') {
+                updates.shippedAt = new Date().toISOString();
+            } else if (status === 'delivered') {
+                updates.deliveredAt = new Date().toISOString();
+            }
+            
+            const response = await databases.updateDocument(
+                COIN_SHOP_DATABASE_ID,
+                SHOP_ORDERS_COLLECTION_ID,
+                orderId,
+                updates
+            );
+            
+            return {
+                ...response,
+                shippingAddress: JSON.parse(response.shippingAddress as string),
+                items: JSON.parse(response.items as string)
+            } as unknown as ShopOrder;
+        } catch (error) {
+            console.error('Error updating order status:', error);
+            throw error;
+        }
+    },
+
+    async addTracking(orderId: string, trackingNumber: string): Promise<ShopOrder> {
+        try {
+            const response = await databases.updateDocument(
+                COIN_SHOP_DATABASE_ID,
+                SHOP_ORDERS_COLLECTION_ID,
+                orderId,
+                { trackingNumber }
+            );
+            
+            return {
+                ...response,
+                shippingAddress: JSON.parse(response.shippingAddress as string),
+                items: JSON.parse(response.items as string)
+            } as unknown as ShopOrder;
+        } catch (error) {
+            console.error('Error adding tracking:', error);
+            throw error;
+        }
+    }
+};
+
 
 

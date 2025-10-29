@@ -87,6 +87,7 @@ const LoginDrawer: React.FC<LoginDrawerProps> = ({ isOpen, onClose, onLoginSelec
         // Services
         { title: 'Balinese Massage', page: 'balinese-massage', icon: '🌿', category: 'services' },
         { title: 'Deep Tissue Massage', page: 'deep-tissue-massage', icon: '💪', category: 'services' },
+        { title: 'Coin Shop', page: 'coin-shop', icon: '🪙', category: 'services' },
         
         // Help & Resources
         { title: 'FAQ', page: 'faq', icon: '❔', category: 'help' },
@@ -168,6 +169,27 @@ const LoginDrawer: React.FC<LoginDrawerProps> = ({ isOpen, onClose, onLoginSelec
                                 );
                             })}
                         </div>
+                    </div>
+
+                    {/* Coin Shop Button - Featured */}
+                    <div className="border-t border-b py-3 my-3">
+                        <button
+                            onClick={() => handleNavigate('coin-shop')}
+                            className="w-full px-4 py-4 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 transition-all duration-200 flex items-center justify-between group shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+                        >
+                            <div className="flex items-center space-x-3">
+                                <span className="text-3xl">🪙</span>
+                                <div className="text-left">
+                                    <h3 className="font-bold text-white text-lg">Coin Shop</h3>
+                                    <p className="text-xs text-orange-100">Redeem your coins for rewards</p>
+                                </div>
+                            </div>
+                            <div className="text-white">
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
+                        </button>
                     </div>
 
                     {/* Navigation Links Section */}

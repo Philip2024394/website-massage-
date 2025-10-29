@@ -12,6 +12,7 @@ export const APPWRITE_CONFIG = {
         therapists: 'therapists_collection_id',
         places: 'places_collection_id',
         agents: 'agents_collection_id',
+        agentVisits: 'agent_visits_collection_id', // NEW: Agent visit tracking
         bookings: 'bookings_collection_id',
         hotelBookings: 'hotel_bookings',
         reviews: 'reviews_collection_id',

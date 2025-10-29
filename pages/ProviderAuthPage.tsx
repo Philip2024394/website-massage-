@@ -1,6 +1,7 @@
 // File deleted as part of unified login refactor.
 import React, { useState, useEffect } from 'react';
 import { therapistService, placeService } from '../lib/appwriteService';
+import { LogIn, UserPlus } from 'lucide-react';
 
 
 interface ProviderAuthPageProps {
@@ -194,9 +195,21 @@ const ProviderAuthPage: React.FC<ProviderAuthPageProps> = ({ mode, providerType,
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full bg-orange-500/80 backdrop-blur-sm text-white py-3 px-4 rounded-md hover:bg-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium border border-white/20"
+                            className="w-full bg-orange-500/80 backdrop-blur-sm text-white py-3 px-4 rounded-md hover:bg-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium border border-white/20 flex items-center justify-center gap-2"
                         >
-                            {isLoading ? 'Processing...' : buttonText}
+                            {isLoading ? (
+                                'Processing...'
+                            ) : mode === 'register' ? (
+                                <>
+                                    <UserPlus className="w-5 h-5" />
+                                    {buttonText}
+                                </>
+                            ) : (
+                                <>
+                                    <LogIn className="w-5 h-5" />
+                                    {buttonText}
+                                </>
+                            )}
                         </button>
                         
                         <div className="text-center">

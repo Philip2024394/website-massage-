@@ -95,7 +95,7 @@ const TraditionalBalineseMassagePage: React.FC<TraditionalBalineseMassagePagePro
 
                 <div className="mb-12 rounded-2xl overflow-hidden">
                     <img 
-                        src="https://ik.imagekit.io/7grri5v7d/massage%20jogja.png?updatedAt=1761561097008" 
+                        src="https://ik.imagekit.io/7grri5v7d/bali%20massage%20indonisea.png" 
                         alt="Traditional Balinese massage techniques and healing in Bali Indonesia" 
                         className="w-full h-96 object-cover"
                     />
@@ -202,20 +202,28 @@ const TraditionalBalineseMassagePage: React.FC<TraditionalBalineseMassagePagePro
                         <li><strong>Ylang-Ylang:</strong> Exotic floral scent reducing blood pressure and stress</li>
                     </ul>
 
-                    <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-6">The Traditional Balinese Massage Experience</h2>
-                    <p className="text-gray-700 mb-6 leading-relaxed">
-                        A full Balinese massage session follows a specific sequence designed to maximize therapeutic benefits:
-                    </p>
-                    <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">Session Structure (90-120 minutes):</h3>
-                    <ul className="list-disc pl-6 mb-6 text-gray-700 space-y-2">
-                        <li><strong>Preparation (5 min):</strong> Warm welcome, foot washing ceremony, herbal tea, intention setting</li>
-                        <li><strong>Back and Shoulders (30 min):</strong> Deep tissue work on largest muscle groups, acupressure along spine</li>
-                        <li><strong>Legs and Feet (20 min):</strong> Releasing tension from standing/walking, reflexology on soles</li>
-                        <li><strong>Arms and Hands (15 min):</strong> Opening chest and shoulders, hand reflexology</li>
-                        <li><strong>Abdomen (10 min):</strong> Gentle circular massage supporting digestive health</li>
-                        <li><strong>Face and Head (15 min):</strong> Relaxing facial massage, scalp stimulation, sinus relief</li>
-                        <li><strong>Integration (5 min):</strong> Gentle rocking, energy balancing, grounding</li>
-                    </ul>
+                    <div className="relative rounded-2xl overflow-hidden my-12 p-8">
+                        <div 
+                            className="absolute inset-0 bg-cover bg-center"
+                            style={{backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/massage%20jogja.png)'}}
+                        ></div>
+                        <div className="relative">
+                            <h2 className="text-2xl font-bold text-white mt-12 mb-6 drop-shadow-lg">The Traditional Balinese Massage Experience</h2>
+                            <p className="text-white mb-6 leading-relaxed drop-shadow-md">
+                                A full Balinese massage session follows a specific sequence designed to maximize therapeutic benefits:
+                            </p>
+                            <h3 className="text-xl font-bold text-white mt-8 mb-4 drop-shadow-lg">Session Structure (90-120 minutes):</h3>
+                            <ul className="list-disc pl-6 mb-6 text-white space-y-2 drop-shadow-md">
+                                <li><strong>Preparation (5 min):</strong> Warm welcome, foot washing ceremony, herbal tea, intention setting</li>
+                                <li><strong>Back and Shoulders (30 min):</strong> Deep tissue work on largest muscle groups, acupressure along spine</li>
+                                <li><strong>Legs and Feet (20 min):</strong> Releasing tension from standing/walking, reflexology on soles</li>
+                                <li><strong>Arms and Hands (15 min):</strong> Opening chest and shoulders, hand reflexology</li>
+                                <li><strong>Abdomen (10 min):</strong> Gentle circular massage supporting digestive health</li>
+                                <li><strong>Face and Head (15 min):</strong> Relaxing facial massage, scalp stimulation, sinus relief</li>
+                                <li><strong>Integration (5 min):</strong> Gentle rocking, energy balancing, grounding</li>
+                            </ul>
+                        </div>
+                    </div>
 
                     <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-6">Health Benefits of Balinese Massage</h2>
                     <p className="text-gray-700 mb-6 leading-relaxed">
@@ -273,15 +281,21 @@ const TraditionalBalineseMassagePage: React.FC<TraditionalBalineseMassagePagePro
                     </p>
                 </div>
 
-                <div className="mt-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl p-8 text-white text-center">
-                    <h3 className="text-2xl font-bold mb-4">Experience Authentic Balinese Massage</h3>
-                    <p className="text-xl mb-6">Find certified traditional therapists on IndaStreet</p>
-                    <button 
-                        onClick={() => onNavigate?.('home')}
-                        className="bg-white text-orange-600 px-8 py-3 rounded-lg font-bold hover:bg-orange-50 transition-colors"
-                    >
-                        Book Your Session
-                    </button>
+                <div className="mt-12 relative rounded-2xl overflow-hidden p-8 text-white text-center">
+                    <div 
+                        className="absolute inset-0 bg-cover bg-center"
+                        style={{backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/garden%20forest.png)'}}
+                    ></div>
+                    <div className="relative">
+                        <h3 className="text-2xl font-bold mb-4 drop-shadow-lg">Experience Authentic Balinese Massage</h3>
+                        <p className="text-xl mb-6 drop-shadow-md">Find certified traditional therapists on IndaStreet</p>
+                        <button 
+                            onClick={() => onNavigate?.('home')}
+                            className="bg-white text-orange-600 px-8 py-3 rounded-lg font-bold hover:bg-orange-50 transition-colors"
+                        >
+                            Book Your Session
+                        </button>
+                    </div>
                 </div>
             </article>
         </div>

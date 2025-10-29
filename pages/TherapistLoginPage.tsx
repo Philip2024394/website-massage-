@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Button from '../components/Button';
 import { therapistAuth } from '../lib/auth';
+import { LogIn, UserPlus } from 'lucide-react';
 
 interface TherapistLoginPageProps {
     onSuccess: (therapistId: string) => void;
@@ -154,9 +155,21 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({ onSuccess, onBa
                     <Button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 mt-6 shadow-lg"
+                        className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 mt-6 shadow-lg flex items-center justify-center gap-2"
                     >
-                        {loading ? 'Processing...' : isSignUp ? 'Create Account' : 'Sign In'}
+                        {loading ? (
+                            'Processing...'
+                        ) : isSignUp ? (
+                            <>
+                                <UserPlus className="w-5 h-5" />
+                                Create Account
+                            </>
+                        ) : (
+                            <>
+                                <LogIn className="w-5 h-5" />
+                                Sign In
+                            </>
+                        )}
                     </Button>
                 </form>
             </div>

@@ -5,7 +5,7 @@ interface CookiesPolicyPageProps {
     t: any;
 }
 
-const CookiesPolicyPage: React.FC<CookiesPolicyPageProps> = ({ onBack, t }) => {
+const CookiesPolicyPage: React.FC<CookiesPolicyPageProps> = ({ onBack, t: _t }) => {
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Header matching HomePage */}

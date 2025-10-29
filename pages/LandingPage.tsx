@@ -37,9 +37,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
     const [imageLoaded, setImageLoaded] = useState(false);
     const [selectedLanguage, setSelectedLanguage] = useState<'en' | 'id'>('id'); // Default to Indonesian
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [location, setLocation] = useState<UserLocation | null>(null);
-    const [isGettingLocation, setIsGettingLocation] = useState(false);
-    const [locationError, setLocationError] = useState('');
 
     useEffect(() => {
         console.log('🖼️ LandingPage: Attempting to load image:', imageSrc);
@@ -56,40 +53,14 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
         };
     }, []);
 
-    const handleGetLocation = () => {
-        if (!navigator.geolocation) {
-            setLocationError('Geolocation is not supported by your browser');
-            return;
-        }
-
-        setIsGettingLocation(true);
-        setLocationError('');
-
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const userLocation: UserLocation = {
-                    address: 'Current Location',
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude,
-                };
-                setLocation(userLocation);
-                setIsGettingLocation(false);
-                console.log('✅ Location obtained:', userLocation);
-            },
-            (error) => {
-                setIsGettingLocation(false);
-                setLocationError('Unable to retrieve your location. Please enable location services.');
-                console.error('Location error:', error);
-            }
-        );
-    };
-
     const handleEnterApp = () => {
-        if (!location) {
-            setLocationError('Please set your location first');
-            return;
-        }
-        onEnterApp(selectedLanguage, location);
+        // Create a default location - user will set it on home page
+        const defaultLocation: UserLocation = {
+            address: 'Not Set',
+            lat: 0,
+            lng: 0,
+        };
+        onEnterApp(selectedLanguage, defaultLocation);
     };
 
     const selectedLang = languages.find(lang => lang.code === selectedLanguage) || languages[0];
@@ -110,13 +81,13 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                 </h1>
                 <p className="text-lg sm:text-xl mt-2 mb-4 px-4">Your personal wellness companion.</p>
                 
-                {/* Free To Join Badge */}
+                {/* Join Today Free Limited Spaces Badge */}
                 <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-full px-6 py-2 mb-8 shadow-lg animate-pulse">
                     <p className="text-white font-bold text-base sm:text-lg flex items-center gap-2">
                         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                         </svg>
-                        GRATIS BERGABUNG - Keanggotaan Gratis 1 Bulan
+                        Join Today Free Limited Spaces
                     </p>
                 </div>
                 
@@ -128,10 +99,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                         <label className="block text-sm font-medium mb-2 text-left">Select Language</label>
                         <button
                             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                            className="w-full bg-gray-900 text-white rounded-lg px-4 py-3 flex items-center justify-between hover:bg-gray-800 transition-colors shadow-lg border border-gray-700"
+                            className="w-full bg-black text-white rounded-lg px-4 py-3 flex items-center justify-between hover:bg-gray-900 transition-colors shadow-lg border border-gray-800"
                         >
                             <div className="flex items-center gap-3">
-                                <span className="text-2xl w-8 h-8 flex items-center justify-center bg-gray-800 rounded-full">
+                                <span className="text-2xl w-8 h-8 flex items-center justify-center bg-gray-900 rounded-full">
                                     {selectedLang.flag}
                                 </span>
                                 <span className="font-medium">{selectedLang.name}</span>
@@ -173,54 +144,11 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                         )}
                     </div>
 
-                    {/* Set Location Button */}
-                    <div>
-                        <label className="block text-sm font-medium mb-2 text-left">Set Your Location</label>
-                        <button
-                            onClick={handleGetLocation}
-                            disabled={isGettingLocation || !!location}
-                            className={`w-full rounded-lg px-4 py-3 flex items-center justify-center gap-2 font-medium transition-all shadow-lg ${
-                                location
-                                    ? 'bg-green-500 text-white cursor-not-allowed'
-                                    : 'bg-orange-500 text-white hover:bg-orange-600'
-                            }`}
-                        >
-                            {isGettingLocation ? (
-                                <>
-                                    <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    Getting Location...
-                                </>
-                            ) : location ? (
-                                <>
-                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                    </svg>
-                                    Location Set
-                                </>
-                            ) : (
-                                <>
-                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    </svg>
-                                    Set Location
-                                </>
-                            )}
-                        </button>
-                        {locationError && (
-                            <p className="text-red-400 text-sm mt-2">{locationError}</p>
-                        )}
-                    </div>
-
                     {/* Enter App Button */}
                     <Button
                         onClick={handleEnterApp}
                         variant="primary"
-                        disabled={!location}
-                        className={`!py-4 !text-lg font-bold ${!location ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        className="!py-4 !text-lg font-bold"
                     >
                         <div className="flex items-center justify-center gap-2">
                             Proceed To Homepage

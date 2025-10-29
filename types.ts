@@ -612,3 +612,114 @@ export interface ChatNotification {
     message: string;
     soundFile?: string;        // Optional sound file to play
 }
+
+export interface AgentVisit {
+    id?: number;
+    $id?: string; // Appwrite document ID
+    agentId: string | number;
+    agentName: string;
+    agentCode: string;
+    providerName: string;
+    providerType: 'therapist' | 'place';
+    whatsappNumber: string;
+    visitDate: string; // ISO string
+    location: {
+        lat: number;
+        lng: number;
+        address: string;
+        timestamp: string; // When location was captured
+    };
+    meetingNotes: string;
+    callbackDate?: string; // ISO string for follow-up
+    membershipAgreed: 'none' | '1month' | '3month' | '6month' | '1year';
+    status: 'pending' | 'completed' | 'followup_required';
+    createdAt: string;
+    updatedAt?: string;
+}
+
+export interface ShopItem {
+    id?: number;
+    $id?: string; // Appwrite document ID
+    name: string;
+    description: string;
+    coinPrice: number; // Coin value required to redeem
+    imageUrl: string;
+    category: 'electronics' | 'fashion' | 'wellness' | 'home' | 'gift_cards' | 'other';
+    stockQuantity: number;
+    isActive: boolean; // Admin can enable/disable items
+    estimatedDelivery: string; // e.g., "6-10 days"
+    disclaimer: string; // "Design may vary from image shown"
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface ShopCoinTransaction {
+    id?: number;
+    $id?: string; // Appwrite document ID
+    userId: string; // Appwrite user ID
+    userType: 'customer' | 'therapist' | 'place' | 'hotel' | 'villa' | 'agent';
+    userName: string;
+    transactionType: 'earn' | 'spend' | 'bonus' | 'refund';
+    amount: number; // Positive for earn, negative for spend
+    description: string;
+    relatedId?: string; // Booking ID, order ID, etc.
+    balanceBefore: number;
+    balanceAfter: number;
+    createdAt?: string;
+}
+
+export interface ShopOrder {
+    id?: number;
+    $id?: string; // Appwrite document ID
+    orderNumber: string; // Unique order number
+    userId: string;
+    userType: 'customer' | 'therapist' | 'place' | 'hotel' | 'villa' | 'agent';
+    userName: string;
+    userEmail?: string;
+    userPhone?: string;
+    
+    // Delivery address
+    shippingAddress: {
+        fullName: string;
+        phone: string;
+        addressLine1: string;
+        addressLine2?: string;
+        city: string;
+        province: string;
+        postalCode: string;
+        country: string;
+    };
+    
+    // Order items
+    items: Array<{
+        itemId: string;
+        itemName: string;
+        itemImage: string;
+        coinPrice: number;
+        quantity: number;
+    }>;
+    
+    totalCoins: number;
+    status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+    
+    // Tracking
+    trackingNumber?: string;
+    shippedAt?: string;
+    deliveredAt?: string;
+    estimatedDelivery: string;
+    
+    notes?: string;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface UserCoins {
+    $id?: string;
+    userId: string;
+    userType: 'customer' | 'therapist' | 'place' | 'hotel' | 'villa' | 'agent';
+    userName: string;
+    totalCoins: number;
+    lifetimeEarned: number;
+    lifetimeSpent: number;
+    updatedAt?: string;
+}

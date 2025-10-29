@@ -85,7 +85,8 @@ const HomePage: React.FC<HomePageProps> = ({
     loggedInAgent: _loggedInAgent,
     loggedInProvider,
     loggedInCustomer,
-    therapists, 
+    therapists,
+    places,
     selectedMassageType: propSelectedMassageType, // Get from prop
     onSetUserLocation, 
     onBook,
@@ -174,10 +175,10 @@ const HomePage: React.FC<HomePageProps> = ({
         }
     };
 
-    // Location modal removed - location is now set on landing page
-    // useEffect(() => {
-    //     setIsLocationModalOpen(true);
-    // }, []);
+    // Auto-open location modal when user arrives to home page
+    useEffect(() => {
+        setIsLocationModalOpen(true);
+    }, []);
 
     useEffect(() => {
         // Fetch custom drawer links
@@ -225,7 +226,18 @@ const HomePage: React.FC<HomePageProps> = ({
                             <span className="inline-block animate-float">S</span>treet
                         </span>
                     </h1>
-                    <div className="flex items-center gap-4 text-gray-600">
+                    <div className="flex items-center gap-3 text-gray-600">
+                        <button 
+                            onClick={() => setIsLocationModalOpen(true)} 
+                            className="flex items-center gap-1 bg-orange-500 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-orange-600 transition-colors"
+                            title="Set Location"
+                        >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <span className="hidden sm:inline">Location</span>
+                        </button>
                         <button onClick={() => setIsMenuOpen(true)} title="Menu">
                            <BurgerMenuIcon className="w-6 h-6" />
                         </button>
@@ -260,6 +272,23 @@ const HomePage: React.FC<HomePageProps> = ({
                         {/* Menu Items */}
                         <nav className="flex-grow overflow-y-auto p-4">
                             <div className="space-y-2">
+                                {/* Coin Shop - FEATURED AT TOP */}
+                                <button 
+                                    onClick={() => { onNavigate?.('coin-shop'); setIsMenuOpen(false); }} 
+                                    className="flex items-center gap-4 w-full text-left p-5 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] group mb-4"
+                                >
+                                    <span className="text-4xl">🪙</span>
+                                    <div className="flex-grow">
+                                        <h3 className="font-bold text-white text-lg">Coin Shop</h3>
+                                        <p className="text-sm text-orange-100">Redeem your coins for rewards</p>
+                                    </div>
+                                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </button>
+
+                                <div className="border-t border-gray-300 my-3"></div>
+
                                 {/* Job Posting Section - MOVED TO TOP */}
                                 <div className="px-2 py-2">
                                     <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Job Posting</h3>
@@ -471,7 +500,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                     <span className="text-2xl">🌺</span>
                                     <div className="flex-grow">
                                         <h3 className="font-semibold text-gray-800 group-hover:text-pink-600 transition-colors">Massage in Bali</h3>
-                                        <p className="text-xs text-gray-500">440+ therapists</p>
+                                        <p className="text-xs text-gray-500">{therapists.length + places.length}+ massage therapists</p>
                                     </div>
                                 </button>
 
@@ -514,6 +543,18 @@ const HomePage: React.FC<HomePageProps> = ({
                                     <div className="flex-grow">
                                         <h3 className="font-semibold text-gray-800 group-hover:text-yellow-600 transition-colors">FAQ</h3>
                                         <p className="text-xs text-gray-500">Common questions</p>
+                                    </div>
+                                </button>
+
+                                {/* TEST: Reward Banners */}
+                                <button 
+                                    onClick={() => { onNavigate?.('reward-banners-test'); setIsMenuOpen(false); }} 
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-gradient-to-r from-red-500 to-pink-500 shadow-md hover:shadow-lg transition-all duration-200 group"
+                                >
+                                    <span className="text-3xl">🎨</span>
+                                    <div className="flex-grow">
+                                        <h3 className="font-semibold text-white group-hover:scale-105 transition-transform">TEST: Reward Banners</h3>
+                                        <p className="text-xs text-red-100">21 Pop-up Preview (DEV)</p>
                                     </div>
                                 </button>
 
