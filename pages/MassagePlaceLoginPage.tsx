@@ -35,6 +35,15 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
                 return;
             }
 
+            // Delete any existing session first
+            try {
+                await account.deleteSession('current');
+                console.log('🗑️ Existing session cleared before massage place login');
+            } catch (err) {
+                // No session to delete, continue
+                console.log('ℹ️ No existing session to clear');
+            }
+
             // Login with Appwrite
             await account.createEmailPasswordSession(email, password);
             
@@ -79,6 +88,15 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
                 setError('Password must be at least 8 characters');
                 setLoading(false);
                 return;
+            }
+
+            // Delete any existing session first
+            try {
+                await account.deleteSession('current');
+                console.log('🗑️ Existing session cleared before massage place signup');
+            } catch (err) {
+                // No session to delete, continue
+                console.log('ℹ️ No existing session to clear');
             }
 
             // Create Appwrite account

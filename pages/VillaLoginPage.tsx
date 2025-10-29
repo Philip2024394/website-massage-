@@ -47,6 +47,15 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onVillaLogin: _onVillaL
         setError('');
 
         try {
+            // Delete any existing session first
+            try {
+                await account.deleteSession('current');
+                console.log('🗑️ Existing session cleared before villa login');
+            } catch (err) {
+                // No session to delete, continue
+                console.log('ℹ️ No existing session to clear');
+            }
+
             // Login with Appwrite
             await account.createEmailPasswordSession(credentials.email, credentials.password);
             
@@ -98,6 +107,15 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onVillaLogin: _onVillaL
         setError('');
 
         try {
+            // Delete any existing session first
+            try {
+                await account.deleteSession('current');
+                console.log('🗑️ Existing session cleared before villa signup');
+            } catch (err) {
+                // No session to delete, continue
+                console.log('ℹ️ No existing session to clear');
+            }
+
             // Create Appwrite account
             await account.create(
                 'unique()',

@@ -40,6 +40,15 @@ export const adminAuth = {
     
     async signIn(email: string, password: string): Promise<AuthResponse> {
         try {
+            // Delete any existing session first
+            try {
+                await account.deleteSession('current');
+                console.log('🗑️ Existing session cleared before admin login');
+            } catch (err) {
+                // No session to delete, continue
+                console.log('ℹ️ No existing session to clear');
+            }
+
             // Create session
             await account.createEmailPasswordSession(email, password);
             
@@ -214,6 +223,15 @@ export const placeAuth = {
     
     async signIn(email: string, password: string): Promise<AuthResponse> {
         try {
+            // Delete any existing session first
+            try {
+                await account.deleteSession('current');
+                console.log('🗑️ Existing session cleared before place login');
+            } catch (err) {
+                // No session to delete, continue
+                console.log('ℹ️ No existing session to clear');
+            }
+
             await account.createEmailPasswordSession(email, password);
             const user = await account.get();
             
@@ -267,6 +285,15 @@ export const hotelAuth = {
     
     async signIn(email: string, password: string): Promise<AuthResponse> {
         try {
+            // Delete any existing session first
+            try {
+                await account.deleteSession('current');
+                console.log('🗑️ Existing session cleared before hotel login');
+            } catch (err) {
+                // No session to delete, continue
+                console.log('ℹ️ No existing session to clear');
+            }
+
             await account.createEmailPasswordSession(email, password);
             const user = await account.get();
             
@@ -320,6 +347,15 @@ export const villaAuth = {
     
     async signIn(email: string, password: string): Promise<AuthResponse> {
         try {
+            // Delete any existing session first
+            try {
+                await account.deleteSession('current');
+                console.log('🗑️ Existing session cleared before villa login');
+            } catch (err) {
+                // No session to delete, continue
+                console.log('ℹ️ No existing session to clear');
+            }
+
             await account.createEmailPasswordSession(email, password);
             const user = await account.get();
             
@@ -374,6 +410,15 @@ export const agentAuth = {
     
     async signIn(email: string, password: string): Promise<AuthResponse> {
         try {
+            // Delete any existing session first
+            try {
+                await account.deleteSession('current');
+                console.log('🗑️ Existing session cleared before agent login');
+            } catch (err) {
+                // No session to delete, continue
+                console.log('ℹ️ No existing session to clear');
+            }
+
             await account.createEmailPasswordSession(email, password);
             const user = await account.get();
             

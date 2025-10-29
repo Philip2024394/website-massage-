@@ -536,6 +536,15 @@ export const authService = {
     },
     async login(email: string, password: string): Promise<any> {
         try {
+            // Delete any existing session first
+            try {
+                await account.deleteSession('current');
+                console.log('🗑️ Existing session cleared before login');
+            } catch (err) {
+                // No session to delete, continue
+                console.log('ℹ️ No existing session to clear');
+            }
+            
             await account.createEmailPasswordSession(email, password);
             return await account.get();
         } catch (error) {
@@ -545,6 +554,15 @@ export const authService = {
     },
     async register(email: string, password: string, name: string): Promise<any> {
         try {
+            // Delete any existing session first
+            try {
+                await account.deleteSession('current');
+                console.log('🗑️ Existing session cleared before registration');
+            } catch (err) {
+                // No session to delete, continue
+                console.log('ℹ️ No existing session to clear');
+            }
+            
             const response = await account.create('unique()', email, password, name);
             // Auto-login after registration
             await account.createEmailPasswordSession(email, password);
