@@ -20,12 +20,12 @@ const RegisterPromptPopup: React.FC<RegisterPromptPopupProps> = ({
     const translations = {
         en: {
             booking: {
-                title: "Create Account to Book",
+                title: "Create Account To Continue",
                 message: "Please register an account to use our booking services and enjoy exclusive benefits!",
                 icon: "🎯"
             },
             chat: {
-                title: "Create Account to Chat",
+                title: "Create Account To Continue",
                 message: "Please register an account to access our chat feature and communicate with therapists!",
                 icon: "💬"
             },
@@ -41,12 +41,12 @@ const RegisterPromptPopup: React.FC<RegisterPromptPopupProps> = ({
         },
         id: {
             booking: {
-                title: "Buat Akun untuk Booking",
+                title: "Buat Akun Untuk Melanjutkan",
                 message: "Silakan daftar akun untuk menggunakan layanan booking kami dan nikmati manfaat eksklusif!",
                 icon: "🎯"
             },
             chat: {
-                title: "Buat Akun untuk Chat",
+                title: "Buat Akun Untuk Melanjutkan",
                 message: "Silakan daftar akun untuk mengakses fitur chat dan berkomunikasi dengan terapis!",
                 icon: "💬"
             },
@@ -68,16 +68,16 @@ const RegisterPromptPopup: React.FC<RegisterPromptPopupProps> = ({
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 animate-fadeIn">
             <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-slideUp">
-                {/* Header with gradient */}
-                <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-6 text-white">
-                    <div className="flex items-center justify-between">
+                {/* Header - No orange block, just title and close button */}
+                <div className="p-6 pb-2">
+                    <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
                             <div className="text-4xl">{contextData.icon}</div>
-                            <h2 className="text-2xl font-bold">{contextData.title}</h2>
+                            <h2 className="text-2xl font-bold text-gray-800">{contextData.title}</h2>
                         </div>
                         <button
                             onClick={onClose}
-                            className="text-white hover:text-gray-200 transition-colors"
+                            className="text-gray-400 hover:text-gray-600 transition-colors"
                         >
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -87,7 +87,7 @@ const RegisterPromptPopup: React.FC<RegisterPromptPopupProps> = ({
                 </div>
 
                 {/* Content */}
-                <div className="p-6">
+                <div className="px-6 pb-6">
                     <p className="text-gray-700 text-lg mb-6 leading-relaxed">
                         {contextData.message}
                     </p>
