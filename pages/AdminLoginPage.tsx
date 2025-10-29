@@ -64,6 +64,15 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin: _onAdminL
                 return;
             }
 
+            // Delete any existing session first
+            try {
+                await account.deleteSession('current');
+                console.log('🗑️ Existing session cleared');
+            } catch (err) {
+                // No session to delete, continue
+                console.log('ℹ️ No existing session to clear');
+            }
+
             // Create new admin account
             await account.create(
                 'unique()',
