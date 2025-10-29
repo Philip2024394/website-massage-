@@ -139,6 +139,13 @@ const HomePage: React.FC<HomePageProps> = ({
     }, [propSelectedMassageType]);
 
     const handleOpenRatingModal = (therapist: Therapist) => {
+        // Check if customer is logged in before allowing review
+        if (!loggedInCustomer) {
+            if (onShowRegisterPrompt) {
+                onShowRegisterPrompt();
+            }
+            return;
+        }
         setSelectedTherapist(therapist);
         setShowRatingModal(true);
     };
