@@ -399,12 +399,12 @@ export const BookingChatWindow: React.FC<BookingChatWindowProps> = ({
                                     key={d}
                                     onClick={async () => {
                                         setSelectedService(d);
-                                        // When a customer selects a duration, mark therapist as provisionally booked (duration + 60min travel)
+                                        // When a customer selects a duration, mark therapist as provisionally booked (duration + 30min travel)
                                         if (currentUserType === 'customer' && chatRoom.therapistId) {
                                             try {
                                                 setIsUpdatingAvailability(true);
                                                 const minutes = parseInt(d, 10);
-                                                const totalMinutes = minutes + 60; // include travel buffer
+                                                const totalMinutes = minutes + 30; // 30 min travel + service duration
                                                 const bookedUntil = new Date(Date.now() + totalMinutes * 60000).toISOString();
                                                 await therapistService.update(String(chatRoom.therapistId), { bookedUntil, bookedForMinutes: totalMinutes });
                                             } catch (err) {

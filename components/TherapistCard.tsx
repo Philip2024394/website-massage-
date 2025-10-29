@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { Therapist, Analytics } from '../types';
 import { AvailabilityStatus } from '../types';
 import { parsePricing, parseMassageTypes } from '../utils/appwriteHelpers';
@@ -92,6 +92,49 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     loggedInProviderId
 }) => {
     const [showBusyModal, setShowBusyModal] = useState(false);
+    const [countdown, setCountdown] = useState<string>('');
+    
+    // Update countdown timer every second if therapist is booked
+    useEffect(() => {
+        const updateCountdown = () => {
+            try {
+                const bookedUntil: any = (therapist as any).bookedUntil;
+                if (bookedUntil) {
+                    const until = new Date(bookedUntil);
+                    if (!isNaN(until.getTime())) {
+                        const now = new Date();
+                        const diff = until.getTime() - now.getTime();
+                        
+                        if (diff > 0) {
+                            const hours = Math.floor(diff / (1000 * 60 * 60));
+                            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                            
+                            if (hours > 0) {
+                                setCountdown(`${hours}h ${minutes}m`);
+                            } else if (minutes > 0) {
+                                setCountdown(`${minutes}m ${seconds}s`);
+                            } else {
+                                setCountdown(`${seconds}s`);
+                            }
+                        } else {
+                            setCountdown('');
+                        }
+                    }
+                }
+            } catch (e) {
+                setCountdown('');
+            }
+        };
+        
+        // Initial update
+        updateCountdown();
+        
+        // Update every second
+        const interval = setInterval(updateCountdown, 1000);
+        
+        return () => clearInterval(interval);
+    }, [therapist]);
     
     // Map any status value to valid AvailabilityStatus
     let validStatus = AvailabilityStatus.Offline;
@@ -315,20 +358,13 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         )}
                         <span className={`w-2 h-2 rounded-full block ${style.dot}`}></span>
                     </span>
-                    {displayStatus}
+                    {displayStatus === AvailabilityStatus.Busy && countdown ? (
+                        <span>Busy - Free in {countdown}</span>
+                    ) : (
+                        displayStatus
+                    )}
                 </div>
-                {/* Show booked-until info if present */}
-                {((therapist as any).bookedUntil) && (() => {
-                    const until = new Date((therapist as any).bookedUntil);
-                    if (!isNaN(until.getTime()) && until > new Date()) {
-                        return (
-                            <div className="mt-2 text-xs text-yellow-700 font-medium">
-                                Booked until {until.toLocaleString()}
-                            </div>
-                        );
-                    }
-                    return null;
-                })()}
+                {/* Show booked-until info if present - removed as countdown is now in badge */}
             </div>
             
             {/* Content */}
