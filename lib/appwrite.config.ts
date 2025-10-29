@@ -34,6 +34,12 @@ export const APPWRITE_CONFIG = {
         messages: 'messages_collection_id', // NEW: In-app messaging
         packages: 'packages_collection_id', // NEW: Pricing packages
         pushSubscriptions: 'push_subscriptions', // NEW: Push notification subscriptions
+        loyaltyWallets: 'loyalty_wallets', // NEW: Customer loyalty coins
+        providerLoyaltySettings: 'provider_loyalty_settings', // NEW: Provider discount tiers
+        coinTransactions: 'coin_transactions', // NEW: Coin transaction history
+        userRegistrations: 'user_registrations', // NEW: Device tracking for welcome bonus
+        chatRooms: 'chat_rooms', // NEW: Booking chat rooms
+        chatMessages: 'chat_messages', // NEW: Chat messages with translations
     },
     
     // Storage bucket ID

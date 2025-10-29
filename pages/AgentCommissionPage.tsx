@@ -261,7 +261,7 @@ const AgentCommissionPage: React.FC = () => {
             <span className="text-2xl">📋</span>
             <span>Agent Terms & Conditions</span>
           </h3>
-          <p className="text-sm text-gray-600 mt-1">Important policies and requirements for all IndoStreet agents</p>
+          <p className="text-sm text-gray-600 mt-1">Important policies and requirements for all <span className="text-black">Inda</span>Street agents</p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -302,7 +302,7 @@ const AgentCommissionPage: React.FC = () => {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-orange-600 font-bold">•</span>
-                    <span>ID card must be returned to IndoStreet office</span>
+                    <span>ID card must be returned to <span className="text-black">Inda</span>Street office</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-orange-600 font-bold">•</span>
@@ -322,7 +322,7 @@ const AgentCommissionPage: React.FC = () => {
                 <ul className="space-y-1.5 text-sm text-gray-700">
                   <li className="flex items-start gap-2">
                     <span className="text-green-600 font-bold">•</span>
-                    <span><strong>MANDATORY:</strong> IndoStreet branded T-shirt</span>
+                    <span><strong>MANDATORY:</strong> <span className="text-black">Inda</span>Street branded T-shirt</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-green-600 font-bold">•</span>
@@ -330,7 +330,7 @@ const AgentCommissionPage: React.FC = () => {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-green-600 font-bold">•</span>
-                    <span>Professional conduct representing IndoStreet</span>
+                    <span>Professional conduct representing <span className="text-black">Inda</span>Street</span>
                   </li>
                 </ul>
               </div>
@@ -346,7 +346,7 @@ const AgentCommissionPage: React.FC = () => {
                 <ul className="space-y-1.5 text-sm text-gray-700">
                   <li className="flex items-start gap-2">
                     <span className="text-purple-600 font-bold">•</span>
-                    <span>Follow all IndoStreet requirements and policies</span>
+                    <span>Follow all <span className="text-black">Inda</span>Street requirements and policies</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-purple-600 font-bold">•</span>

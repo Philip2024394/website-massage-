@@ -8,6 +8,8 @@ interface TherapistCardProps {
     therapist: Therapist;
     onRate: (therapist: Therapist) => void;
     onBook: (therapist: Therapist) => void;
+    onQuickBookWithChat?: (therapist: Therapist) => void; // Quick book after WhatsApp
+    onChatWithBusyTherapist?: (therapist: Therapist) => void; // Chat with busy therapist
     onIncrementAnalytics: (metric: keyof Analytics) => void;
     t: any;
     loggedInProviderId?: number; // To prevent self-notification
@@ -66,7 +68,16 @@ const statusStyles: { [key in AvailabilityStatus]: { text: string; bg: string; d
     [AvailabilityStatus.Offline]: { text: 'text-gray-700', bg: 'bg-gray-100', dot: 'bg-gray-500' },
 };
 
-const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook, onIncrementAnalytics, loggedInProviderId }) => {
+const TherapistCard: React.FC<TherapistCardProps> = ({ 
+    therapist, 
+    onRate, 
+    onBook, 
+    onQuickBookWithChat,
+    onChatWithBusyTherapist,
+    onIncrementAnalytics, 
+    t,
+    loggedInProviderId
+}) => {
     const [showBusyModal, setShowBusyModal] = useState(false);
     
     // Map any status value to valid AvailabilityStatus
@@ -133,6 +144,13 @@ const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook
             // Available or Offline (the 20% that show as offline)
             onIncrementAnalytics('whatsappClicks');
             window.open(`https://wa.me/${therapist.whatsappNumber}`, '_blank');
+            
+            // After opening WhatsApp, also open the chat window
+            if (onQuickBookWithChat) {
+                setTimeout(() => {
+                    onQuickBookWithChat(therapist);
+                }, 500); // Small delay to ensure WhatsApp opens first
+            }
         }
     };
     
@@ -154,9 +172,14 @@ const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook
         }
 
         onIncrementAnalytics('whatsappClicks');
-        window.open(`https://wa.me/${therapist.whatsappNumber}`, '_blank');
         setShowBusyModal(false);
+        
+        // Open chat with automated welcome message (removed WhatsApp)
+        if (onChatWithBusyTherapist) {
+            onChatWithBusyTherapist(therapist);
+        }
     };
+
 
     return (
         <div className="bg-white rounded-xl shadow-md overflow-visible relative">
@@ -364,7 +387,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook
                     className="w-1/2 flex items-center justify-center gap-2 bg-green-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-600 transition-colors duration-300"
                 >
                     <WhatsAppIcon className="w-5 h-5"/>
-                    <span>Chat Now</span>
+                    <span>Book Now</span>
                 </button>
                  <button 
                     onClick={() => onBook(therapist)} 
@@ -399,7 +422,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook
                                 This therapist is booked at present and we cannot ensure how many hours they will be busy. 
                                 Please send a message and when the therapist is available, they will reply.
                             </p>
-                            <p className="text-sm font-semibold text-orange-600 mb-6">- IndoStreet Admin</p>
+                            <p className="text-sm font-semibold text-orange-600 mb-6">- <span className="text-black">Inda</span>Street Admin</p>
                             
                             <div className="flex gap-3">
                                 <button
@@ -410,10 +433,12 @@ const TherapistCard: React.FC<TherapistCardProps> = ({ therapist, onRate, onBook
                                 </button>
                                 <button
                                     onClick={handleConfirmBusyContact}
-                                    className="flex-1 px-4 py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center gap-2"
+                                    className="flex-1 px-4 py-3 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 transition-colors flex items-center justify-center gap-2"
                                 >
-                                    <WhatsAppIcon className="w-4 h-4" />
-                                    Send Message
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                    </svg>
+                                    Chat Now
                                 </button>
                             </div>
                         </div>

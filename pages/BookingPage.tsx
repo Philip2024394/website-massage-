@@ -15,6 +15,7 @@ const BookingPage: React.FC<BookingPageProps> = ({ provider, providerType, onBoo
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
     const [selectedService, setSelectedService] = useState<'60' | '90' | '120'>('60');
+    const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
     const availableTimeSlots = useMemo(() => {
         const slots = [];
@@ -48,6 +49,11 @@ const BookingPage: React.FC<BookingPageProps> = ({ provider, providerType, onBoo
         setSelectedTime(null);
     };
 
+    const handleBookNowClick = () => {
+        if (!selectedTime) return;
+        setShowConfirmDialog(true);
+    };
+
     const handleConfirmBooking = () => {
         if (!selectedTime) return;
         
@@ -56,6 +62,9 @@ const BookingPage: React.FC<BookingPageProps> = ({ provider, providerType, onBoo
         bookingStartTime.setHours(hour, minute, 0, 0);
 
         const providerIdNumber = typeof provider.id === 'number' ? provider.id : (parseInt(String(provider.id), 10) || 0);
+        
+        console.log('📅 Booking confirmed, creating chat room...');
+        
         onBook({
             providerId: providerIdNumber,
             providerType,
@@ -63,6 +72,8 @@ const BookingPage: React.FC<BookingPageProps> = ({ provider, providerType, onBoo
             service: selectedService,
             startTime: bookingStartTime.toISOString(),
         });
+        
+        setShowConfirmDialog(false);
     };
     
     const today = new Date().toISOString().split('T')[0];
@@ -125,10 +136,52 @@ const BookingPage: React.FC<BookingPageProps> = ({ provider, providerType, onBoo
                     </div>
                 </div>
 
-                <Button onClick={handleConfirmBooking} disabled={!selectedTime}>
-                    {t.confirmBooking}
+                <Button onClick={handleBookNowClick} disabled={!selectedTime}>
+                    Book Now
                 </Button>
             </div>
+
+            {/* Confirmation Dialog */}
+            {showConfirmDialog && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+                        <h3 className="text-xl font-bold text-gray-800 mb-4">Confirm Booking</h3>
+                        <div className="space-y-3 mb-6">
+                            <p className="text-gray-700">
+                                <span className="font-semibold">Provider:</span> {provider.name}
+                            </p>
+                            <p className="text-gray-700">
+                                <span className="font-semibold">Date:</span> {selectedDate.toLocaleDateString()}
+                            </p>
+                            <p className="text-gray-700">
+                                <span className="font-semibold">Time:</span> {selectedTime}
+                            </p>
+                            <p className="text-gray-700">
+                                <span className="font-semibold">Duration:</span> {selectedService} minutes
+                            </p>
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4">
+                                <p className="text-sm text-blue-800">
+                                    💬 After confirming, a chat window will open where you can communicate with the provider in real-time. The provider has 25 minutes to accept or decline your booking.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowConfirmDialog(false)}
+                                className="flex-1 px-4 py-3 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleConfirmBooking}
+                                className="flex-1 px-4 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-orange-700 transition shadow-lg"
+                            >
+                                Confirm Booking
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

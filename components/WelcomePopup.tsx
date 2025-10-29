@@ -1,7 +1,44 @@
 import React, { useState, useEffect } from 'react';
 
-const WelcomePopup: React.FC = () => {
+interface WelcomePopupProps {
+  language: 'en' | 'id';
+}
+
+const WelcomePopup: React.FC<WelcomePopupProps> = ({ language }) => {
   const [isOpen, setIsOpen] = useState(false);
+
+  const translations = {
+    en: {
+      title: 'Welcome to',
+      description: 'The #1 platform for call massage services in Bali. Find professional therapists, best spas, and traditional Balinese massage near you in minutes!',
+      features: {
+        therapists: 'professional certified therapists',
+        booking: 'with real-time location',
+        price: 'starting from Rp 250K'
+      },
+      buttons: {
+        start: '🎯 Start Booking Now',
+        browse: 'Browse First'
+      },
+      tip: '💡 Tip: Enable location to find nearest therapists'
+    },
+    id: {
+      title: 'Selamat Datang di',
+      description: 'Platform #1 untuk layanan pijat panggilan di Bali. Temukan terapis profesional, spa terbaik, dan massage traditional Balinese dekat Anda dalam hitungan menit!',
+      features: {
+        therapists: 'terapis profesional tersertifikasi',
+        booking: 'dengan lokasi real-time',
+        price: 'mulai dari Rp 250K'
+      },
+      buttons: {
+        start: '🎯 Mulai Booking Sekarang',
+        browse: 'Lihat-lihat Dulu'
+      },
+      tip: '💡 Tip: Aktifkan lokasi untuk menemukan terapis terdekat'
+    }
+  };
+
+  const t = translations[language];
 
   useEffect(() => {
     const hasVisited = localStorage.getItem('has-visited');
@@ -72,28 +109,26 @@ const WelcomePopup: React.FC = () => {
           `}</style>
           
           <h2 className="text-3xl font-bold mb-3 text-gray-900">
-            Selamat Datang di <span className="text-orange-500">IndaStreet</span>!
+            {t.title} <span className="text-orange-500">IndaStreet</span>!
           </h2>
           
           <p className="text-gray-600 mb-6 leading-relaxed">
-            Platform <strong>#1</strong> untuk layanan pijat panggilan di Bali. 
-            Temukan terapis profesional, spa terbaik, dan massage traditional Balinese 
-            dekat Anda dalam hitungan menit!
+            {t.description}
           </p>
           
           {/* Features */}
           <div className="bg-orange-50 rounded-xl p-4 mb-6 text-left">
             <div className="flex items-center gap-3 mb-2">
               <span className="text-2xl">✨</span>
-              <span className="text-sm text-gray-700"><strong>100+ Terapis</strong> profesional tersertifikasi</span>
+              <span className="text-sm text-gray-700"><strong>100+</strong> {t.features.therapists}</span>
             </div>
             <div className="flex items-center gap-3 mb-2">
               <span className="text-2xl">📍</span>
-              <span className="text-sm text-gray-700"><strong>Booking mudah</strong> dengan lokasi real-time</span>
+              <span className="text-sm text-gray-700"><strong>{language === 'en' ? 'Easy booking' : 'Booking mudah'}</strong> {t.features.booking}</span>
             </div>
             <div className="flex items-center gap-3">
               <span className="text-2xl">💯</span>
-              <span className="text-sm text-gray-700"><strong>Harga terjangkau</strong> mulai dari Rp 250K</span>
+              <span className="text-sm text-gray-700"><strong>{language === 'en' ? 'Affordable prices' : 'Harga terjangkau'}</strong> {t.features.price}</span>
             </div>
           </div>
           
@@ -106,18 +141,18 @@ const WelcomePopup: React.FC = () => {
               }}
               className="w-full bg-orange-500 text-white py-4 rounded-xl hover:bg-orange-600 transition-all duration-300 font-bold text-lg shadow-lg hover:shadow-xl transform hover:scale-105"
             >
-              🎯 Mulai Booking Sekarang
+              {t.buttons.start}
             </button>
             <button
               onClick={() => handleClose('browse')}
               className="w-full border-2 border-gray-300 py-3 rounded-xl hover:bg-gray-50 transition-all duration-300 font-semibold text-gray-700"
             >
-              Lihat-lihat Dulu
+              {t.buttons.browse}
             </button>
           </div>
           
           <p className="text-xs text-gray-500 mt-4">
-            💡 Tip: Aktifkan lokasi untuk menemukan terapis terdekat
+            {t.tip}
           </p>
         </div>
       </div>

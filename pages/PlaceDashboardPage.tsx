@@ -88,6 +88,8 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     const [thumbnailImages, setThumbnailImages] = useState(['', '', '']);
     const [whatsappNumber, setWhatsappNumber] = useState('');
     const [pricing, setPricing] = useState<Pricing>({ 60: 0, 90: 0, 120: 0 });
+    const [hotelVillaPricing, setHotelVillaPricing] = useState<Pricing>({ 60: 0, 90: 0, 120: 0 });
+    const [useSamePricing, setUseSamePricing] = useState(false);
     const [location, setLocation] = useState('');
     const [massageTypes, setMassageTypes] = useState<string[]>([]);
     const [languages, setLanguages] = useState<string[]>([]);
@@ -114,6 +116,16 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             // Parse JSON strings from Appwrite
             try {
                 setPricing(typeof place.pricing === 'string' ? JSON.parse(place.pricing) : place.pricing || { '60': 0, '90': 0, '120': 0 });
+                
+                // Load hotel/villa pricing if exists
+                if ((place as any).hotelVillaPricing) {
+                    setHotelVillaPricing(typeof (place as any).hotelVillaPricing === 'string' ? JSON.parse((place as any).hotelVillaPricing) : (place as any).hotelVillaPricing);
+                    setUseSamePricing(false);
+                } else {
+                    setHotelVillaPricing(typeof place.pricing === 'string' ? JSON.parse(place.pricing) : place.pricing || { '60': 0, '90': 0, '120': 0 });
+                    setUseSamePricing(true);
+                }
+                
                 setCoordinates(typeof place.coordinates === 'string' ? JSON.parse(place.coordinates) : place.coordinates || { lat: 0, lng: 0 });
                 setMassageTypes(typeof place.massageTypes === 'string' ? JSON.parse(place.massageTypes) : place.massageTypes || []);
             } catch (e) {
@@ -221,6 +233,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             thumbnailImages: thumbnailImages.filter(img => img), // remove empty strings
             whatsappNumber,
             pricing: JSON.stringify(pricing),
+            hotelVillaPricing: useSamePricing ? undefined : JSON.stringify(hotelVillaPricing),
             location,
             coordinates: JSON.stringify(coordinates),
             massageTypes: JSON.stringify(massageTypes),
@@ -237,6 +250,34 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     const handlePriceChange = (duration: keyof Pricing, value: string) => {
         const numValue = parseInt(value, 10);
         setPricing(prev => ({ ...prev, [duration]: isNaN(numValue) ? 0 : numValue }));
+        
+        // If "use same pricing" is checked, update hotel/villa pricing too
+        if (useSamePricing) {
+            setHotelVillaPricing(prev => ({ ...prev, [duration]: isNaN(numValue) ? 0 : numValue }));
+        }
+    };
+    
+    const handleHotelVillaPriceChange = (duration: keyof Pricing, value: string) => {
+        let numValue = parseInt(value, 10);
+        
+        // Validate: Hotel/villa price cannot be more than 20% higher than regular price
+        const regularPrice = pricing[duration];
+        const maxAllowedPrice = regularPrice * 1.2; // 20% increase max
+        
+        if (numValue > maxAllowedPrice && regularPrice > 0) {
+            // Cap at 20% increase
+            numValue = Math.floor(maxAllowedPrice);
+        }
+        
+        setHotelVillaPricing(prev => ({ ...prev, [duration]: isNaN(numValue) ? 0 : numValue }));
+    };
+    
+    const handleUseSamePricingChange = (checked: boolean) => {
+        setUseSamePricing(checked);
+        if (checked) {
+            // Copy regular pricing to hotel/villa pricing
+            setHotelVillaPricing({ ...pricing });
+        }
     };
     
     const handleThumbnailChange = (index: number, value: string) => {
@@ -651,6 +692,89 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
                                     <input type="number" value={pricing['120']} onChange={e => handlePriceChange('120', e.target.value)} className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Hotel/Villa Special Pricing Section */}
+                        <div className="border-t border-gray-200 pt-4">
+                            <div className="flex items-center justify-between mb-3">
+                                <div>
+                                    <h3 className="text-md font-medium text-gray-800">Hotel/Villa Live Menu Pricing</h3>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        Set special prices for hotel/villa guests (max 20% increase, or lower)
+                                    </p>
+                                </div>
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={useSamePricing}
+                                        onChange={(e) => handleUseSamePricingChange(e.target.checked)}
+                                        className="w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500"
+                                    />
+                                    <span className="text-xs text-gray-600">Same as regular</span>
+                                </label>
+                            </div>
+                            <div className="grid grid-cols-3 gap-2">
+                                <div>
+                                <label className="block text-xs font-medium text-gray-900">{t['60min']}</label>
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
+                                    <input 
+                                        type="number" 
+                                        value={hotelVillaPricing['60']} 
+                                        onChange={e => handleHotelVillaPriceChange('60', e.target.value)} 
+                                        disabled={useSamePricing}
+                                        className={`mt-1 block w-full pl-9 pr-2 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 ${
+                                            useSamePricing ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
+                                        }`}
+                                    />
+                                </div>
+                                {!useSamePricing && pricing['60'] > 0 && (
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        Max: Rp {Math.floor(pricing['60'] * 1.2).toLocaleString('id-ID')}
+                                    </p>
+                                )}
+                                </div>
+                                <div>
+                                <label className="block text-xs font-medium text-gray-900">{t['90min']}</label>
+                                    <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
+                                    <input 
+                                        type="number" 
+                                        value={hotelVillaPricing['90']} 
+                                        onChange={e => handleHotelVillaPriceChange('90', e.target.value)} 
+                                        disabled={useSamePricing}
+                                        className={`mt-1 block w-full pl-9 pr-2 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 ${
+                                            useSamePricing ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
+                                        }`}
+                                    />
+                                    </div>
+                                    {!useSamePricing && pricing['90'] > 0 && (
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            Max: Rp {Math.floor(pricing['90'] * 1.2).toLocaleString('id-ID')}
+                                        </p>
+                                    )}
+                                </div>
+                                <div>
+                                <label className="block text-xs font-medium text-gray-900">{t['120min']}</label>
+                                    <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
+                                    <input 
+                                        type="number" 
+                                        value={hotelVillaPricing['120']} 
+                                        onChange={e => handleHotelVillaPriceChange('120', e.target.value)} 
+                                        disabled={useSamePricing}
+                                        className={`mt-1 block w-full pl-9 pr-2 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 ${
+                                            useSamePricing ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
+                                        }`}
+                                    />
+                                    </div>
+                                    {!useSamePricing && pricing['120'] > 0 && (
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            Max: Rp {Math.floor(pricing['120'] * 1.2).toLocaleString('id-ID')}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                         </div>

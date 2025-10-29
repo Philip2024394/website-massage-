@@ -401,13 +401,26 @@ export const userService = {
         try {
             const response = await databases.createDocument(
                 APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.therapists, // or places/agents depending on role
+                APPWRITE_CONFIG.collections.users,
                 'unique()',
                 user
             );
             return response;
         } catch (error) {
             console.error('Error creating user profile:', error);
+            throw error;
+        }
+    },
+    async getByUserId(userId: string): Promise<any> {
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.users,
+                [Query.equal('userId', userId)]
+            );
+            return response.documents.length > 0 ? response.documents[0] : null;
+        } catch (error) {
+            console.error('Error fetching user by userId:', error);
             throw error;
         }
     },

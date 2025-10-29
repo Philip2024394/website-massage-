@@ -271,6 +271,7 @@ export interface Therapist {
     villaDiscount?: number; // minimum 20%
     serviceRadius?: number; // minimum 7km - how far they will travel for hotel/villa services
     languages?: string[]; // Languages spoken: ['en', 'id', 'zh', 'ja', 'ko', 'ru', 'fr', 'de', 'es']
+    hotelVillaPricing?: PricingString; // Special pricing for hotel/villa live menu (JSON string for Appwrite)
 }
 
 export interface Place {
@@ -298,6 +299,7 @@ export interface Place {
     hotelVillaServiceStatus?: HotelVillaServiceStatus;
     hotelDiscount?: number; // minimum 20%
     villaDiscount?: number; // minimum 20%
+    hotelVillaPricing?: PricingString; // Special pricing for hotel/villa live menu (JSON string for Appwrite)
     
     // Verification badge fields
     isVerified?: boolean;
@@ -397,4 +399,216 @@ export interface AdminMessage {
     message: string;
     createdAt: string; // ISO string
     isRead: boolean;
+}
+
+// ============================================
+// LOYALTY SYSTEM TYPES
+// ============================================
+
+export enum LoyaltyWalletStatus {
+    Active = 'active',
+    Inactive = 'inactive',
+    Dormant = 'dormant'
+}
+
+export enum CoinTransactionType {
+    Earned = 'earned',
+    Redeemed = 'redeemed',
+    Decayed = 'decayed',
+    Bonus = 'bonus',
+    Expired = 'expired',
+    StreakBonus = 'streak_bonus',
+    BirthdayBonus = 'birthday_bonus'
+}
+
+export interface LoyaltyTier {
+    visits: number;
+    discount: number;
+    coinsRequired: number;
+}
+
+export interface ProviderLoyaltySettings {
+    $id?: string;
+    providerId: number;
+    providerType: 'therapist' | 'place';
+    providerName: string;
+    providerCoinId: string; // e.g., "T001-COINS" or "P042-COINS"
+    
+    // Tier configuration
+    tier1: LoyaltyTier; // Default: 3 visits, 5% discount, 15 coins
+    tier2: LoyaltyTier; // Default: 5 visits, 10% discount, 25 coins
+    tier3: LoyaltyTier; // Default: 10 visits, 15% discount, 50 coins
+    tier4: LoyaltyTier; // Default: 20 visits, 20% discount, 100 coins
+    
+    // Earning configuration
+    coinsPerVisit: number; // Default: 5
+    
+    // Decay configuration
+    enableDecay: boolean;
+    decayGracePeriod: number; // Days before decay starts (default: 14)
+    
+    // Bonuses
+    streakBonus: boolean; // Award bonus coins for consecutive bookings
+    birthdayBonus: number; // Bonus coins on customer birthday
+    
+    // Status
+    isActive: boolean;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface LoyaltyWallet {
+    $id?: string;
+    userId: string; // Appwrite user ID
+    providerId: number;
+    providerType: 'therapist' | 'place';
+    providerName: string;
+    providerCoinId: string; // e.g., "T001-COINS"
+    
+    // Coin balances
+    totalCoins: number; // Current balance
+    coinsEarned: number; // Lifetime earned
+    coinsRedeemed: number; // Lifetime redeemed
+    
+    // Visit tracking
+    totalVisits: number;
+    lastVisitDate?: string;
+    firstVisitDate?: string;
+    
+    // Decay tracking
+    lastDecayDate?: string;
+    decayRate: number; // Coins decayed per period
+    
+    // Current tier and discount
+    currentTier: number; // 0-4 (0 = no tier)
+    currentDiscount: number; // Percentage discount earned
+    
+    // Status
+    status: LoyaltyWalletStatus;
+    streak: number; // Consecutive bookings
+    
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface CoinTransaction {
+    $id?: string;
+    userId: string;
+    walletId: string;
+    providerId: number;
+    providerType: 'therapist' | 'place';
+    
+    // Transaction details
+    type: CoinTransactionType;
+    amount: number; // Positive for earned, negative for redeemed/decayed
+    
+    // Related entities
+    bookingId?: number;
+    reason: string; // Description of transaction
+    
+    // Balance tracking
+    balanceBefore: number;
+    balanceAfter: number;
+    
+    createdAt?: string;
+}
+
+export interface LoyaltyEarnedEvent {
+    userId: string;
+    providerId: number;
+    providerType: 'therapist' | 'place';
+    providerName: string;
+    providerCoinId: string;
+    coinsEarned: number;
+    totalCoins: number;
+    totalVisits: number;
+    tierUnlocked?: number;
+    discountUnlocked?: number;
+    streakCount?: number;
+}
+
+// ==========================================
+// 💬 CHAT SYSTEM TYPES
+// ==========================================
+
+export enum ChatRoomStatus {
+    Pending = 'pending',       // Waiting for therapist response
+    Active = 'active',         // Therapist replied, conversation ongoing
+    Accepted = 'accepted',     // Booking accepted by therapist
+    Declined = 'declined',     // Booking declined by therapist
+    Expired = 'expired',       // 25 minutes passed, no response
+    Completed = 'completed',   // Service completed
+    Cancelled = 'cancelled'    // Booking cancelled
+}
+
+export enum MessageSenderType {
+    Customer = 'customer',
+    Therapist = 'therapist',
+    Place = 'place',
+    System = 'system'
+}
+
+export interface ChatRoom {
+    $id?: string;
+    bookingId: number;
+    
+    // Participants
+    customerId: string;        // Appwrite user ID
+    customerName: string;
+    customerLanguage: 'en' | 'id';
+    customerPhoto?: string;    // Profile photo URL
+    
+    therapistId?: number;      // Provider ID (therapist or place)
+    therapistName?: string;
+    therapistLanguage: 'en' | 'id';
+    therapistType: 'therapist' | 'place';
+    therapistPhoto?: string;   // Profile photo URL
+    
+    // Status & Timing
+    status: ChatRoomStatus;
+    expiresAt: string;         // ISO timestamp (booking time + 25 minutes)
+    respondedAt?: string;      // When therapist first replied
+    
+    // Metadata
+    lastMessageAt?: string;
+    lastMessagePreview?: string;
+    unreadCount: number;       // For therapist side
+    
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface ChatMessage {
+    $id?: string;
+    roomId: string;            // Chat room ID
+    
+    // Sender info
+    senderId: string;          // User ID or provider ID
+    senderType: MessageSenderType;
+    senderName: string;
+    
+    // Message content
+    originalText: string;      // Original message in sender's language
+    originalLanguage: 'en' | 'id';
+    translatedText?: string;   // Auto-translated to recipient's language
+    translatedLanguage?: 'en' | 'id';
+    
+    // Translation toggle
+    showOriginal?: boolean;    // Client-side only (not stored)
+    
+    // Status
+    isRead: boolean;
+    readAt?: string;
+    
+    // Metadata
+    createdAt?: string;
+}
+
+export interface ChatNotification {
+    roomId: string;
+    bookingId: number;
+    recipientId: string;
+    recipientType: 'customer' | 'therapist' | 'place';
+    message: string;
+    soundFile?: string;        // Optional sound file to play
 }

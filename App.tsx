@@ -28,6 +28,17 @@ import NotificationsPage from './pages/NotificationsPage';
 import MassageTypesPage from './pages/MassageTypesPage';
 import HotelDashboardPage from './pages/HotelDashboardPage';
 import VillaDashboardPage from './pages/VillaDashboardPage';
+import { CoinEarnedCelebration } from './components/CoinEarnedCelebration';
+import { CoinWelcomePopup } from './components/CoinWelcomePopup';
+import { WelcomeCoinBonusPopup } from './components/WelcomeCoinBonusPopup';
+import { awardCoins } from './lib/loyaltyService';
+import { 
+    shouldShowWelcomePopup, 
+    markWelcomePopupSeen, 
+    getWelcomeBonusDetails,
+    isEligibleForWelcomeBonus,
+    awardWelcomeBonus
+} from './lib/deviceTracking';
 import HotelLoginPage from './pages/HotelLoginPage';
 import VillaLoginPage from './pages/VillaLoginPage';
 import MassagePlaceLoginPage from './pages/MassagePlaceLoginPage';
@@ -41,6 +52,13 @@ import AdminBankSettingsPage from './pages/AdminBankSettingsPage';
 // UX Enhancement Components
 import CookieConsent from './components/CookieConsent';
 import WelcomePopup from './components/WelcomePopup';
+// Customer Auth Pages
+import CustomerAuthPage from './pages/CustomerAuthPage';
+import CustomerDashboardPage from './pages/CustomerDashboardPage';
+// Chat System Components
+import ChatListPage from './pages/ChatListPage';
+import BookingChatWindow from './components/BookingChatWindow';
+import type { ChatRoom } from './types';
 // SEO Pages
 import AboutUsPage from './pages/AboutUsPage';
 import HowItWorksPage from './pages/HowItWorksPage';
@@ -80,7 +98,7 @@ import HotelVillaMenuPage from './pages/HotelVillaMenuPage';
 import { restoreSession, logout as sessionLogout, saveSessionCache } from './lib/sessionManager';
 import { soundNotificationService } from './utils/soundNotificationService';
 
-type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistStatus' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'agentAuth' | 'agentDashboard' | 'agentTerms' | 'serviceTerms' | 'privacy' | 'membership' | 'booking' | 'bookings' | 'notifications' | 'massageTypes' | 'hotelLogin' | 'hotelDashboard' | 'villaLogin' | 'villaDashboard' | 'unifiedLogin' | 'therapistLogin' | 'massagePlaceLogin' | 'hotelVillaMenu' | 'employerJobPosting' | 'jobPostingPayment' | 'browseJobs' | 'massageJobs' | 'therapistJobs' | 'jobUnlockPayment' | 'adminBankSettings' | 'about' | 'how-it-works' | 'massage-bali' | 'blog' | 'blog/bali-spa-industry-trends-2025' | 'blog/top-10-massage-techniques' | 'blog/massage-career-indonesia' | 'blog/benefits-regular-massage-therapy' | 'blog/hiring-massage-therapists-guide' | 'blog/traditional-balinese-massage' | 'blog/spa-tourism-indonesia' | 'blog/aromatherapy-massage-oils' | 'blog/pricing-guide-massage-therapists' | 'blog/deep-tissue-vs-swedish-massage' | 'blog/online-presence-massage-therapist' | 'blog/wellness-tourism-ubud' | 'faq' | 'balinese-massage' | 'deep-tissue-massage' | 'contact' | 'quick-support' | 'partnership-inquiries' | 'press-media' | 'career-opportunities' | 'therapist-info' | 'hotel-info' | 'employer-info' | 'payment-info';
+type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistStatus' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'agentAuth' | 'agentDashboard' | 'agentTerms' | 'serviceTerms' | 'privacy' | 'membership' | 'booking' | 'bookings' | 'notifications' | 'massageTypes' | 'hotelLogin' | 'hotelDashboard' | 'villaLogin' | 'villaDashboard' | 'unifiedLogin' | 'therapistLogin' | 'massagePlaceLogin' | 'hotelVillaMenu' | 'employerJobPosting' | 'jobPostingPayment' | 'browseJobs' | 'massageJobs' | 'therapistJobs' | 'jobUnlockPayment' | 'adminBankSettings' | 'customerAuth' | 'customerDashboard' | 'chatList' | 'about' | 'how-it-works' | 'massage-bali' | 'blog' | 'blog/bali-spa-industry-trends-2025' | 'blog/top-10-massage-techniques' | 'blog/massage-career-indonesia' | 'blog/benefits-regular-massage-therapy' | 'blog/hiring-massage-therapists-guide' | 'blog/traditional-balinese-massage' | 'blog/spa-tourism-indonesia' | 'blog/aromatherapy-massage-oils' | 'blog/pricing-guide-massage-therapists' | 'blog/deep-tissue-vs-swedish-massage' | 'blog/online-presence-massage-therapist' | 'blog/wellness-tourism-ubud' | 'faq' | 'balinese-massage' | 'deep-tissue-massage' | 'contact' | 'quick-support' | 'partnership-inquiries' | 'press-media' | 'career-opportunities' | 'therapist-info' | 'hotel-info' | 'employer-info' | 'payment-info';
 type Language = 'en' | 'id';
 type LoggedInProvider = { id: number | string; type: 'therapist' | 'place' }; // Support both number and string IDs for Appwrite compatibility
 type LoggedInUser = { id: string; type: 'admin' | 'hotel' | 'villa' | 'agent' };
@@ -94,6 +112,20 @@ const App: React.FC = () => {
     const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
     const [loggedInUser, _setLoggedInUser] = useState<LoggedInUser | null>(null);
     const [jobPostingId, setJobPostingId] = useState<string>('');
+    
+    // Customer/User state (for customers booking massages)
+    const [loggedInCustomer, setLoggedInCustomer] = useState<any | null>(null);
+    const [loyaltyEvent, setLoyaltyEvent] = useState<any | null>(null);
+    const [showWelcomePopup, setShowWelcomePopup] = useState(false);
+    
+    // Welcome coin bonus state
+    const [showWelcomeCoinPopup, setShowWelcomeCoinPopup] = useState(false);
+    const [welcomeBonusCoins, setWelcomeBonusCoins] = useState(0);
+    
+    // Chat system state
+    const [activeChatRoom, setActiveChatRoom] = useState<ChatRoom | null>(null);
+    const [chatBooking, setChatBooking] = useState<Booking | null>(null);
+    const [isChatWindowVisible, setIsChatWindowVisible] = useState(false);
     
     const [therapists, setTherapists] = useState<Therapist[]>([]);
     const [places, setPlaces] = useState<Place[]>([]);
@@ -261,6 +293,30 @@ const App: React.FC = () => {
         initializeApp();
     }, [fetchPublicData]);
 
+    // Check for welcome bonus on app load
+    useEffect(() => {
+        const checkWelcomeBonus = async () => {
+            try {
+                // Check if user should see the welcome popup
+                const shouldShow = shouldShowWelcomePopup();
+                
+                if (shouldShow) {
+                    const bonusDetails = getWelcomeBonusDetails();
+                    setWelcomeBonusCoins(bonusDetails.coins);
+                    
+                    // Show popup after a short delay for better UX
+                    setTimeout(() => {
+                        setShowWelcomeCoinPopup(true);
+                    }, 1500);
+                }
+            } catch (error) {
+                console.error('Error checking welcome bonus:', error);
+            }
+        };
+        
+        checkWelcomeBonus();
+    }, []);
+
     useEffect(() => {
         if (isAdminLoggedIn) {
             fetchAdminData();
@@ -307,6 +363,13 @@ const App: React.FC = () => {
         setLanguage(lang);
         setPage('home');
     };
+
+    const handleEnterApp = (lang: Language, location: UserLocation) => {
+        setLanguage(lang);
+        setUserLocation(location);
+        localStorage.setItem('user_location', JSON.stringify(location));
+        setPage('home');
+    };
     
     const handleSetUserLocation = (location: UserLocation) => {
         setUserLocation(location);
@@ -326,6 +389,7 @@ const App: React.FC = () => {
             setLoggedInProvider(null);
             setLoggedInAgent(null);
             setImpersonatedAgent(null);
+            setLoggedInCustomer(null); // Clear customer login
             
             // Reload public data to ensure we have therapists
             await fetchPublicData();
@@ -335,6 +399,83 @@ const App: React.FC = () => {
         } catch (error) {
             console.error('Error during logout:', error);
             setPage('home');
+        }
+    };
+    
+    // Customer authentication handlers
+    const handleCustomerAuthSuccess = async (customer: any, isNewUser: boolean = false) => {
+        setLoggedInCustomer(customer);
+        setPage('customerDashboard');
+        
+        // Check if this is a new user and award welcome bonus
+        if (isNewUser) {
+            try {
+                const eligibility = await isEligibleForWelcomeBonus();
+                
+                if (eligibility.eligible) {
+                    console.log('🎁 New user detected! Awarding welcome bonus...');
+                    
+                    const bonusResult = await awardWelcomeBonus(
+                        customer.$id || customer.userId,
+                        'customer',
+                        eligibility.deviceId,
+                        eligibility.ipAddress
+                    );
+                    
+                    if (bonusResult.success) {
+                        console.log('✅ Welcome bonus awarded:', bonusResult.coinsAwarded);
+                        setWelcomeBonusCoins(bonusResult.coinsAwarded);
+                        
+                        // Show popup after a short delay
+                        setTimeout(() => {
+                            setShowWelcomeCoinPopup(true);
+                        }, 1000);
+                    } else {
+                        console.log('❌ Welcome bonus not awarded:', bonusResult.message);
+                    }
+                } else {
+                    console.log('ℹ️ User not eligible for welcome bonus:', eligibility.reason);
+                }
+            } catch (error) {
+                console.error('Error awarding welcome bonus:', error);
+            }
+        } else {
+            // For existing users, check if they have unclaimed popup
+            const shouldShow = shouldShowWelcomePopup();
+            if (shouldShow) {
+                const bonusDetails = getWelcomeBonusDetails();
+                setWelcomeBonusCoins(bonusDetails.coins);
+                setTimeout(() => {
+                    setShowWelcomeCoinPopup(true);
+                }, 500);
+            }
+        }
+        
+        console.log('✅ Customer logged in:', customer);
+    };
+    
+    const handleCustomerLogout = async () => {
+        await sessionLogout();
+        setLoggedInCustomer(null);
+        setPage('home');
+        console.log('✅ Customer logout successful');
+    };
+    
+    const handleCloseWelcomeCoinPopup = () => {
+        setShowWelcomeCoinPopup(false);
+        markWelcomePopupSeen();
+        
+        // Navigate to dashboard if customer is logged in
+        if (loggedInCustomer) {
+            setPage('customerDashboard');
+        }
+    };
+    
+    const handleNavigateToCustomerDashboard = () => {
+        if (loggedInCustomer) {
+            setPage('customerDashboard');
+        } else {
+            setPage('customerAuth');
         }
     };
     
@@ -732,7 +873,8 @@ const App: React.FC = () => {
     };
 
     const handleNavigateToBooking = (provider: Therapist | Place, type: 'therapist' | 'place') => {
-        if (!user) {
+        // Allow hotel/villa users or regular customers to book
+        if (!user && !isHotelLoggedIn && !isVillaLoggedIn && !loggedInCustomer) {
             alert(t.bookingPage.loginPrompt);
             setPage('auth');
             return;
@@ -741,13 +883,124 @@ const App: React.FC = () => {
         setPage('booking');
     };
 
+    const handleQuickBookWithChat = async (provider: Therapist | Place, type: 'therapist' | 'place') => {
+        // Allow hotel/villa users or regular customers to book
+        if (!user && !isHotelLoggedIn && !isVillaLoggedIn && !loggedInCustomer) {
+            alert(t.bookingPage.loginPrompt);
+            setPage('auth');
+            return;
+        }
+
+        // Create a quick booking with default values
+        const now = new Date();
+        const bookingTime = new Date(now.getTime() + 60 * 60 * 1000); // +1 hour from now
+        
+        const providerId = typeof provider.id === 'number' ? provider.id : (parseInt(String(provider.id), 10) || 0);
+        
+        const quickBookingData = {
+            providerName: provider.name,
+            providerId: providerId,
+            providerType: type,
+            startTime: bookingTime.toISOString(), // ISO string format
+            service: '60' as '60' | '90' | '120', // Default 60 min service
+        };
+
+        // Set the provider for booking context
+        setProviderForBooking({ provider, type });
+
+        // Create the booking and open chat
+        await handleCreateBooking(quickBookingData);
+    };
+
+    // Handle chat creation from busy therapist modal
+    const handleChatWithBusyTherapist = async (therapist: Therapist) => {
+        if (!isHotelLoggedIn && !isVillaLoggedIn) {
+            alert('Please login as a hotel/villa to use chat feature');
+            return;
+        }
+
+        try {
+            console.log('🚀 Creating chat with busy therapist:', therapist.name);
+
+            // Import chat services
+            const { createChatRoom, sendMessage } = await import('./lib/chatService');
+            
+            // Determine current user info
+            const currentUserId = loggedInCustomer?.$id || user?.id || (isHotelLoggedIn ? 'hotel-user' : 'villa-user');
+            const currentUserName = loggedInCustomer?.name || user?.name || (isHotelLoggedIn ? 'Hotel Guest' : 'Villa Guest');
+            
+            // Create a temporary booking for the chat context
+            const tempBooking: Booking = {
+                id: Date.now(),
+                providerId: typeof therapist.id === 'number' ? therapist.id : parseInt(String(therapist.id), 10),
+                providerName: therapist.name,
+                providerType: 'therapist',
+                startTime: new Date().toISOString(),
+                service: '60' as '60' | '90' | '120',
+                status: BookingStatus.Pending,
+                userId: currentUserId,
+                userName: currentUserName
+            };
+
+            // Create chat room
+            const expiresAt = new Date(Date.now() + 25 * 60 * 1000).toISOString();
+            const chatRoom = await createChatRoom({
+                bookingId: tempBooking.id,
+                customerId: currentUserId,
+                customerName: currentUserName,
+                customerLanguage: language,
+                customerPhoto: loggedInCustomer?.profilePhoto || '',
+                therapistId: typeof therapist.id === 'number' ? therapist.id : parseInt(String(therapist.id), 10),
+                therapistName: therapist.name,
+                therapistLanguage: (therapist as any).language || 'id',
+                therapistType: 'therapist',
+                therapistPhoto: therapist.profilePicture || '',
+                expiresAt
+            });
+
+            console.log('✅ Chat room created:', chatRoom.$id);
+
+            // Send automated welcome message from therapist
+            const welcomeMessage = language === 'en' 
+                ? `Thanks for connecting to my chat! My name is ${therapist.name}. I am busy at the moment and will reply soon. If you would like to require my service please leave a comment below and as soon as I am available I will reply to let you know my availability. Thank you for choosing my profile and I look forward to offering you massage service soon!`
+                : `Terima kasih telah terhubung ke chat saya! Nama saya ${therapist.name}. Saya sedang sibuk saat ini dan akan segera membalas. Jika Anda ingin menggunakan layanan saya, silakan tinggalkan komentar di bawah dan segera saya tersedia saya akan membalas untuk memberi tahu Anda ketersediaan saya. Terima kasih telah memilih profil saya dan saya berharap dapat menawarkan layanan pijat kepada Anda segera!`;
+
+            await sendMessage({
+                roomId: chatRoom.$id!,
+                senderId: String(therapist.id),
+                senderType: 'therapist' as any,
+                senderName: therapist.name,
+                text: welcomeMessage,
+                senderLanguage: (therapist as any).language || 'id',
+                recipientLanguage: language
+            });
+
+            console.log('✅ Welcome message sent');
+
+            // Set active chat and booking
+            setActiveChatRoom(chatRoom);
+            setChatBooking(tempBooking);
+            
+            // Navigate to chat page
+            setPage('chatList');
+
+        } catch (error) {
+            console.error('❌ Error creating chat with busy therapist:', error);
+            alert('Failed to start chat. Please try again.');
+        }
+    };
+
     const handleCreateBooking = async (bookingData: Omit<Booking, 'id' | 'status' | 'userId' | 'userName'>) => {
+        // Determine current user info (support hotel/villa/customer/regular user)
+        const currentUserId = loggedInCustomer?.$id || user?.id || (isHotelLoggedIn ? 'hotel-user' : (isVillaLoggedIn ? 'villa-user' : 'guest'));
+        const currentUserName = loggedInCustomer?.name || user?.name || (isHotelLoggedIn ? 'Hotel Guest' : (isVillaLoggedIn ? 'Villa Guest' : 'Guest'));
+        
         const newBooking: Booking = {
             ...bookingData,
             id: Date.now(),
             status: BookingStatus.Pending,
-            userId: user!.id,
-            userName: user!.name,
+            userId: currentUserId,
+            userName: currentUserName,
         };
         setBookings(prev => [...prev, newBooking]);
 
@@ -768,12 +1021,124 @@ const App: React.FC = () => {
             })
             .catch(err => console.error('Analytics tracking error:', err));
 
-        alert(t.bookingPage.bookingSuccessTitle + '\n' + t.bookingPage.bookingSuccessMessage.replace('{name}', newBooking.providerName));
-        setPage('home');
+        // 🔔 DUAL NOTIFICATION SYSTEM:
+        // 1. WhatsApp (secret backend notification - user never sees)
+        // 2. Chat window (visible to user with real-time messaging)
+        
+        console.log('🚀 Starting chat room creation...');
+        
+        try {
+            // Import chat services
+            const { createChatRoom, sendSystemMessage } = await import('./lib/chatService');
+            const { playBookingNotificationSequence } = await import('./lib/soundService');
+            
+            console.log('✅ Chat services imported');
+            
+            // Get provider details
+            const provider = providerForBooking?.provider;
+            const providerType = providerForBooking?.type || 'therapist';
+            
+            if (!provider) {
+                console.warn('❌ No provider found for booking');
+                alert(t.bookingPage.bookingSuccessTitle + '\n' + t.bookingPage.bookingSuccessMessage.replace('{name}', newBooking.providerName));
+                setPage('home');
+                return;
+            }
+
+            console.log('📋 Provider details:', { 
+                id: provider.id, 
+                name: provider.name, 
+                type: providerType 
+            });
+
+            // Create chat room with 25-minute expiry
+            const expiresAt = new Date(Date.now() + 25 * 60 * 1000).toISOString();
+            
+            console.log('🔧 Creating chat room...');
+            
+            const chatRoom = await createChatRoom({
+                bookingId: newBooking.id,
+                customerId: currentUserId,
+                customerName: currentUserName,
+                customerLanguage: language,
+                customerPhoto: loggedInCustomer?.profilePhoto || '',
+                therapistId: provider.id as number,
+                therapistName: provider.name,
+                therapistLanguage: (provider as any).language || 'id',
+                therapistType: providerType,
+                therapistPhoto: (provider as any).profilePicture || (provider as any).mainImage || '',
+                expiresAt
+            });
+
+            console.log('✅ Chat room created:', chatRoom.$id);
+
+            // Send initial system message
+            await sendSystemMessage(chatRoom.$id!, {
+                en: '✓ Booking request sent! Therapist has 25 minutes to respond.',
+                id: '✓ Permintaan booking terkirim! Terapis punya 25 menit untuk merespon.'
+            });
+
+            console.log('✅ System message sent');
+
+            // Play notification sound sequence
+            // 1. WhatsApp sent sound (0ms)
+            // 2. Chat window opened sound (800ms later)
+            await playBookingNotificationSequence();
+
+            console.log('✅ Notification sounds played');
+
+            // Open chat window
+            setActiveChatRoom(chatRoom);
+            setChatBooking(newBooking);
+            setIsChatWindowVisible(true);
+
+            console.log('✅ Chat window state set. Should be visible now!');
+            console.log('State values:', { 
+                hasChatRoom: !!chatRoom, 
+                hasBooking: !!newBooking,
+                chatRoomId: chatRoom.$id 
+            });
+
+            // Go back to home (chat window will overlay)
+            setPage('home');
+
+        } catch (error) {
+            console.error('❌ Error creating chat room:', error);
+            // Fallback to old behavior if chat fails
+            alert(t.bookingPage.bookingSuccessTitle + '\n' + t.bookingPage.bookingSuccessMessage.replace('{name}', newBooking.providerName));
+            setPage('home');
+        }
     };
     
-    const handleUpdateBookingStatus = (bookingId: number, newStatus: BookingStatus) => {
+    const handleUpdateBookingStatus = async (bookingId: number, newStatus: BookingStatus) => {
+        // Find the booking being updated
+        const booking = bookings.find(b => b.id === bookingId);
+        
+        // Update booking status
         setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: newStatus } : b));
+        
+        // 🪙 LOYALTY COINS: Award coins when booking is completed
+        if (newStatus === BookingStatus.Completed && booking && loggedInCustomer) {
+            try {
+                console.log('🪙 Awarding loyalty coins for completed booking...');
+                
+                const event = await awardCoins(
+                    loggedInCustomer.$id || loggedInCustomer.userId,
+                    booking.providerId,
+                    booking.providerType,
+                    booking.providerName,
+                    booking.id
+                );
+                
+                // Show celebration popup with falling coins!
+                setLoyaltyEvent(event);
+                
+                console.log('✅ Loyalty coins awarded:', event);
+            } catch (error) {
+                console.error('❌ Error awarding loyalty coins:', error);
+                // Don't block the status update if coin awarding fails
+            }
+        }
     };
 
     const handleMarkNotificationAsRead = (notificationId: number) => {
@@ -786,7 +1151,7 @@ const App: React.FC = () => {
         }
 
         switch (page) {
-            case 'landing': return <LandingPage onLanguageSelect={handleLanguageSelect} />;
+            case 'landing': return <LandingPage onLanguageSelect={handleLanguageSelect} onEnterApp={handleEnterApp} />;
             // case 'auth': return <AuthPage onAuthSuccess={() => setPage('home')} onBack={handleBackToHome} t={t.auth} />;
             case 'unifiedLogin': return <UnifiedLoginPage />;
             case 'therapistLogin': return <TherapistLoginPage onSuccess={(therapistId) => {
@@ -802,6 +1167,7 @@ const App: React.FC = () => {
                                 id: typeof loggedInProvider.id === 'string' ? parseInt(loggedInProvider.id) : loggedInProvider.id,
                                 type: loggedInProvider.type
                             } : null}
+                            loggedInCustomer={loggedInCustomer}
                             therapists={therapists}
                             places={places}
                             userLocation={userLocation}
@@ -812,7 +1178,10 @@ const App: React.FC = () => {
                             onLoginClick={handleNavigateToTherapistLogin}
                             onCreateProfileClick={handleNavigateToRegistrationChoice}
                             onAgentPortalClick={loggedInAgent ? () => setPage('agentDashboard') : handleNavigateToAgentAuth}
+                            onCustomerPortalClick={handleNavigateToCustomerDashboard}
                             onBook={handleNavigateToBooking}
+                            onQuickBookWithChat={handleQuickBookWithChat}
+                            onChatWithBusyTherapist={handleChatWithBusyTherapist}
                             onIncrementAnalytics={handleIncrementAnalytics}
                             onMassageTypesClick={() => setPage('massageTypes')}
                             onHotelPortalClick={handleNavigateToHotelLogin}
@@ -906,8 +1275,39 @@ const App: React.FC = () => {
                 return null;
             case 'serviceTerms': return <ServiceTermsPage onBack={handleBackToHome} t={t.serviceTerms} contactNumber={appContactNumber} />;
             case 'privacy': return <PrivacyPolicyPage onBack={handleBackToHome} t={t.privacyPolicy} />;
+            case 'customerAuth': return <CustomerAuthPage onSuccess={handleCustomerAuthSuccess} onBack={handleBackToHome} />;
+            case 'customerDashboard': return loggedInCustomer ? (
+                <CustomerDashboardPage 
+                    user={loggedInCustomer} 
+                    onLogout={handleCustomerLogout} 
+                    onBack={handleBackToHome}
+                    onBookNow={() => setPage('home')}
+                />
+            ) : <CustomerAuthPage onSuccess={handleCustomerAuthSuccess} onBack={handleBackToHome} />;
+            case 'chatList': return <ChatListPage 
+                onLogout={handleHotelLogout}
+                onMenuClick={() => setPage('hotelDashboard')}
+                onHomeClick={() => setPage('home')}
+                language={language}
+                activeChatRoom={activeChatRoom}
+                chatBooking={chatBooking}
+                currentUserId={
+                    loggedInCustomer?.$id || 
+                    user?.id || 
+                    (isHotelLoggedIn ? 'hotel-user' : (isVillaLoggedIn ? 'villa-user' : 'guest'))
+                }
+                currentUserName={
+                    loggedInCustomer?.name || 
+                    user?.name || 
+                    (isHotelLoggedIn ? 'Hotel Guest' : (isVillaLoggedIn ? 'Villa Guest' : 'Guest'))
+                }
+                onCloseChat={() => {
+                    setActiveChatRoom(null);
+                    setChatBooking(null);
+                }}
+            />;
             case 'membership': return loggedInProvider ? <MembershipPage onPackageSelect={handleSelectMembershipPackage} onBack={handleBackToProviderDashboard} t={t.membershipPage} /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice}/>;
-            case 'booking': return providerForBooking ? <BookingPage provider={providerForBooking.provider} providerType={providerForBooking.type} onBook={handleCreateBooking} onBack={handleBackToHome} bookings={bookings.filter(b => b.providerId === providerForBooking.provider.id)} t={t.bookingPage} /> : <HomePage user={user} loggedInAgent={loggedInAgent} therapists={therapists} places={places} userLocation={userLocation} onSetUserLocation={handleSetUserLocation} onSelectPlace={handleSelectPlace} onLogout={handleLogout} onLoginClick={handleNavigateToAuth} onCreateProfileClick={handleNavigateToRegistrationChoice} onAgentPortalClick={loggedInAgent ? () => setPage('agentDashboard') : handleNavigateToAgentAuth} onBook={handleNavigateToBooking} onIncrementAnalytics={handleIncrementAnalytics} onMassageTypesClick={() => setPage('massageTypes')} onHotelPortalClick={handleNavigateToHotelLogin} onVillaPortalClick={handleNavigateToVillaLogin} onTherapistPortalClick={handleNavigateToTherapistLogin} onMassagePlacePortalClick={handleNavigateToMassagePlaceLogin} onAdminPortalClick={handleNavigateToAdminLogin} onBrowseJobsClick={() => setPage('browseJobs')} onEmployerJobPostingClick={() => setPage('employerJobPosting')} onMassageJobsClick={() => setPage('massageJobs')} onTherapistJobsClick={() => setPage('therapistJobs')} onTermsClick={handleNavigateToServiceTerms} onPrivacyClick={handleNavigateToPrivacyPolicy} onNavigate={(page) => setPage(page as Page)} isLoading={isLoading} t={t} />;
+            case 'booking': return providerForBooking ? <BookingPage provider={providerForBooking.provider} providerType={providerForBooking.type} onBook={handleCreateBooking} onBack={handleBackToHome} bookings={bookings.filter(b => b.providerId === providerForBooking.provider.id)} t={t.bookingPage} /> : <HomePage user={user} loggedInAgent={loggedInAgent} therapists={therapists} places={places} userLocation={userLocation} onSetUserLocation={handleSetUserLocation} onSelectPlace={handleSelectPlace} onLogout={handleLogout} onLoginClick={handleNavigateToAuth} onCreateProfileClick={handleNavigateToRegistrationChoice} onAgentPortalClick={loggedInAgent ? () => setPage('agentDashboard') : handleNavigateToAgentAuth} onBook={handleNavigateToBooking} onQuickBookWithChat={handleQuickBookWithChat} onIncrementAnalytics={handleIncrementAnalytics} onMassageTypesClick={() => setPage('massageTypes')} onHotelPortalClick={handleNavigateToHotelLogin} onVillaPortalClick={handleNavigateToVillaLogin} onTherapistPortalClick={handleNavigateToTherapistLogin} onMassagePlacePortalClick={handleNavigateToMassagePlaceLogin} onAdminPortalClick={handleNavigateToAdminLogin} onBrowseJobsClick={() => setPage('browseJobs')} onEmployerJobPostingClick={() => setPage('employerJobPosting')} onMassageJobsClick={() => setPage('massageJobs')} onTherapistJobsClick={() => setPage('therapistJobs')} onTermsClick={handleNavigateToServiceTerms} onPrivacyClick={handleNavigateToPrivacyPolicy} onNavigate={(page) => setPage(page as Page)} isLoading={isLoading} t={t} />;
             case 'notifications': return loggedInProvider ? <NotificationsPage notifications={notifications.filter(n => n.providerId === loggedInProvider.id)} onMarkAsRead={handleMarkNotificationAsRead} onBack={handleBackToProviderDashboard} t={t.notificationsPage} /> : <GuestAlertsPage onBack={handleBackToHome} t={t} />;
             case 'bookings': return loggedInProvider ? <NotificationsPage notifications={notifications.filter(n => n.providerId === loggedInProvider.id)} onMarkAsRead={handleMarkNotificationAsRead} onBack={handleBackToProviderDashboard} t={t.notificationsPage} /> : <GuestAlertsPage onBack={handleBackToHome} t={t} />;
             case 'massageTypes': return <MassageTypesPage 
@@ -987,6 +1387,7 @@ const App: React.FC = () => {
                         onCreateProfileClick={handleNavigateToRegistrationChoice}
                         onAgentPortalClick={loggedInAgent ? () => setPage('agentDashboard') : handleNavigateToAgentAuth}
                         onBook={handleNavigateToBooking}
+                        onQuickBookWithChat={handleQuickBookWithChat}
                         onIncrementAnalytics={handleIncrementAnalytics}
                         onMassageTypesClick={() => setPage('massageTypes')}
                         onHotelPortalClick={handleNavigateToHotelLogin}
@@ -1044,15 +1445,16 @@ const App: React.FC = () => {
     // Determine if footer should be shown
     const pagesWithoutFooter = ['landing', 'auth', 'adminLogin', 'unifiedLogin', 'therapistLogin', 'hotelLogin', 'villaLogin', 
                                  'adminAuth', 'therapistLogin', 'placeLogin', 'agentLogin', 'massagePlaceLogin'];
-    const showFooter = !pagesWithoutFooter.includes(page);
+    // Hide footer only when on chatList page with active chat
+    const showFooter = !pagesWithoutFooter.includes(page) && !(page === 'chatList' && activeChatRoom);
 
     // Footer navigation handlers
     const handleFooterHome = () => {
         if (loggedInUser) {
             switch(loggedInUser.type) {
                 case 'admin': setPage('adminDashboard'); break;
-                case 'hotel': setPage('hotelDashboard'); break;
-                case 'villa': setPage('villaDashboard'); break;
+                case 'hotel': setPage('home'); break; // Hotel users go to therapist directory
+                case 'villa': setPage('home'); break; // Villa users go to therapist directory
                 case 'agent': setPage('agentDashboard'); break;
             }
         } else if (loggedInProvider) {
@@ -1107,7 +1509,8 @@ const App: React.FC = () => {
     
     // Hide FloatingWebsiteButton on login pages and landing page
     const loginPages = ['landing', 'therapistLogin', 'hotelLogin', 'villaLogin', 'adminLogin', 'massagePlaceLogin', 'agentLogin'];
-    const showFloatingButton = !loginPages.includes(page);
+    // Also hide floating button when on chatList page with active chat
+    const showFloatingButton = !loginPages.includes(page) && !(page === 'chatList' && activeChatRoom);
 
     return (
         <div className={isFullScreen ? "min-h-screen flex flex-col" : "max-w-md mx-auto min-h-screen bg-white shadow-lg flex flex-col"}>
@@ -1128,14 +1531,60 @@ const App: React.FC = () => {
                     onDashboardClick={handleFooterDashboard}
                     onMenuClick={handleFooterMenu}
                     onSearchClick={handleFooterSearch}
+                    onChatClick={() => {
+                        // If there's an active chat room, show it
+                        if (activeChatRoom && chatBooking) {
+                            setIsChatWindowVisible(!isChatWindowVisible);
+                            console.log(`📱 Chat button clicked - ${!isChatWindowVisible ? 'Opening' : 'Closing'} chat window`);
+                        } else {
+                            // Navigate to chat list page
+                            setPage('chatList');
+                        }
+                    }}
                     t={t} 
                 />
             )}
             {showFloatingButton && <FloatingWebsiteButton />}
             
             {/* UX Enhancement Components */}
-            <CookieConsent />
-            <WelcomePopup />
+            <CookieConsent 
+                language={language}
+                hasLocation={userLocation !== null}
+            />
+            <WelcomePopup language={language} />
+            
+            {/* Loyalty System Popups */}
+            <CoinWelcomePopup 
+                isOpen={showWelcomePopup}
+                onClose={() => setShowWelcomePopup(false)}
+                customerName={loggedInCustomer?.name}
+            />
+            <WelcomeCoinBonusPopup
+                isOpen={showWelcomeCoinPopup}
+                onClose={handleCloseWelcomeCoinPopup}
+                coinsAwarded={welcomeBonusCoins}
+                userName={loggedInCustomer?.name}
+            />
+            <CoinEarnedCelebration 
+                event={loyaltyEvent}
+                onClose={() => setLoyaltyEvent(null)}
+            />
+
+            {/* Booking Chat Window */}
+            {activeChatRoom && chatBooking && isChatWindowVisible && (
+                <BookingChatWindow
+                    chatRoom={activeChatRoom}
+                    booking={chatBooking}
+                    currentUserId={loggedInCustomer?.$id || user!.id}
+                    currentUserType="customer"
+                    currentUserName={loggedInCustomer?.name || user!.name}
+                    currentUserLanguage={language}
+                    onClose={() => {
+                        setIsChatWindowVisible(false);
+                        console.log('💬 Chat window closed - can be reopened from footer');
+                    }}
+                />
+            )}
         </div>
     );
 };

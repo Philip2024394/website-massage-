@@ -34,9 +34,10 @@ interface HotelDashboardPageProps {
     therapists?: Therapist[];
     places?: Place[];
     hotelId?: string;
+    initialTab?: 'analytics' | 'discounts' | 'profile' | 'menu' | 'feedback' | 'concierge' | 'commissions' | 'notifications';
 }
 
-const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, therapists = [], places = [], hotelId = '1' }) => {
+const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, therapists = [], places = [], hotelId = '1', initialTab = 'analytics' }) => {
     // Therapist banner images pool for randomization (must be defined before useMemo)
     const therapistBannerImages = [
         'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?q=80&w=1200&auto=format&fit=crop',
@@ -49,7 +50,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
         'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=1200&auto=format&fit=crop',
     ];
 
-    const [activeTab, setActiveTab] = useState<'analytics' | 'discounts' | 'profile' | 'menu' | 'feedback' | 'concierge' | 'commissions' | 'notifications'>('analytics');
+    const [activeTab, setActiveTab] = useState<'analytics' | 'discounts' | 'profile' | 'menu' | 'feedback' | 'concierge' | 'commissions' | 'notifications'>(initialTab);
     const [customWelcomeMessage, setCustomWelcomeMessage] = useState('Welcome to our exclusive wellness experience');
     const [selectedLanguage, setSelectedLanguage] = useState('en');
     
@@ -660,7 +661,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                             <div className="text-center py-20 bg-white border-2 border-dashed border-gray-300 rounded-xl">
                                 <div className="text-6xl mb-4">🤷</div>
                                 <h3 className="text-xl font-semibold text-gray-800">No Discounted Partners Found</h3>
-                                <p className="text-gray-500 max-w-md mx-auto mt-2">When therapists or massage places in the IndoStreet network offer a special discount for your guests, they will automatically appear here.</p>
+                                <p className="text-gray-500 max-w-md mx-auto mt-2">When therapists or massage places in the <span className="text-black">Inda</span>Street network offer a special discount for your guests, they will automatically appear here.</p>
                             </div>
                         )}
                     </div>

@@ -330,7 +330,7 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({ onLogout, thera
                             <div className="text-center py-20 border-2 border-dashed rounded-2xl">
                                 <div className="text-6xl mb-4">🤷</div>
                                 <h3 className="text-xl font-semibold text-gray-800">No Discounted Partners Found</h3>
-                                <p className="text-gray-500 max-w-md mx-auto mt-2">When therapists or massage places in the IndoStreet network offer a special discount for your guests, they will automatically appear here.</p>
+                                <p className="text-gray-500 max-w-md mx-auto mt-2">When therapists or massage places in the <span className="text-black">Inda</span>Street network offer a special discount for your guests, they will automatically appear here.</p>
                             </div>
                         )}
                     </Section>
