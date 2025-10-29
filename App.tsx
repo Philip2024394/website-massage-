@@ -52,6 +52,7 @@ import AdminBankSettingsPage from './pages/AdminBankSettingsPage';
 // UX Enhancement Components
 import CookieConsent from './components/CookieConsent';
 import WelcomePopup from './components/WelcomePopup';
+import RegisterPromptPopup from './components/RegisterPromptPopup';
 // Customer Auth Pages
 import CustomerAuthPage from './pages/CustomerAuthPage';
 import CustomerDashboardPage from './pages/CustomerDashboardPage';
@@ -121,6 +122,9 @@ const App: React.FC = () => {
     // Welcome coin bonus state
     const [showWelcomeCoinPopup, setShowWelcomeCoinPopup] = useState(false);
     const [welcomeBonusCoins, setWelcomeBonusCoins] = useState(0);
+    
+    // Registration prompt state
+    const [showRegisterPrompt, setShowRegisterPrompt] = useState(false);
     
     // Chat system state
     const [activeChatRoom, setActiveChatRoom] = useState<ChatRoom | null>(null);
@@ -872,11 +876,21 @@ const App: React.FC = () => {
         console.log(`Incrementing ${metric} for ${type} ${id}`);
     };
 
+    const handleRegisterPromptClose = () => {
+        setShowRegisterPrompt(false);
+    };
+
+    const handleRegisterPromptRegister = () => {
+        setShowRegisterPrompt(false);
+        setPage('customerAuth');
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
     const handleNavigateToBooking = (provider: Therapist | Place, type: 'therapist' | 'place') => {
         // Allow hotel/villa users or regular customers to book
         if (!user && !isHotelLoggedIn && !isVillaLoggedIn && !loggedInCustomer) {
-            alert(t.bookingPage.loginPrompt);
-            setPage('auth');
+            setShowRegisterPrompt(true);
             return;
         }
         setProviderForBooking({ provider, type });
@@ -886,8 +900,7 @@ const App: React.FC = () => {
     const handleQuickBookWithChat = async (provider: Therapist | Place, type: 'therapist' | 'place') => {
         // Allow hotel/villa users or regular customers to book
         if (!user && !isHotelLoggedIn && !isVillaLoggedIn && !loggedInCustomer) {
-            alert(t.bookingPage.loginPrompt);
-            setPage('auth');
+            setShowRegisterPrompt(true);
             return;
         }
 
@@ -1564,6 +1577,12 @@ const App: React.FC = () => {
                 onClose={handleCloseWelcomeCoinPopup}
                 coinsAwarded={welcomeBonusCoins}
                 userName={loggedInCustomer?.name}
+            />
+            <RegisterPromptPopup
+                isOpen={showRegisterPrompt}
+                onClose={handleRegisterPromptClose}
+                onRegister={handleRegisterPromptRegister}
+                language={language}
             />
             <CoinEarnedCelebration 
                 event={loyaltyEvent}

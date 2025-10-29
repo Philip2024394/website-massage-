@@ -111,16 +111,19 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack }
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 relative">
-        {/* Back Button */}
+        {/* Home Button - Circular */}
         <button
           onClick={onBack}
-          className="absolute top-4 left-4 text-gray-600 hover:text-gray-900 text-2xl"
+          className="absolute -top-6 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-full shadow-2xl hover:shadow-orange-300 hover:scale-110 transition-all duration-300 flex items-center justify-center z-10 border-4 border-white"
+          title="Return to Home"
         >
-          ←
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
         </button>
 
         {/* Logo/Title */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 mt-4">
           <div className="text-5xl mb-3">👤</div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             {mode === 'login' ? 'Welcome Back!' : 'Join IndaStreet'}
