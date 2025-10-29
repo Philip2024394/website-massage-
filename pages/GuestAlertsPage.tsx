@@ -2,6 +2,7 @@ import React from 'react';
 
 interface GuestAlertsPageProps {
     onBack: () => void;
+    onCreateAccount?: () => void;
     t: any;
 }
 
@@ -11,18 +12,33 @@ const BellIcon = ({ className = 'w-16 h-16' }) => (
     </svg>
 );
 
-const GuestAlertsPage: React.FC<GuestAlertsPageProps> = ({ onBack }) => {
+const GuestAlertsPage: React.FC<GuestAlertsPageProps> = ({ onBack, onCreateAccount }) => {
+    const handleCreateAccount = () => {
+        if (onCreateAccount) {
+            onCreateAccount();
+        } else {
+            onBack();
+        }
+    };
+
     return (
         <div className="min-h-screen bg-gray-50 pb-16">
-            {/* Header */}
-            <div className="bg-white border-b border-gray-200 px-4 py-4 flex items-center">
-                <button onClick={onBack} className="mr-4">
-                    <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                </button>
-                <h1 className="text-xl font-bold text-gray-900">Alerts</h1>
-            </div>
+            {/* Header - Using HomePage brand style */}
+            <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
+                <div className="flex justify-between items-center">
+                    <h1 className="text-2xl font-bold text-gray-800">
+                        <span className="text-black">Inda</span>
+                        <span className="text-orange-500">
+                            <span className="inline-block animate-float">S</span>treet
+                        </span>
+                    </h1>
+                    <button onClick={onBack} className="text-gray-600">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </header>
 
             {/* Content */}
             <div className="flex flex-col items-center justify-center px-6 py-20">
@@ -41,7 +57,7 @@ const GuestAlertsPage: React.FC<GuestAlertsPageProps> = ({ onBack }) => {
                     
                     <div className="space-y-3">
                         <button
-                            onClick={onBack}
+                            onClick={handleCreateAccount}
                             className="w-full max-w-xs bg-orange-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-orange-600 transition-colors"
                         >
                             Create Account
@@ -78,6 +94,16 @@ const GuestAlertsPage: React.FC<GuestAlertsPageProps> = ({ onBack }) => {
                     </div>
                 </div>
             </div>
+
+            <style>{`
+                @keyframes float {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(-5px); }
+                }
+                .animate-float {
+                    animation: float 2s ease-in-out infinite;
+                }
+            `}</style>
         </div>
     );
 };
