@@ -18,6 +18,19 @@ interface TherapistCardProps {
 // Utility function to determine display status
 // 80% of offline therapists will display as busy
 const getDisplayStatus = (therapist: Therapist): AvailabilityStatus => {
+    // If therapist has an explicit bookedUntil timestamp in the future, show Busy
+    try {
+        const bookedUntil: any = (therapist as any).bookedUntil;
+        if (bookedUntil) {
+            const until = new Date(bookedUntil);
+            if (!isNaN(until.getTime()) && until > new Date()) {
+                return AvailabilityStatus.Busy;
+            }
+        }
+    } catch (e) {
+        // ignore parsing errors
+    }
+
     if (therapist.status === AvailabilityStatus.Available) {
         return AvailabilityStatus.Available;
     }
@@ -304,6 +317,18 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     </span>
                     {displayStatus}
                 </div>
+                {/* Show booked-until info if present */}
+                {((therapist as any).bookedUntil) && (() => {
+                    const until = new Date((therapist as any).bookedUntil);
+                    if (!isNaN(until.getTime()) && until > new Date()) {
+                        return (
+                            <div className="mt-2 text-xs text-yellow-700 font-medium">
+                                Booked until {until.toLocaleString()}
+                            </div>
+                        );
+                    }
+                    return null;
+                })()}
             </div>
             
             {/* Content */}

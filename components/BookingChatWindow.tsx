@@ -17,6 +17,7 @@ import {
     subscribeToChatRoom,
     updateChatRoomStatus 
 } from '../lib/chatService';
+import { therapistService } from '../lib/appwriteService';
 import { soundService } from '../lib/soundService';
 import ChatBubble from './ChatBubble';
 import CountdownTimer from './CountdownTimer';
@@ -51,6 +52,8 @@ export const BookingChatWindow: React.FC<BookingChatWindowProps> = ({
     const [messageInput, setMessageInput] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [isSending, setIsSending] = useState(false);
+    const [selectedService, setSelectedService] = useState<'60'|'90'|'120'|null>(booking?.service || null);
+    const [isUpdatingAvailability, setIsUpdatingAvailability] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const isCustomer = currentUserType === 'customer';
@@ -159,6 +162,12 @@ export const BookingChatWindow: React.FC<BookingChatWindowProps> = ({
     };
 
     const handleSendMessage = async () => {
+        // Require selecting a service duration for customers before sending any message
+        if (currentUserType === 'customer' && !selectedService && !booking?.service) {
+            alert('Please select a service duration (60, 90 or 120 minutes) before sending a message.');
+            return;
+        }
+
         if (!messageInput.trim() || isSending) return;
 
         try {
@@ -377,6 +386,41 @@ export const BookingChatWindow: React.FC<BookingChatWindowProps> = ({
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                {/* Package selector - user must pick a service length before messaging */}
+                <div className="p-4 border-b bg-white">
+                    <div className="max-w-2xl mx-auto">
+                        <div className="text-sm text-gray-600 mb-2">Select a service duration to inquire or book (required before sending messages)</div>
+                        <div className="flex gap-3">
+                            {(['60','90','120'] as const).map((d) => (
+                                <button
+                                    key={d}
+                                    onClick={async () => {
+                                        setSelectedService(d);
+                                        // When a customer selects a duration, mark therapist as provisionally booked (duration + 60min travel)
+                                        if (currentUserType === 'customer' && chatRoom.therapistId) {
+                                            try {
+                                                setIsUpdatingAvailability(true);
+                                                const minutes = parseInt(d, 10);
+                                                const totalMinutes = minutes + 60; // include travel buffer
+                                                const bookedUntil = new Date(Date.now() + totalMinutes * 60000).toISOString();
+                                                await therapistService.update(String(chatRoom.therapistId), { bookedUntil, bookedForMinutes: totalMinutes });
+                                            } catch (err) {
+                                                console.error('Failed to update therapist availability:', err);
+                                            } finally {
+                                                setIsUpdatingAvailability(false);
+                                            }
+                                        }
+                                    }}
+                                    className={`px-4 py-2 rounded-xl font-semibold transition ${selectedService === d ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}
+                                >
+                                    {d} min
+                                </button>
+                            ))}
+                        </div>
+                        {isUpdatingAvailability && <div className="text-xs text-gray-500 mt-2">Updating therapist availability...</div>}
                     </div>
                 </div>
 
