@@ -93,6 +93,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
 }) => {
     const [showBusyModal, setShowBusyModal] = useState(false);
     const [countdown, setCountdown] = useState<string>('');
+    const [isOvertime, setIsOvertime] = useState(false);
     
     // Update countdown timer every second if therapist is booked
     useEffect(() => {
@@ -106,6 +107,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         const diff = until.getTime() - now.getTime();
                         
                         if (diff > 0) {
+                            // Counting down to zero
+                            setIsOvertime(false);
                             const hours = Math.floor(diff / (1000 * 60 * 60));
                             const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
                             const seconds = Math.floor((diff % (1000 * 60)) / 1000);
@@ -118,12 +121,26 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                 setCountdown(`${seconds}s`);
                             }
                         } else {
-                            setCountdown('');
+                            // Counting up from zero (overtime)
+                            setIsOvertime(true);
+                            const overtimeDiff = Math.abs(diff);
+                            const hours = Math.floor(overtimeDiff / (1000 * 60 * 60));
+                            const minutes = Math.floor((overtimeDiff % (1000 * 60 * 60)) / (1000 * 60));
+                            const seconds = Math.floor((overtimeDiff % (1000 * 60)) / 1000);
+                            
+                            if (hours > 0) {
+                                setCountdown(`${hours}h ${minutes}m`);
+                            } else if (minutes > 0) {
+                                setCountdown(`${minutes}m ${seconds}s`);
+                            } else {
+                                setCountdown(`${seconds}s`);
+                            }
                         }
                     }
                 }
             } catch (e) {
                 setCountdown('');
+                setIsOvertime(false);
             }
         };
         
@@ -351,15 +368,18 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         <span>{therapist.distance}km</span>
                     </div>
                 </div>
-                <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${style.bg} ${style.text} mt-1`}>
+                <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isOvertime ? 'bg-red-100 text-red-800' : style.bg} ${isOvertime ? '' : style.text} mt-1`}>
                     <span className="relative mr-1.5">
                         {displayStatus === AvailabilityStatus.Available && (
                             <span className="absolute inset-0 w-4 h-4 -left-1 -top-1 rounded-full bg-white opacity-60"></span>
                         )}
-                        <span className={`w-2 h-2 rounded-full block ${style.dot}`}></span>
+                        <span className={`w-2 h-2 rounded-full block ${isOvertime ? 'bg-red-500' : style.dot}`}></span>
                     </span>
                     {displayStatus === AvailabilityStatus.Busy && countdown ? (
-                        <span>Busy - Free in {countdown}</span>
+                        <span>
+                            {isOvertime ? 'Busy - Extra Time ' : 'Busy - Free in '}
+                            {countdown}
+                        </span>
                     ) : (
                         displayStatus
                     )}
