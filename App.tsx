@@ -888,6 +888,11 @@ const App: React.FC = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
+    const handleShowRegisterPromptForChat = () => {
+        setRegisterPromptContext('chat');
+        setShowRegisterPrompt(true);
+    };
+
     const handleNavigateToBooking = (provider: Therapist | Place, type: 'therapist' | 'place') => {
         // Allow hotel/villa users or regular customers to book
         if (!user && !isHotelLoggedIn && !isVillaLoggedIn && !loggedInCustomer) {
@@ -1198,6 +1203,7 @@ const App: React.FC = () => {
                             onBook={handleNavigateToBooking}
                             onQuickBookWithChat={handleQuickBookWithChat}
                             onChatWithBusyTherapist={handleChatWithBusyTherapist}
+                            onShowRegisterPrompt={handleShowRegisterPromptForChat}
                             onIncrementAnalytics={handleIncrementAnalytics}
                             onMassageTypesClick={() => setPage('massageTypes')}
                             onHotelPortalClick={handleNavigateToHotelLogin}

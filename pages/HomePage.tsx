@@ -27,6 +27,7 @@ interface HomePageProps {
     onBook: (provider: Therapist | Place, type: 'therapist' | 'place') => void;
     onQuickBookWithChat?: (provider: Therapist | Place, type: 'therapist' | 'place') => void;
     onChatWithBusyTherapist?: (therapist: Therapist) => void;
+    onShowRegisterPrompt?: () => void; // NEW: Show registration prompt for busy chat
     onIncrementAnalytics: (id: number | string, type: 'therapist' | 'place', metric: keyof Analytics) => void;
     onLogout: () => void;
     onLoginClick: () => void;
@@ -90,6 +91,7 @@ const HomePage: React.FC<HomePageProps> = ({
     onBook,
     onQuickBookWithChat,
     onChatWithBusyTherapist,
+    onShowRegisterPrompt,
     onIncrementAnalytics, 
     onAgentPortalClick,
     onCustomerPortalClick,
@@ -658,6 +660,8 @@ const HomePage: React.FC<HomePageProps> = ({
                                     onBook={() => onBook(therapist, 'therapist')}
                                     onQuickBookWithChat={onQuickBookWithChat ? () => onQuickBookWithChat(therapist, 'therapist') : undefined}
                                     onChatWithBusyTherapist={onChatWithBusyTherapist}
+                                    onShowRegisterPrompt={onShowRegisterPrompt}
+                                    isCustomerLoggedIn={!!loggedInCustomer}
                                     onIncrementAnalytics={(metric) => onIncrementAnalytics(therapist.id || therapist.$id, 'therapist', metric)}
                                     loggedInProviderId={loggedInProvider?.id}
                                     t={t}

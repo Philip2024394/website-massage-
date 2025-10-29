@@ -11,6 +11,8 @@ interface TherapistCardProps {
     onQuickBookWithChat?: (therapist: Therapist) => void; // Quick book after WhatsApp
     onChatWithBusyTherapist?: (therapist: Therapist) => void; // Chat with busy therapist
     onIncrementAnalytics: (metric: keyof Analytics) => void;
+    onShowRegisterPrompt?: () => void; // Show registration popup
+    isCustomerLoggedIn?: boolean; // Check if customer is logged in
     t: any;
     loggedInProviderId?: number; // To prevent self-notification
 }
@@ -87,7 +89,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     onBook, 
     onQuickBookWithChat,
     onChatWithBusyTherapist,
-    onIncrementAnalytics, 
+    onIncrementAnalytics,
+    onShowRegisterPrompt,
+    isCustomerLoggedIn = false,
     t,
     loggedInProviderId
 }) => {
@@ -210,9 +214,15 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             console.log('🔇 Skipping self-notification (you clicked your own button)');
         }
 
-        // If displaying as Busy, show confirmation modal
+        // If displaying as Busy, show confirmation modal OR registration prompt
         if (displayStatus === AvailabilityStatus.Busy) {
-            setShowBusyModal(true);
+            // If customer is not logged in, show registration prompt instead of busy modal
+            if (!isCustomerLoggedIn && onShowRegisterPrompt) {
+                onShowRegisterPrompt();
+            } else {
+                // Customer is logged in, show the busy modal
+                setShowBusyModal(true);
+            }
         } else {
             // Available or Offline (the 20% that show as offline)
             onIncrementAnalytics('whatsappClicks');
