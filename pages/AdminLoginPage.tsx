@@ -161,21 +161,19 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin: _onAdminL
                 )}
 
                 <div className="space-y-4">
-                    {isSignUp && (
-                        <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-white/90 mb-2">Email</label>
-                            <input 
-                                id="email"
-                                type="email" 
-                                value={email} 
-                                onChange={e => setEmail(e.target.value)}
-                                className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
-                                placeholder="admin@example.com"
-                                onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-                                required
-                            />
-                        </div>
-                    )}
+                    <div>
+                        <label htmlFor="email" className="block text-sm font-medium text-white/90 mb-2">Email</label>
+                        <input 
+                            id="email"
+                            type="email" 
+                            value={email} 
+                            onChange={e => setEmail(e.target.value)}
+                            className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
+                            placeholder="admin@example.com"
+                            onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+                            required
+                        />
+                    </div>
                     <div>
                         <label htmlFor="password" className="block text-sm font-medium text-white/90 mb-2">{t.prompt}</label>
                         <input 
