@@ -10,29 +10,23 @@ const WelcomePopup: React.FC<WelcomePopupProps> = ({ language, isAdmin = false }
 
   const translations = {
     en: {
-      title: 'Welcome to IndaStreet Massage!',
+      title: 'Welcome to Inda',
+      titleHighlight: 'Street',
+      titleEnd: ' Massage!',
+      subtitle: "Indonesia's Premium Choice",
       description: 'The Number 1 platform for massage services in Indonesia. Find professional therapists, best spas, and traditional Balinese massage near you in minutes!',
-      features: {
-        therapists: '100+ professional certified therapists',
-        booking: 'Real-time location tracking',
-        price: 'Affordable prices from Rp 250K'
-      },
       buttons: {
-        start: '🎯 Start Booking Now',
-        browse: 'Browse Services'
+        browse: "Let's Go!"
       }
     },
     id: {
-      title: 'Selamat Datang di IndaStreet Massage!',
+      title: 'Selamat Datang di Inda',
+      titleHighlight: 'Street',
+      titleEnd: ' Massage!',
+      subtitle: "Pilihan Premium Indonesia",
       description: 'Platform Nomor 1 untuk layanan pijat di Indonesia. Temukan terapis profesional, spa terbaik, dan pijat tradisional Bali dekat Anda dalam hitungan menit!',
-      features: {
-        therapists: '100+ terapis profesional tersertifikasi',
-        booking: 'Pelacakan lokasi real-time',
-        price: 'Harga terjangkau mulai Rp 250K'
-      },
       buttons: {
-        start: '🎯 Mulai Booking Sekarang',
-        browse: 'Lihat Layanan'
+        browse: "Ayo!"
       }
     }
   };
@@ -136,6 +130,13 @@ const WelcomePopup: React.FC<WelcomePopupProps> = ({ language, isAdmin = false }
           .animate-wave {
             animation: wave 1s ease-in-out infinite;
           }
+          @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+          }
+          .animate-float {
+            animation: float 2s ease-in-out infinite;
+          }
         `}</style>
         
         <button
@@ -150,55 +151,28 @@ const WelcomePopup: React.FC<WelcomePopupProps> = ({ language, isAdmin = false }
           <div className="text-7xl mb-4 animate-wave">
             👋
           </div>
-          <style>{`
-            @keyframes wave {
-              0%, 100% { transform: rotate(0deg); }
-              25% { transform: rotate(-10deg); }
-              75% { transform: rotate(10deg); }
-            }
-            .animate-wave {
-              animation: wave 1s ease-in-out infinite;
-            }
-          `}</style>
           
-          <h2 className="text-3xl font-bold mb-3 bg-gradient-to-r from-orange-600 to-pink-600 bg-clip-text text-transparent">
-            {t.title}
+          <h2 className="text-3xl font-bold mb-2">
+            <span className="text-black">{t.title}</span>
+            <span className="text-orange-500 relative">
+              <span className="inline-block animate-float">{t.titleHighlight.charAt(0)}</span>
+              <span className="text-orange-500">{t.titleHighlight.slice(1)}</span>
+            </span>
+            <span className="text-black">{t.titleEnd}</span>
           </h2>
+          
+          <p className="text-orange-600 font-semibold text-lg mb-4">
+            {t.subtitle}
+          </p>
           
           <p className="text-gray-700 mb-6 leading-relaxed text-base">
             {t.description}
           </p>
           
-          {/* Features */}
-          <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-5 mb-6 text-left border border-orange-200">
-            <div className="flex items-center gap-3 mb-3">
-              <span className="text-2xl">✨</span>
-              <span className="text-sm text-gray-800">{t.features.therapists}</span>
-            </div>
-            <div className="flex items-center gap-3 mb-3">
-              <span className="text-2xl">📍</span>
-              <span className="text-sm text-gray-800">{t.features.booking}</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">�</span>
-              <span className="text-sm text-gray-800">{t.features.price}</span>
-            </div>
-          </div>
-          
           <div className="space-y-3">
             <button
-              onClick={() => {
-                handleClose('start-booking');
-                // Scroll to therapist section or navigate to home
-                window.scrollTo({ top: 500, behavior: 'smooth' });
-              }}
-              className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-4 rounded-xl hover:shadow-xl transition-all duration-300 font-bold text-lg shadow-lg transform hover:scale-105"
-            >
-              {t.buttons.start}
-            </button>
-            <button
               onClick={() => handleClose('browse')}
-              className="w-full border-2 border-orange-300 text-orange-600 py-3 rounded-xl hover:bg-orange-50 transition-all duration-300 font-semibold"
+              className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-4 rounded-xl hover:shadow-xl transition-all duration-300 font-bold text-lg shadow-lg transform hover:scale-105"
             >
               {t.buttons.browse}
             </button>
