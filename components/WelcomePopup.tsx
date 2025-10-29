@@ -147,9 +147,13 @@ const WelcomePopup: React.FC<WelcomePopupProps> = ({ language, isAdmin = false }
         </button>
         
         <div className="text-center">
-          {/* Animated Welcome Icon */}
-          <div className="text-7xl mb-4 animate-wave">
-            👋
+          {/* Welcome Image */}
+          <div className="mb-4 flex justify-center">
+            <img 
+              src="https://ik.imagekit.io/7grri5v7d/indastreet_guy_34-removebg-preview.png?updatedAt=1761705645668"
+              alt="IndaStreet Welcome"
+              className="w-32 h-32 object-contain animate-wave"
+            />
           </div>
           
           <h2 className="text-3xl font-bold mb-2">
