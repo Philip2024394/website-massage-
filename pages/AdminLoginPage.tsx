@@ -25,18 +25,15 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin: _onAdminL
         setIsLoading(true);
 
         try {
-            // Admin login using Appwrite authentication
-            // Default admin email: admin@indastreet.com
-            const adminEmail = email || 'admin@indastreet.com';
-            
-            if (!password) {
-                setError('Please enter a password');
+            // Validate both email and password are provided
+            if (!email || !password) {
+                setError('Please enter both email and password');
                 setIsLoading(false);
                 return;
             }
 
             // Create session with Appwrite
-            await account.createEmailPasswordSession(adminEmail, password);
+            await account.createEmailPasswordSession(email, password);
             
             // Store admin session
             localStorage.setItem('adminLoggedIn', 'true');
@@ -164,8 +161,9 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin: _onAdminL
                                 value={email} 
                                 onChange={e => setEmail(e.target.value)}
                                 className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
-                                placeholder="admin@indastreet.com"
+                                placeholder="admin@example.com"
                                 onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+                                required
                             />
                         </div>
                     )}
@@ -179,13 +177,9 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin: _onAdminL
                             className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
                             placeholder="Enter password"
                             onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+                            required
                         />
                     </div>
-                    {!isSignUp && (
-                        <p className="text-xs text-white/70 mt-2">
-                            Default admin: admin@indastreet.com
-                        </p>
-                    )}
                     <button
                         onClick={handleSubmit}
                         disabled={isLoading}
