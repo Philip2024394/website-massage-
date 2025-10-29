@@ -275,7 +275,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                 {/* Coin Shop - FEATURED AT TOP */}
                                 <button 
                                     onClick={() => { onNavigate?.('coin-shop'); setIsMenuOpen(false); }} 
-                                    className="flex items-center gap-4 w-full text-left p-5 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] group mb-4"
+                                    className="flex items-center gap-4 w-full text-left p-5 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] group mb-3"
                                 >
                                     <span className="text-4xl">🪙</span>
                                     <div className="flex-grow">
@@ -283,6 +283,36 @@ const HomePage: React.FC<HomePageProps> = ({
                                         <p className="text-sm text-orange-100">Redeem your coins for rewards</p>
                                     </div>
                                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </button>
+
+                                {/* Referral Program */}
+                                <button 
+                                    onClick={() => { onNavigate?.('referral'); setIsMenuOpen(false); }} 
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-md hover:shadow-lg transition-all duration-200 border-2 border-orange-200 hover:border-orange-300 group mb-3"
+                                >
+                                    <span className="text-3xl">🎁</span>
+                                    <div className="flex-grow">
+                                        <h3 className="font-bold text-gray-900 text-base">Invite Friends</h3>
+                                        <p className="text-xs text-orange-600 font-semibold">Earn 100 coins per referral</p>
+                                    </div>
+                                    <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </button>
+
+                                {/* Coin History */}
+                                <button 
+                                    onClick={() => { onNavigate?.('coin-history'); setIsMenuOpen(false); }} 
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-md hover:shadow-lg transition-all duration-200 border-2 border-gray-200 hover:border-orange-200 group mb-4"
+                                >
+                                    <span className="text-3xl">📊</span>
+                                    <div className="flex-grow">
+                                        <h3 className="font-bold text-gray-900 text-base">Coin History</h3>
+                                        <p className="text-xs text-gray-600">View transactions & expiration</p>
+                                    </div>
+                                    <svg className="w-5 h-5 text-gray-400 group-hover:text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                     </svg>
                                 </button>
