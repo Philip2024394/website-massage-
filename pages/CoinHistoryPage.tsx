@@ -1,15 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { TrendingUp, TrendingDown, Clock, Gift, Calendar, AlertCircle, Award, ShoppingBag } from 'lucide-react';
-
-interface CoinTransaction {
-    id: string;
-    type: 'earn' | 'spend' | 'expire';
-    amount: number;
-    reason: string;
-    date: Date;
-    expiryDate?: Date;
-    status: 'completed' | 'pending' | 'expired';
-}
+import { TrendingUp, TrendingDown, Clock, Gift, Calendar, AlertCircle, Award, ShoppingBag, CheckCircle } from 'lucide-react';
+import { coinService, CoinTransaction, CoinBalance } from '../lib/coinService';
 
 interface CoinHistoryPageProps {
     userId?: string;
@@ -19,117 +10,58 @@ interface CoinHistoryPageProps {
 
 const CoinHistoryPage: React.FC<CoinHistoryPageProps> = ({ 
     userId = '12345', 
-    totalCoins = 245,
+    totalCoins: propTotalCoins,
     onNavigate 
 }) => {
-    const [transactions, setTransactions] = useState<CoinTransaction[]>([
-        {
-            id: '1',
-            type: 'earn',
-            amount: 100,
-            reason: 'Referral reward - Friend John signed up',
-            date: new Date('2025-10-25'),
-            expiryDate: new Date('2026-10-25'),
-            status: 'completed'
-        },
-        {
-            id: '2',
-            type: 'earn',
-            amount: 10,
-            reason: 'Daily sign-in - Day 1',
-            date: new Date('2025-10-24'),
-            expiryDate: new Date('2026-10-24'),
-            status: 'completed'
-        },
-        {
-            id: '3',
-            type: 'spend',
-            amount: -50,
-            reason: 'Redeemed: 10% discount coupon',
-            date: new Date('2025-10-23'),
-            status: 'completed'
-        },
-        {
-            id: '4',
-            type: 'earn',
-            amount: 200,
-            reason: 'Booking completed - Traditional Thai Massage',
-            date: new Date('2025-10-22'),
-            expiryDate: new Date('2026-10-22'),
-            status: 'completed'
-        },
-        {
-            id: '5',
-            type: 'earn',
-            amount: 15,
-            reason: 'Daily sign-in - Day 7 streak',
-            date: new Date('2025-10-21'),
-            expiryDate: new Date('2026-10-21'),
-            status: 'completed'
-        },
-        {
-            id: '6',
-            type: 'expire',
-            amount: -25,
-            reason: 'Coins expired (inactive for 12 months)',
-            date: new Date('2025-10-20'),
-            status: 'expired'
-        },
-        {
-            id: '7',
-            type: 'earn',
-            amount: 100,
-            reason: 'Referral reward - Friend Sarah signed up',
-            date: new Date('2025-10-19'),
-            expiryDate: new Date('2026-10-19'),
-            status: 'completed'
-        },
-        {
-            id: '8',
-            type: 'spend',
-            amount: -200,
-            reason: 'Redeemed: Free 60-min massage',
-            date: new Date('2025-10-18'),
-            status: 'completed'
-        },
-        {
-            id: '9',
-            type: 'earn',
-            amount: 50,
-            reason: 'Welcome bonus - New user',
-            date: new Date('2025-09-15'),
-            expiryDate: new Date('2026-09-15'),
-            status: 'completed'
-        },
-        {
-            id: '10',
-            type: 'earn',
-            amount: 500,
-            reason: 'VIP Status achieved - 30 day streak',
-            date: new Date('2025-10-15'),
-            expiryDate: new Date('2026-10-15'),
-            status: 'completed'
-        }
-    ]);
-
+    const [transactions, setTransactions] = useState<CoinTransaction[]>([]);
     const [filterType, setFilterType] = useState<'all' | 'earn' | 'spend' | 'expire'>('all');
-    const [expiringCoins, setExpiringCoins] = useState(150); // Coins expiring in next 30 days
+    const [coinBalance, setCoinBalance] = useState<CoinBalance>({
+        total: 0,
+        active: 0,
+        expired: 0,
+        spent: 0,
+        expiringSoon: 0
+    });
+    const [loading, setLoading] = useState(true);
+
+    // Load coin data
+    useEffect(() => {
+        const loadCoinData = async () => {
+            if (!userId) return;
+            
+            setLoading(true);
+            try {
+                // Load balance and transactions in parallel
+                const [balance, history] = await Promise.all([
+                    coinService.getCoinBalance(userId),
+                    coinService.getTransactionHistory(userId, 100)
+                ]);
+
+                setCoinBalance(balance);
+                setTransactions(history);
+            } catch (error) {
+                console.error('Error loading coin data:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadCoinData();
+    }, [userId]);
+
+    const totalCoins = propTotalCoins ?? coinBalance.total;
 
     const filteredTransactions = transactions.filter(t => 
         filterType === 'all' ? true : t.type === filterType
     );
 
     const totalEarned = transactions
-        .filter(t => t.type === 'earn')
+        .filter(t => t.type === 'earn' && t.status === 'active')
         .reduce((sum, t) => sum + t.amount, 0);
 
-    const totalSpent = Math.abs(transactions
-        .filter(t => t.type === 'spend')
-        .reduce((sum, t) => sum + t.amount, 0));
-
-    const totalExpired = Math.abs(transactions
-        .filter(t => t.type === 'expire')
-        .reduce((sum, t) => sum + t.amount, 0));
+    const totalSpent = coinBalance.spent;
+    const totalExpired = coinBalance.expired;
+    const expiringCoins = coinBalance.expiringSoon;
 
     const getTransactionIcon = (type: string) => {
         switch (type) {
@@ -276,12 +208,12 @@ const CoinHistoryPage: React.FC<CoinHistoryPageProps> = ({
                     <h3 className="font-bold text-gray-900 mb-4">Transaction History</h3>
                     
                     {filteredTransactions.map((transaction) => {
-                        const daysUntilExpiry = getDaysUntilExpiry(transaction.expiryDate);
+                        const daysUntilExpiry = getDaysUntilExpiry(transaction.expiryAt);
                         const isExpiringSoon = daysUntilExpiry !== null && daysUntilExpiry <= 30;
 
                         return (
                             <div
-                                key={transaction.id}
+                                key={transaction.$id || `txn-${Math.random()}`}
                                 className={`bg-white rounded-2xl p-4 shadow-md border transition-all hover:shadow-lg ${getTransactionBg(transaction.type)}`}
                             >
                                 <div className="flex items-start gap-4">
@@ -301,10 +233,10 @@ const CoinHistoryPage: React.FC<CoinHistoryPageProps> = ({
                                         
                                         <div className="flex items-center gap-2 text-xs text-gray-600">
                                             <Calendar className="w-3 h-3" />
-                                            <span>{formatDate(transaction.date)}</span>
+                                            <span>{formatDate(transaction.earnedAt)}</span>
                                         </div>
                                         
-                                        {transaction.expiryDate && transaction.type === 'earn' && (
+                                        {transaction.expiryAt && transaction.type === 'earn' && (
                                             <div className={`mt-2 flex items-center gap-2 text-xs ${
                                                 isExpiringSoon ? 'text-red-600 font-semibold' : 'text-gray-500'
                                             }`}>
@@ -313,16 +245,16 @@ const CoinHistoryPage: React.FC<CoinHistoryPageProps> = ({
                                                     {isExpiringSoon ? (
                                                         <>⚠️ Expires in {daysUntilExpiry} days</>
                                                     ) : (
-                                                        <>Expires: {formatDate(transaction.expiryDate)}</>
+                                                        <>Expires: {formatDate(transaction.expiryAt)}</>
                                                     )}
                                                 </span>
                                             </div>
                                         )}
 
-                                        {transaction.status === 'pending' && (
-                                            <div className="mt-2 inline-flex items-center gap-1 bg-yellow-100 text-yellow-800 px-2 py-1 rounded-lg text-xs font-semibold">
-                                                <Clock className="w-3 h-3" />
-                                                Pending
+                                        {transaction.status === 'active' && transaction.type === 'earn' && (
+                                            <div className="mt-2 inline-flex items-center gap-1 bg-green-100 text-green-800 px-2 py-1 rounded-lg text-xs font-semibold">
+                                                <CheckCircle className="w-3 h-3" />
+                                                Active
                                             </div>
                                         )}
                                     </div>

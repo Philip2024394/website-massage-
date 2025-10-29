@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Copy, Share2, Gift, Users, CheckCircle, Clock, TrendingUp } from 'lucide-react';
+import { coinService } from '../lib/coinService';
 
 interface ReferralPageProps {
     userId?: string;
@@ -9,17 +10,41 @@ interface ReferralPageProps {
 
 const ReferralPage: React.FC<ReferralPageProps> = ({ userId = '12345', userCoins = 245, onNavigate }) => {
     const [copied, setCopied] = useState(false);
+    const [referralCode, setReferralCode] = useState('');
     const [referralStats, setReferralStats] = useState({
-        totalReferrals: 12,
-        activeReferrals: 8,
-        coinsEarned: 1200,
-        pendingRewards: 200,
-        thisMonthReferrals: 3
+        totalReferrals: 0,
+        activeReferrals: 0,
+        coinsEarned: 0,
+        pendingRewards: 0,
+        thisMonthReferrals: 0
     });
+    const [loading, setLoading] = useState(true);
 
-    // Generate unique referral code based on userId
-    const referralCode = `INDA${userId.slice(0, 6).toUpperCase()}`;
     const referralLink = `https://indastreet.com/ref/${referralCode}`;
+
+    // Load referral code and stats
+    useEffect(() => {
+        const loadReferralData = async () => {
+            if (!userId) return;
+            
+            setLoading(true);
+            try {
+                // Initialize or get referral code
+                const code = await coinService.initializeReferralCode(userId);
+                setReferralCode(code);
+
+                // Load referral statistics
+                const stats = await coinService.getReferralStats(userId);
+                setReferralStats(stats);
+            } catch (error) {
+                console.error('Error loading referral data:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadReferralData();
+    }, [userId]);
 
     const handleCopyCode = () => {
         navigator.clipboard.writeText(referralCode);

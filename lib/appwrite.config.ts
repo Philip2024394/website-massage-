@@ -41,6 +41,8 @@ export const APPWRITE_CONFIG = {
         userRegistrations: 'user_registrations', // NEW: Device tracking for welcome bonus
         chatRooms: 'chat_rooms', // NEW: Booking chat rooms
         chatMessages: 'chat_messages', // NEW: Chat messages with translations
+        coins: 'coins', // NEW: Coin rewards transactions
+        referrals: 'referrals', // NEW: Referral tracking
     },
     
     // Storage bucket ID
