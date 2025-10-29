@@ -760,25 +760,25 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                             </div>
                         </div>
                         
-                        {/* Add spacing for overlapping profile image */}
-                        <div className="mt-16"></div>
+                        {/* Add more spacing for overlapping profile image - moved down further */}
+                        <div className="mt-20"></div>
                         
                         <div>
-                            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                                <Building className="w-4 h-4 text-orange-500" />
+                            <label className="flex items-center gap-2 text-sm font-medium text-gray-400 mb-2">
+                                <Building className="w-4 h-4 text-gray-400" />
                                 Hotel/Villa Name
                             </label>
                             <input 
                                 className="w-full p-3 border-2 border-gray-300 rounded-lg text-base font-medium focus:ring-2 focus:ring-orange-500 focus:border-orange-500" 
-                                placeholder="Enter your hotel or villa name" 
+                                placeholder="Your Hotel/Villa Name" 
                                 value={hotelName} 
                                 onChange={(e) => setHotelName(e.target.value)} 
                             />
                         </div>
                         
                         <div>
-                            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                                <svg className="w-4 h-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <label className="flex items-center gap-2 text-sm font-medium text-gray-400 mb-2">
+                                <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
@@ -786,20 +786,20 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                             </label>
                             <textarea 
                                 className="w-full p-4 border-2 border-gray-300 rounded-lg text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 min-h-[100px] resize-none" 
-                                placeholder="Enter complete address&#10;Street, District, City, Postal Code&#10;Include landmarks if helpful" 
+                                placeholder="Your Address / Location" 
                                 value={hotelAddress} 
                                 onChange={(e) => setHotelAddress(e.target.value)} 
                             />
                         </div>
                         
                         <div>
-                            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                                <Phone className="w-4 h-4 text-orange-500" />
+                            <label className="flex items-center gap-2 text-sm font-medium text-gray-400 mb-2">
+                                <Phone className="w-4 h-4 text-gray-400" />
                                 Contact Phone (optional)
                             </label>
                             <input 
                                 className="w-full p-3 border-2 border-gray-300 rounded-lg text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500" 
-                                placeholder="+62 123 456 789" 
+                                placeholder="Your Phone Number" 
                                 value={hotelPhone} 
                                 onChange={(e) => setHotelPhone(e.target.value)} 
                             />
