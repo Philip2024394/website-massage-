@@ -3,9 +3,10 @@ import React, { useState, useEffect } from 'react';
 interface CookieConsentProps {
   language: 'en' | 'id';
   hasLocation: boolean;
+  onNavigateToCookiesPolicy?: () => void;
 }
 
-const CookieConsent: React.FC<CookieConsentProps> = ({ language, hasLocation }) => {
+const CookieConsent: React.FC<CookieConsentProps> = ({ language, hasLocation, onNavigateToCookiesPolicy }) => {
   const [showBanner, setShowBanner] = useState(false);
 
   useEffect(() => {
@@ -98,27 +99,28 @@ const CookieConsent: React.FC<CookieConsentProps> = ({ language, hasLocation }) 
           {t.message}
         </p>
         
-        <a 
-          href="/privacy-policy" 
-          className="text-sm text-orange-500 hover:text-orange-600 underline font-semibold inline-block mb-6"
-          onClick={(e) => {
-            e.preventDefault();
-            window.location.hash = '#/privacy-policy';
+        <button
+          onClick={() => {
+            setShowBanner(false);
+            if (onNavigateToCookiesPolicy) {
+              onNavigateToCookiesPolicy();
+            }
           }}
+          className="text-sm text-orange-500 hover:text-orange-600 underline font-semibold inline-block mb-6"
         >
           {t.learnMore}
-        </a>
+        </button>
         
         <div className="flex gap-3">
           <button
             onClick={declineCookies}
-            className="flex-1 px-6 py-3 rounded-lg border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-300 font-semibold"
+            className="flex-1 px-4 py-2 rounded-lg border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-300 font-semibold text-sm"
           >
             {t.decline}
           </button>
           <button
             onClick={acceptCookies}
-            className="flex-1 bg-orange-500 px-6 py-3 rounded-lg hover:bg-orange-600 text-white transition-all duration-300 font-semibold shadow-lg hover:shadow-xl"
+            className="flex-1 bg-orange-500 px-4 py-2 rounded-lg hover:bg-orange-600 text-white transition-all duration-300 font-semibold shadow-lg hover:shadow-xl text-sm"
           >
             {t.accept}
           </button>

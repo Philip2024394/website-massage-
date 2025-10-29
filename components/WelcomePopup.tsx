@@ -158,9 +158,9 @@ const WelcomePopup: React.FC<WelcomePopupProps> = ({ language, isAdmin = false }
           
           <h2 className="text-3xl font-bold mb-2">
             <span className="text-black">{t.title}</span>
-            <span className="text-orange-500 relative">
-              <span className="inline-block animate-float">{t.titleHighlight.charAt(0)}</span>
-              <span className="text-orange-500">{t.titleHighlight.slice(1)}</span>
+            <span className="text-orange-500">
+              <span className="inline-block animate-float">S</span>
+              <span>treet</span>
             </span>
             <span className="text-black">{t.titleEnd}</span>
           </h2>
