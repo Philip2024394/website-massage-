@@ -125,6 +125,7 @@ const App: React.FC = () => {
     
     // Registration prompt state
     const [showRegisterPrompt, setShowRegisterPrompt] = useState(false);
+    const [registerPromptContext, setRegisterPromptContext] = useState<'booking' | 'chat'>('booking');
     
     // Chat system state
     const [activeChatRoom, setActiveChatRoom] = useState<ChatRoom | null>(null);
@@ -890,6 +891,7 @@ const App: React.FC = () => {
     const handleNavigateToBooking = (provider: Therapist | Place, type: 'therapist' | 'place') => {
         // Allow hotel/villa users or regular customers to book
         if (!user && !isHotelLoggedIn && !isVillaLoggedIn && !loggedInCustomer) {
+            setRegisterPromptContext('booking');
             setShowRegisterPrompt(true);
             return;
         }
@@ -900,6 +902,7 @@ const App: React.FC = () => {
     const handleQuickBookWithChat = async (provider: Therapist | Place, type: 'therapist' | 'place') => {
         // Allow hotel/villa users or regular customers to book
         if (!user && !isHotelLoggedIn && !isVillaLoggedIn && !loggedInCustomer) {
+            setRegisterPromptContext('booking');
             setShowRegisterPrompt(true);
             return;
         }
@@ -1545,6 +1548,13 @@ const App: React.FC = () => {
                     onMenuClick={handleFooterMenu}
                     onSearchClick={handleFooterSearch}
                     onChatClick={() => {
+                        // Check if user is logged in
+                        if (!user && !loggedInCustomer && !isHotelLoggedIn && !isVillaLoggedIn) {
+                            setRegisterPromptContext('chat');
+                            setShowRegisterPrompt(true);
+                            return;
+                        }
+                        
                         // If there's an active chat room, show it
                         if (activeChatRoom && chatBooking) {
                             setIsChatWindowVisible(!isChatWindowVisible);
@@ -1583,6 +1593,7 @@ const App: React.FC = () => {
                 onClose={handleRegisterPromptClose}
                 onRegister={handleRegisterPromptRegister}
                 language={language}
+                context={registerPromptContext}
             />
             <CoinEarnedCelebration 
                 event={loyaltyEvent}

@@ -5,20 +5,30 @@ interface RegisterPromptPopupProps {
     onClose: () => void;
     onRegister: () => void;
     language: 'en' | 'id';
+    context?: 'booking' | 'chat'; // Context for customized messaging
 }
 
 const RegisterPromptPopup: React.FC<RegisterPromptPopupProps> = ({
     isOpen,
     onClose,
     onRegister,
-    language
+    language,
+    context = 'booking'
 }) => {
     if (!isOpen) return null;
 
     const translations = {
         en: {
-            title: "Create Account to Book",
-            message: "Please register an account to use our booking services and enjoy exclusive benefits!",
+            booking: {
+                title: "Create Account to Book",
+                message: "Please register an account to use our booking services and enjoy exclusive benefits!",
+                icon: "🎯"
+            },
+            chat: {
+                title: "Create Account to Chat",
+                message: "Please register an account to access our chat feature and communicate with therapists!",
+                icon: "💬"
+            },
             benefits: [
                 "💰 Get 100 welcome coins instantly",
                 "📅 Easy booking management",
@@ -30,8 +40,16 @@ const RegisterPromptPopup: React.FC<RegisterPromptPopupProps> = ({
             cancelButton: "Maybe Later"
         },
         id: {
-            title: "Buat Akun untuk Booking",
-            message: "Silakan daftar akun untuk menggunakan layanan booking kami dan nikmati manfaat eksklusif!",
+            booking: {
+                title: "Buat Akun untuk Booking",
+                message: "Silakan daftar akun untuk menggunakan layanan booking kami dan nikmati manfaat eksklusif!",
+                icon: "🎯"
+            },
+            chat: {
+                title: "Buat Akun untuk Chat",
+                message: "Silakan daftar akun untuk mengakses fitur chat dan berkomunikasi dengan terapis!",
+                icon: "💬"
+            },
             benefits: [
                 "💰 Dapatkan 100 koin selamat datang langsung",
                 "📅 Manajemen booking mudah",
@@ -45,6 +63,7 @@ const RegisterPromptPopup: React.FC<RegisterPromptPopupProps> = ({
     };
 
     const t = translations[language];
+    const contextData = t[context];
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 animate-fadeIn">
@@ -53,8 +72,8 @@ const RegisterPromptPopup: React.FC<RegisterPromptPopupProps> = ({
                 <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-6 text-white">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="text-4xl">🎯</div>
-                            <h2 className="text-2xl font-bold">{t.title}</h2>
+                            <div className="text-4xl">{contextData.icon}</div>
+                            <h2 className="text-2xl font-bold">{contextData.title}</h2>
                         </div>
                         <button
                             onClick={onClose}
@@ -70,7 +89,7 @@ const RegisterPromptPopup: React.FC<RegisterPromptPopupProps> = ({
                 {/* Content */}
                 <div className="p-6">
                     <p className="text-gray-700 text-lg mb-6 leading-relaxed">
-                        {t.message}
+                        {contextData.message}
                     </p>
 
                     {/* Benefits list */}
