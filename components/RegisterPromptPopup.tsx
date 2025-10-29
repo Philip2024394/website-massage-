@@ -21,42 +21,24 @@ const RegisterPromptPopup: React.FC<RegisterPromptPopupProps> = ({
         en: {
             booking: {
                 title: "Create Account To Continue",
-                message: "Please register an account to use our booking services and enjoy exclusive benefits!",
-                icon: "🎯"
+                message: "Please register an account to use our booking services and enjoy exclusive benefits!"
             },
             chat: {
                 title: "Create Account To Continue",
-                message: "Please register an account to access our chat feature and communicate with therapists!",
-                icon: "💬"
+                message: "Please register an account to access our chat feature and communicate with therapists!"
             },
-            benefits: [
-                "💰 Get 100 welcome coins instantly",
-                "📅 Easy booking management",
-                "⭐ Save favorite therapists",
-                "🎁 Exclusive discounts & rewards",
-                "📱 Track all your appointments"
-            ],
             registerButton: "Create Account",
             cancelButton: "Maybe Later"
         },
         id: {
             booking: {
                 title: "Buat Akun Untuk Melanjutkan",
-                message: "Silakan daftar akun untuk menggunakan layanan booking kami dan nikmati manfaat eksklusif!",
-                icon: "🎯"
+                message: "Silakan daftar akun untuk menggunakan layanan booking kami dan nikmati manfaat eksklusif!"
             },
             chat: {
                 title: "Buat Akun Untuk Melanjutkan",
-                message: "Silakan daftar akun untuk mengakses fitur chat dan berkomunikasi dengan terapis!",
-                icon: "💬"
+                message: "Silakan daftar akun untuk mengakses fitur chat dan berkomunikasi dengan terapis!"
             },
-            benefits: [
-                "💰 Dapatkan 100 koin selamat datang langsung",
-                "📅 Manajemen booking mudah",
-                "⭐ Simpan terapis favorit",
-                "🎁 Diskon & hadiah eksklusif",
-                "📱 Lacak semua janji temu Anda"
-            ],
             registerButton: "Buat Akun",
             cancelButton: "Nanti Saja"
         }
@@ -68,13 +50,10 @@ const RegisterPromptPopup: React.FC<RegisterPromptPopupProps> = ({
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 animate-fadeIn">
             <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-slideUp">
-                {/* Header - No orange block, just title and close button */}
+                {/* Header */}
                 <div className="p-6 pb-2">
                     <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                            <div className="text-4xl">{contextData.icon}</div>
-                            <h2 className="text-2xl font-bold text-gray-800">{contextData.title}</h2>
-                        </div>
+                        <h2 className="text-2xl font-bold text-gray-800">{contextData.title}</h2>
                         <button
                             onClick={onClose}
                             className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -92,35 +71,32 @@ const RegisterPromptPopup: React.FC<RegisterPromptPopupProps> = ({
                         {contextData.message}
                     </p>
 
-                    {/* Benefits list */}
-                    <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-xl p-4 mb-6">
-                        <ul className="space-y-3">
-                            {t.benefits.map((benefit, index) => (
-                                <li 
-                                    key={index} 
-                                    className="flex items-start gap-2 text-gray-700 animate-slideIn"
-                                    style={{ animationDelay: `${index * 0.1}s` }}
-                                >
-                                    <span className="text-lg">{benefit}</span>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-
-                    {/* Action buttons */}
-                    <div className="flex gap-3">
-                        <button
-                            onClick={onRegister}
-                            className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold py-4 px-6 rounded-xl hover:from-orange-600 hover:to-orange-700 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
-                        >
-                            {t.registerButton}
-                        </button>
-                        <button
-                            onClick={onClose}
-                            className="flex-1 bg-gray-200 text-gray-700 font-semibold py-4 px-6 rounded-xl hover:bg-gray-300 transition-colors duration-300"
-                        >
-                            {t.cancelButton}
-                        </button>
+                    {/* Action buttons with background image */}
+                    <div className="relative rounded-xl overflow-hidden">
+                        {/* Background image */}
+                        <div 
+                            className="absolute inset-0 bg-cover bg-center opacity-20"
+                            style={{ 
+                                backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/screen%20cover.png?updatedAt=1761711498523)',
+                                filter: 'blur(2px)'
+                            }}
+                        ></div>
+                        
+                        {/* Buttons */}
+                        <div className="relative flex gap-3 p-4 bg-gradient-to-br from-orange-50/90 to-yellow-50/90 backdrop-blur-sm">
+                            <button
+                                onClick={onRegister}
+                                className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold py-4 px-6 rounded-xl hover:from-orange-600 hover:to-orange-700 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+                            >
+                                {t.registerButton}
+                            </button>
+                            <button
+                                onClick={onClose}
+                                className="flex-1 bg-gray-200 text-gray-700 font-semibold py-4 px-6 rounded-xl hover:bg-gray-300 transition-colors duration-300"
+                            >
+                                {t.cancelButton}
+                            </button>
+                        </div>
                     </div>
                 </div>
 
