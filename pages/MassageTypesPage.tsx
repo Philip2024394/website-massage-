@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MASSAGE_TYPES_CATEGORIZED, getMassageTypeImage, getMassageTypeDetails } from '../constants';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import CloseIcon from '../components/icons/CloseIcon';
@@ -46,9 +46,12 @@ const MassageTypesPage: React.FC<MassageTypesPageProps> = ({ onBack, onFindThera
     // Flatten all massage types from categories
     const allMassageTypes: string[] = MASSAGE_TYPES_CATEGORIZED.flatMap(category => category.types);
     
+    // Base ratings that will be used for each massage type (cycle through these values)
+    const baseRatings = [4.2, 4.5, 4.7, 4.8];
+    
     // Initialize massage types with popularity ratings
     const [massageTypes, setMassageTypes] = useState<MassageType[]>(
-        allMassageTypes.map(name => {
+        allMassageTypes.map((name, index) => {
             const imageUrl = getMassageTypeImage(name);
             const details = getMassageTypeDetails(name);
             // Create a consistent placeholder color based on the massage type name
@@ -63,18 +66,45 @@ const MassageTypesPage: React.FC<MassageTypesPageProps> = ({ onBack, onFindThera
                 bestFor: details?.bestFor || [],
                 // Use our image URL if available, otherwise use consistent placeholder
                 image: imageUrl || `https://via.placeholder.com/400x200/${placeholderColor}/FFFFFF?text=${encodeURIComponent(name)}`,
-                popularity: Math.floor(Math.random() * 3) + 3, // Random 3-5 stars initially
+                popularity: baseRatings[index % baseRatings.length], // Assign base rating from array
                 expanded: false
             };
         })
     );
 
+    // Add slight fluctuations to ratings as user spends time on each card
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setMassageTypes(prevTypes => 
+                prevTypes.map(type => {
+                    // Small random fluctuation between -0.1 and +0.1
+                    const fluctuation = (Math.random() - 0.5) * 0.2;
+                    let newRating = type.popularity + fluctuation;
+                    
+                    // Keep rating within reasonable bounds (4.0 - 5.0)
+                    newRating = Math.max(4.0, Math.min(5.0, newRating));
+                    
+                    // Round to 1 decimal place
+                    newRating = Math.round(newRating * 10) / 10;
+                    
+                    return { ...type, popularity: newRating };
+                })
+            );
+        }, 3000); // Update every 3 seconds
+
+        return () => clearInterval(interval);
+    }, []);
+
     const handlePopularityClick = (index: number) => {
-        const currentPopularity = massageTypes[index].popularity;
-        const newPopularity = currentPopularity === 5 ? 1 : currentPopularity + 1;
-        
+        // Clicking adds a small boost to the rating
         const updatedTypes = [...massageTypes];
-        updatedTypes[index] = { ...updatedTypes[index], popularity: newPopularity };
+        let newRating = updatedTypes[index].popularity + 0.1;
+        
+        // Keep within bounds
+        newRating = Math.min(5.0, newRating);
+        newRating = Math.round(newRating * 10) / 10;
+        
+        updatedTypes[index] = { ...updatedTypes[index], popularity: newRating };
         setMassageTypes(updatedTypes);
     };
 
@@ -89,23 +119,12 @@ const MassageTypesPage: React.FC<MassageTypesPageProps> = ({ onBack, onFindThera
             {/* Header matching HomePage */}
             <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
                 <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-3">
-                        <button 
-                            onClick={onBack} 
-                            className="text-gray-600 hover:text-gray-800"
-                            aria-label="Back"
-                        >
-                            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                            </svg>
-                        </button>
-                        <h1 className="text-2xl font-bold text-gray-800">
-                            <span className="text-black">Inda</span>
-                            <span className="text-orange-500">
-                                <span className="inline-block animate-float">S</span>treet
-                            </span>
-                        </h1>
-                    </div>
+                    <h1 className="text-2xl font-bold text-gray-800">
+                        <span className="text-black">Inda</span>
+                        <span className="text-orange-500">
+                            <span className="inline-block animate-float">S</span>treet
+                        </span>
+                    </h1>
                     <div className="flex items-center gap-4 text-gray-600">
                         <button onClick={() => setIsMenuOpen(true)} title="Menu">
                            <BurgerMenuIcon className="w-6 h-6" />
