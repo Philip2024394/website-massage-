@@ -1199,7 +1199,7 @@ const App: React.FC = () => {
                             onLogout={handleLogout}
                             onLoginClick={handleNavigateToTherapistLogin}
                             onCreateProfileClick={handleNavigateToRegistrationChoice}
-                            onAgentPortalClick={loggedInAgent ? () => setPage('agentDashboard') : handleNavigateToAgentAuth}
+                            onAgentPortalClick={loggedInAgent ? () => setPage('agentDashboard') : () => setPage('agent')}
                             onCustomerPortalClick={handleNavigateToCustomerDashboard}
                             onBook={handleNavigateToBooking}
                             onQuickBookWithChat={handleQuickBookWithChat}
@@ -1409,7 +1409,7 @@ const App: React.FC = () => {
                         onLogout={handleLogout}
                         onLoginClick={handleNavigateToAuth}
                         onCreateProfileClick={handleNavigateToRegistrationChoice}
-                        onAgentPortalClick={loggedInAgent ? () => setPage('agentDashboard') : handleNavigateToAgentAuth}
+                        onAgentPortalClick={loggedInAgent ? () => setPage('agentDashboard') : () => setPage('agent')}
                         onBook={handleNavigateToBooking}
                         onQuickBookWithChat={handleQuickBookWithChat}
                         onIncrementAnalytics={handleIncrementAnalytics}

@@ -1,6 +1,7 @@
 
 import React from 'react';
 import Button from '../components/Button';
+import Footer from '../components/Footer';
 
 const WhatsAppIcon: React.FC<{className?: string}> = ({ className }) => (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -30,17 +31,20 @@ const AgentPage: React.FC<AgentPageProps> = ({ onBack, onNavigateToAgentAuth, t:
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-green-50">
-            <header className="p-4 bg-white sticky top-0 z-10 shadow-sm flex items-center">
-                <button onClick={onBack} className="text-gray-600 hover:text-gray-800 mr-4">
-                     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                </button>
-                <h1 className="text-xl font-bold">
-                    <span className="text-black">Indo</span>
-                    <span className="text-orange-500">Street</span>
-                    <span className="text-gray-700"> Agent Program</span>
-                </h1>
+            <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
+                <div className="flex justify-between items-center">
+                    <h1 className="text-2xl font-bold text-gray-800">
+                        <span className="text-black">Inda</span>
+                        <span className="text-orange-500">
+                            <span className="inline-block animate-float">S</span>treet
+                        </span>
+                    </h1>
+                    <button onClick={onBack} className="text-gray-600 hover:text-gray-800">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
             </header>
 
             <main className="p-6 space-y-8 pb-32 max-w-4xl mx-auto">
@@ -245,21 +249,30 @@ const AgentPage: React.FC<AgentPageProps> = ({ onBack, onNavigateToAgentAuth, t:
                 </div>
             </main>
 
-            {/* Fixed Bottom CTA */}
-            <div className="p-4 fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg">
-                <div className="max-w-md mx-auto">
+                {/* Create Account CTA (explicit button at end) */}
+                <div className="pt-8">
+                    <div className="max-w-md mx-auto">
+                        <Button onClick={onNavigateToAgentAuth} className="w-full bg-orange-500 text-white py-3 rounded-full font-bold">
+                            Create Account (Agent)
+                        </Button>
+                        <p className="text-center text-xs text-gray-500 mt-2">Log in or create your agent account</p>
+                    </div>
+                </div>
+
+                {/* WhatsApp CTA remains as a smaller inline button above footer */}
+                <div className="p-4 max-w-md mx-auto mt-6">
                     <Button
                         onClick={handleWhatsAppClick}
-                        className="w-full flex items-center justify-center gap-3 text-lg py-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
+                        className="w-full flex items-center justify-center gap-3 text-lg py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 rounded-lg"
                     >
                         <WhatsAppIcon className="w-6 h-6"/>
                         <span>Contact Us on WhatsApp</span>
                     </Button>
-                    <p className="text-center text-xs text-gray-500 mt-2">
-                        Get instant answers to your questions
-                    </p>
                 </div>
-            </div>
+
+            <Footer onHomeClick={onBack} t={{}} />
+
+            <style>{`\n                @keyframes float {\n                    0%, 100% { transform: translateY(0); }\n                    50% { transform: translateY(-5px); }\n                }\n                .animate-float {\n                    animation: float 2s ease-in-out infinite;\n                }\n            `}</style>
         </div>
     );
 };

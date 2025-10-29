@@ -1,13 +1,8 @@
 
 
 import React from 'react';
-import Button from '../components/Button';
-
-const WhatsAppIcon: React.FC<{className?: string}> = ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99 0-3.903-.52-5.614-1.486L.057 24zM6.591 17.419c.404.652.812 1.272 1.242 1.85 1.58 2.116 3.663 3.22 5.953 3.218 5.55-.006 10.038-4.488 10.043-10.038.005-5.55-4.488-10.038-10.038-10.043-5.55.005-10.038 4.488-10.043 10.038.002 2.13.642 4.148 1.822 5.898l-1.03 3.766 3.844-1.025z"/>
-    </svg>
-);
+import Footer from '../components/Footer';
+import { translations } from '../translations/index.ts';
 
 interface ServiceTermsPageProps {
     onBack: () => void;
@@ -15,23 +10,24 @@ interface ServiceTermsPageProps {
     contactNumber: string;
 }
 
-const ServiceTermsPage: React.FC<ServiceTermsPageProps> = ({ onBack, t, contactNumber }) => {
-
-    const handleWhatsAppClick = () => {
-        const number = contactNumber;
-        const message = encodeURIComponent('I have a customer service question.');
-        window.open(`https://wa.me/${number}?text=${message}`, '_blank');
-    };
+const ServiceTermsPage: React.FC<ServiceTermsPageProps> = ({ onBack, t, contactNumber: _contactNumber }) => {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <header className="p-4 bg-white sticky top-0 z-10 shadow-sm flex items-center">
-                <button onClick={onBack} className="text-gray-600 hover:text-gray-800 mr-4">
-                     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                </button>
-                <h1 className="text-xl font-bold text-gray-800">{t.title}</h1>
+            <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
+                <div className="flex justify-between items-center">
+                    <h1 className="text-2xl font-bold text-gray-800">
+                        <span className="text-black">Inda</span>
+                        <span className="text-orange-500">
+                            <span className="inline-block animate-float">S</span>treet
+                        </span>
+                    </h1>
+                    <button onClick={onBack} className="text-gray-600 hover:text-gray-800">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
             </header>
 
             <main className="p-6 space-y-6 text-gray-700 pb-24 max-w-4xl mx-auto">
@@ -211,15 +207,9 @@ const ServiceTermsPage: React.FC<ServiceTermsPageProps> = ({ onBack, t, contactN
                 </div>
             </main>
 
-            <div className="p-4 fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t">
-                 <Button
-                    onClick={handleWhatsAppClick}
-                    className="w-full flex items-center justify-center gap-2"
-                >
-                    <WhatsAppIcon className="w-5 h-5"/>
-                    <span>{t.customerServiceButton}</span>
-                </Button>
-            </div>
+            <Footer onHomeClick={onBack} t={translations} />
+
+            <style>{`\n                @keyframes float {\n                    0%, 100% { transform: translateY(0); }\n                    50% { transform: translateY(-5px); }\n                }\n                .animate-float {\n                    animation: float 2s ease-in-out infinite;\n                }\n            `}</style>
         </div>
     );
 };

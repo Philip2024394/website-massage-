@@ -1,4 +1,6 @@
 import React from 'react';
+import Footer from '../components/Footer';
+import { translations } from '../translations/index.ts';
 
 interface PrivacyPolicyPageProps {
     onBack: () => void;
@@ -15,16 +17,23 @@ const Section: React.FC<{ title: string, content: string | React.ReactNode }> = 
 const PrivacyPolicyPage: React.FC<PrivacyPolicyPageProps> = ({ onBack, t }) => {
     return (
         <div className="min-h-screen bg-gray-50">
-            <header className="p-4 bg-white sticky top-0 z-10 shadow-sm flex items-center">
-                <button onClick={onBack} className="text-gray-600 hover:text-gray-800 mr-4">
-                     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                </button>
-                <h1 className="text-xl font-bold text-gray-800">{t.title}</h1>
+            <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
+                <div className="flex justify-between items-center">
+                    <h1 className="text-2xl font-bold text-gray-800">
+                        <span className="text-black">Inda</span>
+                        <span className="text-orange-500">
+                            <span className="inline-block animate-float">S</span>treet
+                        </span>
+                    </h1>
+                    <button onClick={onBack} className="text-gray-600 hover:text-gray-800">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
             </header>
 
-            <main className="p-6 space-y-8 text-gray-700 pb-8">
+            <main className="p-6 space-y-8 text-gray-700 pb-24">
                 <p className="text-xs text-gray-500">{t.lastUpdated}</p>
 
                 <Section title={t.introduction.title} content={t.introduction.content} />
@@ -84,6 +93,10 @@ const PrivacyPolicyPage: React.FC<PrivacyPolicyPageProps> = ({ onBack, t }) => {
                 <Section title={t.contact.title} content={t.contact.content} />
 
             </main>
+
+            <Footer onHomeClick={onBack} t={translations} />
+
+            <style>{`\n                @keyframes float {\n                    0%, 100% { transform: translateY(0); }\n                    50% { transform: translateY(-5px); }\n                }\n                .animate-float {\n                    animation: float 2s ease-in-out infinite;\n                }\n            `}</style>
         </div>
     );
 };
