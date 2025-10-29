@@ -1564,7 +1564,7 @@ const App: React.FC = () => {
                 language={language}
                 hasLocation={userLocation !== null}
             />
-            <WelcomePopup language={language} />
+            <WelcomePopup language={language} isAdmin={isAdminLoggedIn} />
             
             {/* Loyalty System Popups */}
             <CoinWelcomePopup 

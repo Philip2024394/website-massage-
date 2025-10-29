@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 
 interface WelcomePopupProps {
   language: 'en' | 'id';
+  isAdmin?: boolean; // Allow admins to always see the popup for design purposes
 }
 
-const WelcomePopup: React.FC<WelcomePopupProps> = ({ language }) => {
+const WelcomePopup: React.FC<WelcomePopupProps> = ({ language, isAdmin = false }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const translations = {
@@ -41,16 +42,25 @@ const WelcomePopup: React.FC<WelcomePopupProps> = ({ language }) => {
   useEffect(() => {
     const hasVisited = localStorage.getItem('has-visited');
     
+    // Always show for admins (for design purposes)
+    if (isAdmin) {
+      setTimeout(() => setIsOpen(true), 1000); // Show after 1 second
+      return;
+    }
+    
     // Show popup immediately when arriving at home page for first-time visitors
     if (!hasVisited) {
       setTimeout(() => setIsOpen(true), 1000); // Show after 1 second
     }
-  }, []);
+  }, [isAdmin]);
 
   const handleClose = (action: string) => {
-    localStorage.setItem('has-visited', 'true');
-    localStorage.setItem('welcome-dismissed-date', new Date().toISOString());
-    localStorage.setItem('welcome-action', action);
+    // Don't save to localStorage if admin is just previewing
+    if (!isAdmin) {
+      localStorage.setItem('has-visited', 'true');
+      localStorage.setItem('welcome-dismissed-date', new Date().toISOString());
+      localStorage.setItem('welcome-action', action);
+    }
     setIsOpen(false);
     
     // Play sound
