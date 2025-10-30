@@ -1,4 +1,4 @@
-import { databases, account, ID } from './appwrite';
+import { databases, ID } from './appwrite';
 import { APPWRITE_CONFIG } from './appwrite.config';
 import { Query } from 'appwrite';
 
@@ -105,7 +105,7 @@ class CoinService {
                 { referralCode }
             );
 
-            return referral as Referral;
+            return referral as unknown as Referral;
         } catch (error) {
             console.error('Error creating referral:', error);
             return null;
@@ -231,7 +231,7 @@ class CoinService {
                 transaction
             );
 
-            return result as CoinTransaction;
+            return result as unknown as CoinTransaction;
         } catch (error) {
             console.error('Error awarding coins:', error);
             return null;
@@ -423,7 +423,7 @@ class CoinService {
                 ...doc,
                 earnedAt: new Date(doc.earnedAt),
                 expiryAt: doc.expiryAt ? new Date(doc.expiryAt) : undefined,
-            })) as CoinTransaction[];
+            })) as unknown as CoinTransaction[];
         } catch (error) {
             console.error('Error getting transaction history:', error);
             return [];

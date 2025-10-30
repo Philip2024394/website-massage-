@@ -44,11 +44,21 @@ const AdminShopManagementPage: React.FC<AdminShopManagementPageProps> = ({ onNav
 
     const handleSaveItem = async () => {
         try {
+            // Validate required fields
+            if (!formData.name || !formData.description || !formData.coinPrice) {
+                alert('Please fill in all required fields (name, description, and coin price)');
+                return;
+            }
+
+            console.log('Saving shop item:', formData);
+
             if (editingItem) {
                 // Update existing item
+                console.log('Updating item:', editingItem.$id);
                 await shopItemService.updateItem(editingItem.$id || '', formData);
             } else {
                 // Add new item
+                console.log('Creating new item');
                 await shopItemService.createItem(formData);
             }
             
@@ -58,9 +68,23 @@ const AdminShopManagementPage: React.FC<AdminShopManagementPageProps> = ({ onNav
             setShowAddItem(false);
             setEditingItem(null);
             resetForm();
-        } catch (error) {
+            alert('Shop item saved successfully!');
+        } catch (error: any) {
             console.error('Error saving item:', error);
-            alert('Error saving item. Please try again.');
+            
+            // Provide more detailed error message
+            let errorMessage = 'Error saving item. ';
+            if (error.message) {
+                errorMessage += error.message;
+            } else if (error.code === 404) {
+                errorMessage += 'Shop items collection not found. Please create the "shopitems" collection in Appwrite.';
+            } else if (error.code === 401) {
+                errorMessage += 'Authentication error. Please log in again.';
+            } else {
+                errorMessage += 'Please check the console for details.';
+            }
+            
+            alert(errorMessage);
         }
     };
 

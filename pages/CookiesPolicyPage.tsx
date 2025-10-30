@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import LoginDrawer from '../components/LoginDrawer';
 
 interface CookiesPolicyPageProps {
     onBack: () => void;
@@ -6,6 +7,8 @@ interface CookiesPolicyPageProps {
 }
 
 const CookiesPolicyPage: React.FC<CookiesPolicyPageProps> = ({ onBack, t: _t }) => {
+    const [drawerOpen, setDrawerOpen] = useState(false);
+
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Header matching HomePage */}
@@ -17,13 +20,23 @@ const CookiesPolicyPage: React.FC<CookiesPolicyPageProps> = ({ onBack, t: _t }) 
                             <span className="inline-block animate-float">S</span>treet
                         </span>
                     </h1>
-                    <button onClick={onBack} className="text-gray-600 hover:text-gray-800">
+                    <button 
+                        onClick={() => setDrawerOpen(true)} 
+                        className="text-gray-600 hover:text-gray-800"
+                    >
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                     </button>
                 </div>
             </header>
+
+            {/* Login Drawer */}
+            <LoginDrawer 
+                isOpen={drawerOpen}
+                onClose={() => setDrawerOpen(false)}
+                onNavigate={onBack}
+            />
 
             {/* Main Content */}
             <main className="container mx-auto px-4 py-8 max-w-4xl pb-24">

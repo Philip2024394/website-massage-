@@ -4,7 +4,7 @@ import { AvailabilityStatus, BookingStatus, HotelVillaServiceStatus } from '../t
 import { parsePricing, parseCoordinates, parseMassageTypes, stringifyPricing, stringifyCoordinates, stringifyMassageTypes, stringifyAnalytics } from '../utils/appwriteHelpers';
 import { therapistService, notificationService } from '../lib/appwriteService';
 import { soundNotificationService } from '../utils/soundNotificationService';
-import { User, Calendar, TrendingUp, Hotel, FileCheck, LogOut, Bell, Briefcase } from 'lucide-react';
+import { User, Calendar, TrendingUp, Hotel, FileCheck, LogOut, Bell, Briefcase, MessageSquare } from 'lucide-react';
 import Button from '../components/Button';
 import ImageUpload from '../components/ImageUpload';
 import HotelVillaOptIn from '../components/HotelVillaOptIn';
@@ -20,6 +20,7 @@ import TherapistTermsPage from './TherapistTermsPage';
 import TabButton from '../components/dashboard/TabButton';
 import TherapistJobOpportunitiesPage from './TherapistJobOpportunitiesPage';
 import PushNotificationSettings from '../components/PushNotificationSettings';
+import MemberChatWindow from '../components/MemberChatWindow';
 
 
 interface TherapistDashboardPageProps {
@@ -101,6 +102,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [showImageRequirementModal, setShowImageRequirementModal] = useState(false);
     const [pendingImageUrl, setPendingImageUrl] = useState('');
+    const [showChat, setShowChat] = useState(false);
 
     const locationInputRef = useRef<HTMLInputElement>(null);
     
@@ -436,6 +438,24 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
 
     const renderContent = () => {
         switch (activeTab) {
+            case 'chat':
+                return (
+                    <div className="max-w-7xl mx-auto px-2 sm:px-4 py-6">
+                        <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+                            <h2 className="text-2xl font-bold text-gray-900 mb-2">Chat with Support</h2>
+                            <p className="text-sm text-gray-600 mb-4">
+                                Need help? Chat with our IndaStreet support team for assistance with bookings, 
+                                payments, account issues, or any questions you may have.
+                            </p>
+                        </div>
+                        <MemberChatWindow
+                            userId={String(therapistId)}
+                            userName={therapist?.name || 'Therapist'}
+                            userType="therapist"
+                            onClose={() => setActiveTab('profile')}
+                        />
+                    </div>
+                );
             case 'jobOpportunities':
                 return (
                     <TherapistJobOpportunitiesPage
@@ -1099,6 +1119,12 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                         label="Notifications"
                         isActive={activeTab === 'notifications'}
                         onClick={() => setActiveTab('notifications')}
+                    />
+                    <TabButton
+                        icon={<MessageSquare className="w-4 h-4" />}
+                        label="Chat Support"
+                        isActive={activeTab === 'chat'}
+                        onClick={() => setActiveTab('chat')}
                     />
                     <TabButton
                         icon={<Briefcase className="w-4 h-4" />}

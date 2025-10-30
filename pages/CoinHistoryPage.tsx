@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TrendingUp, TrendingDown, Clock, Gift, Calendar, AlertCircle, Award, ShoppingBag, CheckCircle } from 'lucide-react';
+import { TrendingUp, Clock, Gift, Calendar, AlertCircle, Award, ShoppingBag, CheckCircle } from 'lucide-react';
 import { coinService, CoinTransaction, CoinBalance } from '../lib/coinService';
 
 interface CoinHistoryPageProps {
@@ -22,14 +22,12 @@ const CoinHistoryPage: React.FC<CoinHistoryPageProps> = ({
         spent: 0,
         expiringSoon: 0
     });
-    const [loading, setLoading] = useState(true);
 
     // Load coin data
     useEffect(() => {
         const loadCoinData = async () => {
             if (!userId) return;
             
-            setLoading(true);
             try {
                 // Load balance and transactions in parallel
                 const [balance, history] = await Promise.all([
@@ -41,8 +39,6 @@ const CoinHistoryPage: React.FC<CoinHistoryPageProps> = ({
                 setTransactions(history);
             } catch (error) {
                 console.error('Error loading coin data:', error);
-            } finally {
-                setLoading(false);
             }
         };
 

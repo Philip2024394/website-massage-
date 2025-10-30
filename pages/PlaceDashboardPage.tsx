@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { Place, Pricing, Booking, Notification } from '../types';
 import { BookingStatus, HotelVillaServiceStatus } from '../types';
-import { User, Calendar, TrendingUp, Hotel, FileCheck, LogOut, Bell } from 'lucide-react';
+import { User, Calendar, TrendingUp, Hotel, FileCheck, LogOut, Bell, MessageSquare } from 'lucide-react';
 import Button from '../components/Button';
 import ImageUpload from '../components/ImageUpload';
 import HotelVillaOptIn from '../components/HotelVillaOptIn';
@@ -18,6 +18,7 @@ import TabButton from '../components/dashboard/TabButton';
 import { notificationService } from '../lib/appwriteService';
 import { soundNotificationService } from '../utils/soundNotificationService';
 import PushNotificationSettings from '../components/PushNotificationSettings';
+import MemberChatWindow from '../components/MemberChatWindow';
 
 
 interface PlaceDashboardPageProps {
@@ -360,6 +361,24 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
 
     const renderContent = () => {
         switch (activeTab) {
+            case 'chat':
+                return (
+                    <div className="max-w-7xl mx-auto px-2 sm:px-4 py-6">
+                        <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+                            <h2 className="text-2xl font-bold text-gray-900 mb-2">Chat with Support</h2>
+                            <p className="text-sm text-gray-600 mb-4">
+                                Need help? Chat with our IndaStreet support team for assistance with bookings, 
+                                payments, account issues, or any questions you may have.
+                            </p>
+                        </div>
+                        <MemberChatWindow
+                            userId={String(placeId)}
+                            userName={place?.name || 'Massage Place'}
+                            userType="place"
+                            onClose={() => setActiveTab('profile')}
+                        />
+                    </div>
+                );
             case 'terms':
                 return (
                     <div className="bg-white p-6 rounded-lg shadow">
@@ -844,6 +863,12 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                         onClick={() => setActiveTab('notifications')}
                     />
                     <TabButton
+                        icon={<MessageSquare className="w-4 h-4" />}
+                        label="Chat Support"
+                        isActive={activeTab === 'chat'}
+                        onClick={() => setActiveTab('chat')}
+                    />
+                    <TabButton
                         icon={<FileCheck className="w-4 h-4" />}
                         label="Terms"
                         isActive={activeTab === 'terms'}
@@ -860,7 +885,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             </div>
 
             {/* Content Area */}
-            <main className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-6">
+            <main className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-6 pb-20">
                 {renderContent()}
             </main>
         </div>

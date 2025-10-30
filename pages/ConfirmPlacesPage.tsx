@@ -12,6 +12,7 @@ interface PendingPlace {
   status: 'pending' | 'active' | 'deactivated';
   membershipPackage?: string;
   activeMembershipDate?: string;
+  mainImage?: string;
 }
 
 const membershipOptions = [
@@ -48,6 +49,7 @@ const ConfirmPlacesPage: React.FC = () => {
         status: p.status || 'pending',
         membershipPackage: p.membershipPackage,
         activeMembershipDate: p.activeMembershipDate,
+        mainImage: p.mainImage || '',
       }));
       setPlaces(formattedData);
     } catch (error) {
@@ -65,10 +67,6 @@ const ConfirmPlacesPage: React.FC = () => {
       const newExpiryDateString = newExpiryDate.toISOString().split('T')[0];
 
       await placeService.update(placeId, {
-        id: Date.now().toString(),
-        placeId: Date.now().toString(),
-        hotelId: Date.now().toString(),
-        status: 'active',
         isLive: true,
         activeMembershipDate: newExpiryDateString,
       });
@@ -88,10 +86,6 @@ const ConfirmPlacesPage: React.FC = () => {
     setUpdatingId(placeId);
     try {
       await placeService.update(placeId, {
-        id: Date.now().toString(),
-        placeId: Date.now().toString(),
-        hotelId: Date.now().toString(),
-        status: 'deactivated',
         isLive: false,
       });
 
@@ -100,6 +94,35 @@ const ConfirmPlacesPage: React.FC = () => {
     } catch (error: any) {
       console.error('Error deactivating place:', error);
       alert('Error deactivating place: ' + (error.message || 'Unknown error'));
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const handleDelete = async (placeId: string, placeName: string) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to permanently DELETE "${placeName}"?\n\nThis action CANNOT be undone and will remove:\n- Profile and all data\n- Reviews and ratings\n- Membership history\n- Profile images\n\nType "DELETE" to confirm.`
+    );
+    
+    if (!confirmed) return;
+
+    const doubleConfirm = window.prompt(
+      `To confirm deletion of "${placeName}", type DELETE in capital letters:`
+    );
+
+    if (doubleConfirm !== 'DELETE') {
+      alert('Deletion cancelled - confirmation text did not match.');
+      return;
+    }
+
+    setUpdatingId(placeId);
+    try {
+      await placeService.delete(placeId);
+      await fetchPlaces();
+      alert(`Massage place "${placeName}" has been permanently deleted.`);
+    } catch (error: any) {
+      console.error('Error deleting place:', error);
+      alert('Error deleting place: ' + (error.message || 'Unknown error'));
     } finally {
       setUpdatingId(null);
     }
@@ -150,7 +173,30 @@ const ConfirmPlacesPage: React.FC = () => {
                 key={place.$id}
                 className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow"
               >
-                <div className="flex flex-col md:flex-row md:items-center gap-4">
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+                  {/* Profile Image Section */}
+                  <div className="flex-shrink-0">
+                    {place.mainImage ? (
+                      <img
+                        src={place.mainImage}
+                        alt={place.name}
+                        className="w-20 h-20 rounded-full object-cover border-2 border-green-500"
+                      />
+                    ) : (
+                      <div className="w-20 h-20 rounded-full bg-gray-200 border-2 border-red-500 flex items-center justify-center">
+                        <span className="text-gray-400 text-2xl">🏢</span>
+                      </div>
+                    )}
+                    <p className="text-xs text-center mt-1 font-medium">
+                      {place.mainImage ? (
+                        <span className="text-green-600">✓ Image Set</span>
+                      ) : (
+                        <span className="text-red-600">⚠ No Image</span>
+                      )}
+                    </p>
+                  </div>
+
                   {/* Info Section */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
@@ -181,14 +227,15 @@ const ConfirmPlacesPage: React.FC = () => {
                       </p>
                     )}
                   </div>
+                  </div>
 
                   {/* Actions Section */}
-                  <div className="flex flex-col gap-2 md:items-end">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
                     {place.status === 'pending' || place.status === 'deactivated' || (place.status === 'active' && isExpired(place.activeMembershipDate)) ? (
-                      <div className="flex flex-col sm:flex-row gap-2">
+                      <div className="flex flex-col sm:flex-row gap-2 w-full">
                         <select
                           id={`membership-${place.$id}`}
-                          className="border border-gray-300 rounded px-2 py-1.5 text-sm focus:ring-2 focus:ring-brand-green focus:border-transparent"
+                          className="border border-gray-300 rounded px-2 py-1.5 text-sm focus:ring-2 focus:ring-brand-green focus:border-transparent flex-1"
                           disabled={updatingId === place.$id}
                         >
                           {membershipOptions.map((opt) => (
@@ -199,7 +246,7 @@ const ConfirmPlacesPage: React.FC = () => {
                         </select>
                         <Button
                           variant="primary"
-                          className="px-4 py-1.5 text-sm whitespace-nowrap"
+                          className="px-4 py-1.5 text-sm whitespace-nowrap flex-shrink-0"
                           disabled={updatingId === place.$id}
                           onClick={() => {
                             const select = document.getElementById(`membership-${place.$id}`) as HTMLSelectElement;
@@ -208,12 +255,20 @@ const ConfirmPlacesPage: React.FC = () => {
                         >
                           {updatingId === place.$id ? 'Activating...' : 'Activate'}
                         </Button>
-                      </div>
-                    ) : (
-                      <div className="flex gap-2">
                         <Button
                           variant="secondary"
-                          className="px-4 py-1.5 text-sm"
+                          className="px-4 py-1.5 text-sm whitespace-nowrap flex-shrink-0 bg-red-600 hover:bg-red-700 text-white"
+                          disabled={updatingId === place.$id}
+                          onClick={() => handleDelete(place.$id, place.name)}
+                        >
+                          🗑️ Delete
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col sm:flex-row gap-2 w-full">
+                        <Button
+                          variant="secondary"
+                          className="px-4 py-1.5 text-sm flex-shrink-0"
                           disabled={updatingId === place.$id}
                           onClick={() => handleDeactivate(place.$id)}
                         >
@@ -221,7 +276,7 @@ const ConfirmPlacesPage: React.FC = () => {
                         </Button>
                         <select
                           id={`renew-${place.$id}`}
-                          className="border border-gray-300 rounded px-2 py-1.5 text-sm focus:ring-2 focus:ring-brand-green focus:border-transparent"
+                          className="border border-gray-300 rounded px-2 py-1.5 text-sm focus:ring-2 focus:ring-brand-green focus:border-transparent flex-1"
                           disabled={updatingId === place.$id}
                         >
                           {membershipOptions.map((opt) => (
@@ -232,7 +287,7 @@ const ConfirmPlacesPage: React.FC = () => {
                         </select>
                         <Button
                           variant="primary"
-                          className="px-4 py-1.5 text-sm"
+                          className="px-4 py-1.5 text-sm flex-shrink-0"
                           disabled={updatingId === place.$id}
                           onClick={() => {
                             const select = document.getElementById(`renew-${place.$id}`) as HTMLSelectElement;
@@ -240,6 +295,14 @@ const ConfirmPlacesPage: React.FC = () => {
                           }}
                         >
                           Renew
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          className="px-4 py-1.5 text-sm whitespace-nowrap flex-shrink-0 bg-red-600 hover:bg-red-700 text-white"
+                          disabled={updatingId === place.$id}
+                          onClick={() => handleDelete(place.$id, place.name)}
+                        >
+                          🗑️ Delete
                         </Button>
                       </div>
                     )}

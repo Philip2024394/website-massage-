@@ -87,6 +87,7 @@ const HomePage: React.FC<HomePageProps> = ({
     loggedInCustomer,
     therapists,
     places,
+    userLocation,
     selectedMassageType: propSelectedMassageType, // Get from prop
     onSetUserLocation, 
     onBook,
@@ -227,17 +228,6 @@ const HomePage: React.FC<HomePageProps> = ({
                         </span>
                     </h1>
                     <div className="flex items-center gap-3 text-gray-600">
-                        <button 
-                            onClick={() => setIsLocationModalOpen(true)} 
-                            className="flex items-center gap-1 bg-orange-500 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-orange-600 transition-colors"
-                            title="Set Location"
-                        >
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            <span className="hidden sm:inline">Location</span>
-                        </button>
                         <button onClick={() => setIsMenuOpen(true)} title="Menu">
                            <BurgerMenuIcon className="w-6 h-6" />
                         </button>
@@ -730,9 +720,9 @@ const HomePage: React.FC<HomePageProps> = ({
                         {therapists
                             .filter((t: any) => t.isLive === true) // Only show activated therapists
                             .filter((t: any) => selectedMassageType === 'all' || (t.massageTypes && t.massageTypes.includes(selectedMassageType)))
-                            .map((therapist: any) => (
+                            .map((therapist: any, index: number) => (
                                 <TherapistCard
-                                    key={therapist.id || therapist.$id}
+                                    key={therapist.$id || `therapist-${therapist.id}-${index}`}
                                     therapist={therapist}
                                     onRate={() => handleOpenRatingModal(therapist)}
                                     onBook={() => onBook(therapist, 'therapist')}
@@ -782,7 +772,7 @@ const HomePage: React.FC<HomePageProps> = ({
 
                 {/* ...existing code for therapists/places rendering, modals, etc. should follow here... */}
             </main>
-            <AddToHomeScreenPrompt t={t.a2hsPrompt} />
+            <AddToHomeScreenPrompt t={t.a2hsPrompt} hasLocation={!!userLocation} />
             {isLocationModalOpen && (
                 <LocationModal
                     onConfirm={(location) => {

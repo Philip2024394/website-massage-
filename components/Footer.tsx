@@ -104,16 +104,16 @@ const Footer: React.FC<FooterProps> = ({
         return (
             <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40">
                 <div className="flex justify-around items-center h-16 max-w-md mx-auto">
-                    {/* Home/Dashboard */}
+                    {/* Dashboard */}
                     <button 
                         onClick={onDashboardClick}
                         className="flex flex-col items-center justify-center flex-1 h-full"
                     >
-                        <HomeIcon className="w-6 h-6 text-orange-500" />
+                        <DashboardIcon className="w-6 h-6 text-orange-500" />
                         <span className="text-xs mt-1 text-black">Dashboard</span>
                     </button>
 
-                    {/* Members */}
+                    {/* Members (Confirm Accounts) */}
                     <button 
                         onClick={onProfileClick}
                         className="flex flex-col items-center justify-center flex-1 h-full"
@@ -122,7 +122,23 @@ const Footer: React.FC<FooterProps> = ({
                         <span className="text-xs mt-1 text-black">Members</span>
                     </button>
 
-                    {/* Notifications */}
+                    {/* Messages (Chat) */}
+                    <button 
+                        onClick={onChatClick}
+                        className="flex flex-col items-center justify-center flex-1 h-full relative"
+                    >
+                        <div className="relative">
+                            <ChatIcon className="w-6 h-6 text-orange-500" />
+                            {unreadChats > 0 && (
+                                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                                    {unreadChats > 9 ? '9+' : unreadChats}
+                                </span>
+                            )}
+                        </div>
+                        <span className="text-xs mt-1 text-black">Messages</span>
+                    </button>
+
+                    {/* Notifications/Alerts */}
                     <button 
                         onClick={onNotificationsClick}
                         className="flex flex-col items-center justify-center flex-1 h-full relative"
@@ -138,7 +154,7 @@ const Footer: React.FC<FooterProps> = ({
                         <span className="text-xs mt-1 text-black">Alerts</span>
                     </button>
 
-                    {/* Settings */}
+                    {/* Settings (Drawer Buttons) */}
                     <button 
                         onClick={onMenuClick}
                         className="flex flex-col items-center justify-center flex-1 h-full"

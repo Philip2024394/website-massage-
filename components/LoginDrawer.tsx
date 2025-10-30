@@ -23,12 +23,12 @@ interface NavigationLink {
 interface LoginDrawerProps {
     isOpen: boolean;
     onClose: () => void;
-    onLoginSelect: (loginType: string) => void;
+    onLoginSelect?: (loginType: string) => void;
     onNavigate?: (page: string) => void;
-    t: any;
+    t?: any;
 }
 
-const LoginDrawer: React.FC<LoginDrawerProps> = ({ isOpen, onClose, onLoginSelect, onNavigate, t }) => {
+const LoginDrawer: React.FC<LoginDrawerProps> = ({ isOpen, onClose, onLoginSelect, onNavigate }) => {
     const loginOptions: LoginOption[] = [
         {
             id: 'admin',
@@ -142,7 +142,7 @@ const LoginDrawer: React.FC<LoginDrawerProps> = ({ isOpen, onClose, onLoginSelec
                                     <button
                                         key={option.id}
                                         onClick={() => {
-                                            onLoginSelect(option.id);
+                                            onLoginSelect?.(option.id);
                                             onClose();
                                         }}
                                         className="w-full p-4 rounded-lg border border-gray-200 hover:border-gray-300 transition-all duration-200 hover:shadow-md group"

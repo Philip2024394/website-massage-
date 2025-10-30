@@ -1,23 +1,28 @@
 
 
 import React, { useState, useEffect } from 'react';
-import { BarChart, Users, Building, Settings, Percent, LogOut, CreditCard, DollarSign } from 'lucide-react';
+import { BarChart, Users, Building, Settings, Percent, LogOut, CreditCard, DollarSign, ShoppingBag, MessageSquare, UserCheck, Menu, X, Package } from 'lucide-react';
 import ConfirmTherapistsPage from './ConfirmTherapistsPage';
 import ConfirmPlacesPage from './ConfirmPlacesPage';
+import ConfirmAccountsPage from './ConfirmAccountsPage';
+import AdminChatListPage from './AdminChatListPage';
 import DrawerButtonsPage from './DrawerButtonsPage';
 import AgentCommissionPage from './AgentCommissionPage';
 import PlatformAnalyticsPage from './PlatformAnalyticsPage';
 import BankDetailsManagementPage from './BankDetailsManagementPage';
 import PaymentTransactionsPage from './PaymentTransactionsPage';
+import AdminShopManagementPage from './AdminShopManagementPage';
+import MembershipPricingPage from './MembershipPricingPage';
 import { authService } from '../lib/appwriteService';
-import TabButton from '../components/dashboard/TabButton';
 
 interface AdminDashboardPageProps {
     onLogout: () => void;
+    initialTab?: DashboardPage;
 }
-type DashboardPage = 'platform-analytics' | 'confirm-therapists' | 'confirm-places' | 'drawer-buttons' | 'agent-commission' | 'bank-details' | 'payment-transactions';
-const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout'>> = ({ onLogout }) => {
-  const [activePage, setActivePage] = useState<DashboardPage>('platform-analytics');
+type DashboardPage = 'platform-analytics' | 'confirm-therapists' | 'confirm-places' | 'confirm-accounts' | 'chat-messages' | 'drawer-buttons' | 'agent-commission' | 'bank-details' | 'payment-transactions' | 'shop-management' | 'membership-pricing';
+const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'initialTab'>> = ({ onLogout, initialTab }) => {
+  const [activePage, setActivePage] = useState<DashboardPage>(initialTab || 'platform-analytics');
+  const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
 
   useEffect(() => {
     // Initialize anonymous session for Appwrite access
@@ -33,78 +38,242 @@ const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout'>> = 
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Side Drawer Overlay */}
+      {isSideDrawerOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40"
+          onClick={() => setIsSideDrawerOpen(false)}
+        />
+      )}
+
+      {/* Side Drawer */}
+      <div className={`fixed top-0 right-0 h-full w-72 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${
+        isSideDrawerOpen ? 'translate-x-0' : 'translate-x-full'
+      }`}>
+        {/* Drawer Header */}
+        <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4 flex justify-between items-center">
+          <h2 className="text-xl font-bold text-white">Admin Panel</h2>
+          <button
+            onClick={() => setIsSideDrawerOpen(false)}
+            className="text-white hover:bg-orange-600 rounded-lg p-2 transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Drawer Navigation Items */}
+        <nav className="flex flex-col p-4 space-y-2 overflow-y-auto h-[calc(100vh-140px)]">
+          <button
+            onClick={() => {
+              setActivePage('platform-analytics');
+              setIsSideDrawerOpen(false);
+            }}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+              activePage === 'platform-analytics'
+                ? 'bg-orange-500 text-white shadow-md'
+                : 'text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            <BarChart className="w-5 h-5" />
+            <span className="font-medium">Analytics</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActivePage('confirm-therapists');
+              setIsSideDrawerOpen(false);
+            }}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+              activePage === 'confirm-therapists'
+                ? 'bg-orange-500 text-white shadow-md'
+                : 'text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            <Users className="w-5 h-5" />
+            <span className="font-medium">Therapists</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActivePage('confirm-places');
+              setIsSideDrawerOpen(false);
+            }}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+              activePage === 'confirm-places'
+                ? 'bg-orange-500 text-white shadow-md'
+                : 'text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            <Building className="w-5 h-5" />
+            <span className="font-medium">Places</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActivePage('confirm-accounts');
+              setIsSideDrawerOpen(false);
+            }}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+              activePage === 'confirm-accounts'
+                ? 'bg-orange-500 text-white shadow-md'
+                : 'text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            <UserCheck className="w-5 h-5" />
+            <span className="font-medium">Accounts</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActivePage('chat-messages');
+              setIsSideDrawerOpen(false);
+            }}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+              activePage === 'chat-messages'
+                ? 'bg-orange-500 text-white shadow-md'
+                : 'text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            <MessageSquare className="w-5 h-5" />
+            <span className="font-medium">Messages</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActivePage('bank-details');
+              setIsSideDrawerOpen(false);
+            }}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+              activePage === 'bank-details'
+                ? 'bg-orange-500 text-white shadow-md'
+                : 'text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            <CreditCard className="w-5 h-5" />
+            <span className="font-medium">Bank Details</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActivePage('payment-transactions');
+              setIsSideDrawerOpen(false);
+            }}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+              activePage === 'payment-transactions'
+                ? 'bg-orange-500 text-white shadow-md'
+                : 'text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            <DollarSign className="w-5 h-5" />
+            <span className="font-medium">Payments</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActivePage('shop-management');
+              setIsSideDrawerOpen(false);
+            }}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+              activePage === 'shop-management'
+                ? 'bg-orange-500 text-white shadow-md'
+                : 'text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            <ShoppingBag className="w-5 h-5" />
+            <span className="font-medium">Shop</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActivePage('agent-commission');
+              setIsSideDrawerOpen(false);
+            }}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+              activePage === 'agent-commission'
+                ? 'bg-orange-500 text-white shadow-md'
+                : 'text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            <Percent className="w-5 h-5" />
+            <span className="font-medium">Agent Commission</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActivePage('membership-pricing');
+              setIsSideDrawerOpen(false);
+            }}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+              activePage === 'membership-pricing'
+                ? 'bg-orange-500 text-white shadow-md'
+                : 'text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            <Package className="w-5 h-5" />
+            <span className="font-medium">Membership Pricing</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActivePage('drawer-buttons');
+              setIsSideDrawerOpen(false);
+            }}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+              activePage === 'drawer-buttons'
+                ? 'bg-orange-500 text-white shadow-md'
+                : 'text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            <Settings className="w-5 h-5" />
+            <span className="font-medium">Settings</span>
+          </button>
+        </nav>
+
+        {/* Drawer Footer - Logout Button */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gray-50 border-t">
+          <button
+            onClick={() => {
+              setIsSideDrawerOpen(false);
+              onLogout();
+            }}
+            className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors shadow-md"
+          >
+            <LogOut className="w-5 h-5" />
+            <span className="font-medium">Logout</span>
+          </button>
+        </div>
+      </div>
+
       {/* Header */}
       <header className="bg-white shadow-sm px-2 sm:px-3 py-2 sm:py-3 sticky top-0 z-30">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <h1 className="text-base sm:text-2xl font-bold">
-            <span className="text-gray-900">Inda</span>
-            <span className="text-orange-500">Street</span>
-          </h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-base sm:text-2xl font-bold">
+              <span className="text-black">Inda </span>
+              <span className="text-orange-500">Street</span>
+            </h1>
+          </div>
           <button
-            onClick={onLogout}
-            className="flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-all"
+            onClick={() => setIsSideDrawerOpen(true)}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            aria-label="Open menu"
           >
-            <LogOut className="w-4 h-4" />
-            <span className="hidden sm:inline">Logout</span>
+            <Menu className="w-5 h-5 text-gray-700" />
           </button>
         </div>
       </header>
 
-      {/* Tab Navigation */}
-      <nav className="bg-white border-b sticky top-[52px] sm:top-[60px] z-20">
-        <div className="max-w-7xl mx-auto px-2 sm:px-3 flex gap-1 sm:gap-2 overflow-x-auto scrollbar-hide py-2">
-          <TabButton
-            icon={<BarChart />}
-            label="Analytics"
-            isActive={activePage === 'platform-analytics'}
-            onClick={() => setActivePage('platform-analytics')}
-          />
-          <TabButton
-            icon={<Users />}
-            label="Therapists"
-            isActive={activePage === 'confirm-therapists'}
-            onClick={() => setActivePage('confirm-therapists')}
-          />
-          <TabButton
-            icon={<Building />}
-            label="Places"
-            isActive={activePage === 'confirm-places'}
-            onClick={() => setActivePage('confirm-places')}
-          />
-          <TabButton
-            icon={<CreditCard />}
-            label="Bank Details"
-            isActive={activePage === 'bank-details'}
-            onClick={() => setActivePage('bank-details')}
-          />
-          <TabButton
-            icon={<DollarSign />}
-            label="Payments"
-            isActive={activePage === 'payment-transactions'}
-            onClick={() => setActivePage('payment-transactions')}
-          />
-          <TabButton
-            icon={<Percent />}
-            label="Commissions"
-            isActive={activePage === 'agent-commission'}
-            onClick={() => setActivePage('agent-commission')}
-          />
-          <TabButton
-            icon={<Settings />}
-            label="Settings"
-            isActive={activePage === 'drawer-buttons'}
-            onClick={() => setActivePage('drawer-buttons')}
-          />
-        </div>
-      </nav>
-
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-6">
+      <main className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-6 pb-20">
         {activePage === 'platform-analytics' && <PlatformAnalyticsPage />}
         {activePage === 'confirm-therapists' && <ConfirmTherapistsPage />}
         {activePage === 'confirm-places' && <ConfirmPlacesPage />}
+        {activePage === 'confirm-accounts' && <ConfirmAccountsPage />}
+        {activePage === 'chat-messages' && <AdminChatListPage />}
         {activePage === 'bank-details' && <BankDetailsManagementPage />}
         {activePage === 'payment-transactions' && <PaymentTransactionsPage />}
+        {activePage === 'shop-management' && <AdminShopManagementPage onNavigate={() => {}} />}
+        {activePage === 'membership-pricing' && <MembershipPricingPage />}
         {activePage === 'drawer-buttons' && <DrawerButtonsPage />}
         {activePage === 'agent-commission' && <AgentCommissionPage />}
       </main>

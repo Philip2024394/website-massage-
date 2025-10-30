@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { Building, Image as ImageIcon, Link as LinkIcon, LogOut, Menu, MessageSquare, Phone, QrCode, Star, Tag, User, Users, X, Bell } from 'lucide-react';
+import { Building, Image as ImageIcon, Link as LinkIcon, LogOut, Menu, MessageSquare, Phone, QrCode, Star, Tag, User, Users, X, Bell, Package } from 'lucide-react';
 import { Therapist, Place, HotelVillaServiceStatus } from '../types';
 import { parsePricing } from '../utils/appwriteHelpers';
 import { analyticsService } from '../services/analyticsService';
@@ -9,6 +9,7 @@ import QRCodeGenerator from 'qrcode';
 // import Header from '../components/dashboard/Header';
 import TabButton from '../components/dashboard/TabButton';
 import PushNotificationSettings from '../components/PushNotificationSettings';
+import MemberChatWindow from '../components/MemberChatWindow';
 
 type DurationKey = '60' | '90' | '120';
 type ProviderType = 'therapist' | 'place';
@@ -34,7 +35,7 @@ interface HotelDashboardPageProps {
     therapists?: Therapist[];
     places?: Place[];
     hotelId?: string;
-    initialTab?: 'analytics' | 'discounts' | 'profile' | 'menu' | 'feedback' | 'concierge' | 'commissions' | 'notifications';
+    initialTab?: 'analytics' | 'discounts' | 'profile' | 'menu' | 'feedback' | 'concierge' | 'commissions' | 'notifications' | 'membership';
 }
 
 const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, therapists = [], places = [], hotelId = '1', initialTab = 'analytics' }) => {
@@ -50,7 +51,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
         'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=1200&auto=format&fit=crop',
     ];
 
-    const [activeTab, setActiveTab] = useState<'analytics' | 'discounts' | 'profile' | 'menu' | 'feedback' | 'concierge' | 'commissions' | 'notifications'>(initialTab);
+    const [activeTab, setActiveTab] = useState<'analytics' | 'discounts' | 'profile' | 'menu' | 'feedback' | 'concierge' | 'commissions' | 'notifications' | 'membership' | 'chat'>(initialTab);
     const [customWelcomeMessage, setCustomWelcomeMessage] = useState('Welcome to our exclusive wellness experience');
     const [selectedLanguage, setSelectedLanguage] = useState('en');
     
@@ -502,6 +503,24 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
 
     const renderTabContent = () => {
         switch (activeTab) {
+            case 'chat':
+                return (
+                    <div className="space-y-6">
+                        <div className="bg-white rounded-xl shadow-sm p-6">
+                            <h2 className="text-2xl font-bold text-gray-900 mb-2">Chat with Support</h2>
+                            <p className="text-sm text-gray-600 mb-4">
+                                Need help? Chat with our IndaStreet support team for assistance with your hotel account, 
+                                QR codes, provider management, commissions, or any questions you may have.
+                            </p>
+                        </div>
+                        <MemberChatWindow
+                            userId={hotelId || '1'}
+                            userName="Hotel Manager"
+                            userType="hotel"
+                            onClose={() => setActiveTab('analytics')}
+                        />
+                    </div>
+                );
             case 'analytics':
                 return (
                     <div className="space-y-6">
@@ -1319,6 +1338,176 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         />
                     </div>
                 );
+            case 'membership':
+                return (
+                    <div className="space-y-6">
+                        {/* Header */}
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                                <Package className="w-5 h-5 text-orange-600" />
+                            </div>
+                            <div>
+                                <h2 className="text-2xl font-bold text-gray-900">Membership Packages</h2>
+                                <p className="text-xs text-gray-500">Choose the best plan for your hotel</p>
+                            </div>
+                        </div>
+
+                        {/* Current Plan Banner */}
+                        <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg p-6 text-white">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-orange-100 text-sm mb-1">Current Plan</p>
+                                    <h3 className="text-2xl font-bold">Free Access</h3>
+                                    <p className="text-orange-100 text-sm mt-1">Complimentary partner access</p>
+                                </div>
+                                <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
+                                    <p className="text-3xl font-bold">Free</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Available Packages */}
+                        <div>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Upgrade Your Plan</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                {/* 3 Months Package */}
+                                <div className="bg-white rounded-lg border-2 border-gray-200 p-6 hover:border-orange-500 transition-colors">
+                                    <div className="text-center">
+                                        <h4 className="text-xl font-bold text-gray-900 mb-2">3 Months</h4>
+                                        <div className="mb-4">
+                                            <p className="text-3xl font-bold text-orange-600">Rp 500,000</p>
+                                            <p className="text-sm text-gray-500">per quarter</p>
+                                        </div>
+                                        <ul className="text-left space-y-2 mb-6">
+                                            <li className="flex items-start gap-2">
+                                                <span className="text-orange-500">✓</span>
+                                                <span className="text-sm text-gray-600">Full platform access</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <span className="text-orange-500">✓</span>
+                                                <span className="text-sm text-gray-600">Priority listing</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <span className="text-orange-500">✓</span>
+                                                <span className="text-sm text-gray-600">QR menu builder</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <span className="text-orange-500">✓</span>
+                                                <span className="text-sm text-gray-600">Analytics dashboard</span>
+                                            </li>
+                                        </ul>
+                                        <a
+                                            href="https://wa.me/6281234567890?text=I%20want%20to%20upgrade%20to%203%20months%20hotel%20membership"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="block w-full bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition-colors"
+                                        >
+                                            Subscribe via WhatsApp
+                                        </a>
+                                    </div>
+                                </div>
+
+                                {/* 6 Months Package */}
+                                <div className="bg-white rounded-lg border-2 border-orange-500 p-6 relative shadow-md">
+                                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                                        ⭐ BEST VALUE
+                                    </div>
+                                    <div className="text-center">
+                                        <h4 className="text-xl font-bold text-gray-900 mb-2">6 Months</h4>
+                                        <div className="mb-4">
+                                            <p className="text-3xl font-bold text-orange-600">Rp 900,000</p>
+                                            <p className="text-sm text-gray-500">per half-year</p>
+                                            <p className="text-xs text-green-600 font-semibold mt-1">Save Rp 100,000</p>
+                                        </div>
+                                        <ul className="text-left space-y-2 mb-6">
+                                            <li className="flex items-start gap-2">
+                                                <span className="text-orange-500">✓</span>
+                                                <span className="text-sm text-gray-600">Full platform access</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <span className="text-orange-500">✓</span>
+                                                <span className="text-sm text-gray-600">Priority listing</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <span className="text-orange-500">✓</span>
+                                                <span className="text-sm text-gray-600">QR menu builder</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <span className="text-orange-500">✓</span>
+                                                <span className="text-sm text-gray-600">Analytics dashboard</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <span className="text-orange-500">✓</span>
+                                                <span className="text-sm text-gray-600 font-semibold">Featured placement</span>
+                                            </li>
+                                        </ul>
+                                        <a
+                                            href="https://wa.me/6281234567890?text=I%20want%20to%20upgrade%20to%206%20months%20hotel%20membership"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="block w-full bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition-colors"
+                                        >
+                                            Subscribe via WhatsApp
+                                        </a>
+                                    </div>
+                                </div>
+
+                                {/* 1 Year Package */}
+                                <div className="bg-white rounded-lg border-2 border-gray-200 p-6 hover:border-orange-500 transition-colors">
+                                    <div className="text-center">
+                                        <h4 className="text-xl font-bold text-gray-900 mb-2">1 Year</h4>
+                                        <div className="mb-4">
+                                            <p className="text-3xl font-bold text-orange-600">Rp 1,600,000</p>
+                                            <p className="text-sm text-gray-500">per year</p>
+                                            <p className="text-xs text-green-600 font-semibold mt-1">Save Rp 400,000</p>
+                                        </div>
+                                        <ul className="text-left space-y-2 mb-6">
+                                            <li className="flex items-start gap-2">
+                                                <span className="text-orange-500">✓</span>
+                                                <span className="text-sm text-gray-600">Full platform access</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <span className="text-orange-500">✓</span>
+                                                <span className="text-sm text-gray-600">Priority listing</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <span className="text-orange-500">✓</span>
+                                                <span className="text-sm text-gray-600">QR menu builder</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <span className="text-orange-500">✓</span>
+                                                <span className="text-sm text-gray-600">Analytics dashboard</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <span className="text-orange-500">✓</span>
+                                                <span className="text-sm text-gray-600 font-semibold">Featured placement</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <span className="text-orange-500">✓</span>
+                                                <span className="text-sm text-gray-600 font-semibold">Premium support</span>
+                                            </li>
+                                        </ul>
+                                        <a
+                                            href="https://wa.me/6281234567890?text=I%20want%20to%20upgrade%20to%201%20year%20hotel%20membership"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="block w-full bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition-colors"
+                                        >
+                                            Subscribe via WhatsApp
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Info */}
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <p className="text-sm text-blue-800">
+                                <strong>Note:</strong> All packages include full access to Inda Street platform features. Contact us via WhatsApp to upgrade your membership.
+                            </p>
+                        </div>
+                    </div>
+                );
         }
     };
 
@@ -1414,12 +1603,24 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                             isActive={activeTab === 'notifications'}
                             onClick={() => setActiveTab('notifications')}
                         />
+                        <TabButton
+                            icon={<MessageSquare size={14} className="sm:w-5 sm:h-5" />}
+                            label="Chat Support"
+                            isActive={activeTab === 'chat'}
+                            onClick={() => setActiveTab('chat')}
+                        />
+                        <TabButton
+                            icon={<Package size={14} className="sm:w-5 sm:h-5" />}
+                            label="Membership"
+                            isActive={activeTab === 'membership'}
+                            onClick={() => setActiveTab('membership')}
+                        />
                     </div>
                 </div>
             </header>
 
             {/* Main Content */}
-            <main className="flex-1 w-full max-w-5xl mx-auto px-2 py-3 sm:p-4 md:p-6 lg:p-8">{renderTabContent()}
+            <main className="flex-1 w-full max-w-5xl mx-auto px-2 py-3 sm:p-4 md:p-6 lg:p-8 pb-20">{renderTabContent()}
             </main>
 
             {/* QR Modal - Professional Design with Hotel Branding */}

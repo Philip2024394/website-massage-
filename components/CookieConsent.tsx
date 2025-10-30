@@ -13,8 +13,9 @@ const CookieConsent: React.FC<CookieConsentProps> = ({ language, hasLocation, on
     const consent = localStorage.getItem('cookie-consent');
     // Only show if no consent stored AND user has set location
     if (!consent && hasLocation) {
-      // Show banner after 1 second delay
-      setTimeout(() => setShowBanner(true), 1000);
+      // Show banner after 5 minutes (300,000ms)
+      const timer = setTimeout(() => setShowBanner(true), 300000);
+      return () => clearTimeout(timer);
     }
   }, [hasLocation]);
 

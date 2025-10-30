@@ -3,30 +3,6 @@ import React, { useState } from 'react';
 const RewardBannersTestPage: React.FC = () => {
     const [activeModal, setActiveModal] = useState<string | null>(null);
 
-    const modalTypes = [
-        'daily-signin-user-day1',
-        'daily-signin-user-day7',
-        'daily-signin-user-day30',
-        'daily-signin-therapist-day1',
-        'daily-signin-therapist-day7',
-        'daily-signin-therapist-day30',
-        'daily-signin-place-day1',
-        'daily-signin-place-day7',
-        'daily-signin-place-day30',
-        'booking-user-first',
-        'booking-user-completed',
-        'booking-user-milestone-5',
-        'booking-user-milestone-10',
-        'booking-therapist-fast',
-        'booking-therapist-completed',
-        'booking-therapist-5star',
-        'booking-therapist-milestone-10',
-        'booking-place-fast',
-        'booking-place-completed',
-        'booking-place-5star',
-        'booking-place-milestone-10',
-    ];
-
     const renderModal = () => {
         switch (activeModal) {
             // USER DAILY SIGN-IN
@@ -743,35 +719,6 @@ const RewardBannersTestPage: React.FC = () => {
                                 className="w-full px-6 py-4 bg-white text-green-600 rounded-xl font-bold text-lg hover:bg-green-50 transition-colors shadow-lg"
                             >
                                 Great! 🌟
-                            </button>
-                        </div>
-                    </div>
-                );
-
-            case 'booking-user-milestone-5':
-                return (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                        <div className="bg-gradient-to-br from-blue-600 to-purple-600 rounded-3xl max-w-md w-full p-8 text-center animate-fadeIn shadow-2xl relative">
-                            {/* Banner Number */}
-                            <div className="absolute top-4 left-4 bg-white bg-opacity-90 text-blue-600 font-bold text-xl px-4 py-2 rounded-lg shadow-lg">
-                                #12
-                            </div>
-                            <div className="text-8xl mb-4 animate-bounce">🎁</div>
-                            <h2 className="text-4xl font-bold text-white mb-3">5th Booking!</h2>
-                            <p className="text-xl text-white mb-4">Loyalty Milestone! 🏅</p>
-                            <div className="bg-white bg-opacity-20 rounded-2xl p-6 mb-4">
-                                <p className="text-7xl font-bold text-white mb-2">+200 🪙</p>
-                                <p className="text-xl text-white font-semibold">Loyalty Bonus!</p>
-                            </div>
-                            <div className="bg-white bg-opacity-20 rounded-xl p-4 mb-6">
-                                <p className="text-white font-semibold">🎯 You're a valued customer!</p>
-                                <p className="text-blue-100 text-sm mt-2">Keep going for bigger rewards!</p>
-                            </div>
-                            <button
-                                onClick={() => setActiveModal(null)}
-                                className="w-full px-6 py-4 bg-white text-blue-600 rounded-xl font-bold text-lg hover:bg-blue-50 transition-colors shadow-lg"
-                            >
-                                Awesome! 🎉
                             </button>
                         </div>
                     </div>

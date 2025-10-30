@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Copy, Share2, Gift, Users, CheckCircle, Clock, TrendingUp } from 'lucide-react';
+import { Copy, Share2, Gift, Users, CheckCircle, TrendingUp } from 'lucide-react';
 import { coinService } from '../lib/coinService';
 
 interface ReferralPageProps {
@@ -18,7 +18,6 @@ const ReferralPage: React.FC<ReferralPageProps> = ({ userId = '12345', userCoins
         pendingRewards: 0,
         thisMonthReferrals: 0
     });
-    const [loading, setLoading] = useState(true);
 
     const referralLink = `https://indastreet.com/ref/${referralCode}`;
 
@@ -27,7 +26,6 @@ const ReferralPage: React.FC<ReferralPageProps> = ({ userId = '12345', userCoins
         const loadReferralData = async () => {
             if (!userId) return;
             
-            setLoading(true);
             try {
                 // Initialize or get referral code
                 const code = await coinService.initializeReferralCode(userId);
@@ -38,8 +36,6 @@ const ReferralPage: React.FC<ReferralPageProps> = ({ userId = '12345', userCoins
                 setReferralStats(stats);
             } catch (error) {
                 console.error('Error loading referral data:', error);
-            } finally {
-                setLoading(false);
             }
         };
 

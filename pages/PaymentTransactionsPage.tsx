@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { databases } from '../lib/appwrite';
+import { databases, ID } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import { Query } from 'appwrite';
+import { ZoomIn, ZoomOut, X } from 'lucide-react';
 
 const DATABASE_ID = APPWRITE_CONFIG.databaseId;
 const COLLECTIONS = APPWRITE_CONFIG.collections;
@@ -37,10 +38,25 @@ const PaymentTransactionsPage: React.FC = () => {
     const [selectedTransaction, setSelectedTransaction] = useState<PaymentTransaction | null>(null);
     const [reviewNotes, setReviewNotes] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
+    const [imageZoomOpen, setImageZoomOpen] = useState(false);
+    const [imageScale, setImageScale] = useState(1);
 
     useEffect(() => {
         fetchTransactions();
     }, [filter]);
+
+    // Keyboard support for zoom modal
+    useEffect(() => {
+        const handleKeyPress = (e: KeyboardEvent) => {
+            if (imageZoomOpen && e.key === 'Escape') {
+                setImageZoomOpen(false);
+                setImageScale(1);
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyPress);
+        return () => window.removeEventListener('keydown', handleKeyPress);
+    }, [imageZoomOpen]);
 
     const fetchTransactions = async () => {
         setIsLoading(true);
@@ -102,7 +118,10 @@ const PaymentTransactionsPage: React.FC = () => {
                     }
                 );
 
-                alert(`✅ Payment approved! ${transaction.userName || 'User'}'s membership is now active until ${newExpiryDate.toLocaleDateString()}`);
+                // Send thank you message to user's chat
+                await sendPaymentConfirmationMessage(transaction);
+
+                alert(`✅ Payment approved! ${transaction.userName || 'User'}'s membership is now active until ${newExpiryDate.toLocaleDateString()}\n\n📨 Confirmation message sent to their chat.`);
             } else {
                 alert(`✅ Payment approved!`);
             }
@@ -114,6 +133,52 @@ const PaymentTransactionsPage: React.FC = () => {
             alert('Failed to approve payment. Please try again.');
         } finally {
             setIsProcessing(false);
+        }
+    };
+
+    const sendPaymentConfirmationMessage = async (transaction: PaymentTransaction) => {
+        try {
+            // Get duration text for message
+            const durationText = transaction.packageDuration || 'membership';
+            
+            // Create thank you message
+            const thankYouMessage = `Dear ${transaction.userName || 'Valued Member'},
+
+Thank you for your payment! ✨
+
+Your account has been successfully updated with your ${durationText} membership package.
+
+The IndaStreet Team would like to take this opportunity to thank you for your continued partnership. We wish you many years of ongoing success and prosperity.
+
+Warm regards,
+The IndaStreet Team 🙏`;
+
+            // Save message to chat collection
+            await databases.createDocument(
+                DATABASE_ID,
+                COLLECTIONS.chatMessages || 'chat_messages',
+                ID.unique(),
+                {
+                    senderId: 'admin',
+                    senderName: 'IndaStreet Team',
+                    senderType: 'admin',
+                    recipientId: transaction.userId,
+                    recipientName: transaction.userName || '',
+                    recipientType: transaction.userType || 'member',
+                    message: thankYouMessage,
+                    timestamp: new Date().toISOString(),
+                    createdAt: new Date().toISOString(),
+                    read: false,
+                    keepForever: false,
+                    messageType: 'payment_confirmation'
+                }
+            );
+
+            console.log('✅ Confirmation message sent to user:', transaction.userId);
+        } catch (error) {
+            console.error('Error sending confirmation message:', error);
+            // Don't fail the approval if message fails
+            console.warn('Payment approved but message sending failed');
         }
     };
 
@@ -385,14 +450,29 @@ const PaymentTransactionsPage: React.FC = () => {
                             {/* Payment Screenshot */}
                             {selectedTransaction.paymentProofUrl && (
                                 <div className="mb-6">
-                                    <h3 className="font-semibold text-gray-900 mb-3">Payment Screenshot:</h3>
-                                    <div className="border-2 border-gray-200 rounded-xl overflow-hidden">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <h3 className="font-semibold text-gray-900">Payment Screenshot:</h3>
+                                        <button
+                                            onClick={() => setImageZoomOpen(true)}
+                                            className="flex items-center gap-2 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold rounded-lg transition-colors"
+                                        >
+                                            <ZoomIn className="w-4 h-4" />
+                                            View Full Size
+                                        </button>
+                                    </div>
+                                    <div 
+                                        className="border-2 border-gray-200 rounded-xl overflow-hidden cursor-pointer hover:border-blue-400 transition-colors"
+                                        onClick={() => setImageZoomOpen(true)}
+                                    >
                                         <img
                                             src={selectedTransaction.paymentProofUrl}
                                             alt="Payment Proof"
                                             className="w-full h-auto"
                                         />
                                     </div>
+                                    <p className="text-xs text-gray-500 mt-2 text-center">
+                                        💡 Click image or "View Full Size" button to enlarge
+                                    </p>
                                 </div>
                             )}
 
@@ -435,6 +515,98 @@ const PaymentTransactionsPage: React.FC = () => {
                 </div>
             )}
 
+            {/* Full-Size Image Zoom Modal */}
+            {imageZoomOpen && selectedTransaction?.paymentProofUrl && (
+                <div 
+                    className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center p-4 z-[60]"
+                    onClick={() => {
+                        setImageZoomOpen(false);
+                        setImageScale(1);
+                    }}
+                >
+                    <div className="relative max-w-7xl w-full h-full flex flex-col">
+                        {/* Controls Header */}
+                        <div className="flex items-center justify-between mb-4 bg-black bg-opacity-50 backdrop-blur-sm rounded-lg p-3">
+                            <div className="flex items-center gap-3">
+                                <h3 className="text-white font-semibold">Payment Proof - {selectedTransaction.userName}</h3>
+                                <span className="text-gray-300 text-sm">
+                                    {selectedTransaction.currency || 'IDR'} {selectedTransaction.amount.toLocaleString()}
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setImageScale(prev => Math.max(0.5, prev - 0.25));
+                                    }}
+                                    className="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg transition-colors"
+                                    title="Zoom Out"
+                                >
+                                    <ZoomOut className="w-5 h-5" />
+                                </button>
+                                <span className="text-white text-sm font-mono min-w-[60px] text-center">
+                                    {Math.round(imageScale * 100)}%
+                                </span>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setImageScale(prev => Math.min(3, prev + 0.25));
+                                    }}
+                                    className="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg transition-colors"
+                                    title="Zoom In"
+                                >
+                                    <ZoomIn className="w-5 h-5" />
+                                </button>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setImageScale(1);
+                                    }}
+                                    className="px-3 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white text-sm rounded-lg transition-colors"
+                                >
+                                    Reset
+                                </button>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setImageZoomOpen(false);
+                                        setImageScale(1);
+                                    }}
+                                    className="p-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors ml-2"
+                                    title="Close"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Image Container */}
+                        <div 
+                            className="flex-1 overflow-auto flex items-center justify-center"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <img
+                                src={selectedTransaction.paymentProofUrl}
+                                alt="Payment Proof - Full Size"
+                                className="max-w-none transition-transform duration-200"
+                                style={{ 
+                                    transform: `scale(${imageScale})`,
+                                    cursor: imageScale > 1 ? 'grab' : 'default'
+                                }}
+                                draggable={false}
+                            />
+                        </div>
+
+                        {/* Instructions */}
+                        <div className="mt-4 bg-black bg-opacity-50 backdrop-blur-sm rounded-lg p-3">
+                            <p className="text-white text-sm text-center">
+                                💡 Use zoom buttons to adjust size • Click outside or press ESC to close
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Setup Instructions */}
             <div className="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-lg mt-6">
                 <h4 className="font-bold text-blue-900 mb-2 flex items-center gap-2">
@@ -443,11 +615,34 @@ const PaymentTransactionsPage: React.FC = () => {
                     </svg>
                     Collection Setup Required
                 </h4>
-                <ol className="list-decimal list-inside space-y-1 text-sm text-blue-800">
-                    <li>Create <code className="bg-blue-100 px-2 py-0.5 rounded">payment_transactions</code> collection in Appwrite</li>
-                    <li>Add these attributes: userId, userEmail, userName, userType, packageType, packageDuration, amount, paymentProofUrl, status, submittedAt, reviewedAt, reviewedBy, notes, expiresAt</li>
-                    <li>Configure proper permissions for admin access</li>
+                <ol className="list-decimal list-inside space-y-2 text-sm text-blue-800">
+                    <li>
+                        Create <code className="bg-blue-100 px-2 py-0.5 rounded">payment_transactions</code> collection in Appwrite
+                        <ul className="list-disc list-inside ml-6 mt-1 text-xs">
+                            <li>Attributes: userId, userEmail, userName, userType, packageType, packageDuration, amount, currency, paymentProofUrl, status, submittedAt, reviewedAt, reviewedBy, notes, expiresAt, transactionId, transactionDate, paymentMethod</li>
+                        </ul>
+                    </li>
+                    <li>
+                        Ensure <code className="bg-blue-100 px-2 py-0.5 rounded">chat_messages</code> collection exists for payment confirmations
+                        <ul className="list-disc list-inside ml-6 mt-1 text-xs">
+                            <li>Attributes: senderId, senderName, senderType, recipientId, recipientName, recipientType, message, timestamp, createdAt, read, keepForever, messageType</li>
+                        </ul>
+                    </li>
+                    <li>Configure proper permissions for admin access and member read access</li>
+                    <li>Set up file storage bucket for payment proof screenshots</li>
                 </ol>
+                
+                <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-sm text-green-800">
+                        <strong>✨ New Features:</strong>
+                    </p>
+                    <ul className="list-disc list-inside text-xs text-green-700 mt-2 space-y-1">
+                        <li><strong>Full-Size Image Viewer:</strong> Click payment screenshot or "View Full Size" to zoom in</li>
+                        <li><strong>Zoom Controls:</strong> Zoom in/out up to 300% for better verification</li>
+                        <li><strong>Auto Confirmation Messages:</strong> Members receive thank you message in their chat upon approval</li>
+                        <li><strong>Professional Thank You:</strong> "The IndaStreet Team would like to thank you for your continued partnership..."</li>
+                    </ul>
+                </div>
             </div>
         </div>
     );

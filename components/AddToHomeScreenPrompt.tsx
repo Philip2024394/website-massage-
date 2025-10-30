@@ -2,23 +2,25 @@ import React, { useState, useEffect } from 'react';
 
 interface AddToHomeScreenPromptProps {
     t: any;
+    hasLocation?: boolean;
 }
 
-const AddToHomeScreenPrompt: React.FC<AddToHomeScreenPromptProps> = ({ t: _t }) => {
+const AddToHomeScreenPrompt: React.FC<AddToHomeScreenPromptProps> = ({ t: _t, hasLocation = false }) => {
     const [isVisible, setIsVisible] = useState(false);
     
     useEffect(() => {
         const promptDismissed = localStorage.getItem('a2hs-dismissed');
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
 
-        if (!promptDismissed && !isStandalone) {
-            // Delay the prompt slightly to not overwhelm the user on first load
+        // Only show if location is set, prompt not dismissed, and not in standalone mode
+        if (hasLocation && !promptDismissed && !isStandalone) {
+            // Delay the prompt slightly after location is set
             const timer = setTimeout(() => {
                 setIsVisible(true);
             }, 3000);
             return () => clearTimeout(timer);
         }
-    }, []);
+    }, [hasLocation]);
 
     // Auto-dismiss after 15 seconds
     useEffect(() => {

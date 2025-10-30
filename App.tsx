@@ -174,10 +174,18 @@ const App: React.FC = () => {
     const fetchPublicData = useCallback(async () => {
         try {
             setIsLoading(true);
-            const [therapistsData, placesData] = await Promise.all([
+            
+            // Add timeout to prevent infinite loading
+            const timeout = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Fetch timeout')), 10000)
+            );
+            
+            const dataFetch = Promise.all([
                 therapistService.getTherapists(),
                 placeService.getPlaces()
             ]);
+            
+            const [therapistsData, placesData] = await Promise.race([dataFetch, timeout]) as any;
             
             console.log('🏠 HomePage: Fetched therapists:', therapistsData?.length);
             therapistsData?.forEach((t: any) => {
@@ -196,6 +204,7 @@ const App: React.FC = () => {
             setPlaces(placesData || []);
         } catch (error) {
             console.error('Error fetching public data:', error);
+            console.warn('⚠️ Continuing with empty data - check Appwrite configuration');
             setTherapists([]);
             setPlaces([]);
         } finally {
@@ -229,60 +238,70 @@ const App: React.FC = () => {
             console.log('🚀 Initializing app...');
             
             try {
-                // Restore session if exists
-                const sessionUser = await restoreSession();
+                // Check if user explicitly wants to start fresh (from landing page)
+                const startFresh = sessionStorage.getItem('start_fresh');
                 
-                if (sessionUser) {
-                    console.log('✅ Restoring session for:', sessionUser.type);
+                // Only restore session if not starting fresh
+                if (!startFresh) {
+                    // Restore session if exists
+                    const sessionUser = await restoreSession();
                     
-                    // Restore state based on user type
-                    switch (sessionUser.type) {
-                        case 'admin':
-                            setIsAdminLoggedIn(true);
-                            setPage('adminDashboard');
-                            saveSessionCache(sessionUser);
-                            break;
-                            
-                        case 'hotel':
-                            setIsHotelLoggedIn(true);
-                            _setLoggedInUser({ id: sessionUser.documentId, type: 'hotel' });
-                            setPage('hotelDashboard');
-                            saveSessionCache(sessionUser);
-                            break;
-                            
-                        case 'villa':
-                            setIsVillaLoggedIn(true);
-                            _setLoggedInUser({ id: sessionUser.documentId, type: 'villa' });
-                            setPage('villaDashboard');
-                            saveSessionCache(sessionUser);
-                            break;
-                            
-                        case 'agent':
-                            setLoggedInAgent(sessionUser.data);
-                            setPage('agentDashboard');
-                            saveSessionCache(sessionUser);
-                            break;
-                            
-                        case 'therapist':
-                            setLoggedInProvider({ id: sessionUser.documentId, type: 'therapist' });
-                            setPage('therapistStatus');
-                            saveSessionCache(sessionUser);
-                            break;
-                            
-                        case 'place':
-                            setLoggedInProvider({ id: sessionUser.documentId, type: 'place' });
-                            setPage('placeDashboard');
-                            saveSessionCache(sessionUser);
-                            break;
-                            
-                        case 'user':
-                            setUser({ id: sessionUser.documentId, name: sessionUser.email } as any);
-                            setPage('home');
-                            saveSessionCache(sessionUser);
-                            break;
+                    if (sessionUser) {
+                        console.log('✅ Restoring session for:', sessionUser.type);
+                        
+                        // Restore state based on user type
+                        switch (sessionUser.type) {
+                            case 'admin':
+                                setIsAdminLoggedIn(true);
+                                setPage('adminDashboard');
+                                saveSessionCache(sessionUser);
+                                break;
+                                
+                            case 'hotel':
+                                setIsHotelLoggedIn(true);
+                                _setLoggedInUser({ id: sessionUser.documentId, type: 'hotel' });
+                                setPage('hotelDashboard');
+                                saveSessionCache(sessionUser);
+                                break;
+                                
+                            case 'villa':
+                                setIsVillaLoggedIn(true);
+                                _setLoggedInUser({ id: sessionUser.documentId, type: 'villa' });
+                                setPage('villaDashboard');
+                                saveSessionCache(sessionUser);
+                                break;
+                                
+                            case 'agent':
+                                setLoggedInAgent(sessionUser.data);
+                                setPage('agentDashboard');
+                                saveSessionCache(sessionUser);
+                                break;
+                                
+                            case 'therapist':
+                                setLoggedInProvider({ id: sessionUser.documentId, type: 'therapist' });
+                                setPage('therapistStatus');
+                                saveSessionCache(sessionUser);
+                                break;
+                                
+                            case 'place':
+                                setLoggedInProvider({ id: sessionUser.documentId, type: 'place' });
+                                setPage('placeDashboard');
+                                saveSessionCache(sessionUser);
+                                break;
+                                
+                            case 'user':
+                                setUser({ id: sessionUser.documentId, name: sessionUser.email } as any);
+                                setPage('home');
+                                saveSessionCache(sessionUser);
+                                break;
+                        }
+                    } else {
+                        console.log('📭 No session to restore, starting fresh');
                     }
                 } else {
-                    console.log('📭 No session to restore, starting fresh');
+                    console.log('🆕 Starting fresh - clearing any existing sessions');
+                    await sessionLogout();
+                    sessionStorage.removeItem('start_fresh');
                 }
                 
                 // Fetch public data
@@ -372,12 +391,42 @@ const App: React.FC = () => {
 
     const t = translations[language];
 
-    const handleLanguageSelect = (lang: Language) => {
+    const handleLanguageSelect = async (lang: Language) => {
+        // Set flag to start fresh (prevent session restore)
+        sessionStorage.setItem('start_fresh', 'true');
+        
+        // Clear all dashboard sessions when entering from landing page
+        setIsAdminLoggedIn(false);
+        setIsHotelLoggedIn(false);
+        setIsVillaLoggedIn(false);
+        setLoggedInProvider(null);
+        setLoggedInAgent(null);
+        setImpersonatedAgent(null);
+        setLoggedInCustomer(null);
+        
+        // Clear session storage
+        await sessionLogout();
+        
         setLanguage(lang);
         setPage('home');
     };
 
-    const handleEnterApp = (lang: Language, location: UserLocation) => {
+    const handleEnterApp = async (lang: Language, location: UserLocation) => {
+        // Set flag to start fresh (prevent session restore)
+        sessionStorage.setItem('start_fresh', 'true');
+        
+        // Clear all dashboard sessions when entering from landing page
+        setIsAdminLoggedIn(false);
+        setIsHotelLoggedIn(false);
+        setIsVillaLoggedIn(false);
+        setLoggedInProvider(null);
+        setLoggedInAgent(null);
+        setImpersonatedAgent(null);
+        setLoggedInCustomer(null);
+        
+        // Clear session storage
+        await sessionLogout();
+        
         setLanguage(lang);
         setUserLocation(location);
         localStorage.setItem('user_location', JSON.stringify(location));
@@ -519,6 +568,9 @@ const App: React.FC = () => {
     const handleNavigateToAgentAuth = () => setPage('agentAuth');
     
     const handleAdminLogin = () => {
+        // Clear the start_fresh flag to allow session restoration
+        sessionStorage.removeItem('start_fresh');
+        
         setIsAdminLoggedIn(true);
         setPage('adminDashboard');
     };
@@ -1596,7 +1648,18 @@ const App: React.FC = () => {
                 hasLocation={userLocation !== null}
                 onNavigateToCookiesPolicy={() => setPage('cookies-policy')}
             />
-            <WelcomePopup language={language} isAdmin={isAdminLoggedIn} />
+            <WelcomePopup 
+                language={language} 
+                isAdmin={isAdminLoggedIn}
+                isAnyUserLoggedIn={
+                    !!loggedInCustomer || 
+                    !!loggedInProvider || 
+                    !!loggedInAgent || 
+                    isHotelLoggedIn || 
+                    isVillaLoggedIn || 
+                    !!user
+                }
+            />
             
             {/* Loyalty System Popups */}
             <CoinWelcomePopup 

@@ -3,9 +3,10 @@ import React, { useState, useEffect } from 'react';
 interface WelcomePopupProps {
   language: 'en' | 'id';
   isAdmin?: boolean; // Allow admins to always see the popup for design purposes
+  isAnyUserLoggedIn?: boolean; // Hide popup if any user/member is logged in
 }
 
-const WelcomePopup: React.FC<WelcomePopupProps> = ({ language, isAdmin = false }) => {
+const WelcomePopup: React.FC<WelcomePopupProps> = ({ language, isAdmin = false, isAnyUserLoggedIn = false }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const translations = {
@@ -14,6 +15,8 @@ const WelcomePopup: React.FC<WelcomePopupProps> = ({ language, isAdmin = false }
       titleHighlight: 'Street',
       titleEnd: ' Massage!',
       subtitle: "Indonesia's Premium Choice",
+      coinReward: '🎁 Get 100 Free Coins on Sign Up!',
+      coinExplainer: 'Use coins to unlock exclusive deals and rewards',
       description: 'The Number 1 platform for massage services in Indonesia. Find professional therapists, best spas, and traditional Balinese massage near you in minutes!',
       buttons: {
         browse: "Let's Go!"
@@ -24,6 +27,8 @@ const WelcomePopup: React.FC<WelcomePopupProps> = ({ language, isAdmin = false }
       titleHighlight: 'Street',
       titleEnd: ' Massage!',
       subtitle: "Pilihan Premium Indonesia",
+      coinReward: '🎁 Dapatkan 100 Koin Gratis saat Daftar!',
+      coinExplainer: 'Gunakan koin untuk membuka penawaran dan hadiah eksklusif',
       description: 'Platform Nomor 1 untuk layanan pijat di Indonesia. Temukan terapis profesional, spa terbaik, dan pijat tradisional Bali dekat Anda dalam hitungan menit!',
       buttons: {
         browse: "Ayo!"
@@ -36,6 +41,11 @@ const WelcomePopup: React.FC<WelcomePopupProps> = ({ language, isAdmin = false }
   useEffect(() => {
     const hasVisited = localStorage.getItem('has-visited');
     
+    // Don't show popup if any user/member is logged in (except admins for preview)
+    if (isAnyUserLoggedIn && !isAdmin) {
+      return;
+    }
+    
     // Always show for admins (for design purposes)
     if (isAdmin) {
       setTimeout(() => setIsOpen(true), 1000); // Show after 1 second
@@ -46,7 +56,7 @@ const WelcomePopup: React.FC<WelcomePopupProps> = ({ language, isAdmin = false }
     if (!hasVisited) {
       setTimeout(() => setIsOpen(true), 1000); // Show after 1 second
     }
-  }, [isAdmin]);
+  }, [isAdmin, isAnyUserLoggedIn]);
 
   const handleClose = (action: string) => {
     // Don't save to localStorage if admin is just previewing
@@ -152,22 +162,29 @@ const WelcomePopup: React.FC<WelcomePopupProps> = ({ language, isAdmin = false }
             <img 
               src="https://ik.imagekit.io/7grri5v7d/indastreet_guy_34-removebg-preview.png?updatedAt=1761705645668"
               alt="IndaStreet Welcome"
-              className="w-32 h-32 object-contain animate-wave"
+              className="w-64 h-64 object-contain"
             />
           </div>
           
           <h2 className="text-3xl font-bold mb-2">
             <span className="text-black">{t.title}</span>
-            <span className="text-orange-500">
-              <span className="inline-block animate-float">S</span>
-              <span>treet</span>
-            </span>
+            <span className="text-orange-500">{t.titleHighlight}</span>
             <span className="text-black">{t.titleEnd}</span>
           </h2>
           
-          <p className="text-orange-600 font-semibold text-lg mb-4">
+          <p className="text-orange-600 font-semibold text-lg mb-3">
             {t.subtitle}
           </p>
+          
+          {/* Coin Reward Banner */}
+          <div className="bg-gradient-to-r from-yellow-400 to-orange-400 rounded-xl p-4 mb-4 shadow-lg border-2 border-yellow-300">
+            <p className="text-white font-bold text-xl mb-1">
+              {t.coinReward}
+            </p>
+            <p className="text-yellow-50 text-sm">
+              {t.coinExplainer}
+            </p>
+          </div>
           
           <p className="text-gray-700 mb-6 leading-relaxed text-base">
             {t.description}

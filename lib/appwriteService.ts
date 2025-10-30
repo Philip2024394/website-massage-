@@ -153,7 +153,12 @@ export const customLinksService = {
                     icon: iconUrl,
                     customLinkId,
                     createdAt: new Date().toISOString()
-                }
+                },
+                [
+                    Permission.read(Role.any()),
+                    Permission.update(Role.any()),
+                    Permission.delete(Role.any())
+                ]
             );
             return response;
         } catch (error) {
@@ -213,7 +218,7 @@ export const customLinksService = {
     }
 };
 // Appwrite service - Real implementation
-import { Client, Databases, Account, Query, Storage, ID } from 'appwrite';
+import { Client, Databases, Account, Query, Storage, ID, Permission, Role } from 'appwrite';
 import { APPWRITE_CONFIG } from './appwrite.config';
 import type { AgentVisit } from '../types';
 
@@ -2229,6 +2234,10 @@ export const shopItemService = {
 
     async createItem(item: Partial<ShopItem>): Promise<ShopItem> {
         try {
+            console.log('Creating shop item with data:', item);
+            console.log('Using database ID:', COIN_SHOP_DATABASE_ID);
+            console.log('Using collection ID:', SHOP_ITEMS_COLLECTION_ID);
+            
             const response = await databases.createDocument(
                 COIN_SHOP_DATABASE_ID,
                 SHOP_ITEMS_COLLECTION_ID,
@@ -2245,24 +2254,42 @@ export const shopItemService = {
                     disclaimer: item.disclaimer || 'Design may vary slightly from displayed image'
                 }
             );
+            console.log('Shop item created successfully:', response);
             return response as unknown as ShopItem;
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error creating item:', error);
+            console.error('Error details:', {
+                message: error.message,
+                code: error.code,
+                type: error.type,
+                response: error.response
+            });
             throw error;
         }
     },
 
     async updateItem(itemId: string, updates: Partial<ShopItem>): Promise<ShopItem> {
         try {
+            console.log('Updating shop item:', itemId, 'with data:', updates);
+            console.log('Using database ID:', COIN_SHOP_DATABASE_ID);
+            console.log('Using collection ID:', SHOP_ITEMS_COLLECTION_ID);
+            
             const response = await databases.updateDocument(
                 COIN_SHOP_DATABASE_ID,
                 SHOP_ITEMS_COLLECTION_ID,
                 itemId,
                 updates
             );
+            console.log('Shop item updated successfully:', response);
             return response as unknown as ShopItem;
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error updating item:', error);
+            console.error('Error details:', {
+                message: error.message,
+                code: error.code,
+                type: error.type,
+                response: error.response
+            });
             throw error;
         }
     },

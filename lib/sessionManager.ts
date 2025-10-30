@@ -202,6 +202,14 @@ export function saveSessionCache(sessionUser: SessionUser): void {
 export function clearSessionCache(): void {
     try {
         localStorage.removeItem('session_cache');
+        // Also clear any other auth-related items
+        localStorage.removeItem('hotel_session');
+        localStorage.removeItem('villa_session');
+        localStorage.removeItem('admin_session');
+        localStorage.removeItem('agent_session');
+        localStorage.removeItem('therapist_session');
+        localStorage.removeItem('place_session');
+        localStorage.removeItem('customer_session');
     } catch (error) {
         console.error('Error clearing session cache:', error);
     }

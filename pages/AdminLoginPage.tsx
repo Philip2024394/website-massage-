@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { account } from '../lib/appwrite';
-import { LogIn, UserPlus } from 'lucide-react';
+import { saveSessionCache } from '../lib/sessionManager';
 
 interface AdminLoginPageProps {
     onAdminLogin: () => void;
@@ -33,6 +33,8 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin: _onAdminL
                 return;
             }
 
+            console.log('🔄 Starting admin login for:', email);
+
             // Delete any existing session first
             try {
                 await account.deleteSession('current');
@@ -43,12 +45,28 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin: _onAdminL
             }
 
             // Create session with Appwrite
-            await account.createEmailPasswordSession(email, password);
+            console.log('🔐 Creating session...');
+            const session = await account.createEmailPasswordSession(email, password);
             
-            // Store admin session
+            // Get user details
+            const user = await account.get();
+            
+            // Save session cache for persistence
+            saveSessionCache({
+                type: 'admin',
+                id: user.$id,
+                email: user.email,
+                documentId: session.$id,
+                data: user
+            });
+            
+            // Store admin session flag
             localStorage.setItem('adminLoggedIn', 'true');
             
             console.log('✅ Admin login successful');
+            
+            // Reset loading before calling onAdminLogin
+            setIsLoading(false);
             _onAdminLogin();
         } catch (err: any) {
             console.error('Admin login error:', err);
@@ -74,6 +92,10 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin: _onAdminL
                 return;
             }
 
+            console.log('🔄 Starting admin account creation...');
+            console.log('📧 Email:', email);
+            console.log('🔑 Password length:', password.length);
+
             // Delete any existing session first
             try {
                 await account.deleteSession('current');
@@ -84,31 +106,72 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin: _onAdminL
             }
 
             // Create new admin account
-            await account.create(
+            console.log('📝 Creating admin account for:', email);
+            const newUser = await account.create(
                 'unique()',
                 email,
                 password,
                 'Admin User'
             );
 
+            console.log('✅ Account created successfully!', { userId: newUser.$id });
+            console.log('🔐 Now creating session...');
+
             // Automatically login after signup
-            await account.createEmailPasswordSession(email, password);
+            const session = await account.createEmailPasswordSession(email, password);
+            console.log('✅ Session created!', { sessionId: session.$id });
+            
+            // Get user details
+            const user = await account.get();
+            console.log('✅ User details retrieved!', { email: user.email });
+            
+            // Save session cache for persistence
+            saveSessionCache({
+                type: 'admin',
+                id: user.$id,
+                email: user.email,
+                documentId: session.$id,
+                data: user
+            });
             
             localStorage.setItem('adminLoggedIn', 'true');
             
-            console.log('✅ Admin account created and logged in');
+            console.log('✅ Admin account created and logged in successfully!');
+            
+            // Reset loading before calling onAdminLogin
+            setIsLoading(false);
             _onAdminLogin();
         } catch (err: any) {
-            console.error('Admin signup error:', err);
-            setError(err.message || 'Account creation failed. Please try again.');
+            console.error('❌ Admin signup error:', err);
+            console.error('❌ Error code:', err.code);
+            console.error('❌ Error type:', err.type);
+            console.error('❌ Error message:', err.message);
+            
+            // Provide more helpful error messages
+            let errorMessage = err.message || 'Account creation failed. Please try again.';
+            
+            if (err.code === 409 || err.message?.includes('already exists')) {
+                errorMessage = 'An account with this email already exists. Please sign in instead.';
+            } else if (err.code === 401) {
+                errorMessage = 'Invalid credentials. Please check your email and password.';
+            }
+            
+            setError(errorMessage);
             setIsLoading(false);
         }
     };
 
     const handleSubmit = () => {
+        console.log('🔘 Submit button clicked!');
+        console.log('📝 isSignUp:', isSignUp);
+        console.log('📧 Email:', email);
+        console.log('🔑 Password length:', password.length);
+        
         if (isSignUp) {
+            console.log('➡️ Routing to handleSignUp()');
             handleSignUp();
         } else {
+            console.log('➡️ Routing to handleLogin()');
             handleLogin();
         }
     };
@@ -203,17 +266,9 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin: _onAdminL
                         className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 px-4 mt-6 shadow-lg rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium flex items-center justify-center gap-2"
                     >
                         {isLoading ? (
-                            'Processing...'
-                        ) : isSignUp ? (
-                            <>
-                                <UserPlus className="w-5 h-5" />
-                                Create Account
-                            </>
+                            <span>Processing...</span>
                         ) : (
-                            <>
-                                <LogIn className="w-5 h-5" />
-                                {t.button}
-                            </>
+                            <span>{isSignUp ? 'Create Account' : t.button}</span>
                         )}
                     </button>
                 </div>
