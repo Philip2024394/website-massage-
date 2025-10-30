@@ -307,6 +307,21 @@ const HomePage: React.FC<HomePageProps> = ({
                                     </svg>
                                 </button>
 
+                                {/* Today's Discounts - NEW! */}
+                                <button 
+                                    onClick={() => { onNavigate?.('todays-discounts'); setIsMenuOpen(false); }} 
+                                    className="flex items-center gap-4 w-full text-left p-5 rounded-xl bg-gradient-to-r from-red-500 to-pink-600 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] group mb-3"
+                                >
+                                    <span className="text-4xl">🔥</span>
+                                    <div className="flex-grow">
+                                        <h3 className="font-bold text-white text-lg">Today's Discounts</h3>
+                                        <p className="text-sm text-red-100">Limited time offers ending soon!</p>
+                                    </div>
+                                    <svg className="w-6 h-6 text-white animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </button>
+
                                 <div className="border-t border-gray-300 my-3"></div>
 
                                 {/* Job Posting Section - MOVED TO TOP */}

@@ -13,6 +13,7 @@ interface TherapistCardProps {
     onIncrementAnalytics: (metric: keyof Analytics) => void;
     onShowRegisterPrompt?: () => void; // Show registration popup
     isCustomerLoggedIn?: boolean; // Check if customer is logged in
+    activeDiscount?: { percentage: number; expiresAt: Date } | null; // Active discount
     t: any;
     loggedInProviderId?: number; // To prevent self-notification
 }
@@ -92,12 +93,38 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     onIncrementAnalytics,
     onShowRegisterPrompt,
     isCustomerLoggedIn = false,
+    activeDiscount,
     t: _t,
     loggedInProviderId
 }) => {
     const [showBusyModal, setShowBusyModal] = useState(false);
     const [countdown, setCountdown] = useState<string>('');
     const [isOvertime, setIsOvertime] = useState(false);
+    const [discountTimeLeft, setDiscountTimeLeft] = useState<string>('');
+    
+    // Countdown timer for active discount
+    useEffect(() => {
+        if (!activeDiscount) return;
+        
+        const interval = setInterval(() => {
+            const now = new Date().getTime();
+            const distance = activeDiscount.expiresAt.getTime() - now;
+            
+            if (distance < 0) {
+                setDiscountTimeLeft('EXPIRED');
+                clearInterval(interval);
+                return;
+            }
+            
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            
+            setDiscountTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
+        }, 1000);
+        
+        return () => clearInterval(interval);
+    }, [activeDiscount]);
     
     // Update countdown timer every second if therapist is booked
     useEffect(() => {
@@ -284,6 +311,21 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     <span className="font-bold text-white text-sm">{(therapist.rating || 0).toFixed(1)}</span>
                     <span className="text-xs text-gray-300">({therapist.reviewCount || 0})</span>
                 </div>
+
+                {/* Active Discount Badge - Top Right Corner */}
+                {activeDiscount && discountTimeLeft !== 'EXPIRED' && (
+                    <div className="absolute top-2 right-2 flex flex-col items-end gap-1">
+                        <div className="bg-gradient-to-r from-red-600 to-pink-600 rounded-full px-4 py-2 shadow-lg animate-pulse">
+                            <span className="font-bold text-white text-xl">{activeDiscount.percentage}% OFF</span>
+                        </div>
+                        <div className="flex items-center gap-1 bg-black/80 backdrop-blur-md rounded-full px-3 py-1 shadow-lg">
+                            <svg className="w-3 h-3 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span className="text-xs text-white font-semibold">{discountTimeLeft}</span>
+                        </div>
+                    </div>
+                )}
                 
                 {/* Share Buttons - Lower Right Corner */}
                 <div className="absolute bottom-2 right-2 flex items-center gap-2">

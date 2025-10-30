@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import type { Place } from '../types';
 
 interface PlaceCardProps {
     place: Place;
     onClick: () => void;
     onRate: (place: Place) => void;
+    activeDiscount?: { percentage: number; expiresAt: Date } | null; // Active discount
 }
 
 const LocationPinIcon: React.FC<{className?: string}> = ({ className }) => (
@@ -20,7 +21,32 @@ const StarIcon: React.FC<{className?: string}> = ({ className }) => (
 );
 
 
-const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate }) => {
+const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate, activeDiscount }) => {
+    const [discountTimeLeft, setDiscountTimeLeft] = useState<string>('');
+    
+    // Countdown timer for active discount
+    useEffect(() => {
+        if (!activeDiscount) return;
+        
+        const interval = setInterval(() => {
+            const now = new Date().getTime();
+            const distance = activeDiscount.expiresAt.getTime() - now;
+            
+            if (distance < 0) {
+                setDiscountTimeLeft('EXPIRED');
+                clearInterval(interval);
+                return;
+            }
+            
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            
+            setDiscountTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
+        }, 1000);
+        
+        return () => clearInterval(interval);
+    }, [activeDiscount]);
     
     const handleRateClick = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -43,6 +69,21 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate }) => {
                     <span className="font-bold text-white text-sm">{place.rating.toFixed(1)}</span>
                     <span className="text-xs text-gray-300">({place.reviewCount})</span>
                 </div>
+
+                {/* Active Discount Badge - Top Right Corner */}
+                {activeDiscount && discountTimeLeft !== 'EXPIRED' && (
+                    <div className="absolute top-2 right-2 flex flex-col items-end gap-1" onClick={(e) => e.stopPropagation()}>
+                        <div className="bg-gradient-to-r from-red-600 to-pink-600 rounded-full px-4 py-2 shadow-lg animate-pulse">
+                            <span className="font-bold text-white text-xl">{activeDiscount.percentage}% OFF</span>
+                        </div>
+                        <div className="flex items-center gap-1 bg-black/80 backdrop-blur-md rounded-full px-3 py-1 shadow-lg">
+                            <svg className="w-3 h-3 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span className="text-xs text-white font-semibold">{discountTimeLeft}</span>
+                        </div>
+                    </div>
+                )}
                 
                 {/* Share Buttons - Lower Right Corner */}
                 <div className="absolute bottom-2 right-2 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
