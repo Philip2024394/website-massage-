@@ -43,6 +43,7 @@ export const APPWRITE_CONFIG = {
         chatMessages: 'chat_messages', // NEW: Chat messages with translations
         coins: 'coins', // NEW: Coin rewards transactions
         referrals: 'referrals', // NEW: Referral tracking
+        activeDiscounts: 'active_discounts', // NEW: Promotional discount system
     },
     
     // Storage bucket ID

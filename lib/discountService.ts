@@ -3,7 +3,7 @@ import { APPWRITE_CONFIG } from './appwrite.config';
 import { ID, Query } from 'appwrite';
 
 // Collection ID for active discounts
-export const ACTIVE_DISCOUNTS_COLLECTION_ID = 'active_discounts';
+const ACTIVE_DISCOUNTS_COLLECTION_ID = APPWRITE_CONFIG.collections.activeDiscounts;
 const DATABASE_ID = APPWRITE_CONFIG.databaseId;
 
 export interface ActiveDiscount {

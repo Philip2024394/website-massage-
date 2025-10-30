@@ -3,6 +3,9 @@ import { APPWRITE_CONFIG } from './appwrite.config';
 import { Query } from 'appwrite';
 
 const DATABASE_ID = APPWRITE_CONFIG.databaseId;
+const CHAT_ROOMS_COLLECTION_ID = APPWRITE_CONFIG.collections.chatRooms;
+const NOTIFICATIONS_COLLECTION_ID = APPWRITE_CONFIG.collections.notifications;
+const USERS_COLLECTION_ID = APPWRITE_CONFIG.collections.users;
 
 /**
  * Broadcast discount notification to all customers who have chatted with the provider
@@ -67,7 +70,7 @@ const getCustomersWhoChatted = async (
         // Query chat_rooms collection for all rooms involving this provider
         const response = await databases.listDocuments(
             DATABASE_ID,
-            'chat_rooms', // Assuming this is your chat rooms collection ID
+            CHAT_ROOMS_COLLECTION_ID,
             [
                 Query.equal('providerId', providerId),
                 Query.equal('providerType', providerType),
@@ -107,7 +110,7 @@ const createDiscountNotification = async (
 
         await databases.createDocument(
             DATABASE_ID,
-            'notifications', // Assuming this is your notifications collection ID
+            NOTIFICATIONS_COLLECTION_ID,
             'unique()',
             {
                 customerId,
@@ -185,7 +188,7 @@ export const getCustomerPhoneNumbers = async (customerIds: string[]): Promise<st
             try {
                 const customer = await databases.getDocument(
                     DATABASE_ID,
-                    'users', // Assuming this is your users collection
+                    USERS_COLLECTION_ID,
                     customerId
                 );
 
