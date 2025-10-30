@@ -102,7 +102,6 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [showImageRequirementModal, setShowImageRequirementModal] = useState(false);
     const [pendingImageUrl, setPendingImageUrl] = useState('');
-    const [showChat, setShowChat] = useState(false);
 
     const locationInputRef = useRef<HTMLInputElement>(null);
     

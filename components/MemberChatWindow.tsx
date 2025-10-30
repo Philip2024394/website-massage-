@@ -39,7 +39,6 @@ interface Message {
 
 const DATABASE_ID = (import.meta as any).env?.VITE_APPWRITE_DATABASE_ID || 'your-database-id';
 const CHAT_COLLECTION_ID = 'chat_messages';
-const STORAGE_BUCKET_ID = 'chat_attachments';
 
 const MemberChatWindow: React.FC<MemberChatWindowProps> = ({
   userId,

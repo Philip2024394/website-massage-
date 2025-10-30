@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { databases, storage, ID } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import { Query } from 'appwrite';
-import { MessageCircle, Search, Ban, Check, Clock, MapPin, Paperclip, Send, Smile, X, AlertTriangle } from 'lucide-react';
+import { MessageCircle, Search, Ban, Check, MapPin, Paperclip, Send, Smile, AlertTriangle } from 'lucide-react';
 
 interface ChatUser {
     $id: string;

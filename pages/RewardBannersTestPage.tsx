@@ -9,9 +9,9 @@ const RewardBannersTestPage: React.FC = () => {
             case 'daily-signin-user-day1':
                 return (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                        <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden animate-fadeIn shadow-2xl relative">
+                        <div className="bg-white rounded-3xl max-w-sm w-full overflow-hidden animate-fadeIn shadow-2xl relative">
                             {/* Banner Number */}
-                            <div className="absolute top-4 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
+                            <div className="absolute top-3 left-3 bg-orange-500 bg-opacity-90 text-white font-bold text-lg px-3 py-1.5 rounded-lg shadow-lg z-10">
                                 #1
                             </div>
                             
@@ -20,7 +20,7 @@ const RewardBannersTestPage: React.FC = () => {
                                 {[...Array(10)].map((_, i) => (
                                     <div
                                         key={i}
-                                        className="absolute text-4xl"
+                                        className="absolute text-3xl"
                                         style={{
                                             left: `${Math.random() * 100}%`,
                                             animation: `fall ${3 + Math.random() * 2}s linear ${Math.random() * 2}s infinite`,
@@ -46,9 +46,10 @@ const RewardBannersTestPage: React.FC = () => {
                             `}</style>
 
                             {/* Header Text */}
-                            <div className="text-center py-4 bg-gradient-to-r from-orange-500 to-orange-600">
-                                <h2 className="text-2xl font-bold text-white">Day 1 Reward</h2>
-                                <p className="text-lg font-semibold text-orange-100 mt-1">🎉 Welcome Bonus</p>
+                            <div className="text-center py-3 bg-gradient-to-r from-orange-500 to-orange-600">
+                                <div className="text-3xl font-bold text-white mb-1">+10 🪙</div>
+                                <h2 className="text-xl font-bold text-white">Day 1 Reward</h2>
+                                <p className="text-sm font-semibold text-orange-100 mt-1">🎉 Welcome Bonus</p>
                             </div>
 
                             {/* Image */}
@@ -61,17 +62,17 @@ const RewardBannersTestPage: React.FC = () => {
                             </div>
 
                             {/* Tomorrow's Reward Info */}
-                            <div className="px-6 py-4 bg-orange-50">
+                            <div className="px-4 py-3 bg-orange-50">
                                 <div className="text-center">
-                                    <p className="text-orange-800 font-semibold">🔥 Come back tomorrow for 15 coins!</p>
+                                    <p className="text-orange-800 font-semibold text-sm">🔥 Come back tomorrow for 15 coins!</p>
                                 </div>
                             </div>
 
                             {/* Close Button */}
-                            <div className="p-6">
+                            <div className="p-4">
                                 <button
                                     onClick={() => setActiveModal(null)}
-                                    className="w-full px-6 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg"
+                                    className="w-full px-5 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-bold text-base hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg"
                                 >
                                     Awesome! 🎊
                                 </button>
@@ -125,16 +126,14 @@ const RewardBannersTestPage: React.FC = () => {
                                 <p className="text-lg font-semibold text-orange-100 mt-1">🔥 Week Complete!</p>
                             </div>
 
-                            {/* Image */}
-                            <div className="w-full">
-                                <img 
-                                    src="https://ik.imagekit.io/7grri5v7d/day%201%20rewards.png?updatedAt=1761763512910" 
-                                    alt="Day 7 Reward"
-                                    className="w-full h-auto"
-                                />
-                            </div>
-
-                            {/* Next Milestone Info */}
+            {/* Image */}
+            <div className="w-full">
+                <img 
+                    src="https://ik.imagekit.io/7grri5v7d/indastreet%2050%20coins.png?updatedAt=1761799817780" 
+                    alt="Day 7 Reward"
+                    className="w-full h-auto"
+                />
+            </div>                            {/* Next Milestone Info */}
                             <div className="px-6 py-4 bg-orange-50">
                                 <div className="text-center">
                                     <p className="text-orange-800 font-semibold">💎 Keep going! Day 14 unlocks 75 coins</p>
@@ -202,7 +201,7 @@ const RewardBannersTestPage: React.FC = () => {
                             {/* Image */}
                             <div className="w-full">
                                 <img 
-                                    src="https://ik.imagekit.io/7grri5v7d/day%201%20rewards.png?updatedAt=1761763852906" 
+                                    src="https://ik.imagekit.io/7grri5v7d/indastreet%20200%20coins.png?updatedAt=1761801301902" 
                                     alt="Day 30 Reward"
                                     className="w-full h-auto"
                                 />
@@ -341,23 +340,21 @@ const RewardBannersTestPage: React.FC = () => {
                                 <p className="text-lg font-semibold text-orange-100 mt-1">💪 Pro Therapist</p>
                             </div>
 
-                            {/* Image */}
-                            <div className="w-full">
-                                <img 
-                                    src="https://ik.imagekit.io/7grri5v7d/day%201%20rewards.png?updatedAt=1761764981308" 
-                                    alt="Therapist Day 7 Reward"
-                                    className="w-full h-auto"
-                                />
-                            </div>
+            {/* Image */}
+            <div className="w-full">
+                <img 
+                    src="https://ik.imagekit.io/7grri5v7d/indastreet%20100%20coins.png?updatedAt=1761799943286" 
+                    alt="Therapist Day 7 Reward"
+                    className="w-full h-auto"
+                />
+            </div>
 
-                            {/* Next Milestone Info */}
-                            <div className="px-6 py-4 bg-orange-50">
-                                <div className="text-center">
-                                    <p className="text-orange-800 font-semibold">🔥 7 days of excellence! Keep it up!</p>
-                                </div>
-                            </div>
-
-                            {/* Close Button */}
+            {/* Next Milestone Info */}
+            <div className="px-6 py-4 bg-orange-50">
+                <div className="text-center">
+                    <p className="text-orange-800 font-semibold">🔥 7 days of excellence! Keep it up!</p>
+                </div>
+            </div>                            {/* Close Button */}
                             <div className="p-6">
                                 <button
                                     onClick={() => setActiveModal(null)}
@@ -415,23 +412,21 @@ const RewardBannersTestPage: React.FC = () => {
                                 <p className="text-lg font-semibold text-yellow-200 mt-1">👑 Master Therapist</p>
                             </div>
 
-                            {/* Image */}
-                            <div className="w-full">
-                                <img 
-                                    src="https://ik.imagekit.io/7grri5v7d/day%201%20rewards.png?updatedAt=1761765130725" 
-                                    alt="Therapist Day 30 Reward"
-                                    className="w-full h-auto"
-                                />
-                            </div>
+            {/* Image */}
+            <div className="w-full">
+                <img 
+                    src="https://ik.imagekit.io/7grri5v7d/indastreet%20500.png?updatedAt=1761801217762" 
+                    alt="Therapist Day 30 Reward"
+                    className="w-full h-auto"
+                />
+            </div>
 
-                            {/* Info */}
-                            <div className="px-6 py-4 bg-orange-50">
-                                <div className="text-center">
-                                    <p className="text-orange-800 font-semibold">🏆 Elite Status! You're among the best!</p>
-                                </div>
-                            </div>
-
-                            {/* Close Button */}
+            {/* Info */}
+            <div className="px-6 py-4 bg-orange-50">
+                <div className="text-center">
+                    <p className="text-orange-800 font-semibold">🏆 Elite Status! You're among the best!</p>
+                </div>
+            </div>                            {/* Close Button */}
                             <div className="p-6">
                                 <button
                                     onClick={() => setActiveModal(null)}
@@ -522,27 +517,74 @@ const RewardBannersTestPage: React.FC = () => {
             case 'daily-signin-place-day7':
                 return (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                        <div className="bg-gradient-to-br from-emerald-600 to-teal-600 rounded-3xl max-w-md w-full p-8 text-center animate-fadeIn shadow-2xl relative">
+                        <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden animate-fadeIn shadow-2xl relative">
                             {/* Banner Number */}
-                            <div className="absolute top-4 left-4 bg-white bg-opacity-90 text-emerald-600 font-bold text-xl px-4 py-2 rounded-lg shadow-lg">
+                            <div className="absolute top-4 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
                                 #8
                             </div>
-                            <div className="text-8xl mb-4 animate-bounce">🎁</div>
-                            <h2 className="text-4xl font-bold text-white mb-3">7-Day Business Streak!</h2>
-                            <div className="bg-white bg-opacity-20 rounded-2xl p-6 mb-4">
-                                <p className="text-6xl font-bold text-white mb-2">+150 🪙</p>
-                                <p className="text-xl text-white font-semibold">Premium Business Bonus!</p>
+                            
+                            {/* Falling Coins Animation */}
+                            <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden">
+                                {[...Array(10)].map((_, i) => (
+                                    <div
+                                        key={i}
+                                        className="absolute text-4xl"
+                                        style={{
+                                            left: `${Math.random() * 100}%`,
+                                            animation: `fall ${3 + Math.random() * 2}s linear ${Math.random() * 2}s infinite`,
+                                        }}
+                                    >
+                                        🪙
+                                    </div>
+                                ))}
                             </div>
-                            <div className="bg-white bg-opacity-20 rounded-xl p-4 mb-6">
-                                <p className="text-white font-semibold text-lg">🔥 7 days of dedication!</p>
-                                <p className="text-emerald-100 text-sm mt-2">Your business is thriving!</p>
+                            
+                            {/* Falling Animation Keyframes */}
+                            <style>{`
+                                @keyframes fall {
+                                    0% {
+                                        top: -50px;
+                                        transform: rotate(0deg);
+                                    }
+                                    100% {
+                                        top: 100%;
+                                        transform: rotate(360deg);
+                                    }
+                                }
+                            `}</style>
+
+                            {/* Header Text */}
+                            <div className="text-center py-4 bg-gradient-to-r from-orange-500 to-orange-600">
+                                <h2 className="text-2xl font-bold text-white">7-Day Business Streak!</h2>
+                                <p className="text-lg font-semibold text-orange-100 mt-1">🎁 Premium Bonus</p>
                             </div>
-                            <button
-                                onClick={() => setActiveModal(null)}
-                                className="w-full px-6 py-4 bg-white text-emerald-600 rounded-xl font-bold text-lg hover:bg-emerald-50 transition-colors shadow-lg"
-                            >
-                                Claim Bonus! 💼
-                            </button>
+
+                            {/* Image */}
+                            <div className="w-full">
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/indastreet%20100%20coins.png?updatedAt=1761799943286" 
+                                    alt="Place Day 7 Reward"
+                                    className="w-full h-auto"
+                                />
+                            </div>
+
+                            {/* Info */}
+                            <div className="px-6 py-4 bg-orange-50">
+                                <div className="text-center">
+                                    <p className="text-orange-800 font-semibold">🔥 7 days of dedication!</p>
+                                    <p className="text-orange-600 text-sm mt-2">Your business is thriving!</p>
+                                </div>
+                            </div>
+
+                            {/* Close Button */}
+                            <div className="p-6">
+                                <button
+                                    onClick={() => setActiveModal(null)}
+                                    className="w-full px-6 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg"
+                                >
+                                    Claim Bonus! 💼
+                                </button>
+                            </div>
                         </div>
                     </div>
                 );
@@ -667,23 +709,21 @@ const RewardBannersTestPage: React.FC = () => {
                                 <p className="text-lg font-semibold text-orange-100 mt-1">🎉 Welcome Bonus</p>
                             </div>
 
-                            {/* Image */}
-                            <div className="w-full">
-                                <img 
-                                    src="https://ik.imagekit.io/7grri5v7d/day%201%20rewards.png?updatedAt=1761764981308" 
-                                    alt="First Booking Reward"
-                                    className="w-full h-auto"
-                                />
-                            </div>
+            {/* Image */}
+            <div className="w-full">
+                <img 
+                    src="https://ik.imagekit.io/7grri5v7d/indastreet%20100%20coins.png?updatedAt=1761799943286" 
+                    alt="First Booking Reward"
+                    className="w-full h-auto"
+                />
+            </div>
 
-                            {/* Info */}
-                            <div className="px-6 py-4 bg-orange-50">
-                                <div className="text-center">
-                                    <p className="text-orange-800 font-semibold">✅ Thank you for choosing IndaStreet!</p>
-                                </div>
-                            </div>
-
-                            {/* Close Button */}
+            {/* Info */}
+            <div className="px-6 py-4 bg-orange-50">
+                <div className="text-center">
+                    <p className="text-orange-800 font-semibold">✅ Thank you for choosing IndaStreet!</p>
+                </div>
+            </div>                            {/* Close Button */}
                             <div className="p-6">
                                 <button
                                     onClick={() => setActiveModal(null)}
@@ -699,27 +739,66 @@ const RewardBannersTestPage: React.FC = () => {
             case 'booking-user-completed':
                 return (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                        <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-3xl max-w-md w-full p-8 text-center animate-fadeIn shadow-2xl relative">
+                        <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden animate-fadeIn shadow-2xl relative">
                             {/* Banner Number */}
-                            <div className="absolute top-4 left-4 bg-white bg-opacity-90 text-green-600 font-bold text-xl px-4 py-2 rounded-lg shadow-lg">
+                            <div className="absolute top-4 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
                                 #11
                             </div>
-                            <div className="text-8xl mb-4 animate-bounce">✅</div>
-                            <h2 className="text-4xl font-bold text-white mb-3">Booking Completed!</h2>
-                            <div className="bg-white bg-opacity-20 rounded-2xl p-6 mb-4">
-                                <p className="text-6xl font-bold text-white mb-2">+50 🪙</p>
-                                <p className="text-xl text-white font-semibold">Earned!</p>
+                            
+                            {/* Falling Coins Animation */}
+                            <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden">
+                                {[...Array(10)].map((_, i) => (
+                                    <div
+                                        key={i}
+                                        className="absolute text-4xl"
+                                        style={{
+                                            left: `${Math.random() * 100}%`,
+                                            animation: `fall ${3 + Math.random() * 2}s linear ${Math.random() * 2}s infinite`,
+                                        }}
+                                    >
+                                        🪙
+                                    </div>
+                                ))}
                             </div>
-                            <div className="bg-white bg-opacity-20 rounded-xl p-4 mb-6">
-                                <p className="text-white font-semibold">Hope you enjoyed your massage! 💆</p>
-                                <p className="text-green-100 text-sm mt-2">Book again to earn more coins!</p>
+                            
+                            {/* Falling Animation Keyframes */}
+                            <style>{`
+                                @keyframes fall {
+                                    0% {
+                                        top: -50px;
+                                        transform: rotate(0deg);
+                                    }
+                                    100% {
+                                        top: 100%;
+                                        transform: rotate(360deg);
+                                    }
+                                }
+                            `}</style>
+
+                            {/* Header Text */}
+                            <div className="text-center py-4 bg-gradient-to-r from-orange-500 to-orange-600">
+                                <h2 className="text-2xl font-bold text-white">Booking Completed!</h2>
+                                <p className="text-lg font-semibold text-orange-100 mt-1">✅ Great Experience!</p>
                             </div>
-                            <button
-                                onClick={() => setActiveModal(null)}
-                                className="w-full px-6 py-4 bg-white text-green-600 rounded-xl font-bold text-lg hover:bg-green-50 transition-colors shadow-lg"
-                            >
-                                Great! 🌟
-                            </button>
+
+                            {/* Image */}
+                            <div className="w-full">
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/indastreet%2050%20coins.png?updatedAt=1761799817780" 
+                                    alt="Booking Completed Reward"
+                                    className="w-full h-auto"
+                                />
+                            </div>
+
+                            {/* Close Button */}
+                            <div className="p-6">
+                                <button
+                                    onClick={() => setActiveModal(null)}
+                                    className="w-full px-6 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg"
+                                >
+                                    Great! 🌟
+                                </button>
+                            </div>
                         </div>
                     </div>
                 );
@@ -765,14 +844,86 @@ const RewardBannersTestPage: React.FC = () => {
 
                             {/* Header Text */}
                             <div className="text-center py-4 bg-gradient-to-r from-orange-500 to-orange-600">
+                                <h2 className="text-2xl font-bold text-white">5th Booking!</h2>
+                                <p className="text-lg font-semibold text-yellow-200 mt-1">🎯 Milestone Achievement</p>
+                            </div>
+
+            {/* Image */}
+            <div className="w-full">
+                <img 
+                    src="https://ik.imagekit.io/7grri5v7d/indastreet%20200%20coins.png?updatedAt=1761801301902" 
+                    alt="User 5th Booking Reward"
+                    className="w-full h-auto"
+                />
+            </div>
+
+            {/* Info */}
+            <div className="px-6 py-4 bg-orange-50">
+                <div className="text-center">
+                    <p className="text-orange-800 font-semibold">� Great progress! Keep booking!</p>
+                </div>
+            </div>                            {/* Close Button */}
+                            <div className="p-6">
+                                <button
+                                    onClick={() => setActiveModal(null)}
+                                    className="w-full px-6 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg"
+                                >
+                                    Claim Milestone Reward! 🎯
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+
+            case 'booking-user-milestone-10':
+                return (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                        <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden animate-fadeIn shadow-2xl relative">
+                            {/* Banner Number */}
+                            <div className="absolute top-4 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
+                                #13A
+                            </div>
+                            
+                            {/* Falling Coins Animation */}
+                            <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden">
+                                {[...Array(10)].map((_, i) => (
+                                    <div
+                                        key={i}
+                                        className="absolute text-4xl"
+                                        style={{
+                                            left: `${Math.random() * 100}%`,
+                                            animation: `fall ${3 + Math.random() * 2}s linear ${Math.random() * 2}s infinite`,
+                                        }}
+                                    >
+                                        🪙
+                                    </div>
+                                ))}
+                            </div>
+                            
+                            {/* Falling Animation Keyframes */}
+                            <style>{`
+                                @keyframes fall {
+                                    0% {
+                                        top: -50px;
+                                        transform: rotate(0deg);
+                                    }
+                                    100% {
+                                        top: 100%;
+                                        transform: rotate(360deg);
+                                    }
+                                }
+                            `}</style>
+
+                            {/* Header Text */}
+                            <div className="text-center py-4 bg-gradient-to-r from-orange-500 to-orange-600">
                                 <h2 className="text-2xl font-bold text-white">10th Booking!</h2>
-                                <p className="text-lg font-semibold text-yellow-200 mt-1">👑 VIP Status Unlocked</p>
+                                <p className="text-lg font-semibold text-yellow-200 mt-1">🏆 VIP Status Unlocked</p>
                             </div>
 
                             {/* Image */}
                             <div className="w-full">
                                 <img 
-                                    src="https://ik.imagekit.io/7grri5v7d/day%201%20rewards.png?updatedAt=1761765130725" 
+                                    src="https://ik.imagekit.io/7grri5v7d/indastreet%20500.png?updatedAt=1761801217762" 
                                     alt="User 10th Booking Reward"
                                     className="w-full h-auto"
                                 />
@@ -781,7 +932,7 @@ const RewardBannersTestPage: React.FC = () => {
                             {/* Info */}
                             <div className="px-6 py-4 bg-orange-50">
                                 <div className="text-center">
-                                    <p className="text-orange-800 font-semibold">🎁 VIP Member! Exclusive perks unlocked!</p>
+                                    <p className="text-orange-800 font-semibold">🏆 You're now a VIP customer!</p>
                                 </div>
                             </div>
 
@@ -791,7 +942,7 @@ const RewardBannersTestPage: React.FC = () => {
                                     onClick={() => setActiveModal(null)}
                                     className="w-full px-6 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg"
                                 >
-                                    Claim VIP Reward! 👑
+                                    Claim VIP Reward! 🏆
                                 </button>
                             </div>
                         </div>
@@ -802,28 +953,64 @@ const RewardBannersTestPage: React.FC = () => {
             case 'booking-therapist-fast':
                 return (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                        <div className="bg-gradient-to-br from-cyan-500 to-blue-600 rounded-3xl max-w-md w-full p-8 text-center animate-fadeIn shadow-2xl relative">
+                        <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden animate-fadeIn shadow-2xl relative">
                             {/* Banner Number */}
-                            <div className="absolute top-4 left-4 bg-white bg-opacity-90 text-cyan-600 font-bold text-xl px-4 py-2 rounded-lg shadow-lg">
+                            <div className="absolute top-4 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
                                 #14
                             </div>
-                            <div className="text-8xl mb-4 animate-bounce">⚡</div>
-                            <h2 className="text-4xl font-bold text-white mb-3">Lightning Fast!</h2>
-                            <p className="text-xl text-white mb-4">Accepted in 5 minutes! ⏱️</p>
-                            <div className="bg-white bg-opacity-20 rounded-2xl p-6 mb-4">
-                                <p className="text-6xl font-bold text-white mb-2">+30 🪙</p>
-                                <p className="text-xl text-white font-semibold">Fast Response Bonus!</p>
+                            
+                            {/* Falling Coins Animation */}
+                            <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden">
+                                {[...Array(10)].map((_, i) => (
+                                    <div
+                                        key={i}
+                                        className="absolute text-4xl"
+                                        style={{
+                                            left: `${Math.random() * 100}%`,
+                                            animation: `fall ${3 + Math.random() * 2}s linear ${Math.random() * 2}s infinite`,
+                                        }}
+                                    >
+                                        🪙
+                                    </div>
+                                ))}
                             </div>
-                            <div className="bg-white bg-opacity-20 rounded-xl p-4 mb-6">
-                                <p className="text-white font-semibold">⚡ Quick response appreciated!</p>
-                                <p className="text-cyan-100 text-sm mt-2">Customers love your speed!</p>
+                            
+                            {/* Falling Animation Keyframes */}
+                            <style>{`
+                                @keyframes fall {
+                                    0% {
+                                        top: -50px;
+                                        transform: rotate(0deg);
+                                    }
+                                    100% {
+                                        top: 100%;
+                                        transform: rotate(360deg);
+                                    }
+                                }
+                            `}</style>
+
+                            {/* Header Text */}
+                            <div className="text-center py-4 bg-gradient-to-r from-orange-500 to-orange-600">
+                                <h2 className="text-2xl font-bold text-white">Lightning Fast!</h2>
+                                <p className="text-lg font-semibold text-orange-100 mt-1">⚡ Quick Response</p>
                             </div>
-                            <button
-                                onClick={() => setActiveModal(null)}
-                                className="w-full px-6 py-4 bg-white text-cyan-600 rounded-xl font-bold text-lg hover:bg-cyan-50 transition-colors shadow-lg"
-                            >
-                                Great! ⚡
-                            </button>
+
+            {/* Image */}
+            <div className="w-full">
+                <img 
+                    src="https://ik.imagekit.io/7grri5v7d/indastreet%2030%20coins.png?updatedAt=1761798630986" 
+                    alt="Fast Response Reward"
+                    className="w-full h-auto"
+                />
+            </div>                            {/* Close Button */}
+                            <div className="p-6">
+                                <button
+                                    onClick={() => setActiveModal(null)}
+                                    className="w-full px-6 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg"
+                                >
+                                    Great! ⚡
+                                </button>
+                            </div>
                         </div>
                     </div>
                 );
@@ -831,27 +1018,64 @@ const RewardBannersTestPage: React.FC = () => {
             case 'booking-therapist-completed':
                 return (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                        <div className="bg-gradient-to-br from-teal-500 to-green-600 rounded-3xl max-w-md w-full p-8 text-center animate-fadeIn shadow-2xl relative">
+                        <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden animate-fadeIn shadow-2xl relative">
                             {/* Banner Number */}
-                            <div className="absolute top-4 left-4 bg-white bg-opacity-90 text-teal-600 font-bold text-xl px-4 py-2 rounded-lg shadow-lg">
+                            <div className="absolute top-4 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
                                 #15
                             </div>
-                            <div className="text-8xl mb-4 animate-bounce">✅</div>
-                            <h2 className="text-4xl font-bold text-white mb-3">Booking Completed!</h2>
-                            <div className="bg-white bg-opacity-20 rounded-2xl p-6 mb-4">
-                                <p className="text-6xl font-bold text-white mb-2">+75 🪙</p>
-                                <p className="text-xl text-white font-semibold">Service Completed!</p>
+                            
+                            {/* Falling Coins Animation */}
+                            <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden">
+                                {[...Array(10)].map((_, i) => (
+                                    <div
+                                        key={i}
+                                        className="absolute text-4xl"
+                                        style={{
+                                            left: `${Math.random() * 100}%`,
+                                            animation: `fall ${3 + Math.random() * 2}s linear ${Math.random() * 2}s infinite`,
+                                        }}
+                                    >
+                                        🪙
+                                    </div>
+                                ))}
                             </div>
-                            <div className="bg-white bg-opacity-20 rounded-xl p-4 mb-6">
-                                <p className="text-white font-semibold">💆 Great job, therapist!</p>
-                                <p className="text-teal-100 text-sm mt-2">Keep up the excellent work!</p>
+                            
+                            {/* Falling Animation Keyframes */}
+                            <style>{`
+                                @keyframes fall {
+                                    0% {
+                                        top: -50px;
+                                        transform: rotate(0deg);
+                                    }
+                                    100% {
+                                        top: 100%;
+                                        transform: rotate(360deg);
+                                    }
+                                }
+                            `}</style>
+
+                            {/* Header Text */}
+                            <div className="text-center py-4 bg-gradient-to-r from-orange-500 to-orange-600">
+                                <h2 className="text-2xl font-bold text-white">Booking Completed!</h2>
+                                <p className="text-lg font-semibold text-orange-100 mt-1">✅ Service Complete</p>
                             </div>
-                            <button
-                                onClick={() => setActiveModal(null)}
-                                className="w-full px-6 py-4 bg-white text-teal-600 rounded-xl font-bold text-lg hover:bg-teal-50 transition-colors shadow-lg"
-                            >
-                                Thank You! 🌟
-                            </button>
+
+            {/* Image */}
+            <div className="w-full">
+                <img 
+                    src="https://ik.imagekit.io/7grri5v7d/indastreet%2075%20coins.png?updatedAt=1761801413251" 
+                    alt="Therapist Booking Completed Reward"
+                    className="w-full h-auto"
+                />
+            </div>                            {/* Close Button */}
+                            <div className="p-6">
+                                <button
+                                    onClick={() => setActiveModal(null)}
+                                    className="w-full px-6 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg"
+                                >
+                                    Thank You! 🌟
+                                </button>
+                            </div>
                         </div>
                     </div>
                 );
@@ -859,28 +1083,66 @@ const RewardBannersTestPage: React.FC = () => {
             case 'booking-therapist-5star':
                 return (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                        <div className="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-3xl max-w-md w-full p-8 text-center animate-fadeIn shadow-2xl relative">
+                        <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden animate-fadeIn shadow-2xl relative">
                             {/* Banner Number */}
-                            <div className="absolute top-4 left-4 bg-white bg-opacity-90 text-yellow-600 font-bold text-xl px-4 py-2 rounded-lg shadow-lg">
+                            <div className="absolute top-4 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
                                 #16
                             </div>
-                            <div className="text-8xl mb-4 animate-bounce">⭐</div>
-                            <h2 className="text-4xl font-bold text-white mb-3">5-Star Review!</h2>
-                            <p className="text-xl text-white mb-4">Excellent Service! ⭐⭐⭐⭐⭐</p>
-                            <div className="bg-white bg-opacity-20 rounded-2xl p-6 mb-4">
-                                <p className="text-6xl font-bold text-white mb-2">+50 🪙</p>
-                                <p className="text-xl text-white font-semibold">5-Star Bonus!</p>
+                            
+                            {/* Falling Coins Animation */}
+                            <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden">
+                                {[...Array(10)].map((_, i) => (
+                                    <div
+                                        key={i}
+                                        className="absolute text-4xl"
+                                        style={{
+                                            left: `${Math.random() * 100}%`,
+                                            animation: `fall ${3 + Math.random() * 2}s linear ${Math.random() * 2}s infinite`,
+                                        }}
+                                    >
+                                        🪙
+                                    </div>
+                                ))}
                             </div>
-                            <div className="bg-white bg-opacity-20 rounded-xl p-4 mb-6">
-                                <p className="text-white font-semibold">⭐ Outstanding performance!</p>
-                                <p className="text-yellow-100 text-sm mt-2">Your client is very happy!</p>
+                            
+                            {/* Falling Animation Keyframes */}
+                            <style>{`
+                                @keyframes fall {
+                                    0% {
+                                        top: -50px;
+                                        transform: rotate(0deg);
+                                    }
+                                    100% {
+                                        top: 100%;
+                                        transform: rotate(360deg);
+                                    }
+                                }
+                            `}</style>
+
+                            {/* Header Text */}
+                            <div className="text-center py-4 bg-gradient-to-r from-orange-500 to-orange-600">
+                                <h2 className="text-2xl font-bold text-white">5-Star Review!</h2>
+                                <p className="text-lg font-semibold text-orange-100 mt-1">⭐ Excellent Service!</p>
                             </div>
-                            <button
-                                onClick={() => setActiveModal(null)}
-                                className="w-full px-6 py-4 bg-white text-orange-600 rounded-xl font-bold text-lg hover:bg-orange-50 transition-colors shadow-lg"
-                            >
-                                Excellent! ⭐
-                            </button>
+
+                            {/* Image */}
+                            <div className="w-full">
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/indastreet%2050%20coins.png?updatedAt=1761799817780" 
+                                    alt="5-Star Review Reward"
+                                    className="w-full h-auto"
+                                />
+                            </div>
+
+                            {/* Close Button */}
+                            <div className="p-6">
+                                <button
+                                    onClick={() => setActiveModal(null)}
+                                    className="w-full px-6 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg"
+                                >
+                                    Excellent! ⭐
+                                </button>
+                            </div>
                         </div>
                     </div>
                 );
@@ -888,28 +1150,74 @@ const RewardBannersTestPage: React.FC = () => {
             case 'booking-therapist-milestone-10':
                 return (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                        <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl max-w-md w-full p-8 text-center animate-fadeIn shadow-2xl relative">
+                        <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden animate-fadeIn shadow-2xl relative">
                             {/* Banner Number */}
-                            <div className="absolute top-4 left-4 bg-white bg-opacity-90 text-indigo-600 font-bold text-xl px-4 py-2 rounded-lg shadow-lg">
+                            <div className="absolute top-4 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
                                 #17
                             </div>
-                            <div className="text-8xl mb-4 animate-bounce">🏅</div>
-                            <h2 className="text-4xl font-bold text-white mb-3">PRO THERAPIST!</h2>
-                            <p className="text-2xl text-white font-bold mb-4">10 Bookings Completed! 🔥</p>
-                            <div className="bg-white bg-opacity-20 rounded-2xl p-6 mb-4">
-                                <p className="text-7xl font-bold text-white mb-2">+300 🪙</p>
-                                <p className="text-xl text-white font-semibold">Professional Achievement!</p>
+                            
+                            {/* Falling Coins Animation */}
+                            <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden">
+                                {[...Array(10)].map((_, i) => (
+                                    <div
+                                        key={i}
+                                        className="absolute text-4xl"
+                                        style={{
+                                            left: `${Math.random() * 100}%`,
+                                            animation: `fall ${3 + Math.random() * 2}s linear ${Math.random() * 2}s infinite`,
+                                        }}
+                                    >
+                                        🪙
+                                    </div>
+                                ))}
                             </div>
-                            <div className="bg-white bg-opacity-20 rounded-xl p-4 mb-6">
-                                <p className="text-white font-semibold text-lg">🏅 You're a Pro Therapist!</p>
-                                <p className="text-indigo-100 text-sm mt-2">Elite status achieved!</p>
+                            
+                            {/* Falling Animation Keyframes */}
+                            <style>{`
+                                @keyframes fall {
+                                    0% {
+                                        top: -50px;
+                                        transform: rotate(0deg);
+                                    }
+                                    100% {
+                                        top: 100%;
+                                        transform: rotate(360deg);
+                                    }
+                                }
+                            `}</style>
+
+                            {/* Header Text */}
+                            <div className="text-center py-4 bg-gradient-to-r from-orange-500 to-orange-600">
+                                <h2 className="text-2xl font-bold text-white">PRO THERAPIST!</h2>
+                                <p className="text-lg font-semibold text-yellow-200 mt-1">🏅 10 Bookings Complete</p>
                             </div>
-                            <button
-                                onClick={() => setActiveModal(null)}
-                                className="w-full px-6 py-4 bg-white text-indigo-600 rounded-xl font-bold text-lg hover:bg-indigo-50 transition-colors shadow-lg"
-                            >
-                                Claim Pro Reward! 🏅
-                            </button>
+
+                            {/* Image */}
+                            <div className="w-full">
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/indastreet%20500.png?updatedAt=1761801217762" 
+                                    alt="Therapist 10 Bookings Reward"
+                                    className="w-full h-auto"
+                                />
+                            </div>
+
+                            {/* Info */}
+                            <div className="px-6 py-4 bg-orange-50">
+                                <div className="text-center">
+                                    <p className="text-orange-800 font-semibold">🏅 You're a Pro Therapist!</p>
+                                    <p className="text-orange-600 text-sm mt-2">Elite status achieved!</p>
+                                </div>
+                            </div>
+
+                            {/* Close Button */}
+                            <div className="p-6">
+                                <button
+                                    onClick={() => setActiveModal(null)}
+                                    className="w-full px-6 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg"
+                                >
+                                    Claim Pro Reward! 🏅
+                                </button>
+                            </div>
                         </div>
                     </div>
                 );
@@ -918,28 +1226,74 @@ const RewardBannersTestPage: React.FC = () => {
             case 'booking-place-fast':
                 return (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                        <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-3xl max-w-md w-full p-8 text-center animate-fadeIn shadow-2xl relative">
+                        <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden animate-fadeIn shadow-2xl relative">
                             {/* Banner Number */}
-                            <div className="absolute top-4 left-4 bg-white bg-opacity-90 text-blue-600 font-bold text-xl px-4 py-2 rounded-lg shadow-lg">
+                            <div className="absolute top-4 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
                                 #18
                             </div>
-                            <div className="text-8xl mb-4 animate-bounce">⚡</div>
-                            <h2 className="text-4xl font-bold text-white mb-3">Quick Response!</h2>
-                            <p className="text-xl text-white mb-4">Accepted in 10 minutes! 🕐</p>
-                            <div className="bg-white bg-opacity-20 rounded-2xl p-6 mb-4">
-                                <p className="text-6xl font-bold text-white mb-2">+40 🪙</p>
-                                <p className="text-xl text-white font-semibold">Fast Response Bonus!</p>
+                            
+                            {/* Falling Coins Animation */}
+                            <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden">
+                                {[...Array(10)].map((_, i) => (
+                                    <div
+                                        key={i}
+                                        className="absolute text-4xl"
+                                        style={{
+                                            left: `${Math.random() * 100}%`,
+                                            animation: `fall ${3 + Math.random() * 2}s linear ${Math.random() * 2}s infinite`,
+                                        }}
+                                    >
+                                        🪙
+                                    </div>
+                                ))}
                             </div>
-                            <div className="bg-white bg-opacity-20 rounded-xl p-4 mb-6">
-                                <p className="text-white font-semibold">⚡ Excellent response time!</p>
-                                <p className="text-blue-100 text-sm mt-2">Customers appreciate your speed!</p>
+                            
+                            {/* Falling Animation Keyframes */}
+                            <style>{`
+                                @keyframes fall {
+                                    0% {
+                                        top: -50px;
+                                        transform: rotate(0deg);
+                                    }
+                                    100% {
+                                        top: 100%;
+                                        transform: rotate(360deg);
+                                    }
+                                }
+                            `}</style>
+
+                            {/* Header Text */}
+                            <div className="text-center py-4 bg-gradient-to-r from-orange-500 to-orange-600">
+                                <h2 className="text-2xl font-bold text-white">Quick Response!</h2>
+                                <p className="text-lg font-semibold text-orange-100 mt-1">⚡ Fast Service</p>
                             </div>
-                            <button
-                                onClick={() => setActiveModal(null)}
-                                className="w-full px-6 py-4 bg-white text-blue-600 rounded-xl font-bold text-lg hover:bg-blue-50 transition-colors shadow-lg"
-                            >
-                                Excellent! ⚡
-                            </button>
+
+                            {/* Image */}
+                            <div className="w-full">
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/indastreet%20500.png?updatedAt=1761801217762" 
+                                    alt="Place Fast Response Reward"
+                                    className="w-full h-auto"
+                                />
+                            </div>
+
+                            {/* Info */}
+                            <div className="px-6 py-4 bg-orange-50">
+                                <div className="text-center">
+                                    <p className="text-orange-800 font-semibold">⚡ Excellent response time!</p>
+                                    <p className="text-orange-600 text-sm mt-2">Customers appreciate your speed!</p>
+                                </div>
+                            </div>
+
+                            {/* Close Button */}
+                            <div className="p-6">
+                                <button
+                                    onClick={() => setActiveModal(null)}
+                                    className="w-full px-6 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg"
+                                >
+                                    Excellent! ⚡
+                                </button>
+                            </div>
                         </div>
                     </div>
                 );
@@ -989,16 +1343,14 @@ const RewardBannersTestPage: React.FC = () => {
                                 <p className="text-lg font-semibold text-orange-100 mt-1">🏢 Service Success</p>
                             </div>
 
-                            {/* Image */}
-                            <div className="w-full">
-                                <img 
-                                    src="https://ik.imagekit.io/7grri5v7d/day%201%20rewards.png?updatedAt=1761764981308" 
-                                    alt="Place Completed Booking Reward"
-                                    className="w-full h-auto"
-                                />
-                            </div>
-
-                            {/* Info */}
+            {/* Image */}
+            <div className="w-full">
+                <img 
+                    src="https://ik.imagekit.io/7grri5v7d/indastreet%20100%20coins.png?updatedAt=1761799943286" 
+                    alt="Place Completed Booking Reward"
+                    className="w-full h-auto"
+                />
+            </div>                            {/* Info */}
                             <div className="px-6 py-4 bg-orange-50">
                                 <div className="text-center">
                                     <p className="text-orange-800 font-semibold">✅ Great service delivery! Keep it up!</p>
@@ -1021,28 +1373,64 @@ const RewardBannersTestPage: React.FC = () => {
             case 'booking-place-5star':
                 return (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                        <div className="bg-gradient-to-br from-amber-400 to-orange-600 rounded-3xl max-w-md w-full p-8 text-center animate-fadeIn shadow-2xl relative">
+                        <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden animate-fadeIn shadow-2xl relative">
                             {/* Banner Number */}
-                            <div className="absolute top-4 left-4 bg-white bg-opacity-90 text-amber-600 font-bold text-xl px-4 py-2 rounded-lg shadow-lg">
+                            <div className="absolute top-4 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
                                 #20
                             </div>
-                            <div className="text-8xl mb-4 animate-bounce">⭐</div>
-                            <h2 className="text-4xl font-bold text-white mb-3">5-Star Review!</h2>
-                            <p className="text-xl text-white mb-4">Outstanding Service! ⭐⭐⭐⭐⭐</p>
-                            <div className="bg-white bg-opacity-20 rounded-2xl p-6 mb-4">
-                                <p className="text-6xl font-bold text-white mb-2">+75 🪙</p>
-                                <p className="text-xl text-white font-semibold">5-Star Bonus!</p>
+                            
+                            {/* Falling Coins Animation */}
+                            <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden">
+                                {[...Array(10)].map((_, i) => (
+                                    <div
+                                        key={i}
+                                        className="absolute text-4xl"
+                                        style={{
+                                            left: `${Math.random() * 100}%`,
+                                            animation: `fall ${3 + Math.random() * 2}s linear ${Math.random() * 2}s infinite`,
+                                        }}
+                                    >
+                                        🪙
+                                    </div>
+                                ))}
                             </div>
-                            <div className="bg-white bg-opacity-20 rounded-xl p-4 mb-6">
-                                <p className="text-white font-semibold">⭐ Exceptional quality!</p>
-                                <p className="text-amber-100 text-sm mt-2">Your spa is highly rated!</p>
+                            
+                            {/* Falling Animation Keyframes */}
+                            <style>{`
+                                @keyframes fall {
+                                    0% {
+                                        top: -50px;
+                                        transform: rotate(0deg);
+                                    }
+                                    100% {
+                                        top: 100%;
+                                        transform: rotate(360deg);
+                                    }
+                                }
+                            `}</style>
+
+                            {/* Header Text */}
+                            <div className="text-center py-4 bg-gradient-to-r from-orange-500 to-orange-600">
+                                <h2 className="text-2xl font-bold text-white">5-Star Review!</h2>
+                                <p className="text-lg font-semibold text-orange-100 mt-1">⭐ Outstanding Service</p>
                             </div>
-                            <button
-                                onClick={() => setActiveModal(null)}
-                                className="w-full px-6 py-4 bg-white text-amber-600 rounded-xl font-bold text-lg hover:bg-amber-50 transition-colors shadow-lg"
-                            >
-                                Wonderful! ⭐
-                            </button>
+
+            {/* Image */}
+            <div className="w-full">
+                <img 
+                    src="https://ik.imagekit.io/7grri5v7d/indastreet%2075%20coins.png?updatedAt=1761801413251" 
+                    alt="Place 5-Star Review Reward"
+                    className="w-full h-auto"
+                />
+            </div>                            {/* Close Button */}
+                            <div className="p-6">
+                                <button
+                                    onClick={() => setActiveModal(null)}
+                                    className="w-full px-6 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg"
+                                >
+                                    Wonderful! ⭐
+                                </button>
+                            </div>
                         </div>
                     </div>
                 );
@@ -1092,23 +1480,21 @@ const RewardBannersTestPage: React.FC = () => {
                                 <p className="text-lg font-semibold text-yellow-200 mt-1">🏅 Popular Spa Status</p>
                             </div>
 
-                            {/* Image */}
-                            <div className="w-full">
-                                <img 
-                                    src="https://ik.imagekit.io/7grri5v7d/day%201%20rewards.png?updatedAt=1761765130725" 
-                                    alt="Place 10 Bookings Reward"
-                                    className="w-full h-auto"
-                                />
-                            </div>
+            {/* Image */}
+            <div className="w-full">
+                <img 
+                    src="https://ik.imagekit.io/7grri5v7d/indastreet%20500.png?updatedAt=1761801217762" 
+                    alt="Place 10 Bookings Reward"
+                    className="w-full h-auto"
+                />
+            </div>
 
-                            {/* Info */}
-                            <div className="px-6 py-4 bg-orange-50">
-                                <div className="text-center">
-                                    <p className="text-orange-800 font-semibold">🏅 Customers love your service!</p>
-                                </div>
-                            </div>
-
-                            {/* Close Button */}
+            {/* Info */}
+            <div className="px-6 py-4 bg-orange-50">
+                <div className="text-center">
+                    <p className="text-orange-800 font-semibold">🏅 Customers love your service!</p>
+                </div>
+            </div>                            {/* Close Button */}
                             <div className="p-6">
                                 <button
                                     onClick={() => setActiveModal(null)}
