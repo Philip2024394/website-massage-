@@ -4,8 +4,9 @@ import { AvailabilityStatus, BookingStatus, HotelVillaServiceStatus } from '../t
 import { parsePricing, parseCoordinates, parseMassageTypes, stringifyPricing, stringifyCoordinates, stringifyMassageTypes, stringifyAnalytics } from '../utils/appwriteHelpers';
 import { therapistService, notificationService } from '../lib/appwriteService';
 import { soundNotificationService } from '../utils/soundNotificationService';
-import { User, Calendar, TrendingUp, Hotel, FileCheck, LogOut, Bell, Briefcase, MessageSquare } from 'lucide-react';
+import { User, Calendar, TrendingUp, Hotel, FileCheck, LogOut, Bell, Briefcase, MessageSquare, Tag } from 'lucide-react';
 import Button from '../components/Button';
+import DiscountSharePage from './DiscountSharePage';
 import ImageUpload from '../components/ImageUpload';
 import HotelVillaOptIn from '../components/HotelVillaOptIn';
 import Footer from '../components/Footer';
@@ -574,6 +575,15 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                         />
                     </div>
                 );
+            case 'discounts':
+                return (
+                    <DiscountSharePage
+                        providerId={String(therapistId)}
+                        providerName={therapist?.name || 'Therapist'}
+                        providerType="therapist"
+                        t={t}
+                    />
+                );
             case 'terms':
                 return <TherapistTermsPage />;
             case 'profile':
@@ -1124,6 +1134,12 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                         label="Chat Support"
                         isActive={activeTab === 'chat'}
                         onClick={() => setActiveTab('chat')}
+                    />
+                    <TabButton
+                        icon={<Tag className="w-4 h-4" />}
+                        label="Discounts"
+                        isActive={activeTab === 'discounts'}
+                        onClick={() => setActiveTab('discounts')}
                     />
                     <TabButton
                         icon={<Briefcase className="w-4 h-4" />}

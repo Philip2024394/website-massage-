@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { Place, Pricing, Booking, Notification } from '../types';
 import { BookingStatus, HotelVillaServiceStatus } from '../types';
-import { User, Calendar, TrendingUp, Hotel, FileCheck, LogOut, Bell, MessageSquare } from 'lucide-react';
+import { User, Calendar, TrendingUp, Hotel, FileCheck, LogOut, Bell, MessageSquare, Tag } from 'lucide-react';
 import Button from '../components/Button';
+import DiscountSharePage from './DiscountSharePage';
 import ImageUpload from '../components/ImageUpload';
 import HotelVillaOptIn from '../components/HotelVillaOptIn';
 import UserSolidIcon from '../components/icons/UserSolidIcon';
@@ -378,6 +379,15 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                             onClose={() => setActiveTab('profile')}
                         />
                     </div>
+                );
+            case 'discounts':
+                return (
+                    <DiscountSharePage
+                        providerId={String(placeId)}
+                        providerName={place?.name || 'Place'}
+                        providerType="place"
+                        t={t}
+                    />
                 );
             case 'terms':
                 return (
@@ -867,6 +877,12 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                         label="Chat Support"
                         isActive={activeTab === 'chat'}
                         onClick={() => setActiveTab('chat')}
+                    />
+                    <TabButton
+                        icon={<Tag className="w-4 h-4" />}
+                        label="Discounts"
+                        isActive={activeTab === 'discounts'}
+                        onClick={() => setActiveTab('discounts')}
                     />
                     <TabButton
                         icon={<FileCheck className="w-4 h-4" />}
