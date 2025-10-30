@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Share2, Download, Copy, Check, Clock, AlertCircle, Zap, Power, Timer } from 'lucide-react';
 import Button from '../components/Button';
+import { activateDiscount, deactivateDiscount, getActiveDiscountByProvider } from '../lib/discountService';
+import { broadcastDiscountToCustomers } from '../lib/discountBroadcastService';
 
 interface DiscountSharePageProps {
     providerId: string;
@@ -111,6 +113,30 @@ const DiscountSharePage: React.FC<DiscountSharePageProps> = ({
         socialShares: 0,
         activations: 0
     });
+    const [loading, setLoading] = useState(true);
+
+    // Load existing active discount on mount
+    useEffect(() => {
+        const loadActiveDiscount = async () => {
+            try {
+                const existing = await getActiveDiscountByProvider(providerId, providerType);
+                if (existing) {
+                    setActiveDiscount({
+                        percentage: existing.percentage,
+                        expiresAt: new Date(existing.expiresAt),
+                        isActive: true,
+                        duration: existing.duration
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading active discount:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadActiveDiscount();
+    }, [providerId, providerType]);
 
     // Check if discount is expired
     useEffect(() => {
@@ -140,15 +166,18 @@ const DiscountSharePage: React.FC<DiscountSharePageProps> = ({
             const expiresAt = new Date();
             expiresAt.setHours(expiresAt.getHours() + selectedDuration);
 
-            // TODO: Save to Appwrite database
-            // await discountService.activateDiscount({
-            //     providerId,
-            //     providerName,
-            //     providerType,
-            //     percentage: selectedDiscount.percentage,
-            //     imageUrl: selectedDiscount.imageUrl,
-            //     expiresAt: expiresAt.toISOString()
-            // });
+            // Save to Appwrite database
+            await activateDiscount(
+                providerId,
+                providerName,
+                providerType,
+                selectedDiscount.percentage,
+                selectedDuration,
+                selectedDiscount.imageUrl,
+                '', // location - will be populated by query
+                0,  // rating - will be populated by query
+                ''  // profilePicture - will be populated by query
+            );
 
             setActiveDiscount({
                 percentage: selectedDiscount.percentage,
@@ -177,18 +206,44 @@ const DiscountSharePage: React.FC<DiscountSharePageProps> = ({
         if (!activeDiscount) return;
 
         if (confirm('Are you sure you want to deactivate this discount early?')) {
-            // TODO: Update Appwrite database
-            setActiveDiscount(null);
-            alert('✅ Discount deactivated successfully!');
+            try {
+                // Get the active discount ID from database
+                const existing = await getActiveDiscountByProvider(providerId, providerType);
+                if (existing && existing.$id) {
+                    await deactivateDiscount(existing.$id);
+                }
+                
+                setActiveDiscount(null);
+                alert('✅ Discount deactivated successfully!');
+            } catch (error) {
+                console.error('Error deactivating discount:', error);
+                alert('Failed to deactivate discount. Please try again.');
+            }
         }
     };
 
     // Broadcast to all customers
     const broadcastToCustomers = async () => {
+        if (!selectedDiscount) return;
+        
         try {
-            // TODO: Implement Appwrite chat broadcast
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            setShareStats(prev => ({ ...prev, chatsSent: prev.chatsSent + 1 }));
+            const result = await broadcastDiscountToCustomers(
+                providerId,
+                providerName,
+                providerType,
+                selectedDiscount.percentage,
+                selectedDuration
+            );
+            
+            if (result.success) {
+                setShareStats(prev => ({ 
+                    ...prev, 
+                    chatsSent: prev.chatsSent + result.customerCount 
+                }));
+                console.log(`✅ Broadcasted to ${result.customerCount} customers`);
+            } else {
+                console.error('Broadcast failed:', result.error);
+            }
         } catch (err) {
             console.error('Failed to broadcast:', err);
         }
@@ -254,6 +309,17 @@ const DiscountSharePage: React.FC<DiscountSharePageProps> = ({
         setSelectedDiscount(discount);
         setShowActivateModal(true);
     };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-purple-50 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-orange-500 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading discount settings...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-purple-50 pb-20">

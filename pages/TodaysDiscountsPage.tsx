@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, MapPin, Star, Zap, Filter, Search } from 'lucide-react';
 import Button from '../components/Button';
+import { getAllActiveDiscounts, subscribeToDiscounts, type ActiveDiscount as AppwriteDiscount } from '../lib/discountService';
 
 interface ActivePromotion {
     id: string;
@@ -65,47 +66,32 @@ const TodaysDiscountsPage: React.FC<TodaysDiscountsPageProps> = ({
     const [filterType, setFilterType] = useState<'all' | 'therapist' | 'place'>('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [sortBy, setSortBy] = useState<'discount' | 'time' | 'rating'>('discount');
+    const [loading, setLoading] = useState(true);
 
-    // Load active promotions (TODO: From Appwrite)
+    // Load active promotions from Appwrite with real-time updates
     useEffect(() => {
-        loadActivePromotions();
-        const interval = setInterval(loadActivePromotions, 30000); // Refresh every 30s
-        return () => clearInterval(interval);
+        const unsubscribe = subscribeToDiscounts((discounts: AppwriteDiscount[]) => {
+            const mapped = discounts.map(d => ({
+                id: d.$id || '',
+                providerId: d.providerId,
+                providerName: d.providerName,
+                providerType: d.providerType,
+                percentage: d.percentage,
+                imageUrl: d.imageUrl,
+                expiresAt: new Date(d.expiresAt),
+                location: d.location || '',
+                rating: d.rating || 0,
+                profilePicture: d.profilePicture || ''
+            }));
+            setPromotions(mapped);
+            setLoading(false);
+        });
+
+        // Cleanup subscription on unmount
+        return () => {
+            if (unsubscribe) unsubscribe();
+        };
     }, []);
-
-    const loadActivePromotions = async () => {
-        // TODO: Fetch from Appwrite
-        // For now, using mock data
-        const mockPromotions: ActivePromotion[] = [
-            {
-                id: '1',
-                providerId: '1',
-                providerName: 'Bali Spa & Wellness',
-                providerType: 'place',
-                percentage: 20,
-                imageUrl: 'https://ik.imagekit.io/7grri5v7d/massage%20discount%2020.png?updatedAt=1761803783034',
-                expiresAt: new Date(Date.now() + 2 * 60 * 60 * 1000), // 2 hours from now
-                location: 'Seminyak, Bali',
-                rating: 4.8,
-                profilePicture: ''
-            },
-            {
-                id: '2',
-                providerId: '2',
-                providerName: 'Made Traditional Massage',
-                providerType: 'therapist',
-                percentage: 15,
-                imageUrl: 'https://ik.imagekit.io/7grri5v7d/massage%20discount%2015.png?updatedAt=1761803805221',
-                expiresAt: new Date(Date.now() + 5 * 60 * 60 * 1000), // 5 hours from now
-                location: 'Ubud, Bali',
-                rating: 4.9,
-                profilePicture: ''
-            }
-        ];
-
-        setPromotions(mockPromotions);
-        setFilteredPromotions(mockPromotions);
-    };
 
     // Filter and sort promotions
     useEffect(() => {
