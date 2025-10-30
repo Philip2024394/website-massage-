@@ -581,7 +581,6 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                         providerId={String(therapistId)}
                         providerName={therapist?.name || 'Therapist'}
                         providerType="therapist"
-                        t={t}
                     />
                 );
             case 'terms':

@@ -386,7 +386,6 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                         providerId={String(placeId)}
                         providerName={place?.name || 'Place'}
                         providerType="place"
-                        t={t}
                     />
                 );
             case 'terms':
