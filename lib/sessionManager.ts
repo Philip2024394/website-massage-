@@ -19,8 +19,13 @@ export interface SessionUser {
  */
 export async function restoreSession(): Promise<SessionUser | null> {
     try {
-        // Check if there's an active session
-        const user = await account.get();
+        // Check if there's an active session with timeout
+        const user = await Promise.race([
+            account.get(),
+            new Promise<null>((_, reject) => 
+                setTimeout(() => reject(new Error('Session check timeout')), 5000)
+            )
+        ]);
         
         if (!user) {
             console.log('📭 No active session found');
@@ -29,11 +34,16 @@ export async function restoreSession(): Promise<SessionUser | null> {
 
         console.log('✅ Active session found for:', user.email);
 
-        // Try to find user in each collection to determine type
-        const userType = await determineUserType(user.$id, user.email);
+        // Try to find user in each collection to determine type with timeout
+        const userType = await Promise.race([
+            determineUserType(user.$id, user.email),
+            new Promise<null>((resolve) => 
+                setTimeout(() => resolve(null), 8000)
+            )
+        ]);
         
         if (!userType) {
-            console.log('⚠️ User found but not in any collection');
+            console.log('⚠️ User found but not in any collection or timeout');
             return null;
         }
 
@@ -53,11 +63,16 @@ async function determineUserType(userId: string, email: string): Promise<Session
     try {
         // Check Admin (with error handling for missing collection)
         try {
-            const admins = await databases.listDocuments(
-                DATABASE_ID,
-                COLLECTIONS.ADMINS || 'admins_collection_id',
-                [Query.equal('email', email)]
-            );
+            const admins = await Promise.race([
+                databases.listDocuments(
+                    DATABASE_ID,
+                    COLLECTIONS.ADMINS || 'admins_collection_id',
+                    [Query.equal('email', email)]
+                ),
+                new Promise<any>((_, reject) => 
+                    setTimeout(() => reject(new Error('Admin query timeout')), 3000)
+                )
+            ]);
             if (admins.documents.length > 0) {
                 const admin = admins.documents[0];
                 return {
@@ -69,109 +84,163 @@ async function determineUserType(userId: string, email: string): Promise<Session
                 };
             }
         } catch (adminError: any) {
-            console.warn('⚠️ Admins collection not found, skipping admin check');
+            console.warn('⚠️ Admin check failed or timeout, skipping');
         }
 
-        // Check Hotels
-        const hotels = await databases.listDocuments(
-            DATABASE_ID,
-            COLLECTIONS.HOTELS,
-            [Query.equal('email', email)]
-        );
-        if (hotels.documents.length > 0) {
-            const hotel = hotels.documents[0];
-            return {
-                type: 'hotel',
-                id: userId,
-                email,
-                documentId: hotel.$id,
-                data: hotel
-            };
+        // Check Hotels with timeout
+        try {
+            const hotels = await Promise.race([
+                databases.listDocuments(
+                    DATABASE_ID,
+                    COLLECTIONS.HOTELS,
+                    [Query.equal('email', email)]
+                ),
+                new Promise<any>((_, reject) => 
+                    setTimeout(() => reject(new Error('Hotel query timeout')), 3000)
+                )
+            ]);
+            if (hotels.documents.length > 0) {
+                const hotel = hotels.documents[0];
+                return {
+                    type: 'hotel',
+                    id: userId,
+                    email,
+                    documentId: hotel.$id,
+                    data: hotel
+                };
+            }
+        } catch (hotelError: any) {
+            console.warn('⚠️ Hotel check failed or timeout, skipping');
         }
 
-        // Check Villas
-        const villas = await databases.listDocuments(
-            DATABASE_ID,
-            COLLECTIONS.VILLAS || 'villas',
-            [Query.equal('email', email)]
-        );
-        if (villas.documents.length > 0) {
-            const villa = villas.documents[0];
-            return {
-                type: 'villa',
-                id: userId,
-                email,
-                documentId: villa.$id,
-                data: villa
-            };
+        // Check Villas with timeout
+        try {
+            const villas = await Promise.race([
+                databases.listDocuments(
+                    DATABASE_ID,
+                    COLLECTIONS.VILLAS || 'villas',
+                    [Query.equal('email', email)]
+                ),
+                new Promise<any>((_, reject) => 
+                    setTimeout(() => reject(new Error('Villa query timeout')), 3000)
+                )
+            ]);
+            if (villas.documents.length > 0) {
+                const villa = villas.documents[0];
+                return {
+                    type: 'villa',
+                    id: userId,
+                    email,
+                    documentId: villa.$id,
+                    data: villa
+                };
+            }
+        } catch (villaError: any) {
+            console.warn('⚠️ Villa check failed or timeout, skipping');
         }
 
-        // Check Agents
-        const agents = await databases.listDocuments(
-            DATABASE_ID,
-            COLLECTIONS.AGENTS,
-            [Query.equal('email', email)]
-        );
-        if (agents.documents.length > 0) {
-            const agent = agents.documents[0];
-            return {
-                type: 'agent',
-                id: userId,
-                email,
-                documentId: agent.$id,
-                data: agent
-            };
+        // Check Agents with timeout
+        try {
+            const agents = await Promise.race([
+                databases.listDocuments(
+                    DATABASE_ID,
+                    COLLECTIONS.AGENTS,
+                    [Query.equal('email', email)]
+                ),
+                new Promise<any>((_, reject) => 
+                    setTimeout(() => reject(new Error('Agent query timeout')), 3000)
+                )
+            ]);
+            if (agents.documents.length > 0) {
+                const agent = agents.documents[0];
+                return {
+                    type: 'agent',
+                    id: userId,
+                    email,
+                    documentId: agent.$id,
+                    data: agent
+                };
+            }
+        } catch (agentError: any) {
+            console.warn('⚠️ Agent check failed or timeout, skipping');
         }
 
-        // Check Therapists
-        const therapists = await databases.listDocuments(
-            DATABASE_ID,
-            COLLECTIONS.THERAPISTS,
-            [Query.equal('email', email)]
-        );
-        if (therapists.documents.length > 0) {
-            const therapist = therapists.documents[0];
-            return {
-                type: 'therapist',
-                id: therapist.$id,
-                email,
-                documentId: therapist.$id,
-                data: therapist
-            };
+        // Check Therapists with timeout
+        try {
+            const therapists = await Promise.race([
+                databases.listDocuments(
+                    DATABASE_ID,
+                    COLLECTIONS.THERAPISTS,
+                    [Query.equal('email', email)]
+                ),
+                new Promise<any>((_, reject) => 
+                    setTimeout(() => reject(new Error('Therapist query timeout')), 3000)
+                )
+            ]);
+            if (therapists.documents.length > 0) {
+                const therapist = therapists.documents[0];
+                return {
+                    type: 'therapist',
+                    id: therapist.$id,
+                    email,
+                    documentId: therapist.$id,
+                    data: therapist
+                };
+            }
+        } catch (therapistError: any) {
+            console.warn('⚠️ Therapist check failed or timeout, skipping');
         }
 
-        // Check Places (Massage Places)
-        const places = await databases.listDocuments(
-            DATABASE_ID,
-            COLLECTIONS.PLACES,
-            [Query.equal('email', email)]
-        );
-        if (places.documents.length > 0) {
-            const place = places.documents[0];
-            return {
-                type: 'place',
-                id: place.$id,
-                email,
-                documentId: place.$id,
-                data: place
-            };
+        // Check Places (Massage Places) with timeout
+        try {
+            const places = await Promise.race([
+                databases.listDocuments(
+                    DATABASE_ID,
+                    COLLECTIONS.PLACES,
+                    [Query.equal('email', email)]
+                ),
+                new Promise<any>((_, reject) => 
+                    setTimeout(() => reject(new Error('Place query timeout')), 3000)
+                )
+            ]);
+            if (places.documents.length > 0) {
+                const place = places.documents[0];
+                return {
+                    type: 'place',
+                    id: place.$id,
+                    email,
+                    documentId: place.$id,
+                    data: place
+                };
+            }
+        } catch (placeError: any) {
+            console.warn('⚠️ Place check failed or timeout, skipping');
         }
 
-        // Check Regular Users
-        const users = await databases.listDocuments(
-            DATABASE_ID,
-            COLLECTIONS.USERS,
-            [Query.equal('email', email)]
-        );
-        if (users.documents.length > 0) {
-            const regularUser = users.documents[0];
-            return {
-                type: 'user',
-                id: userId,
-                email,
-                documentId: regularUser.$id,
-                data: regularUser
-            };
+        // Check Regular Users with timeout
+        try {
+            const users = await Promise.race([
+                databases.listDocuments(
+                    DATABASE_ID,
+                    COLLECTIONS.USERS,
+                    [Query.equal('email', email)]
+                ),
+                new Promise<any>((_, reject) => 
+                    setTimeout(() => reject(new Error('User query timeout')), 3000)
+                )
+            ]);
+            if (users.documents.length > 0) {
+                const regularUser = users.documents[0];
+                return {
+                    type: 'user',
+                    id: userId,
+                    email,
+                    documentId: regularUser.$id,
+                    data: regularUser
+                };
+            }
+        } catch (userError: any) {
+            console.warn('⚠️ User check failed or timeout, skipping');
         }
 
         return null;

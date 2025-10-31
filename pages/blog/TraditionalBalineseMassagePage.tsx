@@ -21,7 +21,8 @@ const TraditionalBalineseMassagePage: React.FC<TraditionalBalineseMassagePagePro
     const [imageTimestamp] = useState(() => Date.now()); // Cache timestamp - no infinite re-renders
     const [imageError, setImageError] = useState(false);
 
-    const imageUrl = `https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382&t=${imageTimestamp}`;
+    // Updated image URL with cached timestamp for cache busting
+    const imageUrl = `https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=${imageTimestamp}&tr=w-1920,h-400,fo-auto`;
 
     return (
         <div className="min-h-screen bg-gray-50">
