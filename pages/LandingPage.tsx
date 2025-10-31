@@ -34,6 +34,9 @@ const languages = [
 ];
 
 const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
+    console.log('🎨 LandingPage: Component rendering');
+    console.log('onEnterApp prop received:', !!onEnterApp);
+    
     const [imageLoaded, setImageLoaded] = useState(false);
     const [selectedLanguage, setSelectedLanguage] = useState<'en' | 'id'>('id'); // Default to Indonesian
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -54,13 +57,17 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
     }, []);
 
     const handleEnterApp = () => {
+        console.log('🔘 Enter button clicked!');
+        console.log('Selected language:', selectedLanguage);
         // Create a default location - user will set it on home page
         const defaultLocation: UserLocation = {
             address: 'Not Set',
             lat: 0,
             lng: 0,
         };
+        console.log('Calling onEnterApp with:', selectedLanguage, defaultLocation);
         onEnterApp(selectedLanguage, defaultLocation);
+        console.log('✅ onEnterApp called');
     };
 
     const selectedLang = languages.find(lang => lang.code === selectedLanguage) || languages[0];
@@ -119,36 +126,57 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
 
                         {/* Dropdown Menu */}
                         {isDropdownOpen && (
-                            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-2xl max-h-64 overflow-y-auto z-50">
-                                {languages.map((lang) => (
-                                    <button
-                                        key={lang.code}
-                                        onClick={() => {
-                                            setSelectedLanguage(lang.code as 'en' | 'id');
-                                            setIsDropdownOpen(false);
-                                        }}
-                                        className="w-full px-4 py-3 flex items-center gap-3 hover:bg-orange-50 transition-colors text-left"
-                                    >
-                                        <span className="text-2xl w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full">
-                                            {lang.flag}
-                                        </span>
-                                        <span className="text-gray-800 font-medium">{lang.name}</span>
-                                        {lang.code === selectedLanguage && (
-                                            <svg className="w-5 h-5 ml-auto text-orange-500" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                            </svg>
-                                        )}
-                                    </button>
-                                ))}
-                            </div>
+                            <>
+                                {/* Backdrop to close dropdown when clicking outside */}
+                                <div 
+                                    className="fixed inset-0 z-40" 
+                                    onClick={() => {
+                                        console.log('Dropdown backdrop clicked - closing dropdown');
+                                        setIsDropdownOpen(false);
+                                    }}
+                                />
+                                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-2xl max-h-64 overflow-y-auto z-50">
+                                    {languages.map((lang) => (
+                                        <button
+                                            key={lang.code}
+                                            onClick={() => {
+                                                console.log('Language selected:', lang.name);
+                                                setSelectedLanguage(lang.code as 'en' | 'id');
+                                                setIsDropdownOpen(false);
+                                            }}
+                                            className="w-full px-4 py-3 flex items-center gap-3 hover:bg-orange-50 transition-colors text-left"
+                                        >
+                                            <span className="text-2xl w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full">
+                                                {lang.flag}
+                                            </span>
+                                            <span className="text-gray-800 font-medium">{lang.name}</span>
+                                            {lang.code === selectedLanguage && (
+                                                <svg className="w-5 h-5 ml-auto text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                </svg>
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+                            </>
                         )}
                     </div>
 
                     {/* Enter App Button */}
                     <Button
-                        onClick={handleEnterApp}
+                        type="button"
+                        onClick={(e) => {
+                            console.log('🔘 Enter button CLICKED event triggered!');
+                            console.log('Event:', e);
+                            console.log('Dropdown open?', isDropdownOpen);
+                            if (isDropdownOpen) {
+                                console.log('⚠️ Dropdown is still open! Closing it first...');
+                                setIsDropdownOpen(false);
+                            }
+                            handleEnterApp();
+                        }}
                         variant="primary"
-                        className="!py-4 !text-lg font-bold"
+                        className="!py-4 !text-lg font-bold relative z-10"
                     >
                         <div className="flex items-center justify-center gap-2">
                             Enter

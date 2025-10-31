@@ -47,7 +47,6 @@ import EmployerJobPostingPage from './pages/EmployerJobPostingPage';
 import JobPostingPaymentPage from './pages/JobPostingPaymentPage';
 import BrowseJobsPage from './pages/BrowseJobsPage';
 import MassageJobsPage from './pages/MassageJobsPage';
-import TherapistJobsPage from './pages/TherapistJobsPage';
 import JobUnlockPaymentPage from './pages/JobUnlockPaymentPage';
 import AdminBankSettingsPage from './pages/AdminBankSettingsPage';
 // UX Enhancement Components
@@ -1414,7 +1413,6 @@ const App: React.FC = () => {
             case 'jobPostingPayment': return <JobPostingPaymentPage jobId={jobPostingId} onBack={() => setPage('employerJobPosting')} />;
             case 'browseJobs': return <BrowseJobsPage onBack={handleBackToHome} onPostJob={() => setPage('employerJobPosting')} />;
             case 'massageJobs': return <MassageJobsPage onBack={handleBackToHome} onPostJob={() => setPage('employerJobPosting')} onNavigateToPayment={() => setPage('jobUnlockPayment')} />;
-            case 'therapistJobs': return <TherapistJobsPage onBack={handleBackToHome} onRegisterListing={() => setPage('therapistDashboard')} />;
             case 'jobUnlockPayment': return <JobUnlockPaymentPage />;
             case 'adminBankSettings': return <AdminBankSettingsPage />;
             // SEO Pages

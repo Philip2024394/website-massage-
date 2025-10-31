@@ -94,6 +94,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
     const [pricing, setPricing] = useState<Pricing>({ 60: 0, 90: 0, 120: 0 });
     const [hotelVillaPricing, setHotelVillaPricing] = useState<Pricing>({ 60: 0, 90: 0, 120: 0 });
     const [useSamePricing, setUseSamePricing] = useState(false);
+    const [discountPercentage, setDiscountPercentage] = useState<number>(0);
     const [location, setLocation] = useState('');
     const [coordinates, setCoordinates] = useState({ lat: 0, lng: 0 });
     const [status, setStatus] = useState<AvailabilityStatus>(AvailabilityStatus.Offline);
@@ -139,6 +140,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
             setMassageTypes(parseMassageTypes(existingTherapist.massageTypes));
             setLanguages(existingTherapist.languages || []);
             setPricing(parsePricing(existingTherapist.pricing));
+            setDiscountPercentage((existingTherapist as any).discountPercentage || 0);
             
             // Load hotel/villa pricing if exists
             if ((existingTherapist as any).hotelVillaPricing) {
@@ -298,6 +300,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
             isLicensed,
             pricing: stringifyPricing(pricing),
             hotelVillaPricing: useSamePricing ? undefined : stringifyPricing(hotelVillaPricing),
+            discountPercentage,
             location,
             coordinates: stringifyCoordinates(coordinates),
             status,
@@ -989,6 +992,61 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                        <input type="text" value={formatPriceDisplay(pricing["120"])} onChange={e => handlePriceChange("120", e.target.value)} placeholder="450k" className="block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm" />
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                        
+                        {/* Discount Percentage Section */}
+                        <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border-2 border-orange-200 rounded-lg p-4">
+                            <div className="flex items-center gap-2 mb-3">
+                                <svg className="w-5 h-5 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd"/>
+                                </svg>
+                                <h3 className="text-sm sm:text-md font-semibold text-gray-800">Special Discount Promotion</h3>
+                            </div>
+                            <p className="text-xs text-gray-600 mb-3">
+                                Attract more customers by offering a limited-time discount on your services. The discount will be displayed prominently on your profile card.
+                            </p>
+                            <div className="space-y-2">
+                                <label className="block text-xs font-medium text-gray-700">Select Discount Percentage</label>
+                                <div className="grid grid-cols-5 gap-2">
+                                    {[0, 5, 10, 15, 20].map((discount) => (
+                                        <button
+                                            key={discount}
+                                            type="button"
+                                            onClick={() => setDiscountPercentage(discount)}
+                                            className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
+                                                discountPercentage === discount
+                                                    ? 'bg-orange-600 text-white shadow-lg transform scale-105'
+                                                    : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-orange-400 hover:shadow-md'
+                                            }`}
+                                        >
+                                            {discount === 0 ? 'None' : `-${discount}%`}
+                                        </button>
+                                    ))}
+                                </div>
+                                {discountPercentage > 0 && (
+                                    <div className="mt-3 p-3 bg-white rounded-lg border-2 border-orange-300">
+                                        <p className="text-sm font-semibold text-orange-700 mb-2">Preview of Discounted Prices:</p>
+                                        <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                                            <div className="bg-gray-50 p-2 rounded">
+                                                <p className="text-gray-600">60 min</p>
+                                                <p className="text-gray-400 line-through text-xs">Rp {pricing["60"]}k</p>
+                                                <p className="font-bold text-orange-600">Rp {Math.round(pricing["60"] * (1 - discountPercentage / 100))}k</p>
+                                            </div>
+                                            <div className="bg-gray-50 p-2 rounded">
+                                                <p className="text-gray-600">90 min</p>
+                                                <p className="text-gray-400 line-through text-xs">Rp {pricing["90"]}k</p>
+                                                <p className="font-bold text-orange-600">Rp {Math.round(pricing["90"] * (1 - discountPercentage / 100))}k</p>
+                                            </div>
+                                            <div className="bg-gray-50 p-2 rounded">
+                                                <p className="text-gray-600">120 min</p>
+                                                <p className="text-gray-400 line-through text-xs">Rp {pricing["120"]}k</p>
+                                                <p className="font-bold text-orange-600">Rp {Math.round(pricing["120"] * (1 - discountPercentage / 100))}k</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                         

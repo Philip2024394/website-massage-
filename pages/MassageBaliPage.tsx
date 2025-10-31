@@ -19,6 +19,9 @@ const CloseIcon = ({ className = 'w-6 h-6' }) => (
 );
 
 const MassageBaliPage: React.FC<MassageBaliPageProps> = ({ onNavigate }) => {
+    console.log('🌺 MassageBaliPage: Component rendered');
+    console.log('onNavigate prop:', !!onNavigate);
+    
     const [selectedArea, setSelectedArea] = useState<string>('all');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     
@@ -32,6 +35,7 @@ const MassageBaliPage: React.FC<MassageBaliPageProps> = ({ onNavigate }) => {
 
     // Fetch real data from Appwrite
     useEffect(() => {
+        console.log('🌺 MassageBaliPage: useEffect triggered, fetching data...');
         const fetchRealData = async () => {
             try {
                 setIsLoading(true);
@@ -39,6 +43,10 @@ const MassageBaliPage: React.FC<MassageBaliPageProps> = ({ onNavigate }) => {
                     therapistService.getTherapists(),
                     placeService.getPlaces()
                 ]);
+                
+                console.log('✅ MassageBaliPage: Data fetched successfully');
+                console.log('Therapists:', therapistsData?.length);
+                console.log('Places:', placesData?.length);
 
                 // Calculate total therapists
                 const activeTherapists = therapistsData?.filter((t: any) => t.isLive === true) || [];
@@ -81,8 +89,9 @@ const MassageBaliPage: React.FC<MassageBaliPageProps> = ({ onNavigate }) => {
                 
                 setAreaStats(areaCounts);
                 setIsLoading(false);
+                console.log('✅ MassageBaliPage: All data loaded successfully');
             } catch (error) {
-                console.error('Error fetching real data:', error);
+                console.error('❌ MassageBaliPage: Error fetching real data:', error);
                 setIsLoading(false);
             }
         };
@@ -175,7 +184,11 @@ const MassageBaliPage: React.FC<MassageBaliPageProps> = ({ onNavigate }) => {
                         <nav className="flex-grow overflow-y-auto p-4">
                             <div className="space-y-2">
                                 <button 
-                                    onClick={() => window.location.href = '/'} 
+                                    onClick={() => {
+                                        console.log('🏠 Back to Home clicked from MassageBaliPage');
+                                        setIsMenuOpen(false);
+                                        onNavigate?.('home');
+                                    }} 
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-orange-500 group"
                                 >
                                     <span className="text-2xl">🏠</span>

@@ -344,6 +344,74 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         <span className="font-semibold text-white text-xs">Qualified</span>
                     </div>
                 )}
+
+                {/* Social Share Buttons - Bottom Right Corner */}
+                <div className="absolute bottom-2 right-2 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                    {/* WhatsApp */}
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            const text = `Check out ${therapist.name} on IndaStreet - Amazing massage therapist!`;
+                            const url = window.location.href;
+                            window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`, '_blank');
+                        }}
+                        className="w-7 h-7 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all"
+                        title="Share on WhatsApp"
+                        aria-label="Share on WhatsApp"
+                    >
+                        <svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99 0-3.903-.52-5.614-1.486L.057 24z"/>
+                        </svg>
+                    </button>
+                    
+                    {/* Facebook */}
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            const url = window.location.href;
+                            window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+                        }}
+                        className="w-7 h-7 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all"
+                        title="Share on Facebook"
+                        aria-label="Share on Facebook"
+                    >
+                        <svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                        </svg>
+                    </button>
+                    
+                    {/* Instagram */}
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            navigator.clipboard.writeText(`Check out ${therapist.name} on IndaStreet - Amazing massage therapist! ${window.location.href}`);
+                            alert('Instagram message copied! Open Instagram and paste to share.');
+                        }}
+                        className="w-7 h-7 bg-gradient-to-br from-purple-600 via-pink-600 to-orange-600 hover:from-purple-700 hover:via-pink-700 hover:to-orange-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all"
+                        title="Share on Instagram"
+                        aria-label="Share on Instagram"
+                    >
+                        <svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                        </svg>
+                    </button>
+                    
+                    {/* TikTok */}
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            navigator.clipboard.writeText(`Check out ${therapist.name} on IndaStreet - Amazing massage therapist! ${window.location.href}`);
+                            alert('TikTok message copied! Open TikTok and paste to share.');
+                        }}
+                        className="w-7 h-7 bg-black hover:bg-gray-900 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all"
+                        title="Share on TikTok"
+                        aria-label="Share on TikTok"
+                    >
+                        <svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
             
             {/* Profile Picture - Positioned below banner, overlapping */}
@@ -446,18 +514,72 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 </div>
             )}
 
+            {/* Discount Notice - Shows when discount is active */}
+            {therapist.discountPercentage && therapist.discountPercentage > 0 && (
+                <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 px-4 rounded-lg shadow-md mb-2">
+                    <div className="text-center">
+                        <p className="font-bold text-base mb-1 animate-pulse">
+                            🔥 {therapist.discountPercentage}% OFF - PRICES ARE DISCOUNTED! 🔥
+                        </p>
+                        <p className="text-xs font-semibold">
+                            The prices shown below are FINAL DISCOUNTED PRICES - this is what you'll pay!
+                        </p>
+                    </div>
+                </div>
+            )}
+
             <div className="grid grid-cols-3 gap-2 text-center text-sm">
-                <div className="bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md">
+                {/* 60 min pricing */}
+                <div className="bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative">
                     <p className="text-gray-600">60 min</p>
-                    <p className="font-bold text-gray-800">Rp {Number(pricing["60"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
+                    {therapist.discountPercentage && therapist.discountPercentage > 0 ? (
+                        <>
+                            {/* Discounted price - what customer will actually pay */}
+                            <p className="font-bold text-gray-800">
+                                Rp {Math.round(Number(pricing["60"]) * (1 - therapist.discountPercentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
+                            </p>
+                            {/* Discount badge to show they're getting a deal */}
+                            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-10 h-10 flex items-center justify-center shadow-lg animate-bounce">
+                                -{therapist.discountPercentage}%
+                            </span>
+                        </>
+                    ) : (
+                        <p className="font-bold text-gray-800">Rp {Number(pricing["60"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
+                    )}
                 </div>
-                <div className="bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md">
+                
+                {/* 90 min pricing */}
+                <div className="bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative">
                     <p className="text-gray-600">90 min</p>
-                    <p className="font-bold text-gray-800">Rp {Number(pricing["90"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
+                    {therapist.discountPercentage && therapist.discountPercentage > 0 ? (
+                        <>
+                            <p className="font-bold text-gray-800">
+                                Rp {Math.round(Number(pricing["90"]) * (1 - therapist.discountPercentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
+                            </p>
+                            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-10 h-10 flex items-center justify-center shadow-lg animate-bounce">
+                                -{therapist.discountPercentage}%
+                            </span>
+                        </>
+                    ) : (
+                        <p className="font-bold text-gray-800">Rp {Number(pricing["90"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
+                    )}
                 </div>
-                <div className="bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md">
+                
+                {/* 120 min pricing */}
+                <div className="bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative">
                     <p className="text-gray-600">120 min</p>
-                    <p className="font-bold text-gray-800">Rp {Number(pricing["120"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
+                    {therapist.discountPercentage && therapist.discountPercentage > 0 ? (
+                        <>
+                            <p className="font-bold text-gray-800">
+                                Rp {Math.round(Number(pricing["120"]) * (1 - therapist.discountPercentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
+                            </p>
+                            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-10 h-10 flex items-center justify-center shadow-lg animate-bounce">
+                                -{therapist.discountPercentage}%
+                            </span>
+                        </>
+                    ) : (
+                        <p className="font-bold text-gray-800">Rp {Number(pricing["120"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
+                    )}
                 </div>
             </div>
 
@@ -690,10 +812,6 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                     <li className="flex items-start gap-2">
                                         <span className="text-orange-500">✓</span>
                                         <span>All reviews are verified by our admin team before posting live</span>
-                                    </li>
-                                    <li className="flex items-start gap-2">
-                                        <span className="text-orange-500">✓</span>
-                                        <span>Admin can edit, approve, or remove reviews to maintain quality</span>
                                     </li>
                                     <li className="flex items-start gap-2">
                                         <span className="text-orange-500">✓</span>

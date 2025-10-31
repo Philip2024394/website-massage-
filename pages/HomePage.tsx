@@ -181,6 +181,20 @@ const HomePage: React.FC<HomePageProps> = ({
         setIsLocationModalOpen(true);
     }, []);
 
+    // Log therapist display info
+    useEffect(() => {
+        const liveTherapists = therapists.filter((t: any) => t.isLive === true);
+        const filteredTherapists = liveTherapists.filter((t: any) => 
+            selectedMassageType === 'all' || (t.massageTypes && t.massageTypes.includes(selectedMassageType))
+        );
+        
+        console.log('🏠 HomePage Therapist Display:');
+        console.log('  Total therapists prop:', therapists.length);
+        console.log('  Live therapists:', liveTherapists.length);
+        console.log('  After massage type filter:', filteredTherapists.length);
+        console.log('  Selected massage type:', selectedMassageType);
+    }, [therapists, selectedMassageType]);
+
     useEffect(() => {
         // Fetch custom drawer links
         const fetchCustomLinks = async () => {
@@ -467,7 +481,12 @@ const HomePage: React.FC<HomePageProps> = ({
                                     <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Locations</h3>
                                 </div>
                                 <button 
-                                    onClick={() => { onNavigate?.('massage-bali'); setIsMenuOpen(false); }} 
+                                    onClick={() => { 
+                                        console.log('🌺 Massage in Bali button clicked!');
+                                        console.log('onNavigate available:', !!onNavigate);
+                                        onNavigate?.('massage-bali'); 
+                                        setIsMenuOpen(false); 
+                                    }} 
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-pink-500 group"
                                 >
                                     <span className="text-2xl">🌺</span>

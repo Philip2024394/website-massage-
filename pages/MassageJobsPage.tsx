@@ -85,13 +85,14 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
     onBack, 
     onPostJob, 
     onNavigateToPayment, 
-    onCreateTherapistProfile = () => console.error('⚠️ onCreateTherapistProfile not provided!') 
+    onCreateTherapistProfile
 }) => {
     console.log('🔥 MassageJobsPage RENDERED - Props received:', {
         hasOnBack: typeof onBack === 'function',
         hasOnPostJob: typeof onPostJob === 'function',
         hasOnNavigateToPayment: typeof onNavigateToPayment === 'function',
         hasOnCreateTherapistProfile: typeof onCreateTherapistProfile === 'function',
+        onCreateTherapistProfileProvided: !!onCreateTherapistProfile,
         onCreateTherapistProfileType: typeof onCreateTherapistProfile,
         onCreateTherapistProfileValue: onCreateTherapistProfile
     });
@@ -103,7 +104,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedType, setSelectedType] = useState<string>('all');
     const [selectedLocation, setSelectedLocation] = useState<string>('all');
-    const [selectedMassageSkill, setSelectedMassageSkill] = useState<string>('all');
+    // const [selectedMassageSkill, setSelectedMassageSkill] = useState<string>('all'); // Reserved for future filtering
     const [showTypeDropdown, setShowTypeDropdown] = useState(false);
     const [showLocationDropdown, setShowLocationDropdown] = useState(false);
 
@@ -262,7 +263,11 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                     onPostJob();
                                 } else {
                                     console.log('🚀 Calling: onCreateTherapistProfile');
-                                    onCreateTherapistProfile();
+                                    if (onCreateTherapistProfile) {
+                                        onCreateTherapistProfile();
+                                    } else {
+                                        console.error('⚠️ onCreateTherapistProfile not provided! This is a browser cache issue.');
+                                    }
                                 }
                             }}
                             className="flex items-center gap-2 py-1.5 px-4 bg-orange-500 text-white shadow-lg rounded-lg transition-all duration-200 text-sm font-semibold whitespace-nowrap hover:bg-orange-600"
@@ -752,7 +757,6 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                 {/* THERAPIST LISTINGS SECTION */}
                 {activeTab === 'therapists' && (
                     <div className="max-w-7xl mx-auto px-4 pb-8">
-                        {console.log('✅ THERAPIST TAB IS ACTIVE - RENDERING BANNER')}
                         {/* Create Profile CTA Banner */}
                         <div className="mb-6 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl p-6 shadow-lg text-white">
                             <div className="flex items-center justify-between">
@@ -763,7 +767,11 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                 <button
                                     onClick={() => {
                                         console.log('🚀 CTA Banner: Calling onCreateTherapistProfile');
-                                        onCreateTherapistProfile();
+                                        if (onCreateTherapistProfile) {
+                                            onCreateTherapistProfile();
+                                        } else {
+                                            console.error('⚠️ CTA Banner: onCreateTherapistProfile not provided! Browser cache issue.');
+                                        }
                                     }}
                                     className="px-6 py-3 bg-white text-orange-600 font-bold rounded-lg hover:bg-orange-50 transition-all transform hover:scale-105 shadow-lg whitespace-nowrap"
                                 >
@@ -788,7 +796,11 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                     <button
                                         onClick={() => {
                                             console.log('🚀 Empty state: Calling onCreateTherapistProfile');
-                                            onCreateTherapistProfile();
+                                            if (onCreateTherapistProfile) {
+                                                onCreateTherapistProfile();
+                                            } else {
+                                                console.error('⚠️ Empty state: onCreateTherapistProfile not provided! Browser cache issue.');
+                                            }
                                         }}
                                         className="px-6 py-3 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 transition-colors"
                                     >

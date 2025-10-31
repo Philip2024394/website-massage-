@@ -216,14 +216,20 @@ export function clearSessionCache(): void {
 }
 
 /**
- * Logout and clear all sessions
+ * Logout current user and clear session
  */
 export async function logout(): Promise<void> {
     try {
         await account.deleteSession('current');
         clearSessionCache();
         console.log('✅ Session cleared successfully');
-    } catch (error) {
+    } catch (error: any) {
+        // If error is 401 and user is guest, this is expected behavior
+        if (error.code === 401 && error.message?.includes('missing scopes')) {
+            console.log('📭 Logout attempted on guest user - no active session to clear');
+            clearSessionCache();
+            return;
+        }
         console.error('Error during logout:', error);
         // Still clear cache even if Appwrite logout fails
         clearSessionCache();
