@@ -23,9 +23,16 @@ const TraditionalBalineseMassagePage: React.FC<TraditionalBalineseMassagePagePro
         <div className="min-h-screen bg-gray-50">
             <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
                 <div className="flex justify-between items-center">
-                    <h1 className="text-2xl font-bold">
-                        <span className="text-orange-500">Indastreet</span>
-                    </h1>
+                    <div className="flex items-center gap-3">
+                        <img 
+                            src="https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382&cb=1730425600001"
+                            alt="Balinese Massage"
+                            className="h-10 w-10 object-cover rounded-full"
+                        />
+                        <h1 className="text-2xl font-bold">
+                            <span className="text-orange-500">Indastreet</span>
+                        </h1>
+                    </div>
                     <button 
                         onClick={() => setIsMenuOpen(true)} 
                         title="Menu"
