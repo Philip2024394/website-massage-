@@ -742,6 +742,26 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                 {/* THERAPIST LISTINGS SECTION */}
                 {activeTab === 'therapists' && (
                     <div className="max-w-7xl mx-auto px-4 pb-8">
+                        {/* Create Profile CTA Banner */}
+                        <div className="mb-6 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl p-6 shadow-lg text-white">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-2xl font-bold mb-2">Are you a Massage Therapist?</h3>
+                                    <p className="text-orange-100">Create your professional profile and connect with employers</p>
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        console.log('🚀 CTA: Navigating to registration');
+                                        window.location.href = '/#therapistJobRegistration';
+                                        window.location.reload();
+                                    }}
+                                    className="px-6 py-3 bg-white text-orange-600 font-bold rounded-lg hover:bg-orange-50 transition-all transform hover:scale-105 shadow-lg whitespace-nowrap"
+                                >
+                                    Create Your Profile
+                                </button>
+                            </div>
+                        </div>
+
                         {isLoading ? (
                             <div className="text-center py-12">
                                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
