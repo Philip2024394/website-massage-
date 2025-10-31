@@ -250,12 +250,13 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                             onClick={() => {
                                 console.log('🎯 Create Profile/Post Job button clicked!');
                                 console.log('Active tab:', activeTab);
-                                console.log('Calling:', activeTab === 'employers' ? 'onPostJob' : 'onCreateTherapistProfile');
                                 if (activeTab === 'employers') {
+                                    console.log('Calling: onPostJob');
                                     onPostJob();
                                 } else {
-                                    console.log('Calling onCreateTherapistProfile...');
-                                    onCreateTherapistProfile();
+                                    console.log('🚀 DIRECT NAVIGATION: Going to therapist registration');
+                                    window.location.hash = '#therapistJobRegistration';
+                                    window.location.reload();
                                 }
                             }}
                             className="flex items-center gap-2 py-1.5 px-4 bg-orange-500 text-white shadow-lg rounded-lg transition-all duration-200 text-sm font-semibold whitespace-nowrap hover:bg-orange-600"
@@ -277,7 +278,10 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                             💼 Jobs for Offer
                         </button>
                         <button
-                            onClick={() => setActiveTab('therapists')}
+                            onClick={() => {
+                                console.log('🔵 THERAPIST TAB CLICKED - Setting activeTab to therapists');
+                                setActiveTab('therapists');
+                            }}
                             className={`px-6 py-3 font-semibold transition-all ${
                                 activeTab === 'therapists'
                                     ? 'text-orange-600 border-b-2 border-orange-600'
@@ -742,6 +746,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                 {/* THERAPIST LISTINGS SECTION */}
                 {activeTab === 'therapists' && (
                     <div className="max-w-7xl mx-auto px-4 pb-8">
+                        {console.log('✅ THERAPIST TAB IS ACTIVE - RENDERING BANNER')}
                         {/* Create Profile CTA Banner */}
                         <div className="mb-6 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl p-6 shadow-lg text-white">
                             <div className="flex items-center justify-between">
