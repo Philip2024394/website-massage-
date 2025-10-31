@@ -278,7 +278,7 @@ const TraditionalBalineseMassagePage: React.FC<TraditionalBalineseMassagePagePro
                         Traditional Balinese massage represents one of the world's most comprehensive healing traditions—a holistic therapy addressing body, mind, and spirit simultaneously. Whether you're a wellness tourist seeking authentic cultural experiences or a therapist wanting to master this versatile modality, Balinese massage offers profound therapeutic value grounded in centuries of wisdom.
                     </p>
                     <p className="text-gray-700 mb-6 leading-relaxed">
-                        Experience this ancient healing art through certified Balinese massage therapists on IndaStreet—connecting tradition with modern convenience across Indonesia.
+                        Experience this ancient healing art through certified Balinese massage therapists on Indastreet—connecting tradition with modern convenience across Indonesia.
                     </p>
                 </div>
 
@@ -289,7 +289,7 @@ const TraditionalBalineseMassagePage: React.FC<TraditionalBalineseMassagePagePro
                     ></div>
                     <div className="relative">
                         <h3 className="text-2xl font-bold mb-4 drop-shadow-lg">Experience Authentic Balinese Massage</h3>
-                        <p className="text-xl mb-6 drop-shadow-md">Find certified traditional therapists on IndaStreet</p>
+                        <p className="text-xl mb-6 drop-shadow-md">Find certified traditional therapists on Indastreet</p>
                         <button 
                             onClick={() => onNavigate?.('home')}
                             className="bg-white text-orange-600 px-8 py-3 rounded-lg font-bold hover:bg-orange-50 transition-colors"
