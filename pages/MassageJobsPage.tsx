@@ -254,9 +254,8 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                     console.log('Calling: onPostJob');
                                     onPostJob();
                                 } else {
-                                    console.log('🚀 DIRECT NAVIGATION: Going to therapist registration');
-                                    window.location.hash = '#therapistJobRegistration';
-                                    window.location.reload();
+                                    console.log('🚀 Calling: onCreateTherapistProfile');
+                                    onCreateTherapistProfile();
                                 }
                             }}
                             className="flex items-center gap-2 py-1.5 px-4 bg-orange-500 text-white shadow-lg rounded-lg transition-all duration-200 text-sm font-semibold whitespace-nowrap hover:bg-orange-600"
@@ -756,9 +755,8 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                 </div>
                                 <button
                                     onClick={() => {
-                                        console.log('🚀 CTA: Navigating to registration');
-                                        window.location.href = '/#therapistJobRegistration';
-                                        window.location.reload();
+                                        console.log('🚀 CTA Banner: Calling onCreateTherapistProfile');
+                                        onCreateTherapistProfile();
                                     }}
                                     className="px-6 py-3 bg-white text-orange-600 font-bold rounded-lg hover:bg-orange-50 transition-all transform hover:scale-105 shadow-lg whitespace-nowrap"
                                 >
