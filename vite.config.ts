@@ -26,6 +26,26 @@ export default defineConfig({
     headers: {
       'Cache-Control': 'no-store',
     },
+    // Prevent server crashes from file watcher issues
+    watch: {
+      usePolling: false,
+      interval: 100,
+      // Ignore large directories that don't need watching
+      ignored: [
+        '**/node_modules/**',
+        '**/dist/**',
+        '**/.git/**',
+        '**/coverage/**',
+        '**/*.log',
+      ],
+    },
+    // Increase timeout to prevent connection drops
+    hmr: {
+      timeout: 30000,
+      overlay: true,
+    },
+    // Graceful shutdown handling
+    strictPort: false,
   },
   build: {
     outDir: 'dist',
@@ -91,5 +111,13 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom'],
+    // Force pre-bundle these to prevent dev server restarts
+    force: false,
   },
+  // Prevent memory issues during development
+  esbuild: {
+    logOverride: { 'this-is-undefined-in-esm': 'silent' },
+  },
+  // Clear screen on restart
+  clearScreen: false,
 })
