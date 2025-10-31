@@ -47,13 +47,13 @@ interface TherapistJobListing {
 
 interface TherapistJobsPageProps {
     onBack: () => void;
-    onRegisterListing: () => void;
+    onCreateTherapistProfile: () => void;
 }
 
-const TherapistJobsPage: React.FC<TherapistJobsPageProps> = ({ onBack, onRegisterListing }) => {
+const TherapistJobsPage: React.FC<TherapistJobsPageProps> = ({ onBack, onCreateTherapistProfile }) => {
     console.log('🎯 TherapistJobsPage received props:', { 
         hasOnBack: typeof onBack === 'function', 
-        hasOnRegisterListing: typeof onRegisterListing === 'function' 
+        hasOnCreateTherapistProfile: typeof onCreateTherapistProfile === 'function' 
     });
     
     const [therapistListings, setTherapistListings] = useState<TherapistJobListing[]>([]);
@@ -263,11 +263,10 @@ const TherapistJobsPage: React.FC<TherapistJobsPageProps> = ({ onBack, onRegiste
                         </div>
                         <button
                             onClick={() => {
-                                alert('🚀 NEW CODE LOADED! Navigating to Registration Page...');
-                                console.log('🎯 Create Profile button clicked! [NEW CODE v2]');
-                                console.log('onRegisterListing type:', typeof onRegisterListing);
-                                console.log('onRegisterListing value:', onRegisterListing);
-                                onRegisterListing();
+                                alert('🚀 BUTTON CLICKED - CALLING NEW FUNCTION!');
+                                console.log('🎯 Button clicked - calling onCreateTherapistProfile');
+                                console.log('Function type:', typeof onCreateTherapistProfile);
+                                onCreateTherapistProfile();
                             }}
                             className="ml-4 px-6 py-3 bg-white text-orange-600 font-bold rounded-lg hover:bg-orange-50 transition-all transform hover:scale-105 shadow-lg whitespace-nowrap"
                         >
