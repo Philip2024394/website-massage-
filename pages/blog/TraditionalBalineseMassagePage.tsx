@@ -21,22 +21,27 @@ const TraditionalBalineseMassagePage: React.FC<TraditionalBalineseMassagePagePro
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
-                <div className="flex justify-between items-center">
+            <header 
+                className="p-4 sticky top-0 z-20 shadow-sm bg-cover bg-center bg-no-repeat relative"
+                style={{
+                    backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382&cb=1730425600002)`,
+                }}
+            >
+                <div className="flex justify-between items-center relative z-10">
                     <div className="flex items-center gap-3">
                         <img 
                             src="https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382&cb=1730425600001"
                             alt="Balinese Massage"
-                            className="h-10 w-10 object-cover rounded-full"
+                            className="h-10 w-10 object-cover rounded-full border-2 border-white shadow-lg"
                         />
                         <h1 className="text-2xl font-bold">
-                            <span className="text-orange-500">Indastreet</span>
+                            <span className="text-white drop-shadow-lg">Indastreet</span>
                         </h1>
                     </div>
                     <button 
                         onClick={() => setIsMenuOpen(true)} 
                         title="Menu"
-                        className="text-orange-500 hover:text-orange-600 transition-colors"
+                        className="text-white hover:text-orange-300 transition-colors drop-shadow-lg"
                     >
                         <BurgerMenuIcon className="w-6 h-6" />
                     </button>
