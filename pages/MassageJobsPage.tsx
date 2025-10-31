@@ -167,8 +167,15 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
             );
             const listings = response.documents as unknown as TherapistJobListing[];
             setTherapistListings(listings);
-        } catch (error) {
-            console.error('Error fetching therapist listings:', error);
+            console.log('✅ Fetched therapist listings:', listings.length);
+        } catch (error: any) {
+            if (error.code === 401) {
+                console.warn('⚠️ Permission denied: Please configure Appwrite collection permissions to allow public read access');
+                // Set empty array so UI doesn't break
+                setTherapistListings([]);
+            } else {
+                console.error('Error fetching therapist listings:', error);
+            }
         } finally {
             setIsLoading(false);
         }
@@ -771,8 +778,23 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                 <p className="mt-4 text-gray-600">Loading therapist profiles...</p>
                             </div>
                         ) : therapistListings.length === 0 ? (
-                            <div className="text-center py-12">
-                                <p className="text-gray-600">No therapist profiles available</p>
+                            <div className="text-center py-12 bg-white rounded-lg shadow-md">
+                                <div className="max-w-md mx-auto px-6">
+                                    <div className="text-6xl mb-4">👤</div>
+                                    <h3 className="text-xl font-semibold text-gray-800 mb-2">No Therapist Profiles Yet</h3>
+                                    <p className="text-gray-600 mb-4">
+                                        Be the first to create your professional profile and connect with employers!
+                                    </p>
+                                    <button
+                                        onClick={() => {
+                                            console.log('🚀 Empty state: Calling onCreateTherapistProfile');
+                                            onCreateTherapistProfile();
+                                        }}
+                                        className="px-6 py-3 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 transition-colors"
+                                    >
+                                        Create Your Profile Now
+                                    </button>
+                                </div>
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -901,7 +923,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                             {/* Contact Button */}
                                             {listing.contactWhatsApp && (
                                                 <button
-                                                    onClick={() => window.open(`https://wa.me/${listing.contactWhatsApp.replace(/\D/g, '')}`, '_blank')}
+                                                    onClick={() => window.open(`https://wa.me/${listing.contactWhatsApp?.replace(/\D/g, '') || ''}`, '_blank')}
                                                     className="w-full py-3 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg flex items-center justify-center gap-2 transition-all"
                                                 >
                                                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
