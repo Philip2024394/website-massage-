@@ -95,7 +95,7 @@ const TraditionalBalineseMassagePage: React.FC<TraditionalBalineseMassagePagePro
 
                 <div className="mb-12 rounded-2xl overflow-hidden">
                     <img 
-                        src="https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382" 
+                        src="https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382&cache-bust=20251031-2"
                         alt="Traditional Balinese massage techniques and healing in Bali Indonesia" 
                         className="w-full h-96 object-cover"
                     />

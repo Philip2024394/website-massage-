@@ -644,7 +644,7 @@ const MassageBaliPage: React.FC<MassageBaliPageProps> = ({ onNavigate }) => {
                     <div 
                         className="absolute inset-0 bg-cover bg-center"
                         style={{
-                            backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382)'
+                            backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382&cache-bust=20251031-2)'
                         }}
                     ></div>
                     
