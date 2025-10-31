@@ -24,7 +24,7 @@ const TraditionalBalineseMassagePage: React.FC<TraditionalBalineseMassagePagePro
             <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold">
-                        <span className="text-orange-500">IndaStreet</span>
+                        <span className="text-orange-500">Indastreet</span>
                     </h1>
                     <button 
                         onClick={() => setIsMenuOpen(true)} 
@@ -42,7 +42,7 @@ const TraditionalBalineseMassagePage: React.FC<TraditionalBalineseMassagePagePro
                     <div className={`absolute right-0 top-0 bottom-0 w-[70%] sm:w-80 bg-gradient-to-br from-white via-gray-50 to-gray-100 shadow-2xl flex flex-col ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
                         <div className="p-6 flex justify-between items-center">
                             <h2 className="font-bold text-2xl">
-                                <span className="text-orange-500">IndaStreet</span>
+                                <span className="text-orange-500">Indastreet</span>
                             </h2>
                             <button onClick={() => setIsMenuOpen(false)}>
                                 <CloseIcon />
@@ -95,7 +95,7 @@ const TraditionalBalineseMassagePage: React.FC<TraditionalBalineseMassagePagePro
 
                 <div className="mb-12 rounded-2xl overflow-hidden">
                     <img 
-                        src="https://ik.imagekit.io/7grri5v7d/bali%20massage%20indonisea.png" 
+                        src="https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382" 
                         alt="Traditional Balinese massage techniques and healing in Bali Indonesia" 
                         className="w-full h-96 object-cover"
                     />
