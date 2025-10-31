@@ -10,13 +10,15 @@ interface CustomerDashboardPageProps {
   onLogout: () => void;
   onBack: () => void;
   onBookNow: () => void;
+  onNavigate?: (page: string) => void;
 }
 
 const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
   user,
   onLogout,
   onBack,
-  onBookNow
+  onBookNow,
+  onNavigate
 }) => {
   const [activeTab, setActiveTab] = useState<'profile' | 'bookings' | 'calendar' | 'wallet'>('bookings');
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -325,6 +327,27 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
                 </div>
               </div>
             </div>
+
+            {/* Coin History Button */}
+            {onNavigate && (
+              <button
+                onClick={() => onNavigate('coin-history')}
+                className="w-full flex items-center justify-between p-4 bg-white rounded-xl shadow-md hover:shadow-lg transition-all border-2 border-orange-200 hover:border-orange-400"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center text-white text-2xl">
+                    📊
+                  </div>
+                  <div className="text-left">
+                    <h3 className="font-bold text-gray-900">Coin History</h3>
+                    <p className="text-sm text-gray-600">View transactions & expiration</p>
+                  </div>
+                </div>
+                <svg className="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            )}
 
             {/* Loyalty Info */}
             <div className="bg-blue-50 border-l-4 border-blue-400 rounded-lg p-4">

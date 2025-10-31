@@ -1,7 +1,7 @@
 
 
 import React, { useState, useEffect } from 'react';
-import { BarChart, Users, Building, Settings, Percent, LogOut, CreditCard, DollarSign, ShoppingBag, MessageSquare, UserCheck, Menu, X, Package } from 'lucide-react';
+import { BarChart, Users, Building, Settings, Percent, LogOut, CreditCard, DollarSign, ShoppingBag, MessageSquare, UserCheck, Menu, X, Package, Briefcase } from 'lucide-react';
 import ConfirmTherapistsPage from './ConfirmTherapistsPage';
 import ConfirmPlacesPage from './ConfirmPlacesPage';
 import ConfirmAccountsPage from './ConfirmAccountsPage';
@@ -13,13 +13,15 @@ import BankDetailsManagementPage from './BankDetailsManagementPage';
 import PaymentTransactionsPage from './PaymentTransactionsPage';
 import AdminShopManagementPage from './AdminShopManagementPage';
 import MembershipPricingPage from './MembershipPricingPage';
+import AdminJobPostingsPage from './AdminJobPostingsPage';
+import AdminFooter from '../components/footers/AdminFooter';
 import { authService } from '../lib/appwriteService';
 
 interface AdminDashboardPageProps {
     onLogout: () => void;
     initialTab?: DashboardPage;
 }
-type DashboardPage = 'platform-analytics' | 'confirm-therapists' | 'confirm-places' | 'confirm-accounts' | 'chat-messages' | 'drawer-buttons' | 'agent-commission' | 'bank-details' | 'payment-transactions' | 'shop-management' | 'membership-pricing';
+type DashboardPage = 'platform-analytics' | 'confirm-therapists' | 'confirm-places' | 'confirm-accounts' | 'chat-messages' | 'drawer-buttons' | 'agent-commission' | 'bank-details' | 'payment-transactions' | 'shop-management' | 'membership-pricing' | 'job-postings';
 const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'initialTab'>> = ({ onLogout, initialTab }) => {
   const [activePage, setActivePage] = useState<DashboardPage>(initialTab || 'platform-analytics');
   const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
@@ -121,6 +123,21 @@ const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'i
           >
             <UserCheck className="w-5 h-5" />
             <span className="font-medium">Accounts</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActivePage('job-postings');
+              setIsSideDrawerOpen(false);
+            }}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+              activePage === 'job-postings'
+                ? 'bg-orange-500 text-white shadow-md'
+                : 'text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            <Briefcase className="w-5 h-5" />
+            <span className="font-medium">Job Postings</span>
           </button>
 
           <button
@@ -269,6 +286,7 @@ const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'i
         {activePage === 'confirm-therapists' && <ConfirmTherapistsPage />}
         {activePage === 'confirm-places' && <ConfirmPlacesPage />}
         {activePage === 'confirm-accounts' && <ConfirmAccountsPage />}
+        {activePage === 'job-postings' && <AdminJobPostingsPage />}
         {activePage === 'chat-messages' && <AdminChatListPage />}
         {activePage === 'bank-details' && <BankDetailsManagementPage />}
         {activePage === 'payment-transactions' && <PaymentTransactionsPage />}
@@ -277,6 +295,15 @@ const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'i
         {activePage === 'drawer-buttons' && <DrawerButtonsPage />}
         {activePage === 'agent-commission' && <AgentCommissionPage />}
       </main>
+
+      {/* Admin Footer */}
+      <AdminFooter
+        onDashboardClick={() => setActivePage('platform-analytics')}
+        onMembersClick={() => setActivePage('confirm-therapists')}
+        onMessagesClick={() => setActivePage('chat-messages')}
+        onAlertsClick={() => setActivePage('payment-transactions')}
+        onSettingsClick={() => setActivePage('drawer-buttons')}
+      />
     </div>
   );
 };

@@ -29,6 +29,7 @@ interface TherapistDashboardPageProps {
     onLogout: () => void;
     onNavigateToNotifications: () => void;
     onNavigateToHome?: () => void;
+    onNavigate?: (page: string) => void;
     onUpdateBookingStatus: (bookingId: number, status: BookingStatus) => void;
     therapistId: number | string; // Support both for Appwrite compatibility
     bookings: Booking[];
@@ -78,7 +79,7 @@ const BookingCard: React.FC<{ booking: Booking; onUpdateStatus: (id: number, sta
     );
 }
 
-const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave, onLogout, onNavigateToNotifications, onNavigateToHome, onUpdateBookingStatus, therapistId, bookings, notifications, t }) => {
+const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave, onLogout, onNavigateToNotifications, onNavigateToHome, onNavigate, onUpdateBookingStatus, therapistId, bookings, notifications, t }) => {
     const [therapist, setTherapist] = useState<Therapist | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -539,6 +540,27 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                 } catch { return 0; }
                             })()} description={t.analytics.whatsappClicksDesc} />
                         </div>
+
+                        {/* Coin History Button */}
+                        {onNavigate && (
+                            <button
+                                onClick={() => onNavigate('coin-history')}
+                                className="w-full flex items-center justify-between p-4 bg-white rounded-xl shadow-md hover:shadow-lg transition-all border-2 border-orange-200 hover:border-orange-400 mt-6"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center text-white text-2xl">
+                                        📊
+                                    </div>
+                                    <div className="text-left">
+                                        <h3 className="font-bold text-gray-900">Coin History</h3>
+                                        <p className="text-sm text-gray-600">View transactions & expiration</p>
+                                    </div>
+                                </div>
+                                <svg className="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                        )}
                     </div>
                 );
             case 'hotelVilla':

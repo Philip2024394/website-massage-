@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { Building2, MapPin, DollarSign, Home, Briefcase, Phone, Mail, X } from 'lucide-react';
 import { databases, ID } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
+import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 
 interface EmployerJobPostingPageProps {
     onNavigateToPayment?: (jobId: string) => void;
+    onOpenMenu?: () => void;
 }
 
-const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({ onNavigateToPayment }) => {
+const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({ onNavigateToPayment, onOpenMenu }) => {
     // Array of professional massage/spa images - will cycle through all before repeating
     const jobPostingImages = [
         'https://ik.imagekit.io/7grri5v7d/jungle%20massage.png?updatedAt=1761594798827',
@@ -68,11 +70,18 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({ onNavig
         views: 0,
         applications: 0,
         imageUrl: getRandomImage(),
+        thumbnailImages: [] as string[],
         flightsPaidByEmployer: false,
         visaArrangedByEmployer: false,
     });
 
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [mainImagePreview, setMainImagePreview] = useState<string>('');
+    const [thumbnailPreviews, setThumbnailPreviews] = useState<string[]>([]);
+    const [showRequirementsDropdown, setShowRequirementsDropdown] = useState(false);
+    const [showBenefitsDropdown, setShowBenefitsDropdown] = useState(false);
+    const [showMassageTypesDropdown, setShowMassageTypesDropdown] = useState(false);
+    const [showLanguagesDropdown, setShowLanguagesDropdown] = useState(false);
 
     const businessTypes = [
         { value: 'hotel', label: 'Hotel' },
@@ -84,8 +93,20 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({ onNavig
     ];
 
     const indonesianCities = [
-        'Bali', 'Jakarta', 'Surabaya', 'Bandung', 'Yogyakarta',
-        'Medan', 'Semarang', 'Makassar', 'Lombok', 'Ubud'
+        // Java
+        'Jakarta', 'Surabaya', 'Bandung', 'Semarang', 'Yogyakarta', 'Malang', 'Solo', 'Bogor', 'Depok', 'Tangerang', 'Bekasi', 'Cirebon',
+        // Bali
+        'Denpasar', 'Ubud', 'Seminyak', 'Kuta', 'Sanur', 'Nusa Dua', 'Canggu', 'Jimbaran',
+        // Sumatra
+        'Medan', 'Palembang', 'Pekanbaru', 'Padang', 'Bandar Lampung', 'Batam', 'Jambi', 'Bengkulu',
+        // Sulawesi
+        'Makassar', 'Manado', 'Palu', 'Kendari', 'Gorontalo',
+        // Kalimantan
+        'Balikpapan', 'Banjarmasin', 'Pontianak', 'Samarinda', 'Palangkaraya',
+        // Lombok & Nusa Tenggara
+        'Mataram', 'Lombok', 'Kupang', 'Labuan Bajo',
+        // Other
+        'Maluku', 'Jayapura', 'Manokwari', 'Sorong'
     ];
 
     const commonRequirements = [
@@ -159,6 +180,46 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({ onNavig
         'Vietnamese',
     ];
 
+    // Handle main image upload
+    const handleMainImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setMainImagePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    // Handle thumbnail images upload
+    const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+        const remainingSlots = 5 - thumbnailPreviews.length;
+        const filesToAdd = files.slice(0, remainingSlots);
+        
+        if (filesToAdd.length > 0) {
+            // Create previews
+            filesToAdd.forEach(file => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setThumbnailPreviews(prev => [...prev, reader.result as string]);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+    };
+
+    // Remove thumbnail
+    const removeThumbnail = (index: number) => {
+        setThumbnailPreviews(prev => prev.filter((_, i) => i !== index));
+    };
+
+    // Remove main image
+    const removeMainImage = () => {
+        setMainImagePreview('');
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
@@ -171,6 +232,13 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({ onNavig
         try {
             console.log('Submitting job with massage types:', formData.massageTypes);
             console.log('Submitting job with languages:', formData.requiredLanguages);
+            
+            // Always use getRandomImage() for now since imageurl field only accepts strings up to 255 chars
+            // Base64 images are too long. In production, upload to Appwrite Storage first and use those URLs
+            const finalMainImage = getRandomImage();
+            
+            // NOTE: In production, upload images to Appwrite Storage first and get URLs
+            // For now, using auto-generated image URLs only (base64 is too long for imageurl field)
             
             // NOTE: All Appwrite attributes have been added! Sending complete data.
             // Appwrite field names (lowercase): whatsappsent, whatsappsentat, massagetypes
@@ -188,6 +256,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({ onNavig
                     city: formData.city,
                     status: 'pending_payment',
                     postedDate: new Date().toISOString(),
+                    whatsappsentat: '', // Required string field (not datetime) - will be updated when WhatsApp is clicked
                     
                     // ✅ Required fields with defaults
                     businessType: formData.businessType === 'other' ? formData.customBusinessType : formData.businessType,
@@ -197,8 +266,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({ onNavig
                     contactPerson: formData.contactPerson || 'HR Manager',
                     numberOfPositions: formData.numberOfPositions || 1,
                     accommodationProvided: formData.accommodationProvided || false,
-                    imageurl: formData.imageUrl || '',
-                    whatsappsentat: '', // Will be updated when WhatsApp is clicked
+                    imageurl: finalMainImage,
                     
                     // ✅ Optional fields
                     ...(formData.location && { location: formData.location }),
@@ -230,11 +298,26 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({ onNavig
             // Navigate to payment page instead of showing success
             if (onNavigateToPayment) {
                 onNavigateToPayment(response.$id);
+            } else {
+                alert('✅ Job posted successfully! Job ID: ' + response.$id);
+                // Reset form
+                window.location.reload();
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error posting job:', error);
             console.error('Error details:', JSON.stringify(error, null, 2));
-            alert('Failed to post job. Please check console for details.');
+            
+            // Show more specific error message
+            let errorMessage = 'Failed to post job. ';
+            if (error.message) {
+                errorMessage += error.message;
+            } else if (error.response) {
+                errorMessage += JSON.stringify(error.response);
+            } else {
+                errorMessage += 'Please check console for details.';
+            }
+            
+            alert(errorMessage);
         } finally {
             setIsSubmitting(false);
         }
@@ -242,21 +325,20 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({ onNavig
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Header */}
-            <header className="bg-white shadow-sm px-4 py-3 sticky top-0 z-30">
-                <div className="max-w-4xl mx-auto flex justify-between items-center">
-                    <div>
-                        <h1 className="text-xl font-bold">
-                            <span className="text-gray-900">Post Job</span>
-                        </h1>
-                        <p className="text-xs text-gray-500 mt-0.5">Find qualified massage therapists</p>
+            {/* Header - HomePage Style */}
+            <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
+                <div className="flex justify-between items-center">
+                    <h1 className="text-2xl font-bold text-gray-800">
+                        <span className="text-black">Inda</span>
+                        <span className="text-orange-500">
+                            <span className="inline-block animate-float">S</span>treet
+                        </span>
+                    </h1>
+                    <div className="flex items-center gap-3 text-gray-600">
+                        <button onClick={onOpenMenu} title="Menu">
+                            <BurgerMenuIcon className="w-6 h-6" />
+                        </button>
                     </div>
-                    <button
-                        onClick={() => window.history.back()}
-                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                    >
-                        <X className="w-5 h-5 text-gray-600" />
-                    </button>
                 </div>
             </header>
 
@@ -345,52 +427,58 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({ onNavig
                             </div>
                         </div>
 
-                        <div className="grid sm:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-900 mb-2">
-                                    Salary From
-                                </label>
-                                <select
-                                    value={formData.salaryRangeMin || ''}
-                                    onChange={(e) => setFormData({ ...formData, salaryRangeMin: parseInt(e.target.value) || 0 })}
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                >
-                                    <option value="">Select minimum salary</option>
-                                    <option value="0">To be discussed</option>
-                                    <option value="3000000">Up to 3jt</option>
-                                    <option value="4000000">Up to 4jt</option>
-                                    <option value="5000000">Up to 5jt</option>
-                                    <option value="6000000">Up to 6jt</option>
-                                    <option value="7000000">Up to 7jt</option>
-                                    <option value="8000000">Up to 8jt</option>
-                                    <option value="9000000">Up to 9jt</option>
-                                    <option value="10000000">Up to 10jt</option>
-                                    <option value="11000000">Up to 11jt</option>
-                                    <option value="12000000">Above 11jt</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-900 mb-2">
-                                    Salary To
-                                </label>
-                                <select
-                                    value={formData.salaryRangeMax || ''}
-                                    onChange={(e) => setFormData({ ...formData, salaryRangeMax: parseInt(e.target.value) || 0 })}
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                >
-                                    <option value="">Select maximum salary</option>
-                                    <option value="0">To be discussed</option>
-                                    <option value="3000000">Up to 3jt</option>
-                                    <option value="4000000">Up to 4jt</option>
-                                    <option value="5000000">Up to 5jt</option>
-                                    <option value="6000000">Up to 6jt</option>
-                                    <option value="7000000">Up to 7jt</option>
-                                    <option value="8000000">Up to 8jt</option>
-                                    <option value="9000000">Up to 9jt</option>
-                                    <option value="10000000">Up to 10jt</option>
-                                    <option value="11000000">Up to 11jt</option>
-                                    <option value="12000000">Above 11jt</option>
-                                </select>
+                        {/* Salary Range Section */}
+                        <div>
+                            <h3 className="text-lg font-bold text-gray-900 mb-4">
+                                Salary Range (Monthly in Indonesian Rupiah)
+                            </h3>
+                            <div className="grid sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-900 mb-2">
+                                        Minimum Salary
+                                    </label>
+                                    <select
+                                        value={formData.salaryRangeMin || ''}
+                                        onChange={(e) => setFormData({ ...formData, salaryRangeMin: parseInt(e.target.value) || 0 })}
+                                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                    >
+                                        <option value="">Select minimum salary</option>
+                                        <option value="0">To be discussed</option>
+                                        <option value="3000000">Rp 3,000,000</option>
+                                        <option value="4000000">Rp 4,000,000</option>
+                                        <option value="5000000">Rp 5,000,000</option>
+                                        <option value="6000000">Rp 6,000,000</option>
+                                        <option value="7000000">Rp 7,000,000</option>
+                                        <option value="8000000">Rp 8,000,000</option>
+                                        <option value="9000000">Rp 9,000,000</option>
+                                        <option value="10000000">Rp 10,000,000</option>
+                                        <option value="11000000">Rp 11,000,000</option>
+                                        <option value="12000000">Rp 12,000,000+</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-900 mb-2">
+                                        Maximum Salary
+                                    </label>
+                                    <select
+                                        value={formData.salaryRangeMax || ''}
+                                        onChange={(e) => setFormData({ ...formData, salaryRangeMax: parseInt(e.target.value) || 0 })}
+                                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                    >
+                                        <option value="">Select maximum salary</option>
+                                        <option value="0">To be discussed</option>
+                                        <option value="3000000">Rp 3,000,000</option>
+                                        <option value="4000000">Rp 4,000,000</option>
+                                        <option value="5000000">Rp 5,000,000</option>
+                                        <option value="6000000">Rp 6,000,000</option>
+                                        <option value="7000000">Rp 7,000,000</option>
+                                        <option value="8000000">Rp 8,000,000</option>
+                                        <option value="9000000">Rp 9,000,000</option>
+                                        <option value="10000000">Rp 10,000,000</option>
+                                        <option value="11000000">Rp 11,000,000</option>
+                                        <option value="12000000">Rp 12,000,000+</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
 
@@ -444,16 +532,18 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({ onNavig
 
                         <div>
                             <label className="block text-sm font-medium text-gray-900 mb-2">
-                                Business Name *
+                                Business Name * <span className="text-gray-500 text-xs">(Max 23 characters)</span>
                             </label>
                             <input
                                 type="text"
                                 required
+                                maxLength={23}
                                 value={formData.businessName}
                                 onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
-                                placeholder="e.g., Paradise Resort & Spa"
+                                placeholder="e.g., Paradise Resort"
                                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                             />
+                            <p className="text-xs text-gray-500 mt-1">{formData.businessName.length}/23 characters</p>
                         </div>
 
                         <div>
@@ -489,6 +579,105 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({ onNavig
                                     />
                                 </div>
                             )}
+                        </div>
+                    </div>
+
+                    {/* Business Images */}
+                    <div className="bg-white border-2 border-gray-200 rounded-xl p-6 space-y-4">
+                        <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                            <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            Business Images
+                        </h2>
+                        <p className="text-sm text-gray-600">
+                            Upload images to showcase your business. Main image is displayed on job cards.
+                            <br />
+                            <span className="text-orange-600 font-medium">💡 If no main image is uploaded, we'll use professional massage imagery.</span>
+                        </p>
+
+                        {/* Main Image Upload */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-900 mb-2">
+                                Main Image (Optional)
+                            </label>
+                            {mainImagePreview ? (
+                                <div className="relative w-full h-48 rounded-lg overflow-hidden border-2 border-gray-200">
+                                    <img 
+                                        src={mainImagePreview} 
+                                        alt="Main preview" 
+                                        className="w-full h-full object-cover"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={removeMainImage}
+                                        className="absolute top-2 right-2 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-colors"
+                                    >
+                                        <X className="w-5 h-5" />
+                                    </button>
+                                </div>
+                            ) : (
+                                <label className="block w-full h-48 border-2 border-dashed border-gray-300 rounded-lg hover:border-orange-400 transition-colors cursor-pointer">
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleMainImageChange}
+                                        className="hidden"
+                                    />
+                                    <div className="h-full flex flex-col items-center justify-center text-gray-500">
+                                        <svg className="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                        </svg>
+                                        <p className="text-sm font-medium">Click to upload main image</p>
+                                        <p className="text-xs">PNG, JPG up to 10MB</p>
+                                    </div>
+                                </label>
+                            )}
+                        </div>
+
+                        {/* Thumbnail Images Upload */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-900 mb-2">
+                                Additional Images (Up to 5)
+                            </label>
+                            <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+                                {thumbnailPreviews.map((preview, index) => (
+                                    <div key={index} className="relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200">
+                                        <img 
+                                            src={preview} 
+                                            alt={`Thumbnail ${index + 1}`} 
+                                            className="w-full h-full object-cover"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => removeThumbnail(index)}
+                                            className="absolute top-1 right-1 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-colors"
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                ))}
+                                {thumbnailPreviews.length < 5 && (
+                                    <label className="aspect-square border-2 border-dashed border-gray-300 rounded-lg hover:border-orange-400 transition-colors cursor-pointer">
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            multiple
+                                            onChange={handleThumbnailChange}
+                                            className="hidden"
+                                        />
+                                        <div className="h-full flex flex-col items-center justify-center text-gray-500">
+                                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                            </svg>
+                                            <p className="text-xs mt-1">Add</p>
+                                        </div>
+                                    </label>
+                                )}
+                            </div>
+                            <p className="text-xs text-gray-500 mt-2">
+                                {thumbnailPreviews.length}/5 images uploaded
+                            </p>
                         </div>
                     </div>
 
@@ -603,22 +792,19 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({ onNavig
                                 City / Location *
                             </label>
                             {formData.country === 'Indonesia' ? (
-                                <div className="flex flex-wrap gap-2">
+                                <select
+                                    value={formData.city}
+                                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                    required
+                                >
+                                    <option value="">Select a city</option>
                                     {indonesianCities.map((city) => (
-                                        <button
-                                            key={city}
-                                            type="button"
-                                            onClick={() => setFormData({ ...formData, city })}
-                                            className={`px-3 py-2 rounded-lg font-medium transition-all ${
-                                                formData.city === city
-                                                    ? 'bg-orange-500 text-white'
-                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                            }`}
-                                        >
+                                        <option key={city} value={city}>
                                             {city}
-                                        </button>
+                                        </option>
                                     ))}
-                                </div>
+                                </select>
                             ) : (
                                 <input
                                     type="text"
@@ -857,49 +1043,155 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({ onNavig
                     {/* Requirements & Benefits */}
                     <div className="bg-white border-2 border-gray-200 rounded-xl p-6 space-y-4">
                         <h2 className="text-lg font-bold text-gray-900">Requirements</h2>
-                        <div className="flex flex-wrap gap-2">
-                            {commonRequirements.map((req) => (
-                                <button
-                                    key={req}
-                                    type="button"
-                                    onClick={() => {
-                                        const newReqs = formData.requirements.includes(req)
-                                            ? formData.requirements.filter(r => r !== req)
-                                            : [...formData.requirements, req];
-                                        setFormData({ ...formData, requirements: newReqs });
-                                    }}
-                                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                                        formData.requirements.includes(req)
-                                            ? 'bg-orange-500 text-white'
-                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                    }`}
-                                >
-                                    {req}
-                                </button>
-                            ))}
+                        
+                        {/* Selected Requirements Tags */}
+                        {formData.requirements.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-3">
+                                {formData.requirements.map((req) => (
+                                    <div key={req} className="flex items-center gap-1 px-3 py-1.5 bg-orange-500 text-white rounded-lg text-sm">
+                                        <span>{req}</span>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setFormData({ 
+                                                    ...formData, 
+                                                    requirements: formData.requirements.filter(r => r !== req) 
+                                                });
+                                            }}
+                                            className="ml-1 hover:bg-orange-600 rounded-full p-0.5"
+                                        >
+                                            <X className="w-3 h-3" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                        
+                        {/* Dropdown */}
+                        <div className="relative">
+                            <button
+                                type="button"
+                                onClick={() => setShowRequirementsDropdown(!showRequirementsDropdown)}
+                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-left flex items-center justify-between hover:border-orange-400"
+                            >
+                                <span className="text-gray-700">Select Requirements</span>
+                                <svg className={`w-5 h-5 transition-transform ${showRequirementsDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            
+                            {showRequirementsDropdown && (
+                                <div className="absolute z-10 w-full mt-2 bg-white border-2 border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                                    {/* Close Button */}
+                                    <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-2 flex justify-end">
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowRequirementsDropdown(false)}
+                                            className="w-6 h-6 bg-orange-500 hover:bg-orange-600 text-white rounded-full flex items-center justify-center transition-colors"
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                    {commonRequirements.map((req) => (
+                                        <button
+                                            key={req}
+                                            type="button"
+                                            onClick={() => {
+                                                const newReqs = formData.requirements.includes(req)
+                                                    ? formData.requirements.filter(r => r !== req)
+                                                    : [...formData.requirements, req];
+                                                setFormData({ ...formData, requirements: newReqs });
+                                            }}
+                                            className={`w-full px-4 py-3 text-left hover:bg-orange-50 flex items-center justify-between ${
+                                                formData.requirements.includes(req) ? 'bg-orange-100' : ''
+                                            }`}
+                                        >
+                                            <span className="text-sm">{req}</span>
+                                            {formData.requirements.includes(req) && (
+                                                <svg className="w-4 h-4 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                </svg>
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </div>
 
                         <h2 className="text-lg font-bold text-gray-900 mt-6">Benefits</h2>
-                        <div className="flex flex-wrap gap-2">
-                            {commonBenefits.map((benefit) => (
-                                <button
-                                    key={benefit}
-                                    type="button"
-                                    onClick={() => {
-                                        const newBenefits = formData.benefits.includes(benefit)
-                                            ? formData.benefits.filter(b => b !== benefit)
-                                            : [...formData.benefits, benefit];
-                                        setFormData({ ...formData, benefits: newBenefits });
-                                    }}
-                                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                                        formData.benefits.includes(benefit)
-                                            ? 'bg-orange-500 text-white'
-                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                    }`}
-                                >
-                                    {benefit}
-                                </button>
-                            ))}
+                        
+                        {/* Selected Benefits Tags */}
+                        {formData.benefits.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-3">
+                                {formData.benefits.map((benefit) => (
+                                    <div key={benefit} className="flex items-center gap-1 px-3 py-1.5 bg-orange-500 text-white rounded-lg text-sm">
+                                        <span>{benefit}</span>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setFormData({ 
+                                                    ...formData, 
+                                                    benefits: formData.benefits.filter(b => b !== benefit) 
+                                                });
+                                            }}
+                                            className="ml-1 hover:bg-orange-600 rounded-full p-0.5"
+                                        >
+                                            <X className="w-3 h-3" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                        
+                        {/* Dropdown */}
+                        <div className="relative">
+                            <button
+                                type="button"
+                                onClick={() => setShowBenefitsDropdown(!showBenefitsDropdown)}
+                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-left flex items-center justify-between hover:border-orange-400"
+                            >
+                                <span className="text-gray-700">Select Benefits</span>
+                                <svg className={`w-5 h-5 transition-transform ${showBenefitsDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            
+                            {showBenefitsDropdown && (
+                                <div className="absolute z-10 w-full mt-2 bg-white border-2 border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                                    {/* Close Button */}
+                                    <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-2 flex justify-end">
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowBenefitsDropdown(false)}
+                                            className="w-6 h-6 bg-orange-500 hover:bg-orange-600 text-white rounded-full flex items-center justify-center transition-colors"
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                    {commonBenefits.map((benefit) => (
+                                        <button
+                                            key={benefit}
+                                            type="button"
+                                            onClick={() => {
+                                                const newBenefits = formData.benefits.includes(benefit)
+                                                    ? formData.benefits.filter(b => b !== benefit)
+                                                    : [...formData.benefits, benefit];
+                                                setFormData({ ...formData, benefits: newBenefits });
+                                            }}
+                                            className={`w-full px-4 py-3 text-left hover:bg-orange-50 flex items-center justify-between ${
+                                                formData.benefits.includes(benefit) ? 'bg-orange-100' : ''
+                                            }`}
+                                        >
+                                            <span className="text-sm">{benefit}</span>
+                                            {formData.benefits.includes(benefit) && (
+                                                <svg className="w-4 h-4 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                </svg>
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -907,26 +1199,79 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({ onNavig
                     <div className="bg-white border-2 border-gray-200 rounded-xl p-6 space-y-4">
                         <h2 className="text-lg font-bold text-gray-900">Massage Types Required</h2>
                         <p className="text-sm text-gray-600">Select the massage types the therapist must be skilled in</p>
-                        <div className="flex flex-wrap gap-2">
-                            {massageTypes.map((type) => (
-                                <button
-                                    key={type}
-                                    type="button"
-                                    onClick={() => {
-                                        const newTypes = formData.massageTypes.includes(type)
-                                            ? formData.massageTypes.filter(t => t !== type)
-                                            : [...formData.massageTypes, type];
-                                        setFormData({ ...formData, massageTypes: newTypes });
-                                    }}
-                                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                                        formData.massageTypes.includes(type)
-                                            ? 'bg-blue-500 text-white'
-                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                    }`}
-                                >
-                                    {type}
-                                </button>
-                            ))}
+                        
+                        {/* Selected Massage Types Tags */}
+                        {formData.massageTypes.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-3">
+                                {formData.massageTypes.map((type) => (
+                                    <div key={type} className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm">
+                                        <span>{type}</span>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setFormData({ 
+                                                    ...formData, 
+                                                    massageTypes: formData.massageTypes.filter(t => t !== type) 
+                                                });
+                                            }}
+                                            className="ml-1 hover:bg-blue-600 rounded-full p-0.5"
+                                        >
+                                            <X className="w-3 h-3" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                        
+                        {/* Dropdown */}
+                        <div className="relative">
+                            <button
+                                type="button"
+                                onClick={() => setShowMassageTypesDropdown(!showMassageTypesDropdown)}
+                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-left flex items-center justify-between hover:border-orange-400"
+                            >
+                                <span className="text-gray-700">Select Massage Types</span>
+                                <svg className={`w-5 h-5 transition-transform ${showMassageTypesDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            
+                            {showMassageTypesDropdown && (
+                                <div className="absolute z-10 w-full mt-2 bg-white border-2 border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                                    {/* Close Button */}
+                                    <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-2 flex justify-end">
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowMassageTypesDropdown(false)}
+                                            className="w-6 h-6 bg-orange-500 hover:bg-orange-600 text-white rounded-full flex items-center justify-center transition-colors"
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                    {massageTypes.map((type) => (
+                                        <button
+                                            key={type}
+                                            type="button"
+                                            onClick={() => {
+                                                const newTypes = formData.massageTypes.includes(type)
+                                                    ? formData.massageTypes.filter(t => t !== type)
+                                                    : [...formData.massageTypes, type];
+                                                setFormData({ ...formData, massageTypes: newTypes });
+                                            }}
+                                            className={`w-full px-4 py-3 text-left hover:bg-orange-50 flex items-center justify-between ${
+                                                formData.massageTypes.includes(type) ? 'bg-orange-100' : ''
+                                            }`}
+                                        >
+                                            <span className="text-sm">{type}</span>
+                                            {formData.massageTypes.includes(type) && (
+                                                <svg className="w-4 h-4 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                </svg>
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -934,26 +1279,79 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({ onNavig
                     <div className="bg-white border-2 border-gray-200 rounded-xl p-6 space-y-4">
                         <h2 className="text-lg font-bold text-gray-900">Languages Required</h2>
                         <p className="text-sm text-gray-600">Select the languages the therapist must speak</p>
-                        <div className="flex flex-wrap gap-2">
-                            {availableLanguages.map((lang) => (
-                                <button
-                                    key={lang}
-                                    type="button"
-                                    onClick={() => {
-                                        const newLangs = formData.requiredLanguages.includes(lang)
-                                            ? formData.requiredLanguages.filter(l => l !== lang)
-                                            : [...formData.requiredLanguages, lang];
-                                        setFormData({ ...formData, requiredLanguages: newLangs });
-                                    }}
-                                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                                        formData.requiredLanguages.includes(lang)
-                                            ? 'bg-green-500 text-white'
-                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                    }`}
-                                >
-                                    {lang}
-                                </button>
-                            ))}
+                        
+                        {/* Selected Languages Tags */}
+                        {formData.requiredLanguages.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-3">
+                                {formData.requiredLanguages.map((lang) => (
+                                    <div key={lang} className="flex items-center gap-1 px-3 py-1.5 bg-green-500 text-white rounded-lg text-sm">
+                                        <span>{lang}</span>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setFormData({ 
+                                                    ...formData, 
+                                                    requiredLanguages: formData.requiredLanguages.filter(l => l !== lang) 
+                                                });
+                                            }}
+                                            className="ml-1 hover:bg-green-600 rounded-full p-0.5"
+                                        >
+                                            <X className="w-3 h-3" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                        
+                        {/* Dropdown */}
+                        <div className="relative">
+                            <button
+                                type="button"
+                                onClick={() => setShowLanguagesDropdown(!showLanguagesDropdown)}
+                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-left flex items-center justify-between hover:border-orange-400"
+                            >
+                                <span className="text-gray-700">Select Languages</span>
+                                <svg className={`w-5 h-5 transition-transform ${showLanguagesDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            
+                            {showLanguagesDropdown && (
+                                <div className="absolute z-10 w-full mt-2 bg-white border-2 border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                                    {/* Close Button */}
+                                    <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-2 flex justify-end">
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowLanguagesDropdown(false)}
+                                            className="w-6 h-6 bg-orange-500 hover:bg-orange-600 text-white rounded-full flex items-center justify-center transition-colors"
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                    {availableLanguages.map((lang) => (
+                                        <button
+                                            key={lang}
+                                            type="button"
+                                            onClick={() => {
+                                                const newLangs = formData.requiredLanguages.includes(lang)
+                                                    ? formData.requiredLanguages.filter(l => l !== lang)
+                                                    : [...formData.requiredLanguages, lang];
+                                                setFormData({ ...formData, requiredLanguages: newLangs });
+                                            }}
+                                            className={`w-full px-4 py-3 text-left hover:bg-orange-50 flex items-center justify-between ${
+                                                formData.requiredLanguages.includes(lang) ? 'bg-orange-100' : ''
+                                            }`}
+                                        >
+                                            <span className="text-sm">{lang}</span>
+                                            {formData.requiredLanguages.includes(lang) && (
+                                                <svg className="w-4 h-4 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                </svg>
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -971,6 +1369,22 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({ onNavig
                     </button>
                 </form>
             </div>
+
+            {/* Animations */}
+            <style>{`
+                @keyframes float {
+                    0%, 100% {
+                        transform: translateY(0px);
+                    }
+                    50% {
+                        transform: translateY(-5px);
+                    }
+                }
+                
+                .animate-float {
+                    animation: float 2s ease-in-out infinite;
+                }
+            `}</style>
         </div>
     );
 };

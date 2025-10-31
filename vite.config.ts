@@ -23,6 +23,9 @@ export default defineConfig({
     port: 3000,
     host: true,
     open: true,
+    headers: {
+      'Cache-Control': 'no-store',
+    },
   },
   build: {
     outDir: 'dist',

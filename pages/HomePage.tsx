@@ -262,68 +262,6 @@ const HomePage: React.FC<HomePageProps> = ({
                         {/* Menu Items */}
                         <nav className="flex-grow overflow-y-auto p-4">
                             <div className="space-y-2">
-                                {/* Coin Shop - FEATURED AT TOP */}
-                                <button 
-                                    onClick={() => { onNavigate?.('coin-shop'); setIsMenuOpen(false); }} 
-                                    className="flex items-center gap-4 w-full text-left p-5 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] group mb-3"
-                                >
-                                    <span className="text-4xl">🪙</span>
-                                    <div className="flex-grow">
-                                        <h3 className="font-bold text-white text-lg">Coin Shop</h3>
-                                        <p className="text-sm text-orange-100">Redeem your coins for rewards</p>
-                                    </div>
-                                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </button>
-
-                                {/* Referral Program */}
-                                <button 
-                                    onClick={() => { onNavigate?.('referral'); setIsMenuOpen(false); }} 
-                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-md hover:shadow-lg transition-all duration-200 border-2 border-orange-200 hover:border-orange-300 group mb-3"
-                                >
-                                    <span className="text-3xl">🎁</span>
-                                    <div className="flex-grow">
-                                        <h3 className="font-bold text-gray-900 text-base">Invite Friends</h3>
-                                        <p className="text-xs text-orange-600 font-semibold">Earn 100 coins per referral</p>
-                                    </div>
-                                    <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </button>
-
-                                {/* Coin History */}
-                                <button 
-                                    onClick={() => { onNavigate?.('coin-history'); setIsMenuOpen(false); }} 
-                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-md hover:shadow-lg transition-all duration-200 border-2 border-gray-200 hover:border-orange-200 group mb-4"
-                                >
-                                    <span className="text-3xl">📊</span>
-                                    <div className="flex-grow">
-                                        <h3 className="font-bold text-gray-900 text-base">Coin History</h3>
-                                        <p className="text-xs text-gray-600">View transactions & expiration</p>
-                                    </div>
-                                    <svg className="w-5 h-5 text-gray-400 group-hover:text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </button>
-
-                                {/* Today's Discounts - NEW! */}
-                                <button 
-                                    onClick={() => { onNavigate?.('todays-discounts'); setIsMenuOpen(false); }} 
-                                    className="flex items-center gap-4 w-full text-left p-5 rounded-xl bg-gradient-to-r from-red-500 to-pink-600 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] group mb-3"
-                                >
-                                    <span className="text-4xl">🔥</span>
-                                    <div className="flex-grow">
-                                        <h3 className="font-bold text-white text-lg">Today's Discounts</h3>
-                                        <p className="text-sm text-red-100">Limited time offers ending soon!</p>
-                                    </div>
-                                    <svg className="w-6 h-6 text-white animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </button>
-
-                                <div className="border-t border-gray-300 my-3"></div>
-
                                 {/* Job Posting Section - MOVED TO TOP */}
                                 <div className="px-2 py-2">
                                     <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Job Posting</h3>
@@ -581,18 +519,6 @@ const HomePage: React.FC<HomePageProps> = ({
                                     </div>
                                 </button>
 
-                                {/* TEST: Reward Banners */}
-                                <button 
-                                    onClick={() => { onNavigate?.('reward-banners-test'); setIsMenuOpen(false); }} 
-                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-gradient-to-r from-red-500 to-pink-500 shadow-md hover:shadow-lg transition-all duration-200 group"
-                                >
-                                    <span className="text-3xl">🎨</span>
-                                    <div className="flex-grow">
-                                        <h3 className="font-semibold text-white group-hover:scale-105 transition-transform">TEST: Reward Banners</h3>
-                                        <p className="text-xs text-red-100">21 Pop-up Preview (DEV)</p>
-                                    </div>
-                                </button>
-
                                 {/* Admin Portal */}
                                 <button 
                                     onClick={() => { onAdminPortalClick(); setIsMenuOpen(false); }} 
@@ -723,7 +649,21 @@ const HomePage: React.FC<HomePageProps> = ({
                             </select>
             <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"/>
                         </div>
-                        <button onClick={onMassageTypesClick} className="ml-3 text-orange-500 font-semibold text-sm whitespace-nowrap hover:text-orange-600 transition-colors">
+                        <button 
+                            onClick={() => onNavigate?.('coin-shop')} 
+                            className="ml-3 text-orange-500 font-semibold text-sm whitespace-nowrap hover:text-orange-600 transition-colors flex items-center gap-1"
+                        >
+                            <span>🛒</span>
+                            Online Shop
+                        </button>
+                    </div>
+                    
+                    {/* Massage Directory Button - Centered */}
+                    <div className="flex justify-center mt-3">
+                        <button 
+                            onClick={onMassageTypesClick} 
+                            className="text-orange-500 font-semibold text-sm hover:text-orange-600 transition-colors"
+                        >
                             Massage Directory
                         </button>
                     </div>
@@ -735,21 +675,31 @@ const HomePage: React.FC<HomePageProps> = ({
                         {therapists
                             .filter((t: any) => t.isLive === true) // Only show activated therapists
                             .filter((t: any) => selectedMassageType === 'all' || (t.massageTypes && t.massageTypes.includes(selectedMassageType)))
-                            .map((therapist: any, index: number) => (
-                                <TherapistCard
-                                    key={therapist.$id || `therapist-${therapist.id}-${index}`}
-                                    therapist={therapist}
-                                    onRate={() => handleOpenRatingModal(therapist)}
-                                    onBook={() => onBook(therapist, 'therapist')}
-                                    onQuickBookWithChat={onQuickBookWithChat ? () => onQuickBookWithChat(therapist, 'therapist') : undefined}
-                                    onChatWithBusyTherapist={onChatWithBusyTherapist}
-                                    onShowRegisterPrompt={onShowRegisterPrompt}
-                                    isCustomerLoggedIn={!!loggedInCustomer}
-                                    onIncrementAnalytics={(metric) => onIncrementAnalytics(therapist.id || therapist.$id, 'therapist', metric)}
-                                    loggedInProviderId={loggedInProvider?.id}
-                                    t={t}
-                                />
-                            ))}
+                            .map((therapist: any, index: number) => {
+                                // Mock discount data - show all 4 discount levels (20%, 15%, 10%, 5%) on first 4 therapists
+                                const hasDiscount = index < 4;
+                                const mockDiscount = hasDiscount ? {
+                                    percentage: index === 0 ? 20 : index === 1 ? 15 : index === 2 ? 10 : 5,
+                                    expiresAt: new Date(Date.now() + (index + 2) * 60 * 60 * 1000) // Expires in 2-5 hours
+                                } : null;
+                                
+                                return (
+                                    <TherapistCard
+                                        key={therapist.$id || `therapist-${therapist.id}-${index}`}
+                                        therapist={therapist}
+                                        onRate={() => handleOpenRatingModal(therapist)}
+                                        onBook={() => onBook(therapist, 'therapist')}
+                                        onQuickBookWithChat={onQuickBookWithChat ? () => onQuickBookWithChat(therapist, 'therapist') : undefined}
+                                        onChatWithBusyTherapist={onChatWithBusyTherapist}
+                                        onShowRegisterPrompt={onShowRegisterPrompt}
+                                        isCustomerLoggedIn={!!loggedInCustomer}
+                                        onIncrementAnalytics={(metric) => onIncrementAnalytics(therapist.id || therapist.$id, 'therapist', metric)}
+                                        loggedInProviderId={loggedInProvider?.id}
+                                        activeDiscount={mockDiscount}
+                                        t={t}
+                                    />
+                                );
+                            })}
                         {therapists.filter((t: any) => t.isLive === true).length === 0 && (
                             <div className="text-center py-12 bg-white rounded-lg">
                                 <p className="text-gray-500">No therapists available at the moment.</p>

@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { TrendingUp, Clock, Gift, Calendar, AlertCircle, Award, ShoppingBag, CheckCircle } from 'lucide-react';
 import { coinService, CoinTransaction, CoinBalance } from '../lib/coinService';
+import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 
 interface CoinHistoryPageProps {
     userId?: string;
     totalCoins?: number;
     onNavigate?: (page: string) => void;
+    onOpenMenu?: () => void;
 }
 
 const CoinHistoryPage: React.FC<CoinHistoryPageProps> = ({ 
     userId = '12345', 
     totalCoins: propTotalCoins,
-    onNavigate 
+    onNavigate,
+    onOpenMenu
 }) => {
     const [transactions, setTransactions] = useState<CoinTransaction[]>([]);
     const [filterType, setFilterType] = useState<'all' | 'earn' | 'spend' | 'expire'>('all');
@@ -118,18 +121,19 @@ const CoinHistoryPage: React.FC<CoinHistoryPageProps> = ({
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
-            {/* Header */}
-            <header className="bg-white shadow-sm p-4 sticky top-0 z-10">
-                <div className="max-w-4xl mx-auto flex justify-between items-center">
-                    <button onClick={() => onNavigate?.('home')} className="text-gray-600 hover:text-gray-800">
-                        ← Back
-                    </button>
-                    <h1 className="text-xl font-bold">
-                        <span className="text-gray-900">Inda</span>
-                        <span className="text-orange-500">Street</span>
+            {/* Header - HomePage Style */}
+            <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
+                <div className="flex justify-between items-center">
+                    <h1 className="text-2xl font-bold text-gray-800">
+                        <span className="text-black">Inda</span>
+                        <span className="text-orange-500">
+                            <span className="inline-block animate-float">S</span>treet
+                        </span>
                     </h1>
-                    <div className="text-sm font-semibold text-orange-600">
-                        🪙 {totalCoins}
+                    <div className="flex items-center gap-3 text-gray-600">
+                        <button onClick={onOpenMenu} title="Menu">
+                            <BurgerMenuIcon className="w-6 h-6" />
+                        </button>
                     </div>
                 </div>
             </header>
@@ -144,16 +148,16 @@ const CoinHistoryPage: React.FC<CoinHistoryPageProps> = ({
                     </div>
 
                     <div className="grid grid-cols-3 gap-4">
-                        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                            <p className="text-orange-100 text-xs mb-1">Total Earned</p>
+                        <div className="bg-black bg-opacity-20 backdrop-blur-sm rounded-xl p-4 border border-white border-opacity-20">
+                            <p className="text-white text-opacity-80 text-xs mb-1">Total Earned</p>
                             <p className="text-2xl font-bold">{totalEarned}</p>
                         </div>
-                        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                            <p className="text-orange-100 text-xs mb-1">Total Spent</p>
+                        <div className="bg-black bg-opacity-20 backdrop-blur-sm rounded-xl p-4 border border-white border-opacity-20">
+                            <p className="text-white text-opacity-80 text-xs mb-1">Total Spent</p>
                             <p className="text-2xl font-bold">{totalSpent}</p>
                         </div>
-                        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                            <p className="text-orange-100 text-xs mb-1">Expired</p>
+                        <div className="bg-black bg-opacity-20 backdrop-blur-sm rounded-xl p-4 border border-white border-opacity-20">
+                            <p className="text-white text-opacity-80 text-xs mb-1">Expired</p>
                             <p className="text-2xl font-bold">{totalExpired}</p>
                         </div>
                     </div>
@@ -300,6 +304,22 @@ const CoinHistoryPage: React.FC<CoinHistoryPageProps> = ({
                     </div>
                 </div>
             </div>
+
+            {/* Animations */}
+            <style>{`
+                @keyframes float {
+                    0%, 100% {
+                        transform: translateY(0px);
+                    }
+                    50% {
+                        transform: translateY(-5px);
+                    }
+                }
+                
+                .animate-float {
+                    animation: float 2s ease-in-out infinite;
+                }
+            `}</style>
         </div>
     );
 };

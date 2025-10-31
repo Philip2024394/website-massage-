@@ -1,19 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { CreditCard, AlertCircle, CheckCircle, Copy, ArrowLeft, DollarSign, Calendar, Home, Phone, Mail } from 'lucide-react';
+import { CreditCard, AlertCircle, CheckCircle, Copy, ArrowLeft, DollarSign, Calendar } from 'lucide-react';
 import { databases } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import Footer from '../components/Footer';
+
+const BurgerMenuIcon = ({ className = 'w-6 h-6' }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+);
 
 interface JobPostingPaymentPageProps {
     jobId: string;
     onBack: () => void;
     onNavigate?: (page: string) => void;
+    onOpenMenu?: () => void;
 }
 
 const JobPostingPaymentPage: React.FC<JobPostingPaymentPageProps> = ({ 
     jobId, 
     onBack,
-    onNavigate
+    onNavigate,
+    onOpenMenu
 }) => {
     const [selectedPlan, setSelectedPlan] = useState<'standard' | 'premium'>('standard');
     const [jobDetails, setJobDetails] = useState<any>(null);
@@ -147,34 +155,16 @@ const JobPostingPaymentPage: React.FC<JobPostingPaymentPageProps> = ({
                             className="text-2xl font-bold tracking-tight hover:opacity-80 transition-opacity"
                         >
                             <span className="text-black">Inda</span>
-                            <span className="text-orange-500">Street</span>
+                            <span className="text-orange-500">
+                                <span className="inline-block animate-float">S</span>treet
+                            </span>
                         </button>
                     </div>
-                    <nav className="hidden md:flex items-center gap-6">
-                        <button 
-                            onClick={() => onNavigate?.('home')}
-                            className="flex items-center gap-2 text-gray-700 hover:text-orange-500 transition-colors"
-                        >
-                            <Home className="w-4 h-4" />
-                            <span>Home</span>
+                    <div className="flex items-center gap-3 text-gray-600">
+                        <button onClick={onOpenMenu} title="Menu">
+                            <BurgerMenuIcon className="w-6 h-6" />
                         </button>
-                        <a 
-                            href="https://wa.me/6281392000050"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 text-gray-700 hover:text-orange-500 transition-colors"
-                        >
-                            <Phone className="w-4 h-4" />
-                            <span>Contact</span>
-                        </a>
-                        <a 
-                            href="mailto:indastreet.id@gmail.com"
-                            className="flex items-center gap-2 text-gray-700 hover:text-orange-500 transition-colors"
-                        >
-                            <Mail className="w-4 h-4" />
-                            <span>Email</span>
-                        </a>
-                    </nav>
+                    </div>
                 </div>
             </header>
 

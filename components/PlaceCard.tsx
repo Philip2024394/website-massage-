@@ -73,7 +73,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate, activeDis
                 {/* Active Discount Badge - Top Right Corner */}
                 {activeDiscount && discountTimeLeft !== 'EXPIRED' && (
                     <div className="absolute top-2 right-2 flex flex-col items-end gap-1" onClick={(e) => e.stopPropagation()}>
-                        <div className="bg-gradient-to-r from-red-600 to-pink-600 rounded-full px-4 py-2 shadow-lg animate-pulse">
+                        <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-full px-4 py-2 shadow-lg animate-pulse">
                             <span className="font-bold text-white text-xl">{activeDiscount.percentage}% OFF</span>
                         </div>
                         <div className="flex items-center gap-1 bg-black/80 backdrop-blur-md rounded-full px-3 py-1 shadow-lg">
@@ -200,18 +200,18 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate, activeDis
                                         let pricing = {"60":0,"90":0,"120":0};
                                         try { pricing = JSON.parse(place.pricing); } catch {}
                                         return (
-                                            <div className="grid grid-cols-3 gap-2 text-center text-sm text-gray-600 mt-3">
-                                                <div className="bg-brand-orange-light p-2 rounded-lg">
-                                                    <p>60 min</p>
-                                                    <p className="font-bold text-brand-orange-dark">Rp {String(pricing["60"]).padStart(3, '0')}k</p>
+                                            <div className="grid grid-cols-3 gap-2 text-center text-sm mt-3">
+                                                <div className="bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md">
+                                                    <p className="text-gray-600">60 min</p>
+                                                    <p className="font-bold text-gray-800">Rp {String(pricing["60"]).padStart(3, '0')}k</p>
                                                 </div>
-                                                <div className="bg-brand-orange-light p-2 rounded-lg">
-                                                    <p>90 min</p>
-                                                    <p className="font-bold text-brand-orange-dark">Rp {String(pricing["90"]).padStart(3, '0')}k</p>
+                                                <div className="bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md">
+                                                    <p className="text-gray-600">90 min</p>
+                                                    <p className="font-bold text-gray-800">Rp {String(pricing["90"]).padStart(3, '0')}k</p>
                                                 </div>
-                                                <div className="bg-brand-orange-light p-2 rounded-lg">
-                                                    <p>120 min</p>
-                                                    <p className="font-bold text-brand-orange-dark">Rp {String(pricing["120"]).padStart(3, '0')}k</p>
+                                                <div className="bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md">
+                                                    <p className="text-gray-600">120 min</p>
+                                                    <p className="font-bold text-gray-800">Rp {String(pricing["120"]).padStart(3, '0')}k</p>
                                                 </div>
                                             </div>
                                         );

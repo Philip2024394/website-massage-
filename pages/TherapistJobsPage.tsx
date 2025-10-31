@@ -10,24 +10,39 @@ interface TherapistJobListing {
     $id: string;
     therapistId: string;
     therapistName: string;
+    gender?: string;
+    age?: number;
+    religion?: string;
     listingId: number;
     jobTitle: string;
     jobDescription: string;
+    jobType: string;
+    location?: string;
     requiredLicenses: string;
+    applicationDeadline?: string;
     willingToRelocateDomestic: boolean;
     willingToRelocateInternational: boolean;
-    availability: 'full-time' | 'part-time' | 'both';
+    availability: string;
     minimumSalary: string;
-    preferredLocations: string[];
-    accommodation: 'required' | 'preferred' | 'not-required';
-    specializations: string[];
-    languages: string[];
+    preferredLocations: string; // This is a string in Appwrite, not array
+    accommodation: string;
+    experienceYears?: number;
+    specializations?: string[]; // This is array in Appwrite
+    languages?: string[]; // This is array in Appwrite
     massageTypes?: string[];
     requiredLanguages?: string[];
-    yearsOfExperience: number;
-    contactWhatsApp: string;
+    workedAbroadBefore?: boolean;
+    hasReferences?: boolean;
+    currentlyWorking?: boolean;
+    contactWhatsApp?: string;
     isActive: boolean;
+    listingDate: string;
+    expiryDate: string;
+    profileImage?: string;
+    mainImage?: string;
+    experienceLevel?: 'Experienced' | 'Basic Skill' | 'Require Training';
     $createdAt: string;
+    $updatedAt: string;
 }
 
 interface TherapistJobsPageProps {
@@ -36,14 +51,55 @@ interface TherapistJobsPageProps {
 }
 
 const TherapistJobsPage: React.FC<TherapistJobsPageProps> = ({ onBack, onRegisterListing }) => {
+    console.log('🎯 TherapistJobsPage received props:', { 
+        hasOnBack: typeof onBack === 'function', 
+        hasOnRegisterListing: typeof onRegisterListing === 'function' 
+    });
+    
     const [therapistListings, setTherapistListings] = useState<TherapistJobListing[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
-    const [selectedAvailability, setSelectedAvailability] = useState<string>('all');
-    const [selectedRelocation, setSelectedRelocation] = useState<string>('all');
+    const [selectedLocation, setSelectedLocation] = useState<string>('all');
+    const [selectedMassageSkill, setSelectedMassageSkill] = useState<string>('all');
     const [unlockedListings, setUnlockedListings] = useState<Set<string>>(new Set());
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [selectedListing, setSelectedListing] = useState<TherapistJobListing | null>(null);
+
+    // Indonesian cities
+    const indonesianCities = [
+        // Java
+        'Jakarta', 'Surabaya', 'Bandung', 'Semarang', 'Yogyakarta', 'Malang', 'Solo', 'Bogor', 'Depok', 'Tangerang', 'Bekasi', 'Cirebon',
+        // Bali
+        'Denpasar', 'Ubud', 'Seminyak', 'Kuta', 'Sanur', 'Nusa Dua', 'Canggu', 'Jimbaran',
+        // Sumatra
+        'Medan', 'Palembang', 'Pekanbaru', 'Padang', 'Bandar Lampung', 'Batam', 'Jambi', 'Bengkulu',
+        // Sulawesi
+        'Makassar', 'Manado', 'Palu', 'Kendari', 'Gorontalo',
+        // Kalimantan
+        'Balikpapan', 'Banjarmasin', 'Pontianak', 'Samarinda', 'Palangkaraya',
+        // Lombok & Nusa Tenggara
+        'Mataram', 'Lombok', 'Kupang', 'Labuan Bajo',
+        // Other
+        'Maluku', 'Jayapura', 'Manokwari', 'Sorong'
+    ];
+
+    // Massage types
+    const massageTypes = [
+        'Swedish Massage',
+        'Deep Tissue',
+        'Thai Massage',
+        'Balinese Massage',
+        'Shiatsu',
+        'Hot Stone',
+        'Aromatherapy',
+        'Sports Massage',
+        'Reflexology',
+        'Prenatal Massage',
+        'Traditional Massage',
+        'Oil Massage',
+        'Dry Massage',
+        'Acupressure'
+    ];
 
     useEffect(() => {
         fetchTherapistListings();
@@ -74,17 +130,18 @@ const TherapistJobsPage: React.FC<TherapistJobsPageProps> = ({ onBack, onRegiste
             listing.therapistName.toLowerCase().includes(searchQuery.toLowerCase()) ||
             listing.jobTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
             listing.jobDescription.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            listing.specializations.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()));
+            (listing.specializations && listing.specializations.some(s => s.toLowerCase().includes(searchQuery.toLowerCase())));
         
-        const matchesAvailability = selectedAvailability === 'all' || listing.availability === selectedAvailability;
+        const matchesLocation = 
+            selectedLocation === 'all' ||
+            (listing.preferredLocations && listing.preferredLocations.toLowerCase().includes(selectedLocation.toLowerCase()));
         
-        const matchesRelocation = 
-            selectedRelocation === 'all' ||
-            (selectedRelocation === 'domestic' && listing.willingToRelocateDomestic) ||
-            (selectedRelocation === 'international' && listing.willingToRelocateInternational) ||
-            (selectedRelocation === 'local' && !listing.willingToRelocateDomestic && !listing.willingToRelocateInternational);
+        const matchesMassageSkill = 
+            selectedMassageSkill === 'all' ||
+            listing.massageTypes?.some(type => type.toLowerCase() === selectedMassageSkill.toLowerCase()) ||
+            listing.specializations?.some(spec => spec.toLowerCase() === selectedMassageSkill.toLowerCase());
         
-        return matchesSearch && matchesAvailability && matchesRelocation;
+        return matchesSearch && matchesLocation && matchesMassageSkill;
     });
 
     const handleUnlockContact = (listing: TherapistJobListing) => {
@@ -110,29 +167,21 @@ const TherapistJobsPage: React.FC<TherapistJobsPageProps> = ({ onBack, onRegiste
             {/* Header */}
             <header className="bg-white shadow-md sticky top-0 z-20">
                 <div className="w-full px-4 py-4">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-4">
-                            <button
-                                onClick={onBack}
-                                className="p-2 hover:bg-orange-100 rounded-lg transition-colors"
-                            >
-                                <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                                </svg>
-                            </button>
-                            <div>
-                                <h1 className="text-2xl font-bold text-gray-900">
-                                    Therapist For Contract
-                                </h1>
-                                <p className="text-sm text-gray-600">Find qualified massage therapists seeking opportunities</p>
-                            </div>
-                        </div>
+                    <div className="flex items-center gap-4 mb-4">
                         <button
-                            onClick={onRegisterListing}
-                            className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-lg transition-all"
+                            onClick={onBack}
+                            className="p-2 hover:bg-orange-100 rounded-lg transition-colors"
                         >
-                            Register
+                            <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
                         </button>
+                        <div>
+                            <h1 className="text-2xl font-bold text-gray-900">
+                                Massage Therapists
+                            </h1>
+                            <p className="text-sm text-gray-600">Massage therapists seeking work</p>
+                        </div>
                     </div>
 
                     {/* Search Bar */}
@@ -150,56 +199,83 @@ const TherapistJobsPage: React.FC<TherapistJobsPageProps> = ({ onBack, onRegiste
                     </div>
 
                     {/* Filters */}
-                    <div className="space-y-2">
-                        <div className="flex gap-2 overflow-x-auto pb-2">
-                            {[
-                                { value: 'all', label: 'All', icon: 'M4 6h16M4 12h16M4 18h16' },
-                                { value: 'full-time', label: 'Full-Time', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' },
-                                { value: 'part-time', label: 'Part-Time', icon: 'M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
-                                { value: 'both', label: 'Both', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' }
-                            ].map((type) => (
-                                <button
-                                    key={type.value}
-                                    onClick={() => setSelectedAvailability(type.value)}
-                                    className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium whitespace-nowrap transition-all border-2 ${
-                                        selectedAvailability === type.value
-                                            ? 'bg-orange-100 text-orange-600 border-orange-500'
-                                            : 'bg-white text-gray-600 hover:bg-gray-50 border-gray-300'
-                                    }`}
-                                >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={type.icon} />
-                                    </svg>
-                                    <span className="text-sm">{type.label}</span>
-                                </button>
-                            ))}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {/* Location Dropdown */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                            <select
+                                value={selectedLocation}
+                                onChange={(e) => setSelectedLocation(e.target.value)}
+                                className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                            >
+                                <option value="all">All Locations</option>
+                                {indonesianCities.map((city) => (
+                                    <option key={city} value={city}>{city}</option>
+                                ))}
+                            </select>
                         </div>
-                        <div className="flex gap-2 overflow-x-auto pb-2">
-                            {[
-                                { value: 'all', label: 'All Locations', icon: 'M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
-                                { value: 'local', label: 'Local', icon: 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z' },
-                                { value: 'domestic', label: 'Domestic', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
-                                { value: 'international', label: 'International', icon: 'M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9' }
-                            ].map((type) => (
-                                <button
-                                    key={type.value}
-                                    onClick={() => setSelectedRelocation(type.value)}
-                                    className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium whitespace-nowrap transition-all border-2 ${
-                                        selectedRelocation === type.value
-                                            ? 'bg-orange-100 text-orange-600 border-orange-500'
-                                            : 'bg-white text-gray-600 hover:bg-gray-50 border-gray-300'
-                                    }`}
-                                >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={type.icon} />
-                                    </svg>
-                                    <span className="text-sm">{type.label}</span>
-                                </button>
-                            ))}
+
+                        {/* Massage Skills Dropdown */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Massage Skills</label>
+                            <select
+                                value={selectedMassageSkill}
+                                onChange={(e) => setSelectedMassageSkill(e.target.value)}
+                                className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                            >
+                                <option value="all">All Skills</option>
+                                {massageTypes.map((type) => (
+                                    <option key={type} value={type}>{type}</option>
+                                ))}
+                            </select>
                         </div>
                     </div>
                 </div>
             </header>
+
+            {/* Create Profile CTA Section */}
+            <div className="w-full px-4 py-6">
+                <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
+                    <div className="flex items-center justify-between">
+                        <div className="flex-grow">
+                            <h2 className="text-xl font-bold mb-2">Are You a Massage Therapist?</h2>
+                            <p className="text-orange-50 text-sm mb-4">Create your profile and connect with employers looking for skilled therapists like you!</p>
+                            <ul className="space-y-2 text-sm text-orange-50">
+                                <li className="flex items-center gap-2">
+                                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Showcase your skills and experience
+                                </li>
+                                <li className="flex items-center gap-2">
+                                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Get discovered by hotels, spas & wellness centers
+                                </li>
+                                <li className="flex items-center gap-2">
+                                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Find local and international opportunities
+                                </li>
+                            </ul>
+                        </div>
+                        <button
+                            onClick={() => {
+                                alert('🚀 NEW CODE LOADED! Navigating to Registration Page...');
+                                console.log('🎯 Create Profile button clicked! [NEW CODE v2]');
+                                console.log('onRegisterListing type:', typeof onRegisterListing);
+                                console.log('onRegisterListing value:', onRegisterListing);
+                                onRegisterListing();
+                            }}
+                            className="ml-4 px-6 py-3 bg-white text-orange-600 font-bold rounded-lg hover:bg-orange-50 transition-all transform hover:scale-105 shadow-lg whitespace-nowrap"
+                        >
+                            Create Profile
+                        </button>
+                    </div>
+                </div>
+            </div>
 
             {/* Therapist Count */}
             <div className="w-full px-4 py-4">
@@ -226,9 +302,21 @@ const TherapistJobsPage: React.FC<TherapistJobsPageProps> = ({ onBack, onRegiste
                 ) : (
                     <div className="grid grid-cols-1 gap-6">
                         {filteredListings.map((listing) => (
-                            <div key={listing.$id} className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border-t-4 border-orange-500 relative flex">
-                                {/* Social Share Buttons - Left Side */}
-                                <div className="flex flex-col gap-2 py-6 pl-3 pr-2 bg-gray-50 border-r border-gray-200">
+                            <div key={listing.$id} className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border-t-4 border-orange-500 relative">
+                                {/* Main Image */}
+                                {listing.mainImage && (
+                                    <div className="w-full h-48 overflow-hidden">
+                                        <img 
+                                            src={listing.mainImage} 
+                                            alt={listing.jobTitle}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    </div>
+                                )}
+                                
+                                <div className="flex">
+                                    {/* Social Share Buttons - Left Side */}
+                                    <div className="flex flex-col gap-2 py-6 pl-3 pr-2 bg-gray-50 border-r border-gray-200">
                                     {/* WhatsApp */}
                                     <button
                                         onClick={(e) => {
@@ -295,21 +383,101 @@ const TherapistJobsPage: React.FC<TherapistJobsPageProps> = ({ onBack, onRegiste
                                 
                                 {/* Content Area */}
                                 <div className="p-6 flex-1">
-                                    {/* Header */}
-                                    <div className="flex items-start justify-between mb-4">
+                                    {/* Header with Profile Image */}
+                                    <div className="flex items-start gap-4 mb-4">
+                                        {/* Round Profile Image */}
+                                        {listing.profileImage ? (
+                                            <img 
+                                                src={listing.profileImage} 
+                                                alt={listing.therapistName}
+                                                className="w-20 h-20 rounded-full object-cover border-4 border-orange-500 shadow-lg flex-shrink-0"
+                                            />
+                                        ) : (
+                                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center border-4 border-orange-500 shadow-lg flex-shrink-0">
+                                                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                </svg>
+                                            </div>
+                                        )}
+                                        
                                         <div className="flex-1">
                                             <h3 className="text-xl font-bold text-gray-900 mb-1">
                                                 {unlockedListings.has(listing.$id) ? listing.therapistName : "Register To Display"}
                                             </h3>
                                             <p className="text-orange-600 font-semibold text-sm">Position: {listing.jobTitle}</p>
                                         </div>
-                                        <span className="px-3 py-1 bg-orange-500 text-white text-xs font-semibold rounded-full">
-                                            Available
-                                        </span>
+                                        {listing.experienceLevel && (
+                                            <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
+                                                listing.experienceLevel === 'Experienced' 
+                                                    ? 'bg-green-500 text-white' 
+                                                    : listing.experienceLevel === 'Basic Skill'
+                                                    ? 'bg-blue-500 text-white'
+                                                    : 'bg-yellow-500 text-white'
+                                            }`}>
+                                                {listing.experienceLevel}
+                                            </span>
+                                        )}
                                     </div>
 
                                     {/* Description */}
                                     <p className="text-gray-700 text-sm mb-4 line-clamp-3">{listing.jobDescription}</p>
+
+                                    {/* Personal Information */}
+                                    {(listing.gender || listing.age || listing.religion) && (
+                                        <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                            <p className="text-xs font-semibold text-gray-500 mb-2">PERSONAL INFO:</p>
+                                            <div className="flex flex-wrap gap-3 text-sm">
+                                                {listing.gender && (
+                                                    <div className="flex items-center gap-1">
+                                                        <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                        </svg>
+                                                        <span className="text-gray-700">{listing.gender}</span>
+                                                    </div>
+                                                )}
+                                                {listing.age && (
+                                                    <div className="flex items-center gap-1">
+                                                        <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                        </svg>
+                                                        <span className="text-gray-700">{listing.age} years old</span>
+                                                    </div>
+                                                )}
+                                                {listing.religion && (
+                                                    <div className="flex items-center gap-1">
+                                                        <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                                                        </svg>
+                                                        <span className="text-gray-700">{listing.religion}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Work History */}
+                                    {(listing.workedAbroadBefore || listing.hasReferences || listing.currentlyWorking) && (
+                                        <div className="mb-4">
+                                            <p className="text-xs font-semibold text-gray-500 mb-2">WORK HISTORY:</p>
+                                            <div className="flex flex-wrap gap-2">
+                                                {listing.workedAbroadBefore && (
+                                                    <span className="px-3 py-1 bg-purple-50 text-purple-700 text-xs font-medium rounded-full border border-purple-200">
+                                                        ✈️ Worked Abroad
+                                                    </span>
+                                                )}
+                                                {listing.hasReferences && (
+                                                    <span className="px-3 py-1 bg-green-50 text-green-700 text-xs font-medium rounded-full border border-green-200">
+                                                        ✓ Has References
+                                                    </span>
+                                                )}
+                                                {listing.currentlyWorking && (
+                                                    <span className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full border border-blue-200">
+                                                        💼 Currently Working
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
 
                                     {/* Massage Types Required - Show up to 4 */}
                                     {listing.massageTypes && listing.massageTypes.length > 0 && (
@@ -369,7 +537,7 @@ const TherapistJobsPage: React.FC<TherapistJobsPageProps> = ({ onBack, onRegiste
                                             <svg className="w-4 h-4 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                                             </svg>
-                                            <span className="text-gray-700 font-medium">{listing.yearsOfExperience} years exp.</span>
+                                            <span className="text-gray-700 font-medium">{listing.experienceYears || 0} years exp.</span>
                                         </div>
                                         <div className="flex items-center gap-2 text-sm">
                                             <svg className="w-4 h-4 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -380,9 +548,9 @@ const TherapistJobsPage: React.FC<TherapistJobsPageProps> = ({ onBack, onRegiste
                                     </div>
 
                                     {/* Specializations */}
-                                    {listing.specializations.length > 0 && (
+                                    {listing.specializations && listing.specializations.length > 0 && (
                                         <div className="mb-4">
-                                            <p className="text-xs font-semibold text-gray-500 mb-2">SPECIALIZATIONS:</p>
+                                            <p className="text-xs font-semibold text-gray-500 mb-2">My Massage Skill</p>
                                             <div className="flex flex-wrap gap-2">
                                                 {listing.specializations.slice(0, 3).map((spec, idx) => (
                                                     <span key={idx} className="px-3 py-1 bg-orange-50 text-orange-700 text-xs font-medium rounded-full border border-orange-200">
@@ -399,7 +567,7 @@ const TherapistJobsPage: React.FC<TherapistJobsPageProps> = ({ onBack, onRegiste
                                     )}
 
                                     {/* Languages */}
-                                    {listing.languages.length > 0 && (
+                                    {listing.languages && listing.languages.length > 0 && (
                                         <div className="mb-4">
                                             <p className="text-xs font-semibold text-gray-500 mb-2">LANGUAGES:</p>
                                             <div className="flex flex-wrap gap-2">
@@ -413,7 +581,7 @@ const TherapistJobsPage: React.FC<TherapistJobsPageProps> = ({ onBack, onRegiste
                                     )}
 
                                     {/* Contact Button */}
-                                    {unlockedListings.has(listing.$id) ? (
+                                    {unlockedListings.has(listing.$id) && listing.contactWhatsApp ? (
                                         <a
                                             href={`https://wa.me/${listing.contactWhatsApp.replace(/[^0-9]/g, '')}`}
                                             target="_blank"
@@ -438,6 +606,7 @@ const TherapistJobsPage: React.FC<TherapistJobsPageProps> = ({ onBack, onRegiste
                                     )}
                                 </div>
                             </div>
+                                </div>
                         ))}
                     </div>
                 )}
@@ -482,7 +651,7 @@ const TherapistJobsPage: React.FC<TherapistJobsPageProps> = ({ onBack, onRegiste
                                         <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                         </svg>
-                                        <span className="text-gray-700">{selectedListing.specializations.join(', ')}</span>
+                                        <span className="text-gray-700">{selectedListing.specializations ? selectedListing.specializations.join(', ') : 'N/A'}</span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">

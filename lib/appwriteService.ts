@@ -180,6 +180,24 @@ export const customLinksService = {
     },
     async delete(id: string): Promise<void> {
         try {
+            // First, try to update permissions before deleting (in case they weren't set properly)
+            try {
+                await databases.updateDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.customLinks,
+                    id,
+                    {},
+                    [
+                        Permission.read(Role.any()),
+                        Permission.update(Role.any()),
+                        Permission.delete(Role.any())
+                    ]
+                );
+            } catch (permError) {
+                console.log('Could not update permissions, attempting direct delete:', permError);
+            }
+            
+            // Now delete the document
             await databases.deleteDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.customLinks,
@@ -208,7 +226,12 @@ export const customLinksService = {
                     title: link.name,
                     url: link.url,
                     icon: iconUrl,
-                }
+                },
+                [
+                    Permission.read(Role.any()),
+                    Permission.update(Role.any()),
+                    Permission.delete(Role.any())
+                ]
             );
             return response;
         } catch (error) {
@@ -2195,7 +2218,7 @@ export const agentVisitService = {
 // --- Coin Shop Service ---
 import { ShopItem, ShopCoinTransaction, ShopOrder, UserCoins } from '../types';
 
-const COIN_SHOP_DATABASE_ID = '68f23b11000d25eb3664'; // Your database ID
+const COIN_SHOP_DATABASE_ID = '68f76ee1000e64ca8d05';
 
 // Collection IDs
 const SHOP_ITEMS_COLLECTION_ID = 'shopitems';
@@ -2221,10 +2244,17 @@ export const shopItemService = {
 
     async getAllItems(): Promise<ShopItem[]> {
         try {
+            console.log('Fetching all items from database:', COIN_SHOP_DATABASE_ID);
+            console.log('Collection:', SHOP_ITEMS_COLLECTION_ID);
+            
             const response = await databases.listDocuments(
                 COIN_SHOP_DATABASE_ID,
                 SHOP_ITEMS_COLLECTION_ID
             );
+            
+            console.log('Items fetched successfully:', response.documents.length, 'items');
+            console.log('Items:', response.documents);
+            
             return response.documents as unknown as ShopItem[];
         } catch (error) {
             console.error('Error getting all items:', error);
@@ -2296,13 +2326,26 @@ export const shopItemService = {
 
     async deleteItem(itemId: string): Promise<void> {
         try {
+            console.log('Deleting item from Appwrite:', {
+                database: COIN_SHOP_DATABASE_ID,
+                collection: SHOP_ITEMS_COLLECTION_ID,
+                itemId: itemId
+            });
+            
             await databases.deleteDocument(
                 COIN_SHOP_DATABASE_ID,
                 SHOP_ITEMS_COLLECTION_ID,
                 itemId
             );
-        } catch (error) {
-            console.error('Error deleting item:', error);
+            
+            console.log('Item deleted successfully from Appwrite');
+        } catch (error: any) {
+            console.error('Error deleting item from Appwrite:', error);
+            console.error('Error details:', {
+                code: error.code,
+                message: error.message,
+                response: error.response
+            });
             throw error;
         }
     },
@@ -2547,11 +2590,7 @@ export const shopOrderService = {
                 ]
             );
             
-            return response.documents.map(doc => ({
-                ...doc,
-                shippingAddress: JSON.parse(doc.shippingAddress as string),
-                items: JSON.parse(doc.items as string)
-            })) as unknown as ShopOrder[];
+            return response.documents as unknown as ShopOrder[];
         } catch (error) {
             console.error('Error getting user orders:', error);
             return [];
@@ -2566,11 +2605,7 @@ export const shopOrderService = {
                 [Query.orderDesc('$createdAt')]
             );
             
-            return response.documents.map(doc => ({
-                ...doc,
-                shippingAddress: JSON.parse(doc.shippingAddress as string),
-                items: JSON.parse(doc.items as string)
-            })) as unknown as ShopOrder[];
+            return response.documents as unknown as ShopOrder[];
         } catch (error) {
             console.error('Error getting all orders:', error);
             return [];
@@ -2594,11 +2629,7 @@ export const shopOrderService = {
                 updates
             );
             
-            return {
-                ...response,
-                shippingAddress: JSON.parse(response.shippingAddress as string),
-                items: JSON.parse(response.items as string)
-            } as unknown as ShopOrder;
+            return response as unknown as ShopOrder;
         } catch (error) {
             console.error('Error updating order status:', error);
             throw error;
@@ -2614,11 +2645,7 @@ export const shopOrderService = {
                 { trackingNumber }
             );
             
-            return {
-                ...response,
-                shippingAddress: JSON.parse(response.shippingAddress as string),
-                items: JSON.parse(response.items as string)
-            } as unknown as ShopOrder;
+            return response as unknown as ShopOrder;
         } catch (error) {
             console.error('Error adding tracking:', error);
             throw error;

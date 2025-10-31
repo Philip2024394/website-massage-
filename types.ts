@@ -678,26 +678,11 @@ export interface ShopOrder {
     userEmail?: string;
     userPhone?: string;
     
-    // Delivery address
-    shippingAddress: {
-        fullName: string;
-        phone: string;
-        addressLine1: string;
-        addressLine2?: string;
-        city: string;
-        province: string;
-        postalCode: string;
-        country: string;
-    };
+    // Delivery address (stored as JSON string in Appwrite)
+    shippingAddress: string;
     
-    // Order items
-    items: Array<{
-        itemId: string;
-        itemName: string;
-        itemImage: string;
-        coinPrice: number;
-        quantity: number;
-    }>;
+    // Order items (stored as JSON string array in Appwrite)
+    items: string; // JSON array string
     
     totalCoins: number;
     status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';

@@ -2,10 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { ShopItem, UserCoins } from '../types';
 import { shopItemService, coinService, shopOrderService } from '../lib/appwriteService';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
-import CloseIcon from '../components/icons/CloseIcon';
-import HomeIcon from '../components/icons/HomeIcon';
-import UserSolidIcon from '../components/icons/UserSolidIcon';
-import BriefcaseIcon from '../components/icons/BriefcaseIcon';
 import LocationModal from '../components/LocationModal';
 
 interface CoinShopPageProps {
@@ -26,36 +22,14 @@ interface CoinShopPageProps {
     onCustomerPortalClick?: () => void;
     onMassageJobsClick?: () => void;
     onTherapistJobsClick?: () => void;
+    onOpenMenu?: () => void; // Function to open the HomePage drawer
     t?: any;
 }
 
-// Inline icon components (from HomePage)
-const BuildingIcon = ({ className = 'w-5 h-5' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-    </svg>
-);
-
-const SparklesIcon = ({ className = 'w-5 h-5' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.293 2.293a1 1 0 010 1.414L10 17l-4 4 4-4 6.293-6.293a1 1 0 011.414 0L21 11" />
-    </svg>
-);
-
 const CoinShopPage: React.FC<CoinShopPageProps> = ({ 
-    onNavigate, 
     currentUser,
     onSetUserLocation,
-    onAgentPortalClick,
-    onTermsClick,
-    onPrivacyClick,
-    onHotelPortalClick,
-    onVillaPortalClick,
-    onTherapistPortalClick,
-    onMassagePlacePortalClick,
-    onCustomerPortalClick,
-    onMassageJobsClick,
-    onTherapistJobsClick,
+    onOpenMenu,
     t
 }) => {
     const [shopItems, setShopItems] = useState<ShopItem[]>([]);
@@ -63,19 +37,23 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
     const [loading, setLoading] = useState(true);
     const [processingItemId, setProcessingItemId] = useState<string | null>(null);
-    const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [showInsufficientModal, setShowInsufficientModal] = useState(false);
     const [selectedItem, setSelectedItem] = useState<ShopItem | null>(null);
     const [deliveryInfo, setDeliveryInfo] = useState({
         name: '',
         whatsapp: '',
-        address: ''
+        address: '',
+        postcode: ''
     });
     const [showDeliveryForm, setShowDeliveryForm] = useState(false);
+    const [showLoginNotice, setShowLoginNotice] = useState(false);
+    const [agreedToTerms, setAgreedToTerms] = useState(false);
+    const [showFinalConfirmation, setShowFinalConfirmation] = useState(false);
     
-    // Header state
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    // Location modal state
     const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 12;
 
     useEffect(() => {
         loadShopData();
@@ -121,9 +99,29 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
         ? shopItems 
         : shopItems.filter(item => item.category === selectedCategory);
 
+    // Pagination
+    const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedItems = filteredItems.slice(startIndex, endIndex);
+
+    const handleNextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(currentPage + 1);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
+    const handlePrevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
     const handleCashIn = (item: ShopItem) => {
         if (!currentUser) {
-            alert('Please login to redeem items');
+            setShowLoginNotice(true);
             return;
         }
 
@@ -135,16 +133,22 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
             return;
         }
 
-        // Show delivery form
+        // Show delivery form with celebration
         setShowDeliveryForm(true);
+        setAgreedToTerms(false); // Reset checkbox
     };
 
     const handleConfirmOrder = async () => {
         if (!selectedItem || !currentUser || !userCoins) return;
 
         // Validate delivery info
-        if (!deliveryInfo.name || !deliveryInfo.whatsapp || !deliveryInfo.address) {
+        if (!deliveryInfo.name || !deliveryInfo.whatsapp || !deliveryInfo.address || !deliveryInfo.postcode) {
             alert('Please fill in all delivery information');
+            return;
+        }
+
+        if (!agreedToTerms) {
+            alert('Please confirm that you understand products cannot be changed once processed');
             return;
         }
 
@@ -174,31 +178,32 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
                     addressLine1: deliveryInfo.address,
                     city: '',
                     province: '',
-                    postalCode: '',
+                    postalCode: deliveryInfo.postcode,
                     country: 'Indonesia'
-                },
+                } as any,
                 items: [{
                     itemId: selectedItem.$id || '',
                     itemName: selectedItem.name,
                     itemImage: selectedItem.imageUrl,
                     coinPrice: selectedItem.coinPrice,
                     quantity: 1
-                }],
+                }] as any,
                 totalCoins: selectedItem.coinPrice,
                 estimatedDelivery: '7-10 days',
-                notes: `WhatsApp: ${deliveryInfo.whatsapp}, Address: ${deliveryInfo.address}`
+                notes: `Name: ${deliveryInfo.name}, WhatsApp: ${deliveryInfo.whatsapp}, Address: ${deliveryInfo.address}, Postcode: ${deliveryInfo.postcode}`
             });
 
             // Reload user coins
             await loadShopData();
 
-            // Show success modal
+            // Show final confirmation modal
             setShowDeliveryForm(false);
-            setShowSuccessModal(true);
+            setShowFinalConfirmation(true);
             setProcessingItemId(null);
 
             // Reset delivery info
-            setDeliveryInfo({ name: '', whatsapp: '', address: '' });
+            setDeliveryInfo({ name: '', whatsapp: '', address: '', postcode: '' });
+            setAgreedToTerms(false);
         } catch (error) {
             console.error('Error processing order:', error);
             alert('Error processing order. Please try again.');
@@ -207,7 +212,42 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
     };
 
     return (
-        <div className="min-h-screen bg-white">
+        <>
+            {/* Falling Coins Animation CSS */}
+            <style>{`
+                @keyframes fall-slow {
+                    0% {
+                        transform: translateY(0px) rotate(0deg);
+                        opacity: 0;
+                    }
+                    10% {
+                        opacity: 0.3;
+                    }
+                    100% {
+                        transform: translateY(calc(100vh)) rotate(360deg);
+                        opacity: 0.3;
+                    }
+                }
+                .animate-fall-slow {
+                    animation: fall-slow linear infinite;
+                }
+                
+                @keyframes confetti {
+                    0% {
+                        transform: translateY(0) rotate(0deg);
+                        opacity: 1;
+                    }
+                    100% {
+                        transform: translateY(100vh) rotate(720deg);
+                        opacity: 0;
+                    }
+                }
+                .animate-confetti {
+                    animation: confetti linear forwards;
+                }
+            `}</style>
+
+            <div className="min-h-screen bg-white">
             {/* HomePage-style Header */}
             <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
                 <div className="flex justify-between items-center">
@@ -218,258 +258,17 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
                         </span>
                     </h1>
                     <div className="flex items-center gap-3 text-gray-600">
-                        <button onClick={() => setIsMenuOpen(true)} title="Menu">
+                        <button onClick={onOpenMenu} title="Menu">
                             <BurgerMenuIcon className="w-6 h-6" />
                         </button>
                     </div>
                 </div>
             </header>
 
-            {/* Drawer Menu */}
-            {isMenuOpen && (
-                <div className="fixed inset-0 z-50">
-                    {/* Backdrop */}
-                    <div 
-                        className="absolute inset-0 bg-black bg-opacity-50" 
-                        onClick={() => setIsMenuOpen(false)}
-                    ></div>
-                    
-                    {/* Drawer */}
-                    <div className={`absolute right-0 top-0 bottom-0 w-[70%] sm:w-80 bg-gradient-to-br from-white via-gray-50 to-gray-100 shadow-2xl flex flex-col transform transition-transform ease-in-out duration-300 ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-                        {/* Brand Header */}
-                        <div className="p-6 flex justify-between items-center">
-                            <h2 className="font-bold text-2xl">
-                                <span className="text-black">inda</span>
-                                <span className="text-orange-500">Street</span>
-                            </h2>
-                            <button 
-                                onClick={() => setIsMenuOpen(false)} 
-                                className="text-gray-600 hover:bg-gray-200 p-2 rounded-full transition-all" 
-                                aria-label="Close menu"
-                            >
-                                <CloseIcon />
-                            </button>
-                        </div>
-
-                        {/* Menu Items */}
-                        <nav className="flex-grow overflow-y-auto p-4">
-                            <div className="space-y-2">
-                                {/* Coin Shop - FEATURED AT TOP */}
-                                <button 
-                                    onClick={() => { onNavigate?.('coin-shop'); setIsMenuOpen(false); }} 
-                                    className="flex items-center gap-4 w-full text-left p-5 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] group mb-4"
-                                >
-                                    <span className="text-4xl">🪙</span>
-                                    <div className="flex-grow">
-                                        <h3 className="font-bold text-white text-lg">Coin Shop</h3>
-                                        <p className="text-sm text-orange-100">Redeem your coins for rewards</p>
-                                    </div>
-                                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </button>
-
-                                <div className="border-t border-gray-300 my-3"></div>
-
-                                {/* Job Posting Section */}
-                                <div className="px-2 py-2">
-                                    <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Job Posting</h3>
-                                </div>
-
-                                {onMassageJobsClick && (
-                                    <button 
-                                        onClick={() => { onMassageJobsClick(); setIsMenuOpen(false); }} 
-                                        className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-blue-500 group"
-                                    >
-                                        <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl shadow-lg bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600 border-2 border-white transform hover:scale-105 transition-transform">
-                                            <svg className="w-6 h-6 text-white drop-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                            </svg>
-                                        </div>
-                                        <div className="flex-grow">
-                                            <h3 className="font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">Massage Jobs</h3>
-                                            <p className="text-xs text-gray-500">Browse job openings</p>
-                                        </div>
-                                    </button>
-                                )}
-
-                                {onTherapistJobsClick && (
-                                    <button 
-                                        onClick={() => { onTherapistJobsClick(); setIsMenuOpen(false); }} 
-                                        className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-orange-500 group"
-                                    >
-                                        <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl shadow-lg bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600 border-2 border-white transform hover:scale-105 transition-transform">
-                                            <svg className="w-6 h-6 text-white drop-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                            </svg>
-                                        </div>
-                                        <div className="flex-grow">
-                                            <h3 className="font-semibold text-gray-800 group-hover:text-orange-600 transition-colors">Therapist For Contract</h3>
-                                            <p className="text-xs text-gray-500">Find qualified therapists</p>
-                                        </div>
-                                    </button>
-                                )}
-
-                                {/* Login / Create Account Section */}
-                                <div className="border-t border-gray-300 my-3"></div>
-                                <div className="px-2 py-2">
-                                    <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Login / Create Account</h3>
-                                </div>
-
-                                {onHotelPortalClick && (
-                                    <button 
-                                        onClick={() => { onHotelPortalClick(); setIsMenuOpen(false); }} 
-                                        className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-blue-500 group"
-                                    >
-                                        <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl shadow-lg bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600 border-2 border-white transform hover:scale-105 transition-transform">
-                                            <BuildingIcon className="w-6 h-6 text-white drop-shadow" />
-                                        </div>
-                                        <div className="flex-grow">
-                                            <h3 className="font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">Hotel</h3>
-                                            <p className="text-xs text-gray-500">Login / Register</p>
-                                        </div>
-                                    </button>
-                                )}
-
-                                {onVillaPortalClick && (
-                                    <button 
-                                        onClick={() => { onVillaPortalClick(); setIsMenuOpen(false); }} 
-                                        className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-green-500 group"
-                                    >
-                                        <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl shadow-lg bg-gradient-to-br from-green-400 via-green-500 to-green-600 border-2 border-white transform hover:scale-105 transition-transform">
-                                            <HomeIcon className="w-6 h-6 text-white drop-shadow" />
-                                        </div>
-                                        <div className="flex-grow">
-                                            <h3 className="font-semibold text-gray-800 group-hover:text-green-600 transition-colors">Villa</h3>
-                                            <p className="text-xs text-gray-500">Login / Register</p>
-                                        </div>
-                                    </button>
-                                )}
-
-                                {onTherapistPortalClick && (
-                                    <button 
-                                        onClick={() => { onTherapistPortalClick(); setIsMenuOpen(false); }} 
-                                        className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-orange-500 group"
-                                    >
-                                        <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl shadow-lg bg-gradient-to-br from-orange-400 via-yellow-300 to-orange-600 border-2 border-white transform hover:scale-105 transition-transform">
-                                            <UserSolidIcon className="w-6 h-6 text-white drop-shadow" />
-                                        </div>
-                                        <div className="flex-grow">
-                                            <h3 className="font-semibold text-gray-800 group-hover:text-orange-600 transition-colors">Therapists</h3>
-                                            <p className="text-xs text-gray-500">Login / Register</p>
-                                        </div>
-                                    </button>
-                                )}
-
-                                {onMassagePlacePortalClick && (
-                                    <button 
-                                        onClick={() => { onMassagePlacePortalClick(); setIsMenuOpen(false); }} 
-                                        className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-pink-500 group"
-                                    >
-                                        <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl shadow-lg bg-gradient-to-br from-pink-400 via-pink-500 to-pink-600 border-2 border-white transform hover:scale-105 transition-transform">
-                                            <SparklesIcon className="w-6 h-6 text-white drop-shadow" />
-                                        </div>
-                                        <div className="flex-grow">
-                                            <h3 className="font-semibold text-gray-800 group-hover:text-pink-600 transition-colors">Massage Spa</h3>
-                                            <p className="text-xs text-gray-500">Login / Register</p>
-                                        </div>
-                                    </button>
-                                )}
-
-                                {onAgentPortalClick && (
-                                    <button 
-                                        onClick={() => { onAgentPortalClick(); setIsMenuOpen(false); }} 
-                                        className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-purple-500 group"
-                                    >
-                                        <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl shadow-lg bg-gradient-to-br from-purple-500 via-fuchsia-400 to-purple-800 border-2 border-white transform hover:scale-105 transition-transform">
-                                            <BriefcaseIcon className="w-6 h-6 text-white drop-shadow" />
-                                        </div>
-                                        <div className="flex-grow">
-                                            <h3 className="font-semibold text-gray-800 group-hover:text-purple-600 transition-colors">Agent</h3>
-                                            <p className="text-xs text-gray-500">Login / Register</p>
-                                        </div>
-                                    </button>
-                                )}
-
-                                {onCustomerPortalClick && (
-                                    <button 
-                                        onClick={() => { onCustomerPortalClick(); setIsMenuOpen(false); }} 
-                                        className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-blue-500 group"
-                                    >
-                                        <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl shadow-lg bg-gradient-to-br from-blue-500 via-blue-400 to-blue-600 border-2 border-white transform hover:scale-105 transition-transform">
-                                            <UserSolidIcon className="w-6 h-6 text-white drop-shadow" />
-                                        </div>
-                                        <div className="flex-grow">
-                                            <h3 className="font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">Customer</h3>
-                                            <p className="text-xs text-gray-500">Login / Register</p>
-                                        </div>
-                                    </button>
-                                )}
-
-                                {/* Company Section */}
-                                <div className="border-t border-gray-300 my-3"></div>
-                                <div className="px-2 py-2">
-                                    <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Company</h3>
-                                </div>
-                                <button 
-                                    onClick={() => { onNavigate?.('about'); setIsMenuOpen(false); }} 
-                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-blue-500 group"
-                                >
-                                    <span className="text-2xl">🏢</span>
-                                    <div className="flex-grow">
-                                        <h3 className="font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">About Us</h3>
-                                        <p className="text-xs text-gray-500">Our story & mission</p>
-                                    </div>
-                                </button>
-                            </div>
-                        </nav>
-
-                        {/* Footer with Links */}
-                        <div className="p-4 bg-gray-50 border-t border-gray-200 space-y-3">
-                            <div className="flex justify-center gap-2">
-                                {onAgentPortalClick && (
-                                    <>
-                                        <button 
-                                            onClick={() => { onAgentPortalClick(); setIsMenuOpen(false); }} 
-                                            className="text-xs text-orange-500 font-medium hover:underline"
-                                        >
-                                            Become Agent
-                                        </button>
-                                        <span className="text-gray-400">|</span>
-                                    </>
-                                )}
-                                {onTermsClick && (
-                                    <>
-                                        <button 
-                                            onClick={() => { onTermsClick(); setIsMenuOpen(false); }} 
-                                            className="text-xs text-orange-500 font-medium hover:underline"
-                                        >
-                                            Terms
-                                        </button>
-                                        <span className="text-gray-400">|</span>
-                                    </>
-                                )}
-                                {onPrivacyClick && (
-                                    <button 
-                                        onClick={() => { onPrivacyClick(); setIsMenuOpen(false); }} 
-                                        className="text-xs text-orange-500 font-medium hover:underline"
-                                    >
-                                        Privacy
-                                    </button>
-                                )}
-                            </div>
-                            <p className="text-xs text-center text-gray-500">
-                                © 2025 IndaStreet Massage
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            )}
-
             {/* Coin Balance Display */}
-            <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-3 text-white">
+            <div id="coin-balance-bar" className="bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-3 text-white sticky top-16 z-10">
                 <div className="flex items-center justify-between">
-                    <span className="font-bold text-lg">🪙 Your Coins: {userCoins?.totalCoins || 0}</span>
+                    <span className="font-bold text-lg">🪙 Your Coin Balance</span>
                     
                     {/* Category Dropdown */}
                     <select
@@ -484,31 +283,62 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
                         ))}
                     </select>
                 </div>
-            </div>
 
-            {/* Welcome Banner */}
-            {!currentUser && (
-                <div className="max-w-7xl mx-auto px-4 py-6">
-                    <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl p-8 text-center text-white shadow-xl">
-                        <h2 className="text-3xl font-bold mb-4">Welcome to IndaStreet Massage!</h2>
-                        <div className="bg-white bg-opacity-20 rounded-xl p-6 mb-4">
-                            <div className="text-6xl mb-3 animate-bounce">🎉</div>
-                            <h3 className="text-4xl font-bold mb-2">Congratulations!</h3>
-                            <p className="text-2xl font-semibold mb-3">You Have 100 Coins In Your Account</p>
-                        </div>
-                        <p className="text-xl font-bold mb-4 animate-pulse">Register To Claim Before Expired</p>
-                        <button
-                            onClick={() => onNavigate('home')}
-                            className="bg-white text-orange-600 px-8 py-4 rounded-xl font-bold text-lg hover:bg-orange-50 transition-colors shadow-lg"
-                        >
-                            Register Now & Claim Your Coins! 🎁
-                        </button>
+                {/* Coin Stats - Glass Effect */}
+                <div className="grid grid-cols-3 gap-3 mt-3">
+                    {/* Total Earned */}
+                    <div className="bg-black bg-opacity-20 backdrop-blur-sm rounded-lg px-3 py-2 border border-white border-opacity-20">
+                        <div className="text-xs text-white text-opacity-80 mb-1">Total Earned</div>
+                        <div className="text-lg font-bold text-white">{userCoins?.lifetimeEarned || 0}</div>
+                    </div>
+
+                    {/* Total Spent */}
+                    <div className="bg-black bg-opacity-20 backdrop-blur-sm rounded-lg px-3 py-2 border border-white border-opacity-20">
+                        <div className="text-xs text-white text-opacity-80 mb-1">Total Spent</div>
+                        <div className="text-lg font-bold text-white">{userCoins?.lifetimeSpent || 0}</div>
+                    </div>
+
+                    {/* Available (Expired renamed to Available) */}
+                    <div className="bg-black bg-opacity-20 backdrop-blur-sm rounded-lg px-3 py-2 border border-white border-opacity-20">
+                        <div className="text-xs text-white text-opacity-80 mb-1">Available</div>
+                        <div className="text-lg font-bold text-white">{userCoins?.totalCoins || 0}</div>
                     </div>
                 </div>
-            )}
+            </div>
 
-            {/* Shop Items Grid */}
-            <div className="max-w-7xl mx-auto px-4 py-6">
+            {/* Header Text */}
+            <div className="text-center py-6 px-4">
+                <h2 className="text-4xl font-bold mb-3">
+                    <span className="text-black">Inda</span>
+                    <span className="text-orange-500">Street</span>
+                </h2>
+                <p className="text-gray-600 text-base max-w-2xl mx-auto">
+                    Let's Cash in your coins for awesome products dispatched within 48 hours. Delivery times may vary across Indonesia
+                </p>
+            </div>
+
+            {/* Shop Items Grid with Falling Coins Background */}
+            <div className="max-w-7xl mx-auto px-4 py-6 relative">
+                {/* Falling Coins Animation - Positioned from coin bar */}
+                <div className="fixed left-0 right-0 pointer-events-none overflow-hidden z-5" style={{ top: '112px', bottom: 0 }}>
+                    {[...Array(15)].map((_, i) => (
+                        <div
+                            key={i}
+                            className="absolute animate-fall-slow"
+                            style={{
+                                left: `${Math.random() * 100}%`,
+                                top: 0,
+                                animationDelay: `${Math.random() * 5}s`,
+                                animationDuration: `${8 + Math.random() * 4}s`,
+                                fontSize: `${20 + Math.random() * 20}px`
+                            }}
+                        >
+                            🪙
+                        </div>
+                    ))}
+                </div>
+
+                {/* Product Content */}
                 {loading ? (
                     <div className="text-center py-12">
                         <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-orange-500"></div>
@@ -521,8 +351,9 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
                         <p className="text-gray-600">Check back later for new items!</p>
                     </div>
                 ) : (
+                    <>
                     <div className="grid grid-cols-2 gap-4">
-                        {filteredItems.map((item) => (
+                        {paginatedItems.map((item) => (
                             <div
                                 key={item.$id}
                                 className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200 hover:shadow-md transition-shadow"
@@ -534,6 +365,13 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
                                         alt={item.name}
                                         className="w-full h-full object-cover"
                                     />
+                                    
+                                    {/* Coin Price Badge - Top Right - Black Glass Effect */}
+                                    <div className="absolute top-2 right-2 bg-black bg-opacity-70 backdrop-blur-md text-white px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1 border border-white border-opacity-20">
+                                        <span className="font-bold text-sm">{item.coinPrice.toLocaleString()}</span>
+                                        <span className="text-xs">🪙</span>
+                                    </div>
+                                    
                                     {item.stockQuantity <= 0 && (
                                         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                                             <span className="bg-red-500 text-white px-4 py-2 rounded-lg font-bold">
@@ -584,57 +422,153 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
                             </div>
                         ))}
                     </div>
+
+                    {/* Pagination Controls */}
+                    {totalPages > 1 && (
+                        <div className="flex items-center justify-center gap-4 mt-8 mb-6">
+                            <button
+                                onClick={handlePrevPage}
+                                disabled={currentPage === 1}
+                                className={`flex items-center gap-2 px-6 py-3 rounded-lg font-bold transition-colors ${
+                                    currentPage === 1
+                                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                        : 'bg-orange-500 text-white hover:bg-orange-600'
+                                }`}
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                </svg>
+                                Previous
+                            </button>
+
+                            <div className="text-gray-700 font-semibold">
+                                Page {currentPage} of {totalPages}
+                            </div>
+
+                            <button
+                                onClick={handleNextPage}
+                                disabled={currentPage === totalPages}
+                                className={`flex items-center gap-2 px-6 py-3 rounded-lg font-bold transition-colors ${
+                                    currentPage === totalPages
+                                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                        : 'bg-orange-500 text-white hover:bg-orange-600'
+                                }`}
+                            >
+                                Next
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                        </div>
+                    )}
+                    </>
                 )}
             </div>
 
-            {/* Delivery Info Modal */}
+            {/* Delivery Info Modal with Confetti */}
             {showDeliveryForm && selectedItem && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl max-w-md w-full p-6 animate-fadeIn">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-4">Delivery Information</h2>
-                        <p className="text-gray-600 mb-6">
-                            Please provide your delivery details for: <strong>{selectedItem.name}</strong>
-                        </p>
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+                    {/* Confetti Animation */}
+                    <div className="fixed inset-0 pointer-events-none overflow-hidden">
+                        {[...Array(50)].map((_, i) => (
+                            <div
+                                key={`confetti-${i}`}
+                                className="absolute animate-confetti"
+                                style={{
+                                    left: `${Math.random() * 100}%`,
+                                    top: '-10%',
+                                    animationDelay: `${Math.random() * 3}s`,
+                                    animationDuration: `${2 + Math.random() * 2}s`,
+                                    opacity: 0.8,
+                                    fontSize: `${10 + Math.random() * 10}px`,
+                                    color: ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#6c5ce7'][Math.floor(Math.random() * 5)]
+                                }}
+                            >
+                                {['🎉', '🎊', '✨', '⭐', '💫'][Math.floor(Math.random() * 5)]}
+                            </div>
+                        ))}
+                    </div>
+                    
+                    <div className="bg-white rounded-2xl max-w-md w-full p-6 animate-fadeIn relative z-10 my-8">
+                        {/* Celebration Header */}
+                        <div className="text-center mb-4">
+                            <div className="text-5xl mb-2 animate-bounce">🎉</div>
+                            <h2 className="text-2xl font-bold text-green-600 mb-2">Congratulations!</h2>
+                            <p className="text-gray-600">
+                                You have enough coins for: <strong className="text-orange-600">{selectedItem.name}</strong>
+                            </p>
+                        </div>
 
-                        <div className="space-y-4 mb-6">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Full Name
-                                </label>
+                        <div className="border-t border-gray-200 pt-4 mb-4">
+                            <h3 className="font-semibold text-gray-800 mb-3">Delivery Information</h3>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Full Name *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={deliveryInfo.name}
+                                        onChange={(e) => setDeliveryInfo({...deliveryInfo, name: e.target.value})}
+                                        placeholder="Enter your full name"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        WhatsApp Number *
+                                    </label>
+                                    <input
+                                        type="tel"
+                                        value={deliveryInfo.whatsapp}
+                                        onChange={(e) => setDeliveryInfo({...deliveryInfo, whatsapp: e.target.value})}
+                                        placeholder="+62 812 3456 7890"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Delivery Address *
+                                    </label>
+                                    <textarea
+                                        value={deliveryInfo.address}
+                                        onChange={(e) => setDeliveryInfo({...deliveryInfo, address: e.target.value})}
+                                        placeholder="Enter your complete delivery address"
+                                        rows={3}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Postcode *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={deliveryInfo.postcode}
+                                        onChange={(e) => setDeliveryInfo({...deliveryInfo, postcode: e.target.value})}
+                                        placeholder="Enter postcode"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Terms Checkbox */}
+                        <div className="mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                            <label className="flex items-start gap-3 cursor-pointer">
                                 <input
-                                    type="text"
-                                    value={deliveryInfo.name}
-                                    onChange={(e) => setDeliveryInfo({...deliveryInfo, name: e.target.value})}
-                                    placeholder="Enter your full name"
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                    type="checkbox"
+                                    checked={agreedToTerms}
+                                    onChange={(e) => setAgreedToTerms(e.target.checked)}
+                                    className="mt-1 w-5 h-5 text-orange-500 border-gray-300 rounded focus:ring-orange-500 cursor-pointer"
                                 />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    WhatsApp Number
-                                </label>
-                                <input
-                                    type="tel"
-                                    value={deliveryInfo.whatsapp}
-                                    onChange={(e) => setDeliveryInfo({...deliveryInfo, whatsapp: e.target.value})}
-                                    placeholder="+62 812 3456 7890"
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Delivery Address
-                                </label>
-                                <textarea
-                                    value={deliveryInfo.address}
-                                    onChange={(e) => setDeliveryInfo({...deliveryInfo, address: e.target.value})}
-                                    placeholder="Enter your complete delivery address"
-                                    rows={3}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
-                                />
-                            </div>
+                                <span className="text-sm text-gray-700">
+                                    I understand that <strong>products cannot be changed once the item is being processed</strong>
+                                </span>
+                            </label>
                         </div>
 
                         <div className="flex gap-3">
@@ -642,7 +576,8 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
                                 onClick={() => {
                                     setShowDeliveryForm(false);
                                     setSelectedItem(null);
-                                    setDeliveryInfo({ name: '', whatsapp: '', address: '' });
+                                    setDeliveryInfo({ name: '', whatsapp: '', address: '', postcode: '' });
+                                    setAgreedToTerms(false);
                                 }}
                                 className="flex-1 px-6 py-3 border border-gray-300 rounded-lg font-bold text-gray-700 hover:bg-gray-50"
                             >
@@ -650,33 +585,59 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
                             </button>
                             <button
                                 onClick={handleConfirmOrder}
-                                className="flex-1 px-6 py-3 bg-orange-500 text-white rounded-lg font-bold hover:bg-orange-600"
+                                disabled={!agreedToTerms}
+                                className={`flex-1 px-6 py-3 rounded-lg font-bold transition-colors ${
+                                    agreedToTerms
+                                        ? 'bg-orange-500 text-white hover:bg-orange-600'
+                                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                }`}
                             >
-                                Confirm Order
+                                Process My Item
                             </button>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Success Modal */}
-            {showSuccessModal && selectedItem && (
+            {/* Login Notice Modal */}
+            {showLoginNotice && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-2xl max-w-md w-full p-8 text-center animate-fadeIn">
-                        {/* Confetti Animation */}
-                        <div className="text-6xl mb-4 animate-bounce">🎉</div>
-                        <h2 className="text-3xl font-bold text-green-600 mb-4">Congratulations!</h2>
-                        <p className="text-lg text-gray-700 mb-6">
-                            Your item <strong className="text-orange-600">{selectedItem.name}</strong> is in process and will be soon dispatched for delivery within <strong>10 days approx</strong>.
+                        <div className="text-6xl mb-4">🔐</div>
+                        <h2 className="text-2xl font-bold text-orange-600 mb-4">Login Required</h2>
+                        <p className="text-gray-700 mb-6">
+                            Please log in to your account before cashing in coins for products.
+                        </p>
+                        <button
+                            onClick={() => setShowLoginNotice(false)}
+                            className="w-full px-6 py-3 bg-orange-500 text-white rounded-lg font-bold hover:bg-orange-600 transition-colors"
+                        >
+                            OK
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Final Confirmation Modal */}
+            {showFinalConfirmation && selectedItem && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl max-w-md w-full p-8 text-center animate-fadeIn">
+                        <div className="text-6xl mb-4">✅</div>
+                        <h2 className="text-2xl font-bold text-green-600 mb-4">Order Confirmed!</h2>
+                        <p className="text-lg text-gray-700 mb-4">
+                            Your item <strong className="text-orange-600">{selectedItem.name}</strong> is being processed and will soon be dispatched.
+                        </p>
+                        <p className="text-gray-600 mb-6">
+                            <strong>IndaStreet Team</strong>
                         </p>
                         <button
                             onClick={() => {
-                                setShowSuccessModal(false);
+                                setShowFinalConfirmation(false);
                                 setSelectedItem(null);
                             }}
                             className="w-full px-6 py-3 bg-orange-500 text-white rounded-lg font-bold hover:bg-orange-600 transition-colors"
                         >
-                            Got it! 🎊
+                            Got it!
                         </button>
                     </div>
                 </div>
@@ -709,15 +670,6 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
                     </div>
                 </div>
             )}
-
-            {/* Full Width Image at Bottom */}
-            <div className="w-full mt-8">
-                <img 
-                    src="https://ik.imagekit.io/7grri5v7d/indastreet%20shop.png?updatedAt=1761759258038" 
-                    alt="IndaStreet Shop" 
-                    className="w-full h-auto"
-                />
-            </div>
 
             {/* Location Modal */}
             {isLocationModalOpen && onSetUserLocation && (
@@ -773,6 +725,7 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
                 }
             `}</style>
         </div>
+        </>
     );
 };
 

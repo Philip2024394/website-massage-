@@ -120,9 +120,9 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({ onBack, onPostJob, on
     };
 
     const locations = [
-        { value: 'all', label: 'All Locations' },
+        { value: 'all', label: 'Locations' },
         // Bali Areas
-        { value: 'Bali', label: '🏝️ All Bali' },
+        { value: 'Bali', label: '🏝️ Bali' },
         { value: 'Seminyak', label: 'Seminyak' },
         { value: 'Canggu', label: 'Canggu' },
         { value: 'Ubud', label: 'Ubud' },
@@ -131,7 +131,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({ onBack, onPostJob, on
         { value: 'Sanur', label: 'Sanur' },
         { value: 'Uluwatu', label: 'Uluwatu' },
         // Jakarta Areas
-        { value: 'Jakarta', label: '🏙️ All Jakarta' },
+        { value: 'Jakarta', label: '🏙️ Jakarta' },
         { value: 'Jakarta Selatan', label: 'Jakarta Selatan' },
         { value: 'Jakarta Pusat', label: 'Jakarta Pusat' },
         { value: 'Jakarta Utara', label: 'Jakarta Utara' },
@@ -201,13 +201,13 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({ onBack, onPostJob, on
                                     setShowTypeDropdown(!showTypeDropdown);
                                     setShowLocationDropdown(false);
                                 }}
-                                className="flex items-center gap-2 py-2.5 px-4 bg-white border-2 border-orange-300 rounded-lg hover:bg-orange-50 transition-all duration-200 text-sm font-semibold min-w-[160px]"
+                                className="flex items-center gap-2 py-2.5 px-4 bg-white border-2 border-orange-300 rounded-lg hover:border-orange-400 transition-all duration-200 text-sm font-semibold min-w-[160px]"
                             >
                                 <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                 </svg>
                                 <span className="text-gray-700 flex-1">
-                                    {selectedType === 'all' ? 'All Jobs' : selectedType.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                                    {selectedType === 'all' ? 'Jobs' : selectedType.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
                                 </span>
                                 <svg className={`w-4 h-4 text-gray-500 transition-transform ${showTypeDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -245,10 +245,10 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({ onBack, onPostJob, on
                                                     selectedType === type ? 'bg-orange-100 text-orange-700 font-semibold' : 'text-gray-700'
                                                 }`}
                                             >
-                                                <span className={selectedType === type ? 'text-orange-500' : 'text-gray-400'}>
+                                                <span className="text-black">
                                                     {getIcon(type)}
                                                 </span>
-                                                <span>{type === 'all' ? 'All Jobs' : type.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}</span>
+                                                <span>{type === 'all' ? 'Jobs' : type.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}</span>
                                                 {selectedType === type && (
                                                     <svg className="w-4 h-4 ml-auto text-orange-500" fill="currentColor" viewBox="0 0 20 20">
                                                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -268,14 +268,16 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({ onBack, onPostJob, on
                                     setShowLocationDropdown(!showLocationDropdown);
                                     setShowTypeDropdown(false);
                                 }}
-                                className="flex items-center gap-2 py-2.5 px-4 bg-white border-2 border-orange-300 rounded-lg hover:bg-orange-50 transition-all duration-200 text-sm font-semibold w-full"
+                                className={`flex items-center gap-2 py-2.5 px-4 bg-white border-2 rounded-lg hover:border-orange-400 transition-all duration-200 text-sm font-semibold w-full ${
+                                    showLocationDropdown ? 'border-orange-500 ring-2 ring-orange-200' : 'border-orange-300'
+                                }`}
                             >
                                 <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
                                 <span className="text-gray-700 flex-1">
-                                    {locations.find(loc => loc.value === selectedLocation)?.label || 'All Locations'}
+                                    {locations.find(loc => loc.value === selectedLocation)?.label || 'Locations'}
                                 </span>
                                 <svg className={`w-4 h-4 text-gray-500 transition-transform ${showLocationDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -285,25 +287,31 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({ onBack, onPostJob, on
                             {/* Location Dropdown Menu */}
                             {showLocationDropdown && (
                                 <div className="absolute top-full left-0 mt-2 w-72 bg-white rounded-lg shadow-xl border border-gray-200 z-30 max-h-96 overflow-y-auto">
-                                    {locations.map((location) => (
-                                        <button
-                                            key={location.value}
-                                            onClick={() => {
-                                                setSelectedLocation(location.value);
-                                                setShowLocationDropdown(false);
-                                            }}
-                                            className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-orange-50 transition-colors text-left ${
-                                                selectedLocation === location.value ? 'bg-orange-100 text-orange-700 font-semibold' : 'text-gray-700'
-                                            }`}
-                                        >
-                                            <span className="text-lg">{location.label}</span>
-                                            {selectedLocation === location.value && (
-                                                <svg className="w-4 h-4 ml-auto text-orange-500" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                    {locations.map((location) => {
+                                        return (
+                                            <button
+                                                key={location.value}
+                                                onClick={() => {
+                                                    setSelectedLocation(location.value);
+                                                    setShowLocationDropdown(false);
+                                                }}
+                                                className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-orange-50 transition-colors text-left ${
+                                                    selectedLocation === location.value ? 'bg-orange-100 text-orange-700 font-semibold' : 'text-gray-700'
+                                                }`}
+                                            >
+                                                <svg className="w-4 h-4 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                                 </svg>
-                                            )}
-                                        </button>
-                                    ))}
+                                                <span className="text-sm flex-1">{location.label}</span>
+                                                {selectedLocation === location.value && (
+                                                    <svg className="w-4 h-4 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                    </svg>
+                                                )}
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             )}
                         </div>
@@ -417,8 +425,8 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({ onBack, onPostJob, on
 
                                     {/* Employment Type Badge - Top Right */}
                                     <div className="absolute top-4 right-4">
-                                        <span className="px-4 py-2 bg-black/70 backdrop-blur-md text-white text-sm font-bold rounded-lg shadow-2xl border border-white/20">
-                                            {posting.employmentType}
+                                        <span className="px-4 py-2 bg-black/70 backdrop-blur-md text-yellow-400 text-sm font-bold rounded-lg shadow-2xl border border-white/20">
+                                            {posting.employmentType.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
                                         </span>
                                     </div>
 
@@ -435,9 +443,50 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({ onBack, onPostJob, on
                                     {/* Header */}
                                     <div className="flex items-start justify-between mb-4">
                                         <div className="flex-1">
-                                            <h3 className="text-xl font-bold text-gray-900 mb-1">{posting.jobTitle}</h3>
-                                            <p className="text-orange-600 font-semibold">{posting.businessName}</p>
-                                            <p className="text-sm text-gray-500">{posting.businessType.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}</p>
+                                            <h3 className="text-xl font-bold text-gray-900 mb-2">
+                                                {posting.businessName.length > 23 ? posting.businessName.substring(0, 23) : posting.businessName}
+                                            </h3>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                {/* Business Type Icon */}
+                                                {posting.businessType === 'clinic' && (
+                                                    <svg className="w-4 h-4 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                                    </svg>
+                                                )}
+                                                {posting.businessType === 'hotel' && (
+                                                    <svg className="w-4 h-4 text-black flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                                    </svg>
+                                                )}
+                                                {posting.businessType === 'spa' && (
+                                                    <svg className="w-4 h-4 text-black flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                )}
+                                                {posting.businessType === 'wellness-center' && (
+                                                    <svg className="w-4 h-4 text-black flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                                    </svg>
+                                                )}
+                                                {posting.businessType === 'resort' && (
+                                                    <svg className="w-4 h-4 text-black flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                )}
+                                                {posting.businessType === 'home-service' && (
+                                                    <svg className="w-4 h-4 text-black flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                                    </svg>
+                                                )}
+                                                {!['clinic', 'hotel', 'spa', 'wellness-center', 'resort', 'home-service'].includes(posting.businessType) && (
+                                                    <svg className="w-4 h-4 text-black flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                                    </svg>
+                                                )}
+                                                <p className="text-sm font-semibold text-gray-700">{posting.businessType.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}</p>
+                                                <span className="text-gray-400">•</span>
+                                                <p className="text-sm text-gray-600">{posting.numberOfPositions} Position{posting.numberOfPositions > 1 ? 's' : ''} Available</p>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -447,16 +496,10 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({ onBack, onPostJob, on
                                     {/* Details Grid */}
                                     <div className="grid grid-cols-1 gap-3 mb-4">
                                         <div className="text-sm">
-                                            <p className="text-xs font-semibold text-gray-500 mb-1">SALARY RANGE</p>
+                                            <p className="text-sm font-bold text-black mb-1">SALARY RANGE</p>
                                             <span className="text-gray-700 font-medium">
                                                 {formatSalary(posting.salaryRangeMin)} - {formatSalary(posting.salaryRangeMax)}
                                             </span>
-                                        </div>
-                                        <div className="flex items-center gap-2 text-sm">
-                                            <svg className="w-5 h-5 text-purple-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.653-.122-1.28-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.653.122-1.28.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                            </svg>
-                                            <span className="text-gray-700 font-medium">{posting.numberOfPositions} position{posting.numberOfPositions > 1 ? 's' : ''} available</span>
                                         </div>
                                         {posting.accommodationProvided && (
                                             <div className="flex items-center gap-2 text-sm">
@@ -553,7 +596,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({ onBack, onPostJob, on
                                     {/* Benefits */}
                                     {posting.benefits.length > 0 && (
                                         <div className="mb-4">
-                                            <p className="text-xs font-semibold text-gray-500 mb-2">BENEFITS:</p>
+                                            <p className="text-sm font-bold text-black mb-2">BENEFITS:</p>
                                             <ul className="space-y-1.5">
                                                 {posting.benefits.map((benefit, idx) => (
                                                     <li key={idx} className="flex items-start gap-2 text-sm text-gray-700">
