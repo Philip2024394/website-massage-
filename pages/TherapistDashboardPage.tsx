@@ -620,10 +620,33 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                     setShowImageRequirementModal(true);
                 };
 
-                const handleAcceptImageRequirement = () => {
+                const handleAcceptImageRequirement = async () => {
                     setProfilePicture(pendingImageUrl);
                     setShowImageRequirementModal(false);
                     setPendingImageUrl('');
+                    
+                    // 🚀 AUTO-SAVE: Immediately save profile picture to database
+                    try {
+                        console.log('💾 Auto-saving profile picture to database...');
+                        const therapistIdString = typeof therapistId === 'string' 
+                            ? therapistId 
+                            : therapistId.toString();
+                        
+                        await therapistService.update(therapistIdString, {
+                            profilePicture: pendingImageUrl
+                        });
+                        
+                        console.log('✅ Profile picture auto-saved successfully!');
+                        // Show subtle success message
+                        const successMsg = document.createElement('div');
+                        successMsg.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in';
+                        successMsg.innerHTML = '✅ Profile picture saved automatically!';
+                        document.body.appendChild(successMsg);
+                        setTimeout(() => successMsg.remove(), 3000);
+                    } catch (error) {
+                        console.error('❌ Error auto-saving profile picture:', error);
+                        alert('Profile picture uploaded but auto-save failed. Please click "Save Profile" to persist changes.');
+                    }
                 };
 
                 const handleRejectImageRequirement = () => {
@@ -754,7 +777,31 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                             id="main-image-upload"
                             label="Main Banner Image (Optional)"
                             currentImage={mainImage}
-                            onImageChange={(imageUrl) => setMainImage(imageUrl)}
+                            onImageChange={async (imageUrl) => {
+                                setMainImage(imageUrl);
+                                
+                                // 🚀 AUTO-SAVE: Immediately save main image to database
+                                try {
+                                    console.log('💾 Auto-saving main image to database...');
+                                    const therapistIdString = typeof therapistId === 'string' 
+                                        ? therapistId 
+                                        : therapistId.toString();
+                                    
+                                    await therapistService.update(therapistIdString, {
+                                        mainImage: imageUrl
+                                    });
+                                    
+                                    console.log('✅ Main image auto-saved successfully!');
+                                    // Show subtle success message
+                                    const successMsg = document.createElement('div');
+                                    successMsg.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in';
+                                    successMsg.innerHTML = '✅ Main image saved automatically!';
+                                    document.body.appendChild(successMsg);
+                                    setTimeout(() => successMsg.remove(), 3000);
+                                } catch (error) {
+                                    console.error('❌ Error auto-saving main image:', error);
+                                }
+                            }}
                             variant="default"
                         />
                          
