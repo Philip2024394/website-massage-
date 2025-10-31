@@ -208,8 +208,10 @@ const MassageBaliPage: React.FC<MassageBaliPageProps> = ({ onNavigate }) => {
                 <div 
                     className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                     style={{
-                        backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/massage%20jogja%20indonisea.png?updatedAt=1761561233215)'
+                        // Added stronger cache-buster to force browsers/CDN to fetch latest asset
+                        backgroundImage: "url(https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382&v=20251031-v4)"
                     }}
+                    key="massage-bali-hero-v4"
                 ></div>
                 {/* Content */}
                 <div className="max-w-6xl mx-auto px-4 text-center relative z-10">
