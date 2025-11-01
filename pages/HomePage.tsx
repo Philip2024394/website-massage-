@@ -11,6 +11,7 @@ import { customLinksService, reviewService } from '../lib/appwriteService';
 import { AppDrawer } from '../components/AppDrawer';
 import { Users, Building, Sparkles } from 'lucide-react';
 import HomeIcon from '../components/icons/HomeIcon';
+import FlyingButterfly from '../components/FlyingButterfly';
 
 
 interface HomePageProps {
@@ -217,8 +218,11 @@ const HomePage: React.FC<HomePageProps> = ({
     // Removed unused renderPlaces
 
     return (
-    <div className="min-h-screen bg-gray-50">
-             <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
+        <div className="min-h-screen bg-gray-50">
+            {/* Flying Butterfly Animation */}
+            <FlyingButterfly />
+            
+            <header className="bg-white p-4 shadow-md sticky top-0 z-20">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">
                         <span className="text-black">Inda</span>
