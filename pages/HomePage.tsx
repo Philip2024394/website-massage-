@@ -324,7 +324,13 @@ const HomePage: React.FC<HomePageProps> = ({
 
                 {/* Therapists and Places Display */}
                 {activeTab === 'home' && (
-                    <div className="space-y-4">
+                    <div>
+                        <div className="mb-6 text-center">
+                            <h3 className="text-2xl font-bold text-gray-900 mb-2">Home Massage Therapists</h3>
+                            <p className="text-gray-600">Discover top-rated massage therapists in Bali</p>
+                        </div>
+                        
+                        <div className="space-y-4">
                         {therapists
                             .filter((t: any) => t.isLive === true) // Only show activated therapists
                             .filter((t: any) => selectedMassageType === 'all' || (t.massageTypes && t.massageTypes.includes(selectedMassageType)))
@@ -358,6 +364,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                 <p className="text-gray-500">No therapists available at the moment.</p>
                             </div>
                         )}
+                        </div>
                     </div>
                 )}
 
