@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Query } from 'appwrite';
 import { databases } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
+import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 
 const DATABASE_ID = APPWRITE_CONFIG.databaseId;
 const COLLECTIONS = APPWRITE_CONFIG.collections;
@@ -87,20 +88,19 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
     onNavigateToPayment, 
     onCreateTherapistProfile
 }) => {
-    console.log('🔥 MassageJobsPage RENDERED - Props received:', {
+    console.log('🔥 MassageJobsPage RENDERED - VERSION 2025-01-11-17:00:00');
+    console.log('🔥 Props received:', {
         hasOnBack: typeof onBack === 'function',
         hasOnPostJob: typeof onPostJob === 'function',
         hasOnNavigateToPayment: typeof onNavigateToPayment === 'function',
-        hasOnCreateTherapistProfile: typeof onCreateTherapistProfile === 'function',
-        onCreateTherapistProfileProvided: !!onCreateTherapistProfile,
-        onCreateTherapistProfileType: typeof onCreateTherapistProfile,
-        onCreateTherapistProfileValue: onCreateTherapistProfile
+        hasOnCreateTherapistProfile: typeof onCreateTherapistProfile === 'function'
     });
     
     const [activeTab, setActiveTab] = useState<'employers' | 'therapists'>('employers');
     const [jobPostings, setJobPostings] = useState<EmployerJobPosting[]>([]);
     const [therapistListings, setTherapistListings] = useState<TherapistJobListing[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedType, setSelectedType] = useState<string>('all');
     const [selectedLocation, setSelectedLocation] = useState<string>('all');
@@ -233,226 +233,82 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
     const businessTypes = ['all', 'hotel', 'spa', 'wellness-center', 'resort', 'home-service', 'other'];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
-            {/* Header */}
-            <header className="bg-white shadow-md sticky top-0 z-20">
-                <div className="max-w-7xl mx-auto px-4 py-4">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-4">
-                            <button
-                                onClick={onBack}
-                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                            >
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                                </svg>
-                            </button>
-                            <div>
-                                <h1 className="text-2xl font-bold text-black">
-                                    Massage Jobs Marketplace
-                                </h1>
-                                <p className="text-sm text-gray-600">Connect employers and therapists</p>
-                            </div>
-                        </div>
+        <div className="min-h-screen bg-gray-50">
+            {/* Header - Same as Home Page */}
+            <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
+                <div className="flex justify-between items-center">
+                    <h1 className="text-2xl font-bold text-gray-800">
+                        <span className="text-black">Inda</span>
+                        <span className="text-orange-500">Street</span>
+                    </h1>
+                    <div className="flex items-center gap-3">
                         <button
                             onClick={() => {
-                                console.log('🎯 Create Profile/Post Job button clicked!');
+                                console.log('🎯 BUTTON CLICKED - VERSION 2025-01-11-17:00:00');
                                 console.log('Active tab:', activeTab);
+                                
                                 if (activeTab === 'employers') {
-                                    console.log('Calling: onPostJob');
+                                    console.log('Employer tab - calling onPostJob');
                                     onPostJob();
                                 } else {
-                                    console.log('🚀 Calling: onCreateTherapistProfile');
+                                    console.log('Therapist tab - calling onCreateTherapistProfile');
                                     if (onCreateTherapistProfile) {
                                         onCreateTherapistProfile();
-                                    } else {
-                                        console.error('⚠️ onCreateTherapistProfile not provided! This is a browser cache issue.');
                                     }
                                 }
                             }}
-                            className="flex items-center gap-2 py-1.5 px-4 bg-orange-500 text-white shadow-lg rounded-lg transition-all duration-200 text-sm font-semibold whitespace-nowrap hover:bg-orange-600"
+                            className="flex items-center gap-1.5 sm:gap-2 py-1.5 sm:py-2 px-3 sm:px-4 bg-orange-500 text-white shadow-lg rounded-lg transition-all duration-200 text-xs sm:text-sm font-semibold whitespace-nowrap hover:bg-orange-600"
                         >
                             <span>{activeTab === 'employers' ? 'Post Job' : 'Create Profile'}</span>
                         </button>
-                    </div>
-
-                    {/* Tabs */}
-                    <div className="flex gap-2 mb-4 border-b border-gray-200">
-                        <button
-                            onClick={() => setActiveTab('employers')}
-                            className={`px-6 py-3 font-semibold transition-all ${
-                                activeTab === 'employers'
-                                    ? 'text-orange-600 border-b-2 border-orange-600'
-                                    : 'text-gray-500 hover:text-gray-700'
-                            }`}
-                        >
-                            💼 Jobs for Offer
+                        <button onClick={() => setIsMenuOpen(true)} title="Menu" className="text-gray-600">
+                           <BurgerMenuIcon className="w-6 h-6" />
                         </button>
-                        <button
-                            onClick={() => {
-                                console.log('🔵 THERAPIST TAB CLICKED - Setting activeTab to therapists');
-                                setActiveTab('therapists');
-                            }}
-                            className={`px-6 py-3 font-semibold transition-all ${
-                                activeTab === 'therapists'
-                                    ? 'text-orange-600 border-b-2 border-orange-600'
-                                    : 'text-gray-500 hover:text-gray-700'
-                            }`}
-                        >
-                            👨‍⚕️ Therapists Seeking Work
-                        </button>
-                    </div>
-
-                    {/* Search Bar */}
-                    <div className="relative mb-4">
-                        <input
-                            type="text"
-                            placeholder={activeTab === 'employers' ? "Search by company, job title, or location..." : "Search therapists by name, skills, or location..."}
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full px-4 py-3 pl-12 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                        />
-                        <svg className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </div>
-
-                    {/* Dropdown Filters - Side by Side */}
-                    <div className="flex gap-3 mb-4">
-                        {/* Job Type / Massage Skill Dropdown */}
-                        <div className="relative flex-1" ref={typeDropdownRef}>
-                            <button
-                                onClick={() => {
-                                    setShowTypeDropdown(!showTypeDropdown);
-                                    setShowLocationDropdown(false);
-                                }}
-                                className="flex items-center gap-2 py-2.5 px-4 bg-white border-2 border-orange-300 rounded-lg hover:border-orange-400 transition-all duration-200 text-sm font-semibold min-w-[160px]"
-                            >
-                                <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                </svg>
-                                <span className="text-gray-700 flex-1">
-                                    {selectedType === 'all' ? 'Jobs' : selectedType.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
-                                </span>
-                                <svg className={`w-4 h-4 text-gray-500 transition-transform ${showTypeDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
-
-                            {/* Job Type Dropdown Menu */}
-                            {showTypeDropdown && (
-                                <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 z-30 max-h-96 overflow-y-auto">
-                                    {businessTypes.map((type) => {
-                                        const getIcon = (businessType: string) => {
-                                            switch(businessType) {
-                                                case 'all':
-                                                    return <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>;
-                                                case 'hotel':
-                                                    return <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>;
-                                                case 'spa':
-                                                    return <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
-                                                case 'wellness-center':
-                                                    return <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>;
-                                                case 'clinic':
-                                                    return <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>;
-                                                default:
-                                                    return <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>;
-                                            }
-                                        };
-                                        return (
-                                            <button
-                                                key={type}
-                                                onClick={() => {
-                                                    setSelectedType(type);
-                                                    setShowTypeDropdown(false);
-                                                }}
-                                                className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-orange-50 transition-colors ${
-                                                    selectedType === type ? 'bg-orange-100 text-orange-700 font-semibold' : 'text-gray-700'
-                                                }`}
-                                            >
-                                                <span className="text-black">
-                                                    {getIcon(type)}
-                                                </span>
-                                                <span>{type === 'all' ? 'Jobs' : type.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}</span>
-                                                {selectedType === type && (
-                                                    <svg className="w-4 h-4 ml-auto text-orange-500" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                                    </svg>
-                                                )}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Location Dropdown */}
-                        <div className="relative flex-1" ref={locationDropdownRef}>
-                            <button
-                                onClick={() => {
-                                    setShowLocationDropdown(!showLocationDropdown);
-                                    setShowTypeDropdown(false);
-                                }}
-                                className={`flex items-center gap-2 py-2.5 px-4 bg-white border-2 rounded-lg hover:border-orange-400 transition-all duration-200 text-sm font-semibold w-full ${
-                                    showLocationDropdown ? 'border-orange-500 ring-2 ring-orange-200' : 'border-orange-300'
-                                }`}
-                            >
-                                <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
-                                <span className="text-gray-700 flex-1">
-                                    {locations.find(loc => loc.value === selectedLocation)?.label || 'Locations'}
-                                </span>
-                                <svg className={`w-4 h-4 text-gray-500 transition-transform ${showLocationDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
-
-                            {/* Location Dropdown Menu */}
-                            {showLocationDropdown && (
-                                <div className="absolute top-full left-0 mt-2 w-72 bg-white rounded-lg shadow-xl border border-gray-200 z-30 max-h-96 overflow-y-auto">
-                                    {locations.map((location) => {
-                                        return (
-                                            <button
-                                                key={location.value}
-                                                onClick={() => {
-                                                    setSelectedLocation(location.value);
-                                                    setShowLocationDropdown(false);
-                                                }}
-                                                className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-orange-50 transition-colors text-left ${
-                                                    selectedLocation === location.value ? 'bg-orange-100 text-orange-700 font-semibold' : 'text-gray-700'
-                                                }`}
-                                            >
-                                                <svg className="w-4 h-4 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                </svg>
-                                                <span className="text-sm flex-1">{location.label}</span>
-                                                {selectedLocation === location.value && (
-                                                    <svg className="w-4 h-4 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                                    </svg>
-                                                )}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </div>
                     </div>
                 </div>
             </header>
 
+            <main className="p-4">
+                <div className="max-w-7xl mx-auto">
+
+                    {/* Toggle Button - Jobs vs Therapists */}
+                    <div className="flex justify-center mb-6">
+                        <div className="inline-flex bg-gray-100 rounded-full p-1 shadow-inner">
+                            <button
+                                onClick={() => setActiveTab('employers')}
+                                className={`px-4 sm:px-6 py-2.5 rounded-full font-semibold text-xs sm:text-sm transition-all duration-300 ${
+                                    activeTab === 'employers'
+                                        ? 'bg-orange-500 text-white shadow-lg'
+                                        : 'text-gray-600 hover:text-gray-800'
+                                }`}
+                            >
+                                💼 Jobs for Offer
+                            </button>
+                            <button
+                                onClick={() => {
+                                    console.log('🔵 THERAPIST TAB CLICKED - Setting activeTab to therapists');
+                                    setActiveTab('therapists');
+                                }}
+                                className={`px-4 sm:px-6 py-2.5 rounded-full font-semibold text-xs sm:text-sm transition-all duration-300 ${
+                                    activeTab === 'therapists'
+                                        ? 'bg-orange-500 text-white shadow-lg'
+                                        : 'text-gray-600 hover:text-gray-800'
+                                }`}
+                            >
+                                👨‍⚕️ Therapist Seeking Jobs
+                            </button>
+                        </div>
+                    </div>
+
             {/* Job Count */}
-            <div className="max-w-7xl mx-auto px-4 py-4">
-                <p className="text-gray-600">
+            <div className="py-4">
+                <p className="text-gray-600 text-sm sm:text-base">
                     <span className="font-bold text-orange-600">{filteredPostings.length}</span> job{filteredPostings.length !== 1 ? 's' : ''} found
                 </p>
             </div>
 
             {/* Content */}
-            <div className="max-w-7xl mx-auto px-4 pb-8">
+            <div className="pb-8">
                 {isLoading ? (
                     <div className="text-center py-12">
                         <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-orange-600 mx-auto"></div>
@@ -952,6 +808,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                     </div>
                 )}
             </div>
+            </main>
         </div>
     );
 };

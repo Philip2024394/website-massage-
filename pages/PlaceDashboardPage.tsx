@@ -87,11 +87,21 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [mainImage, setMainImage] = useState('');
+    const [profilePicture, setProfilePicture] = useState('');
     const [thumbnailImages, setThumbnailImages] = useState(['', '', '']);
+    const [galleryImages, setGalleryImages] = useState<Array<{ imageUrl: string; caption: string }>>([
+        { imageUrl: '', caption: '' },
+        { imageUrl: '', caption: '' },
+        { imageUrl: '', caption: '' },
+        { imageUrl: '', caption: '' },
+        { imageUrl: '', caption: '' },
+        { imageUrl: '', caption: '' }
+    ]);
     const [whatsappNumber, setWhatsappNumber] = useState('');
     const [pricing, setPricing] = useState<Pricing>({ 60: 0, 90: 0, 120: 0 });
     const [hotelVillaPricing, setHotelVillaPricing] = useState<Pricing>({ 60: 0, 90: 0, 120: 0 });
     const [useSamePricing, setUseSamePricing] = useState(false);
+    const [discountPercentage, setDiscountPercentage] = useState<number>(0);
     const [location, setLocation] = useState('');
     const [massageTypes, setMassageTypes] = useState<string[]>([]);
     const [languages, setLanguages] = useState<string[]>([]);
@@ -112,7 +122,19 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             setName(place.name || '');
             setDescription(place.description || '');
             setMainImage(place.mainImage || '');
+            setProfilePicture((place as any).profilePicture || place.mainImage || '');
             setThumbnailImages([...(place.thumbnailImages || []), '', '', ''].slice(0, 3));
+            
+            // Load gallery images with captions
+            if ((place as any).galleryImages && Array.isArray((place as any).galleryImages)) {
+                const loadedGallery = [...(place as any).galleryImages];
+                // Ensure we always have 6 slots
+                while (loadedGallery.length < 6) {
+                    loadedGallery.push({ imageUrl: '', caption: '' });
+                }
+                setGalleryImages(loadedGallery.slice(0, 6));
+            }
+            
             setWhatsappNumber(place.whatsappNumber || '');
             
             // Parse JSON strings from Appwrite
@@ -128,6 +150,8 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                     setUseSamePricing(true);
                 }
                 
+                setDiscountPercentage((place as any).discountPercentage || 0);
+                
                 setCoordinates(typeof place.coordinates === 'string' ? JSON.parse(place.coordinates) : place.coordinates || { lat: 0, lng: 0 });
                 setMassageTypes(typeof place.massageTypes === 'string' ? JSON.parse(place.massageTypes) : place.massageTypes || []);
             } catch (e) {
@@ -135,6 +159,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             }
             
             setLanguages(place.languages || []);
+            setAdditionalServices((place as any).additionalServices || []);
             setLocation(place.location || '');
             setOpeningTime(place.openingTime || '09:00');
             setClosingTime(place.closingTime || '21:00');
@@ -228,25 +253,32 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     }, [mapsApiLoaded]);
 
     const handleSave = () => {
+        // Filter out empty gallery images
+        const filteredGallery = galleryImages.filter(img => img.imageUrl.trim() !== '');
+        
         onSave({
             name,
             description,
             mainImage,
+            profilePicture,
             thumbnailImages: thumbnailImages.filter(img => img), // remove empty strings
+            galleryImages: filteredGallery.length > 0 ? filteredGallery : undefined,
             whatsappNumber,
             pricing: JSON.stringify(pricing),
             hotelVillaPricing: useSamePricing ? undefined : JSON.stringify(hotelVillaPricing),
+            discountPercentage,
             location,
             coordinates: JSON.stringify(coordinates),
             massageTypes: JSON.stringify(massageTypes),
             languages,
+            additionalServices,
             openingTime,
             closingTime,
             distance: 0, // dummy value
             activeMembershipDate: place?.activeMembershipDate || '',
             password: place?.password,
             analytics: JSON.stringify(place?.analytics || { impressions: 0, profileViews: 0, whatsappClicks: 0 }),
-        });
+        } as any);
     };
     
     const handlePriceChange = (duration: keyof Pricing, value: string) => {
@@ -286,6 +318,18 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         const newThumbs = [...thumbnailImages];
         newThumbs[index] = value;
         setThumbnailImages(newThumbs);
+    };
+
+    const handleGalleryImageChange = (index: number, imageUrl: string) => {
+        const newGallery = [...galleryImages];
+        newGallery[index] = { ...newGallery[index], imageUrl };
+        setGalleryImages(newGallery);
+    };
+
+    const handleGalleryCaptionChange = (index: number, caption: string) => {
+        const newGallery = [...galleryImages];
+        newGallery[index] = { ...newGallery[index], caption };
+        setGalleryImages(newGallery);
     };
 
     const handleMassageTypeChange = (type: string) => {
@@ -509,6 +553,24 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                             currentImage={mainImage}
                             onImageChange={setMainImage}
                         />
+                        
+                        {/* Profile Picture Upload (Circular Logo) */}
+                        <div className="mb-6">
+                            <label className="block text-sm font-medium text-gray-900 mb-2">
+                                {t.uploadProfilePicture || "Upload Profile Picture (Circular Logo)"}
+                            </label>
+                            <ImageUpload
+                                id="profile-picture-upload"
+                                label=""
+                                currentImage={profilePicture}
+                                onImageChange={setProfilePicture}
+                                heightClass="h-40 w-40 rounded-full mx-auto"
+                            />
+                            <p className="text-xs text-gray-500 mt-2 text-center">
+                                This will appear as a circular logo overlapping your banner image
+                            </p>
+                        </div>
+                        
                         <div className="grid grid-cols-3 gap-4">
                             {thumbnailImages.map((thumb, index) => (
                                 <ImageUpload
@@ -521,6 +583,46 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                 />
                             ))}
                         </div>
+                        
+                        {/* Gallery Images with Captions (6 images) */}
+                        <div className="mt-8">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                                Gallery Images (with Captions)
+                            </h3>
+                            <p className="text-sm text-gray-600 mb-4">
+                                Upload up to 6 images for your gallery. Add a caption/bio for each image to describe what it shows.
+                            </p>
+                            <div className="grid grid-cols-2 gap-6">
+                                {galleryImages.map((galleryItem, index) => (
+                                    <div key={index} className="space-y-2">
+                                        <ImageUpload
+                                            id={`gallery-upload-${index}`}
+                                            label={`Gallery Image ${index + 1}`}
+                                            currentImage={galleryItem.imageUrl}
+                                            onImageChange={(dataUrl) => handleGalleryImageChange(index, dataUrl)}
+                                            heightClass="h-40"
+                                        />
+                                        <div>
+                                            <label className="block text-xs font-medium text-gray-700 mb-1">
+                                                Caption for Image {index + 1}
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={galleryItem.caption}
+                                                onChange={(e) => handleGalleryCaptionChange(index, e.target.value)}
+                                                placeholder="e.g., Relaxation Room, Treatment Area"
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+                                                maxLength={50}
+                                            />
+                                            <p className="text-xs text-gray-500 mt-1">
+                                                {galleryItem.caption.length}/50 characters
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        
                         <div>
                             <label className="block text-sm font-medium text-gray-900">{t.nameLabel}</label>
                             {renderInput(name, setName, UserSolidIcon)}
@@ -804,6 +906,41 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                         </p>
                                     )}
                                 </div>
+                            </div>
+                        </div>
+
+                        {/* Discount Percentage Section */}
+                        <div className="border-t border-gray-200 pt-4">
+                            <div>
+                                <h3 className="text-md font-medium text-gray-800">Discount Promotion</h3>
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Set a discount percentage to display on your profile (0-100%)
+                                </p>
+                            </div>
+                            <div className="mt-3 max-w-xs">
+                                <label className="block text-xs font-medium text-gray-900">Discount %</label>
+                                <div className="relative mt-1">
+                                    <input 
+                                        type="number" 
+                                        min="0"
+                                        max="100"
+                                        value={discountPercentage} 
+                                        onChange={(e) => {
+                                            const value = Math.min(100, Math.max(0, Number(e.target.value)));
+                                            setDiscountPercentage(value);
+                                        }}
+                                        className="block w-full pr-10 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900"
+                                        placeholder="0"
+                                    />
+                                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <span className="text-gray-400">%</span>
+                                    </div>
+                                </div>
+                                {discountPercentage > 0 && (
+                                    <p className="text-xs text-green-600 mt-1">
+                                        ✓ {discountPercentage}% discount will be displayed with animated badge
+                                    </p>
+                                )}
                             </div>
                         </div>
 

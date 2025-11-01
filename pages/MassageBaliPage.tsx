@@ -405,6 +405,141 @@ const MassageBaliPage: React.FC<MassageBaliPageProps> = ({ onNavigate }) => {
                     </div>
                 </div>
 
+                {/* Example Massage Places - Showcase */}
+                <div className="mb-12 md:mb-16">
+                    <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4 text-center">Featured Massage Spas in Bali</h2>
+                    <p className="text-center text-sm md:text-base text-gray-600 mb-6 md:mb-8 max-w-2xl mx-auto px-4">
+                        Discover top-rated massage spas offering authentic Balinese wellness experiences
+                    </p>
+                    <div className="grid md:grid-cols-3 gap-4 md:gap-6">
+                        {/* Example Place 1 - Luxury Spa */}
+                        <div className="bg-white rounded-xl md:rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+                            <div className="relative h-48 md:h-56 overflow-hidden">
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382" 
+                                    alt="Serene Bali Spa"
+                                    className="w-full h-full object-cover"
+                                />
+                                <div className="absolute top-3 right-3 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                                    ⭐ 4.9
+                                </div>
+                            </div>
+                            <div className="p-4 md:p-6">
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">Serene Bali Spa & Wellness</h3>
+                                <div className="flex items-center gap-2 text-gray-600 mb-3">
+                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                                    </svg>
+                                    <span className="text-sm">Seminyak, Bali</span>
+                                </div>
+                                <p className="text-gray-600 text-sm mb-4">
+                                    Luxury spa offering traditional Balinese massage, hot stone therapy, and aromatherapy treatments in a tranquil garden setting.
+                                </p>
+                                <div className="flex items-center justify-between mb-4">
+                                    <div>
+                                        <span className="text-gray-500 text-xs">Starting from</span>
+                                        <p className="text-orange-600 font-bold text-lg">IDR 250,000</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="text-gray-500 text-xs block">Reviews</span>
+                                        <span className="text-gray-900 font-bold">287</span>
+                                    </div>
+                                </div>
+                                <button 
+                                    onClick={() => onNavigate?.('home')}
+                                    className="w-full py-2.5 bg-orange-500 text-white font-bold rounded-lg hover:bg-orange-600 transition-colors text-sm shadow-lg"
+                                >
+                                    View Spa & Chat
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Example Place 2 - Traditional Spa */}
+                        <div className="bg-white rounded-xl md:rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+                            <div className="relative h-48 md:h-56 overflow-hidden">
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/indonisea%20bali%20rice%20fields.png?updatedAt=1761741529395" 
+                                    alt="Ubud Healing Center"
+                                    className="w-full h-full object-cover"
+                                />
+                                <div className="absolute top-3 right-3 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                                    ⭐ 4.8
+                                </div>
+                            </div>
+                            <div className="p-4 md:p-6">
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">Ubud Healing Center</h3>
+                                <div className="flex items-center gap-2 text-gray-600 mb-3">
+                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                                    </svg>
+                                    <span className="text-sm">Ubud, Bali</span>
+                                </div>
+                                <p className="text-gray-600 text-sm mb-4">
+                                    Authentic traditional Balinese healing with experienced therapists specializing in deep tissue, reflexology, and energy work.
+                                </p>
+                                <div className="flex items-center justify-between mb-4">
+                                    <div>
+                                        <span className="text-gray-500 text-xs">Starting from</span>
+                                        <p className="text-orange-600 font-bold text-lg">IDR 180,000</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="text-gray-500 text-xs block">Reviews</span>
+                                        <span className="text-gray-900 font-bold">412</span>
+                                    </div>
+                                </div>
+                                <button 
+                                    onClick={() => onNavigate?.('home')}
+                                    className="w-full py-2.5 bg-orange-500 text-white font-bold rounded-lg hover:bg-orange-600 transition-colors text-sm shadow-lg"
+                                >
+                                    View Spa & Chat
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Example Place 3 - Beach Spa */}
+                        <div className="bg-white rounded-xl md:rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+                            <div className="relative h-48 md:h-56 overflow-hidden">
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/jimbaran%20indonisea%20island.png?updatedAt=1761743048054" 
+                                    alt="Ocean Breeze Spa"
+                                    className="w-full h-full object-cover"
+                                />
+                                <div className="absolute top-3 right-3 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                                    ⭐ 5.0
+                                </div>
+                            </div>
+                            <div className="p-4 md:p-6">
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">Ocean Breeze Spa</h3>
+                                <div className="flex items-center gap-2 text-gray-600 mb-3">
+                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                                    </svg>
+                                    <span className="text-sm">Canggu, Bali</span>
+                                </div>
+                                <p className="text-gray-600 text-sm mb-4">
+                                    Beachfront spa combining traditional massage with ocean views. Perfect for couples therapy and sunset wellness sessions.
+                                </p>
+                                <div className="flex items-center justify-between mb-4">
+                                    <div>
+                                        <span className="text-gray-500 text-xs">Starting from</span>
+                                        <p className="text-orange-600 font-bold text-lg">IDR 300,000</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="text-gray-500 text-xs block">Reviews</span>
+                                        <span className="text-gray-900 font-bold">156</span>
+                                    </div>
+                                </div>
+                                <button 
+                                    onClick={() => onNavigate?.('home')}
+                                    className="w-full py-2.5 bg-orange-500 text-white font-bold rounded-lg hover:bg-orange-600 transition-colors text-sm shadow-lg"
+                                >
+                                    View Spa & Chat
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Featured Therapists */}
                 <div className="mb-12 md:mb-16">
                     <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 md:mb-8 text-center">Featured Bali Therapists</h2>

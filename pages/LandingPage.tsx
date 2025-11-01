@@ -7,7 +7,7 @@ interface LandingPageProps {
     onEnterApp: (language: 'en' | 'id', location: UserLocation) => void;
 }
 
-const imageSrc = 'https://ik.imagekit.io/7grri5v7d/indo%20street%20massage.png?updatedAt=1760119669463';
+const imageSrc = 'https://ik.imagekit.io/7grri5v7d/indastreet%20massage.png?updatedAt=1761978080830';
 
 // Language options with flags - Indonesian first, then English, then others
 const languages = [
@@ -73,11 +73,13 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
     const selectedLang = languages.find(lang => lang.code === selectedLanguage) || languages[0];
 
     return (
-        <div className="min-h-screen flex relative overflow-hidden">
+        <div className="h-screen flex relative overflow-hidden">
             <div
-                className="absolute inset-0 w-full h-full bg-cover bg-center transition-opacity duration-1000 ease-in-out"
+                className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ease-in-out"
                 style={{
                     backgroundImage: `url('${imageSrc}')`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center center',
                     opacity: imageLoaded ? 1 : 0,
                 }}
             />

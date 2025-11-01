@@ -18,11 +18,10 @@ interface TraditionalBalineseMassagePageProps {
 
 const TraditionalBalineseMassagePage: React.FC<TraditionalBalineseMassagePageProps> = ({ onNavigate }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [imageTimestamp] = useState(() => Date.now()); // Cache timestamp - no infinite re-renders
     const [imageError, setImageError] = useState(false);
 
-    // Updated image URL with cached timestamp for cache busting
-    const imageUrl = `https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=${imageTimestamp}&tr=w-1920,h-400,fo-auto`;
+    // Updated image URL with fresh timestamp for cache busting
+    const imageUrl = `https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=${Date.now()}&tr=w-1920,h-400,fo-auto`;
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -46,7 +45,8 @@ const TraditionalBalineseMassagePage: React.FC<TraditionalBalineseMassagePagePro
                             }}
                         />
                         <h1 className="text-2xl font-bold">
-                            <span className="text-white drop-shadow-lg">Indastreet</span>
+                            <span className="text-black drop-shadow-lg">Inda</span>
+                            <span className="text-orange-500 drop-shadow-lg">Street</span>
                         </h1>
                     </div>
                     <button 

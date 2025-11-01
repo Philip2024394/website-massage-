@@ -36,6 +36,12 @@ const TherapistJobOpportunitiesPage: React.FC<TherapistJobOpportunitiesPageProps
         experienceYears: 0,
         specializations: [] as string[],
         languages: [] as string[],
+        gender: '',
+        age: 0,
+        religion: '',
+        workedAbroadBefore: false,
+        hasReferences: false,
+        currentlyWorking: false,
         acceptTerms: false,
     });
 
@@ -73,6 +79,12 @@ const TherapistJobOpportunitiesPage: React.FC<TherapistJobOpportunitiesPageProps
                     experienceYears: existing.experienceYears || 0,
                     specializations: existing.specializations || [],
                     languages: existing.languages || [],
+                    gender: existing.gender || '',
+                    age: existing.age || 0,
+                    religion: existing.religion || '',
+                    workedAbroadBefore: existing.workedAbroadBefore || false,
+                    hasReferences: existing.hasReferences || false,
+                    currentlyWorking: existing.currentlyWorking || false,
                     acceptTerms: true,
                 });
             }
@@ -108,10 +120,18 @@ const TherapistJobOpportunitiesPage: React.FC<TherapistJobOpportunitiesPageProps
             // Generate unique listingId
             const listingId = Date.now();
             
+            // Convert arrays to strings for Appwrite schema compatibility
+            const preferredLocationsString = Array.isArray(formData.preferredLocations) 
+                ? formData.preferredLocations.join(', ') 
+                : formData.preferredLocations;
+            
+            // Truncate jobDescription to 5000 chars max (Appwrite limit)
+            const truncatedDescription = formData.jobDescription.substring(0, 5000);
+            
             const listingData = {
                 listingId,
                 jobTitle: formData.jobTitle,
-                jobDescription: formData.jobDescription,
+                jobDescription: truncatedDescription,
                 requiredLicenses: formData.requiredLicenses || null,
                 applicationDeadline: formData.applicationDeadline ? new Date(formData.applicationDeadline).toISOString() : null,
                 jobType: formData.jobType,
@@ -122,11 +142,17 @@ const TherapistJobOpportunitiesPage: React.FC<TherapistJobOpportunitiesPageProps
                 willingToRelocateInternational: formData.willingToRelocateInternational,
                 availability: formData.availability,
                 minimumSalary: formData.minimumSalary,
-                preferredLocations: formData.preferredLocations,
+                preferredLocations: preferredLocationsString,
                 accommodation: formData.accommodation,
                 experienceYears: formData.experienceYears || null,
                 specializations: formData.specializations,
                 languages: formData.languages,
+                gender: formData.gender || null,
+                age: formData.age || null,
+                religion: formData.religion || null,
+                workedAbroadBefore: formData.workedAbroadBefore,
+                hasReferences: formData.hasReferences,
+                currentlyWorking: formData.currentlyWorking,
                 isActive: true,
                 listingDate: new Date().toISOString(),
                 expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // 1 year

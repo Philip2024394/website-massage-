@@ -370,17 +370,23 @@ export const placeService = {
         }
     },
     async getPlaces(): Promise<any[]> {
+        console.log('🔥 placeService.getPlaces() CALLED!');
         return this.getAll();
     },
     async getAll(): Promise<any[]> {
         try {
+            console.log('📋 Fetching all PLACES from collection:', APPWRITE_CONFIG.collections.places);
             const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.places
             );
+            console.log('✅ Fetched PLACES:', response.documents.length);
+            response.documents.forEach((p: any) => {
+                console.log(`  🏨 ${p.name} - isLive: ${p.isLive}, ID: ${p.$id}`);
+            });
             return response.documents;
         } catch (error) {
-            console.error('Error fetching places:', error);
+            console.error('❌ Error fetching places:', error);
             return [];
         }
     },

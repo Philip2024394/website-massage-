@@ -54,6 +54,10 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000, // Increase limit to reduce warnings
     rollupOptions: {
       output: {
+        // 🔥 CACHE-BUSTING: Add content hash to filenames
+        entryFileNames: 'assets/[name].[hash].js',
+        chunkFileNames: 'assets/[name].[hash].js',
+        assetFileNames: 'assets/[name].[hash].[ext]',
         manualChunks: (id) => {
           // Split vendor chunks for better caching
           if (id.includes('node_modules')) {

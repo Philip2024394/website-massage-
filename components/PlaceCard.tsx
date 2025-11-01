@@ -56,7 +56,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate, activeDis
     return (
         <div className="bg-white rounded-xl shadow-md overflow-hidden transform hover:scale-105 transition-transform duration-300" onClick={onClick}>
             <div className="h-40 w-full relative">
-                <img className="h-40 w-full object-cover" src={place.mainImage} alt={place.name} />
+                <img className="h-40 w-full object-cover" src={place.mainImage || 'https://ik.imagekit.io/7grri5v7d/massage%20indonsea.png?updatedAt=1761973275491'} alt={place.name} />
                 
                 {/* Star Rating - Top Left Corner */}
                 <div 
@@ -84,6 +84,17 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate, activeDis
                         </div>
                     </div>
                 )}
+                
+                {/* Circular Profile Image - LEFT side, 20% LARGER, halfway overlapping the main image */}
+                <div className="absolute bottom-0 left-2 transform translate-y-1/2">
+                    <div className="w-14 h-14 rounded-full border-2 border-white shadow-lg overflow-hidden bg-white">
+                        <img
+                            src={(place as any).profilePicture || place.mainImage || 'https://via.placeholder.com/150?text=Logo'}
+                            alt={`${place.name} logo`}
+                            className="w-full h-full object-cover"
+                        />
+                    </div>
+                </div>
                 
                 {/* Share Buttons - Lower Right Corner */}
                 <div className="absolute bottom-2 right-2 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
@@ -156,45 +167,77 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate, activeDis
                     </div>
                 )}
             </div>
-                        <div className="p-4">
-                                <h3 className="text-lg font-bold text-gray-900">{place.name}</h3>
-                                <p className="mt-1 text-gray-500 text-sm truncate">{place.description}</p>
-                                <div className="flex justify-end items-center mt-3 text-sm">
-                                         <div className="flex items-center text-gray-500 gap-1">
-                                                <LocationPinIcon className="w-4 h-4 text-gray-400"/>
-                                                <span>{place.distance}km</span>
-                                        </div>
-                                </div>
+            
+            {/* Content Section with padding-top and padding-left to account for overlapping profile image */}
+            <div className="p-4 pt-8">
+                {/* Name and Distance - Positioned to the right of profile picture */}
+                <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-bold text-gray-900 pl-12">{place.name}</h3>
+                    <div className="flex items-center text-sm text-gray-500 gap-1">
+                        <LocationPinIcon className="w-4 h-4 text-red-500"/>
+                        <span>{place.distance}km</span>
+                    </div>
+                </div>
+                <p className="mt-1 text-gray-500 text-sm truncate pl-12">{place.description}</p>
 
-                                {/* Languages Spoken */}
-                                {place.languages && Array.isArray(place.languages) && place.languages.length > 0 && (
-                                    <div className="mt-3">
-                                        <h4 className="text-xs font-semibold text-gray-700 mb-1.5">Languages</h4>
-                                        <div className="flex flex-wrap gap-1.5">
-                                            {place.languages.map(lang => {
-                                                const langMap: Record<string, {flag: string, name: string}> = {
-                                                    'en': {flag: '🇬🇧', name: 'English'},
-                                                    'id': {flag: '🇮🇩', name: 'Indonesian'},
-                                                    'zh': {flag: '🇨🇳', name: 'Chinese'},
-                                                    'ja': {flag: '🇯🇵', name: 'Japanese'},
-                                                    'ko': {flag: '🇰🇷', name: 'Korean'},
-                                                    'ru': {flag: '🇷🇺', name: 'Russian'},
-                                                    'fr': {flag: '🇫🇷', name: 'French'},
-                                                    'de': {flag: '🇩🇪', name: 'German'},
-                                                    'es': {flag: '🇪🇸', name: 'Spanish'}
-                                                };
-                                                const langInfo = langMap[lang] || {flag: '🌐', name: lang};
-                                                return (
-                                                    <span key={lang} className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-gray-800 text-xs font-medium rounded-full flex items-center gap-1">
-                                                        <span className="text-sm">{langInfo.flag}</span>
-                                                    </span>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
+                {/* Languages Spoken */}
+                {place.languages && Array.isArray(place.languages) && place.languages.length > 0 && (
+                    <div className="mt-3">
+                        <h4 className="text-xs font-semibold text-gray-700 mb-1.5">Languages</h4>
+                        <div className="flex flex-wrap gap-1.5">
+                            {place.languages.map(lang => {
+                                const langMap: Record<string, {flag: string, name: string}> = {
+                                    'en': {flag: '🇬🇧', name: 'English'},
+                                    'id': {flag: '🇮🇩', name: 'Indonesian'},
+                                    'zh': {flag: '🇨🇳', name: 'Chinese'},
+                                    'ja': {flag: '🇯🇵', name: 'Japanese'},
+                                    'ko': {flag: '🇰🇷', name: 'Korean'},
+                                    'ru': {flag: '🇷🇺', name: 'Russian'},
+                                    'fr': {flag: '🇫🇷', name: 'French'},
+                                    'de': {flag: '🇩🇪', name: 'German'},
+                                    'es': {flag: '🇪🇸', name: 'Spanish'}
+                                };
+                                const langInfo = langMap[lang] || {flag: '🌐', name: lang};
+                                return (
+                                    <span key={lang} className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-gray-800 text-xs font-medium rounded-full flex items-center gap-1">
+                                        <span className="text-sm">{langInfo.flag}</span>
+                                    </span>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
+                {/* Massage Types Offered */}
+                {place.massageTypes && (() => {
+                    let massageTypes: string[] = [];
+                    try {
+                        massageTypes = typeof place.massageTypes === 'string' 
+                            ? JSON.parse(place.massageTypes) 
+                            : place.massageTypes;
+                    } catch {
+                        massageTypes = [];
+                    }
+                    return Array.isArray(massageTypes) && massageTypes.length > 0 ? (
+                        <div className="mt-3">
+                            <h4 className="text-xs font-semibold text-gray-700 mb-1.5">Massage Types</h4>
+                            <div className="flex flex-wrap gap-1.5">
+                                {massageTypes.slice(0, 3).map((type, index) => (
+                                    <span key={index} className="px-2 py-0.5 bg-gray-100 text-gray-800 text-xs font-medium rounded-full">
+                                        {type}
+                                    </span>
+                                ))}
+                                {massageTypes.length > 3 && (
+                                    <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
+                                        +{massageTypes.length - 3} more
+                                    </span>
                                 )}
+                            </div>
+                        </div>
+                    ) : null;
+                })()}
 
-                                {/* Price structure for 60, 90, 120 min */}
+                {/* Price structure for 60, 90, 120 min */}
                                 {place.pricing && (
                                     (() => {
                                         let pricing = {"60":0,"90":0,"120":0};

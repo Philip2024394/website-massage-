@@ -1,4 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { databases } from '../lib/appwrite';
+import { APPWRITE_CONFIG } from '../lib/appwrite.config';
+import { AppDrawer } from '../components/AppDrawer';
+
+interface BalineseMassagePageProps {
+    onNavigate?: (page: string) => void;
+    onMassageJobsClick?: () => void;
+    onHotelPortalClick?: () => void;
+    onVillaPortalClick?: () => void;
+    onTherapistPortalClick?: () => void;
+    onMassagePlacePortalClick?: () => void;
+    onAgentPortalClick?: () => void;
+    onCustomerPortalClick?: () => void;
+    onAdminPortalClick?: () => void;
+    onTermsClick?: () => void;
+    onPrivacyClick?: () => void;
+    therapists?: any[];
+    places?: any[];
+}
 
 const BurgerMenuIcon = ({ className = 'w-6 h-6' }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -6,21 +25,83 @@ const BurgerMenuIcon = ({ className = 'w-6 h-6' }) => (
     </svg>
 );
 
-const CloseIcon = ({ className = 'w-6 h-6' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-    </svg>
-);
-
-const BalineseMassagePage: React.FC = () => {
+const BalineseMassagePage: React.FC<BalineseMassagePageProps> = ({ 
+    onNavigate,
+    onMassageJobsClick,
+    onHotelPortalClick,
+    onVillaPortalClick,
+    onTherapistPortalClick,
+    onMassagePlacePortalClick,
+    onAgentPortalClick,
+    onCustomerPortalClick,
+    onAdminPortalClick,
+    onTermsClick,
+    onPrivacyClick,
+    therapists = [],
+    places = []
+}) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    
+    // Appwrite live data states
+    const [heroImage, setHeroImage] = useState<string>('');
+    const [sectionImages, setSectionImages] = useState<any>({});
+    const [isLoadingImages, setIsLoadingImages] = useState(true);
+
+    // Fetch images from Appwrite image_assets collection
+    useEffect(() => {
+        const fetchImages = async () => {
+            try {
+                setIsLoadingImages(true);
+                console.log('🖼️ Fetching Balinese massage images from Appwrite...');
+                
+                // Fetch images from image_assets collection
+                const response = await databases.listDocuments(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.imageAssets
+                );
+
+                console.log('✅ Image assets loaded:', response.documents.length);
+
+                // Find Balinese massage related images
+                const images = response.documents.reduce((acc: any, doc: any) => {
+                    if (doc.category === 'balinese-massage' || doc.tags?.includes('balinese')) {
+                        acc[doc.imageType || 'hero'] = doc.imageUrl;
+                    }
+                    return acc;
+                }, {});
+
+                setHeroImage(images.hero || 'https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png');
+                setSectionImages(images);
+                
+                setIsLoadingImages(false);
+            } catch (error) {
+                console.error('❌ Error fetching images from Appwrite:', error);
+                // Set default ImageKit images as fallback
+                setHeroImage('https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png');
+                setIsLoadingImages(false);
+            }
+        };
+
+        fetchImages();
+    }, []);
+
+    // Handle "Find Therapist" button - navigate to massage-bali page with live therapists
+    const handleFindTherapist = () => {
+        console.log('🔍 Navigate to therapist search...');
+        if (onNavigate) {
+            onNavigate('massage-bali'); // This page has live Appwrite therapist data
+        } else {
+            window.location.href = '/#massage-bali';
+        }
+    };
 
     return (
         <div className="min-h-screen bg-gray-50">
             <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">
-                        <span className="text-orange-500">IndaStreet</span>
+                        <span className="text-black">Inda</span>
+                        <span className="text-orange-500">Street</span>
                     </h1>
                     <div className="flex items-center gap-4 text-gray-600">
                         <button onClick={() => setIsMenuOpen(true)} title="Menu">
@@ -30,49 +111,34 @@ const BalineseMassagePage: React.FC = () => {
                 </div>
             </header>
             
-            {/* Side Drawer */}
-            {isMenuOpen && (
-                <div className="fixed inset-0 z-50" role="dialog" aria-modal="true">
-                    <div 
-                        className="absolute inset-0 bg-black bg-opacity-50 transition-opacity" 
-                        onClick={() => setIsMenuOpen(false)}
-                        aria-hidden="true"
-                    ></div>
-    
-                    <div className={`absolute right-0 top-0 bottom-0 w-[70%] sm:w-80 bg-gradient-to-br from-white via-gray-50 to-gray-100 shadow-2xl flex flex-col transform transition-transform ease-in-out duration-300 ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-                        <div className="p-6 flex justify-between items-center">
-                            <h2 className="font-bold text-2xl">
-                                <span className="text-black">inda</span>
-                                <span className="text-orange-500">Street</span>
-                            </h2>
-                            <button 
-                                onClick={() => setIsMenuOpen(false)} 
-                                className="text-gray-600 hover:bg-gray-200 p-2 rounded-full transition-all" 
-                                aria-label="Close menu"
-                            >
-                                <CloseIcon />
-                            </button>
-                        </div>
+            
+            {/* App Drawer */}
+            <AppDrawer
+                isOpen={isMenuOpen}
+                onClose={() => setIsMenuOpen(false)}
+                onMassageJobsClick={onMassageJobsClick}
+                onHotelPortalClick={onHotelPortalClick || (() => {})}
+                onVillaPortalClick={onVillaPortalClick || (() => {})}
+                onTherapistPortalClick={onTherapistPortalClick || (() => {})}
+                onMassagePlacePortalClick={onMassagePlacePortalClick || (() => {})}
+                onAgentPortalClick={onAgentPortalClick || (() => {})}
+                onCustomerPortalClick={onCustomerPortalClick}
+                onAdminPortalClick={onAdminPortalClick || (() => {})}
+                onNavigate={onNavigate}
+                onTermsClick={onTermsClick}
+                onPrivacyClick={onPrivacyClick}
+                therapists={therapists}
+                places={places}
+            />
 
-                        <nav className="flex-grow overflow-y-auto p-4">
-                            <div className="space-y-2">
-                                <button 
-                                    onClick={() => window.location.href = '/'} 
-                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-orange-500 group"
-                                >
-                                    <span className="text-2xl">🏠</span>
-                                    <div className="flex-grow">
-                                        <h3 className="font-semibold text-gray-800 group-hover:text-orange-600 transition-colors">Back to Home</h3>
-                                        <p className="text-xs text-gray-500">Return to main page</p>
-                                    </div>
-                                </button>
-                            </div>
-                        </nav>
-                    </div>
-                </div>
-            )}
             {/* Hero Section */}
-            <div className="relative bg-gradient-to-r from-orange-600 to-green-600 text-white py-24 overflow-hidden">
+            <div 
+                className="relative text-white py-24 overflow-hidden bg-cover bg-center"
+                style={{
+                    backgroundImage: heroImage ? `url(${heroImage})` : 'linear-gradient(to right, rgb(234, 88, 12), rgb(22, 163, 74))',
+                    backgroundColor: heroImage ? 'transparent' : undefined
+                }}
+            >
                 <div className="absolute inset-0 opacity-10">
                     <div className="absolute top-10 right-10 text-9xl">🌺</div>
                     <div className="absolute bottom-10 left-10 text-8xl">🌿</div>
@@ -85,8 +151,11 @@ const BalineseMassagePage: React.FC = () => {
                     <p className="text-lg text-orange-100 mb-8">
                         Deep tissue acupressure • Aromatherapy oils • Reflexology • Full body relaxation
                     </p>
+                    {isLoadingImages && (
+                        <p className="text-sm text-orange-200 mb-4">🔄 Loading live images from Appwrite...</p>
+                    )}
                     <button 
-                        onClick={() => {/* Navigate to therapists */}}
+                        onClick={handleFindTherapist}
                         className="px-8 py-4 bg-white text-orange-700 font-bold rounded-lg hover:bg-orange-50 transition-colors shadow-lg"
                     >
                         Find Balinese Massage Therapist
@@ -110,22 +179,40 @@ const BalineseMassagePage: React.FC = () => {
                             to mind, body, and spirit.
                         </p>
                         <div className="grid md:grid-cols-3 gap-6 mt-8">
-                            <div className="bg-orange-50 rounded-xl p-6">
-                                <div className="text-4xl mb-3">💆</div>
+                            <div className="text-center">
+                                <div className="mb-3 flex justify-center">
+                                    <img 
+                                        src="https://ik.imagekit.io/7grri5v7d/achecj.png?updatedAt=1761918816695" 
+                                        alt="Acupressure" 
+                                        className="w-20 h-20 object-contain"
+                                    />
+                                </div>
                                 <h3 className="font-bold text-gray-900 mb-2">Acupressure</h3>
                                 <p className="text-gray-600 text-sm">
                                     Pressure applied to specific points releases blocked energy and promotes healing
                                 </p>
                             </div>
-                            <div className="bg-green-50 rounded-xl p-6">
-                                <div className="text-4xl mb-3">🌸</div>
+                            <div className="text-center">
+                                <div className="mb-3 flex justify-center">
+                                    <img 
+                                        src="https://ik.imagekit.io/7grri5v7d/massageoils%20indonisea.png?updatedAt=1761918880940" 
+                                        alt="Aromatherapy" 
+                                        className="w-20 h-20 object-contain"
+                                    />
+                                </div>
                                 <h3 className="font-bold text-gray-900 mb-2">Aromatherapy</h3>
                                 <p className="text-gray-600 text-sm">
                                     Essential oils like frangipani, sandalwood, and coconut enhance relaxation
                                 </p>
                             </div>
-                            <div className="bg-blue-50 rounded-xl p-6">
-                                <div className="text-4xl mb-3">🦶</div>
+                            <div className="text-center">
+                                <div className="mb-3 flex justify-center">
+                                    <img 
+                                        src="https://ik.imagekit.io/7grri5v7d/massageoils%20indonisea%20new.png?updatedAt=1761918938160" 
+                                        alt="Reflexology" 
+                                        className="w-20 h-20 object-contain"
+                                    />
+                                </div>
                                 <h3 className="font-bold text-gray-900 mb-2">Reflexology</h3>
                                 <p className="text-gray-600 text-sm">
                                     Foot and hand massage stimulates organs and systems throughout the body
@@ -141,8 +228,12 @@ const BalineseMassagePage: React.FC = () => {
                     <div className="grid md:grid-cols-2 gap-6">
                         <div className="bg-white rounded-2xl p-6 shadow-lg">
                             <div className="flex items-start gap-4">
-                                <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                    <span className="text-2xl">😌</span>
+                                <div className="flex-shrink-0">
+                                    <img 
+                                        src="https://ik.imagekit.io/7grri5v7d/bali%20stress.png?updatedAt=1761986323020" 
+                                        alt="Reduces Stress" 
+                                        className="w-16 h-16 object-contain"
+                                    />
                                 </div>
                                 <div>
                                     <h3 className="text-xl font-bold text-gray-900 mb-2">Reduces Stress & Anxiety</h3>
@@ -156,8 +247,12 @@ const BalineseMassagePage: React.FC = () => {
 
                         <div className="bg-white rounded-2xl p-6 shadow-lg">
                             <div className="flex items-start gap-4">
-                                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                    <span className="text-2xl">💪</span>
+                                <div className="flex-shrink-0">
+                                    <img 
+                                        src="https://ik.imagekit.io/7grri5v7d/bali%20stress%20relief.png?updatedAt=1761986449891" 
+                                        alt="Muscle Tension Relief" 
+                                        className="w-16 h-16 object-contain"
+                                    />
                                 </div>
                                 <div>
                                     <h3 className="text-xl font-bold text-gray-900 mb-2">Relieves Muscle Tension</h3>
@@ -171,8 +266,12 @@ const BalineseMassagePage: React.FC = () => {
 
                         <div className="bg-white rounded-2xl p-6 shadow-lg">
                             <div className="flex items-start gap-4">
-                                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                    <span className="text-2xl">❤️</span>
+                                <div className="flex-shrink-0">
+                                    <img 
+                                        src="https://ik.imagekit.io/7grri5v7d/bali%20stress%20reliefs.png?updatedAt=1761986511901" 
+                                        alt="Blood Circulation" 
+                                        className="w-16 h-16 object-contain"
+                                    />
                                 </div>
                                 <div>
                                     <h3 className="text-xl font-bold text-gray-900 mb-2">Improves Blood Circulation</h3>
@@ -186,8 +285,12 @@ const BalineseMassagePage: React.FC = () => {
 
                         <div className="bg-white rounded-2xl p-6 shadow-lg">
                             <div className="flex items-start gap-4">
-                                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                    <span className="text-2xl">😴</span>
+                                <div className="flex-shrink-0">
+                                    <img 
+                                        src="https://ik.imagekit.io/7grri5v7d/bali%20stress%20reliefs%20new.png?updatedAt=1761986666848" 
+                                        alt="Sleep Quality" 
+                                        className="w-16 h-16 object-contain"
+                                    />
                                 </div>
                                 <div>
                                     <h3 className="text-xl font-bold text-gray-900 mb-2">Enhances Sleep Quality</h3>
@@ -201,8 +304,12 @@ const BalineseMassagePage: React.FC = () => {
 
                         <div className="bg-white rounded-2xl p-6 shadow-lg">
                             <div className="flex items-start gap-4">
-                                <div className="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                    <span className="text-2xl">✨</span>
+                                <div className="flex-shrink-0">
+                                    <img 
+                                        src="https://ik.imagekit.io/7grri5v7d/bali%20stress%20reliefs%20news.png?updatedAt=1761986875284" 
+                                        alt="Boosts Energy" 
+                                        className="w-16 h-16 object-contain"
+                                    />
                                 </div>
                                 <div>
                                     <h3 className="text-xl font-bold text-gray-900 mb-2">Boosts Energy Levels</h3>
@@ -216,8 +323,12 @@ const BalineseMassagePage: React.FC = () => {
 
                         <div className="bg-white rounded-2xl p-6 shadow-lg">
                             <div className="flex items-start gap-4">
-                                <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                    <span className="text-2xl">🌟</span>
+                                <div className="flex-shrink-0">
+                                    <img 
+                                        src="https://ik.imagekit.io/7grri5v7d/bali%20stress%20reliefs%20news.png?updatedAt=1761986969798" 
+                                        alt="Skin Health" 
+                                        className="w-16 h-16 object-contain"
+                                    />
                                 </div>
                                 <div>
                                     <h3 className="text-xl font-bold text-gray-900 mb-2">Improves Skin Health</h3>
@@ -234,8 +345,16 @@ const BalineseMassagePage: React.FC = () => {
                 {/* What to Expect */}
                 <div className="mb-16">
                     <h2 className="text-4xl font-bold text-gray-900 mb-8 text-center">What to Expect During Your Session</h2>
-                    <div className="bg-gradient-to-br from-orange-500 to-green-600 rounded-2xl p-8 md:p-12 text-white">
-                        <div className="space-y-6">
+                    <div className="rounded-2xl p-8 md:p-12 relative overflow-hidden min-h-[600px]">
+                        {/* Massage Table Image - Full Height */}
+                        <div className="absolute inset-0">
+                            <img 
+                                src="https://ik.imagekit.io/7grri5v7d/massage%20table.png?updatedAt=1761607910862" 
+                                alt="Massage Table" 
+                                className="w-full h-full object-cover"
+                            />
+                        </div>
+                        <div className="space-y-6 relative z-10 text-white">
                             <div className="flex items-start gap-4">
                                 <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-xl">
                                     1
@@ -412,7 +531,7 @@ const BalineseMassagePage: React.FC = () => {
                         Book certified Balinese massage therapists across Indonesia
                     </p>
                     <button 
-                        onClick={() => {/* Navigate to therapists */}}
+                        onClick={handleFindTherapist}
                         className="px-12 py-4 bg-white text-orange-600 font-bold rounded-lg hover:bg-orange-50 transition-colors shadow-lg text-lg"
                     >
                         Find Therapists Now

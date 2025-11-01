@@ -6,6 +6,7 @@ import LocationModal from '../components/LocationModal';
 
 interface CoinShopPageProps {
     onNavigate: (page: string) => void;
+    onBack?: () => void;
     currentUser?: {
         id: string;
         name: string;

@@ -15,6 +15,8 @@ const DrawerButtonsPage: React.FC = () => {
     const [showAddForm, setShowAddForm] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [authError, setAuthError] = useState<string | null>(null);
+    const [googleMapsApiKey, setGoogleMapsApiKey] = useState('');
+    const [isEditingApiKey, setIsEditingApiKey] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
         url: '',
@@ -23,6 +25,11 @@ const DrawerButtonsPage: React.FC = () => {
 
     useEffect(() => {
         initializeAndFetch();
+        // Load Google Maps API key from localStorage
+        const savedApiKey = localStorage.getItem('googleMapsApiKey');
+        if (savedApiKey) {
+            setGoogleMapsApiKey(savedApiKey);
+        }
     }, []);
 
     const initializeAndFetch = async () => {
@@ -168,7 +175,91 @@ const DrawerButtonsPage: React.FC = () => {
     }
 
     return (
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="space-y-6">
+            {/* Google Maps API Settings Section */}
+            <div className="bg-white rounded-lg shadow-md p-6">
+                <div className="flex justify-between items-center mb-4">
+                    <div>
+                        <h2 className="text-2xl font-bold text-gray-800">Google Maps API Settings</h2>
+                        <p className="text-sm text-gray-600 mt-1">Configure Google Maps API for distance calculations</p>
+                    </div>
+                    <button
+                        onClick={() => setIsEditingApiKey(!isEditingApiKey)}
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                        {isEditingApiKey ? 'Cancel' : 'Edit API Key'}
+                    </button>
+                </div>
+
+                {isEditingApiKey ? (
+                    <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Google Maps API Key *
+                                </label>
+                                <input
+                                    type="text"
+                                    value={googleMapsApiKey}
+                                    onChange={(e) => setGoogleMapsApiKey(e.target.value)}
+                                    placeholder="Enter your Google Maps API Key"
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                />
+                                <p className="text-xs text-gray-500 mt-2">
+                                    This key is used to calculate distances between user location and massage places.
+                                </p>
+                            </div>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => {
+                                        if (googleMapsApiKey) {
+                                            localStorage.setItem('googleMapsApiKey', googleMapsApiKey);
+                                            setIsEditingApiKey(false);
+                                            alert('✅ Google Maps API Key saved successfully!');
+                                        } else {
+                                            alert('Please enter a valid API key');
+                                        }
+                                    }}
+                                    className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                                >
+                                    Save API Key
+                                </button>
+                                <a
+                                    href="https://console.cloud.google.com/google/maps-apis"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+                                >
+                                    Get API Key
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <p className="text-sm text-blue-800">
+                            <strong>Current API Key:</strong> {googleMapsApiKey || 'Not configured'}
+                        </p>
+                        <p className="text-xs text-blue-600 mt-2">
+                            💡 Click "Edit API Key" to update your Google Maps API configuration
+                        </p>
+                    </div>
+                )}
+
+                <div className="mt-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                    <h4 className="font-semibold text-yellow-900 mb-2">📍 How to get Google Maps API Key</h4>
+                    <ol className="text-sm text-yellow-800 space-y-1 list-decimal list-inside">
+                        <li>Go to <a href="https://console.cloud.google.com/" target="_blank" rel="noopener noreferrer" className="underline">Google Cloud Console</a></li>
+                        <li>Create a new project or select an existing one</li>
+                        <li>Enable "Maps JavaScript API" and "Distance Matrix API"</li>
+                        <li>Go to Credentials and create an API key</li>
+                        <li>Copy the API key and paste it above</li>
+                    </ol>
+                </div>
+            </div>
+
+            {/* Drawer Buttons Section */}
+            <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-800">Manage Drawer Buttons</h2>
                 <button
@@ -342,6 +433,7 @@ const DrawerButtonsPage: React.FC = () => {
                     </ul>
                 </div>
             )}
+            </div>
         </div>
     );
 };

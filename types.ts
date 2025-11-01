@@ -313,6 +313,11 @@ export interface Place {
     discountPercentage?: number; // Overall discount for promotions
     serviceRadius?: number; // minimum 7km - how far they will travel for hotel/villa services
     languages?: string[]; // Languages spoken: ['en', 'id', 'zh', 'ja', 'ko', 'ru', 'fr', 'de', 'es']
+    
+    // Gallery images with captions (up to 6 images)
+    galleryImages?: Array<{ imageUrl: string; caption: string }>;
+    profilePicture?: string; // Logo/profile image
+    additionalServices?: string[]; // Selected additional services/amenities
 }
 
 export interface User {
