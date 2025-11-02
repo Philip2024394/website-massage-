@@ -14,7 +14,7 @@ interface UseNavigationProps {
     setProviderAuthInfo: (info: { type: 'therapist' | 'place', mode: 'login' | 'register' } | null) => void;
     setProviderForBooking: (provider: { provider: Therapist | Place; type: 'therapist' | 'place' } | null) => void;
     setIsAdminLoggedIn: (value: boolean) => void;
-    setLoggedInUser: React.Dispatch<React.SetStateAction<LoggedInUser | null>>;
+    setLoggedInUser: (user: LoggedInUser | null) => void;
     setAdminDashboardTab: React.Dispatch<React.SetStateAction<any>>;
     loggedInProvider: LoggedInProvider | null;
     loggedInCustomer: any;
@@ -90,6 +90,14 @@ export const useNavigation = ({
     const handleNavigateToMassagePlaceLogin = useCallback(() => setPage('massagePlaceLogin'), [setPage]);
     const handleNavigateToAdminLogin = useCallback(() => setPage('adminLogin'), [setPage]);
     const handleNavigateToRegistrationChoice = useCallback(() => setPage('registrationChoice'), [setPage]);
+    
+    // Registration selection handler
+    const handleSelectRegistration = useCallback((type: 'therapist' | 'place') => {
+        console.log('🎯 HANDLER: Registration type selected:', type);
+        setProviderAuthInfo({ type, mode: 'register' });
+        setPage('providerAuth');
+    }, [setProviderAuthInfo, setPage]);
+    
     const handleNavigateToServiceTerms = useCallback(() => setPage('serviceTerms'), [setPage]);
     const handleNavigateToPrivacyPolicy = useCallback(() => setPage('privacy'), [setPage]);
     const handleNavigateToNotifications = useCallback(() => setPage('notifications'), [setPage]);
@@ -108,6 +116,17 @@ export const useNavigation = ({
         alert('🎯 APP.TSX CALLBACK EXECUTING!');
         setPage('therapistJobRegistration');
     }, [setPage]);
+
+    // Booking navigation handlers
+    const handleNavigateToBooking = useCallback((provider: Therapist | Place, type: 'therapist' | 'place') => {
+        setProviderForBooking({ provider, type });
+        setPage('booking');
+    }, [setProviderForBooking, setPage]);
+
+    const handleNavigateToBookingPage = useCallback((therapist: Therapist) => {
+        setProviderForBooking({ provider: therapist, type: 'therapist' });
+        setPage('booking');
+    }, [setProviderForBooking, setPage]);
 
     // Complex navigation handlers
     const handleAdminLogin = useCallback(() => {
@@ -188,6 +207,7 @@ export const useNavigation = ({
         handleNavigateToMassagePlaceLogin,
         handleNavigateToAdminLogin,
         handleNavigateToRegistrationChoice,
+        handleSelectRegistration,
         handleNavigateToServiceTerms,
         handleNavigateToPrivacyPolicy,
         handleNavigateToNotifications,
@@ -196,6 +216,10 @@ export const useNavigation = ({
         handleNavigateToTherapistDashboard,
         handleNavigateToCustomerDashboard,
         handleNavigateToTherapistProfileCreation,
+        
+        // Booking navigation
+        handleNavigateToBooking,
+        handleNavigateToBookingPage,
         
         // Complex navigation
         handleAdminLogin,

@@ -21,6 +21,7 @@ import { therapistService } from '../lib/appwriteService';
 import { soundService } from '../lib/soundService';
 import ChatBubble from './ChatBubble';
 import CountdownTimer from './CountdownTimer';
+import { Paperclip, MapPin, Smile, Send } from 'lucide-react';
 
 interface BookingChatWindowProps {
     chatRoom: ChatRoom;
@@ -54,7 +55,11 @@ export const BookingChatWindow: React.FC<BookingChatWindowProps> = ({
     const [isSending, setIsSending] = useState(false);
     const [selectedService, setSelectedService] = useState<'60'|'90'|'120'|null>(booking?.service || null);
     const [isUpdatingAvailability, setIsUpdatingAvailability] = useState(false);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
+    const [isCapturingLocation, setIsCapturingLocation] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const isCustomer = currentUserType === 'customer';
     const isTherapist = currentUserType === 'therapist' || currentUserType === 'place';
@@ -113,6 +118,19 @@ export const BookingChatWindow: React.FC<BookingChatWindowProps> = ({
     useEffect(() => {
         loadMessages();
     }, [chatRoom.$id]);
+
+    // Handle clicking outside to close menus
+    useEffect(() => {
+        const handleClickOutside = () => {
+            setShowEmojiPicker(false);
+            setShowAttachmentMenu(false);
+        };
+
+        if (showEmojiPicker || showAttachmentMenu) {
+            document.addEventListener('click', handleClickOutside);
+            return () => document.removeEventListener('click', handleClickOutside);
+        }
+    }, [showEmojiPicker, showAttachmentMenu]);
 
     // Subscribe to real-time messages
     useEffect(() => {
@@ -202,6 +220,145 @@ export const BookingChatWindow: React.FC<BookingChatWindowProps> = ({
         } finally {
             setIsSending(false);
         }
+    };
+
+    // Common emojis for massage/spa context
+    const commonEmojis = [
+        '😊', '😍', '🤗', '🙏', '👍', '❤️', '✨', '🌟',
+        '💆‍♀️', '💆‍♂️', '🧘‍♀️', '🧘‍♂️', '🌸', '🌺', '🕯️', '🛁',
+        '😌', '😇', '🥰', '😘', '👌', '💯', '🔥', '⭐',
+        '🙂', '😄', '🤝', '💪', '🌷', '🌿', '🎉', '✅'
+    ];
+
+    const handleEmojiSelect = (emoji: string) => {
+        setMessageInput(prev => prev + emoji);
+        setShowEmojiPicker(false);
+    };
+
+    const handleFileSelect = () => {
+        fileInputRef.current?.click();
+        setShowAttachmentMenu(false);
+    };
+
+    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        // Check file size (max 10MB)
+        if (file.size > 10 * 1024 * 1024) {
+            alert('File size must be less than 10MB');
+            return;
+        }
+
+        // Check file type
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'text/plain'];
+        if (!allowedTypes.includes(file.type)) {
+            alert('Only images (JPG, PNG, GIF), PDF, and text files are allowed');
+            return;
+        }
+
+        try {
+            setIsSending(true);
+            
+            // Create a message with file attachment
+            const senderType = isCustomer 
+                ? MessageSenderType.Customer 
+                : chatRoom.therapistType === 'therapist' 
+                    ? MessageSenderType.Therapist 
+                    : MessageSenderType.Place;
+
+            const fileMessage = file.type.startsWith('image/') 
+                ? `📸 Shared an image: ${file.name}`
+                : `📎 Shared a file: ${file.name}`;
+
+            await sendMessage({
+                roomId: chatRoom.$id!,
+                senderId: currentUserId,
+                senderType,
+                senderName: currentUserName,
+                text: fileMessage,
+                senderLanguage: currentUserLanguage,
+                recipientLanguage
+            });
+
+            soundService.play('messageSent');
+            
+        } catch (error) {
+            console.error('Error uploading file:', error);
+            alert('Failed to upload file. Please try again.');
+        } finally {
+            setIsSending(false);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+        }
+    };
+
+    const handleShareLocation = () => {
+        if (!navigator.geolocation) {
+            alert('Geolocation is not supported by your device');
+            return;
+        }
+
+        setIsCapturingLocation(true);
+        setShowAttachmentMenu(false);
+
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                try {
+                    const { latitude, longitude } = position.coords;
+                    
+                    // Get address from coordinates (optional)
+                    let locationText = `📍 My Location: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+                    
+                    try {
+                        const response = await fetch(
+                            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+                        );
+                        const data = await response.json();
+                        if (data.display_name) {
+                            locationText = `📍 ${data.display_name}`;
+                        }
+                    } catch (error) {
+                        console.log('Could not get address, using coordinates');
+                    }
+
+                    const senderType = isCustomer 
+                        ? MessageSenderType.Customer 
+                        : chatRoom.therapistType === 'therapist' 
+                            ? MessageSenderType.Therapist 
+                            : MessageSenderType.Place;
+
+                    await sendMessage({
+                        roomId: chatRoom.$id!,
+                        senderId: currentUserId,
+                        senderType,
+                        senderName: currentUserName,
+                        text: locationText,
+                        senderLanguage: currentUserLanguage,
+                        recipientLanguage
+                    });
+
+                    soundService.play('messageSent');
+                    
+                } catch (error) {
+                    console.error('Error sharing location:', error);
+                    alert('Failed to share location. Please try again.');
+                } finally {
+                    setIsCapturingLocation(false);
+                }
+            },
+            (error) => {
+                console.error('Geolocation error:', error);
+                alert('Unable to get your location. Please enable location services.');
+                setIsCapturingLocation(false);
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 60000
+            }
+        );
     };
 
     const handleAcceptBooking = async () => {
@@ -484,7 +641,88 @@ export const BookingChatWindow: React.FC<BookingChatWindowProps> = ({
                     "fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 z-50" :
                     "p-4 bg-white border-t border-gray-200"
                 }>
-                    <div className="flex gap-2 items-end">
+                    {/* Hidden file input */}
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*,.pdf,.txt"
+                        onChange={handleFileChange}
+                        className="hidden"
+                    />
+
+                    {/* Emoji Picker */}
+                    {showEmojiPicker && (
+                        <div 
+                            className="mb-3 p-3 bg-gray-50 rounded-xl border border-gray-200 max-h-32 overflow-y-auto"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="flex flex-wrap gap-2">
+                                {commonEmojis.map((emoji, index) => (
+                                    <button
+                                        key={index}
+                                        onClick={() => handleEmojiSelect(emoji)}
+                                        className="text-lg hover:bg-gray-200 rounded p-1 transition-colors"
+                                    >
+                                        {emoji}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Attachment Menu */}
+                    {showAttachmentMenu && (
+                        <div 
+                            className="mb-3 p-3 bg-gray-50 rounded-xl border border-gray-200"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="flex gap-4">
+                                <button
+                                    onClick={handleFileSelect}
+                                    className="flex items-center gap-2 px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                                >
+                                    <Paperclip className="w-4 h-4" />
+                                    <span className="text-sm">Photo/File</span>
+                                </button>
+                                <button
+                                    onClick={handleShareLocation}
+                                    disabled={isCapturingLocation}
+                                    className="flex items-center gap-2 px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50"
+                                >
+                                    <MapPin className="w-4 h-4" />
+                                    <span className="text-sm">
+                                        {isCapturingLocation ? 'Getting Location...' : 'Share Location'}
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="flex gap-2 items-end" onClick={(e) => e.stopPropagation()}>
+                        {/* Left attachment and emoji buttons */}
+                        <div className="flex gap-1">
+                            <button
+                                onClick={() => {
+                                    setShowAttachmentMenu(!showAttachmentMenu);
+                                    setShowEmojiPicker(false);
+                                }}
+                                className="p-2.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
+                                title="Attach file or share location"
+                            >
+                                <Paperclip className="w-5 h-5" />
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setShowEmojiPicker(!showEmojiPicker);
+                                    setShowAttachmentMenu(false);
+                                }}
+                                className="p-2.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
+                                title="Add emoji"
+                            >
+                                <Smile className="w-5 h-5" />
+                            </button>
+                        </div>
+
                         <div className="flex-1 relative">
                             <input
                                 type="text"
@@ -495,7 +733,12 @@ export const BookingChatWindow: React.FC<BookingChatWindowProps> = ({
                                 onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
                                 disabled={chatRoom.status === ChatRoomStatus.Expired || chatRoom.status === ChatRoomStatus.Declined}
                             />
-                            {/* Character count or emoji button could go here */}
+                            {/* Character count display */}
+                            {messageInput.length > 100 && (
+                                <div className="absolute -top-6 right-0 text-xs text-gray-500">
+                                    {messageInput.length}/500
+                                </div>
+                            )}
                         </div>
                         <button
                             onClick={handleSendMessage}
@@ -509,9 +752,7 @@ export const BookingChatWindow: React.FC<BookingChatWindowProps> = ({
                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
                             ) : (
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                                </svg>
+                                <Send className="w-5 h-5" />
                             )}
                         </button>
                     </div>

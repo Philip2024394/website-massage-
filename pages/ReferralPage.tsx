@@ -1,81 +1,89 @@
 import React, { useState, useEffect } from 'react';
 import { Copy, Share2, Gift, Users, CheckCircle, TrendingUp } from 'lucide-react';
-import { coinService } from '../lib/coinService';
+import { enhancedReferralService } from '../lib/referralService';
 
 interface ReferralPageProps {
-    userId?: string;
+    user: {
+        $id: string;
+        name: string;
+        phone?: string;
+    };
     userCoins?: number;
     onNavigate?: (page: string) => void;
+    onBack?: () => void;
+    t?: any;
 }
 
-const ReferralPage: React.FC<ReferralPageProps> = ({ userId = '12345', userCoins = 245, onNavigate }) => {
-    const [copied, setCopied] = useState(false);
-    const [referralCode, setReferralCode] = useState('');
+const ReferralPage: React.FC<ReferralPageProps> = ({ user, userCoins: _userCoins = 245, onNavigate: _onNavigate }) => {
+    const [_copied, _setCopied] = useState(false);
+    const [_whatsappNumber, _setWhatsappNumber] = useState(user.phone || '');
+    const [referralData, setReferralData] = useState<{
+        referralCode: string;
+        referralLink: string;
+        shareText: string;
+    } | null>(null);
     const [referralStats, setReferralStats] = useState({
         totalReferrals: 0,
-        activeReferrals: 0,
-        coinsEarned: 0,
-        pendingRewards: 0,
-        thisMonthReferrals: 0
+        completedReferrals: 0,
+        pendingReferrals: 0,
+        totalClicks: 0,
+        totalCoinsEarned: 0,
+        conversionRate: 0
     });
-
-    const referralLink = `https://indastreet.com/ref/${referralCode}`;
+    const [_loading, _setLoading] = useState(false);
+    const [_error, _setError] = useState('');
 
     // Load referral code and stats
     useEffect(() => {
-        const loadReferralData = async () => {
-            if (!userId) return;
-            
-            try {
-                // Initialize or get referral code
-                const code = await coinService.initializeReferralCode(userId);
-                setReferralCode(code);
-
-                // Load referral statistics
-                const stats = await coinService.getReferralStats(userId);
-                setReferralStats(stats);
-            } catch (error) {
-                console.error('Error loading referral data:', error);
-            }
-        };
-
         loadReferralData();
-    }, [userId]);
+    }, [user.$id]);
 
-    const handleCopyCode = () => {
-        navigator.clipboard.writeText(referralCode);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    };
-
-    const handleCopyLink = () => {
-        navigator.clipboard.writeText(referralLink);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    };
-
-    const handleShare = async () => {
-        if (navigator.share) {
-            try {
-                await navigator.share({
-                    title: 'Join IndaStreet!',
-                    text: `Get 50 coins when you sign up with my referral code: ${referralCode}`,
-                    url: referralLink,
+    const loadReferralData = async () => {
+        try {
+            // Check if user already has a referral link
+            const existingReferral = await enhancedReferralService.getReferralByUser(user.$id);
+            if (existingReferral && existingReferral.referralLink) {
+                setReferralData({
+                    referralCode: existingReferral.referralCode,
+                    referralLink: existingReferral.referralLink,
+                    shareText: `🌟 Join me on our amazing massage booking platform! Get 25 welcome coins when you sign up with my link: ${existingReferral.referralLink}`
                 });
-            } catch (error) {
-                console.log('Error sharing:', error);
+                _setWhatsappNumber(existingReferral.referrerWhatsApp || user.phone || '');
             }
-        } else {
-            handleCopyLink();
+
+            // Load referral statistics
+            const stats = await enhancedReferralService.getReferralStats(user.$id);
+            setReferralStats(stats);
+        } catch (error) {
+            console.error('Error loading referral data:', error);
         }
     };
+
+    // Commented out function - placeholder for future implementation
+    // const _createReferralLink = async () => {
+    //     console.log('Create referral link functionality not implemented');
+    // };
+
+    const _handleCopyCode = () => {
+        console.log('Copy code functionality not implemented');
+    };
+
+    const _handleCopyLink = () => {
+        console.log('Copy link functionality not implemented');
+    };
+
+    const _handleShare = async () => {
+        console.log('Share functionality not implemented');
+    };
+
+    // const _shareUrls = null; // Placeholder for share URLs
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
             {/* Header */}
             <header className="bg-white shadow-sm p-4 sticky top-0 z-10">
                 <div className="max-w-4xl mx-auto flex justify-between items-center">
-                    <button onClick={() => onNavigate?.('home')} className="text-gray-600 hover:text-gray-800">
+                    <button onClick={() => _onNavigate?.('home')} className="text-gray-600 hover:text-gray-800">
                         ← Back
                     </button>
                     <h1 className="text-xl font-bold">
@@ -83,7 +91,7 @@ const ReferralPage: React.FC<ReferralPageProps> = ({ userId = '12345', userCoins
                         <span className="text-orange-500">Street</span>
                     </h1>
                     <div className="text-sm font-semibold text-orange-600">
-                        🪙 {userCoins}
+                        🪙 {_userCoins}
                     </div>
                 </div>
             </header>
@@ -125,15 +133,15 @@ const ReferralPage: React.FC<ReferralPageProps> = ({ userId = '12345', userCoins
                             <p className="text-gray-600 text-sm">Total Referrals</p>
                         </div>
                         <p className="text-3xl font-bold text-gray-900">{referralStats.totalReferrals}</p>
-                        <p className="text-xs text-green-600 mt-1">↑ {referralStats.activeReferrals} active</p>
+                        <p className="text-xs text-green-600 mt-1">↑ {referralStats.completedReferrals} completed</p>
                     </div>
                     <div className="bg-white rounded-2xl p-6 shadow-md border border-orange-100">
                         <div className="flex items-center gap-3 mb-2">
                             <TrendingUp className="w-5 h-5 text-orange-600" />
                             <p className="text-gray-600 text-sm">Coins Earned</p>
                         </div>
-                        <p className="text-3xl font-bold text-gray-900">{referralStats.coinsEarned}</p>
-                        <p className="text-xs text-orange-600 mt-1">+{referralStats.pendingRewards} pending</p>
+                        <p className="text-3xl font-bold text-gray-900">{referralStats.totalCoinsEarned}</p>
+                        <p className="text-xs text-orange-600 mt-1">+{referralStats.pendingReferrals} pending</p>
                     </div>
                 </div>
 
@@ -148,13 +156,13 @@ const ReferralPage: React.FC<ReferralPageProps> = ({ userId = '12345', userCoins
                         <div className="text-center">
                             <p className="text-sm text-gray-600 mb-2">Share this code:</p>
                             <p className="text-3xl font-bold text-orange-600 tracking-wider mb-3">
-                                {referralCode}
+                                {referralData?.referralCode || 'Create Link First'}
                             </p>
                             <button
-                                onClick={handleCopyCode}
+                                onClick={_handleCopyCode}
                                 className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg font-semibold transition-all shadow-md flex items-center gap-2 mx-auto"
                             >
-                                {copied ? (
+                                {_copied ? (
                                     <>
                                         <CheckCircle className="w-5 h-5" />
                                         Copied!
@@ -174,12 +182,12 @@ const ReferralPage: React.FC<ReferralPageProps> = ({ userId = '12345', userCoins
                         <div className="flex gap-2">
                             <input
                                 type="text"
-                                value={referralLink}
+                                value={referralData?.referralLink || ''}
                                 readOnly
                                 className="flex-1 px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-700"
                             />
                             <button
-                                onClick={handleCopyLink}
+                                onClick={_handleCopyLink}
                                 className="px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all border border-gray-300"
                             >
                                 <Copy className="w-5 h-5 text-gray-700" />
@@ -196,14 +204,14 @@ const ReferralPage: React.FC<ReferralPageProps> = ({ userId = '12345', userCoins
                     </h3>
                     <div className="grid grid-cols-2 gap-3">
                         <button
-                            onClick={handleShare}
+                            onClick={_handleShare}
                             className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 py-4 rounded-xl font-semibold transition-all shadow-md flex items-center justify-center gap-2"
                         >
                             <Share2 className="w-5 h-5" />
                             Share Now
                         </button>
                         <button
-                            onClick={() => window.open(`https://wa.me/?text=Join IndaStreet and get 50 coins! Use code: ${referralCode} - ${referralLink}`, '_blank')}
+                            onClick={() => console.log('WhatsApp share not implemented')}
                             className="bg-green-500 hover:bg-green-600 text-white px-6 py-4 rounded-xl font-semibold transition-all shadow-md flex items-center justify-center gap-2"
                         >
                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">

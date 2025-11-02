@@ -100,15 +100,14 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
     const [jobPostings, setJobPostings] = useState<EmployerJobPosting[]>([]);
     const [therapistListings, setTherapistListings] = useState<TherapistJobListing[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedType, setSelectedType] = useState<string>('all');
-    const [selectedLocation, setSelectedLocation] = useState<string>('all');
+    const [_isMenuOpen, setIsMenuOpen] = useState(false);
+    const [searchQuery, _setSearchQuery] = useState('');
+    const [selectedType, _setSelectedType] = useState<string>('all');
+    const [selectedLocation, _setSelectedLocation] = useState<string>('all');
     // const [selectedMassageSkill, setSelectedMassageSkill] = useState<string>('all'); // Reserved for future filtering
-    const [showTypeDropdown, setShowTypeDropdown] = useState(false);
-    const [showLocationDropdown, setShowLocationDropdown] = useState(false);
-
-    const typeDropdownRef = useRef<HTMLDivElement>(null);
+    
+    const [_showTypeDropdown, setShowTypeDropdown] = useState(false);
+    const [_showLocationDropdown, setShowLocationDropdown] = useState(false);    const typeDropdownRef = useRef<HTMLDivElement>(null);
     const locationDropdownRef = useRef<HTMLDivElement>(null);
 
     // Close dropdowns when clicking outside
@@ -203,6 +202,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
         }).format(amount);
     };
 
+    /*
     const locations = [
         { value: 'all', label: 'Locations' },
         // Bali Areas
@@ -229,8 +229,9 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
         { value: 'Bintan', label: '🏝️ Bintan' },
         { value: 'Labuan Bajo', label: '🦎 Labuan Bajo' },
     ];
+    */
 
-    const businessTypes = ['all', 'hotel', 'spa', 'wellness-center', 'resort', 'home-service', 'other'];
+    // const businessTypes = ['all', 'hotel', 'spa', 'wellness-center', 'resort', 'home-service', 'other'];
 
     return (
         <div className="min-h-screen bg-gray-50">

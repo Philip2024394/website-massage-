@@ -76,7 +76,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
     onTherapistJobsClick,
     onHotelPortalClick,
     onVillaPortalClick,
-    onTherapistPortalClick,
+    onTherapistPortalClick: _onTherapistPortalClick,
     onMassagePlacePortalClick,
     onAgentPortalClick,
     onCustomerPortalClick,
@@ -91,7 +91,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     
     // Custom links from Appwrite
-    const [customLinks, setCustomLinks] = useState<any[]>([]);
+    const [_customLinks, setCustomLinks] = useState<any[]>([]);
     
     // Fetch custom links on mount
     useEffect(() => {
@@ -150,9 +150,9 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
         services,
         amenities,
         galleryImages,
-        isFavorite,
+        isFavorite: _isFavorite,
         expandedImage,
-        setIsFavorite,
+        setIsFavorite: _setIsFavorite,
         setExpandedImage
     } = useMassagePlaceProfile(place);
 
@@ -300,10 +300,9 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                 isOpen={isMenuOpen}
                 onClose={() => setIsMenuOpen(false)}
                 onMassageJobsClick={onMassageJobsClick}
-                onTherapistJobsClick={onTherapistJobsClick}
+                onTherapistPortalClick={onTherapistJobsClick || (() => {})}
                 onHotelPortalClick={onHotelPortalClick || (() => {})}
                 onVillaPortalClick={onVillaPortalClick || (() => {})}
-                onTherapistPortalClick={onTherapistPortalClick || (() => {})}
                 onMassagePlacePortalClick={onMassagePlacePortalClick || (() => {})}
                 onAgentPortalClick={onAgentPortalClick || (() => {})}
                 onCustomerPortalClick={onCustomerPortalClick}
@@ -313,7 +312,6 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                 onPrivacyClick={onPrivacyClick}
                 therapists={therapists}
                 places={places}
-                customLinks={customLinks}
             />
 
             {/* Main Content */}

@@ -7,7 +7,6 @@ import { databases, ID } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import QRCodeGenerator from 'qrcode';
 // import Header from '../components/dashboard/Header';
-import TabButton from '../components/dashboard/TabButton';
 import PushNotificationSettings from '../components/PushNotificationSettings';
 
 type DurationKey = '60' | '90' | '120';
@@ -53,6 +52,7 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({ onLogout, thera
     const [activeTab, setActiveTab] = useState<'analytics' | 'discounts' | 'profile' | 'menu' | 'feedback' | 'concierge' | 'commissions' | 'notifications' | 'membership'>(initialTab);
     const [customWelcomeMessage, setCustomWelcomeMessage] = useState('Welcome to our exclusive wellness experience');
     const [selectedLanguage, setSelectedLanguage] = useState('en');
+    const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
     
     // Real analytics state
     const [analytics, setAnalytics] = useState<any>(null);
@@ -1498,104 +1498,205 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({ onLogout, thera
     return (
 
         <div className="min-h-screen bg-gray-50 flex flex-col max-w-[430px] sm:max-w-none mx-auto">
-            {/* Top Navigation Bar - Mobile Optimized */}
-            <header className="bg-white shadow-sm px-2 sm:px-3 py-2 sm:py-3 sticky top-0 z-30">
-                {/* Mobile: Hotel Name & Logo */}
-                <div className="flex items-center justify-between mb-2 sm:mb-0">
-                    <h1 className="text-base sm:text-2xl font-bold text-gray-800">
-                        <span className="text-orange-500">IndaStreet</span>
-                    </h1>
-                    <div className="flex items-center gap-1 sm:gap-4">
+            {/* Header with Burger Menu */}
+            <header className="bg-white shadow-sm px-4 py-3 sticky top-0 z-30">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
                         <button
-                            onClick={onLogout}
-                            className="flex items-center justify-center text-gray-900 hover:text-gray-600 transition-colors"
-                            title="Logout"
+                            onClick={() => setIsSideDrawerOpen(true)}
+                            className="p-2 text-gray-700 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-colors"
                         >
-                            <LogOut size={20} className="sm:w-6 sm:h-6" />
+                            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
                         </button>
+                        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
+                            <span className="text-orange-500">IndaStreet</span> Villa
+                        </h1>
                     </div>
-                </div>
-
-                {/* Navigation Buttons - Two Rows */}
-                <div className="space-y-1">
-                    {/* First Row */}
-                    <div 
-                        className="flex gap-1 overflow-x-auto pb-1" 
-                        style={{
-                            scrollbarWidth: 'none', 
-                            msOverflowStyle: 'none',
-                            WebkitOverflowScrolling: 'touch'
-                        }}
+                    <button
+                        onClick={onLogout}
+                        className="flex items-center justify-center text-gray-700 hover:text-red-500 hover:bg-red-50 rounded-lg p-2 transition-colors"
+                        title="Logout"
                     >
-                        <TabButton
-                            icon={<svg className="w-3.5 h-3.5 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>}
-                            label="Analytics"
-                            isActive={activeTab === 'analytics'}
-                            onClick={() => setActiveTab('analytics')}
-                        />
-                        <TabButton
-                            icon={<Tag size={14} className="sm:w-5 sm:h-5" />}
-                            label="Discounts"
-                            isActive={activeTab === 'discounts'}
-                            onClick={() => setActiveTab('discounts')}
-                        />
-                        <TabButton
-                            icon={<User size={14} className="sm:w-5 sm:h-5" />}
-                            label="Profile"
-                            isActive={activeTab === 'profile'}
-                            onClick={() => setActiveTab('profile')}
-                        />
-                        <TabButton
-                            icon={<Menu size={14} className="sm:w-5 sm:h-5" />}
-                            label="Menu"
-                            isActive={activeTab === 'menu'}
-                            onClick={() => setActiveTab('menu')}
-                            badge={providers.length}
-                        />
-                    </div>
-                    
-                    {/* Second Row */}
-                    <div 
-                        className="flex gap-1 overflow-x-auto pb-1" 
-                        style={{
-                            scrollbarWidth: 'none', 
-                            msOverflowStyle: 'none',
-                            WebkitOverflowScrolling: 'touch'
-                        }}
-                    >
-                        <TabButton
-                            icon={<Star size={14} className="sm:w-5 sm:h-5" />}
-                            label="Feedback"
-                            isActive={activeTab === 'feedback'}
-                            onClick={() => setActiveTab('feedback')}
-                        />
-                        <TabButton
-                            icon={<Users size={14} className="sm:w-5 sm:h-5" />}
-                            label="Concierge"
-                            isActive={activeTab === 'concierge'}
-                            onClick={() => setActiveTab('concierge')}
-                        />
-                        <TabButton
-                            icon={<svg className="w-3.5 h-3.5 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
-                            label="Commissions"
-                            isActive={activeTab === 'commissions'}
-                            onClick={() => setActiveTab('commissions')}
-                        />
-                        <TabButton
-                            icon={<Bell size={14} className="sm:w-5 sm:h-5" />}
-                            label="Notifications"
-                            isActive={activeTab === 'notifications'}
-                            onClick={() => setActiveTab('notifications')}
-                        />
-                        <TabButton
-                            icon={<Package size={14} className="sm:w-5 sm:h-5" />}
-                            label="Membership"
-                            isActive={activeTab === 'membership'}
-                            onClick={() => setActiveTab('membership')}
-                        />
-                    </div>
+                        <LogOut size={20} />
+                    </button>
                 </div>
             </header>
+
+            {/* Side Drawer */}
+            {isSideDrawerOpen && (
+                <div className="fixed inset-0 z-50">
+                    {/* Overlay */}
+                    <div 
+                        className="absolute inset-0 bg-black bg-opacity-50"
+                        onClick={() => setIsSideDrawerOpen(false)}
+                    ></div>
+                    
+                    {/* Drawer */}
+                    <div className="absolute left-0 top-0 h-full w-80 bg-white shadow-xl">
+                        {/* Drawer Header */}
+                        <div className="bg-orange-500 px-6 py-4">
+                            <div className="flex items-center justify-between">
+                                <h2 className="text-white text-lg font-semibold">Villa Dashboard</h2>
+                                <button
+                                    onClick={() => setIsSideDrawerOpen(false)}
+                                    className="text-white hover:text-orange-200 transition-colors"
+                                >
+                                    <X size={24} />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Navigation Items */}
+                        <div className="p-4 space-y-2">
+                            <button
+                                onClick={() => {
+                                    setActiveTab('analytics');
+                                    setIsSideDrawerOpen(false);
+                                }}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                                    activeTab === 'analytics' 
+                                        ? 'bg-orange-100 text-orange-600 border-l-4 border-orange-500' 
+                                        : 'text-gray-700 hover:bg-gray-100'
+                                }`}
+                            >
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                </svg>
+                                Analytics
+                            </button>
+
+                            <button
+                                onClick={() => {
+                                    setActiveTab('discounts');
+                                    setIsSideDrawerOpen(false);
+                                }}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                                    activeTab === 'discounts' 
+                                        ? 'bg-orange-100 text-orange-600 border-l-4 border-orange-500' 
+                                        : 'text-gray-700 hover:bg-gray-100'
+                                }`}
+                            >
+                                <Tag className="w-5 h-5" />
+                                Discounts
+                            </button>
+
+                            <button
+                                onClick={() => {
+                                    setActiveTab('profile');
+                                    setIsSideDrawerOpen(false);
+                                }}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                                    activeTab === 'profile' 
+                                        ? 'bg-orange-100 text-orange-600 border-l-4 border-orange-500' 
+                                        : 'text-gray-700 hover:bg-gray-100'
+                                }`}
+                            >
+                                <User className="w-5 h-5" />
+                                Profile
+                            </button>
+
+                            <button
+                                onClick={() => {
+                                    setActiveTab('menu');
+                                    setIsSideDrawerOpen(false);
+                                }}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                                    activeTab === 'menu' 
+                                        ? 'bg-orange-100 text-orange-600 border-l-4 border-orange-500' 
+                                        : 'text-gray-700 hover:bg-gray-100'
+                                }`}
+                            >
+                                <Menu className="w-5 h-5" />
+                                Menu
+                                {providers.length > 0 && (
+                                    <span className="ml-auto bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
+                                        {providers.length}
+                                    </span>
+                                )}
+                            </button>
+
+                            <button
+                                onClick={() => {
+                                    setActiveTab('feedback');
+                                    setIsSideDrawerOpen(false);
+                                }}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                                    activeTab === 'feedback' 
+                                        ? 'bg-orange-100 text-orange-600 border-l-4 border-orange-500' 
+                                        : 'text-gray-700 hover:bg-gray-100'
+                                }`}
+                            >
+                                <Star className="w-5 h-5" />
+                                Feedback
+                            </button>
+
+                            <button
+                                onClick={() => {
+                                    setActiveTab('concierge');
+                                    setIsSideDrawerOpen(false);
+                                }}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                                    activeTab === 'concierge' 
+                                        ? 'bg-orange-100 text-orange-600 border-l-4 border-orange-500' 
+                                        : 'text-gray-700 hover:bg-gray-100'
+                                }`}
+                            >
+                                <Users className="w-5 h-5" />
+                                Concierge
+                            </button>
+
+                            <button
+                                onClick={() => {
+                                    setActiveTab('commissions');
+                                    setIsSideDrawerOpen(false);
+                                }}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                                    activeTab === 'commissions' 
+                                        ? 'bg-orange-100 text-orange-600 border-l-4 border-orange-500' 
+                                        : 'text-gray-700 hover:bg-gray-100'
+                                }`}
+                            >
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Commissions
+                            </button>
+
+                            <button
+                                onClick={() => {
+                                    setActiveTab('notifications');
+                                    setIsSideDrawerOpen(false);
+                                }}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                                    activeTab === 'notifications' 
+                                        ? 'bg-orange-100 text-orange-600 border-l-4 border-orange-500' 
+                                        : 'text-gray-700 hover:bg-gray-100'
+                                }`}
+                            >
+                                <Bell className="w-5 h-5" />
+                                Notifications
+                            </button>
+
+                            <button
+                                onClick={() => {
+                                    setActiveTab('membership');
+                                    setIsSideDrawerOpen(false);
+                                }}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                                    activeTab === 'membership' 
+                                        ? 'bg-orange-100 text-orange-600 border-l-4 border-orange-500' 
+                                        : 'text-gray-700 hover:bg-gray-100'
+                                }`}
+                            >
+                                <Package className="w-5 h-5" />
+                                Membership
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Main Content */}
             <main className="flex-1 w-full max-w-5xl mx-auto px-2 py-3 sm:p-4 md:p-6 lg:p-8 pb-20">{renderTabContent()}

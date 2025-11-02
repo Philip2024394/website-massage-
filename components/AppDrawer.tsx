@@ -211,7 +211,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                             </h3>
                             <div className="space-y-2">
                                 <button 
-                                    onClick={() => handleItemClick(() => onNavigate?.('about'))}
+                                    onClick={() => handleItemClick(() => onNavigate?.('about-us'))}
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-cyan-500 group transform hover:scale-105"
                                 >
                                     <div className="p-2 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-lg">
@@ -250,7 +250,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                 </button>
 
                                 <button 
-                                    onClick={() => handleItemClick(() => onNavigate?.('contact'))}
+                                    onClick={() => handleItemClick(() => onNavigate?.('about-us'))}
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-cyan-500 group transform hover:scale-105"
                                 >
                                     <div className="p-2 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-lg">

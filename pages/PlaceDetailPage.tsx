@@ -36,7 +36,7 @@ const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({ place, onBack, onBook
         ).catch(err => console.error('Analytics tracking error:', err));
         
         // Keep legacy tracking for backwards compatibility
-        onIncrementAnalytics('profileViews');
+        onIncrementAnalytics('views');
     }, [place.id]);
 
     const openWhatsApp = () => {
@@ -66,7 +66,7 @@ const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({ place, onBack, onBook
         ).catch(err => console.error('Analytics tracking error:', err));
         
         // Keep legacy tracking
-        onIncrementAnalytics('whatsappClicks');
+        onIncrementAnalytics('whatsapp_clicks');
         window.open(`https://wa.me/${place.whatsappNumber}`, '_blank');
     };
 

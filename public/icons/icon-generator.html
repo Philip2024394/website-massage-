@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Icon Generator</title>
+    <style>
+        .icon-canvas {
+            margin: 10px;
+            border: 1px solid #ccc;
+        }
+        .icon-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 20px;
+        }
+        .icon-item {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Notification Icon Generator</h1>
+    <div class="icon-container" id="iconContainer"></div>
+
+    <script>
+        const icons = [
+            { name: 'app-icon-192', emoji: '💆', bg: '#4F46E5' },
+            { name: 'badge-icon', emoji: '🔔', bg: '#EF4444' },
+            { name: 'booking', emoji: '📅', bg: '#3B82F6' },
+            { name: 'booking-confirmed', emoji: '✅', bg: '#10B981' },
+            { name: 'booking-cancelled', emoji: '❌', bg: '#EF4444' },
+            { name: 'booking-completed', emoji: '🎉', bg: '#8B5CF6' },
+            { name: 'new-booking', emoji: '📝', bg: '#F59E0B' },
+            { name: 'chat', emoji: '💬', bg: '#06B6D4' },
+            { name: 'group-chat', emoji: '👥', bg: '#84CC16' },
+            { name: 'coins', emoji: '🪙', bg: '#F59E0B' },
+            { name: 'commission', emoji: '💰', bg: '#10B981' },
+            { name: 'general', emoji: '🔔', bg: '#6B7280' },
+            { name: 'therapist-available', emoji: '👋', bg: '#8B5CF6' },
+            { name: 'achievement', emoji: '🏆', bg: '#F59E0B' },
+            { name: 'payment', emoji: '💳', bg: '#10B981' },
+            { name: 'test', emoji: '🔊', bg: '#6B7280' }
+        ];
+
+        function createIcon(iconData) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 192;
+            canvas.height = 192;
+            canvas.className = 'icon-canvas';
+            
+            const ctx = canvas.getContext('2d');
+            
+            // Draw background circle
+            ctx.fillStyle = iconData.bg;
+            ctx.beginPath();
+            ctx.arc(96, 96, 85, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Draw emoji
+            ctx.font = '80px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(iconData.emoji, 96, 96);
+            
+            return canvas;
+        }
+
+        function generateIcons() {
+            const container = document.getElementById('iconContainer');
+            
+            icons.forEach(iconData => {
+                const iconDiv = document.createElement('div');
+                iconDiv.className = 'icon-item';
+                
+                const canvas = createIcon(iconData);
+                const label = document.createElement('p');
+                label.textContent = iconData.name + '.png';
+                
+                const downloadBtn = document.createElement('button');
+                downloadBtn.textContent = 'Download';
+                downloadBtn.onclick = () => {
+                    const link = document.createElement('a');
+                    link.download = iconData.name + '.png';
+                    link.href = canvas.toDataURL();
+                    link.click();
+                };
+                
+                iconDiv.appendChild(canvas);
+                iconDiv.appendChild(label);
+                iconDiv.appendChild(downloadBtn);
+                container.appendChild(iconDiv);
+            });
+        }
+
+        generateIcons();
+    </script>
+</body>
+</html>

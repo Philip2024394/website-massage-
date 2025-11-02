@@ -8,6 +8,8 @@ interface CoinHistoryPageProps {
     totalCoins?: number;
     onNavigate?: (page: string) => void;
     onOpenMenu?: () => void;
+    onBack?: () => void;
+    t?: any;
 }
 
 const CoinHistoryPage: React.FC<CoinHistoryPageProps> = ({ 

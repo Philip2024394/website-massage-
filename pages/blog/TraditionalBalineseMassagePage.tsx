@@ -14,6 +14,8 @@ const CloseIcon = ({ className = 'w-6 h-6' }) => (
 
 interface TraditionalBalineseMassagePageProps {
     onNavigate?: (page: string) => void;
+    onBack?: () => void;
+    t?: any;
 }
 
 const TraditionalBalineseMassagePage: React.FC<TraditionalBalineseMassagePageProps> = ({ onNavigate }) => {
@@ -65,7 +67,8 @@ const TraditionalBalineseMassagePage: React.FC<TraditionalBalineseMassagePagePro
                     <div className={`absolute right-0 top-0 bottom-0 w-[70%] sm:w-80 bg-gradient-to-br from-white via-gray-50 to-gray-100 shadow-2xl flex flex-col ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
                         <div className="p-6 flex justify-between items-center">
                             <h2 className="font-bold text-2xl">
-                                <span className="text-orange-500">Indastreet</span>
+                                <span className="text-black">Inda</span>
+                                <span className="text-orange-500">Street</span>
                             </h2>
                             <button onClick={() => setIsMenuOpen(false)}>
                                 <CloseIcon />

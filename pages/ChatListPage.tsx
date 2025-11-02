@@ -3,9 +3,12 @@ import type { ChatRoom, Booking } from '../types';
 import BookingChatWindow from '../components/BookingChatWindow';
 
 interface ChatListPageProps {
+    userId?: any;
+    userType?: string;
     onLogout?: () => void;
     onMenuClick?: () => void;
     onHomeClick?: () => void;
+    onBack?: () => void;
     language: 'en' | 'id';
     activeChatRoom?: ChatRoom | null;
     chatBooking?: Booking | null;

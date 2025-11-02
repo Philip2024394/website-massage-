@@ -310,10 +310,6 @@ const PushNotificationSettings: React.FC<PushNotificationSettingsProps> = ({
                             'serviceWorker' in navigator ? '✅ Available' : '❌ Not Available'
                         }
                     </p>
-                    <p className="pt-2 border-t border-gray-300">
-                        <strong>Note:</strong> Background notifications use the Web Push API 
-                        powered by Appwrite Realtime. No Firebase required.
-                    </p>
                 </div>
             </details>
         </div>

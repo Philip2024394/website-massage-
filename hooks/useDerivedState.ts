@@ -1,4 +1,4 @@
-import type { LoggedInProvider, LoggedInUser, Page } from '../types/pageTypes';
+import type { LoggedInProvider, Page } from '../types/pageTypes';
 import type { Agent, Notification, Booking, ChatRoom } from '../types';
 
 interface UseDerivedStateProps {

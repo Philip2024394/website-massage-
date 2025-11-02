@@ -1845,16 +1845,119 @@ export const hotelVillaBookingService = {
      */
     async completeBooking(bookingId: string): Promise<any> {
         try {
+            // First get the booking details
+            const bookingDetails = await this.getBookingById(bookingId);
+            
             const booking = await this.updateBooking(bookingId, {
                 status: 'completed',
                 completedAt: new Date().toISOString()
             });
+            
+            // Award coins to customer for completing booking
+            if (bookingDetails?.userId) {
+                try {
+                    // Import coin configuration
+                    const { calculateBookingCoins, getLoyaltyTier } = await import('./coinConfig');
+                    
+                    // Get customer's booking history to determine tier and bonuses
+                    const customerBookings = await bookingService.getByUser(bookingDetails.userId);
+                    const completedBookings = customerBookings.filter((b: any) => b.status === 'Completed').length;
+                    const isFirstBooking = completedBookings === 0; // This will be their first completed booking
+                    
+                    // Determine loyalty tier
+                    const loyaltyTier = getLoyaltyTier(completedBookings + 1); // +1 because this booking is now completed
+                    
+                    // Calculate total coins to award
+                    const coinsToAward = calculateBookingCoins(isFirstBooking, loyaltyTier, false);
+                    
+                    // Award coins through coin service
+                    await coinService.addCoins(
+                        bookingDetails.userId,
+                        'customer',
+                        bookingDetails.userName || 'Customer',
+                        coinsToAward,
+                        `Booking completed - ${coinsToAward} coins earned`,
+                        bookingId
+                    );
+                    
+                    // Check if this is their first booking and complete any pending referral
+                    if (isFirstBooking) {
+                        try {
+                            const { enhancedReferralService } = await import('./referralService');
+                            await enhancedReferralService.completeReferral(bookingDetails.userId);
+                        } catch (referralError) {
+                            console.error('Error processing referral completion:', referralError);
+                        }
+                    }
+                    
+                    console.log(`💰 Awarded ${coinsToAward} coins to customer ${bookingDetails.userId} for booking completion`);
+                    
+                } catch (coinError) {
+                    console.error('Error awarding coins for booking completion:', coinError);
+                    // Don't fail the booking completion if coin awarding fails
+                }
+            }
+
+            // Award coins to provider (therapist or massage place)
+            if (bookingDetails?.providerId && bookingDetails?.providerType) {
+                try {
+                    const { providerRewardsService } = await import('./providerRewardsService');
+                    const isWeekend = this.isWeekend(new Date());
+                    
+                    if (bookingDetails.providerType === 'therapist') {
+                        await providerRewardsService.awardTherapistBookingCoins(
+                            bookingDetails.providerId.toString(),
+                            bookingDetails.providerName || 'Therapist',
+                            bookingId,
+                            bookingDetails.rating,
+                            isWeekend,
+                            bookingDetails.acceptedWithinMinutes
+                        );
+                    } else if (bookingDetails.providerType === 'place') {
+                        await providerRewardsService.awardPlaceBookingCoins(
+                            bookingDetails.providerId.toString(),
+                            bookingDetails.providerName || 'Massage Place',
+                            bookingId,
+                            bookingDetails.rating,
+                            parseInt(bookingDetails.service) || 60,
+                            bookingDetails.isReturnCustomer
+                        );
+                    }
+                } catch (providerError) {
+                    console.error('Error awarding provider coins:', providerError);
+                }
+            }
+
+            // Award coins to hotel/villa if this is a hotel/villa booking
+            if (bookingDetails?.hotelVillaId && bookingDetails?.hotelVillaName) {
+                try {
+                    const { providerRewardsService } = await import('./providerRewardsService');
+                    await providerRewardsService.awardHotelVillaBookingCoins(
+                        bookingDetails.hotelVillaId.toString(),
+                        bookingDetails.hotelVillaName,
+                        bookingDetails.hotelVillaType || 'hotel',
+                        bookingId,
+                        bookingDetails.wasChatBooking || false
+                    );
+                } catch (hotelError) {
+                    console.error('Error awarding hotel/villa coins:', hotelError);
+                }
+            }
+            
             console.log('✅ Booking completed:', bookingId);
             return booking;
         } catch (error) {
             console.error('Error completing booking:', error);
             throw error;
         }
+    },
+
+    /**
+     * Helper method to check if date is weekend
+     */
+    isWeekend(date: Date): boolean {
+        const day = date.getDay();
+        return day === 0 || day === 6; // Sunday or Saturday
     },
 
     /**

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import type { Therapist, Place } from '../types';
+import type { Page } from '../types/pageTypes';
 import PlaceCard from '../components/PlaceCard';
 import TherapistCard from '../components/TherapistCard';
 import { getRandomLiveMenuImage } from '../lib/appwriteService';
@@ -16,9 +17,13 @@ interface VenueProfile {
 
 interface HotelVillaMenuPageProps {
     venueId: string;
+    logo?: string;
     therapists: Therapist[];
     places: Place[];
     onBook: (provider: Therapist | Place, type: 'therapist' | 'place') => void;
+    onBack?: () => void;
+    onNavigate?: (page: Page) => void;
+    t?: any;
 }
 
 const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({ 

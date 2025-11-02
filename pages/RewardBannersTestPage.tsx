@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 
-const RewardBannersTestPage: React.FC = () => {
+interface RewardBannersTestPageProps {
+    onBack?: () => void;
+    t?: any;
+}
+
+const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _onBack, t: _t }) => {
     const [activeModal, setActiveModal] = useState<string | null>(null);
 
     const renderModal = () => {

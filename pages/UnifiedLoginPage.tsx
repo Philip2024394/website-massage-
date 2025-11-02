@@ -100,30 +100,68 @@ const UnifiedLoginPage: React.FC = () => {
     <div
       className="min-h-screen flex flex-col items-center justify-center p-4 relative"
       style={{
-        backgroundImage: "url('https://ik.imagekit.io/7grri5v7d/massage%20hoter%20villa.png?updatedAt=1760965742264')",
+        backgroundImage: "url('https://ik.imagekit.io/7grri5v7d/massage%20image%208.png?updatedAt=1760187222991')",
         backgroundSize: 'cover',
         backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
       }}
     >
+      {/* Overlay for better readability */}
+      <div className="absolute inset-0 bg-black/40"></div>
+
       {/* Return to Home Button */}
       <button
         onClick={() => typeof navigate === 'function' ? navigate('/') : window.location.href = '/'}
-        className="absolute top-6 left-6 z-20 focus:outline-none"
+        className="fixed top-6 left-6 w-12 h-12 bg-orange-500 hover:bg-orange-600 rounded-full shadow-lg flex items-center justify-center transition-all z-20 border border-orange-400"
         aria-label="Back to Home"
       >
-        <span className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-orange-500 shadow-lg border-2 border-white transition-all duration-200 hover:bg-orange-600">
-          <HomeIcon className="w-6 h-6 text-white" />
-        </span>
+        <HomeIcon className="w-6 h-6 text-white" />
       </button>
-      <div className="bg-white/90 rounded-xl shadow-lg p-8 w-full max-w-md backdrop-blur-md">
-        <h2 className="text-2xl font-bold mb-6 text-center">Login / Create Account</h2>
-  {error && <div className="text-red-500 text-center mb-2">{error}</div>}
-  {success && <div className="text-green-600 text-center mb-2">{success}</div>}
-  <form onSubmit={handleSubmit} className="space-y-4">
+
+      {/* Glass Effect Login Container */}
+      <div className="max-w-md w-full bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-8 relative z-10 border border-white/20">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold mb-2">
+            <span className="text-white">Inda</span>
+            <span className="text-orange-400">Street</span>
+          </h1>
+          <p className="text-white/90 font-medium">Customer Account</p>
+        </div>
+
+        <div className="flex mb-6 bg-white/10 backdrop-blur-sm rounded-lg p-1 border border-white/20">
+          <button
+            onClick={() => setMode('login')}
+            className={`flex-1 py-2 px-4 rounded-md transition-all ${
+              mode === 'login' ? 'bg-orange-500 shadow-lg text-white font-semibold' : 'text-white/90 hover:bg-white/5'
+            }`}
+          >
+            Sign In
+          </button>
+          <button
+            onClick={() => setMode('register')}
+            className={`flex-1 py-2 px-4 rounded-md transition-all ${
+              mode === 'register' ? 'bg-orange-500 shadow-lg text-white font-semibold' : 'text-white/90 hover:bg-white/5'
+            }`}
+          >
+            Create Account
+          </button>
+        </div>
+
+        {error && (
+          <div className="mb-4 p-3 rounded-lg backdrop-blur-sm bg-red-500/20 text-red-100 border border-red-400/30">
+            {error}
+          </div>
+        )}
+        {success && (
+          <div className="mb-4 p-3 rounded-lg backdrop-blur-sm bg-green-500/20 text-green-100 border border-green-400/30">
+            {success}
+          </div>
+        )}
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block mb-1 font-medium">Select Role</label>
+            <label className="block text-sm font-medium text-white/90 mb-2">Select Role</label>
             <select
-              className="w-full border rounded p-2"
+              className="w-full bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg p-3 focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900"
               value={selectedRole}
               onChange={handleRoleChange}
               required
@@ -135,65 +173,59 @@ const UnifiedLoginPage: React.FC = () => {
             </select>
           </div>
           <div>
-            <label className="block mb-1 font-medium">Email</label>
+            <label className="block text-sm font-medium text-white/90 mb-2">Email</label>
             <input
               type="email"
               name="email"
-              className="w-full border rounded p-2"
+              className="w-full bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg p-3 focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
               value={form.email}
               onChange={handleInputChange}
+              placeholder="your@email.com"
               required
             />
           </div>
           <div>
-            <label className="block mb-1 font-medium">Password</label>
+            <label className="block text-sm font-medium text-white/90 mb-2">Password</label>
             <input
               type="password"
               name="password"
-              className="w-full border rounded p-2"
+              className="w-full bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg p-3 focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
               value={form.password}
               onChange={handleInputChange}
+              placeholder="••••••••"
               required
             />
           </div>
           {/* Extra field for registration, e.g. agent code for therapist/place */}
           {mode === 'register' && (selectedRole === 'therapist' || selectedRole === 'place') && (
             <div>
-              <label className="block mb-1 font-medium">Agent Code (optional)</label>
+              <label className="block text-sm font-medium text-white/90 mb-2">Agent Code (optional)</label>
               <input
                 type="text"
                 name="extra"
-                className="w-full border rounded p-2"
+                className="w-full bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg p-3 focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
                 value={form.extra}
                 onChange={handleInputChange}
+                placeholder="Agent code (optional)"
               />
             </div>
           )}
-          <div className="flex justify-between items-center mt-4">
-            <button
-              type="button"
-              className="text-blue-600 hover:underline text-sm"
-              onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
-            >
-              {mode === 'login' ? 'Create an account' : 'Already have an account? Login'}
-            </button>
-            <button
-              type="submit"
-              className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 font-semibold flex items-center justify-center gap-2"
-            >
-              {mode === 'login' ? (
-                <>
-                  <LogIn className="w-5 h-5" />
-                  Login
-                </>
-              ) : (
-                <>
-                  <UserPlus className="w-5 h-5" />
-                  Register
-                </>
-              )}
-            </button>
-          </div>
+          <button
+            type="submit"
+            className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 shadow-lg transition-all mt-6"
+          >
+            {mode === 'login' ? (
+              <>
+                <LogIn className="w-5 h-5" />
+                Login
+              </>
+            ) : (
+              <>
+                <UserPlus className="w-5 h-5" />
+                Register
+              </>
+            )}
+          </button>
         </form>
       </div>
     </div>

@@ -1,0 +1,127 @@
+import React, { useState, useEffect } from 'react';
+import { providerRewardsService } from '../lib/providerRewardsService';
+
+interface CommissionConfirmationProps {
+    bookingId: string;
+    hotelVillaId: string;
+    hotelVillaType: 'hotel' | 'villa';
+    hotelVillaName: string;
+    therapistId: string;
+    therapistName: string;
+    commissionAmount: number;
+    confirmedBy: string;
+    onConfirmationComplete?: (success: boolean, message: string) => void;
+}
+
+const CommissionConfirmation: React.FC<CommissionConfirmationProps> = ({
+    bookingId,
+    hotelVillaId,
+    hotelVillaType,
+    hotelVillaName,
+    therapistId,
+    therapistName,
+    commissionAmount,
+    confirmedBy,
+    onConfirmationComplete
+}) => {
+    const [loading, setLoading] = useState(false);
+    const [confirmed, setConfirmed] = useState(false);
+    const [error, setError] = useState('');
+
+    const handleConfirmPayment = async () => {
+        setLoading(true);
+        setError('');
+
+        try {
+            const result = await providerRewardsService.confirmCommissionPayment(
+                bookingId,
+                hotelVillaId,
+                hotelVillaType,
+                hotelVillaName,
+                therapistId,
+                therapistName,
+                commissionAmount,
+                confirmedBy
+            );
+
+            if (result.success) {
+                setConfirmed(true);
+                onConfirmationComplete?.(true, result.message);
+            } else {
+                setError(result.message);
+                onConfirmationComplete?.(false, result.message);
+            }
+        } catch (error) {
+            const errorMessage = 'Failed to confirm commission payment';
+            setError(errorMessage);
+            onConfirmationComplete?.(false, errorMessage);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (confirmed) {
+        return (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-center gap-3">
+                    <span className="text-green-500 text-xl">✅</span>
+                    <div>
+                        <h3 className="font-bold text-green-800">Payment Confirmed!</h3>
+                        <p className="text-sm text-green-600">
+                            Commission payment confirmed. Therapist status updated to available.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="space-y-4">
+                <div>
+                    <h3 className="font-bold text-gray-800 mb-2">📋 Confirm Commission Payment</h3>
+                    <div className="text-sm text-gray-600 space-y-1">
+                        <div><strong>Booking ID:</strong> {bookingId}</div>
+                        <div><strong>Therapist:</strong> {therapistName}</div>
+                        <div><strong>Commission Amount:</strong> ${commissionAmount}</div>
+                        <div><strong>{hotelVillaType === 'hotel' ? 'Hotel' : 'Villa'}:</strong> {hotelVillaName}</div>
+                    </div>
+                </div>
+
+                {error && (
+                    <div className="bg-red-50 border border-red-200 rounded p-3">
+                        <p className="text-red-600 text-sm">{error}</p>
+                    </div>
+                )}
+
+                <div className="bg-orange-50 border border-orange-200 rounded p-3">
+                    <p className="text-orange-700 text-sm">
+                        <strong>⚠️ Important:</strong> Only confirm payment after you have received 
+                        the commission from the therapist. This will release the therapist to accept new bookings.
+                    </p>
+                </div>
+
+                <button
+                    onClick={handleConfirmPayment}
+                    disabled={loading}
+                    className="w-full bg-green-500 text-white py-3 px-4 rounded-lg font-bold hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    {loading ? 'Confirming...' : '✅ Confirm Payment Received'}
+                </button>
+
+                <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded">
+                    <strong>What happens when you confirm:</strong>
+                    <ul className="list-disc list-inside mt-1 space-y-1">
+                        <li>You earn 5 coins for confirming the payment</li>
+                        <li>Therapist status changes from "busy" to "available"</li>
+                        <li>Therapist can accept new bookings</li>
+                        <li>Payment record is permanently logged</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default CommissionConfirmation;

@@ -4,6 +4,8 @@ type Page = 'home' | 'registrationChoice' | 'contact' | 'about' | 'faq';
 
 interface AboutUsPageProps {
     onNavigate: (page: Page) => void;
+    onBack?: () => void;
+    t?: any;
 }
 
 const BurgerMenuIcon = ({ className = 'w-6 h-6' }) => (

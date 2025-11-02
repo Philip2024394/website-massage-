@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import type { Agent, Therapist, Place, AdminMessage, AgentVisit } from '../types';
-import { Users, RefreshCw, DollarSign, MessageSquare, User as UserIcon, LogOut, Code, TrendingUp, MapPin, Calendar, CheckCircle } from 'lucide-react';
+import { Users, RefreshCw, DollarSign, MessageSquare, User as UserIcon, LogOut, Code, TrendingUp, MapPin, Calendar, CheckCircle, X } from 'lucide-react';
 import ImageUpload from '../components/ImageUpload';
-import TabButton from '../components/dashboard/TabButton';
 import { agentVisitService } from '../lib/appwriteService';
 
 interface AgentDashboardPageProps {
@@ -23,12 +22,13 @@ const WhatsAppIcon: React.FC<{ className?: string }> = ({ className }) => (
     </svg>
 );
 
-const AgentDashboardPage: React.FC<AgentDashboardPageProps> = ({ agent, onLogout, t: _t, isAdminView = false, onStopImpersonating, messages = [], onSendMessage, onMarkMessagesAsRead, onSaveProfile }) => {
+const AgentDashboardPage: React.FC<AgentDashboardPageProps> = ({ agent, onLogout, t: _t, isAdminView = false, onStopImpersonating, messages = [], onSendMessage, onMarkMessagesAsRead: _onMarkMessagesAsRead, onSaveProfile }) => {
     const [activeTab, setActiveTab] = useState<'visits' | 'clients' | 'renewals' | 'earnings' | 'messages' | 'profile'>('visits');
     const [clients, setClients] = useState<(Therapist | Place)[]>([]);
     const [visits, setVisits] = useState<AgentVisit[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [newMessage, setNewMessage] = useState('');
+    const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
     
     // Visit Form State
     const [providerName, setProviderName] = useState('');
@@ -86,13 +86,6 @@ const AgentDashboardPage: React.FC<AgentDashboardPageProps> = ({ agent, onLogout
     }, [clients]);
     
     const unreadMessagesCount = useMemo(() => messages.filter(m => !m.isRead).length, [messages]);
-
-    const handleTabClick = (tab: 'visits' | 'clients' | 'renewals' | 'earnings' | 'messages' | 'profile') => {
-        setActiveTab(tab);
-        if (tab === 'messages' && !isAdminView && unreadMessagesCount > 0) {
-            onMarkMessagesAsRead?.();
-        }
-    };
 
     const handleCaptureLocation = () => {
         if (!navigator.geolocation) {
@@ -287,17 +280,27 @@ const AgentDashboardPage: React.FC<AgentDashboardPageProps> = ({ agent, onLogout
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Header - Same as Hotel Dashboard */}
-            <header className="bg-white shadow-sm px-2 sm:px-3 py-2 sm:py-3 sticky top-0 z-30">
+            {/* Header with Burger Menu */}
+            <header className="bg-white shadow-sm px-4 py-3 sticky top-0 z-30">
                 <div className="max-w-7xl mx-auto flex justify-between items-center">
-                    <h1 className="text-base sm:text-2xl font-bold">
-                        <span className="text-gray-900">Inda</span>
-                        <span className="text-orange-500">Street</span>
-                    </h1>
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => setIsSideDrawerOpen(true)}
+                            className="p-2 text-gray-700 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-colors"
+                        >
+                            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        </button>
+                        <h1 className="text-xl sm:text-2xl font-bold">
+                            <span className="text-gray-900">Inda</span>
+                            <span className="text-orange-500">Street</span> Agent
+                        </h1>
+                    </div>
                     {!isAdminView && (
                         <button
                             onClick={onLogout}
-                            className="flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-all"
+                            className="flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
                         >
                             <LogOut className="w-4 h-4" />
                             <span className="hidden sm:inline">Logout</span>
@@ -305,6 +308,141 @@ const AgentDashboardPage: React.FC<AgentDashboardPageProps> = ({ agent, onLogout
                     )}
                 </div>
             </header>
+
+            {/* Side Drawer */}
+            {isSideDrawerOpen && (
+                <div className="fixed inset-0 z-50">
+                    {/* Overlay */}
+                    <div 
+                        className="absolute inset-0 bg-black bg-opacity-50"
+                        onClick={() => setIsSideDrawerOpen(false)}
+                    ></div>
+                    
+                    {/* Drawer */}
+                    <div className="absolute left-0 top-0 h-full w-80 bg-white shadow-xl">
+                        {/* Drawer Header */}
+                        <div className="bg-orange-500 px-6 py-4">
+                            <div className="flex items-center justify-between">
+                                <h2 className="text-white text-lg font-semibold">Agent Dashboard</h2>
+                                <button
+                                    onClick={() => setIsSideDrawerOpen(false)}
+                                    className="text-white hover:text-orange-200 transition-colors"
+                                >
+                                    <X size={24} />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Navigation Items */}
+                        <div className="p-4 space-y-2">
+                            <button
+                                onClick={() => {
+                                    setActiveTab('visits');
+                                    setIsSideDrawerOpen(false);
+                                }}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                                    activeTab === 'visits' 
+                                        ? 'bg-orange-100 text-orange-600 border-l-4 border-orange-500' 
+                                        : 'text-gray-700 hover:bg-gray-100'
+                                }`}
+                            >
+                                <MapPin className="w-5 h-5" />
+                                Visits
+                                {visits.filter(v => v.status === 'followup_required').length > 0 && (
+                                    <span className="ml-auto bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
+                                        {visits.filter(v => v.status === 'followup_required').length}
+                                    </span>
+                                )}
+                            </button>
+
+                            <button
+                                onClick={() => {
+                                    setActiveTab('clients');
+                                    setIsSideDrawerOpen(false);
+                                }}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                                    activeTab === 'clients' 
+                                        ? 'bg-orange-100 text-orange-600 border-l-4 border-orange-500' 
+                                        : 'text-gray-700 hover:bg-gray-100'
+                                }`}
+                            >
+                                <Users className="w-5 h-5" />
+                                Clients
+                            </button>
+
+                            <button
+                                onClick={() => {
+                                    setActiveTab('renewals');
+                                    setIsSideDrawerOpen(false);
+                                }}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                                    activeTab === 'renewals' 
+                                        ? 'bg-orange-100 text-orange-600 border-l-4 border-orange-500' 
+                                        : 'text-gray-700 hover:bg-gray-100'
+                                }`}
+                            >
+                                <RefreshCw className="w-5 h-5" />
+                                Renewals
+                                {renewalsDue.length > 0 && (
+                                    <span className="ml-auto bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
+                                        {renewalsDue.length}
+                                    </span>
+                                )}
+                            </button>
+
+                            <button
+                                onClick={() => {
+                                    setActiveTab('earnings');
+                                    setIsSideDrawerOpen(false);
+                                }}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                                    activeTab === 'earnings' 
+                                        ? 'bg-orange-100 text-orange-600 border-l-4 border-orange-500' 
+                                        : 'text-gray-700 hover:bg-gray-100'
+                                }`}
+                            >
+                                <DollarSign className="w-5 h-5" />
+                                Earnings
+                            </button>
+
+                            <button
+                                onClick={() => {
+                                    setActiveTab('messages');
+                                    setIsSideDrawerOpen(false);
+                                }}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                                    activeTab === 'messages' 
+                                        ? 'bg-orange-100 text-orange-600 border-l-4 border-orange-500' 
+                                        : 'text-gray-700 hover:bg-gray-100'
+                                }`}
+                            >
+                                <MessageSquare className="w-5 h-5" />
+                                Messages
+                                {!isAdminView && unreadMessagesCount > 0 && (
+                                    <span className="ml-auto bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
+                                        {unreadMessagesCount}
+                                    </span>
+                                )}
+                            </button>
+
+                            <button
+                                onClick={() => {
+                                    setActiveTab('profile');
+                                    setIsSideDrawerOpen(false);
+                                }}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                                    activeTab === 'profile' 
+                                        ? 'bg-orange-100 text-orange-600 border-l-4 border-orange-500' 
+                                        : 'text-gray-700 hover:bg-gray-100'
+                                }`}
+                            >
+                                <UserIcon className="w-5 h-5" />
+                                Profile
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Main Container */}
             <div className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-6 pb-20">
@@ -344,51 +482,6 @@ const AgentDashboardPage: React.FC<AgentDashboardPageProps> = ({ agent, onLogout
                         </div>
                     </div>
                 </div>
-
-                {/* Tab Navigation - Same as Hotel Dashboard */}
-                <nav className="bg-white border-2 border-gray-200 rounded-xl mb-6 p-2">
-                    <div className="flex gap-1 sm:gap-2 overflow-x-auto scrollbar-hide">
-                        <TabButton
-                            icon={<MapPin />}
-                            label="Visits"
-                            isActive={activeTab === 'visits'}
-                            onClick={() => handleTabClick('visits')}
-                            badge={visits.filter(v => v.status === 'followup_required').length || undefined}
-                        />
-                        <TabButton
-                            icon={<Users />}
-                            label="Clients"
-                            isActive={activeTab === 'clients'}
-                            onClick={() => handleTabClick('clients')}
-                        />
-                        <TabButton
-                            icon={<RefreshCw />}
-                            label="Renewals"
-                            isActive={activeTab === 'renewals'}
-                            onClick={() => handleTabClick('renewals')}
-                            badge={renewalsDue.length > 0 ? renewalsDue.length : undefined}
-                        />
-                        <TabButton
-                            icon={<DollarSign />}
-                            label="Earnings"
-                            isActive={activeTab === 'earnings'}
-                            onClick={() => handleTabClick('earnings')}
-                        />
-                        <TabButton
-                            icon={<MessageSquare />}
-                            label="Messages"
-                            isActive={activeTab === 'messages'}
-                            onClick={() => handleTabClick('messages')}
-                            badge={!isAdminView && unreadMessagesCount > 0 ? unreadMessagesCount : undefined}
-                        />
-                        <TabButton
-                            icon={<UserIcon />}
-                            label="Profile"
-                            isActive={activeTab === 'profile'}
-                            onClick={() => handleTabClick('profile')}
-                        />
-                    </div>
-                </nav>
 
                 {/* Tab Content */}
                 {isLoading ? (

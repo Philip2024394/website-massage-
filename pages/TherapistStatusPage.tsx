@@ -7,6 +7,7 @@ interface TherapistStatusPageProps {
     onStatusChange: (status: AvailabilityStatus) => void;
     onNavigateToDashboard: () => void;
     onNavigateToHome?: () => void;
+    onLogout?: () => Promise<void>;
     t: any;
 }
 

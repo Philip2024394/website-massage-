@@ -37,7 +37,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
     isCustomerLoggedIn = false,
     activeDiscount,
     t: _t,
-    userLocation
+    userLocation: _userLocation
 }) => {
     const [showReferModal, setShowReferModal] = useState(false);
     const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);

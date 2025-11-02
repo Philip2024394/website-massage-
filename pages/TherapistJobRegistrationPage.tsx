@@ -6,8 +6,11 @@ const DATABASE_ID = APPWRITE_CONFIG.databaseId;
 const COLLECTIONS = APPWRITE_CONFIG.collections;
 
 interface TherapistJobRegistrationPageProps {
+    jobId?: string;
     onBack: () => void;
-    onSuccess: () => void;
+    onSuccess?: () => void;
+    onNavigate?: (page: any) => void;
+    t?: any;
 }
 
 const indonesianCities = [
@@ -130,7 +133,7 @@ const TherapistJobRegistrationPage: React.FC<TherapistJobRegistrationPageProps> 
                 }
             );
 
-            onSuccess();
+            onSuccess?.();
         } catch (err: any) {
             console.error('Error creating therapist listing:', err);
             setError(err.message || 'Failed to create listing. Please try again.');

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import type { User, UserLocation, Agent, Place, Therapist, Analytics } from '../types';
+import type { User, UserLocation, Agent, Place, Therapist, Analytics, UserCoins } from '../types';
 import LocationModal from '../components/LocationModal';
 import TherapistCard from '../components/TherapistCard';
 import MassagePlaceCard from '../components/MassagePlaceCard';
@@ -19,6 +19,7 @@ interface HomePageProps {
     loggedInAgent: Agent | null;
     loggedInProvider?: { id: number; type: 'therapist' | 'place' } | null; // Add logged in provider
     loggedInCustomer?: any | null; // Add customer login state
+    userCoins?: UserCoins | null; // Add user coins
     therapists: any[];
     places: any[];
     userLocation: UserLocation | null;
@@ -35,7 +36,6 @@ interface HomePageProps {
     onCreateProfileClick: () => void;
     onAgentPortalClick: () => void;
     onCustomerPortalClick?: () => void; // Add customer portal callback
-    onMassageTypesClick: () => void;
     onHotelPortalClick: () => void;
     onVillaPortalClick: () => void;
     onTherapistPortalClick: () => void;
@@ -78,7 +78,6 @@ const HomePage: React.FC<HomePageProps> = ({
     onIncrementAnalytics, 
     onAgentPortalClick,
     onCustomerPortalClick,
-    onMassageTypesClick, 
     onHotelPortalClick, 
     onVillaPortalClick, 
     onTherapistPortalClick, 
@@ -87,7 +86,7 @@ const HomePage: React.FC<HomePageProps> = ({
     onBrowseJobsClick: _onBrowseJobsClick, 
     onEmployerJobPostingClick: _onEmployerJobPostingClick, 
     onMassageJobsClick, 
-    onTherapistJobsClick, 
+    onTherapistJobsClick: _onTherapistJobsClick, 
     onTermsClick, 
     onPrivacyClick, 
     onNavigate, 
@@ -110,9 +109,9 @@ const HomePage: React.FC<HomePageProps> = ({
     const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [selectedMassageType, setSelectedMassageType] = useState(propSelectedMassageType || 'all');
-    const [customLinks, setCustomLinks] = useState<any[]>([]);
+    const [_customLinks, setCustomLinks] = useState<any[]>([]);
     const [showRatingModal, setShowRatingModal] = useState(false);
-    const [selectedTherapist, setSelectedTherapist] = useState<Therapist | null>(null);
+    const [_selectedTherapist, setSelectedTherapist] = useState<Therapist | null>(null);
     const [selectedRatingItem, setSelectedRatingItem] = useState<{item: any, type: 'therapist' | 'place'} | null>(null);
 
     // Update selectedMassageType when prop changes
@@ -232,6 +231,35 @@ const HomePage: React.FC<HomePageProps> = ({
                         <span className="text-orange-500">Street</span>
                     </h1>
                     <div className="flex items-center gap-3 text-gray-600">
+                        {/* Quick Access Buttons */}
+                        <button 
+                            onClick={() => {
+                                if (onNavigate) {
+                                    onNavigate('notifications');
+                                }
+                            }} 
+                            className="p-2 hover:bg-gray-100 rounded-full transition-colors" 
+                            title="Notifications"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            </svg>
+                        </button>
+                        
+                        <button 
+                            onClick={() => {
+                                if (onNavigate) {
+                                    onNavigate('referral');
+                                }
+                            }} 
+                            className="p-2 hover:bg-gray-100 rounded-full transition-colors" 
+                            title="Referral Program"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                            </svg>
+                        </button>
+
                         <button onClick={() => setIsMenuOpen(true)} title="Menu">
                            <BurgerMenuIcon className="w-6 h-6" />
                         </button>
@@ -244,7 +272,6 @@ const HomePage: React.FC<HomePageProps> = ({
                 isOpen={isMenuOpen}
                 onClose={() => setIsMenuOpen(false)}
                 onMassageJobsClick={onMassageJobsClick}
-                onTherapistJobsClick={onTherapistJobsClick}
                 onHotelPortalClick={onHotelPortalClick}
                 onVillaPortalClick={onVillaPortalClick}
                 onTherapistPortalClick={onTherapistPortalClick}
@@ -257,7 +284,6 @@ const HomePage: React.FC<HomePageProps> = ({
                 onPrivacyClick={onPrivacyClick}
                 therapists={therapists}
                 places={places}
-                customLinks={customLinks}
             />
 
 
@@ -306,12 +332,28 @@ const HomePage: React.FC<HomePageProps> = ({
             <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"/>
                         </div>
                         <button 
-                            onClick={() => {
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                console.log('🛒 Online Shop button clicked!');
+                                console.log('onNavigate function exists:', !!onNavigate);
+                                
                                 if (onNavigate) {
-                                    onNavigate('coin-shop');
+                                    console.log('✅ Calling onNavigate with coin-shop');
+                                    try {
+                                        onNavigate('coin-shop');
+                                        console.log('✅ Navigation called successfully');
+                                    } catch (error) {
+                                        console.error('❌ Error calling onNavigate:', error);
+                                    }
+                                } else {
+                                    console.error('❌ onNavigate is not available!');
+                                    alert('Navigation function not available. Please refresh the page.');
                                 }
                             }} 
-                            className="ml-3 text-orange-500 font-semibold text-sm whitespace-nowrap hover:text-orange-600 transition-colors flex items-center gap-1"
+                            className="ml-3 text-orange-500 font-semibold text-sm whitespace-nowrap hover:text-orange-600 transition-colors flex items-center gap-1 cursor-pointer bg-orange-50 px-2 py-1 rounded border-2 border-orange-200"
+                            type="button"
+                            title="Click to go to Online Shop"
                         >
                             <span>🛒</span>
                             Online Shop
@@ -321,8 +363,28 @@ const HomePage: React.FC<HomePageProps> = ({
                     {/* Massage Directory Button - Centered */}
                     <div className="flex justify-center mt-3">
                         <button 
-                            onClick={onMassageTypesClick} 
-                            className="text-orange-500 font-semibold text-sm hover:text-orange-600 transition-colors"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                console.log('📋 Massage Directory button clicked!');
+                                console.log('onNavigate function exists:', !!onNavigate);
+                                
+                                if (onNavigate) {
+                                    console.log('✅ Calling onNavigate with massageTypes');
+                                    try {
+                                        onNavigate('massageTypes');
+                                        console.log('✅ Navigation to massageTypes called successfully');
+                                    } catch (error) {
+                                        console.error('❌ Error calling onNavigate:', error);
+                                    }
+                                } else {
+                                    console.error('❌ onNavigate is not available!');
+                                    alert('Navigation function not available. Please refresh the page.');
+                                }
+                            }}
+                            className="text-orange-500 font-semibold text-sm hover:text-orange-600 transition-colors bg-orange-50 px-4 py-2 rounded border-2 border-orange-200 cursor-pointer"
+                            type="button"
+                            title="Click to go to Massage Directory"
                         >
                             Massage Directory
                         </button>

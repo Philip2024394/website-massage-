@@ -34,7 +34,6 @@ export const useAuthHandlers = ({
     const handleProviderLogout = useCallback(async () => {
         await sessionLogout();
         setLoggedInProvider(null);
-        localStorage.removeItem('loggedInProvider');
         setPage('home');
     }, [setLoggedInProvider, setPage]);
 
@@ -74,7 +73,6 @@ export const useAuthHandlers = ({
     const handleAgentLogout = useCallback(async () => {
         await sessionLogout();
         setLoggedInAgent(null);
-        localStorage.removeItem('loggedInAgent');
         setPage('home');
     }, [setLoggedInAgent, setPage]);
 

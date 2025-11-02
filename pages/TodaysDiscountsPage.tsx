@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Clock, MapPin, Star } from 'lucide-react';
+import type { Page } from '../types/pageTypes';
 
 interface Therapist {
     id: string;
@@ -14,6 +15,8 @@ interface Therapist {
 
 interface TodaysDiscountsPageProps {
     onBack: () => void;
+    onNavigate?: (page: Page) => void;
+    t?: any;
 }
 
 const TodaysDiscountsPage: React.FC<TodaysDiscountsPageProps> = ({ onBack }) => {

@@ -15,6 +15,7 @@ const CheckCircleIcon: React.FC<{className?: string}> = ({ className }) => (
 
 
 interface MembershipPageProps {
+    onSelectPackage?: (packageName: string, price: string) => void;
     onPackageSelect: (packageName: string, price: string) => void;
     onBack: () => void;
     t: any;

@@ -5,6 +5,9 @@ import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 
 interface EmployerJobPostingPageProps {
     onNavigateToPayment?: (jobId: string) => void;
+    onBack?: () => void;
+    onNavigate?: (page: any) => void;
+    t?: any;
 }
 
 const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({ onNavigateToPayment }) => {

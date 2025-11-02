@@ -19,7 +19,12 @@ interface BankAccount {
     $updatedAt?: string;
 }
 
-const AdminBankSettingsPage: React.FC = () => {
+interface AdminBankSettingsPageProps {
+    onBack?: () => void;
+    t?: any;
+}
+
+const AdminBankSettingsPage: React.FC<AdminBankSettingsPageProps> = ({ onBack: _onBack, t: _t }) => {
     const [banks, setBanks] = useState<BankAccount[]>([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);

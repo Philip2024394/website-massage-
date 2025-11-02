@@ -224,8 +224,13 @@ export type MassageTypesString = string; // JSON string of string array
 
 export interface Analytics {
     impressions: number;
+    views: number;
     profileViews: number;
+    whatsapp_clicks: number;
     whatsappClicks: number;
+    phone_clicks: number;
+    directions_clicks: number;
+    bookings: number;
 }
 
 export interface Therapist {

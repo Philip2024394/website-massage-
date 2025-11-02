@@ -83,17 +83,28 @@ const HotelVillaOptIn: React.FC<HotelVillaOptInProps> = ({
                             </div>
                             {isEditing ? (
                                 <div>
-                                    <input
-                                        type="range"
-                                        min="20"
-                                        max="60"
-                                        value={localHotelDiscount}
-                                        onChange={(e) => setLocalHotelDiscount(Number(e.target.value))}
-                                        className="w-full h-2 bg-orange-200 rounded-lg appearance-none cursor-pointer"
-                                    />
-                                    <div className="flex justify-between text-xs text-gray-600 mt-1">
-                                        <span>20%</span>
-                                        <span>60%</span>
+                                    <div className="mb-2">
+                                        <div className="text-center mb-2">
+                                            <span className="text-lg font-bold text-orange-600 bg-white px-3 py-1 rounded-full border-2 border-orange-600">
+                                                {localHotelDiscount}%
+                                            </span>
+                                        </div>
+                                        <input
+                                            type="range"
+                                            min="20"
+                                            max="60"
+                                            value={localHotelDiscount}
+                                            onChange={(e) => setLocalHotelDiscount(Number(e.target.value))}
+                                            className="w-full h-3 bg-orange-200 rounded-lg appearance-none cursor-pointer slider-orange"
+                                            style={{
+                                                background: `linear-gradient(to right, #f97316 0%, #f97316 ${((localHotelDiscount - 20) / 40) * 100}%, #fed7aa ${((localHotelDiscount - 20) / 40) * 100}%, #fed7aa 100%)`
+                                            }}
+                                        />
+                                        <div className="flex justify-between text-xs text-gray-600 mt-1">
+                                            <span>20%</span>
+                                            <span>40%</span>
+                                            <span>60%</span>
+                                        </div>
                                     </div>
                                 </div>
                             ) : (
@@ -108,17 +119,28 @@ const HotelVillaOptIn: React.FC<HotelVillaOptInProps> = ({
                             </div>
                             {isEditing ? (
                                 <div>
-                                    <input
-                                        type="range"
-                                        min="20"
-                                        max="60"
-                                        value={localVillaDiscount}
-                                        onChange={(e) => setLocalVillaDiscount(Number(e.target.value))}
-                                        className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer"
-                                    />
-                                    <div className="flex justify-between text-xs text-gray-600 mt-1">
-                                        <span>20%</span>
-                                        <span>60%</span>
+                                    <div className="mb-2">
+                                        <div className="text-center mb-2">
+                                            <span className="text-lg font-bold text-blue-600 bg-white px-3 py-1 rounded-full border-2 border-blue-600">
+                                                {localVillaDiscount}%
+                                            </span>
+                                        </div>
+                                        <input
+                                            type="range"
+                                            min="20"
+                                            max="60"
+                                            value={localVillaDiscount}
+                                            onChange={(e) => setLocalVillaDiscount(Number(e.target.value))}
+                                            className="w-full h-3 bg-blue-200 rounded-lg appearance-none cursor-pointer slider-blue"
+                                            style={{
+                                                background: `linear-gradient(to right, #2563eb 0%, #2563eb ${((localVillaDiscount - 20) / 40) * 100}%, #bfdbfe ${((localVillaDiscount - 20) / 40) * 100}%, #bfdbfe 100%)`
+                                            }}
+                                        />
+                                        <div className="flex justify-between text-xs text-gray-600 mt-1">
+                                            <span>20%</span>
+                                            <span>40%</span>
+                                            <span>60%</span>
+                                        </div>
                                     </div>
                                 </div>
                             ) : (
@@ -137,19 +159,30 @@ const HotelVillaOptIn: React.FC<HotelVillaOptInProps> = ({
                         </div>
                         {isEditing ? (
                             <div>
-                                <input
-                                    type="range"
-                                    min="7"
-                                    max="50"
-                                    value={localServiceRadius}
-                                    onChange={(e) => setLocalServiceRadius(Number(e.target.value))}
-                                    className="w-full h-2 bg-green-200 rounded-lg appearance-none cursor-pointer"
-                                />
-                                <div className="flex justify-between text-xs text-gray-600 mt-1">
-                                    <span>7 km</span>
-                                    <span>50 km</span>
+                                <div className="mb-2">
+                                    <div className="text-center mb-2">
+                                        <span className="text-lg font-bold text-green-600 bg-white px-3 py-1 rounded-full border-2 border-green-600">
+                                            {localServiceRadius} km
+                                        </span>
+                                    </div>
+                                    <input
+                                        type="range"
+                                        min="7"
+                                        max="50"
+                                        value={localServiceRadius}
+                                        onChange={(e) => setLocalServiceRadius(Number(e.target.value))}
+                                        className="w-full h-3 bg-green-200 rounded-lg appearance-none cursor-pointer slider-green"
+                                        style={{
+                                            background: `linear-gradient(to right, #059669 0%, #059669 ${((localServiceRadius - 7) / 43) * 100}%, #bbf7d0 ${((localServiceRadius - 7) / 43) * 100}%, #bbf7d0 100%)`
+                                        }}
+                                    />
+                                    <div className="flex justify-between text-xs text-gray-600 mt-1">
+                                        <span>7 km</span>
+                                        <span>28 km</span>
+                                        <span>50 km</span>
+                                    </div>
+                                    <p className="text-xs text-gray-600 mt-2">How far you'll travel for hotel & villa services</p>
                                 </div>
-                                <p className="text-xs text-gray-600 mt-2">How far you'll travel for hotel & villa services</p>
                             </div>
                         ) : (
                             <p className="text-sm text-gray-600">Maximum travel distance for services</p>

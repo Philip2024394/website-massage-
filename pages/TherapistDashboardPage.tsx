@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { Therapist, Pricing, Booking, Notification } from '../types';
+import type { Page } from '../types/pageTypes';
 import { AvailabilityStatus, BookingStatus, HotelVillaServiceStatus } from '../types';
 import { parsePricing, parseCoordinates, parseMassageTypes, stringifyPricing, stringifyCoordinates, stringifyMassageTypes, stringifyAnalytics } from '../utils/appwriteHelpers';
 import { therapistService, notificationService } from '../lib/appwriteService';
 import { soundNotificationService } from '../utils/soundNotificationService';
-import { User, Calendar, TrendingUp, Hotel, FileCheck, LogOut, Bell, Briefcase, MessageSquare, Tag, Activity, Megaphone, Menu } from 'lucide-react';
+import { User, Calendar, TrendingUp, Hotel, FileCheck, LogOut, Bell, Briefcase, MessageSquare, Tag, Activity, Megaphone, Menu, Crown } from 'lucide-react';
 import Button from '../components/Button';
 import DiscountSharePage from './DiscountSharePage';
+import MembershipPlansPage from './MembershipPlansPage';
 import ImageUpload from '../components/ImageUpload';
 import HotelVillaOptIn from '../components/HotelVillaOptIn';
 import Footer from '../components/Footer';
@@ -18,7 +20,6 @@ import MapPinIcon from '../components/icons/MapPinIcon';
 import CustomCheckbox from '../components/CustomCheckbox';
 import { MASSAGE_TYPES_CATEGORIZED } from '../constants/rootConstants';
 import TherapistTermsPage from './TherapistTermsPage';
-import TabButton from '../components/dashboard/TabButton';
 import TherapistJobOpportunitiesPage from './TherapistJobOpportunitiesPage';
 import PushNotificationSettings from '../components/PushNotificationSettings';
 import MemberChatWindow from '../components/MemberChatWindow';
@@ -29,9 +30,10 @@ interface TherapistDashboardPageProps {
     onLogout: () => void;
     onNavigateToNotifications: () => void;
     onNavigateToHome?: () => void;
-    onNavigate?: (page: string) => void;
+    onNavigate?: (page: Page) => void;
     onUpdateBookingStatus: (bookingId: number, status: BookingStatus) => void;
     onStatusChange?: (status: AvailabilityStatus) => void; // Add status change handler
+    handleNavigateToAdminLogin?: () => void;
     therapistId: number | string; // Support both for Appwrite compatibility
     bookings: Booking[];
     notifications: Notification[];
@@ -84,7 +86,7 @@ const BookingCard: React.FC<{ booking: Booking; onUpdateStatus: (id: number, sta
     );
 }
 
-const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave, onLogout, onNavigateToNotifications, onNavigateToHome, onNavigate, onUpdateBookingStatus, onStatusChange, therapistId, bookings, notifications, t }) => {
+const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave, onLogout, onNavigateToNotifications: _onNavigateToNotifications, onNavigateToHome, onNavigate, onUpdateBookingStatus, onStatusChange, handleNavigateToAdminLogin, therapistId, bookings, notifications, t }) => {
     const [therapist, setTherapist] = useState<Therapist | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -98,7 +100,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
     const [languages, setLanguages] = useState<string[]>([]);
     const [pricing, setPricing] = useState<Pricing>({ 60: 0, 90: 0, 120: 0 });
     const [hotelVillaPricing, setHotelVillaPricing] = useState<Pricing>({ 60: 0, 90: 0, 120: 0 });
-    const [useSamePricing, setUseSamePricing] = useState(false);
+    const [useSamePricing, setUseSamePricing] = useState(true);
     const [discountPercentage, setDiscountPercentage] = useState<number>(0);
     const [location, setLocation] = useState('');
     const [coordinates, setCoordinates] = useState({ lat: 0, lng: 0 });
@@ -186,7 +188,16 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                 activeMembershipDate: new Date().toISOString().split('T')[0],
                 email: `therapist${therapistId}@indostreet.com`,
                 distance: 0,
-                analytics: stringifyAnalytics({ impressions: 0, profileViews: 0, whatsappClicks: 0 }),
+                analytics: stringifyAnalytics({ 
+                  impressions: 0, 
+                  views: 0, 
+                  profileViews: 0,
+                  whatsapp_clicks: 0, 
+                  whatsappClicks: 0,
+                  phone_clicks: 0, 
+                  directions_clicks: 0, 
+                  bookings: 0 
+                }),
             };
             
             setTherapist(emptyTherapist);
@@ -358,7 +369,16 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                 location,
                 coordinates: stringifyCoordinates(coordinates),
                 status,
-                analytics: therapist?.analytics || stringifyAnalytics({ impressions: 0, profileViews: 0, whatsappClicks: 0 }),
+                analytics: therapist?.analytics || stringifyAnalytics({ 
+                  impressions: 0, 
+                  views: 0, 
+                  profileViews: 0,
+                  whatsapp_clicks: 0, 
+                  whatsappClicks: 0,
+                  phone_clicks: 0, 
+                  directions_clicks: 0, 
+                  bookings: 0 
+                }),
                 massageTypes: stringifyMassageTypes(massageTypes),
                 languages,
             } as any);
@@ -801,7 +821,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                     <Megaphone className="w-6 h-6 text-orange-600" />
                                 </div>
                                 <div>
-                                    <h2 className="text-2xl font-bold text-gray-900">Promotional Tools</h2>
+                                    <h2 className="text-2xl font-bold text-orange-700">Promotional Tools</h2>
                                     <p className="text-sm text-gray-600">Create and share special offers with customers</p>
                                 </div>
                             </div>
@@ -931,17 +951,17 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                 </p>
                                 <div className="space-y-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Select Discount Percentage</label>
-                                        <div className="grid grid-cols-5 gap-3">
+                                        <label className="block text-sm font-medium text-orange-700 mb-2">Promotional Discounts - Activate limited-time offers to attract customers</label>
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 md:gap-3">
                                             {[0, 5, 10, 15, 20].map((discount) => (
                                                 <button
                                                     key={discount}
                                                     type="button"
                                                     onClick={() => setDiscountPercentage(discount)}
-                                                    className={`px-4 py-3 rounded-lg text-sm font-semibold transition-all ${
+                                                    className={`px-2 py-2 md:px-4 md:py-3 rounded-lg text-xs md:text-sm font-semibold transition-all ${
                                                         discountPercentage === discount
-                                                            ? 'bg-orange-600 text-white shadow-lg transform scale-105'
-                                                            : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-orange-400 hover:shadow-md'
+                                                            ? 'bg-orange-600 text-white shadow-lg transform scale-105 border-2 border-orange-600'
+                                                            : 'bg-white text-gray-700 border-2 border-orange-300 hover:border-orange-500 hover:bg-orange-50 hover:shadow-md'
                                                     }`}
                                                 >
                                                     {discount === 0 ? 'None' : `-${discount}%`}
@@ -950,23 +970,28 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                         </div>
                                     </div>
                                     {discountPercentage > 0 && (
-                                        <div className="mt-4 p-4 bg-white rounded-lg border-2 border-orange-300">
-                                            <p className="text-sm font-semibold text-orange-700 mb-3">Preview of Discounted Prices:</p>
-                                            <div className="grid grid-cols-3 gap-3">
-                                                <div className="bg-gray-50 p-3 rounded-lg text-center">
-                                                    <p className="text-gray-600 font-medium mb-1">60 min</p>
+                                        <div className="mt-4 p-4 bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg border-2 border-orange-300">
+                                            <div className="bg-orange-600 text-white px-4 py-2 rounded-lg mb-3 text-center">
+                                                <p className="text-sm font-bold">🎉 {discountPercentage}% OFF Special Prices</p>
+                                            </div>
+                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                                <div className="bg-white p-3 rounded-lg text-center border-2 border-orange-200 shadow-sm">
+                                                    <div className="bg-orange-500 text-white px-2 py-1 rounded-md text-xs font-bold mb-2">1 Hour</div>
                                                     <p className="text-gray-400 line-through text-sm">Rp {pricing["60"]}k</p>
                                                     <p className="font-bold text-orange-600 text-lg">Rp {Math.round(pricing["60"] * (1 - discountPercentage / 100))}k</p>
+                                                    <p className="text-xs text-gray-600">60 minutes</p>
                                                 </div>
-                                                <div className="bg-gray-50 p-3 rounded-lg text-center">
-                                                    <p className="text-gray-600 font-medium mb-1">90 min</p>
+                                                <div className="bg-white p-3 rounded-lg text-center border-2 border-orange-200 shadow-sm">
+                                                    <div className="bg-orange-500 text-white px-2 py-1 rounded-md text-xs font-bold mb-2">1.5 Hours</div>
                                                     <p className="text-gray-400 line-through text-sm">Rp {pricing["90"]}k</p>
                                                     <p className="font-bold text-orange-600 text-lg">Rp {Math.round(pricing["90"] * (1 - discountPercentage / 100))}k</p>
+                                                    <p className="text-xs text-gray-600">90 minutes</p>
                                                 </div>
-                                                <div className="bg-gray-50 p-3 rounded-lg text-center">
-                                                    <p className="text-gray-600 font-medium mb-1">120 min</p>
+                                                <div className="bg-white p-3 rounded-lg text-center border-2 border-orange-200 shadow-sm">
+                                                    <div className="bg-orange-500 text-white px-2 py-1 rounded-md text-xs font-bold mb-2">2 Hours</div>
                                                     <p className="text-gray-400 line-through text-sm">Rp {pricing["120"]}k</p>
                                                     <p className="font-bold text-orange-600 text-lg">Rp {Math.round(pricing["120"] * (1 - discountPercentage / 100))}k</p>
+                                                    <p className="text-xs text-gray-600">120 minutes</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -975,92 +1000,120 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                             </div>
 
                             {/* Shareable Discount Banner */}
-                            <div className="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200 rounded-lg p-6">
-                                <div className="flex items-center gap-3 mb-4">
-                                    <svg className="w-6 h-6 text-purple-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"/>
-                                    </svg>
-                                    <h3 className="text-xl font-semibold text-gray-800">Share Your Discount</h3>
-                                </div>
-                                <p className="text-sm text-gray-600 mb-4">
-                                    Create a beautiful promotional banner to share on social media and with customers via chat.
-                                </p>
-                                
-                                {/* Discount Banner Preview */}
-                                <div className="bg-white rounded-xl p-6 mb-4 border-4 border-dashed border-purple-300">
-                                    <div className="text-center">
-                                        <div className="bg-gradient-to-r from-orange-500 to-pink-500 text-white inline-block px-6 py-2 rounded-full text-2xl font-bold mb-3">
-                                            {discountPercentage > 0 ? `${discountPercentage}% OFF` : 'NO DISCOUNT SET'}
-                                        </div>
-                                        <h4 className="text-2xl font-bold text-gray-900 mb-2">{therapist?.name || 'Your Name'}</h4>
-                                        <p className="text-gray-600 mb-4">Professional Massage Services</p>
-                                        {discountPercentage > 0 && (
-                                            <div className="bg-orange-50 rounded-lg p-4 inline-block">
-                                                <p className="text-sm text-gray-700 font-medium mb-2">Special Prices:</p>
-                                                <div className="flex gap-4 justify-center">
-                                                    <div>
-                                                        <p className="text-xs text-gray-500 line-through">Rp {pricing["60"]}k</p>
-                                                        <p className="text-lg font-bold text-orange-600">Rp {Math.round(pricing["60"] * (1 - discountPercentage / 100))}k</p>
-                                                        <p className="text-xs text-gray-600">60 min</p>
+                            <div 
+                                className="bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-200 rounded-lg p-4 md:p-6"
+                                style={{
+                                    backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/hotel%20staffs.png?updatedAt=1761578921097)',
+                                    backgroundSize: 'cover',
+                                    backgroundPosition: 'center',
+                                    backgroundRepeat: 'no-repeat'
+                                }}
+                            >
+                                {/* Overlay for better text readability */}
+                                <div className="bg-white/90 rounded-lg p-4 md:p-6">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <svg className="w-6 h-6 text-orange-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"/>
+                                        </svg>
+                                        <h3 className="text-lg md:text-xl font-semibold text-orange-700">Share Your Discount</h3>
+                                    </div>
+                                    <p className="text-sm text-gray-600 mb-4">
+                                        Create a beautiful promotional banner to share on social media and with customers via chat.
+                                    </p>
+                                    
+                                    {/* Discount Banner Preview */}
+                                    <div className="bg-white rounded-xl p-4 md:p-6 mb-4 border-4 border-dashed border-orange-300">
+                                        <div className="text-center">
+                                            <div className={`text-white inline-block px-4 md:px-6 py-2 rounded-full text-lg md:text-2xl font-bold mb-3 ${
+                                                discountPercentage > 0 
+                                                    ? 'bg-gradient-to-r from-orange-500 to-red-500' 
+                                                    : 'bg-gradient-to-r from-gray-400 to-gray-500'
+                                            }`}>
+                                                {discountPercentage > 0 ? `${discountPercentage}% OFF` : 'NO DISCOUNT SET'}
+                                            </div>
+                                            <h4 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">{therapist?.name || 'Your Name'}</h4>
+                                            <p className="text-gray-600 mb-4">Professional Massage Services</p>
+                                            {discountPercentage > 0 && (
+                                                <div className="bg-orange-50 rounded-lg p-3 md:p-4 inline-block border-2 border-orange-200">
+                                                    <div className="bg-orange-600 text-white px-3 py-1 rounded-md text-sm font-bold mb-2">
+                                                        💰 Special Prices
                                                     </div>
-                                                    <div>
-                                                        <p className="text-xs text-gray-500 line-through">Rp {pricing["90"]}k</p>
-                                                        <p className="text-lg font-bold text-orange-600">Rp {Math.round(pricing["90"] * (1 - discountPercentage / 100))}k</p>
-                                                        <p className="text-xs text-gray-600">90 min</p>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-xs text-gray-500 line-through">Rp {pricing["120"]}k</p>
-                                                        <p className="text-lg font-bold text-orange-600">Rp {Math.round(pricing["120"] * (1 - discountPercentage / 100))}k</p>
-                                                        <p className="text-xs text-gray-600">120 min</p>
+                                                    <div className="flex flex-col sm:flex-row gap-2 md:gap-4 justify-center">
+                                                        <div className="bg-white rounded-lg p-2 md:p-3 border border-orange-200">
+                                                            <div className="bg-orange-500 text-white px-2 py-1 rounded text-xs font-bold mb-1">1 Hour</div>
+                                                            <p className="text-xs text-gray-500 line-through">Rp {pricing["60"]}k</p>
+                                                            <p className="text-base md:text-lg font-bold text-orange-600">Rp {Math.round(pricing["60"] * (1 - discountPercentage / 100))}k</p>
+                                                            <p className="text-xs text-gray-600">60 minutes</p>
+                                                        </div>
+                                                        <div className="bg-white rounded-lg p-2 md:p-3 border border-orange-200">
+                                                            <div className="bg-orange-500 text-white px-2 py-1 rounded text-xs font-bold mb-1">1.5 Hours</div>
+                                                            <p className="text-xs text-gray-500 line-through">Rp {pricing["90"]}k</p>
+                                                            <p className="text-base md:text-lg font-bold text-orange-600">Rp {Math.round(pricing["90"] * (1 - discountPercentage / 100))}k</p>
+                                                            <p className="text-xs text-gray-600">90 minutes</p>
+                                                        </div>
+                                                        <div className="bg-white rounded-lg p-2 md:p-3 border border-orange-200">
+                                                            <div className="bg-orange-500 text-white px-2 py-1 rounded text-xs font-bold mb-1">2 Hours</div>
+                                                            <p className="text-xs text-gray-500 line-through">Rp {pricing["120"]}k</p>
+                                                            <p className="text-base md:text-lg font-bold text-orange-600">Rp {Math.round(pricing["120"] * (1 - discountPercentage / 100))}k</p>
+                                                            <p className="text-xs text-gray-600">120 minutes</p>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        )}
-                                        <p className="text-xs text-gray-500 mt-4">📱 WhatsApp: {therapist?.whatsappNumber || 'Not Set'}</p>
+                                            )}
+                                            <p className="text-xs text-gray-500 mt-4">📱 WhatsApp: {therapist?.whatsappNumber || 'Not Set'}</p>
+                                        </div>
                                     </div>
-                                </div>
 
-                                {/* Share Buttons */}
-                                <div className="space-y-3">
-                                    <p className="text-sm font-medium text-gray-700">Share this promotion:</p>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <button 
-                                            onClick={() => {
-                                                const message = discountPercentage > 0 
-                                                    ? `🌟 Special ${discountPercentage}% OFF! ${therapist?.name || 'Professional Massage'}\n\n60min: Rp ${Math.round(pricing["60"] * (1 - discountPercentage / 100))}k (was ${pricing["60"]}k)\n90min: Rp ${Math.round(pricing["90"] * (1 - discountPercentage / 100))}k (was ${pricing["90"]}k)\n120min: Rp ${Math.round(pricing["120"] * (1 - discountPercentage / 100))}k (was ${pricing["120"]}k)\n\nBook now! WhatsApp: ${therapist?.whatsappNumber || ''}`
-                                                    : `${therapist?.name || 'Professional Massage Services'}\n\n60min: Rp ${pricing["60"]}k\n90min: Rp ${pricing["90"]}k\n120min: Rp ${pricing["120"]}k\n\nWhatsApp: ${therapist?.whatsappNumber || ''}`;
-                                                navigator.clipboard.writeText(message);
-                                                setToast({ message: '✅ Promotional text copied! Paste it anywhere.', type: 'success' });
-                                                setTimeout(() => setToast(null), 3000);
-                                            }}
-                                            className="flex items-center justify-center gap-2 bg-gray-700 hover:bg-gray-800 text-white py-3 px-4 rounded-lg font-medium transition-colors"
-                                        >
-                                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                                <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/>
-                                                <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/>
-                                            </svg>
-                                            Copy Text
-                                        </button>
-                                        <button 
-                                            onClick={() => {
-                                                const message = discountPercentage > 0 
-                                                    ? `🌟 Special ${discountPercentage}% OFF! Book now!`
-                                                    : `Book professional massage services now!`;
-                                                const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
-                                                window.open(url, '_blank');
-                                            }}
-                                            className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg font-medium transition-colors"
-                                        >
-                                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                                            </svg>
-                                            Share WhatsApp
-                                        </button>
+                                    {/* Share Buttons */}
+                                    <div className="space-y-3">
+                                        <p className="text-sm font-medium text-orange-700 text-center">Share this promotion:</p>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            <button 
+                                                onClick={() => {
+                                                    const message = discountPercentage > 0 
+                                                        ? `🌟 Special ${discountPercentage}% OFF! ${therapist?.name || 'Professional Massage'}\n\n1 Hour (60min): Rp ${Math.round(pricing["60"] * (1 - discountPercentage / 100))}k (was ${pricing["60"]}k)\n1.5 Hours (90min): Rp ${Math.round(pricing["90"] * (1 - discountPercentage / 100))}k (was ${pricing["90"]}k)\n2 Hours (120min): Rp ${Math.round(pricing["120"] * (1 - discountPercentage / 100))}k (was ${pricing["120"]}k)\n\nBook now! WhatsApp: ${therapist?.whatsappNumber || ''}`
+                                                        : `${therapist?.name || 'Professional Massage Services'}\n\n1 Hour: Rp ${pricing["60"]}k\n1.5 Hours: Rp ${pricing["90"]}k\n2 Hours: Rp ${pricing["120"]}k\n\nWhatsApp: ${therapist?.whatsappNumber || ''}`;
+                                                    navigator.clipboard.writeText(message);
+                                                    setToast({ message: '✅ Promotional text copied! Paste it anywhere.', type: 'success' });
+                                                    setTimeout(() => setToast(null), 3000);
+                                                }}
+                                                className="flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white py-3 px-4 rounded-lg font-medium transition-colors shadow-md hover:shadow-lg"
+                                            >
+                                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/>
+                                                    <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/>
+                                                </svg>
+                                                <span className="text-sm md:text-base">Copy Text</span>
+                                            </button>
+                                            <button 
+                                                onClick={() => {
+                                                    const message = discountPercentage > 0 
+                                                        ? `🌟 Special ${discountPercentage}% OFF! Book now!`
+                                                        : `Book professional massage services now!`;
+                                                    const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+                                                    window.open(url, '_blank');
+                                                }}
+                                                className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg font-medium transition-colors shadow-md hover:shadow-lg"
+                                            >
+                                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                                                </svg>
+                                                <span className="text-sm md:text-base">Share WhatsApp</span>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                );
+            case 'membership':
+                return (
+                    <MembershipPlansPage 
+                        onBack={() => setActiveTab('profile')}
+                        userType="therapist"
+                        currentPlan="free"
+                    />
                 );
             case 'terms':
                 return <TherapistTermsPage />;
@@ -1075,7 +1128,8 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                 };
 
                 const handleAcceptImageRequirement = async () => {
-                    setProfilePicture(pendingImageUrl);
+                    const newImageUrl = pendingImageUrl;
+                    setProfilePicture(newImageUrl);
                     setShowImageRequirementModal(false);
                     setPendingImageUrl('');
                     
@@ -1086,17 +1140,44 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                             ? therapistId 
                             : therapistId.toString();
                         
-                        await therapistService.update(therapistIdString, {
-                            profilePicture: pendingImageUrl
-                        });
+                        // Check if therapist profile exists in database
+                        const existingProfile = await therapistService.getById(therapistIdString);
                         
-                        console.log('✅ Profile picture auto-saved successfully!');
+                        if (existingProfile) {
+                            // Update existing profile
+                            await therapistService.update(therapistIdString, {
+                                profilePicture: newImageUrl
+                            });
+                            console.log('✅ Profile picture auto-saved to existing profile!');
+                        } else {
+                            // For new profiles, we'll update the therapist state but defer database creation to manual save
+                            // This avoids issues with Appwrite's unique ID generation vs predefined IDs
+                            console.log('🔄 New profile detected - profile picture set, use Save Profile for full creation');
+                            setToast({ message: '📷 Profile picture set! Please click "Save Profile" to create your complete profile.', type: 'warning' });
+                            setTimeout(() => setToast(null), 4000);
+                            return; // Exit early, don't show success message
+                        }
+                        
                         setToast({ message: '✅ Profile picture saved automatically!', type: 'success' });
                         setTimeout(() => setToast(null), 3000);
                     } catch (error) {
                         console.error('❌ Error auto-saving profile picture:', error);
-                        setToast({ message: '⚠️ Profile picture uploaded but auto-save failed. Please click "Save Profile" button.', type: 'error' });
-                        setTimeout(() => setToast(null), 5000);
+                        
+                        // Provide more specific error messages based on error type
+                        let errorMessage = '⚠️ Profile picture uploaded but auto-save failed. Please click "Save Profile" button.';
+                        
+                        if (error instanceof Error) {
+                            if (error.message.includes('network') || error.message.includes('fetch')) {
+                                errorMessage = '🌐 Network error during auto-save. Please check connection and use "Save Profile" button.';
+                            } else if (error.message.includes('permission') || error.message.includes('auth')) {
+                                errorMessage = '🔐 Permission error during auto-save. Please use "Save Profile" button.';
+                            } else if (error.message.includes('not found') || error.message.includes('404')) {
+                                errorMessage = '📄 Profile not found. Please use "Save Profile" button to create your profile.';
+                            }
+                        }
+                        
+                        setToast({ message: errorMessage, type: 'error' });
+                        setTimeout(() => setToast(null), 6000);
                     }
                 };
 
@@ -1108,6 +1189,12 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                 
                 return (
                      <div className="space-y-6">
+                         {/* Profile Header */}
+                         <div className="border-b border-gray-200 pb-4">
+                             <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Profile</h2>
+                             <p className="text-sm text-gray-500 mt-1">Manage your therapist profile information</p>
+                         </div>
+                         
                          {/* Image Requirement Modal - Professional Design */}
                          {showImageRequirementModal && (
                             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -1223,6 +1310,11 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                             onImageChange={handleProfilePictureChange}
                             variant="profile"
                         />
+                        
+                        {/* Profile Picture Guidelines */}
+                        <div className="text-center -mt-2">
+                            <p className="text-xs text-gray-500">Your Image front or Side Photo !</p>
+                        </div>
                          
                         <div>
                             <label className="block text-sm font-medium text-gray-700">{t.nameLabel}</label>
@@ -1428,14 +1520,58 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                     <span className="font-semibold">{location ? 'Location Set ✓' : 'Set Location from Device'}</span>
                                 </Button>
                                 {location && (
-                                    <p className="text-xs text-gray-500 mt-2 text-center">
-                                        📍 {location.substring(0, 50)}{location.length > 50 ? '...' : ''}
-                                    </p>
+                                    <div className="mt-3 space-y-2">
+                                        <p className="text-xs text-gray-500 text-center">
+                                            📍 {location.substring(0, 50)}{location.length > 50 ? '...' : ''}
+                                        </p>
+                                        {coordinates.lat !== 0 && coordinates.lng !== 0 && (
+                                            <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                                                <p className="text-xs font-medium text-gray-700 mb-2">Location Coordinates:</p>
+                                                <div className="grid grid-cols-2 gap-2 text-xs mb-2">
+                                                    <div className="bg-white rounded p-2 border">
+                                                        <span className="text-gray-500">Lat:</span>
+                                                        <span className="font-mono ml-1 text-gray-900">{coordinates.lat.toFixed(6)}</span>
+                                                    </div>
+                                                    <div className="bg-white rounded p-2 border">
+                                                        <span className="text-gray-500">Lng:</span>
+                                                        <span className="font-mono ml-1 text-gray-900">{coordinates.lng.toFixed(6)}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="bg-white rounded p-2 border">
+                                                    <span className="text-gray-500 text-xs">Map ID:</span>
+                                                    <div className="font-mono text-xs text-gray-900 mt-1 break-all">
+                                                        {coordinates.lat.toFixed(6)},{coordinates.lng.toFixed(6)}
+                                                    </div>
+                                                    <button
+                                                        onClick={() => {
+                                                            const coordString = `${coordinates.lat.toFixed(6)},${coordinates.lng.toFixed(6)}`;
+                                                            navigator.clipboard.writeText(coordString);
+                                                            setToast({ message: '📋 Coordinates copied to clipboard!', type: 'success' });
+                                                            setTimeout(() => setToast(null), 2000);
+                                                        }}
+                                                        className="mt-1 mr-3 text-xs text-orange-600 hover:text-orange-700 underline"
+                                                    >
+                                                        Copy Coordinates
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            const mapsUrl = `https://www.google.com/maps?q=${coordinates.lat},${coordinates.lng}`;
+                                                            window.open(mapsUrl, '_blank');
+                                                        }}
+                                                        className="mt-1 text-xs text-blue-600 hover:text-blue-700 underline"
+                                                    >
+                                                        View on Google Maps
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
                                 )}
                             </div>
                         </div>
                         <div>
-                            <h3 className="text-sm sm:text-md font-medium text-gray-800 mb-2">{t.pricingTitle || 'Pricing'}</h3>
+                            <h3 className="text-sm sm:text-md font-medium text-gray-800 mb-1">Set Your Prices (Rp)</h3>
+                            <p className="text-xs text-gray-500 mb-3">These Prices Displayed On The App</p>
                             <div className="grid grid-cols-3 gap-2 sm:gap-3">
                                 <div>
                                    <label className="block text-xs font-medium text-gray-600 mb-1">{t['60min'] || '60min'}</label>
@@ -1463,22 +1599,18 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                         
                         {/* Hotel/Villa Special Pricing Section */}
                         <div className="border-t border-gray-200 pt-4">
-                            <div className="flex items-center justify-between mb-3">
-                                <div>
-                                    <h3 className="text-sm sm:text-md font-medium text-gray-800">Hotel/Villa Live Menu Pricing</h3>
-                                    <p className="text-xs text-gray-500 mt-1">
-                                        Set special prices for hotel/villa guests (max 20% increase, or lower)
-                                    </p>
-                                </div>
-                                <label className="flex items-center gap-2 cursor-pointer">
-                                    <input 
-                                        type="checkbox" 
+                            <div className="mb-3">
+                                <h3 className="text-sm sm:text-md font-medium text-gray-800">Hotel/Villa Live Menu Pricing</h3>
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Set special prices for hotel/villa guest Menu
+                                </p>
+                                <div className="mt-3">
+                                    <CustomCheckbox
+                                        label="Same as regular"
                                         checked={useSamePricing}
-                                        onChange={(e) => handleUseSamePricingChange(e.target.checked)}
-                                        className="w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500"
+                                        onChange={() => handleUseSamePricingChange(!useSamePricing)}
                                     />
-                                    <span className="text-xs text-gray-600">Same as regular</span>
-                                </label>
+                                </div>
                             </div>
                             <div className="grid grid-cols-3 gap-2 sm:gap-3">
                                 <div>
@@ -1743,6 +1875,18 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                             </button>
                             <button
                                 onClick={() => {
+                                    setActiveTab('membership');
+                                    setIsSideDrawerOpen(false);
+                                }}
+                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
+                                    activeTab === 'membership' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
+                                }`}
+                            >
+                                <Crown className="w-5 h-5" />
+                                <span className="font-medium">Membership Plans</span>
+                            </button>
+                            <button
+                                onClick={() => {
                                     setActiveTab('terms');
                                     setIsSideDrawerOpen(false);
                                 }}
@@ -1768,87 +1912,29 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                 <LogOut className="w-5 h-5" />
                                 <span className="font-medium">Logout</span>
                             </button>
+
+                            {/* Admin Link */}
+                            {handleNavigateToAdminLogin && (
+                                <div className="pt-2 mt-2 border-t border-gray-200">
+                                    <button
+                                        onClick={() => {
+                                            setIsSideDrawerOpen(false);
+                                            handleNavigateToAdminLogin();
+                                        }}
+                                        className="w-full flex items-center justify-center px-6 py-3 text-xs text-gray-600 hover:text-gray-900 transition-colors"
+                                    >
+                                        Admin
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </>
             )}
 
-            {/* Tab Navigation - Fixed under header */}
-            <nav className="bg-white border-b border-gray-200 sticky top-[57px] sm:top-[61px] z-30 overflow-x-auto scrollbar-hide">
-                <div className="max-w-7xl mx-auto px-1 sm:px-3 flex gap-1 py-1.5 sm:py-2">
-                    <TabButton
-                        icon={<Activity className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
-                        label="Online Status"
-                        isActive={activeTab === 'status'}
-                        onClick={() => setActiveTab('status')}
-                    />
-                    <TabButton
-                        icon={<User className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
-                        label={t.tabs?.profile || 'Profile'}
-                        isActive={activeTab === 'profile'}
-                        onClick={() => setActiveTab('profile')}
-                    />
-                    <TabButton
-                        icon={<Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
-                        label={t.tabs?.bookings || 'Booking'}
-                        isActive={activeTab === 'bookings'}
-                        onClick={() => setActiveTab('bookings')}
-                        badge={upcomingBookings.length}
-                    />
-                    <TabButton
-                        icon={<TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
-                        label={t.tabs?.analytics || 'Analytic'}
-                        isActive={activeTab === 'analytics'}
-                        onClick={() => setActiveTab('analytics')}
-                    />
-                    <TabButton
-                        icon={<Hotel className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
-                        label="Hotel/Villa"
-                        isActive={activeTab === 'hotelVilla'}
-                        onClick={() => setActiveTab('hotelVilla')}
-                    />
-                    <TabButton
-                        icon={<Bell className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
-                        label="Notifications"
-                        isActive={activeTab === 'notifications'}
-                        onClick={() => setActiveTab('notifications')}
-                    />
-                    <TabButton
-                        icon={<MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
-                        label="Chat Support"
-                        isActive={activeTab === 'chat'}
-                        onClick={() => setActiveTab('chat')}
-                    />
-                    <TabButton
-                        icon={<Megaphone className="w-3.5 h:3.5 sm:w-4 sm:h-4" />}
-                        label="Promotions"
-                        isActive={activeTab === 'promotions'}
-                        onClick={() => setActiveTab('promotions')}
-                    />
-                    <TabButton
-                        icon={<Tag className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
-                        label="Discounts"
-                        isActive={activeTab === 'discounts'}
-                        onClick={() => setActiveTab('discounts')}
-                    />
-                    <TabButton
-                        icon={<Briefcase className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
-                        label="Job Opportunities"
-                        isActive={activeTab === 'jobOpportunities'}
-                        onClick={() => setActiveTab('jobOpportunities')}
-                    />
-                    <TabButton
-                        icon={<FileCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
-                        label="Terms"
-                        isActive={activeTab === 'terms'}
-                        onClick={() => setActiveTab('terms')}
-                    />
-                </div>
-            </nav>
-
             {/* Content Area */}
             <main className={`max-w-7xl mx-auto px-3 sm:px-4 w-full ${
-                activeTab === 'status' ? 'h-[calc(100vh-160px)] overflow-y-auto py-2' : 'py-4 sm:py-6'
+                activeTab === 'status' ? 'h-[calc(100vh-120px)] overflow-y-auto py-2' : 'py-4 sm:py-6'
             }`}>
                 {renderContent()}
             </main>
@@ -1891,7 +1977,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
             <Footer
                 currentPage={activeTab}
                 userRole="therapist"
-                onHomeClick={onNavigateToHome || (() => {})}
+                onHomeClick={onNavigateToHome || (() => onNavigate?.('home')) || (() => {})}
                 onNotificationsClick={() => setActiveTab('notifications')}
                 onBookingsClick={() => setActiveTab('bookings')}
                 onProfileClick={() => setActiveTab('profile')}

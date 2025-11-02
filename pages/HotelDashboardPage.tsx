@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { Building, Image as ImageIcon, Link as LinkIcon, LogOut, Menu, MessageSquare, Phone, QrCode, Star, Tag, User, Users, X, Bell, Package } from 'lucide-react';
+import { Building, Image as ImageIcon, Link as LinkIcon, LogOut, Menu, MessageSquare, Phone, QrCode, Star, Tag, User, Users, X, Bell, Package, Settings } from 'lucide-react';
 import { Therapist, Place, HotelVillaServiceStatus } from '../types';
 import { parsePricing } from '../utils/appwriteHelpers';
 import { analyticsService } from '../services/analyticsService';
@@ -7,9 +7,9 @@ import { databases, ID } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import QRCodeGenerator from 'qrcode';
 // import Header from '../components/dashboard/Header';
-import TabButton from '../components/dashboard/TabButton';
 import PushNotificationSettings from '../components/PushNotificationSettings';
 import MemberChatWindow from '../components/MemberChatWindow';
+import HotelVillaServicesSettingsPage from './HotelVillaServicesSettingsPage';
 
 type DurationKey = '60' | '90' | '120';
 type ProviderType = 'therapist' | 'place';
@@ -35,7 +35,7 @@ interface HotelDashboardPageProps {
     therapists?: Therapist[];
     places?: Place[];
     hotelId?: string;
-    initialTab?: 'analytics' | 'discounts' | 'profile' | 'menu' | 'feedback' | 'concierge' | 'commissions' | 'notifications' | 'membership';
+    initialTab?: 'analytics' | 'discounts' | 'profile' | 'menu' | 'feedback' | 'concierge' | 'commissions' | 'notifications' | 'membership' | 'services-settings';
 }
 
 const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, therapists = [], places = [], hotelId = '1', initialTab = 'analytics' }) => {
@@ -51,9 +51,10 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
         'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=1200&auto=format&fit=crop',
     ];
 
-    const [activeTab, setActiveTab] = useState<'analytics' | 'discounts' | 'profile' | 'menu' | 'feedback' | 'concierge' | 'commissions' | 'notifications' | 'membership' | 'chat'>(initialTab);
+    const [activeTab, setActiveTab] = useState<'analytics' | 'discounts' | 'profile' | 'menu' | 'feedback' | 'concierge' | 'commissions' | 'notifications' | 'membership' | 'chat' | 'services-settings'>(initialTab);
     const [customWelcomeMessage, setCustomWelcomeMessage] = useState('Welcome to our exclusive wellness experience');
     const [selectedLanguage, setSelectedLanguage] = useState('en');
+    const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
     
     // Real analytics state
     const [analytics, setAnalytics] = useState<any>(null);
@@ -1508,114 +1509,254 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         </div>
                     </div>
                 );
+            case 'services-settings':
+                return (
+                    <HotelVillaServicesSettingsPage
+                        hotelVillaId={hotelId}
+                        onBack={() => setActiveTab('analytics')}
+                        onSave={async (settings) => {
+                            console.log('Saving hotel villa service settings:', settings);
+                            // TODO: Save to Appwrite or your database
+                        }}
+                    />
+                );
         }
     };
 
     return (
 
         <div className="min-h-screen bg-gray-50 flex flex-col max-w-[430px] sm:max-w-none mx-auto">
-            {/* Top Navigation Bar - Mobile Optimized */}
+            {/* Side Drawer Overlay */}
+            {isSideDrawerOpen && (
+                <div 
+                    className="fixed inset-0 bg-black bg-opacity-50 z-40"
+                    onClick={() => setIsSideDrawerOpen(false)}
+                />
+            )}
+
+            {/* Side Drawer */}
+            <div className={`fixed top-0 right-0 h-full w-80 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${
+                isSideDrawerOpen ? 'translate-x-0' : 'translate-x-full'
+            }`}>
+                {/* Drawer Header */}
+                <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4 flex justify-between items-center">
+                    <div>
+                        <h2 className="text-xl font-bold text-white">Hotel Menu</h2>
+                        <p className="text-sm text-orange-100">Navigation</p>
+                    </div>
+                    <button
+                        onClick={() => setIsSideDrawerOpen(false)}
+                        className="text-white hover:bg-orange-600 rounded-lg p-2 transition-colors"
+                    >
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
+
+                {/* Drawer Navigation Items */}
+                <nav className="flex flex-col p-4 space-y-2 overflow-y-auto h-[calc(100vh-140px)]">
+                    <button
+                        onClick={() => {
+                            setActiveTab('analytics');
+                            setIsSideDrawerOpen(false);
+                        }}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                            activeTab === 'analytics'
+                                ? 'bg-orange-500 text-white shadow-md'
+                                : 'text-gray-700 hover:bg-gray-100'
+                        }`}
+                    >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        <span className="font-medium">Analytics</span>
+                    </button>
+
+                    <button
+                        onClick={() => {
+                            setActiveTab('discounts');
+                            setIsSideDrawerOpen(false);
+                        }}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                            activeTab === 'discounts'
+                                ? 'bg-orange-500 text-white shadow-md'
+                                : 'text-gray-700 hover:bg-gray-100'
+                        }`}
+                    >
+                        <Tag className="w-5 h-5" />
+                        <span className="font-medium">Discounts</span>
+                    </button>
+
+                    <button
+                        onClick={() => {
+                            setActiveTab('profile');
+                            setIsSideDrawerOpen(false);
+                        }}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                            activeTab === 'profile'
+                                ? 'bg-orange-500 text-white shadow-md'
+                                : 'text-gray-700 hover:bg-gray-100'
+                        }`}
+                    >
+                        <User className="w-5 h-5" />
+                        <span className="font-medium">Profile</span>
+                    </button>
+
+                    <button
+                        onClick={() => {
+                            setActiveTab('menu');
+                            setIsSideDrawerOpen(false);
+                        }}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                            activeTab === 'menu'
+                                ? 'bg-orange-500 text-white shadow-md'
+                                : 'text-gray-700 hover:bg-gray-100'
+                        }`}
+                    >
+                        <Menu className="w-5 h-5" />
+                        <span className="font-medium">Menu</span>
+                        {providers.length > 0 && (
+                            <span className="ml-auto bg-orange-500 text-white text-xs rounded-full px-2.5 py-0.5 font-bold">
+                                {providers.length}
+                            </span>
+                        )}
+                    </button>
+
+                    <button
+                        onClick={() => {
+                            setActiveTab('feedback');
+                            setIsSideDrawerOpen(false);
+                        }}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                            activeTab === 'feedback'
+                                ? 'bg-orange-500 text-white shadow-md'
+                                : 'text-gray-700 hover:bg-gray-100'
+                        }`}
+                    >
+                        <Star className="w-5 h-5" />
+                        <span className="font-medium">Feedback</span>
+                    </button>
+
+                    <button
+                        onClick={() => {
+                            setActiveTab('concierge');
+                            setIsSideDrawerOpen(false);
+                        }}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                            activeTab === 'concierge'
+                                ? 'bg-orange-500 text-white shadow-md'
+                                : 'text-gray-700 hover:bg-gray-100'
+                        }`}
+                    >
+                        <Users className="w-5 h-5" />
+                        <span className="font-medium">Concierge</span>
+                    </button>
+
+                    <button
+                        onClick={() => {
+                            setActiveTab('commissions');
+                            setIsSideDrawerOpen(false);
+                        }}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                            activeTab === 'commissions'
+                                ? 'bg-orange-500 text-white shadow-md'
+                                : 'text-gray-700 hover:bg-gray-100'
+                        }`}
+                    >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="font-medium">Commissions</span>
+                    </button>
+
+                    <button
+                        onClick={() => {
+                            setActiveTab('notifications');
+                            setIsSideDrawerOpen(false);
+                        }}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                            activeTab === 'notifications'
+                                ? 'bg-orange-500 text-white shadow-md'
+                                : 'text-gray-700 hover:bg-gray-100'
+                        }`}
+                    >
+                        <Bell className="w-5 h-5" />
+                        <span className="font-medium">Notifications</span>
+                    </button>
+
+                    <button
+                        onClick={() => {
+                            setActiveTab('chat');
+                            setIsSideDrawerOpen(false);
+                        }}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                            activeTab === 'chat'
+                                ? 'bg-orange-500 text-white shadow-md'
+                                : 'text-gray-700 hover:bg-gray-100'
+                        }`}
+                    >
+                        <MessageSquare className="w-5 h-5" />
+                        <span className="font-medium">Chat Support</span>
+                    </button>
+
+                    <button
+                        onClick={() => {
+                            setActiveTab('services-settings');
+                            setIsSideDrawerOpen(false);
+                        }}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                            activeTab === 'services-settings'
+                                ? 'bg-orange-500 text-white shadow-md'
+                                : 'text-gray-700 hover:bg-gray-100'
+                        }`}
+                    >
+                        <Settings className="w-5 h-5" />
+                        <span className="font-medium">Service Settings</span>
+                    </button>
+
+                    <button
+                        onClick={() => {
+                            setActiveTab('membership');
+                            setIsSideDrawerOpen(false);
+                        }}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                            activeTab === 'membership'
+                                ? 'bg-orange-500 text-white shadow-md'
+                                : 'text-gray-700 hover:bg-gray-100'
+                        }`}
+                    >
+                        <Package className="w-5 h-5" />
+                        <span className="font-medium">Membership</span>
+                    </button>
+                </nav>
+
+                {/* Drawer Footer - Logout Button */}
+                <div className="absolute bottom-0 left-0 right-0 p-4 bg-gray-50 border-t">
+                    <button
+                        onClick={() => {
+                            setIsSideDrawerOpen(false);
+                            onLogout();
+                        }}
+                        className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors shadow-md"
+                    >
+                        <LogOut className="w-5 h-5" />
+                        <span className="font-medium">Logout</span>
+                    </button>
+                </div>
+            </div>
+
+            {/* Clean Header */}
             <header className="bg-white shadow-sm px-2 sm:px-3 py-2 sm:py-3 sticky top-0 z-30">
-                {/* Mobile: Hotel Name & Logo */}
-                <div className="flex items-center justify-between mb-2 sm:mb-0">
+                <div className="flex items-center justify-between">
                     <h1 className="text-base sm:text-2xl font-bold text-gray-800">
                         <span className="text-orange-500">IndaStreet</span>
                     </h1>
-                    <div className="flex items-center gap-1 sm:gap-4">
-                        <button
-                            onClick={onLogout}
-                            className="flex items-center justify-center text-gray-900 hover:text-gray-600 transition-colors"
-                            title="Logout"
-                        >
-                            <LogOut size={20} className="sm:w-6 sm:h-6" />
-                        </button>
-                    </div>
-                </div>
-
-                {/* Navigation Buttons - Two Rows */}
-                <div className="space-y-1">
-                    {/* First Row */}
-                    <div 
-                        className="flex gap-1 overflow-x-auto pb-1" 
-                        style={{
-                            scrollbarWidth: 'none', 
-                            msOverflowStyle: 'none',
-                            WebkitOverflowScrolling: 'touch'
-                        }}
+                    <button
+                        onClick={() => setIsSideDrawerOpen(true)}
+                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                        aria-label="Open menu"
                     >
-                        <TabButton
-                            icon={<svg className="w-3.5 h-3.5 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>}
-                            label="Analytics"
-                            isActive={activeTab === 'analytics'}
-                            onClick={() => setActiveTab('analytics')}
-                        />
-                        <TabButton
-                            icon={<Tag size={14} className="sm:w-5 sm:h-5" />}
-                            label="Discounts"
-                            isActive={activeTab === 'discounts'}
-                            onClick={() => setActiveTab('discounts')}
-                        />
-                        <TabButton
-                            icon={<User size={14} className="sm:w-5 sm:h-5" />}
-                            label="Profile"
-                            isActive={activeTab === 'profile'}
-                            onClick={() => setActiveTab('profile')}
-                        />
-                        <TabButton
-                            icon={<Menu size={14} className="sm:w-5 sm:h-5" />}
-                            label="Menu"
-                            isActive={activeTab === 'menu'}
-                            onClick={() => setActiveTab('menu')}
-                            badge={providers.length}
-                        />
-                    </div>
-                    
-                    {/* Second Row */}
-                    <div 
-                        className="flex gap-1 overflow-x-auto pb-1" 
-                        style={{
-                            scrollbarWidth: 'none', 
-                            msOverflowStyle: 'none',
-                            WebkitOverflowScrolling: 'touch'
-                        }}
-                    >
-                        <TabButton
-                            icon={<Star size={14} className="sm:w-5 sm:h-5" />}
-                            label="Feedback"
-                            isActive={activeTab === 'feedback'}
-                            onClick={() => setActiveTab('feedback')}
-                        />
-                        <TabButton
-                            icon={<Users size={14} className="sm:w-5 sm:h-5" />}
-                            label="Concierge"
-                            isActive={activeTab === 'concierge'}
-                            onClick={() => setActiveTab('concierge')}
-                        />
-                        <TabButton
-                            icon={<svg className="w-3.5 h-3.5 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
-                            label="Commissions"
-                            isActive={activeTab === 'commissions'}
-                            onClick={() => setActiveTab('commissions')}
-                        />
-                        <TabButton
-                            icon={<Bell size={14} className="sm:w-5 sm:h-5" />}
-                            label="Notifications"
-                            isActive={activeTab === 'notifications'}
-                            onClick={() => setActiveTab('notifications')}
-                        />
-                        <TabButton
-                            icon={<MessageSquare size={14} className="sm:w-5 sm:h-5" />}
-                            label="Chat Support"
-                            isActive={activeTab === 'chat'}
-                            onClick={() => setActiveTab('chat')}
-                        />
-                        <TabButton
-                            icon={<Package size={14} className="sm:w-5 sm:h-5" />}
-                            label="Membership"
-                            isActive={activeTab === 'membership'}
-                            onClick={() => setActiveTab('membership')}
-                        />
-                    </div>
+                        <Menu className="w-5 h-5 text-orange-500" />
+                    </button>
                 </div>
             </header>
 

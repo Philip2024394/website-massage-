@@ -45,7 +45,6 @@ export const useAllHooks = () => {
     // @ts-ignore - Auth handlers
     const authHandlers = useAuthHandlers({
         setPage: state.setPage,
-        setUser: state.setUser,
         setIsAdminLoggedIn: state.setIsAdminLoggedIn,
         setLoggedInUser: state.setLoggedInUser,
         setLoggedInProvider: state.setLoggedInProvider,
@@ -71,7 +70,7 @@ export const useAllHooks = () => {
         setPage: state.setPage,
         setLoyaltyEvent: state.setLoyaltyEvent,
         setShowRegisterPrompt: state.setShowRegisterPrompt,
-        setRegisterPromptContext: state.setRegisterPromptContext,
+        setRegisterPromptContext: (context: string) => state.setRegisterPromptContext(context as 'booking' | 'chat'),
         t: {} // Will be provided by App.tsx
     });
     
@@ -79,8 +78,8 @@ export const useAllHooks = () => {
     const providerAgentHandlers = useProviderAgentHandlers({
         loggedInProvider: state.loggedInProvider,
         loggedInAgent: state.loggedInAgent,
+        impersonatedAgent: state.impersonatedAgent,
         therapists: state.therapists,
-        setLoggedInProvider: state.setLoggedInProvider,
         setLoggedInAgent: state.setLoggedInAgent,
         setImpersonatedAgent: state.setImpersonatedAgent,
         setAdminMessages: state.setAdminMessages,

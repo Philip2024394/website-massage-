@@ -254,7 +254,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             }
         } else {
             // Available or Offline (the 20% that show as offline)
-            onIncrementAnalytics('whatsappClicks');
+            onIncrementAnalytics('whatsapp_clicks');
             window.open(`https://wa.me/${therapist.whatsappNumber}`, '_blank');
             
             // After opening WhatsApp, also open the chat window
@@ -283,7 +283,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             console.log('🔇 Skipping self-notification (you clicked your own button)');
         }
 
-        onIncrementAnalytics('whatsappClicks');
+        onIncrementAnalytics('whatsapp_clicks');
         setShowBusyModal(false);
         
         // Open chat with automated welcome message (removed WhatsApp)

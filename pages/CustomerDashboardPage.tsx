@@ -4,13 +4,16 @@ import { Booking, BookingStatus, LoyaltyWallet, CoinTransaction } from '../types
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import { getUserWallets, getTransactionHistory } from '../lib/loyaltyService';
+import { X, Calendar as CalendarIcon, Wallet, CreditCard, User } from 'lucide-react';
 
 interface CustomerDashboardPageProps {
+  customer?: any;
   user: any;
   onLogout: () => void;
   onBack: () => void;
   onBookNow: () => void;
   onNavigate?: (page: string) => void;
+  t: any;
 }
 
 const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
@@ -28,6 +31,7 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
   const [wallets, setWallets] = useState<LoyaltyWallet[]>([]);
   const [selectedWallet, setSelectedWallet] = useState<LoyaltyWallet | null>(null);
   const [transactions, setTransactions] = useState<CoinTransaction[]>([]);
+  const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
 
   useEffect(() => {
     loadBookings();
@@ -110,12 +114,22 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-6 shadow-lg">
+      {/* Header with Burger Menu */}
+      <header className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-6 shadow-lg sticky top-0 z-30">
         <div className="flex items-center justify-between mb-4">
-          <button onClick={onBack} className="text-white text-2xl">
-            ←
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsSideDrawerOpen(true)}
+              className="p-2 text-white hover:text-orange-200 hover:bg-white/20 rounded-lg transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <button onClick={onBack} className="text-white text-2xl">
+              ←
+            </button>
+          </div>
           <button
             onClick={() => setShowConfirmLogout(true)}
             className="bg-white/20 px-4 py-2 rounded-lg hover:bg-white/30 transition-all"
@@ -141,53 +155,97 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
             </div>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Tab Navigation */}
-      <div className="bg-white shadow-sm border-b sticky top-0 z-10">
-        <div className="grid grid-cols-4">
-          <button
-            onClick={() => setActiveTab('bookings')}
-            className={`py-4 font-semibold transition-all text-sm ${
-              activeTab === 'bookings'
-                ? 'text-orange-500 border-b-2 border-orange-500'
-                : 'text-gray-500'
-            }`}
-          >
-            📋 Bookings
-          </button>
-          <button
-            onClick={() => setActiveTab('wallet')}
-            className={`py-4 font-semibold transition-all text-sm ${
-              activeTab === 'wallet'
-                ? 'text-orange-500 border-b-2 border-orange-500'
-                : 'text-gray-500'
-            }`}
-          >
-            🪙 Wallet
-          </button>
-          <button
-            onClick={() => setActiveTab('calendar')}
-            className={`py-4 font-semibold transition-all text-sm ${
-              activeTab === 'calendar'
-                ? 'text-orange-500 border-b-2 border-orange-500'
-                : 'text-gray-500'
-            }`}
-          >
-            📅 Calendar
-          </button>
-          <button
-            onClick={() => setActiveTab('profile')}
-            className={`py-4 font-semibold transition-all text-sm ${
-              activeTab === 'profile'
-                ? 'text-orange-500 border-b-2 border-orange-500'
-                : 'text-gray-500'
-            }`}
-          >
-            ⚙️ Profile
-          </button>
+      {/* Side Drawer */}
+      {isSideDrawerOpen && (
+        <div className="fixed inset-0 z-50">
+          {/* Overlay */}
+          <div 
+            className="absolute inset-0 bg-black bg-opacity-50"
+            onClick={() => setIsSideDrawerOpen(false)}
+          ></div>
+          
+          {/* Drawer */}
+          <div className="absolute left-0 top-0 h-full w-80 bg-white shadow-xl">
+            {/* Drawer Header */}
+            <div className="bg-orange-500 px-6 py-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-white text-lg font-semibold">Customer Dashboard</h2>
+                <button
+                  onClick={() => setIsSideDrawerOpen(false)}
+                  className="text-white hover:text-orange-200 transition-colors"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+            </div>
+
+            {/* Navigation Items */}
+            <div className="p-4 space-y-2">
+              <button
+                onClick={() => {
+                  setActiveTab('bookings');
+                  setIsSideDrawerOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                  activeTab === 'bookings' 
+                    ? 'bg-orange-100 text-orange-600 border-l-4 border-orange-500' 
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <CreditCard className="w-5 h-5" />
+                Bookings
+              </button>
+
+              <button
+                onClick={() => {
+                  setActiveTab('wallet');
+                  setIsSideDrawerOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                  activeTab === 'wallet' 
+                    ? 'bg-orange-100 text-orange-600 border-l-4 border-orange-500' 
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <Wallet className="w-5 h-5" />
+                Wallet
+              </button>
+
+              <button
+                onClick={() => {
+                  setActiveTab('calendar');
+                  setIsSideDrawerOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                  activeTab === 'calendar' 
+                    ? 'bg-orange-100 text-orange-600 border-l-4 border-orange-500' 
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <CalendarIcon className="w-5 h-5" />
+                Calendar
+              </button>
+
+              <button
+                onClick={() => {
+                  setActiveTab('profile');
+                  setIsSideDrawerOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                  activeTab === 'profile' 
+                    ? 'bg-orange-100 text-orange-600 border-l-4 border-orange-500' 
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <User className="w-5 h-5" />
+                Profile
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Content */}
       <div className="p-4">
@@ -328,25 +386,47 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
               </div>
             </div>
 
-            {/* Coin History Button */}
+            {/* Coin Navigation Buttons */}
             {onNavigate && (
-              <button
-                onClick={() => onNavigate('coin-history')}
-                className="w-full flex items-center justify-between p-4 bg-white rounded-xl shadow-md hover:shadow-lg transition-all border-2 border-orange-200 hover:border-orange-400"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center text-white text-2xl">
-                    📊
+              <div className="space-y-3">
+                {/* Coin Shop Button */}
+                <button
+                  onClick={() => onNavigate('coin-shop')}
+                  className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl shadow-md hover:shadow-lg transition-all text-white"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl">
+                      🛍️
+                    </div>
+                    <div className="text-left">
+                      <h3 className="font-bold">Coin Shop</h3>
+                      <p className="text-sm text-purple-100">Spend coins on rewards</p>
+                    </div>
                   </div>
-                  <div className="text-left">
-                    <h3 className="font-bold text-gray-900">Coin History</h3>
-                    <p className="text-sm text-gray-600">View transactions & expiration</p>
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+
+                {/* Coin History Button */}
+                <button
+                  onClick={() => onNavigate('coin-history')}
+                  className="w-full flex items-center justify-between p-4 bg-white rounded-xl shadow-md hover:shadow-lg transition-all border-2 border-orange-200 hover:border-orange-400"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center text-white text-2xl">
+                      📊
+                    </div>
+                    <div className="text-left">
+                      <h3 className="font-bold text-gray-900">Coin History</h3>
+                      <p className="text-sm text-gray-600">View transactions & expiration</p>
+                    </div>
                   </div>
-                </div>
-                <svg className="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
+                  <svg className="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
             )}
 
             {/* Loyalty Info */}

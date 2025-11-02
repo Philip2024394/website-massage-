@@ -6,8 +6,10 @@ interface BookingPageProps {
     provider: Therapist | Place;
     providerType: 'therapist' | 'place';
     onBook: (bookingData: Omit<Booking, 'id' | 'status' | 'userId' | 'userName'>) => void;
+    onCreateBooking?: (bookingData: any) => Promise<void>;
     onBack: () => void;
     bookings: Booking[];
+    contactNumber?: string;
     t: any;
 }
 

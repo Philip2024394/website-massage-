@@ -331,6 +331,17 @@ const DiscountSharePage: React.FC<DiscountSharePageProps> = ({
                 </div>
             </div>
 
+            {/* Promotional Image */}
+            <div className="max-w-4xl mx-auto px-4 mt-6">
+                <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                    <img
+                        src="https://ik.imagekit.io/7grri5v7d/bali%20massage%20indonisea%20new%20job.png?updatedAt=1761591600248"
+                        alt="Bali Massage Indonesia New Job Promotion"
+                        className="w-full h-64 object-cover"
+                    />
+                </div>
+            </div>
+
             {/* Active Discount Banner */}
             {activeDiscount && (
                 <div className="max-w-4xl mx-auto px-4 mt-6">
@@ -368,32 +379,32 @@ const DiscountSharePage: React.FC<DiscountSharePageProps> = ({
             <div className="max-w-4xl mx-auto px-4 mt-6 mb-8">
                 <div className="grid grid-cols-4 gap-3">
                     <div className="bg-white rounded-xl shadow-lg p-4 border-2 border-orange-200">
-                        <p className="text-xs text-gray-600">Activations</p>
+                        <p className="text-xs text-orange-600 font-semibold">Activations</p>
                         <p className="text-2xl font-bold text-orange-600">{shareStats.activations}</p>
                     </div>
-                    <div className="bg-white rounded-xl shadow-lg p-4 border-2 border-purple-200">
-                        <p className="text-xs text-gray-600">Total Shares</p>
-                        <p className="text-2xl font-bold text-purple-600">{shareStats.totalShares}</p>
+                    <div className="bg-white rounded-xl shadow-lg p-4 border-2 border-orange-200">
+                        <p className="text-xs text-orange-600 font-semibold">Shares</p>
+                        <p className="text-2xl font-bold text-orange-600">{shareStats.totalShares}</p>
                     </div>
-                    <div className="bg-white rounded-xl shadow-lg p-4 border-2 border-blue-200">
-                        <p className="text-xs text-gray-600">Chat Sent</p>
-                        <p className="text-2xl font-bold text-blue-600">{shareStats.chatsSent}</p>
+                    <div className="bg-white rounded-xl shadow-lg p-4 border-2 border-orange-200">
+                        <p className="text-xs text-orange-600 font-semibold">Chat Sent</p>
+                        <p className="text-2xl font-bold text-orange-600">{shareStats.chatsSent}</p>
                     </div>
-                    <div className="bg-white rounded-xl shadow-lg p-4 border-2 border-green-200">
-                        <p className="text-xs text-gray-600">Social</p>
-                        <p className="text-2xl font-bold text-green-600">{shareStats.socialShares}</p>
+                    <div className="bg-white rounded-xl shadow-lg p-4 border-2 border-orange-200">
+                        <p className="text-xs text-orange-600 font-semibold">Social</p>
+                        <p className="text-2xl font-bold text-orange-600">{shareStats.socialShares}</p>
                     </div>
                 </div>
             </div>
 
             {/* Instructions */}
             <div className="max-w-4xl mx-auto px-4 mb-6">
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-4">
-                    <h3 className="font-bold text-blue-900 mb-2 flex items-center gap-2">
+                <div className="bg-gradient-to-r from-orange-50 to-orange-100 border-2 border-orange-200 rounded-xl p-4">
+                    <h3 className="font-bold text-orange-900 mb-2 flex items-center gap-2">
                         <AlertCircle size={20} />
-                        How Promotional Discounts Work
+                        How Promotional Offers Work
                     </h3>
-                    <ul className="text-sm text-blue-800 space-y-1">
+                    <ul className="text-sm text-orange-800 space-y-1">
                         <li>✓ Select a discount and set duration (4-24 hours)</li>
                         <li>✓ Discount auto-broadcasts to ALL your chat customers</li>
                         <li>✓ Appears on your profile card with countdown timer</li>
@@ -405,7 +416,7 @@ const DiscountSharePage: React.FC<DiscountSharePageProps> = ({
 
             {/* Discount Cards Grid */}
             <div className="max-w-4xl mx-auto px-4">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4">Select Discount to Activate</h2>
+                <h2 className="text-2xl font-bold text-orange-600 mb-4">Select Discount to Activate</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {DISCOUNT_CARDS.map((discount) => {
                         const isCurrentlyActive = activeDiscount?.percentage === discount.percentage;

@@ -4,6 +4,8 @@ import { shopItemService, shopOrderService } from '../lib/appwriteService';
 
 interface AdminShopManagementPageProps {
     onNavigate?: (page: string) => void;
+    onBack?: () => void;
+    t?: any;
 }
 
 const AdminShopManagementPage: React.FC<AdminShopManagementPageProps> = ({ onNavigate }) => {

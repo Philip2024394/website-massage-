@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { MASSAGE_TYPES_CATEGORIZED, getMassageTypeImage, getMassageTypeDetails } from '../constants';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import CloseIcon from '../components/icons/CloseIcon';
+import { Page } from '../types/pageTypes';
 
 interface MassageTypesPageProps {
     onBack: () => void;
+    onNavigate?: (page: Page) => void;
     onFindTherapists?: (massageType: string) => void;
     onFindPlaces?: (massageType: string) => void;
+    t?: any;
 }
 
 const StarIcon: React.FC<{ className?: string }> = ({ className }) => (
@@ -40,7 +43,13 @@ interface MassageType {
     expanded: boolean;
 }
 
-const MassageTypesPage: React.FC<MassageTypesPageProps> = ({ onBack, onFindTherapists, onFindPlaces }) => {
+const MassageTypesPage: React.FC<MassageTypesPageProps> = ({ 
+    onBack, 
+    onNavigate: _onNavigate, // Mark as unused for now
+    onFindTherapists, 
+    onFindPlaces, 
+    t: _t // Mark as unused for now
+}) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     
     // Flatten all massage types from categories

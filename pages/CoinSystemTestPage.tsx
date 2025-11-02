@@ -2,7 +2,12 @@ import React, { useState } from 'react';
 import { Play, CheckCircle, XCircle, Loader } from 'lucide-react';
 import { quickTest, runAllCoinTests } from '../lib/coinServiceTests';
 
-const CoinSystemTestPage: React.FC = () => {
+interface CoinSystemTestPageProps {
+    onBack?: () => void;
+    t?: any;
+}
+
+const CoinSystemTestPage: React.FC<CoinSystemTestPageProps> = ({ onBack: _onBack, t: _t }) => {
     const [testResults, setTestResults] = useState<any>(null);
     const [isRunning, setIsRunning] = useState(false);
     const [quickTestResult, setQuickTestResult] = useState<boolean | null>(null);

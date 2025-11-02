@@ -20,7 +20,16 @@ export const parseAnalytics = (analyticsString: string): Analytics => {
   try {
     return JSON.parse(analyticsString);
   } catch {
-    return { impressions: 0, profileViews: 0, whatsappClicks: 0 };
+    return { 
+      impressions: 0, 
+      views: 0, 
+      profileViews: 0,
+      whatsapp_clicks: 0, 
+      whatsappClicks: 0,
+      phone_clicks: 0, 
+      directions_clicks: 0, 
+      bookings: 0 
+    };
   }
 };
 
