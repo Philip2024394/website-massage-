@@ -4,7 +4,7 @@ import { AvailabilityStatus, BookingStatus, HotelVillaServiceStatus } from '../t
 import { parsePricing, parseCoordinates, parseMassageTypes, stringifyPricing, stringifyCoordinates, stringifyMassageTypes, stringifyAnalytics } from '../utils/appwriteHelpers';
 import { therapistService, notificationService } from '../lib/appwriteService';
 import { soundNotificationService } from '../utils/soundNotificationService';
-import { User, Calendar, TrendingUp, Hotel, FileCheck, LogOut, Bell, Briefcase, MessageSquare, Tag } from 'lucide-react';
+import { User, Calendar, TrendingUp, Hotel, FileCheck, LogOut, Bell, Briefcase, MessageSquare, Tag, Activity, Megaphone, Menu } from 'lucide-react';
 import Button from '../components/Button';
 import DiscountSharePage from './DiscountSharePage';
 import ImageUpload from '../components/ImageUpload';
@@ -31,6 +31,7 @@ interface TherapistDashboardPageProps {
     onNavigateToHome?: () => void;
     onNavigate?: (page: string) => void;
     onUpdateBookingStatus: (bookingId: number, status: BookingStatus) => void;
+    onStatusChange?: (status: AvailabilityStatus) => void; // Add status change handler
     therapistId: number | string; // Support both for Appwrite compatibility
     bookings: Booking[];
     notifications: Notification[];
@@ -70,16 +71,20 @@ const BookingCard: React.FC<{ booking: Booking; onUpdateStatus: (id: number, sta
             </div>
             <p className="text-sm text-gray-600">{t.date}: {new Date(booking.startTime).toLocaleString()}</p>
             {isPending && isUpcoming && (
-                 <div className="flex gap-2 pt-4 mt-4 border-t">
-                    <button onClick={() => onUpdateStatus(booking.id, BookingStatus.Confirmed)} className="flex-1 bg-orange-500 text-white font-semibold py-2.5 px-4 rounded-lg hover:bg-orange-600 transition-all">{t.confirm}</button>
-                    <button onClick={() => onUpdateStatus(booking.id, BookingStatus.Cancelled)} className="flex-1 bg-white text-gray-700 font-semibold py-2.5 px-4 rounded-lg border-2 border-gray-300 hover:bg-gray-50 transition-all">{t.cancel}</button>
+                 <div className="flex flex-col sm:flex-row gap-2 pt-4 mt-4 border-t">
+                    <button onClick={() => onUpdateStatus(booking.id, BookingStatus.Confirmed)} className="flex-1 bg-orange-500 text-white font-semibold py-2.5 px-3 sm:px-4 rounded-lg hover:bg-orange-600 transition-all text-sm">
+                        {t.confirm}
+                    </button>
+                    <button onClick={() => onUpdateStatus(booking.id, BookingStatus.Cancelled)} className="flex-1 bg-white text-gray-700 font-semibold py-2.5 px-3 sm:px-4 rounded-lg border-2 border-gray-300 hover:bg-gray-50 transition-all text-sm">
+                        {t.cancel}
+                    </button>
                 </div>
             )}
         </div>
     );
 }
 
-const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave, onLogout, onNavigateToNotifications, onNavigateToHome, onNavigate, onUpdateBookingStatus, therapistId, bookings, notifications, t }) => {
+const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave, onLogout, onNavigateToNotifications, onNavigateToHome, onNavigate, onUpdateBookingStatus, onStatusChange, therapistId, bookings, notifications, t }) => {
     const [therapist, setTherapist] = useState<Therapist | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -101,12 +106,17 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
     const [isLicensed, setIsLicensed] = useState(false);
     const [licenseNumber, setLicenseNumber] = useState('');
     const [mapsApiLoaded, setMapsApiLoaded] = useState(false);
-    const [activeTab, setActiveTab] = useState('profile');
+    const [activeTab, setActiveTab] = useState('status'); // Start with Online Status tab
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [showImageRequirementModal, setShowImageRequirementModal] = useState(false);
     const [pendingImageUrl, setPendingImageUrl] = useState('');
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
 
     const locationInputRef = useRef<HTMLInputElement>(null);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+    const sideDrawerRef = useRef<HTMLDivElement>(null);
     
     const fetchTherapistData = useCallback(async () => {
         setIsLoading(true);
@@ -205,6 +215,40 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
         fetchTherapistData();
     }, [fetchTherapistData]);
 
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsDropdownOpen(false);
+            }
+        };
+
+        if (isDropdownOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isDropdownOpen]);
+
+    // Close side drawer when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (sideDrawerRef.current && !sideDrawerRef.current.contains(event.target as Node)) {
+                setIsSideDrawerOpen(false);
+            }
+        };
+
+        if (isSideDrawerOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isSideDrawerOpen]);
+
     useEffect(() => {
         const checkGoogleMaps = () => {
              if ((window as any).google && (window as any).google.maps && (window as any).google.maps.places) {
@@ -290,25 +334,41 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
     }, [mapsApiLoaded]);
 
     const handleSave = () => {
-        onSave({
+        console.log('💾 SAVE BUTTON CLICKED - Starting save process...');
+        console.log('📋 Profile data:', {
             name,
-            description,
-            profilePicture,
-            mainImage,
             whatsappNumber,
             yearsOfExperience,
-            isLicensed,
-            pricing: stringifyPricing(pricing),
-            hotelVillaPricing: useSamePricing ? undefined : stringifyPricing(hotelVillaPricing),
-            discountPercentage,
             location,
-            coordinates: stringifyCoordinates(coordinates),
-            status,
-            analytics: therapist?.analytics || stringifyAnalytics({ impressions: 0, profileViews: 0, whatsappClicks: 0 }),
-            massageTypes: stringifyMassageTypes(massageTypes),
-            languages,
-        } as any);
-        setShowConfirmation(true);
+            status
+        });
+        
+        try {
+            onSave({
+                name,
+                description,
+                profilePicture,
+                mainImage,
+                whatsappNumber,
+                yearsOfExperience,
+                isLicensed,
+                pricing: stringifyPricing(pricing),
+                hotelVillaPricing: useSamePricing ? undefined : stringifyPricing(hotelVillaPricing),
+                discountPercentage,
+                location,
+                coordinates: stringifyCoordinates(coordinates),
+                status,
+                analytics: therapist?.analytics || stringifyAnalytics({ impressions: 0, profileViews: 0, whatsappClicks: 0 }),
+                massageTypes: stringifyMassageTypes(massageTypes),
+                languages,
+            } as any);
+            console.log('✅ Save function called successfully');
+            setShowConfirmation(true);
+        } catch (error) {
+            console.error('❌ Error in handleSave:', error);
+            // Use alert as fallback since toast causes DOM errors
+            alert('Error saving profile. Please try again.');
+        }
     };
     
     const handlePriceChange = (duration: keyof Pricing, value: string) => {
@@ -442,6 +502,130 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
 
     const renderContent = () => {
         switch (activeTab) {
+            case 'status':
+                const handleStatusChange = async (newStatus: AvailabilityStatus) => {
+                    setStatus(newStatus);
+                    
+                    // Auto-save status to database
+                    try {
+                        console.log('💾 Auto-saving status:', newStatus);
+                        const therapistIdString = typeof therapistId === 'string' ? therapistId : therapistId.toString();
+                        await therapistService.update(therapistIdString, { status: newStatus });
+                        console.log('✅ Status saved successfully');
+                        
+                        // Call parent handler if provided
+                        if (onStatusChange) {
+                            onStatusChange(newStatus);
+                        }
+                    } catch (error) {
+                        console.error('❌ Error saving status:', error);
+                    }
+                };
+                
+                return (
+                    <div className="max-w-2xl mx-auto h-full flex flex-col">
+                        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 flex-1 flex flex-col">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+                                    <Activity className="w-5 h-5 text-orange-600" />
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-bold text-gray-900">Online Status</h2>
+                                    <p className="text-xs text-gray-600">Set your availability for customers</p>
+                                </div>
+                            </div>
+                            
+                            <div className="space-y-3 flex-1 overflow-y-auto">
+                                {/* Available Option */}
+                                <button
+                                    onClick={() => handleStatusChange(AvailabilityStatus.Available)}
+                                    className={`w-full p-4 rounded-xl border-2 transition-all ${
+                                        status === AvailabilityStatus.Available
+                                            ? 'border-green-500 bg-green-100'
+                                            : 'border-gray-200 hover:border-green-300 bg-white'
+                                    }`}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className={`w-5 h-5 rounded-full status-dot-satellite flex-shrink-0 ${
+                                            status === AvailabilityStatus.Available ? 'bg-green-500 text-green-500' : 'bg-gray-300'
+                                        }`} />
+                                        <div className="flex-1 text-left">
+                                            <h3 className="text-lg font-bold text-gray-900">Available</h3>
+                                            <p className="text-xs text-gray-600">You're ready to accept bookings</p>
+                                        </div>
+                                        {status === AvailabilityStatus.Available && (
+                                            <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                            </svg>
+                                        )}
+                                    </div>
+                                </button>
+
+                                {/* Busy Option */}
+                                <button
+                                    onClick={() => handleStatusChange(AvailabilityStatus.Busy)}
+                                    className={`w-full p-4 rounded-xl border-2 transition-all ${
+                                        status === AvailabilityStatus.Busy
+                                            ? 'border-yellow-500 bg-yellow-100'
+                                            : 'border-gray-200 hover:border-yellow-300 bg-white'
+                                    }`}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className={`w-5 h-5 rounded-full status-dot-satellite flex-shrink-0 ${
+                                            status === AvailabilityStatus.Busy ? 'bg-yellow-500 text-yellow-500' : 'bg-gray-300'
+                                        }`} />
+                                        <div className="flex-1 text-left">
+                                            <h3 className="text-lg font-bold text-gray-900">Busy</h3>
+                                            <p className="text-xs text-gray-600">You're currently occupied</p>
+                                        </div>
+                                        {status === AvailabilityStatus.Busy && (
+                                            <svg className="w-5 h-5 text-yellow-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                            </svg>
+                                        )}
+                                    </div>
+                                </button>
+
+                                {/* Offline Option */}
+                                <button
+                                    onClick={() => handleStatusChange(AvailabilityStatus.Offline)}
+                                    className={`w-full p-4 rounded-xl border-2 transition-all ${
+                                        status === AvailabilityStatus.Offline
+                                            ? 'border-red-500 bg-red-100'
+                                            : 'border-gray-200 hover:border-red-400 bg-white'
+                                    }`}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className={`w-5 h-5 rounded-full status-dot-satellite flex-shrink-0 ${
+                                            status === AvailabilityStatus.Offline ? 'bg-red-500 text-red-500' : 'bg-gray-300'
+                                        }`} />
+                                        <div className="flex-1 text-left">
+                                            <h3 className="text-lg font-bold text-gray-900">Offline</h3>
+                                            <p className="text-xs text-gray-600">You're not accepting bookings</p>
+                                        </div>
+                                        {status === AvailabilityStatus.Offline && (
+                                            <svg className="w-5 h-5 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                            </svg>
+                                        )}
+                                    </div>
+                                </button>
+                            </div>
+
+                            {/* Current Status Display */}
+                            <div className="mt-4 p-3 rounded-lg bg-gray-50 border border-gray-200">
+                                <p className="text-xs text-gray-600 mb-1">Current Status:</p>
+                                <p className="text-base font-bold text-gray-900 flex items-center gap-2">
+                                    <span className={`w-2.5 h-2.5 rounded-full status-dot-satellite ${
+                                        status === AvailabilityStatus.Available ? 'bg-green-500 text-green-500' :
+                                        status === AvailabilityStatus.Busy ? 'bg-yellow-500 text-yellow-500' : 'bg-red-500 text-red-500'
+                                    }`} />
+                                    {status}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                );
             case 'chat':
                 return (
                     <div className="max-w-7xl mx-auto px-2 sm:px-4 py-6">
@@ -608,6 +792,276 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                         providerType="therapist"
                     />
                 );
+            case 'promotions':
+                return (
+                    <div className="max-w-4xl mx-auto">
+                        <div className="bg-white rounded-xl shadow-sm p-6">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
+                                    <Megaphone className="w-6 h-6 text-orange-600" />
+                                </div>
+                                <div>
+                                    <h2 className="text-2xl font-bold text-gray-900">Promotional Tools</h2>
+                                    <p className="text-sm text-gray-600">Create and share special offers with customers</p>
+                                </div>
+                            </div>
+
+                            {/* Quick Action Buttons - 2 Rows */}
+                            <div className="mb-6 space-y-2">
+                                {/* First Row */}
+                                <div className="grid grid-cols-3 gap-2">
+                                    <button
+                                        onClick={() => {
+                                            const message = discountPercentage > 0 
+                                                ? `🌟 Special ${discountPercentage}% OFF! ${therapist?.name || 'Professional Massage'}\n\n60min: Rp ${Math.round(pricing["60"] * (1 - discountPercentage / 100))}k (was ${pricing["60"]}k)\n90min: Rp ${Math.round(pricing["90"] * (1 - discountPercentage / 100))}k (was ${pricing["90"]}k)\n120min: Rp ${Math.round(pricing["120"] * (1 - discountPercentage / 100))}k (was ${pricing["120"]}k)\n\nBook now! WhatsApp: ${therapist?.whatsappNumber || ''}`
+                                                : `${therapist?.name || 'Professional Massage Services'}\n\n60min: Rp ${pricing["60"]}k\n90min: Rp ${pricing["90"]}k\n120min: Rp ${pricing["120"]}k\n\nWhatsApp: ${therapist?.whatsappNumber || ''}`;
+                                            navigator.clipboard.writeText(message);
+                                            setToast({ message: '✅ Promotional text copied!', type: 'success' });
+                                            setTimeout(() => setToast(null), 3000);
+                                        }}
+                                        className="flex flex-col items-center justify-center gap-1 bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-2 px-2 rounded-lg font-medium transition-all shadow-sm hover:shadow-md"
+                                    >
+                                        <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/>
+                                            <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/>
+                                        </svg>
+                                        <span className="text-[10px] sm:text-xs">Copy Text</span>
+                                    </button>
+                                    
+                                    <button
+                                        onClick={() => {
+                                            const message = discountPercentage > 0 
+                                                ? `🌟 Special ${discountPercentage}% OFF! Book now!`
+                                                : `Book professional massage services now!`;
+                                            const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+                                            window.open(url, '_blank');
+                                        }}
+                                        className="flex flex-col items-center justify-center gap-1 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-2 px-2 rounded-lg font-medium transition-all shadow-sm hover:shadow-md"
+                                    >
+                                        <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                                        </svg>
+                                        <span className="text-[10px] sm:text-xs">WhatsApp</span>
+                                    </button>
+                                    
+                                    <button
+                                        onClick={() => {
+                                            const message = discountPercentage > 0 
+                                                ? `🌟 ${discountPercentage}% OFF Massage Services!`
+                                                : `Professional Massage Services`;
+                                            const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodeURIComponent(message)}`;
+                                            window.open(url, '_blank', 'width=600,height=400');
+                                        }}
+                                        className="flex flex-col items-center justify-center gap-1 bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-2 px-2 rounded-lg font-medium transition-all shadow-sm hover:shadow-md"
+                                    >
+                                        <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                                        </svg>
+                                        <span className="text-[10px] sm:text-xs">Facebook</span>
+                                    </button>
+                                </div>
+
+                                {/* Second Row */}
+                                <div className="grid grid-cols-3 gap-2">
+                                    <button
+                                        onClick={() => {
+                                            const url = `https://www.instagram.com/`;
+                                            window.open(url, '_blank');
+                                            setToast({ message: '📱 Opening Instagram - Paste your promo!', type: 'success' });
+                                            setTimeout(() => setToast(null), 3000);
+                                        }}
+                                        className="flex flex-col items-center justify-center gap-1 bg-gradient-to-br from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white py-2 px-2 rounded-lg font-medium transition-all shadow-sm hover:shadow-md"
+                                    >
+                                        <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z"/>
+                                        </svg>
+                                        <span className="text-[10px] sm:text-xs">Instagram</span>
+                                    </button>
+                                    
+                                    <button
+                                        onClick={() => {
+                                            const message = discountPercentage > 0 
+                                                ? `🌟 Special ${discountPercentage}% OFF! ${therapist?.name || 'Massage'} - Book now!`
+                                                : `${therapist?.name || 'Professional Massage Services'} - Book now!`;
+                                            const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}`;
+                                            window.open(url, '_blank', 'width=600,height=400');
+                                        }}
+                                        className="flex flex-col items-center justify-center gap-1 bg-gradient-to-br from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white py-2 px-2 rounded-lg font-medium transition-all shadow-sm hover:shadow-md"
+                                    >
+                                        <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                                        </svg>
+                                        <span className="text-[10px] sm:text-xs">Twitter/X</span>
+                                    </button>
+                                    
+                                    <button
+                                        onClick={async () => {
+                                            try {
+                                                const therapistIdString = typeof therapistId === 'string' ? therapistId : therapistId.toString();
+                                                await therapistService.update(therapistIdString, { discountPercentage });
+                                                setToast({ message: '💾 Discount saved successfully!', type: 'success' });
+                                                setTimeout(() => setToast(null), 3000);
+                                            } catch (error) {
+                                                console.error('Error saving discount:', error);
+                                                setToast({ message: '❌ Failed to save discount', type: 'error' });
+                                                setTimeout(() => setToast(null), 3000);
+                                            }
+                                        }}
+                                        className="flex flex-col items-center justify-center gap-1 bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white py-2 px-2 rounded-lg font-medium transition-all shadow-sm hover:shadow-md"
+                                    >
+                                        <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z"/>
+                                        </svg>
+                                        <span className="text-[10px] sm:text-xs">Save Promo</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Discount Promotion Section */}
+                            <div className="mb-8 bg-gradient-to-r from-orange-50 to-yellow-50 border-2 border-orange-200 rounded-lg p-6">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <svg className="w-6 h-6 text-orange-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd"/>
+                                    </svg>
+                                    <h3 className="text-xl font-semibold text-gray-800">Special Discount Promotion</h3>
+                                </div>
+                                <p className="text-sm text-gray-600 mb-4">
+                                    Attract more customers by offering a limited-time discount on your services.
+                                </p>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Select Discount Percentage</label>
+                                        <div className="grid grid-cols-5 gap-3">
+                                            {[0, 5, 10, 15, 20].map((discount) => (
+                                                <button
+                                                    key={discount}
+                                                    type="button"
+                                                    onClick={() => setDiscountPercentage(discount)}
+                                                    className={`px-4 py-3 rounded-lg text-sm font-semibold transition-all ${
+                                                        discountPercentage === discount
+                                                            ? 'bg-orange-600 text-white shadow-lg transform scale-105'
+                                                            : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-orange-400 hover:shadow-md'
+                                                    }`}
+                                                >
+                                                    {discount === 0 ? 'None' : `-${discount}%`}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    {discountPercentage > 0 && (
+                                        <div className="mt-4 p-4 bg-white rounded-lg border-2 border-orange-300">
+                                            <p className="text-sm font-semibold text-orange-700 mb-3">Preview of Discounted Prices:</p>
+                                            <div className="grid grid-cols-3 gap-3">
+                                                <div className="bg-gray-50 p-3 rounded-lg text-center">
+                                                    <p className="text-gray-600 font-medium mb-1">60 min</p>
+                                                    <p className="text-gray-400 line-through text-sm">Rp {pricing["60"]}k</p>
+                                                    <p className="font-bold text-orange-600 text-lg">Rp {Math.round(pricing["60"] * (1 - discountPercentage / 100))}k</p>
+                                                </div>
+                                                <div className="bg-gray-50 p-3 rounded-lg text-center">
+                                                    <p className="text-gray-600 font-medium mb-1">90 min</p>
+                                                    <p className="text-gray-400 line-through text-sm">Rp {pricing["90"]}k</p>
+                                                    <p className="font-bold text-orange-600 text-lg">Rp {Math.round(pricing["90"] * (1 - discountPercentage / 100))}k</p>
+                                                </div>
+                                                <div className="bg-gray-50 p-3 rounded-lg text-center">
+                                                    <p className="text-gray-600 font-medium mb-1">120 min</p>
+                                                    <p className="text-gray-400 line-through text-sm">Rp {pricing["120"]}k</p>
+                                                    <p className="font-bold text-orange-600 text-lg">Rp {Math.round(pricing["120"] * (1 - discountPercentage / 100))}k</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Shareable Discount Banner */}
+                            <div className="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200 rounded-lg p-6">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <svg className="w-6 h-6 text-purple-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"/>
+                                    </svg>
+                                    <h3 className="text-xl font-semibold text-gray-800">Share Your Discount</h3>
+                                </div>
+                                <p className="text-sm text-gray-600 mb-4">
+                                    Create a beautiful promotional banner to share on social media and with customers via chat.
+                                </p>
+                                
+                                {/* Discount Banner Preview */}
+                                <div className="bg-white rounded-xl p-6 mb-4 border-4 border-dashed border-purple-300">
+                                    <div className="text-center">
+                                        <div className="bg-gradient-to-r from-orange-500 to-pink-500 text-white inline-block px-6 py-2 rounded-full text-2xl font-bold mb-3">
+                                            {discountPercentage > 0 ? `${discountPercentage}% OFF` : 'NO DISCOUNT SET'}
+                                        </div>
+                                        <h4 className="text-2xl font-bold text-gray-900 mb-2">{therapist?.name || 'Your Name'}</h4>
+                                        <p className="text-gray-600 mb-4">Professional Massage Services</p>
+                                        {discountPercentage > 0 && (
+                                            <div className="bg-orange-50 rounded-lg p-4 inline-block">
+                                                <p className="text-sm text-gray-700 font-medium mb-2">Special Prices:</p>
+                                                <div className="flex gap-4 justify-center">
+                                                    <div>
+                                                        <p className="text-xs text-gray-500 line-through">Rp {pricing["60"]}k</p>
+                                                        <p className="text-lg font-bold text-orange-600">Rp {Math.round(pricing["60"] * (1 - discountPercentage / 100))}k</p>
+                                                        <p className="text-xs text-gray-600">60 min</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs text-gray-500 line-through">Rp {pricing["90"]}k</p>
+                                                        <p className="text-lg font-bold text-orange-600">Rp {Math.round(pricing["90"] * (1 - discountPercentage / 100))}k</p>
+                                                        <p className="text-xs text-gray-600">90 min</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs text-gray-500 line-through">Rp {pricing["120"]}k</p>
+                                                        <p className="text-lg font-bold text-orange-600">Rp {Math.round(pricing["120"] * (1 - discountPercentage / 100))}k</p>
+                                                        <p className="text-xs text-gray-600">120 min</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                        <p className="text-xs text-gray-500 mt-4">📱 WhatsApp: {therapist?.whatsappNumber || 'Not Set'}</p>
+                                    </div>
+                                </div>
+
+                                {/* Share Buttons */}
+                                <div className="space-y-3">
+                                    <p className="text-sm font-medium text-gray-700">Share this promotion:</p>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <button 
+                                            onClick={() => {
+                                                const message = discountPercentage > 0 
+                                                    ? `🌟 Special ${discountPercentage}% OFF! ${therapist?.name || 'Professional Massage'}\n\n60min: Rp ${Math.round(pricing["60"] * (1 - discountPercentage / 100))}k (was ${pricing["60"]}k)\n90min: Rp ${Math.round(pricing["90"] * (1 - discountPercentage / 100))}k (was ${pricing["90"]}k)\n120min: Rp ${Math.round(pricing["120"] * (1 - discountPercentage / 100))}k (was ${pricing["120"]}k)\n\nBook now! WhatsApp: ${therapist?.whatsappNumber || ''}`
+                                                    : `${therapist?.name || 'Professional Massage Services'}\n\n60min: Rp ${pricing["60"]}k\n90min: Rp ${pricing["90"]}k\n120min: Rp ${pricing["120"]}k\n\nWhatsApp: ${therapist?.whatsappNumber || ''}`;
+                                                navigator.clipboard.writeText(message);
+                                                setToast({ message: '✅ Promotional text copied! Paste it anywhere.', type: 'success' });
+                                                setTimeout(() => setToast(null), 3000);
+                                            }}
+                                            className="flex items-center justify-center gap-2 bg-gray-700 hover:bg-gray-800 text-white py-3 px-4 rounded-lg font-medium transition-colors"
+                                        >
+                                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/>
+                                                <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/>
+                                            </svg>
+                                            Copy Text
+                                        </button>
+                                        <button 
+                                            onClick={() => {
+                                                const message = discountPercentage > 0 
+                                                    ? `🌟 Special ${discountPercentage}% OFF! Book now!`
+                                                    : `Book professional massage services now!`;
+                                                const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+                                                window.open(url, '_blank');
+                                            }}
+                                            className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg font-medium transition-colors"
+                                        >
+                                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                                            </svg>
+                                            Share WhatsApp
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
             case 'terms':
                 return <TherapistTermsPage />;
             case 'profile':
@@ -637,15 +1091,12 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                         });
                         
                         console.log('✅ Profile picture auto-saved successfully!');
-                        // Show subtle success message
-                        const successMsg = document.createElement('div');
-                        successMsg.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in';
-                        successMsg.innerHTML = '✅ Profile picture saved automatically!';
-                        document.body.appendChild(successMsg);
-                        setTimeout(() => successMsg.remove(), 3000);
+                        setToast({ message: '✅ Profile picture saved automatically!', type: 'success' });
+                        setTimeout(() => setToast(null), 3000);
                     } catch (error) {
                         console.error('❌ Error auto-saving profile picture:', error);
-                        alert('Profile picture uploaded but auto-save failed. Please click "Save Profile" to persist changes.');
+                        setToast({ message: '⚠️ Profile picture uploaded but auto-save failed. Please click "Save Profile" button.', type: 'error' });
+                        setTimeout(() => setToast(null), 5000);
                     }
                 };
 
@@ -771,38 +1222,6 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                             currentImage={profilePicture}
                             onImageChange={handleProfilePictureChange}
                             variant="profile"
-                        />
-                        
-                        <ImageUpload
-                            id="main-image-upload"
-                            label="Main Banner Image (Optional)"
-                            currentImage={mainImage}
-                            onImageChange={async (imageUrl) => {
-                                setMainImage(imageUrl);
-                                
-                                // 🚀 AUTO-SAVE: Immediately save main image to database
-                                try {
-                                    console.log('💾 Auto-saving main image to database...');
-                                    const therapistIdString = typeof therapistId === 'string' 
-                                        ? therapistId 
-                                        : therapistId.toString();
-                                    
-                                    await therapistService.update(therapistIdString, {
-                                        mainImage: imageUrl
-                                    });
-                                    
-                                    console.log('✅ Main image auto-saved successfully!');
-                                    // Show subtle success message
-                                    const successMsg = document.createElement('div');
-                                    successMsg.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in';
-                                    successMsg.innerHTML = '✅ Main image saved automatically!';
-                                    document.body.appendChild(successMsg);
-                                    setTimeout(() => successMsg.remove(), 3000);
-                                } catch (error) {
-                                    console.error('❌ Error auto-saving main image:', error);
-                                }
-                            }}
-                            variant="default"
                         />
                          
                         <div>
@@ -1042,61 +1461,6 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                             </div>
                         </div>
                         
-                        {/* Discount Percentage Section */}
-                        <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border-2 border-orange-200 rounded-lg p-4">
-                            <div className="flex items-center gap-2 mb-3">
-                                <svg className="w-5 h-5 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
-                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd"/>
-                                </svg>
-                                <h3 className="text-sm sm:text-md font-semibold text-gray-800">Special Discount Promotion</h3>
-                            </div>
-                            <p className="text-xs text-gray-600 mb-3">
-                                Attract more customers by offering a limited-time discount on your services. The discount will be displayed prominently on your profile card.
-                            </p>
-                            <div className="space-y-2">
-                                <label className="block text-xs font-medium text-gray-700">Select Discount Percentage</label>
-                                <div className="grid grid-cols-5 gap-2">
-                                    {[0, 5, 10, 15, 20].map((discount) => (
-                                        <button
-                                            key={discount}
-                                            type="button"
-                                            onClick={() => setDiscountPercentage(discount)}
-                                            className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
-                                                discountPercentage === discount
-                                                    ? 'bg-orange-600 text-white shadow-lg transform scale-105'
-                                                    : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-orange-400 hover:shadow-md'
-                                            }`}
-                                        >
-                                            {discount === 0 ? 'None' : `-${discount}%`}
-                                        </button>
-                                    ))}
-                                </div>
-                                {discountPercentage > 0 && (
-                                    <div className="mt-3 p-3 bg-white rounded-lg border-2 border-orange-300">
-                                        <p className="text-sm font-semibold text-orange-700 mb-2">Preview of Discounted Prices:</p>
-                                        <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                                            <div className="bg-gray-50 p-2 rounded">
-                                                <p className="text-gray-600">60 min</p>
-                                                <p className="text-gray-400 line-through text-xs">Rp {pricing["60"]}k</p>
-                                                <p className="font-bold text-orange-600">Rp {Math.round(pricing["60"] * (1 - discountPercentage / 100))}k</p>
-                                            </div>
-                                            <div className="bg-gray-50 p-2 rounded">
-                                                <p className="text-gray-600">90 min</p>
-                                                <p className="text-gray-400 line-through text-xs">Rp {pricing["90"]}k</p>
-                                                <p className="font-bold text-orange-600">Rp {Math.round(pricing["90"] * (1 - discountPercentage / 100))}k</p>
-                                            </div>
-                                            <div className="bg-gray-50 p-2 rounded">
-                                                <p className="text-gray-600">120 min</p>
-                                                <p className="text-gray-400 line-through text-xs">Rp {pricing["120"]}k</p>
-                                                <p className="font-bold text-orange-600">Rp {Math.round(pricing["120"] * (1 - discountPercentage / 100))}k</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                        
                         {/* Hotel/Villa Special Pricing Section */}
                         <div className="border-t border-gray-200 pt-4">
                             <div className="flex items-center justify-between mb-3">
@@ -1193,88 +1557,288 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
 
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-20">
+        <div className="min-h-screen bg-gray-50 pb-20 overflow-x-hidden">
             {/* Header */}
-            <header className="bg-white shadow-sm px-2 sm:px-3 py-2 sm:py-3 sticky top-0 z-30">
-                <div className="max-w-7xl mx-auto flex justify-between items-center">
-                    <h1 className="text-base sm:text-2xl font-bold">
+            <header className="bg-white shadow-sm px-3 sm:px-4 py-3 sticky top-0 z-40">
+                <div className="max-w-7xl mx-auto flex justify-between items-center gap-2">
+                    <h1 className="text-lg sm:text-2xl font-bold flex-shrink-0">
                         <span className="text-gray-900">Inda</span>
                         <span className="text-orange-500">Street</span>
                     </h1>
-                    <div className="flex items-center gap-2">
-                        <button onClick={() => setActiveTab('terms')} className="relative p-2 hover:bg-gray-100 rounded-lg transition-all">
-                            <Bell className="w-5 h-5 text-orange-500" />
-                            {notifications.filter(n => !n.isRead).length > 0 && (
-                                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-orange-500 text-[10px] font-bold text-white">
-                                    {notifications.filter(n => !n.isRead).length}
-                                </span>
-                            )}
-                        </button>
-                        <button
-                            onClick={onLogout}
-                            className="flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-all"
+                    <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                        {/* Burger Menu - Moved to right */}
+                        <button 
+                            onClick={() => setIsSideDrawerOpen(true)}
+                            className="relative p-2 hover:bg-gray-100 rounded-lg transition-all"
                         >
-                            <LogOut className="w-4 h-4" />
-                            <span className="hidden sm:inline">Logout</span>
+                            <Menu className="w-5 h-5 text-orange-500" />
                         </button>
                     </div>
                 </div>
             </header>
 
-            {/* Tab Navigation */}
-            <nav className="bg-white border-b sticky top-[52px] sm:top-[60px] z-20">
-                <div className="max-w-7xl mx-auto px-2 sm:px-3 flex gap-1 sm:gap-2 overflow-x-auto scrollbar-hide py-2">
+            {/* Side Drawer */}
+            {isSideDrawerOpen && (
+                <>
+                    {/* Backdrop */}
+                    <div 
+                        className="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity"
+                        onClick={() => setIsSideDrawerOpen(false)}
+                    ></div>
+                    
+                    {/* Drawer */}
+                    <div 
+                        ref={sideDrawerRef}
+                        className="fixed top-0 right-0 h-full w-80 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out overflow-y-auto"
+                    >
+                        {/* Drawer Header */}
+                        <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-4 text-white">
+                            <div className="flex justify-between items-center">
+                                <div>
+                                    <h2 className="text-xl font-bold">Menu</h2>
+                                    <p className="text-sm text-orange-100">{therapist?.name || 'Therapist'}</p>
+                                </div>
+                                <button 
+                                    onClick={() => setIsSideDrawerOpen(false)}
+                                    className="p-2 hover:bg-white/20 rounded-lg transition-all"
+                                >
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Drawer Menu Items */}
+                        <div className="py-2">
+                            <button
+                                onClick={() => {
+                                    setActiveTab('status');
+                                    setIsSideDrawerOpen(false);
+                                }}
+                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
+                                    activeTab === 'status' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
+                                }`}
+                            >
+                                <Activity className="w-5 h-5" />
+                                <span className="font-medium">Online Status</span>
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setActiveTab('profile');
+                                    setIsSideDrawerOpen(false);
+                                }}
+                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
+                                    activeTab === 'profile' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
+                                }`}
+                            >
+                                <User className="w-5 h-5" />
+                                <span className="font-medium">Profile</span>
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setActiveTab('bookings');
+                                    setIsSideDrawerOpen(false);
+                                }}
+                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
+                                    activeTab === 'bookings' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
+                                }`}
+                            >
+                                <Calendar className="w-5 h-5" />
+                                <span className="font-medium">Booking</span>
+                                {upcomingBookings.length > 0 && (
+                                    <span className="ml-auto bg-orange-500 text-white text-xs rounded-full px-2.5 py-0.5 font-bold">
+                                        {upcomingBookings.length}
+                                    </span>
+                                )}
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setActiveTab('analytics');
+                                    setIsSideDrawerOpen(false);
+                                }}
+                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
+                                    activeTab === 'analytics' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
+                                }`}
+                            >
+                                <TrendingUp className="w-5 h-5" />
+                                <span className="font-medium">Analytic</span>
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setActiveTab('hotelVilla');
+                                    setIsSideDrawerOpen(false);
+                                }}
+                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
+                                    activeTab === 'hotelVilla' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
+                                }`}
+                            >
+                                <Hotel className="w-5 h-5" />
+                                <span className="font-medium">Hotel/Villa</span>
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setActiveTab('notifications');
+                                    setIsSideDrawerOpen(false);
+                                }}
+                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
+                                    activeTab === 'notifications' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
+                                }`}
+                            >
+                                <Bell className="w-5 h-5" />
+                                <span className="font-medium">Notifications</span>
+                                {notifications.filter(n => !n.isRead).length > 0 && (
+                                    <span className="ml-auto bg-orange-500 text-white text-xs rounded-full px-2.5 py-0.5 font-bold">
+                                        {notifications.filter(n => !n.isRead).length}
+                                    </span>
+                                )}
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setActiveTab('chat');
+                                    setIsSideDrawerOpen(false);
+                                }}
+                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
+                                    activeTab === 'chat' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
+                                }`}
+                            >
+                                <MessageSquare className="w-5 h-5" />
+                                <span className="font-medium">Chat Support</span>
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setActiveTab('promotions');
+                                    setIsSideDrawerOpen(false);
+                                }}
+                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
+                                    activeTab === 'promotions' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
+                                }`}
+                            >
+                                <Megaphone className="w-5 h-5" />
+                                <span className="font-medium">Promotions</span>
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setActiveTab('discounts');
+                                    setIsSideDrawerOpen(false);
+                                }}
+                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
+                                    activeTab === 'discounts' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
+                                }`}
+                            >
+                                <Tag className="w-5 h-5" />
+                                <span className="font-medium">Discounts</span>
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setActiveTab('jobOpportunities');
+                                    setIsSideDrawerOpen(false);
+                                }}
+                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
+                                    activeTab === 'jobOpportunities' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
+                                }`}
+                            >
+                                <Briefcase className="w-5 h-5" />
+                                <span className="font-medium">Job Opportunities</span>
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setActiveTab('terms');
+                                    setIsSideDrawerOpen(false);
+                                }}
+                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
+                                    activeTab === 'terms' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
+                                }`}
+                            >
+                                <FileCheck className="w-5 h-5" />
+                                <span className="font-medium">Terms</span>
+                            </button>
+
+                            {/* Divider */}
+                            <div className="my-2 border-t border-gray-200"></div>
+
+                            {/* Logout Button */}
+                            <button
+                                onClick={() => {
+                                    setIsSideDrawerOpen(false);
+                                    onLogout();
+                                }}
+                                className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-red-50 transition-colors text-red-600 border-l-4 border-transparent hover:border-red-500"
+                            >
+                                <LogOut className="w-5 h-5" />
+                                <span className="font-medium">Logout</span>
+                            </button>
+                        </div>
+                    </div>
+                </>
+            )}
+
+            {/* Tab Navigation - Fixed under header */}
+            <nav className="bg-white border-b border-gray-200 sticky top-[57px] sm:top-[61px] z-30 overflow-x-auto scrollbar-hide">
+                <div className="max-w-7xl mx-auto px-1 sm:px-3 flex gap-1 py-1.5 sm:py-2">
                     <TabButton
-                        icon={<User className="w-4 h-4" />}
+                        icon={<Activity className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+                        label="Online Status"
+                        isActive={activeTab === 'status'}
+                        onClick={() => setActiveTab('status')}
+                    />
+                    <TabButton
+                        icon={<User className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
                         label={t.tabs?.profile || 'Profile'}
                         isActive={activeTab === 'profile'}
                         onClick={() => setActiveTab('profile')}
                     />
                     <TabButton
-                        icon={<Calendar className="w-4 h-4" />}
-                        label={t.tabs?.bookings || 'Bookings'}
+                        icon={<Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+                        label={t.tabs?.bookings || 'Booking'}
                         isActive={activeTab === 'bookings'}
                         onClick={() => setActiveTab('bookings')}
                         badge={upcomingBookings.length}
                     />
                     <TabButton
-                        icon={<TrendingUp className="w-4 h-4" />}
-                        label={t.tabs?.analytics || 'Analytics'}
+                        icon={<TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+                        label={t.tabs?.analytics || 'Analytic'}
                         isActive={activeTab === 'analytics'}
                         onClick={() => setActiveTab('analytics')}
                     />
                     <TabButton
-                        icon={<Hotel className="w-4 h-4" />}
+                        icon={<Hotel className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
                         label="Hotel/Villa"
                         isActive={activeTab === 'hotelVilla'}
                         onClick={() => setActiveTab('hotelVilla')}
                     />
                     <TabButton
-                        icon={<Bell className="w-4 h-4" />}
+                        icon={<Bell className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
                         label="Notifications"
                         isActive={activeTab === 'notifications'}
                         onClick={() => setActiveTab('notifications')}
                     />
                     <TabButton
-                        icon={<MessageSquare className="w-4 h-4" />}
+                        icon={<MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
                         label="Chat Support"
                         isActive={activeTab === 'chat'}
                         onClick={() => setActiveTab('chat')}
                     />
                     <TabButton
-                        icon={<Tag className="w-4 h-4" />}
+                        icon={<Megaphone className="w-3.5 h:3.5 sm:w-4 sm:h-4" />}
+                        label="Promotions"
+                        isActive={activeTab === 'promotions'}
+                        onClick={() => setActiveTab('promotions')}
+                    />
+                    <TabButton
+                        icon={<Tag className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
                         label="Discounts"
                         isActive={activeTab === 'discounts'}
                         onClick={() => setActiveTab('discounts')}
                     />
                     <TabButton
-                        icon={<Briefcase className="w-4 h-4" />}
+                        icon={<Briefcase className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
                         label="Job Opportunities"
                         isActive={activeTab === 'jobOpportunities'}
                         onClick={() => setActiveTab('jobOpportunities')}
                     />
                     <TabButton
-                        icon={<FileCheck className="w-4 h-4" />}
+                        icon={<FileCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
                         label="Terms"
                         isActive={activeTab === 'terms'}
                         onClick={() => setActiveTab('terms')}
@@ -1283,7 +1847,9 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
             </nav>
 
             {/* Content Area */}
-            <main className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-6">
+            <main className={`max-w-7xl mx-auto px-3 sm:px-4 w-full ${
+                activeTab === 'status' ? 'h-[calc(100vh-160px)] overflow-y-auto py-2' : 'py-4 sm:py-6'
+            }`}>
                 {renderContent()}
             </main>
             
@@ -1311,14 +1877,27 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                 </div>
             )}
 
+            {/* Toast Notification */}
+            {toast && (
+                <div className={`fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 text-white transition-opacity duration-300 ${
+                    toast.type === 'success' ? 'bg-green-500' :
+                    toast.type === 'error' ? 'bg-red-500' : 'bg-orange-500'
+                }`}>
+                    {toast.message}
+                </div>
+            )}
+
             {/* Footer */}
             <Footer
-                currentPage="profile"
+                currentPage={activeTab}
                 userRole="therapist"
                 onHomeClick={onNavigateToHome || (() => {})}
-                onNotificationsClick={onNavigateToNotifications}
+                onNotificationsClick={() => setActiveTab('notifications')}
+                onBookingsClick={() => setActiveTab('bookings')}
                 onProfileClick={() => setActiveTab('profile')}
+                onChatClick={() => setActiveTab('chat')}
                 unreadNotifications={notifications.filter(n => !n.isRead).length}
+                hasNewBookings={upcomingBookings.length > 0}
                 t={t}
             />
         </div>

@@ -85,15 +85,26 @@ export const adminAuth = {
 export const therapistAuth = {
     async signUp(email: string, password: string): Promise<AuthResponse> {
         try {
+            console.log('🔵 [Therapist Sign-Up] Starting...', { email });
+            
             // Clear any existing session first
             try {
                 await account.deleteSession('current');
+                console.log('✅ [Therapist Sign-Up] Cleared existing session');
             } catch {
-                // No active session to delete
+                console.log('ℹ️ [Therapist Sign-Up] No active session to delete');
             }
             
+            console.log('🔵 [Therapist Sign-Up] Creating Appwrite account...');
             const user = await account.create(ID.unique(), email, password);
+            console.log('✅ [Therapist Sign-Up] Appwrite account created:', user.$id);
             const therapistId = ID.unique();
+            
+            console.log('🔵 [Therapist Sign-Up] Creating therapist document...', {
+                therapistId,
+                collectionId: COLLECTIONS.THERAPISTS,
+                databaseId: DATABASE_ID
+            });
             
             const therapist = await databases.createDocument(
                 DATABASE_ID,
@@ -142,39 +153,73 @@ export const therapistAuth = {
                 }
             );
             
+            console.log('✅ [Therapist Sign-Up] Therapist document created:', therapist.$id);
+            console.log('🎉 [Therapist Sign-Up] SUCCESS! Returning response...');
+            
             return { success: true, userId: user.$id, documentId: therapist.$id };
         } catch (error: any) {
-            console.error('Therapist sign up error:', error);
+            console.error('❌ [Therapist Sign-Up] ERROR:', {
+                message: error.message,
+                code: error.code,
+                type: error.type,
+                response: error.response,
+                fullError: error
+            });
             return { success: false, error: error.message };
         }
     },
     
     async signIn(email: string, password: string): Promise<AuthResponse> {
         try {
+            console.log('🔵 [Therapist Sign-In] Starting...', { email });
+            
             // Clear any existing session first
             try {
                 await account.deleteSession('current');
+                console.log('✅ [Therapist Sign-In] Cleared existing session');
             } catch {
-                // No active session to delete
+                console.log('ℹ️ [Therapist Sign-In] No active session to delete');
             }
             
+            console.log('🔵 [Therapist Sign-In] Creating email/password session...');
             await account.createEmailPasswordSession(email, password);
-            const user = await account.get();
+            console.log('✅ [Therapist Sign-In] Session created');
             
+            console.log('🔵 [Therapist Sign-In] Getting user account...');
+            const user = await account.get();
+            console.log('✅ [Therapist Sign-In] User account retrieved:', user.$id);
+            
+            console.log('🔵 [Therapist Sign-In] Searching for therapist document...', {
+                collectionId: COLLECTIONS.THERAPISTS,
+                searchEmail: email
+            });
             const therapists = await databases.listDocuments(
                 DATABASE_ID,
                 COLLECTIONS.THERAPISTS
             );
             
+            console.log(`🔍 [Therapist Sign-In] Found ${therapists.total} total therapists`);
+            
             const therapist = therapists.documents.find((doc: any) => doc.email === email);
             
             if (!therapist) {
+                console.error('❌ [Therapist Sign-In] Therapist document not found for email:', email);
+                console.log('Available emails in collection:', therapists.documents.map((d: any) => d.email));
                 throw new Error('Therapist not found');
             }
             
+            console.log('✅ [Therapist Sign-In] Therapist document found:', therapist.$id);
+            console.log('🎉 [Therapist Sign-In] SUCCESS! Returning response...');
+            
             return { success: true, userId: user.$id, documentId: therapist.$id };
         } catch (error: any) {
-            console.error('Therapist sign in error:', error);
+            console.error('❌ [Therapist Sign-In] ERROR:', {
+                message: error.message,
+                code: error.code,
+                type: error.type,
+                response: error.response,
+                fullError: error
+            });
             return { success: false, error: error.message };
         }
     },

@@ -52,6 +52,13 @@ const LocationModal: React.FC<LocationModalProps> = ({ onConfirm, onClose, t }) 
             setError('Geolocation is not supported by your browser.');
             return;
         }
+        
+        // Check if Google Maps is loaded
+        if (!(window as any).google || !(window as any).google.maps) {
+            setError('Google Maps is loading... Please try again in a moment.');
+            return;
+        }
+        
         setIsLoading(true);
         setError('');
         navigator.geolocation.getCurrentPosition(

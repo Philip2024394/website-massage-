@@ -453,7 +453,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return <CookiesPolicyPage onBack={handleBackToHome} t={t} />;
             
         case 'customerAuth': 
-            return <CustomerAuthPage onSuccess={handleCustomerAuthSuccess} onBack={handleBackToHome} />;
+            return <CustomerAuthPage onSuccess={handleCustomerAuthSuccess} onBack={handleBackToHome} userLocation={userLocation} />;
             
         case 'customerDashboard': 
             return loggedInCustomer && <CustomerDashboardPage 

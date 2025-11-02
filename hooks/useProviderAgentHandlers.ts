@@ -2,6 +2,33 @@ import type { Therapist, Place, Agent } from '../types';
 import type { Page, LoggedInProvider } from '../types/pageTypes';
 import { therapistService, placeService, agentService, adminMessageService } from '../lib/appwriteService';
 
+// Toast notification utility for better UX - uses safe DOM manipulation
+const showToast = (message: string, type: 'success' | 'error' | 'warning' = 'success') => {
+    const bgColor = type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-orange-500';
+    const icon = type === 'success' ? '✓' : type === 'error' ? '⚠️' : '⚠';
+    
+    const toast = document.createElement('div');
+    toast.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-[9999] transition-opacity duration-300`;
+    toast.innerHTML = `<strong>${icon}</strong> ${message}`;
+    toast.style.opacity = '1';
+    
+    // Append to body safely
+    if (document.body) {
+        document.body.appendChild(toast);
+        
+        // Fade out and remove
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => {
+                // Check if element still exists and has parent before removing
+                if (toast && toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 300);
+        }, 4000);
+    }
+};
+
 interface UseProviderAgentHandlersProps {
     loggedInProvider: LoggedInProvider | null;
     loggedInAgent: Agent | null;
@@ -54,8 +81,9 @@ export const useProviderAgentHandlers = ({
             console.log('📏 ProfilePicture length:', profilePicture.length);
             
             if (profilePicture.length > 512) {
-                alert('Profile picture URL is too long. Please use a shorter URL or upload the image to a hosting service.');
-                return;
+                showToast('Profile picture URL is too long. Saving other data without profile picture.', 'warning');
+                // Continue saving other data even if profile picture is invalid
+                therapistData.profilePicture = ''; // Clear invalid URL
             }
             
             // First, try to fetch existing therapist data
@@ -104,10 +132,11 @@ export const useProviderAgentHandlers = ({
                 await therapistService.create(createData);
             }
             
-            alert('Profile saved successfully!');
+            console.log('✅ Therapist profile saved successfully');
+            showToast('Profile saved successfully! All your changes have been saved.', 'success');
         } catch (error: any) {
-            console.error('Save error:', error);
-            alert('Error saving profile: ' + (error.message || 'Unknown error'));
+            console.error('❌ Save error:', error);
+            showToast('Error saving profile: ' + (error.message || 'Unknown error. Please try again.'), 'error');
         }
     };
     
@@ -130,10 +159,11 @@ export const useProviderAgentHandlers = ({
             // Use string ID for Appwrite
             const placeId = typeof loggedInProvider.id === 'string' ? loggedInProvider.id : loggedInProvider.id.toString();
             await placeService.update(placeId, updateData);
-            alert('Profile saved successfully!');
+            console.log('✅ Place profile saved successfully');
+            showToast('Profile saved successfully! All your changes have been saved.', 'success');
         } catch (error: any) {
-            console.error('Save error:', error);
-            alert('Error saving profile: ' + (error.message || 'Unknown error'));
+            console.error('❌ Save error:', error);
+            showToast('Error saving profile: ' + (error.message || 'Unknown error. Please try again.'), 'error');
         }
     };
 
@@ -201,7 +231,7 @@ export const useProviderAgentHandlers = ({
             setPage('agentDashboard');
         } catch (error: any) {
             console.error('Accept terms error:', error);
-            alert('Could not accept terms: ' + (error.message || 'Unknown error'));
+            showToast('Could not accept terms: ' + (error.message || 'Unknown error'), 'error');
         }
     };
 
@@ -215,10 +245,10 @@ export const useProviderAgentHandlers = ({
             const updatedAgent = { ...loggedInAgent, ...agentData };
             setLoggedInAgent(updatedAgent);
             localStorage.setItem('loggedInAgent', JSON.stringify(updatedAgent));
-            alert('Profile saved successfully!');
+            showToast('Profile saved successfully!', 'success');
         } catch (error: any) {
             console.error('Save agent profile error:', error);
-            alert('Error saving profile: ' + (error.message || 'Unknown error'));
+            showToast('Error saving profile: ' + (error.message || 'Unknown error'), 'error');
         }
     };
 
@@ -247,7 +277,7 @@ export const useProviderAgentHandlers = ({
             setAdminMessages(messages);
         } catch (error) {
             console.error('Error sending admin message:', error);
-            alert('Failed to send message. Please try again.');
+            showToast('Failed to send message. Please try again.', 'error');
         }
     };
 

@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { authService, userService } from '../lib/appwriteService';
-import { LogIn, UserPlus } from 'lucide-react';
+import { LogIn, UserPlus, MapPin } from 'lucide-react';
 
 interface CustomerAuthPageProps {
   onSuccess: (user: any, isNewUser?: boolean) => void;
   onBack: () => void;
+  userLocation: { address: string; lat: number; lng: number; } | null;
 }
 
-const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack }) => {
+const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, userLocation }) => {
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showLocationWarning, setShowLocationWarning] = useState(false);
   
   // Form fields
   const [email, setEmail] = useState('');
@@ -57,6 +59,13 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack }
     e.preventDefault();
     setError('');
 
+    // ⚠️ LOCATION REQUIRED CHECK
+    if (!userLocation || !userLocation.address) {
+      setShowLocationWarning(true);
+      setError('');
+      return;
+    }
+
     // Validation
     if (!name || !email || !password || !phone) {
       setError('Please fill in all required fields');
@@ -80,12 +89,14 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack }
       const user = await authService.register(email, password, name);
       console.log('✅ Registration successful:', user);
 
-      // Create user profile
+      // Create user profile WITH LOCATION
       await userService.create({
         userId: user.$id,
         name,
         email,
         phone,
+        location: userLocation.address, // Save user's location
+        coordinates: JSON.stringify({ lat: userLocation.lat, lng: userLocation.lng }),
         createdAt: new Date().toISOString(),
         totalBookings: 0,
         membershipLevel: 'free'
@@ -310,6 +321,64 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack }
           </div>
         )}
       </div>
+
+      {/* Location Warning Modal */}
+      {showLocationWarning && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 relative animate-fadeIn">
+            {/* Icon */}
+            <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <MapPin className="w-10 h-10 text-orange-500" />
+            </div>
+
+            {/* Title */}
+            <h2 className="text-2xl font-bold text-gray-900 text-center mb-4">
+              Location Required
+            </h2>
+
+            {/* Message */}
+            <p className="text-gray-700 text-center mb-2 leading-relaxed">
+              You must set your location before registering an account.
+            </p>
+            <p className="text-gray-600 text-sm text-center mb-6">
+              This helps us show you nearby therapists and provide accurate service.
+            </p>
+
+            {/* Location Display */}
+            {userLocation && userLocation.address ? (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                <p className="text-sm text-green-800 font-semibold mb-1">📍 Current Location:</p>
+                <p className="text-sm text-green-700">{userLocation.address}</p>
+              </div>
+            ) : (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <p className="text-sm text-red-800 font-semibold mb-1">⚠️ No Location Set</p>
+                <p className="text-xs text-red-700">Please use "Set My Location" button on the home page</p>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="space-y-3">
+              <button
+                onClick={() => {
+                  setShowLocationWarning(false);
+                  onBack(); // Go back to home page where they can set location
+                }}
+                className="w-full bg-orange-500 text-white py-4 rounded-lg hover:bg-orange-600 transition-all duration-300 font-bold text-lg shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+              >
+                <MapPin className="w-5 h-5" />
+                Go Set My Location
+              </button>
+              <button
+                onClick={() => setShowLocationWarning(false)}
+                className="w-full bg-gray-200 text-gray-700 py-3 rounded-lg hover:bg-gray-300 transition-all duration-300 font-semibold"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

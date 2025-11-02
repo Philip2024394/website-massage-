@@ -6,6 +6,7 @@ import Button from '../components/Button';
 import DiscountSharePage from './DiscountSharePage';
 import ImageUpload from '../components/ImageUpload';
 import HotelVillaOptIn from '../components/HotelVillaOptIn';
+import Footer from '../components/Footer';
 import UserSolidIcon from '../components/icons/UserSolidIcon';
 import DocumentTextIcon from '../components/icons/DocumentTextIcon';
 import PhoneIcon from '../components/icons/PhoneIcon';
@@ -953,9 +954,9 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 pb-20">
             {/* Header */}
-            <header className="bg-white shadow-sm px-2 sm:px-3 py-2 sm:py-3 sticky top-0 z-30">
+            <header className="bg-white shadow-sm px-2 sm:px-3 py-2 sm:py-3 sticky top-0 z-40">
                 <div className="max-w-7xl mx-auto flex justify-between items-center">
                     <h1 className="text-base sm:text-2xl font-bold">
                         <span className="text-gray-900">Inda</span>
@@ -975,7 +976,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             </header>
 
             {/* Tab Navigation */}
-            <nav className="bg-white border-b sticky top-[52px] sm:top-[60px] z-20">
+            <nav className="bg-white border-b border-gray-200 sticky top-[52px] sm:top-[60px] z-30 overflow-x-auto">
                 <div className="max-w-7xl mx-auto px-2 sm:px-3 flex gap-1 sm:gap-2 overflow-x-auto scrollbar-hide py-2">
                     <TabButton
                         icon={<User className="w-4 h-4" />}
@@ -1040,6 +1041,16 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             <main className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-6 pb-20">
                 {renderContent()}
             </main>
+
+            {/* Footer */}
+            <Footer
+                currentPage="profile"
+                userRole="place"
+                onProfileClick={() => setActiveTab('profile')}
+                onChatClick={() => setActiveTab('chat')}
+                unreadNotifications={notifications.filter(n => !n.isRead).length}
+                t={t}
+            />
         </div>
     );
 };

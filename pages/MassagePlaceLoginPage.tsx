@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Button from '../components/Button';
+import PasswordInput from '../components/PasswordInput';
 import { account } from '../lib/appwrite';
 import { placeService } from '../lib/appwriteService';
 import { LogIn, UserPlus } from 'lucide-react';
@@ -168,7 +169,7 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
                         <span className="text-white">Inda</span>
                         <span className="text-orange-400">Street</span>
                     </h1>
-                    <p className="text-white/90 font-medium">Massage Place Portal</p>
+                    <p className="text-white/90 font-medium">Massage Place Account</p>
                 </div>
 
                 <div className="flex mb-6 bg-white/10 backdrop-blur-sm rounded-lg p-1 border border-white/20">
@@ -226,20 +227,13 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
                         />
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-white/90 mb-2">
-                            Password
-                        </label>
-                        <input
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
-                            placeholder="Enter your password"
-                            required
-                            minLength={8}
-                        />
-                    </div>
+                    <PasswordInput
+                        value={password}
+                        onChange={setPassword}
+                        placeholder="Enter your password"
+                        required
+                        minLength={8}
+                    />
 
                     <Button
                         type="submit"

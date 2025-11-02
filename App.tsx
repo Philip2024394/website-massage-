@@ -1,85 +1,320 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { AppLayout } from './components/layout/AppLayout';
 import { AppFooterLayout } from './components/layout/AppFooterLayout';
 import { AppRouter } from './AppRouter';
-import { useAllHooks } from './hooks/useAllHooks';
-import { translations } from './translations/index.ts';
+import { APP_CONFIG } from './config/appConfig';
+import { useDataFetching } from './hooks/useDataFetching';
+import { useNavigation } from './hooks/useNavigation';
+import { useAuthHandlers } from './hooks/useAuthHandlers';
+import { useBookingHandlers } from './hooks/useBookingHandlers';
+import { useProviderAgentHandlers } from './hooks/useProviderAgentHandlers';
+import { useFooterNavigation } from './hooks/useFooterNavigation';
+import { useDerivedState } from './hooks/useDerivedState';
+import { useTranslations } from './utils/translations';
+import { LoyaltyRewardModal } from './components/LoyaltyRewardModal';
+import { BookingChatWindow } from './components/chat/BookingChatWindow';
+import type { Page } from './types/pageTypes';
 
-const App: React.FC = () => {
-    const { state, dataFetching, navigation, authHandlers, bookingHandlers, providerAgentHandlers, footerNav, derived, homeHandlers } = useAllHooks();
-    
-    // Get translations for current language
-    const t = translations[state.language];
+const App = () => {
+    // Core hooks
+    const {
+        language,
+        setLanguage,
+        page,
+        setPage,
+        isLoading,
+        therapists,
+        setTherapists,
+        places,
+        massageTypes,
+        notifications,
+        bookings,
+        hotelsAndVillas,
+        jobPostings,
+        selectedTherapist,
+        selectedPlace,
+        selectedMassageType,
+        providerForBooking,
+        setProviderForBooking,
+        registrationType,
+        setRegistrationType,
+        selectedMembershipPackage,
+        setSelectedMembershipPackage,
+        activeChatRoom,
+        setActiveChatRoom,
+        chatMessages,
+        unreadMessagesCount,
+        isChatWindowVisible,
+        setIsChatWindowVisible,
+        chatBooking,
+        loyaltyEvent,
+        setLoyaltyEvent,
+        isFullScreen,
+        adminDashboardTab,
+        adminMessages,
+        setAdminMessages,
+        showRegisterPrompt,
+        setShowRegisterPrompt,
+        user,
+        handleSendAdminMessage,
+        handleStartImpersonating,
+        handleStopImpersonating,
+        handleMarkMessagesAsRead,
+        handleUpdateJobPosting,
+        handleDeleteJobPosting
+    } = useDataFetching();
 
-    // Fetch initial data on mount
-    useEffect(() => {
-        const loadData = async () => {
-            console.log(' Loading therapists and places...');
-            const { therapists, places } = await dataFetching.fetchPublicData();
-            console.log(' Loaded:', therapists.length, 'therapists,', places.length, 'places');
-            state.setTherapists(therapists);
-            state.setPlaces(places);
-        };
-        loadData();
-    }, []);
+    const {
+        handleBackToHome,
+        handleNavigateToTherapistAuth,
+        handleNavigateToAgentAuth,
+        handleBackToProviderDashboard,
+        handleNavigateToTherapistDashboard,
+        handleIncrementAnalytics,
+        handleRegisterPromptClose,
+        handleRegisterPromptRegister,
+        handleShowRegisterPromptForChat,
+        handleNavigateToBooking,
+        handleQuickBookWithChat,
+        handleChatWithBusyTherapist,
+        handleMarkNotificationAsRead,
+        handleSetSelectedPlace,
+        handleSelectRegistration,
+        handleSelectMembershipPackage,
+        handleSelectMembershipCheckout
+    } = useNavigation({ 
+        setPage, 
+        setProviderForBooking, 
+        setRegistrationType, 
+        setSelectedMembershipPackage,
+        setActiveChatRoom,
+        setIsChatWindowVisible,
+        setShowRegisterPrompt
+    });
+
+    const {
+        loggedInUser,
+        loggedInProvider,
+        loggedInCustomer,
+        loggedInAgent,
+        isAdminLoggedIn,
+        isHotelLoggedIn,
+        handleLanguageSelect,
+        handleEnterApp,
+        handleSetUserLocation,
+        handleLogout,
+        handleAdminLogin,
+        handleAdminLogout,
+        handleProviderLogin,
+        handleProviderRegister,
+        handleProviderLogout,
+        handleCustomerAuthSuccess,
+        handleCustomerLogout,
+        handleAgentRegister,
+        handleAgentLogin,
+        handleAgentLogout,
+        handleAgentAcceptTerms,
+        handleHotelLogout,
+        providerAuthInfo
+    } = useAuthHandlers({ setPage, language });
+
+    const {
+        handleCreateBooking
+    } = useBookingHandlers({ setPage });
+
+    const {
+        handleTherapistStatusChange,
+        handleSaveTherapistProfile,
+        handleSavePlaceProfile,
+        handleSaveAgentProfile
+    } = useProviderAgentHandlers({ 
+        loggedInProvider, 
+        loggedInAgent, 
+        setTherapists 
+    });
+
+    const t = useTranslations(language);
+
+    // Calculate derived state
+    const getUserRole = () => {
+        if (isAdminLoggedIn) return 'admin';
+        if (loggedInProvider) return loggedInProvider.type === 'therapist' ? 'therapist' : 'place';
+        if (loggedInAgent) return 'agent';
+        if (loggedInCustomer) return 'customer';
+        if (isHotelLoggedIn) return 'hotel';
+        return null;
+    };
+
+    const unreadNotifications = notifications.filter(n => !n.isRead && n.providerId === loggedInProvider?.id).length;
+    const hasNewBookings = bookings.some(b => !b.isRead && b.providerId === loggedInProvider?.id);
+    const hasWhatsAppClick = false;
+
+    // Footer navigation handlers
+    const pagesWithoutFooter: Page[] = ['landing', 'language', 'login', 'register', 'adminLogin', 'therapistDashboard', 'placeDashboard'];
+    const showFooter = !pagesWithoutFooter.includes(page) && !(page === 'chatList' && activeChatRoom);
+
+    const handleFooterHome = () => {
+        if (loggedInUser) {
+            switch(loggedInUser.type) {
+                case 'admin': setPage('adminDashboard'); break;
+                case 'hotel': setPage('home'); break;
+                case 'villa': setPage('home'); break;
+                case 'agent': setPage('agentDashboard'); break;
+            }
+        } else if (loggedInProvider) {
+            if (loggedInProvider.type === 'therapist') {
+                setPage('therapistDashboard');
+            } else {
+                setPage('placeDashboard');
+            }
+        } else if (loggedInAgent) {
+            setPage('agentDashboard');
+        } else if (loggedInCustomer) {
+            setPage('home');
+        } else if (isHotelLoggedIn) {
+            setPage('hotelDashboard');
+        } else {
+            setPage('home');
+        }
+    };
+
+    const handleFooterDashboard = () => {
+        if (loggedInProvider) {
+            if (loggedInProvider.type === 'therapist') {
+                setPage('therapistDashboard');
+            } else {
+                setPage('placeDashboard');
+            }
+        } else if (loggedInAgent) {
+            setPage('agentDashboard');
+        } else if (loggedInCustomer) {
+            setPage('customerDashboard');
+        } else if (isHotelLoggedIn) {
+            setPage('hotelDashboard');
+        }
+    };
+
+    const handleFooterProfile = () => {
+        if (loggedInProvider) {
+            if (loggedInProvider.type === 'therapist') {
+                setPage('therapistDashboard');
+            } else {
+                setPage('placeDashboard');
+            }
+        } else if (loggedInAgent) {
+            setPage('agentDashboard');
+        } else if (loggedInCustomer) {
+            setPage('customerDashboard');
+        }
+    };
+
+    const handleFooterMenu = () => {
+        setPage('home');
+    };
 
     return (
         <AppLayout
-            showRegisterPrompt={state.showRegisterPrompt}
-            onRegisterPromptClose={navigation.handleRegisterPromptClose}
-            onRegisterPromptRegister={navigation.handleRegisterPromptRegister}
-            loyaltyEvent={state.loyaltyEvent}
-            onLoyaltyEventClose={() => state.setLoyaltyEvent(null)}
-            activeChatRoom={state.activeChatRoom}
-            chatBooking={state.chatBooking}
-            isChatWindowVisible={state.isChatWindowVisible}
-            loggedInCustomer={state.loggedInCustomer}
-            user={state.user}
-            language={state.language}
-            onChatClose={() => state.setIsChatWindowVisible(false)}
-            isFullScreen={state.isFullScreen}
+            showRegisterPrompt={showRegisterPrompt}
+            onRegisterPromptClose={handleRegisterPromptClose}
+            onRegisterPromptRegister={handleRegisterPromptRegister}
+            loyaltyEvent={loyaltyEvent}
+            onLoyaltyEventClose={() => setLoyaltyEvent(null)}
+            activeChatRoom={activeChatRoom}
+            chatBooking={chatBooking}
+            isChatWindowVisible={isChatWindowVisible}
+            loggedInCustomer={loggedInCustomer}
+            user={user}
+            language={language}
+            onChatClose={() => {
+                setIsChatWindowVisible(false);
+                console.log('🔥 Chat window closed - can be reopened from footer');
+            }}
+            isFullScreen={isFullScreen}
         >
-            <div className={state.isFullScreen ? "flex-grow" : "flex-grow pb-16"}>
-                <AppRouter {...state} {...navigation} {...authHandlers} {...bookingHandlers} {...providerAgentHandlers} {...homeHandlers} isLoading={dataFetching.isLoading} t={t} />
+            <div className={isFullScreen ? "flex-grow" : "flex-grow pb-16"}>
+                <AppRouter
+                    page={page}
+                    language={language}
+                    t={t}
+                    isLoading={isLoading}
+                    loggedInUser={loggedInUser}
+                    loggedInProvider={loggedInProvider}
+                    loggedInCustomer={loggedInCustomer}
+                    loggedInAgent={loggedInAgent}
+                    isAdminLoggedIn={isAdminLoggedIn}
+                    isHotelLoggedIn={isHotelLoggedIn}
+                    adminDashboardTab={adminDashboardTab}
+                    adminMessages={adminMessages}
+                    therapists={therapists}
+                    places={places}
+                    massageTypes={massageTypes}
+                    selectedTherapist={selectedTherapist}
+                    selectedPlace={selectedPlace}
+                    selectedMassageType={selectedMassageType}
+                    providerForBooking={providerForBooking}
+                    notifications={notifications}
+                    bookings={bookings}
+                    activeChatRoom={activeChatRoom}
+                    chatMessages={chatMessages}
+                    unreadMessagesCount={unreadMessagesCount}
+                    providerAuthInfo={providerAuthInfo}
+                    registrationType={registrationType}
+                    selectedMembershipPackage={selectedMembershipPackage}
+                    hotelsAndVillas={hotelsAndVillas}
+                    jobPostings={jobPostings}
+                    onSetPage={setPage}
+                    onSetLanguage={setLanguage}
+                    onBackToHome={handleBackToHome}
+                    onNavigateToBooking={handleNavigateToBooking}
+                    onNavigateToTherapistAuth={handleNavigateToTherapistAuth}
+                    onNavigateToAgentAuth={handleNavigateToAgentAuth}
+                    onIncrementAnalytics={handleIncrementAnalytics}
+                    onAdminLogin={handleAdminLogin}
+                    onAdminLogout={handleAdminLogout}
+                    onProviderLogin={handleProviderLogin}
+                    onProviderRegister={handleProviderRegister}
+                    onProviderLogout={handleProviderLogout}
+                    onCustomerAuthSuccess={handleCustomerAuthSuccess}
+                    onCustomerLogout={handleCustomerLogout}
+                    onAgentRegister={handleAgentRegister}
+                    onAgentLogin={handleAgentLogin}
+                    onAgentLogout={handleAgentLogout}
+                    onAgentAcceptTerms={handleAgentAcceptTerms}
+                    onHotelLogout={handleHotelLogout}
+                    onSelectRegistration={handleSelectRegistration}
+                    onBackToProviderDashboard={handleBackToProviderDashboard}
+                    onNavigateToTherapistDashboard={handleNavigateToTherapistDashboard}
+                    onTherapistStatusChange={handleTherapistStatusChange}
+                    onSaveTherapistProfile={handleSaveTherapistProfile}
+                    onSavePlaceProfile={handleSavePlaceProfile}
+                    onSaveAgentProfile={handleSaveAgentProfile}
+                    onSelectMembershipPackage={handleSelectMembershipPackage}
+                    onSelectMembershipCheckout={handleSelectMembershipCheckout}
+                    onCreateBooking={handleCreateBooking}
+                    onMarkNotificationAsRead={handleMarkNotificationAsRead}
+                    onSendAdminMessage={handleSendAdminMessage}
+                    onStartImpersonating={handleStartImpersonating}
+                    onStopImpersonating={handleStopImpersonating}
+                    onMarkMessagesAsRead={handleMarkMessagesAsRead}
+                    onUpdateJobPosting={handleUpdateJobPosting}
+                    onDeleteJobPosting={handleDeleteJobPosting}
+                />
             </div>
 
             <AppFooterLayout
-                showFooter={derived.showFooter}
-                showFloatingButton={true}
-                page={state.page}
-                language={state.language}
-                userLocation={state.userLocation}
-                unreadNotifications={derived.unreadNotifications}
-                hasNewBookings={derived.hasNewBookings}
-                hasWhatsAppClick={derived.hasWhatsAppClick}
-                isAdminLoggedIn={state.isAdminLoggedIn}
-                isHotelLoggedIn={state.isHotelLoggedIn}
-                isVillaLoggedIn={state.isVillaLoggedIn}
-                loggedInUser={state.loggedInUser}
-                loggedInAgent={state.loggedInAgent}
-                loggedInCustomer={state.loggedInCustomer}
-                user={state.user}
-                showRegisterPrompt={state.showRegisterPrompt}
-                registerPromptContext={state.registerPromptContext}
-                loyaltyEvent={state.loyaltyEvent}
-                activeChatRoom={state.activeChatRoom}
-                chatBooking={state.chatBooking}
-                isChatWindowVisible={state.isChatWindowVisible}
-                getUserRole={derived.getUserRole}
-                handleFooterHome={footerNav.handleFooterHome}
-                handleFooterProfile={footerNav.handleFooterProfile}
-                handleFooterDashboard={footerNav.handleFooterDashboard}
-                handleFooterMenu={footerNav.handleFooterMenu}
-                handleFooterSearch={() => {}}
-                handleRegisterPromptClose={navigation.handleRegisterPromptClose}
-                handleRegisterPromptRegister={navigation.handleRegisterPromptRegister}
-                setPage={state.setPage}
-                setAdminDashboardTab={state.setAdminDashboardTab}
-                setRegisterPromptContext={state.setRegisterPromptContext}
-                setShowRegisterPrompt={state.setShowRegisterPrompt}
-                setLoyaltyEvent={state.setLoyaltyEvent}
-                setIsChatWindowVisible={state.setIsChatWindowVisible}
-                t={t}
+                showFooter={showFooter}
+                userRole={getUserRole()}
+                currentPage={page}
+                unreadNotifications={unreadNotifications}
+                hasNewBookings={hasNewBookings}
+                hasWhatsAppClick={hasWhatsAppClick}
+                onHomeClick={handleFooterHome}
+                onNotificationsClick={() => setPage('notifications')}
+                onBookingsClick={() => setPage('bookings')}
+                onProfileClick={handleFooterProfile}
+                onDashboardClick={handleFooterDashboard}
+                onMenuClick={handleFooterMenu}
+                onChatClick={() => setPage('chatList')}
             />
         </AppLayout>
     );

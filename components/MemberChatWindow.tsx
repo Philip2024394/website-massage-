@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Send, Smile, Paperclip, MapPin, AlertTriangle, Check } from 'lucide-react';
 import { databases, storage, ID } from '../lib/appwrite';
-import APPWRITE_CONFIG from '../lib/appwrite.config';
+import { APPWRITE_CONFIG } from '../lib/appwrite.config';
+import { Query } from 'appwrite';
 import { validateChatMessage } from '../utils/chatValidation';
 import { chatNotificationService } from '../services/chatNotificationService';
 
@@ -37,8 +38,8 @@ interface Message {
   readAt?: string;
 }
 
-const DATABASE_ID = (import.meta as any).env?.VITE_APPWRITE_DATABASE_ID || 'your-database-id';
-const CHAT_COLLECTION_ID = 'chat_messages';
+const DATABASE_ID = APPWRITE_CONFIG.databaseId;
+const CHAT_COLLECTION_ID = APPWRITE_CONFIG.collections.chatMessages;
 
 const MemberChatWindow: React.FC<MemberChatWindowProps> = ({
   userId,
@@ -91,10 +92,10 @@ const MemberChatWindow: React.FC<MemberChatWindowProps> = ({
         DATABASE_ID,
         CHAT_COLLECTION_ID,
         [
-          `recipientId="${userId}"`,
-          `messageType="system"`,
-          'limit(1)',
-          'orderDesc("timestamp")'
+          Query.equal('recipientId', userId),
+          Query.equal('messageType', 'system'),
+          Query.orderDesc('createdAt'),
+          Query.limit(1)
         ]
       );
 
@@ -116,9 +117,18 @@ const MemberChatWindow: React.FC<MemberChatWindowProps> = ({
         DATABASE_ID,
         CHAT_COLLECTION_ID,
         [
-          `(senderId="${userId}" AND recipientId="admin") OR (senderId="admin" AND recipientId="${userId}")`,
-          'orderAsc("timestamp")',
-          'limit(100)'
+          Query.or([
+            Query.and([
+              Query.equal('senderId', userId),
+              Query.equal('recipientId', 'admin')
+            ]),
+            Query.and([
+              Query.equal('senderId', 'admin'),
+              Query.equal('recipientId', userId)
+            ])
+          ]),
+          Query.orderAsc('createdAt'),
+          Query.limit(100)
         ]
       );
 
@@ -209,9 +219,14 @@ const MemberChatWindow: React.FC<MemberChatWindowProps> = ({
 
       setNewMessage('');
       fetchMessages();
-    } catch (error) {
-      console.error('Error sending message:', error);
-      alert('Failed to send message. Please try again.');
+    } catch (error: any) {
+      console.error('❌ Error sending message:', error);
+      console.error('Error details:', {
+        message: error.message,
+        code: error.code,
+        type: error.type
+      });
+      alert(`Failed to send message: ${error.message || 'Please try again.'}`);
     } finally {
       setSending(false);
     }
@@ -243,6 +258,8 @@ const MemberChatWindow: React.FC<MemberChatWindowProps> = ({
     setUploading(true);
 
     try {
+      console.log('📤 Uploading file:', file.name, 'Size:', file.size, 'Type:', file.type);
+      
       // Upload file to Appwrite Storage using existing bucket
       const uploadResponse = await storage.createFile(
         APPWRITE_CONFIG.bucketId,
@@ -250,8 +267,12 @@ const MemberChatWindow: React.FC<MemberChatWindowProps> = ({
         file
       );
 
+      console.log('✅ File uploaded successfully:', uploadResponse.$id);
+
       // Get file URL
       const fileUrl = String(storage.getFileView(APPWRITE_CONFIG.bucketId, uploadResponse.$id));
+
+      console.log('📎 File URL:', fileUrl);
 
       // Create message with file
       const message: Partial<Message> = {
@@ -281,9 +302,15 @@ const MemberChatWindow: React.FC<MemberChatWindowProps> = ({
       );
 
       fetchMessages();
-    } catch (error) {
-      console.error('Error uploading file:', error);
-      alert('Failed to upload file. Please try again.');
+    } catch (error: any) {
+      console.error('❌ Error uploading file:', error);
+      console.error('Error details:', {
+        message: error.message,
+        code: error.code,
+        type: error.type,
+        response: error.response
+      });
+      alert(`Failed to upload file: ${error.message || 'Please try again.'}`);
     } finally {
       setUploading(false);
       if (fileInputRef.current) {
@@ -303,49 +330,65 @@ const MemberChatWindow: React.FC<MemberChatWindowProps> = ({
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
+    // Request permission and get location
+    try {
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        });
+      });
 
-        try {
-          const message: Partial<Message> = {
-            senderId: userId,
-            senderName: userName,
-            senderType: userType,
-            recipientId: 'admin',
-            recipientName: 'IndaStreet Team',
-            recipientType: 'admin',
-            message: `📍 Shared location: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`,
-            createdAt: new Date().toISOString(),
-            read: false,
-            messageType: 'location',
-            location: JSON.stringify({ latitude, longitude }),
-            keepForever: false,
-            originalLanguage: 'en',
-            roomId: `admin-${userId}`,
-            isSystemMessage: false
-          };
+      const { latitude, longitude } = position.coords;
 
-          await databases.createDocument(
-            DATABASE_ID,
-            CHAT_COLLECTION_ID,
-            ID.unique(),
-            message
-          );
+      try {
+        const message: Partial<Message> = {
+          senderId: userId,
+          senderName: userName,
+          senderType: userType,
+          recipientId: 'admin',
+          recipientName: 'IndaStreet Team',
+          recipientType: 'admin',
+          message: `📍 Shared location: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`,
+          createdAt: new Date().toISOString(),
+          read: false,
+          messageType: 'location',
+          location: JSON.stringify({ latitude, longitude }),
+          keepForever: false,
+          originalLanguage: 'en',
+          roomId: `admin-${userId}`,
+          isSystemMessage: false
+        };
 
-          fetchMessages();
-        } catch (error) {
-          console.error('Error sharing location:', error);
-          alert('Failed to share location. Please try again.');
-        }
-      },
-      () => {
-        alert('Failed to get your location. Please enable location services.');
+        await databases.createDocument(
+          DATABASE_ID,
+          CHAT_COLLECTION_ID,
+          ID.unique(),
+          message
+        );
+
+        fetchMessages();
+      } catch (error) {
+        console.error('Error sharing location:', error);
+        alert('Failed to share location. Please try again.');
       }
-    );
+    } catch (error: any) {
+      console.error('Geolocation error:', error);
+      if (error.code === 1) {
+        alert('Location permission denied. Please enable location access in your browser settings.');
+      } else if (error.code === 2) {
+        alert('Location unavailable. Please check your device settings.');
+      } else if (error.code === 3) {
+        alert('Location request timed out. Please try again.');
+      } else {
+        alert('Failed to get your location. Please try again.');
+      }
+    }
   };
 
   const handleEmojiClick = (emoji: string) => {
+    console.log('😀 Emoji clicked:', emoji);
     setNewMessage(prev => prev + emoji);
     setShowEmojiPicker(false);
   };
@@ -367,13 +410,19 @@ const MemberChatWindow: React.FC<MemberChatWindowProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl h-[90vh] flex flex-col">
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center sm:p-4">
+      <div className="bg-white sm:rounded-2xl shadow-2xl w-full sm:max-w-2xl h-full sm:h-screen flex flex-col">
         {/* Header */}
-        <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-4 rounded-t-2xl flex justify-between items-center">
-          <div>
-            <h2 className="text-xl font-bold">Chat with IndaStreet Team</h2>
-            <p className="text-sm text-orange-100">Get help and support</p>
+        <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-4 sm:rounded-t-2xl flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+              <div className="absolute inset-0 w-3 h-3 bg-green-400 rounded-full animate-ping"></div>
+            </div>
+            <div>
+              <h2 className="text-xl font-bold">Chat Live</h2>
+              <p className="text-sm text-orange-100">IndaStreet Support Team</p>
+            </div>
           </div>
           <button
             onClick={onClose}
@@ -381,6 +430,26 @@ const MemberChatWindow: React.FC<MemberChatWindowProps> = ({
           >
             <X className="w-6 h-6" />
           </button>
+        </div>
+
+        {/* Auto-Translation Welcome Message */}
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b-2 border-blue-200 px-4 py-3">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-blue-900 mb-1">🌍 Auto-Translation Enabled</p>
+              <p className="text-xs text-blue-800 leading-relaxed">
+                Welcome! Chats are automatically translated to your customer's language. 
+                Now you can chat with tourists in your native language. 
+                <span className="block mt-1 italic">Please allow for small translation errors due to language interpretation.</span>
+              </p>
+              <p className="text-xs text-blue-700 mt-2 font-medium">— Admin Team IndaStreet</p>
+            </div>
+          </div>
         </div>
 
         {/* Chat Blocked Warning */}

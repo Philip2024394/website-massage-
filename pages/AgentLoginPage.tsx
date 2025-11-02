@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Button from '../components/Button';
+import PasswordInput from '../components/PasswordInput';
 import { LogIn, UserPlus } from 'lucide-react';
 
 interface AgentLoginPageProps {
@@ -87,7 +88,7 @@ const AgentLoginPage: React.FC<AgentLoginPageProps> = ({ onSuccess, onBack, t })
                         <span className="text-white">Inda</span>
                         <span className="text-orange-400">Street</span>
                     </h1>
-                    <p className="text-white/90 font-medium">Agent Portal</p>
+                    <p className="text-white/90 font-medium">Agent Account</p>
                 </div>
 
                 <div className="flex mb-6 bg-white/10 backdrop-blur-sm rounded-lg p-1 border border-white/20">
@@ -110,7 +111,7 @@ const AgentLoginPage: React.FC<AgentLoginPageProps> = ({ onSuccess, onBack, t })
                 </div>
 
                 {error && (
-                    <div className={`mb-4 p-3 rounded-lg backdrop-blur-sm ${error.includes('created') ? 'bg-green-500/20 text-green-100 border border-green-400/30' : 'bg-red-500/20 text-red-100 border border-red-400/30'}`}>
+                    <div className={`mb-4 p-3 rounded-lg backdrop-blur-sm ${error.includes('✅') || error.includes('created') ? 'bg-green-500/20 text-green-100 border border-green-400/30' : 'bg-red-500/20 text-red-100 border border-red-400/30'}`}>
                         {error}
                     </div>
                 )}
@@ -130,20 +131,13 @@ const AgentLoginPage: React.FC<AgentLoginPageProps> = ({ onSuccess, onBack, t })
                         />
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-white/90 mb-2">
-                            Password
-                        </label>
-                        <input
-                            type="text"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
-                            placeholder="Enter your password"
-                            required
-                            minLength={8}
-                        />
-                    </div>
+                    <PasswordInput
+                        value={password}
+                        onChange={setPassword}
+                        placeholder="Enter your password"
+                        required
+                        minLength={8}
+                    />
 
                     <Button
                         type="submit"
@@ -151,17 +145,17 @@ const AgentLoginPage: React.FC<AgentLoginPageProps> = ({ onSuccess, onBack, t })
                         className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 mt-6 shadow-lg flex items-center justify-center gap-2"
                     >
                         {loading ? (
-                            'Processing...'
+                            <span key="loading">Processing...</span>
                         ) : isSignUp ? (
-                            <>
+                            <span key="signup" className="flex items-center gap-2">
                                 <UserPlus className="w-5 h-5" />
                                 Create Account
-                            </>
+                            </span>
                         ) : (
-                            <>
+                            <span key="signin" className="flex items-center gap-2">
                                 <LogIn className="w-5 h-5" />
                                 Sign In
-                            </>
+                            </span>
                         )}
                     </Button>
                 </form>

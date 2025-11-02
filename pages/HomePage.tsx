@@ -162,10 +162,13 @@ const HomePage: React.FC<HomePageProps> = ({
         }
     };
 
-    // Auto-open location modal when user arrives to home page
+    // Auto-open location modal ONLY for regular customers (not for therapists, places, or admin)
     useEffect(() => {
-        setIsLocationModalOpen(true);
-    }, []);
+        // Don't show location modal if user is a provider, agent, or customer
+        if (!loggedInProvider && !_loggedInAgent && !loggedInCustomer) {
+            setIsLocationModalOpen(true);
+        }
+    }, [loggedInProvider, _loggedInAgent, loggedInCustomer]);
 
     // Log therapist display info
     useEffect(() => {

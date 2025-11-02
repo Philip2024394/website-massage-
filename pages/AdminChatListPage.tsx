@@ -526,11 +526,15 @@ const AdminChatListPage: React.FC = () => {
 
             {/* Chat Window */}
             {selectedUser ? (
-                <div className="flex-1 flex flex-col">
+                <div className="flex-1 flex flex-col h-screen">
                     {/* Chat Header */}
                     <div className="bg-white border-b border-gray-200 p-4">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
+                                <div className="relative">
+                                    <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                                    <div className="absolute inset-0 w-3 h-3 bg-green-400 rounded-full animate-ping"></div>
+                                </div>
                                 <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
                                     {selectedUser.avatar ? (
                                         <img src={selectedUser.avatar} alt={selectedUser.userName} className="w-10 h-10 rounded-full object-cover" />
@@ -541,7 +545,10 @@ const AdminChatListPage: React.FC = () => {
                                     )}
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-gray-900">{selectedUser.userName}</h3>
+                                    <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                                        Chat Live
+                                        <span className="text-xs font-normal text-gray-500">with {selectedUser.userName}</span>
+                                    </h3>
                                     <p className="text-xs text-gray-500">{selectedUser.userType}</p>
                                 </div>
                             </div>
@@ -559,6 +566,26 @@ const AdminChatListPage: React.FC = () => {
                                     <><Ban className="w-4 h-4 inline mr-1" /> Block Chat</>
                                 )}
                             </button>
+                        </div>
+                    </div>
+
+                    {/* Auto-Translation Welcome Message */}
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b-2 border-blue-200 px-4 py-3">
+                        <div className="flex items-start gap-3">
+                            <div className="flex-shrink-0 w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                                </svg>
+                            </div>
+                            <div className="flex-1">
+                                <p className="text-sm font-semibold text-blue-900 mb-1">🌍 Auto-Translation Enabled</p>
+                                <p className="text-xs text-blue-800 leading-relaxed">
+                                    Welcome! Chats are automatically translated to your customer's language. 
+                                    Now you can chat with tourists in your native language. 
+                                    <span className="block mt-1 italic">Please allow for small translation errors due to language interpretation.</span>
+                                </p>
+                                <p className="text-xs text-blue-700 mt-2 font-medium">— Admin Team IndaStreet</p>
+                            </div>
                         </div>
                     </div>
 
