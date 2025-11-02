@@ -1,7 +1,8 @@
-// File deleted as part of unified login refactor.
 import React, { useState } from 'react';
+import { account, databases, DATABASE_ID, COLLECTIONS, ID } from '../lib/appwrite';
+import { saveSessionCache } from '../lib/sessionManager';
+import { checkRateLimit, handleAppwriteError, resetRateLimit } from '../lib/rateLimitUtils';
 import { LogIn, UserPlus } from 'lucide-react';
-
 
 interface AgentAuthPageProps {
     onRegister: (name: string, email: string) => Promise<{ success: boolean, message: string }>;
@@ -10,151 +11,334 @@ interface AgentAuthPageProps {
     t: any;
 }
 
-const AgentAuthPage: React.FC<AgentAuthPageProps> = ({ onRegister, onLogin, onBack, t }) => {
-    const [mode, setMode] = useState<'login' | 'register'>('login');
+const HomeIcon: React.FC<{className?: string}> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+    </svg>
+);
+
+const AgentAuthPage: React.FC<AgentAuthPageProps> = ({ onRegister, onLogin, onBack }) => {
+    const [isSignUp, setIsSignUp] = useState(false);
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const [successMessage, setSuccessMessage] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
+
+    // Make rate limit reset functions available in browser console for testing
+    React.useEffect(() => {
+        (window as any).resetAgentRateLimit = () => {
+            resetRateLimit('agent-login');
+            resetRateLimit('agent-signup');
+            console.log('✅ Agent rate limits reset! You can now try logging in again.');
+        };
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
         setError('');
-        setSuccessMessage('');
-        setIsLoading(true);
-        
-        if (mode === 'register') {
-            if (!name || !email || !password) {
-                setError(t.fillFieldsError);
-                setIsLoading(false);
-                return;
-            }
-            
-            // Mock implementation - replace with your actual authentication logic
-            const result = await onRegister(name, email);
-            if (result.success) {
-                setSuccessMessage(result.message);
-                    setName('');
-                setEmail('');
-                setPassword('');
-                setMode('login');
-            } else {
-                setError(result.message);
-            }
-        } else { // Login mode
+        setLoading(true);
+
+        try {
+            // Validate inputs
             if (!email || !password) {
-                setError(t.fillFieldsError);
-                setIsLoading(false);
+                setError('Please enter both email and password');
+                setLoading(false);
+                return;
+            }
+
+            if (isSignUp && !name.trim()) {
+                setError('Agent name is required');
+                setLoading(false);
+                return;
+            }
+
+            if (password.length < 8) {
+                setError('Password must be at least 8 characters');
+                setLoading(false);
+                return;
+            }
+
+            // Check rate limit
+            const operation = isSignUp ? 'agent-signup' : 'agent-login';
+            const maxAttempts = isSignUp ? 3 : 5;
+            const windowMs = isSignUp ? 600000 : 300000; // 10 min for signup, 5 min for login
+
+            if (!checkRateLimit(operation, maxAttempts, windowMs)) {
+                setError(`Too many ${isSignUp ? 'signup' : 'login'} attempts. Please wait before trying again.`);
+                setLoading(false);
+                return;
+            }
+
+            console.log(`🔄 Starting agent ${isSignUp ? 'signup' : 'login'} for:`, email);
+
+            // Delete any existing session
+            try {
+                await account.deleteSession('current');
+                console.log('🗑️ Existing session cleared');
+            } catch (err) {
+                console.log('ℹ️ No existing session to clear');
+            }
+
+            if (isSignUp) {
+                // Create account
+                console.log('📝 Creating agent account for:', email);
+                const newUser = await account.create(
+                    'unique()',
+                    email,
+                    password,
+                    name
+                );
+
+                console.log('✅ Account created successfully!', { userId: newUser.$id });
+
+                // Automatically login after signup
+                console.log('🔐 Creating session...');
+                await account.createEmailPasswordSession(email, password);
+                
+                // Get user details
+                const user = await account.get();
+                
+                // Create agent record in database
+                const agentData = {
+                    userId: user.$id,
+                    name: name,
+                    email: email,
+                    phoneNumber: 'To be updated',
+                    address: 'To be updated',
+                    profilePicture: null,
+                    isActive: true,
+                    joinDate: new Date().toISOString(),
+                    totalEarnings: 0,
+                    completedBookings: 0,
+                    rating: 5.0,
+                    bankDetails: null
+                };
+                
+                console.log('📝 Creating agent database record...');
+                const agentDoc = await databases.createDocument(
+                    DATABASE_ID,
+                    COLLECTIONS.AGENTS,
+                    ID.unique(),
+                    agentData
+                );
+                
+                // Save session cache
+                saveSessionCache({
+                    type: 'agent',
+                    id: user.$id,
+                    email: user.email,
+                    documentId: agentDoc.$id,
+                    data: agentDoc
+                });
+                
+                console.log('✅ Agent account created and logged in successfully!');
+                
+                // Call the onRegister prop for any additional logic
+                const result = await onRegister(name, email);
+                if (result.success) {
+                    setError('✅ Account created successfully! Redirecting to dashboard...');
+                } else {
+                    console.warn('⚠️ onRegister callback failed:', result.message);
+                    setError('✅ Account created successfully! Redirecting to dashboard...');
+                }
+            } else {
+                // Login
+                console.log('🔐 Creating session...');
+                await account.createEmailPasswordSession(email, password);
+                
+                // Get user details
+                const user = await account.get();
+                
+                // Find agent record
+                console.log('🔍 Finding agent record...');
+                const response = await databases.listDocuments(
+                    DATABASE_ID,
+                    COLLECTIONS.AGENTS,
+                    []
+                );
+                
+                const agent = response.documents.find((a: any) => a.userId === user.$id);
+                
+                if (!agent) {
+                    setError('Agent account not found. Please create an account first.');
+                    await account.deleteSession('current');
+                    setLoading(false);
+                    return;
+                }
+                
+                // Save session cache
+                saveSessionCache({
+                    type: 'agent',
+                    id: user.$id,
+                    email: user.email,
+                    documentId: agent.$id,
+                    data: agent
+                });
+                
+                console.log('✅ Agent login successful');
+                
+                // Call the onLogin prop for any additional logic
+                const result = await onLogin(email);
+                if (!result.success) {
+                    console.warn('⚠️ onLogin callback failed:', result.message);
+                    // Continue anyway since the core authentication succeeded
+                }
+            }
+        } catch (err: any) {
+            console.error('Agent authentication error:', err);
+            
+            // Handle user already exists case
+            if (err.code === 409 || err.message?.includes('already exists')) {
+                console.log('🔄 User already exists, switching to sign-in mode');
+                setIsSignUp(false);
+                setError('This email is already registered. Switched to Sign In mode - please enter your password.');
+                setLoading(false);
                 return;
             }
             
-            // Mock implementation - replace with your actual authentication logic
-            const loginResult = await onLogin(email);
-            if (!loginResult.success) {
-                setError(loginResult.message);
-            }
+            setError(handleAppwriteError(err, isSignUp ? 'account creation' : 'login'));
+        } finally {
+            setLoading(false);
         }
-        setIsLoading(false);
     };
 
-    const title = mode === 'register' ? t.registerTitle : t.loginTitle;
-    const buttonText = mode === 'register' ? t.registerButton : t.loginButton;
-    const switchText = mode === 'register' ? t.switchToLogin : t.switchToRegister;
-
     return (
-        <div className="min-h-screen flex flex-col justify-center p-4 relative" style={{ backgroundImage: "url('https://ik.imagekit.io/7grri5v7d/massage%20hoter%20villa.png?updatedAt=1760965742264')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
-            <div className="w-full flex justify-center z-30 pt-20 pb-8 absolute top-0 left-0">
-                <h1 className="text-6xl font-extrabold tracking-tight drop-shadow-lg">
-                    <span className="text-white">Indo</span>
-                    <span className="text-orange-500">Street</span>
-                </h1>
-            </div>
-            <button onClick={onBack} className="absolute top-8 left-4 z-20 focus:outline-none" aria-label="Back to Home">
-                <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-orange-500 shadow-lg border-2 border-white transition-all duration-200 hover:bg-orange-600">
-                    <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-                </span>
+        <div 
+            className="min-h-screen flex items-center justify-center p-4 relative"
+            style={{
+                backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/garden%20forest.png?updatedAt=1761334454082)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat'
+            }}
+        >
+            {/* Overlay for better readability */}
+            <div className="absolute inset-0 bg-black/40"></div>
+
+            {/* Home Button */}
+            <button
+                onClick={onBack}
+                className="fixed top-6 left-6 w-12 h-12 bg-orange-500 hover:bg-orange-600 rounded-full shadow-lg flex items-center justify-center transition-all z-20 border border-orange-400"
+                aria-label="Go to home"
+            >
+                <HomeIcon className="w-6 h-6 text-white" />
             </button>
-            <div className="w-full max-w-sm mx-auto relative z-20 flex items-center justify-center min-h-[20vh] mt-32">
-                <div className="bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl shadow-2xl p-4 flex flex-col justify-center transition-all duration-300 min-h-[240px] max-h-[340px] w-full max-w-xs">
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <h2 className="text-xl font-semibold text-white text-center mb-6">{title}</h2>
-                        {mode === 'register' && (
-                            <div>
-                                <label htmlFor="name" className="block text-sm font-medium text-white/90 mb-2">{t.nameLabel}</label>
-                                <input 
-                                    id="name" 
-                                    type="text" 
-                                    value={name} 
-                                    onChange={e => setName(e.target.value)} 
-                                    className="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-md text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent backdrop-blur-sm" 
-                                    placeholder="Agent Name"
-                                    required 
-                                />
-                            </div>
-                        )}
-                        <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-white/90 mb-2">{t.emailLabel}</label>
-                            <input 
-                                id="email" 
-                                type="email" 
-                                value={email} 
-                                onChange={e => setEmail(e.target.value)} 
-                                className="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-md text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent backdrop-blur-sm" 
-                                placeholder="agent@example.com"
-                                required 
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-white/90 mb-2">{t.passwordLabel}</label>
-                            <input 
-                                id="password" 
-                                type="password" 
-                                value={password} 
-                                onChange={e => setPassword(e.target.value)} 
-                                className="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-md text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent backdrop-blur-sm" 
-                                placeholder="password123" 
-                                required 
-                            />
-                        </div>
-                        {error && <div className="text-red-400 text-sm text-center bg-red-500/20 p-2 rounded-md border border-red-400/30">{error}</div>}
-                        {successMessage && <div className="text-green-400 text-sm text-center bg-green-500/20 p-2 rounded-md border border-green-400/30">{successMessage}</div>}
-                        <button
-                            type="submit"
-                            disabled={isLoading}
-                            className="w-full bg-orange-500/80 backdrop-blur-sm text-white py-3 px-4 rounded-md hover:bg-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium border border-white/20 flex items-center justify-center gap-2"
-                        >
-                            {isLoading ? (
-                                'Processing...'
-                            ) : mode === 'register' ? (
-                                <>
-                                    <UserPlus className="w-5 h-5" />
-                                    {buttonText}
-                                </>
-                            ) : (
-                                <>
-                                    <LogIn className="w-5 h-5" />
-                                    {buttonText}
-                                </>
-                            )}
-                        </button>
-                        <div className="text-center">
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setError('');
-                                    setSuccessMessage('');
-                                    setMode(mode === 'login' ? 'register' : 'login')
-                                }}
-                                className="text-sm font-medium text-white/80 hover:text-white hover:underline"
-                            >
-                                {switchText}
-                            </button>
-                        </div>
-                    </form>
+
+            {/* Glass Effect Login Container */}
+            <div className="max-w-md w-full bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-8 relative z-10 border border-white/20">
+                <div className="text-center mb-8">
+                    <h1 className="text-4xl font-bold mb-2">
+                        <span className="text-white">Inda</span>
+                        <span className="text-orange-400">Street</span>
+                    </h1>
+                    <p className="text-white/90 font-medium">Agent Account</p>
                 </div>
+
+                <div className="flex mb-6 bg-white/10 backdrop-blur-sm rounded-lg p-1 border border-white/20">
+                    <button
+                        onClick={() => {
+                            setIsSignUp(false);
+                            setError(''); // Clear error when switching modes
+                        }}
+                        className={`flex-1 py-2 px-4 rounded-md transition-all ${
+                            !isSignUp ? 'bg-orange-500 shadow-lg text-white font-semibold' : 'text-white/90 hover:bg-white/5'
+                        }`}
+                    >
+                        Sign In
+                    </button>
+                    <button
+                        onClick={() => {
+                            setIsSignUp(true);
+                            setError(''); // Clear error when switching modes
+                        }}
+                        className={`flex-1 py-2 px-4 rounded-md transition-all ${
+                            isSignUp ? 'bg-orange-500 shadow-lg text-white font-semibold' : 'text-white/90 hover:bg-white/5'
+                        }`}
+                    >
+                        Create Account
+                    </button>
+                </div>
+
+                {error && (
+                    <div className={`mb-4 p-3 rounded-lg backdrop-blur-sm border ${
+                        error.includes('created') || error.includes('Switched to Sign In mode')
+                            ? 'bg-blue-500/20 text-blue-100 border-blue-400/30' 
+                            : 'bg-red-500/20 text-red-100 border-red-400/30'
+                    }`}>
+                        {error}
+                    </div>
+                )}
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    {isSignUp && (
+                        <div>
+                            <label className="block text-sm font-medium text-white/90 mb-2">
+                                Agent Name
+                            </label>
+                            <input
+                                type="text"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
+                                placeholder="Enter your name"
+                                required={isSignUp}
+                                onKeyDown={(e) => e.key === 'Enter' && handleSubmit}
+                            />
+                        </div>
+                    )}
+                    
+                    <div>
+                        <label className="block text-sm font-medium text-white/90 mb-2">
+                            Email
+                        </label>
+                        <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
+                            placeholder="agent@example.com"
+                            required
+                            onKeyDown={(e) => e.key === 'Enter' && handleSubmit}
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-white/90 mb-2">
+                            Password
+                        </label>
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
+                            placeholder="Enter your password"
+                            required
+                            minLength={8}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSubmit}
+                        />
+                    </div>
+
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 px-4 mt-6 shadow-lg rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium flex items-center justify-center gap-2"
+                    >
+                        {loading ? (
+                            'Processing...'
+                        ) : isSignUp ? (
+                            <>
+                                <UserPlus className="w-5 h-5" />
+                                Create Account
+                            </>
+                        ) : (
+                            <>
+                                <LogIn className="w-5 h-5" />
+                                Sign In
+                            </>
+                        )}
+                    </button>
+                </form>
             </div>
         </div>
     );

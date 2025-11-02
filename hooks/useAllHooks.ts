@@ -12,11 +12,34 @@ import { useProviderAgentHandlers } from './useProviderAgentHandlers';
 import { useFooterNavigation } from './useFooterNavigation';
 import { useDerivedState } from './useDerivedState';
 import { useHomeHandlers } from './useHomeHandlers';
+import { useSessionRestore } from './useSessionRestore';
+import { useEffect } from 'react';
 
 export const useAllHooks = () => {
     // @ts-ignore - Centralized state
     const state = useAppState();
     const dataFetching = useDataFetching();
+    
+    // Fetch therapists and places on app initialization
+    useEffect(() => {
+        const initializeData = async () => {
+            try {
+                console.log('🚀 Initializing app data...');
+                const { therapists, places } = await dataFetching.fetchPublicData();
+                console.log('✅ Setting therapists in state:', therapists.length);
+                console.log('✅ Setting places in state:', places.length);
+                state.setTherapists(therapists);
+                state.setPlaces(places);
+            } catch (error) {
+                console.error('❌ Failed to initialize app data:', error);
+                // Set empty arrays to prevent loading state
+                state.setTherapists([]);
+                state.setPlaces([]);
+            }
+        };
+
+        initializeData();
+    }, []); // Only run once on mount
     
     // @ts-ignore - Navigation hook
     const navigation = useNavigation({
@@ -52,6 +75,19 @@ export const useAllHooks = () => {
         setLoggedInCustomer: state.setLoggedInCustomer,
         setIsHotelLoggedIn: state.setIsHotelLoggedIn,
         setIsVillaLoggedIn: state.setIsVillaLoggedIn
+    });
+    
+    // Session restoration on app startup
+    useSessionRestore({
+        setIsAdminLoggedIn: state.setIsAdminLoggedIn,
+        setLoggedInUser: state.setLoggedInUser,
+        setLoggedInProvider: state.setLoggedInProvider,
+        setLoggedInCustomer: state.setLoggedInCustomer,
+        setLoggedInAgent: state.setLoggedInAgent,
+        setIsHotelLoggedIn: state.setIsHotelLoggedIn,
+        setIsVillaLoggedIn: state.setIsVillaLoggedIn,
+        setPage: state.setPage,
+        setAdminDashboardTab: state.setAdminDashboardTab
     });
     
     // @ts-ignore - Booking handlers

@@ -892,6 +892,23 @@ export const bookingService = {
         }
     },
 
+    async getAll(): Promise<any[]> {
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.bookings,
+                [
+                    Query.orderDesc('$createdAt'),
+                    Query.limit(1000)
+                ]
+            );
+            return response.documents;
+        } catch (error) {
+            console.error('Error fetching all bookings:', error);
+            return [];
+        }
+    },
+
     async getByUser(userId: string): Promise<any[]> {
         try {
             const response = await databases.listDocuments(

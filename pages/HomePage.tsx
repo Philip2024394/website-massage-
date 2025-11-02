@@ -12,6 +12,7 @@ import { AppDrawer } from '../components/AppDrawer';
 import { Users, Building, Sparkles } from 'lucide-react';
 import HomeIcon from '../components/icons/HomeIcon';
 import FlyingButterfly from '../components/FlyingButterfly';
+import { getCustomerLocation, findNearbyTherapists, findNearbyPlaces } from '../lib/nearbyProvidersService';
 
 
 interface HomePageProps {
@@ -113,6 +114,12 @@ const HomePage: React.FC<HomePageProps> = ({
     const [showRatingModal, setShowRatingModal] = useState(false);
     const [_selectedTherapist, setSelectedTherapist] = useState<Therapist | null>(null);
     const [selectedRatingItem, setSelectedRatingItem] = useState<{item: any, type: 'therapist' | 'place'} | null>(null);
+    
+    // Location-based filtering state (automatic, no UI)
+    const [autoDetectedLocation, setAutoDetectedLocation] = useState<{lat: number, lng: number} | null>(null);
+    const [nearbyTherapists, setNearbyTherapists] = useState<Therapist[]>([]);
+    const [nearbyPlaces, setNearbyPlaces] = useState<Place[]>([]);
+    const [isLocationDetecting, setIsLocationDetecting] = useState(false);
 
     // Update selectedMassageType when prop changes
     useEffect(() => {
@@ -169,19 +176,110 @@ const HomePage: React.FC<HomePageProps> = ({
         }
     }, [loggedInProvider, _loggedInAgent, loggedInCustomer]);
 
-    // Log therapist display info
+    // Automatic location detection (seamless, no UI)
     useEffect(() => {
-        const liveTherapists = therapists.filter((t: any) => t.isLive === true);
+        const detectLocationAutomatically = async () => {
+            if (isLocationDetecting || autoDetectedLocation) return;
+            
+            setIsLocationDetecting(true);
+            try {
+                console.log('🌍 Automatically detecting user location...');
+                const location = await getCustomerLocation();
+                setAutoDetectedLocation(location);
+                
+                console.log('✅ Location detected:', location);
+                
+                // Automatically update the app's user location if not set
+                if (!userLocation && onSetUserLocation) {
+                    onSetUserLocation({
+                        address: 'Auto-detected location',
+                        lat: location.lat,
+                        lng: location.lng
+                    });
+                }
+                
+            } catch (error) {
+                console.log('📍 Auto location detection failed (silent fallback):', error);
+                // Silent fallback - no error shown to user
+            } finally {
+                setIsLocationDetecting(false);
+            }
+        };
+
+        // Only auto-detect for regular users, not providers/agents
+        if (!loggedInProvider && !_loggedInAgent) {
+            detectLocationAutomatically();
+        }
+    }, [loggedInProvider, _loggedInAgent, autoDetectedLocation, isLocationDetecting, userLocation, onSetUserLocation]);
+
+    // Filter therapists and places by location automatically
+    useEffect(() => {
+        const filterByLocation = async () => {
+            const locationToUse = autoDetectedLocation || userLocation;
+            if (!locationToUse) {
+                // No location available - show all therapists/places
+                setNearbyTherapists(therapists);
+                setNearbyPlaces(places);
+                return;
+            }
+
+            try {
+                console.log('🔍 Filtering providers by location:', locationToUse);
+                
+                // Get location coordinates
+                const coords = 'lat' in locationToUse 
+                    ? { lat: locationToUse.lat, lng: locationToUse.lng }
+                    : autoDetectedLocation;
+
+                if (!coords) {
+                    setNearbyTherapists(therapists);
+                    setNearbyPlaces(places);
+                    return;
+                }
+
+                // Find nearby therapists and places (15km radius)
+                const nearbyTherapistsResult = await findNearbyTherapists('0', coords, 15);
+                const nearbyPlacesResult = await findNearbyPlaces('0', coords, 15);
+                
+                console.log(`📍 Found ${nearbyTherapistsResult.length} nearby therapists`);
+                console.log(`📍 Found ${nearbyPlacesResult.length} nearby places`);
+                
+                // If no nearby providers found, fallback to all providers
+                setNearbyTherapists(nearbyTherapistsResult.length > 0 ? nearbyTherapistsResult : therapists);
+                setNearbyPlaces(nearbyPlacesResult.length > 0 ? nearbyPlacesResult : places);
+                
+            } catch (error) {
+                console.log('📍 Location filtering failed (silent fallback):', error);
+                // Silent fallback to all providers
+                setNearbyTherapists(therapists);
+                setNearbyPlaces(places);
+            }
+        };
+
+        filterByLocation();
+    }, [therapists, places, autoDetectedLocation, userLocation]);
+
+    // Log therapist display info with location filtering
+    useEffect(() => {
+        const liveTherapists = nearbyTherapists.filter((t: any) => t.isLive === true);
         const filteredTherapists = liveTherapists.filter((t: any) => 
             selectedMassageType === 'all' || (t.massageTypes && t.massageTypes.includes(selectedMassageType))
         );
         
-        console.log('🏠 HomePage Therapist Display:');
-        console.log('  Total therapists prop:', therapists.length);
-        console.log('  Live therapists:', liveTherapists.length);
-        console.log('  After massage type filter:', filteredTherapists.length);
-        console.log('  Selected massage type:', selectedMassageType);
-    }, [therapists, selectedMassageType]);
+        console.log('🏠 HomePage Therapist Display Debug (Location-Filtered):');
+        console.log('  📊 Total therapists prop:', therapists.length);
+        console.log('  � Nearby therapists (location-filtered):', nearbyTherapists.length);
+        console.log('  🔴 Live nearby therapists (isLive=true):', liveTherapists.length);
+        console.log('  🎯 Final filtered therapists (massage type + location):', filteredTherapists.length);
+        console.log('  📍 Auto-detected location:', autoDetectedLocation);
+        console.log('  🎨 Selected massage type:', selectedMassageType);
+        
+        // Also log places
+        const livePlaces = nearbyPlaces.filter((p: any) => p.isLive === true);
+        console.log('  🏢 Total places prop:', places.length);
+        console.log('  📍 Nearby places (location-filtered):', nearbyPlaces.length);
+        console.log('  🔴 Live nearby places:', livePlaces.length);
+    }, [therapists, nearbyTherapists, places, nearbyPlaces, selectedMassageType, autoDetectedLocation]);
 
     useEffect(() => {
         // Fetch custom drawer links
@@ -400,7 +498,7 @@ const HomePage: React.FC<HomePageProps> = ({
                         </div>
                         
                         <div className="space-y-4">
-                        {therapists
+                        {nearbyTherapists
                             .filter((t: any) => t.isLive === true) // Only show activated therapists
                             .filter((t: any) => selectedMassageType === 'all' || (t.massageTypes && t.massageTypes.includes(selectedMassageType)))
                             .map((therapist: any, index: number) => {
@@ -415,6 +513,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                     <TherapistCard
                                         key={therapist.$id || `therapist-${therapist.id}-${index}`}
                                         therapist={therapist}
+                                        userLocation={autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null)}
                                         onRate={() => handleOpenRatingModal(therapist)}
                                         onBook={() => onBook(therapist, 'therapist')}
                                         onQuickBookWithChat={onQuickBookWithChat ? () => onQuickBookWithChat(therapist, 'therapist') : undefined}
@@ -428,9 +527,14 @@ const HomePage: React.FC<HomePageProps> = ({
                                     />
                                 );
                             })}
-                        {therapists.filter((t: any) => t.isLive === true).length === 0 && (
+                        {nearbyTherapists.filter((t: any) => t.isLive === true).length === 0 && (
                             <div className="text-center py-12 bg-white rounded-lg">
-                                <p className="text-gray-500">No therapists available at the moment.</p>
+                                <p className="text-gray-500">No therapists available in your area at the moment.</p>
+                                {autoDetectedLocation && (
+                                    <p className="text-gray-400 text-sm mt-2">
+                                        Showing providers within 15km of your location
+                                    </p>
+                                )}
                             </div>
                         )}
                         </div>
@@ -473,7 +577,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                 places: places
                             });
                             
-                            const livePlaces = places?.filter(place => place.isLive) || [];
+                            const livePlaces = nearbyPlaces?.filter(place => place.isLive) || [];
                             
                             if (livePlaces.length === 0) {
                                 return (
@@ -483,9 +587,14 @@ const HomePage: React.FC<HomePageProps> = ({
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                             </svg>
                                         </div>
-                                        <p className="text-gray-500 mb-2 text-lg font-semibold">No massage places available at the moment</p>
+                                        <p className="text-gray-500 mb-2 text-lg font-semibold">No massage places available in your area</p>
                                         <p className="text-sm text-gray-400">Check back soon for featured spas!</p>
-                                        <p className="text-xs text-gray-300 mt-4">Total places in DB: {places?.length || 0} | Live: {livePlaces.length}</p>
+                                        {autoDetectedLocation && (
+                                            <p className="text-xs text-gray-300 mt-2">
+                                                Showing places within 15km of your location
+                                            </p>
+                                        )}
+                                        <p className="text-xs text-gray-300 mt-4">Total places in DB: {places?.length || 0} | Nearby: {nearbyPlaces.length} | Live: {livePlaces.length}</p>
                                     </div>
                                 );
                             }
@@ -516,7 +625,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                                     isCustomerLoggedIn={!!loggedInCustomer}
                                                     activeDiscount={mockDiscount}
                                                     t={t}
-                                                    userLocation={userLocation}
+                                                    userLocation={autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null)}
                                                 />
                                             );
                                         })}

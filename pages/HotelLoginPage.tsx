@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
-import Button from '../components/Button';
-import PasswordInput from '../components/PasswordInput';
-import { authService } from '../lib/appwriteService';
-import { databases, ID } from '../lib/appwrite';
-import { APPWRITE_CONFIG } from '../lib/appwrite.config';
+import { account, databases, DATABASE_ID, COLLECTIONS, ID } from '../lib/appwrite';
+import { saveSessionCache } from '../lib/sessionManager';
+import { checkRateLimit, handleAppwriteError, resetRateLimit } from '../lib/rateLimitUtils';
 import { LogIn, UserPlus } from 'lucide-react';
 
 interface HotelLoginPageProps {
@@ -26,93 +24,172 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) =>
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
+    // Make rate limit reset functions available in browser console for testing
+    React.useEffect(() => {
+        (window as any).resetHotelRateLimit = () => {
+            resetRateLimit('hotel-login');
+            resetRateLimit('hotel-signup');
+            console.log('✅ Hotel rate limits reset! You can now try logging in again.');
+        };
+    }, []);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         setLoading(true);
 
         try {
-            // First, logout any existing session
+            // Validate inputs
+            if (!email || !password) {
+                setError('Please enter both email and password');
+                setLoading(false);
+                return;
+            }
+
+            if (isSignUp && !hotelName.trim()) {
+                setError('Hotel name is required');
+                setLoading(false);
+                return;
+            }
+
+            if (password.length < 8) {
+                setError('Password must be at least 8 characters');
+                setLoading(false);
+                return;
+            }
+
+            // Check rate limit
+            const operation = isSignUp ? 'hotel-signup' : 'hotel-login';
+            const maxAttempts = isSignUp ? 3 : 5;
+            const windowMs = isSignUp ? 600000 : 300000; // 10 min for signup, 5 min for login
+
+            if (!checkRateLimit(operation, maxAttempts, windowMs)) {
+                setError(`Too many ${isSignUp ? 'signup' : 'login'} attempts. Please wait before trying again.`);
+                setLoading(false);
+                return;
+            }
+
+            console.log(`🔄 Starting hotel ${isSignUp ? 'signup' : 'login'} for:`, email);
+
+            // Delete any existing session
             try {
-                await authService.logout();
+                await account.deleteSession('current');
+                console.log('🗑️ Existing session cleared');
             } catch (err) {
-                // Ignore error if no session exists
+                console.log('ℹ️ No existing session to clear');
             }
 
             if (isSignUp) {
                 // Create account
-                if (!hotelName.trim()) {
-                    setError('Hotel name is required');
-                    setLoading(false);
-                    return;
-                }
+                console.log('📝 Creating hotel account for:', email);
+                const newUser = await account.create(
+                    'unique()',
+                    email,
+                    password,
+                    hotelName
+                );
 
-                // Register with Appwrite
-                await authService.register(email, password, hotelName);
+                console.log('✅ Account created successfully!', { userId: newUser.$id });
+
+                // Automatically login after signup
+                console.log('🔐 Creating session...');
+                await account.createEmailPasswordSession(email, password);
                 
-                // Get the current user
-                const user = await authService.getCurrentUser();
+                // Get user details
+                const user = await account.get();
                 
-                // Generate hotel ID
-                const hotelId = Math.floor(Math.random() * 1000000);
-                
-                // Create hotel record with default values for required fields
+                // Create hotel record in database
                 const hotelData = {
-                    id: user.$id,
-                    userId: user.$id, // Add this for login lookup
-                    hotelId: hotelId,
+                    userId: user.$id,
+                    name: hotelName,
+                    email: email,
+                    type: 'hotel',
+                    address: 'To be updated',
+                    contactNumber: 'To be updated',
+                    hotelId: Math.floor(Math.random() * 1000000),
                     hotelName: hotelName,
                     hotelAddress: 'To be updated',
                     totalRooms: 1,
                     availableRooms: 1,
                     pricePerNight: 0,
-                    name: hotelName,
-                    email: email,
-                    address: 'To be updated',
-                    contactNumber: 'To be updated',
-                    type: 'hotel',
                     amenities: null,
                     phoneNumber: null,
                     profilePicture: null,
                     mainImage: null
                 };
                 
+                console.log('📝 Creating hotel database record...');
                 const hotelDoc = await databases.createDocument(
-                    APPWRITE_CONFIG.databaseId,
-                    APPWRITE_CONFIG.collections.hotels,
+                    DATABASE_ID,
+                    COLLECTIONS.HOTELS,
                     ID.unique(),
                     hotelData
                 );
                 
+                // Save session cache
+                saveSessionCache({
+                    type: 'hotel',
+                    id: user.$id,
+                    email: user.email,
+                    documentId: hotelDoc.$id,
+                    data: hotelDoc
+                });
+                
+                console.log('✅ Hotel account created and logged in successfully!');
                 setError('✅ Account created successfully! Redirecting to dashboard...');
                 setTimeout(() => {
                     onSuccess(hotelDoc.$id);
                 }, 1500);
             } else {
                 // Login
-                const user = await authService.login(email, password);
+                console.log('🔐 Creating session...');
+                await account.createEmailPasswordSession(email, password);
+                
+                // Get user details
+                const user = await account.get();
                 
                 // Find hotel record
+                console.log('🔍 Finding hotel record...');
                 const response = await databases.listDocuments(
-                    APPWRITE_CONFIG.databaseId,
-                    APPWRITE_CONFIG.collections.hotels,
+                    DATABASE_ID,
+                    COLLECTIONS.HOTELS,
                     []
                 );
                 
-                const hotel = response.documents.find((h: any) => h.userId === user.$id);
+                const hotel = response.documents.find((h: any) => h.userId === user.$id && h.type === 'hotel');
                 
                 if (!hotel) {
                     setError('Hotel account not found. Please create an account first.');
-                    await authService.logout();
+                    await account.deleteSession('current');
                     setLoading(false);
                     return;
                 }
                 
+                // Save session cache
+                saveSessionCache({
+                    type: 'hotel',
+                    id: user.$id,
+                    email: user.email,
+                    documentId: hotel.$id,
+                    data: hotel
+                });
+                
+                console.log('✅ Hotel login successful');
                 onSuccess(hotel.$id);
             }
         } catch (err: any) {
-            console.error('Authentication error:', err);
-            setError(err.message || 'Authentication failed. Please try again.');
+            console.error('Hotel authentication error:', err);
+            
+            // Handle user already exists case
+            if (err.code === 409 || err.message?.includes('already exists')) {
+                console.log('🔄 User already exists, switching to sign-in mode');
+                setIsSignUp(false);
+                setError('This email is already registered. Switched to Sign In mode - please enter your password.');
+                setLoading(false);
+                return;
+            }
+            
+            setError(handleAppwriteError(err, isSignUp ? 'account creation' : 'login'));
         } finally {
             setLoading(false);
         }
@@ -206,18 +283,26 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) =>
                         />
                     </div>
 
-                    <PasswordInput
-                        value={password}
-                        onChange={setPassword}
-                        placeholder="Enter your password"
-                        required
-                        minLength={8}
-                    />
+                    <div>
+                        <label className="block text-sm font-medium text-white/90 mb-2">
+                            Password
+                        </label>
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
+                            placeholder="Enter your password"
+                            required
+                            minLength={8}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSubmit}
+                        />
+                    </div>
 
-                    <Button
+                    <button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 px-4 mt-6 shadow-lg flex items-center justify-center gap-2"
+                        className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 px-4 mt-6 shadow-lg rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium flex items-center justify-center gap-2"
                     >
                         {loading ? (
                             'Processing...'
@@ -232,7 +317,7 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) =>
                                 Sign In
                             </>
                         )}
-                    </Button>
+                    </button>
                 </form>
             </div>
         </div>

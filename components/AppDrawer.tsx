@@ -11,13 +11,13 @@ interface AppDrawerProps {
     
     // Navigation callbacks
     onMassageJobsClick?: () => void;
-    onHotelPortalClick: () => void;
-    onVillaPortalClick: () => void;
-    onTherapistPortalClick: () => void;
-    onMassagePlacePortalClick: () => void;
-    onAgentPortalClick: () => void;
+    onHotelPortalClick?: () => void;
+    onVillaPortalClick?: () => void;
+    onTherapistPortalClick?: () => void;
+    onMassagePlacePortalClick?: () => void;
+    onAgentPortalClick?: () => void;
     onCustomerPortalClick?: () => void;
-    onAdminPortalClick: () => void;
+    onAdminPortalClick?: () => void;
     onNavigate?: (page: string) => void;
     onTermsClick?: () => void;
     onPrivacyClick?: () => void;

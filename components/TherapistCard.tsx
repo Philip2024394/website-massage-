@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import type { Therapist, Analytics } from '../types';
 import { AvailabilityStatus } from '../types';
-import { parsePricing, parseMassageTypes } from '../utils/appwriteHelpers';
+import { parsePricing, parseMassageTypes, parseCoordinates } from '../utils/appwriteHelpers';
 import { notificationService } from '../lib/appwriteService';
+import DistanceDisplay from './DistanceDisplay';
 
 interface TherapistCardProps {
     therapist: Therapist;
+    userLocation?: { lat: number; lng: number } | null; // User's current location for distance calculation
     onRate: (therapist: Therapist) => void;
     onBook: (therapist: Therapist) => void;
     onQuickBookWithChat?: (therapist: Therapist) => void; // Quick book after WhatsApp
@@ -65,11 +67,7 @@ const CalendarIcon: React.FC<{className?: string}> = ({ className }) => (
     </svg>
 );
 
-const LocationPinIcon: React.FC<{className?: string}> = ({ className }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 20 20" fill="currentColor">
-        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-    </svg>
-);
+
 
 const StarIcon: React.FC<{className?: string}> = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 20 20" fill="currentColor">
@@ -86,6 +84,7 @@ const statusStyles: { [key in AvailabilityStatus]: { text: string; bg: string; d
 
 const TherapistCard: React.FC<TherapistCardProps> = ({ 
     therapist, 
+    userLocation,
     onRate, 
     onBook, 
     onQuickBookWithChat,
@@ -430,10 +429,15 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             <div className="absolute top-52 left-28 right-4 z-10">
                 <div className="flex justify-between items-center">
                     <h3 className="text-lg font-bold text-gray-900">{therapist.name}</h3>
-                    <div className="flex items-center text-sm text-gray-500 gap-1">
-                        <LocationPinIcon className="w-4 h-4 text-red-500"/>
-                        <span>{therapist.distance}km</span>
-                    </div>
+                    {/* Enhanced Distance Display with Google Maps Integration */}
+                    <DistanceDisplay
+                        userLocation={userLocation}
+                        providerLocation={parseCoordinates(therapist.coordinates) || { lat: 0, lng: 0 }}
+                        className="text-sm"
+                        showTravelTime={true}
+                        showIcon={true}
+                        size="sm"
+                    />
                 </div>
                 <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isOvertime ? 'bg-red-100 text-red-800' : style.bg} ${isOvertime ? '' : style.text} mt-1`}>
                     <span className="relative mr-1.5">

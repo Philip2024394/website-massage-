@@ -65,8 +65,7 @@ const TherapistJobRegistrationPage: React.FC<TherapistJobRegistrationPageProps> 
         preferredLocations: [] as string[],
         massageTypes: [] as string[],
         specializations: [] as string[],
-        profileImageUrl: '',
-        mainImageUrl: ''
+        profileImageUrl: ''
     });
 
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -495,17 +494,11 @@ const TherapistJobRegistrationPage: React.FC<TherapistJobRegistrationPageProps> 
                             />
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                Main Image URL
-                            </label>
-                            <input
-                                type="url"
-                                value={formData.mainImageUrl}
-                                onChange={(e) => handleInputChange('mainImageUrl', e.target.value)}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                placeholder="https://example.com/main.jpg"
-                            />
+                        {/* Note about main images */}
+                        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                            <p className="text-sm text-blue-700">
+                                <span className="font-medium">Note:</span> Main card images are automatically assigned from our curated collection to ensure consistent quality and design.
+                            </p>
                         </div>
                     </div>
 

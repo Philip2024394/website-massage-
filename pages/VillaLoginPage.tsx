@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
-import Button from '../components/Button';
-import PasswordInput from '../components/PasswordInput';
-import { authService } from '../lib/appwriteService';
-import { databases, ID } from '../lib/appwrite';
-import { APPWRITE_CONFIG } from '../lib/appwrite.config';
+import { account, databases, DATABASE_ID, COLLECTIONS, ID } from '../lib/appwrite';
+import { saveSessionCache } from '../lib/sessionManager';
+import { checkRateLimit, handleAppwriteError, resetRateLimit } from '../lib/rateLimitUtils';
 import { LogIn, UserPlus } from 'lucide-react';
 
 interface VillaLoginPageProps {
@@ -26,76 +24,135 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onSuccess, onBack }) =>
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
+    // Make rate limit reset functions available in browser console for testing
+    React.useEffect(() => {
+        (window as any).resetVillaRateLimit = () => {
+            resetRateLimit('villa-login');
+            resetRateLimit('villa-signup');
+            console.log('✅ Villa rate limits reset! You can now try logging in again.');
+        };
+    }, []);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         setLoading(true);
 
         try {
-            // First, logout any existing session
+            // Validate inputs
+            if (!email || !password) {
+                setError('Please enter both email and password');
+                setLoading(false);
+                return;
+            }
+
+            if (isSignUp && !villaName.trim()) {
+                setError('Villa name is required');
+                setLoading(false);
+                return;
+            }
+
+            if (password.length < 8) {
+                setError('Password must be at least 8 characters');
+                setLoading(false);
+                return;
+            }
+
+            // Check rate limit
+            const operation = isSignUp ? 'villa-signup' : 'villa-login';
+            const maxAttempts = isSignUp ? 3 : 5;
+            const windowMs = isSignUp ? 600000 : 300000; // 10 min for signup, 5 min for login
+
+            if (!checkRateLimit(operation, maxAttempts, windowMs)) {
+                setError(`Too many ${isSignUp ? 'signup' : 'login'} attempts. Please wait before trying again.`);
+                setLoading(false);
+                return;
+            }
+
+            console.log(`🔄 Starting villa ${isSignUp ? 'signup' : 'login'} for:`, email);
+
+            // Delete any existing session
             try {
-                await authService.logout();
+                await account.deleteSession('current');
+                console.log('🗑️ Existing session cleared');
             } catch (err) {
-                // Ignore error if no session exists
+                console.log('ℹ️ No existing session to clear');
             }
 
             if (isSignUp) {
                 // Create account
-                if (!villaName.trim()) {
-                    setError('Villa name is required');
-                    setLoading(false);
-                    return;
-                }
+                console.log('📝 Creating villa account for:', email);
+                const newUser = await account.create(
+                    'unique()',
+                    email,
+                    password,
+                    villaName
+                );
 
-                // Register with Appwrite
-                await authService.register(email, password, villaName);
+                console.log('✅ Account created successfully!', { userId: newUser.$id });
+
+                // Automatically login after signup
+                console.log('🔐 Creating session...');
+                await account.createEmailPasswordSession(email, password);
                 
-                // Get the current user
-                const user = await authService.getCurrentUser();
+                // Get user details
+                const user = await account.get();
                 
-                // Generate villa ID
-                const villaId = Math.floor(Math.random() * 1000000);
-                
-                // Create villa record with default values for required fields
+                // Create villa record in database
                 const villaData = {
-                    id: user.$id,
-                    userId: user.$id, // Add this for login lookup
-                    hotelId: villaId,
+                    userId: user.$id,
+                    name: villaName,
+                    email: email,
+                    type: 'villa',
+                    address: 'To be updated',
+                    contactNumber: 'To be updated',
+                    hotelId: Math.floor(Math.random() * 1000000),
                     hotelName: villaName,
                     hotelAddress: 'To be updated',
                     totalRooms: 1,
                     availableRooms: 1,
                     pricePerNight: 0,
-                    name: villaName,
-                    email: email,
-                    address: 'To be updated',
-                    contactNumber: 'To be updated',
-                    type: 'villa',
                     amenities: null,
                     phoneNumber: null,
                     profilePicture: null,
                     mainImage: null
                 };
                 
+                console.log('📝 Creating villa database record...');
                 const villaDoc = await databases.createDocument(
-                    APPWRITE_CONFIG.databaseId,
-                    APPWRITE_CONFIG.collections.hotels,
+                    DATABASE_ID,
+                    COLLECTIONS.HOTELS,
                     ID.unique(),
                     villaData
                 );
                 
+                // Save session cache
+                saveSessionCache({
+                    type: 'villa',
+                    id: user.$id,
+                    email: user.email,
+                    documentId: villaDoc.$id,
+                    data: villaDoc
+                });
+                
+                console.log('✅ Villa account created and logged in successfully!');
                 setError('✅ Account created successfully! Redirecting to dashboard...');
                 setTimeout(() => {
                     onSuccess(villaDoc.$id);
                 }, 1500);
             } else {
                 // Login
-                const user = await authService.login(email, password);
+                console.log('🔐 Creating session...');
+                await account.createEmailPasswordSession(email, password);
+                
+                // Get user details
+                const user = await account.get();
                 
                 // Find villa record
+                console.log('🔍 Finding villa record...');
                 const response = await databases.listDocuments(
-                    APPWRITE_CONFIG.databaseId,
-                    APPWRITE_CONFIG.collections.hotels,
+                    DATABASE_ID,
+                    COLLECTIONS.HOTELS,
                     []
                 );
                 
@@ -103,16 +160,36 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onSuccess, onBack }) =>
                 
                 if (!villa) {
                     setError('Villa account not found. Please create an account first.');
-                    await authService.logout();
+                    await account.deleteSession('current');
                     setLoading(false);
                     return;
                 }
                 
+                // Save session cache
+                saveSessionCache({
+                    type: 'villa',
+                    id: user.$id,
+                    email: user.email,
+                    documentId: villa.$id,
+                    data: villa
+                });
+                
+                console.log('✅ Villa login successful');
                 onSuccess(villa.$id);
             }
         } catch (err: any) {
-            console.error('Authentication error:', err);
-            setError(err.message || 'Authentication failed. Please try again.');
+            console.error('Villa authentication error:', err);
+            
+            // Handle user already exists case
+            if (err.code === 409 || err.message?.includes('already exists')) {
+                console.log('🔄 User already exists, switching to sign-in mode');
+                setIsSignUp(false);
+                setError('This email is already registered. Switched to Sign In mode - please enter your password.');
+                setLoading(false);
+                return;
+            }
+            
+            setError(handleAppwriteError(err, isSignUp ? 'account creation' : 'login'));
         } finally {
             setLoading(false);
         }
@@ -152,7 +229,10 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onSuccess, onBack }) =>
 
                 <div className="flex mb-6 bg-white/10 backdrop-blur-sm rounded-lg p-1 border border-white/20">
                     <button
-                        onClick={() => setIsSignUp(false)}
+                        onClick={() => {
+                            setIsSignUp(false);
+                            setError(''); // Clear error when switching modes
+                        }}
                         className={`flex-1 py-2 px-4 rounded-md transition-all ${
                             !isSignUp ? 'bg-orange-500 shadow-lg text-white font-semibold' : 'text-white/90 hover:bg-white/5'
                         }`}
@@ -160,7 +240,10 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onSuccess, onBack }) =>
                         Sign In
                     </button>
                     <button
-                        onClick={() => setIsSignUp(true)}
+                        onClick={() => {
+                            setIsSignUp(true);
+                            setError(''); // Clear error when switching modes
+                        }}
                         className={`flex-1 py-2 px-4 rounded-md transition-all ${
                             isSignUp ? 'bg-orange-500 shadow-lg text-white font-semibold' : 'text-white/90 hover:bg-white/5'
                         }`}
@@ -170,7 +253,11 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onSuccess, onBack }) =>
                 </div>
 
                 {error && (
-                    <div className={`mb-4 p-3 rounded-lg backdrop-blur-sm ${error.includes('created') ? 'bg-green-500/20 text-green-100 border border-green-400/30' : 'bg-red-500/20 text-red-100 border border-red-400/30'}`}>
+                    <div className={`mb-4 p-3 rounded-lg backdrop-blur-sm border ${
+                        error.includes('created') || error.includes('Switched to Sign In mode')
+                            ? 'bg-blue-500/20 text-blue-100 border-blue-400/30' 
+                            : 'bg-red-500/20 text-red-100 border-red-400/30'
+                    }`}>
                         {error}
                     </div>
                 )}
@@ -188,6 +275,7 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onSuccess, onBack }) =>
                                 className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
                                 placeholder="Enter your villa name"
                                 required={isSignUp}
+                                onKeyDown={(e) => e.key === 'Enter' && handleSubmit}
                             />
                         </div>
                     )}
@@ -201,23 +289,32 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onSuccess, onBack }) =>
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
-                            placeholder="hotel@indastreet.com"
+                            placeholder="villa@example.com"
                             required
+                            onKeyDown={(e) => e.key === 'Enter' && handleSubmit}
                         />
                     </div>
 
-                    <PasswordInput
-                        value={password}
-                        onChange={setPassword}
-                        placeholder="Enter your password"
-                        required
-                        minLength={8}
-                    />
+                    <div>
+                        <label className="block text-sm font-medium text-white/90 mb-2">
+                            Password
+                        </label>
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
+                            placeholder="Enter your password"
+                            required
+                            minLength={8}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSubmit}
+                        />
+                    </div>
 
-                    <Button
+                    <button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 px-4 mt-6 shadow-lg flex items-center justify-center gap-2"
+                        className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 px-4 mt-6 shadow-lg rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium flex items-center justify-center gap-2"
                     >
                         {loading ? (
                             'Processing...'
@@ -232,7 +329,7 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onSuccess, onBack }) =>
                                 Sign In
                             </>
                         )}
-                    </Button>
+                    </button>
                 </form>
             </div>
         </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { Place, Analytics } from '../types';
-import { parsePricing } from '../utils/appwriteHelpers';
+import { parsePricing, parseCoordinates } from '../utils/appwriteHelpers';
+import DistanceDisplay from './DistanceDisplay';
 
 interface MassagePlaceCardProps {
     place: Place;
@@ -15,11 +16,6 @@ interface MassagePlaceCardProps {
     userLocation?: { lat: number; lng: number } | null;
 }
 
-const LocationPinIcon: React.FC<{className?: string}> = ({ className }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 20 20" fill="currentColor">
-        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-    </svg>
-);
 
 const StarIcon: React.FC<{className?: string}> = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 20 20" fill="currentColor">
@@ -37,7 +33,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
     isCustomerLoggedIn = false,
     activeDiscount,
     t: _t,
-    userLocation: _userLocation
+    userLocation
 }) => {
     const [showReferModal, setShowReferModal] = useState(false);
     const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
@@ -77,8 +73,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
     const amenities = (place as any).amenities || [];
     const displayAmenities = Array.isArray(amenities) ? amenities.slice(0, 3) : [];
 
-    // Calculate distance (mock for now)
-    const distance = place.distance || '2.5';
+
 
     const handleViewDetails = () => {
         console.log('🏨 MassagePlaceCard - View Details clicked:', {
@@ -222,10 +217,14 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
             
             {/* Distance - Positioned above place name */}
             <div className="absolute top-52 right-4 z-10">
-                <div className="flex items-center text-sm text-gray-500 gap-1">
-                    <LocationPinIcon className="w-4 h-4 text-red-500"/>
-                    <span>{distance}km</span>
-                </div>
+                <DistanceDisplay
+                    userLocation={userLocation}
+                    providerLocation={parseCoordinates(place.coordinates) || { lat: 0, lng: 0 }}
+                    className="text-sm"
+                    showTravelTime={true}
+                    showIcon={true}
+                    size="sm"
+                />
             </div>
             
             {/* Place Name and Status - Positioned to the right of logo */}

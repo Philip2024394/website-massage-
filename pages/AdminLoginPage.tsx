@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { account } from '../lib/appwrite';
 import { saveSessionCache } from '../lib/sessionManager';
+import { checkRateLimit, handleAppwriteError, resetRateLimit, resetAllRateLimits } from '../lib/rateLimitUtils';
 
 interface AdminLoginPageProps {
     onAdminLogin: () => void;
@@ -21,6 +22,19 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin: _onAdminL
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
+    // Make rate limit reset functions available in browser console for testing
+    React.useEffect(() => {
+        (window as any).resetAdminRateLimit = () => {
+            resetRateLimit('admin-login');
+            resetRateLimit('admin-signup');
+            console.log('✅ Admin rate limits reset! You can now try logging in again.');
+        };
+        (window as any).resetAllRateLimits = () => {
+            resetAllRateLimits();
+            console.log('✅ All rate limits reset!');
+        };
+    }, []);
+
     const handleLogin = async () => {
         setError('');
         setIsLoading(true);
@@ -29,6 +43,13 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin: _onAdminL
             // Validate both email and password are provided
             if (!email || !password) {
                 setError('Please enter both email and password');
+                setIsLoading(false);
+                return;
+            }
+
+            // Check rate limit before attempting login
+            if (!checkRateLimit('admin-login', 5, 300000)) { // 5 attempts per 5 minutes
+                setError('Too many login attempts. Please wait 5 minutes before trying again.');
                 setIsLoading(false);
                 return;
             }
@@ -60,8 +81,9 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin: _onAdminL
                 data: user
             });
             
-            // Store admin session flag
-            localStorage.setItem('adminLoggedIn', 'true');
+            // Store admin session flag - DO NOT set localStorage directly
+            // The setIsAdminLoggedIn function handles localStorage automatically
+            // localStorage.setItem('adminLoggedIn', 'true'); // REMOVED - causes state mismatch
             
             console.log('✅ Admin login successful');
             
@@ -70,7 +92,7 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin: _onAdminL
             _onAdminLogin();
         } catch (err: any) {
             console.error('Admin login error:', err);
-            setError(err.message || 'Invalid credentials. Please try again.');
+            setError(handleAppwriteError(err, 'login'));
             setIsLoading(false);
         }
     };
@@ -88,6 +110,13 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin: _onAdminL
 
             if (password.length < 8) {
                 setError('Password must be at least 8 characters');
+                setIsLoading(false);
+                return;
+            }
+
+            // Check rate limit before attempting signup
+            if (!checkRateLimit('admin-signup', 3, 600000)) { // 3 attempts per 10 minutes
+                setError('Too many signup attempts. Please wait 10 minutes before trying again.');
                 setIsLoading(false);
                 return;
             }
@@ -134,7 +163,9 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin: _onAdminL
                 data: user
             });
             
-            localStorage.setItem('adminLoggedIn', 'true');
+            // Store admin session flag - DO NOT set localStorage directly
+            // The setIsAdminLoggedIn function handles localStorage automatically
+            // localStorage.setItem('adminLoggedIn', 'true'); // REMOVED - causes state mismatch
             
             console.log('✅ Admin account created and logged in successfully!');
             
@@ -147,16 +178,17 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin: _onAdminL
             console.error('❌ Error type:', err.type);
             console.error('❌ Error message:', err.message);
             
-            // Provide more helpful error messages
-            let errorMessage = err.message || 'Account creation failed. Please try again.';
-            
+            // Handle user already exists case specially
             if (err.code === 409 || err.message?.includes('already exists')) {
-                errorMessage = 'An account with this email already exists. Please sign in instead.';
-            } else if (err.code === 401) {
-                errorMessage = 'Invalid credentials. Please check your email and password.';
+                console.log('🔄 User already exists, switching to sign-in mode');
+                setIsSignUp(false);
+                setError('This email is already registered. Switched to Sign In mode - please enter your password.');
+                setIsLoading(false);
+                return;
             }
             
-            setError(errorMessage);
+            // Use centralized error handling for other errors
+            setError(handleAppwriteError(err, 'account creation'));
             setIsLoading(false);
         }
     };
@@ -210,7 +242,10 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin: _onAdminL
 
                 <div className="flex mb-6 bg-white/10 backdrop-blur-sm rounded-lg p-1 border border-white/20">
                     <button
-                        onClick={() => setIsSignUp(false)}
+                        onClick={() => {
+                            setIsSignUp(false);
+                            setError(''); // Clear error when switching modes
+                        }}
                         className={`flex-1 py-2 px-4 rounded-md transition-all ${
                             !isSignUp ? 'bg-orange-500 shadow-lg text-white font-semibold' : 'text-white/90 hover:bg-white/5'
                         }`}
@@ -218,7 +253,10 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin: _onAdminL
                         Sign In
                     </button>
                     <button
-                        onClick={() => setIsSignUp(true)}
+                        onClick={() => {
+                            setIsSignUp(true);
+                            setError(''); // Clear error when switching modes
+                        }}
                         className={`flex-1 py-2 px-4 rounded-md transition-all ${
                             isSignUp ? 'bg-orange-500 shadow-lg text-white font-semibold' : 'text-white/90 hover:bg-white/5'
                         }`}
@@ -228,7 +266,11 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin: _onAdminL
                 </div>
 
                 {error && (
-                    <div className="mb-4 p-3 rounded-lg backdrop-blur-sm bg-red-500/20 text-red-100 border border-red-400/30">
+                    <div className={`mb-4 p-3 rounded-lg backdrop-blur-sm border ${
+                        error.includes('Switched to Sign In mode') 
+                            ? 'bg-blue-500/20 text-blue-100 border-blue-400/30' 
+                            : 'bg-red-500/20 text-red-100 border-red-400/30'
+                    }`}>
                         {error}
                     </div>
                 )}

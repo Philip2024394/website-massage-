@@ -18,8 +18,6 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,7 +65,7 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, 
     }
 
     // Validation
-    if (!name || !email || !password || !phone) {
+    if (!email || !password) {
       setError('Please fill in all required fields');
       return;
     }
@@ -86,15 +84,14 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, 
 
     try {
       // Register with Appwrite
-      const user = await authService.register(email, password, name);
+      const user = await authService.register(email, password, email.split('@')[0]);
       console.log('✅ Registration successful:', user);
 
       // Create user profile WITH LOCATION
       await userService.create({
         userId: user.$id,
-        name,
+        name: email.split('@')[0], // Use email prefix as default name
         email,
-        phone,
         location: userLocation.address, // Save user's location
         coordinates: JSON.stringify({ lat: userLocation.lat, lng: userLocation.lng }),
         createdAt: new Date().toISOString(),
@@ -231,20 +228,6 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, 
           <form onSubmit={handleRegister} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-white/90 mb-2">
-                Full Name <span className="text-red-400">*</span>
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg p-3 focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
-                placeholder="John Doe"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-white/90 mb-2">
                 Email <span className="text-red-400">*</span>
               </label>
               <input
@@ -253,20 +236,6 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, 
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg p-3 focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
                 placeholder="your@email.com"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-white/90 mb-2">
-                Phone Number <span className="text-red-400">*</span>
-              </label>
-              <input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg p-3 focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
-                placeholder="+62 812 3456 7890"
                 required
               />
             </div>

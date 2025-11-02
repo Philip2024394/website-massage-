@@ -610,7 +610,23 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             />;
             
         case 'about-us': 
-            return <AboutUsPage onBack={handleBackToHome} onNavigate={(page: string) => setPage(page as Page)} t={t} />;
+            return <AboutUsPage 
+                onBack={handleBackToHome} 
+                onNavigate={(page: string) => setPage(page as Page)} 
+                t={t}
+                onMassageJobsClick={() => setPage('massageJobs')}
+                onHotelPortalClick={handleNavigateToHotelLogin}
+                onVillaPortalClick={handleNavigateToVillaLogin}
+                onTherapistPortalClick={handleNavigateToTherapistLogin}
+                onMassagePlacePortalClick={handleNavigateToMassagePlaceLogin}
+                onAgentPortalClick={loggedInAgent ? () => setPage('agentDashboard') : () => setPage('agent')}
+                onCustomerPortalClick={loggedInCustomer ? handleNavigateToCustomerDashboard : () => setPage('customerAuth')}
+                onAdminPortalClick={handleNavigateToAdminLogin}
+                onTermsClick={handleNavigateToServiceTerms}
+                onPrivacyClick={handleNavigateToPrivacyPolicy}
+                therapists={therapists}
+                places={places}
+            />;
             
         case 'how-it-works': 
             // @ts-ignore - Prop interface mismatch 
@@ -621,12 +637,38 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return <MassageBaliPage onBack={handleBackToHome} onNavigate={(page: Page) => setPage(page as Page)} t={t} />;
             
         case 'blog': 
-            // @ts-ignore - Prop interface mismatch 
-            return <BlogIndexPage onBack={handleBackToHome} onNavigate={(page: Page) => setPage(page as Page)} t={t} />;
+            return <BlogIndexPage 
+                onNavigate={(page: string) => setPage(page as Page)} 
+                onMassageJobsClick={() => setPage('massageJobs')}
+                onHotelPortalClick={handleNavigateToHotelLogin}
+                onVillaPortalClick={handleNavigateToVillaLogin}
+                onTherapistPortalClick={handleNavigateToTherapistLogin}
+                onMassagePlacePortalClick={handleNavigateToMassagePlaceLogin}
+                onAgentPortalClick={loggedInAgent ? () => setPage('agentDashboard') : () => setPage('agent')}
+                onCustomerPortalClick={loggedInCustomer ? handleNavigateToCustomerDashboard : () => setPage('customerAuth')}
+                onAdminPortalClick={handleNavigateToAdminLogin}
+                onTermsClick={handleNavigateToServiceTerms}
+                onPrivacyClick={handleNavigateToPrivacyPolicy}
+                therapists={therapists}
+                places={places}
+            />;
             
         case 'faq': 
-            // @ts-ignore - Prop interface mismatch 
-            return <FAQPage onBack={handleBackToHome} onNavigate={(page: Page) => setPage(page as Page)} t={t} />;
+            return <FAQPage 
+                onNavigate={(page: string) => setPage(page as Page)} 
+                onMassageJobsClick={() => setPage('massageJobs')}
+                onHotelPortalClick={handleNavigateToHotelLogin}
+                onVillaPortalClick={handleNavigateToVillaLogin}
+                onTherapistPortalClick={handleNavigateToTherapistLogin}
+                onMassagePlacePortalClick={handleNavigateToMassagePlaceLogin}
+                onAgentPortalClick={loggedInAgent ? () => setPage('agentDashboard') : () => setPage('agent')}
+                onCustomerPortalClick={loggedInCustomer ? handleNavigateToCustomerDashboard : () => setPage('customerAuth')}
+                onAdminPortalClick={handleNavigateToAdminLogin}
+                onTermsClick={handleNavigateToServiceTerms}
+                onPrivacyClick={handleNavigateToPrivacyPolicy}
+                therapists={therapists}
+                places={places}
+            />;
             
         case 'balinese-massage': 
             // @ts-ignore - Prop interface mismatch 

@@ -87,7 +87,7 @@ const App = () => {
                 handleNavigateToBookingPage={navigation?.handleNavigateToBookingPage || (() => {})}
                 handleUpdateBookingStatus={() => Promise.resolve()}
                 handleMarkNotificationAsRead={() => {}}
-                handleAdminLogin={() => {}}
+                handleAdminLogin={authHandlers?.handleAdminLogin || (() => {})}
                 handleNavigateToNotifications={navigation?.handleNavigateToNotifications || (() => {})}
                 handleNavigateToAgentAuth={navigation?.handleNavigateToAgentAuth || (() => {})}
                 handleNavigateToTherapistDashboard={navigation?.handleNavigateToTherapistDashboard || (() => {})}

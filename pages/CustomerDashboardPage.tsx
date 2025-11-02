@@ -4,7 +4,7 @@ import { Booking, BookingStatus, LoyaltyWallet, CoinTransaction } from '../types
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import { getUserWallets, getTransactionHistory } from '../lib/loyaltyService';
-import { X, Calendar as CalendarIcon, Wallet, CreditCard, User } from 'lucide-react';
+import { X, Calendar as CalendarIcon, Wallet, CreditCard, User, Coins, Camera, Users } from 'lucide-react';
 
 interface CustomerDashboardPageProps {
   customer?: any;
@@ -241,6 +241,42 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
               >
                 <User className="w-5 h-5" />
                 Profile
+              </button>
+
+              {/* Coin Shop Link */}
+              <button
+                onClick={() => {
+                  onNavigate?.('coin-shop');
+                  setIsSideDrawerOpen(false);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors text-gray-700 hover:bg-gray-100"
+              >
+                <Coins className="w-5 h-5" />
+                Coin Shop
+              </button>
+
+              {/* Profile Upload Link */}
+              <button
+                onClick={() => {
+                  setActiveTab('profile');
+                  setIsSideDrawerOpen(false);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors text-gray-700 hover:bg-gray-100"
+              >
+                <Camera className="w-5 h-5" />
+                Upload Photo
+              </button>
+
+              {/* Become Agent Link */}
+              <button
+                onClick={() => {
+                  onNavigate?.('agent-portal');
+                  setIsSideDrawerOpen(false);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors text-gray-700 hover:bg-gray-100"
+              >
+                <Users className="w-5 h-5" />
+                Become Agent
               </button>
             </div>
           </div>

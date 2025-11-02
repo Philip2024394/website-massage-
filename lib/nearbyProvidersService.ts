@@ -1,9 +1,11 @@
 import type { Therapist, Place } from '../types';
 import { AvailabilityStatus } from '../types';
+import { enhancedDistanceService } from './googleMapsDistanceService';
 
 /**
  * Calculate distance between two coordinates using Haversine formula
  * Returns distance in kilometers
+ * @deprecated Use enhancedDistanceService.getDistanceWithTravelTime for Google Maps integration
  */
 const calculateDistance = (
     lat1: number,
@@ -20,6 +22,32 @@ const calculateDistance = (
         Math.sin(dLng / 2) * Math.sin(dLng / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
+};
+
+/**
+ * Enhanced distance calculation using Google Maps API with Haversine fallback
+ */
+const calculateEnhancedDistance = async (
+    lat1: number,
+    lng1: number,
+    lat2: number,
+    lng2: number
+): Promise<{ distance: number; travelTime?: number }> => {
+    try {
+        const result = await enhancedDistanceService.getDistanceWithTravelTime(
+            { lat: lat1, lng: lng1 },
+            { lat: lat2, lng: lng2 }
+        );
+        return {
+            distance: result.distance,
+            travelTime: result.duration
+        };
+    } catch (error) {
+        console.warn('Google Maps distance calculation failed, using Haversine fallback:', error);
+        return {
+            distance: calculateDistance(lat1, lng1, lat2, lng2)
+        };
+    }
 };
 
 /**
@@ -59,41 +87,48 @@ export const findNearbyTherapists = async (
         // Get all therapists
         const allTherapists = await dataService.getTherapists();
         
-        // Filter nearby available therapists
-        const nearbyTherapists = allTherapists
-            .filter((therapist: Therapist) => {
-                // Exclude original therapist
-                if (therapist.id.toString() === originalTherapistId.toString()) {
-                    return false;
-                }
-                
-                // Only available therapists
-                if (therapist.status !== AvailabilityStatus.Available) {
-                    return false;
-                }
-                
-                // Parse therapist coordinates
-                const therapistCoords = parseCoordinates(therapist.coordinates);
-                if (!therapistCoords) {
-                    console.warn(`Therapist ${therapist.id} has invalid coordinates`);
-                    return false;
-                }
-                
-                // Calculate distance
-                const distance = calculateDistance(
-                    customerLocation.lat,
-                    customerLocation.lng,
-                    therapistCoords.lat,
-                    therapistCoords.lng
-                );
-                
-                // Update therapist distance for sorting
-                therapist.distance = distance;
-                
-                return distance <= radiusKm;
-            })
-            // Sort by distance (closest first)
-            .sort((a: Therapist, b: Therapist) => a.distance - b.distance);
+        // Filter nearby available therapists using async processing
+        const nearbyTherapists = [];
+        
+        for (const therapist of allTherapists) {
+            // Exclude original therapist
+            if (therapist.id.toString() === originalTherapistId.toString()) {
+                continue;
+            }
+            
+            // Only available therapists
+            if (therapist.status !== AvailabilityStatus.Available) {
+                continue;
+            }
+            
+            // Parse therapist coordinates
+            const therapistCoords = parseCoordinates(therapist.coordinates);
+            if (!therapistCoords) {
+                console.warn(`Therapist ${therapist.id} has invalid coordinates`);
+                continue;
+            }
+            
+            // Calculate distance using enhanced service (Google Maps + Haversine fallback)
+            const distanceResult = await calculateEnhancedDistance(
+                customerLocation.lat,
+                customerLocation.lng,
+                therapistCoords.lat,
+                therapistCoords.lng
+            );
+            
+            // Update therapist distance and travel time for sorting and display
+            therapist.distance = distanceResult.distance;
+            if (distanceResult.travelTime) {
+                (therapist as any).travelTime = distanceResult.travelTime;
+            }
+
+            if (distanceResult.distance <= radiusKm) {
+                nearbyTherapists.push(therapist);
+            }
+        }
+        
+        // Sort by distance (closest first)
+        nearbyTherapists.sort((a: Therapist, b: Therapist) => a.distance - b.distance);
         
         console.log(`✅ Found ${nearbyTherapists.length} nearby therapists within ${radiusKm}km`);
         
@@ -128,40 +163,47 @@ export const findNearbyPlaces = async (
         const allPlaces = await dataService.getPlaces();
         
         // Filter nearby available places
-        const nearbyPlaces = allPlaces
-            .filter((place: Place) => {
-                // Exclude original place
-                if (place.id.toString() === originalPlaceId.toString()) {
-                    return false;
-                }
-                
-                // Only live places
-                if (!place.isLive) {
-                    return false;
-                }
-                
-                // Parse place coordinates
-                const placeCoords = parseCoordinates(place.coordinates);
-                if (!placeCoords) {
-                    console.warn(`Place ${place.id} has invalid coordinates`);
-                    return false;
-                }
-                
-                // Calculate distance
-                const distance = calculateDistance(
-                    customerLocation.lat,
-                    customerLocation.lng,
-                    placeCoords.lat,
-                    placeCoords.lng
-                );
-                
-                // Update place distance for sorting
-                place.distance = distance;
-                
-                return distance <= radiusKm;
-            })
-            // Sort by distance (closest first)
-            .sort((a: Place, b: Place) => a.distance - b.distance);
+        const nearbyPlaces = [];
+        
+        for (const place of allPlaces) {
+            // Exclude original place
+            if (place.id.toString() === originalPlaceId.toString()) {
+                continue;
+            }
+            
+            // Only live places
+            if (!place.isLive) {
+                continue;
+            }
+            
+            // Parse place coordinates
+            const placeCoords = parseCoordinates(place.coordinates);
+            if (!placeCoords) {
+                console.warn(`Place ${place.id} has invalid coordinates`);
+                continue;
+            }
+            
+            // Calculate distance using enhanced service (Google Maps + Haversine fallback)
+            const distanceResult = await calculateEnhancedDistance(
+                customerLocation.lat,
+                customerLocation.lng,
+                placeCoords.lat,
+                placeCoords.lng
+            );
+            
+            // Update place distance and travel time for sorting and display
+            place.distance = distanceResult.distance;
+            if (distanceResult.travelTime) {
+                (place as any).travelTime = distanceResult.travelTime;
+            }
+            
+            if (distanceResult.distance <= radiusKm) {
+                nearbyPlaces.push(place);
+            }
+        }
+        
+        // Sort by distance (closest first)
+        nearbyPlaces.sort((a: Place, b: Place) => a.distance - b.distance);
         
         console.log(`✅ Found ${nearbyPlaces.length} nearby places within ${radiusKm}km`);
         

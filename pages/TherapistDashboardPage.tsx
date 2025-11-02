@@ -93,7 +93,6 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [profilePicture, setProfilePicture] = useState('');
-    const [mainImage, setMainImage] = useState('');
     const [whatsappNumber, setWhatsappNumber] = useState('');
     const [yearsOfExperience, setYearsOfExperience] = useState<number>(0);
     const [massageTypes, setMassageTypes] = useState<string[]>([]);
@@ -133,7 +132,6 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                 name: existingTherapist.name,
                 description: existingTherapist.description?.substring(0, 50) + '...',
                 profilePicture: existingTherapist.profilePicture?.substring(0, 50) + '...',
-                mainImage: existingTherapist.mainImage?.substring(0, 50) + '...',
                 location: existingTherapist.location,
                 whatsappNumber: existingTherapist.whatsappNumber,
                 yearsOfExperience: (existingTherapist as any).yearsOfExperience,
@@ -143,9 +141,8 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
             setName(existingTherapist.name || '');
             setDescription(existingTherapist.description || '');
             setProfilePicture(existingTherapist.profilePicture || '');
-            setMainImage(existingTherapist.mainImage || '');
             console.log('📷 Loaded profilePicture from database:', existingTherapist.profilePicture);
-            console.log('📷 Loaded mainImage from database:', existingTherapist.mainImage);
+            console.log('ℹ️ Main image is automatically assigned from curated collection');
             console.log('🔄 State updated - name:', existingTherapist.name, 'description length:', existingTherapist.description?.length);
             setWhatsappNumber(existingTherapist.whatsappNumber || '');
             setYearsOfExperience((existingTherapist as any).yearsOfExperience || 0);
@@ -204,7 +201,6 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
             setName('');
             setDescription('');
             setProfilePicture('');
-            setMainImage('');
             setWhatsappNumber('');
             setYearsOfExperience(0);
             setMassageTypes([]);
@@ -359,7 +355,6 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                 name,
                 description,
                 profilePicture,
-                mainImage,
                 whatsappNumber,
                 yearsOfExperience,
                 isLicensed,

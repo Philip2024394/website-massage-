@@ -1,26 +1,41 @@
 import React, { useState } from 'react';
-
-type Page = 'home' | 'registrationChoice' | 'contact' | 'about' | 'faq';
+import { AppDrawer } from '../components/AppDrawer';
+import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 
 interface AboutUsPageProps {
-    onNavigate: (page: Page) => void;
+    onNavigate: (page: string) => void;
     onBack?: () => void;
     t?: any;
+    // Add navigation props for the drawer
+    onMassageJobsClick?: () => void;
+    onHotelPortalClick?: () => void;
+    onVillaPortalClick?: () => void;
+    onTherapistPortalClick?: () => void;
+    onMassagePlacePortalClick?: () => void;
+    onAgentPortalClick?: () => void;
+    onCustomerPortalClick?: () => void;
+    onAdminPortalClick?: () => void;
+    onTermsClick?: () => void;
+    onPrivacyClick?: () => void;
+    therapists?: any[];
+    places?: any[];
 }
 
-const BurgerMenuIcon = ({ className = 'w-6 h-6' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-    </svg>
-);
-
-const CloseIcon = ({ className = 'w-6 h-6' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-    </svg>
-);
-
-const AboutUsPage: React.FC<AboutUsPageProps> = ({ onNavigate }) => {
+const AboutUsPage: React.FC<AboutUsPageProps> = ({ 
+    onNavigate, 
+    onMassageJobsClick,
+    onHotelPortalClick,
+    onVillaPortalClick,
+    onTherapistPortalClick,
+    onMassagePlacePortalClick,
+    onAgentPortalClick,
+    onCustomerPortalClick,
+    onAdminPortalClick,
+    onTermsClick,
+    onPrivacyClick,
+    therapists = [],
+    places = []
+}) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     return (
@@ -38,104 +53,24 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({ onNavigate }) => {
                 </div>
             </header>
             
-            {/* Side Drawer */}
-            {isMenuOpen && (
-                <div className="fixed inset-0 z-50" role="dialog" aria-modal="true">
-                    <div 
-                        className="absolute inset-0 bg-black bg-opacity-50 transition-opacity" 
-                        onClick={() => setIsMenuOpen(false)}
-                        aria-hidden="true"
-                    ></div>
-    
-                    <div className={`absolute right-0 top-0 bottom-0 w-[70%] sm:w-80 bg-gradient-to-br from-white via-gray-50 to-gray-100 shadow-2xl flex flex-col transform transition-transform ease-in-out duration-300 ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-                        <div className="p-6 flex justify-between items-center">
-                            <h2 className="font-bold text-2xl">
-                                <span className="text-black">inda</span>
-                                <span className="text-orange-500">Street</span>
-                            </h2>
-                            <button 
-                                onClick={() => setIsMenuOpen(false)} 
-                                className="text-gray-600 hover:bg-gray-200 p-2 rounded-full transition-all" 
-                                aria-label="Close menu"
-                            >
-                                <CloseIcon />
-                            </button>
-                        </div>
-
-                        <nav className="flex-grow overflow-y-auto p-4">
-                            <div className="space-y-2">
-                                <button 
-                                    onClick={() => onNavigate('home')} 
-                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-orange-500 group"
-                                >
-                                    <span className="text-2xl">🏠</span>
-                                    <div className="flex-grow">
-                                        <h3 className="font-semibold text-gray-800 group-hover:text-orange-600 transition-colors">Home</h3>
-                                        <p className="text-xs text-gray-500">Return to main page</p>
-                                    </div>
-                                </button>
-                                
-                                <button 
-                                    onClick={() => {
-                                        const event = new CustomEvent('toggleDrawer');
-                                        window.dispatchEvent(event);
-                                        setIsMenuOpen(false);
-                                    }} 
-                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-green-500 group"
-                                >
-                                    <span className="text-2xl">🚀</span>
-                                    <div className="flex-grow">
-                                        <h3 className="font-semibold text-gray-800 group-hover:text-green-600 transition-colors">Get Started</h3>
-                                        <p className="text-xs text-gray-500">Join IndaStreet</p>
-                                    </div>
-                                </button>
-                                
-                                <button 
-                                    onClick={() => {
-                                        onNavigate('about');
-                                        setIsMenuOpen(false);
-                                    }} 
-                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-blue-500 group"
-                                >
-                                    <span className="text-2xl">ℹ️</span>
-                                    <div className="flex-grow">
-                                        <h3 className="font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">About Us</h3>
-                                        <p className="text-xs text-gray-500">Learn our story</p>
-                                    </div>
-                                </button>
-                                
-                                <button 
-                                    onClick={() => {
-                                        onNavigate('contact');
-                                        setIsMenuOpen(false);
-                                    }} 
-                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-purple-500 group"
-                                >
-                                    <span className="text-2xl">📧</span>
-                                    <div className="flex-grow">
-                                        <h3 className="font-semibold text-gray-800 group-hover:text-purple-600 transition-colors">Contact Us</h3>
-                                        <p className="text-xs text-gray-500">Get in touch</p>
-                                    </div>
-                                </button>
-                                
-                                <button 
-                                    onClick={() => {
-                                        onNavigate('faq');
-                                        setIsMenuOpen(false);
-                                    }} 
-                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-yellow-500 group"
-                                >
-                                    <span className="text-2xl">❓</span>
-                                    <div className="flex-grow">
-                                        <h3 className="font-semibold text-gray-800 group-hover:text-yellow-600 transition-colors">FAQ</h3>
-                                        <p className="text-xs text-gray-500">Common questions</p>
-                                    </div>
-                                </button>
-                            </div>
-                        </nav>
-                    </div>
-                </div>
-            )}
+            {/* Global App Drawer */}
+            <AppDrawer
+                isOpen={isMenuOpen}
+                onClose={() => setIsMenuOpen(false)}
+                onMassageJobsClick={onMassageJobsClick}
+                onHotelPortalClick={onHotelPortalClick}
+                onVillaPortalClick={onVillaPortalClick}
+                onTherapistPortalClick={onTherapistPortalClick}
+                onMassagePlacePortalClick={onMassagePlacePortalClick}
+                onAgentPortalClick={onAgentPortalClick}
+                onCustomerPortalClick={onCustomerPortalClick}
+                onAdminPortalClick={onAdminPortalClick}
+                onNavigate={onNavigate}
+                onTermsClick={onTermsClick}
+                onPrivacyClick={onPrivacyClick}
+                therapists={therapists}
+                places={places}
+            />
             
             {/* Hero Section */}
             <div 
