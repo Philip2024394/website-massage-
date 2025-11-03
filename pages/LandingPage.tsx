@@ -90,6 +90,48 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                 </h1>
                 <p className="text-lg sm:text-xl mt-2 mb-4 px-4">Your personal wellness companion.</p>
                 
+                {/* Therapist Promotional Banner */}
+                <div className="bg-gradient-to-r from-green-500 via-green-400 to-emerald-500 border-2 border-white rounded-xl p-6 mb-6 shadow-2xl max-w-lg mx-auto transform hover:scale-105 transition-transform duration-300">
+                    <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg p-4 border border-white border-opacity-30">
+                        <div className="flex items-center justify-center mb-3">
+                            <div className="bg-white rounded-full p-2 mr-3">
+                                <svg className="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                </svg>
+                            </div>
+                            <h2 className="text-xl font-bold text-white">🌟 Therapist Special Offer!</h2>
+                        </div>
+                        
+                        <div className="text-center space-y-2">
+                            <div className="bg-white bg-opacity-90 text-green-800 rounded-lg py-2 px-4 font-bold text-lg">
+                                Only IDR 5,000/day = IDR 150,000/month
+                            </div>
+                            
+                            <div className="bg-yellow-400 bg-opacity-95 text-green-900 rounded-lg py-2 px-4 font-bold text-base animate-pulse">
+                                🎁 FREE 1-Month Trial for First 100 Therapists!
+                            </div>
+                            
+                            <div className="text-white text-sm mt-3 space-y-1">
+                                <p className="flex items-center justify-center gap-2">
+                                    <span className="text-green-200">✓</span> Unlimited Bookings
+                                </p>
+                                <p className="flex items-center justify-center gap-2">
+                                    <span className="text-green-200">✓</span> Professional Platform
+                                </p>
+                                <p className="flex items-center justify-center gap-2">
+                                    <span className="text-green-200">✓</span> No Commission Fees
+                                </p>
+                            </div>
+                            
+                            <div className="mt-4">
+                                <button className="bg-white text-green-600 font-bold py-2 px-6 rounded-full hover:bg-green-50 transition-colors shadow-lg text-sm">
+                                    🚀 Join Now - Limited Spots!
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 {/* Join Today Free Limited Spaces Badge */}
                 <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-full px-6 py-2 mb-8 shadow-lg animate-pulse">
                     <p className="text-white font-bold text-base sm:text-lg flex items-center gap-2">

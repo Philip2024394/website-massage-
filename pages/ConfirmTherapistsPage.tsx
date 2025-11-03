@@ -2,7 +2,9 @@ import React, { useEffect, useState } from 'react';
 import Button from '../components/Button';
 import ImageUpload from '../components/ImageUpload';
 import { therapistService, authService } from '../lib/appwriteService';
-import { parseMassageTypes } from '../utils/appwriteHelpers';
+import { parseMassageTypes, parseLanguages } from '../utils/appwriteHelpers';
+import { membershipOptions } from '../constants/languages';
+import { LanguageSelector } from '../components/admin/LanguageSelector';
 
 interface PendingTherapist {
   $id: string;
@@ -34,7 +36,6 @@ interface EditModalData {
   $id: string;
   name: string;
   email: string;
-  city: string;
   country: string;
   whatsappNumber: string;
   profilePicture: string;
@@ -50,13 +51,6 @@ interface EditModalData {
   languages: string[];
   massageTypes: string[];
 }
-
-const membershipOptions = [
-  { label: '1 Month', value: '1', months: 1 },
-  { label: '3 Months', value: '3', months: 3 },
-  { label: '6 Months', value: '6', months: 6 },
-  { label: '1 Year', value: '12', months: 12 },
-];
 
 const ConfirmTherapistsPage: React.FC = () => {
   const [therapists, setTherapists] = useState<PendingTherapist[]>([]);
@@ -139,9 +133,6 @@ const ConfirmTherapistsPage: React.FC = () => {
     setUpdatingId(therapistId);
     try {
       await therapistService.update(therapistId, {
-        id: Date.now().toString(),
-        therapistId: Date.now().toString(),
-        hotelId: Date.now().toString(),
         status: 'deactivated',
         isLive: false,
       });
@@ -161,7 +152,6 @@ const ConfirmTherapistsPage: React.FC = () => {
       $id: therapist.$id,
       name: therapist.name || '',
       email: therapist.email || '',
-      city: therapist.city || '',
       country: therapist.country || '',
       whatsappNumber: therapist.whatsappNumber || '',
       profilePicture: therapist.profilePicture || '',
@@ -174,7 +164,11 @@ const ConfirmTherapistsPage: React.FC = () => {
       },
       discountPercentage: therapist.discountPercentage || 0,
       additionalImages: Array.isArray(therapist.additionalImages) ? therapist.additionalImages : [],
-      languages: Array.isArray(therapist.languages) ? therapist.languages : [],
+      languages: therapist.languages 
+        ? (typeof therapist.languages === 'string' 
+            ? parseLanguages(therapist.languages) 
+            : (Array.isArray(therapist.languages) ? therapist.languages : []))
+        : [],
       massageTypes: therapist.massageTypes ? parseMassageTypes(therapist.massageTypes) : []
     };
     
@@ -187,21 +181,35 @@ const ConfirmTherapistsPage: React.FC = () => {
     
     setUpdatingId(editingTherapist.$id);
     try {
+      // Convert pricing object to JSON string and validate length
+      const pricingString = typeof editingTherapist.pricing === 'string' 
+        ? editingTherapist.pricing 
+        : JSON.stringify(editingTherapist.pricing);
+      
+      if (pricingString.length > 255) {
+        alert('Pricing data is too long. Please simplify the pricing structure.');
+        return;
+      }
+
+      // Convert arrays to JSON strings
+      const languagesString = typeof editingTherapist.languages === 'string'
+        ? editingTherapist.languages
+        : JSON.stringify(editingTherapist.languages);
+
+      const massageTypesString = typeof editingTherapist.massageTypes === 'string'
+        ? editingTherapist.massageTypes
+        : JSON.stringify(editingTherapist.massageTypes);
+
       await therapistService.update(editingTherapist.$id, {
         name: editingTherapist.name,
         email: editingTherapist.email,
-        city: editingTherapist.city,
-        country: editingTherapist.country,
         whatsappNumber: editingTherapist.whatsappNumber,
         profilePicture: editingTherapist.profilePicture,
         description: editingTherapist.description,
-        experience: editingTherapist.experience,
-        specialties: editingTherapist.specialties,
-        pricing: editingTherapist.pricing,
-        discountPercentage: editingTherapist.discountPercentage,
-        additionalImages: editingTherapist.additionalImages,
-        languages: editingTherapist.languages,
-        massageTypes: editingTherapist.massageTypes
+        yearsOfExperience: parseInt(editingTherapist.experience) || 0,
+        pricing: pricingString,
+        languages: languagesString,
+        massageTypes: massageTypesString
       });
 
       await fetchTherapists();
@@ -224,12 +232,13 @@ const ConfirmTherapistsPage: React.FC = () => {
   const handleDiscountUpdate = async (therapistId: string, discountPercentage: number) => {
     setUpdatingId(therapistId);
     try {
+      // Note: discountPercentage field doesn't exist in schema, using hotelDiscount as fallback
       await therapistService.update(therapistId, {
-        discountPercentage: discountPercentage
+        hotelDiscount: discountPercentage
       });
       
       await fetchTherapists();
-      alert(`Discount updated to ${discountPercentage}%!`);
+      alert(`Hotel discount updated to ${discountPercentage}%!`);
     } catch (error: any) {
       console.error('Error updating discount:', error);
       alert('Error updating discount: ' + (error.message || 'Unknown error'));
@@ -669,17 +678,6 @@ const ConfirmTherapistsPage: React.FC = () => {
                       onChange={(e) => setEditingTherapist({...editingTherapist, whatsappNumber: e.target.value})}
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-green focus:border-transparent"
                       placeholder="+62812345678"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      City
-                    </label>
-                    <input
-                      type="text"
-                      value={editingTherapist.city}
-                      onChange={(e) => setEditingTherapist({...editingTherapist, city: e.target.value})}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-green focus:border-transparent"
                     />
                   </div>
                   <div>
@@ -1162,22 +1160,13 @@ const ConfirmTherapistsPage: React.FC = () => {
                 </div>
 
                 {/* Languages */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Languages
-                  </label>
-                  <input
-                    type="text"
-                    value={editingTherapist.languages.join(', ')}
-                    onChange={(e) => setEditingTherapist({
-                      ...editingTherapist, 
-                      languages: e.target.value.split(',').map(s => s.trim()).filter(s => s)
-                    })}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-green focus:border-transparent"
-                    placeholder="English, Indonesian, Mandarin"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Separate multiple languages with commas</p>
-                </div>
+                <LanguageSelector
+                  selectedLanguages={editingTherapist.languages}
+                  onLanguagesChange={(languages) => setEditingTherapist({
+                    ...editingTherapist,
+                    languages
+                  })}
+                />
               </div>
 
               {/* Modal Actions */}

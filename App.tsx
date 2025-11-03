@@ -6,7 +6,7 @@ import { useTranslations } from './lib/useTranslations';
 const App = () => {
     // All hooks combined
     const hooks = useAllHooks();
-    const { state, navigation, authHandlers } = hooks;
+    const { state, navigation, authHandlers, providerAgentHandlers } = hooks;
     
     // Get translations
     const { t } = useTranslations(state.language);
@@ -64,9 +64,13 @@ const App = () => {
                 handleNavigateToCustomerDashboard={navigation?.handleNavigateToCustomerDashboard || (() => {})}
                 handleBackToHome={navigation?.handleBackToHome || (() => {})}
                 handleSelectRegistration={navigation?.handleSelectRegistration || (() => {})}
-                handleTherapistStatusChange={() => Promise.resolve()}
-                handleSaveTherapist={() => Promise.resolve()}
-                handleSavePlace={() => Promise.resolve()}
+                handleTherapistStatusChange={(status: string) => 
+                    providerAgentHandlers?.handleTherapistStatusChange 
+                        ? providerAgentHandlers.handleTherapistStatusChange(status, providerAgentHandlers.handleSaveTherapist)
+                        : Promise.resolve()
+                }
+                handleSaveTherapist={providerAgentHandlers?.handleSaveTherapist || (() => Promise.resolve())}
+                handleSavePlace={providerAgentHandlers?.handleSavePlace || (() => Promise.resolve())}
                 handleAgentRegister={() => Promise.resolve({ success: true, message: '' })}
                 handleAgentLogin={() => Promise.resolve({ success: true, message: '' })}
                 handleAgentAcceptTerms={() => Promise.resolve()}

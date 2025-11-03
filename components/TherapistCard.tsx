@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { Therapist, Analytics } from '../types';
 import { AvailabilityStatus } from '../types';
-import { parsePricing, parseMassageTypes, parseCoordinates } from '../utils/appwriteHelpers';
+import { parsePricing, parseMassageTypes, parseCoordinates, parseLanguages } from '../utils/appwriteHelpers';
 import { notificationService } from '../lib/appwriteService';
 import DistanceDisplay from './DistanceDisplay';
 
@@ -211,6 +211,13 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     // Parse Appwrite string fields with fallbacks
     const pricing = parsePricing(therapist.pricing) || { "60": 0, "90": 0, "120": 0 };
     const massageTypes = parseMassageTypes(therapist.massageTypes) || [];
+    
+    // Helper function to format price in "123K" format
+    const formatPrice = (price: number): string => {
+        if (!price || price === 0 || isNaN(price)) return "0K";
+        // Prices are already in thousands (e.g., 400 = 400K), so just add K suffix
+        return `${price}K`;
+    };
     
     // Get main image from therapist data
     const mainImage = (therapist as any).mainImage;
@@ -490,33 +497,41 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             </div>
 
             {/* Languages Spoken */}
-            {therapist.languages && Array.isArray(therapist.languages) && therapist.languages.length > 0 && (
-                <div>
-                    <h4 className="text-sm font-semibold text-gray-700 mb-2">Therapist Speaks</h4>
-                    <div className="flex flex-wrap gap-2">
-                        {therapist.languages.map(lang => {
-                            const langMap: Record<string, {flag: string, name: string}> = {
-                                'en': {flag: '🇬🇧', name: 'English'},
-                                'id': {flag: '🇮🇩', name: 'Indonesian'},
-                                'zh': {flag: '🇨🇳', name: 'Chinese'},
-                                'ja': {flag: '🇯🇵', name: 'Japanese'},
-                                'ko': {flag: '🇰🇷', name: 'Korean'},
-                                'ru': {flag: '🇷🇺', name: 'Russian'},
-                                'fr': {flag: '🇫🇷', name: 'French'},
-                                'de': {flag: '🇩🇪', name: 'German'},
-                                'es': {flag: '🇪🇸', name: 'Spanish'}
-                            };
-                            const langInfo = langMap[lang] || {flag: '🌐', name: lang};
-                            return (
-                                <span key={lang} className="px-2.5 py-1 bg-blue-50 border border-blue-200 text-gray-800 text-xs font-medium rounded-full flex items-center gap-1">
-                                    <span className="text-base">{langInfo.flag}</span>
-                                    <span>{langInfo.name}</span>
-                                </span>
-                            );
-                        })}
+            {(() => {
+                const languages = therapist.languages 
+                    ? (typeof therapist.languages === 'string' 
+                        ? parseLanguages(therapist.languages) 
+                        : therapist.languages)
+                    : [];
+                
+                return languages && Array.isArray(languages) && languages.length > 0 && (
+                    <div>
+                        <h4 className="text-sm font-semibold text-gray-700 mb-2">Therapist Speaks</h4>
+                        <div className="flex flex-wrap gap-2">
+                            {languages.map(lang => {
+                                const langMap: Record<string, {flag: string, name: string}> = {
+                                    'en': {flag: '🇬🇧', name: 'English'},
+                                    'id': {flag: '🇮🇩', name: 'Indonesian'},
+                                    'zh': {flag: '🇨🇳', name: 'Chinese'},
+                                    'ja': {flag: '🇯🇵', name: 'Japanese'},
+                                    'ko': {flag: '🇰🇷', name: 'Korean'},
+                                    'ru': {flag: '🇷🇺', name: 'Russian'},
+                                    'fr': {flag: '🇫🇷', name: 'French'},
+                                    'de': {flag: '🇩🇪', name: 'German'},
+                                    'es': {flag: '🇪🇸', name: 'Spanish'}
+                                };
+                                const langInfo = langMap[lang] || {flag: '🌐', name: lang};
+                                return (
+                                    <span key={lang} className="px-2.5 py-1 bg-blue-50 border border-blue-200 text-gray-800 text-xs font-medium rounded-full flex items-center gap-1">
+                                        <span className="text-base">{langInfo.flag}</span>
+                                        <span>{langInfo.name}</span>
+                                    </span>
+                                );
+                            })}
+                        </div>
                     </div>
-                </div>
-            )}
+                );
+            })()}
 
             {/* Discount Notice - Shows when discount is active */}
             {therapist.discountPercentage && therapist.discountPercentage > 0 && (
@@ -534,13 +549,17 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
 
             <div className="grid grid-cols-3 gap-2 text-center text-sm">
                 {/* 60 min pricing */}
-                <div className="bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative">
+                <div className={`bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative transition-all duration-500 ${
+                    (therapist.discountPercentage && therapist.discountPercentage > 0) || (activeDiscount && discountTimeLeft !== 'EXPIRED')
+                        ? 'shadow-orange-500/60 shadow-xl ring-4 ring-orange-400/40 bg-gradient-to-br from-orange-50 to-orange-100 animate-pulse border-orange-300' 
+                        : ''
+                }`}>
                     <p className="text-gray-600">60 min</p>
                     {therapist.discountPercentage && therapist.discountPercentage > 0 ? (
                         <>
                             {/* Discounted price - what customer will actually pay */}
                             <p className="font-bold text-gray-800">
-                                Rp {Math.round(Number(pricing["60"]) * (1 - therapist.discountPercentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
+                                Rp {formatPrice(Math.round(Number(pricing["60"]) * (1 - therapist.discountPercentage / 100)))}
                             </p>
                             {/* Discount badge to show they're getting a deal */}
                             <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-10 h-10 flex items-center justify-center shadow-lg animate-bounce">
@@ -548,41 +567,49 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                             </span>
                         </>
                     ) : (
-                        <p className="font-bold text-gray-800">Rp {Number(pricing["60"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
+                        <p className="font-bold text-gray-800">Rp {formatPrice(Number(pricing["60"]))}</p>
                     )}
                 </div>
                 
                 {/* 90 min pricing */}
-                <div className="bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative">
+                <div className={`bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative transition-all duration-500 ${
+                    (therapist.discountPercentage && therapist.discountPercentage > 0) || (activeDiscount && discountTimeLeft !== 'EXPIRED')
+                        ? 'shadow-orange-500/60 shadow-xl ring-4 ring-orange-400/40 bg-gradient-to-br from-orange-50 to-orange-100 animate-pulse border-orange-300' 
+                        : ''
+                }`}>
                     <p className="text-gray-600">90 min</p>
                     {therapist.discountPercentage && therapist.discountPercentage > 0 ? (
                         <>
                             <p className="font-bold text-gray-800">
-                                Rp {Math.round(Number(pricing["90"]) * (1 - therapist.discountPercentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
+                                Rp {formatPrice(Math.round(Number(pricing["90"]) * (1 - therapist.discountPercentage / 100)))}
                             </p>
                             <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-10 h-10 flex items-center justify-center shadow-lg animate-bounce">
                                 -{therapist.discountPercentage}%
                             </span>
                         </>
                     ) : (
-                        <p className="font-bold text-gray-800">Rp {Number(pricing["90"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
+                        <p className="font-bold text-gray-800">Rp {formatPrice(Number(pricing["90"]))}</p>
                     )}
                 </div>
                 
                 {/* 120 min pricing */}
-                <div className="bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative">
+                <div className={`bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative transition-all duration-500 ${
+                    (therapist.discountPercentage && therapist.discountPercentage > 0) || (activeDiscount && discountTimeLeft !== 'EXPIRED')
+                        ? 'shadow-orange-500/60 shadow-xl ring-4 ring-orange-400/40 bg-gradient-to-br from-orange-50 to-orange-100 animate-pulse border-orange-300' 
+                        : ''
+                }`}>
                     <p className="text-gray-600">120 min</p>
                     {therapist.discountPercentage && therapist.discountPercentage > 0 ? (
                         <>
                             <p className="font-bold text-gray-800">
-                                Rp {Math.round(Number(pricing["120"]) * (1 - therapist.discountPercentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
+                                Rp {formatPrice(Math.round(Number(pricing["120"]) * (1 - therapist.discountPercentage / 100)))}
                             </p>
                             <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-10 h-10 flex items-center justify-center shadow-lg animate-bounce">
                                 -{therapist.discountPercentage}%
                             </span>
                         </>
                     ) : (
-                        <p className="font-bold text-gray-800">Rp {Number(pricing["120"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
+                        <p className="font-bold text-gray-800">Rp {formatPrice(Number(pricing["120"]))}</p>
                     )}
                 </div>
             </div>

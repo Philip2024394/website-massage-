@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Copy, Share2, Gift, Users, CheckCircle, TrendingUp } from 'lucide-react';
 import { enhancedReferralService } from '../lib/referralService';
+import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
+import { AppDrawer } from '../components/AppDrawer';
+import FlyingButterfly from '../components/FlyingButterfly';
 
 interface ReferralPageProps {
     user: {
@@ -12,11 +15,33 @@ interface ReferralPageProps {
     onNavigate?: (page: string) => void;
     onBack?: () => void;
     t?: any;
+    // HomePage header functionality props
+    onAgentPortalClick?: () => void;
+    onCustomerPortalClick?: () => void;
+    onHotelPortalClick?: () => void;
+    onVillaPortalClick?: () => void;
+    onTherapistPortalClick?: () => void;
+    onMassagePlacePortalClick?: () => void;
+    onAdminPortalClick?: () => void;
+    onMassageJobsClick?: () => void;
 }
 
-const ReferralPage: React.FC<ReferralPageProps> = ({ user, userCoins: _userCoins = 245, onNavigate: _onNavigate }) => {
-    const [_copied, _setCopied] = useState(false);
-    const [_whatsappNumber, _setWhatsappNumber] = useState(user.phone || '');
+const ReferralPage: React.FC<ReferralPageProps> = ({ 
+    user, 
+    userCoins: _userCoins = 245, 
+    onNavigate: _onNavigate,
+    onAgentPortalClick,
+    onCustomerPortalClick,
+    onHotelPortalClick,
+    onVillaPortalClick,
+    onTherapistPortalClick,
+    onMassagePlacePortalClick,
+    onAdminPortalClick,
+    onMassageJobsClick
+}) => {
+    const [copied, setCopied] = useState(false);
+    const [whatsappNumber, setWhatsappNumber] = useState(user.phone || '');
+    const [isMenuOpen, setIsMenuOpen] = useState(false); // Add menu state
     const [referralData, setReferralData] = useState<{
         referralCode: string;
         referralLink: string;
@@ -30,8 +55,8 @@ const ReferralPage: React.FC<ReferralPageProps> = ({ user, userCoins: _userCoins
         totalCoinsEarned: 0,
         conversionRate: 0
     });
-    const [_loading, _setLoading] = useState(false);
-    const [_error, _setError] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
     // Load referral code and stats
     useEffect(() => {
@@ -48,7 +73,10 @@ const ReferralPage: React.FC<ReferralPageProps> = ({ user, userCoins: _userCoins
                     referralLink: existingReferral.referralLink,
                     shareText: `🌟 Join me on our amazing massage booking platform! Get 25 welcome coins when you sign up with my link: ${existingReferral.referralLink}`
                 });
-                _setWhatsappNumber(existingReferral.referrerWhatsApp || user.phone || '');
+                setWhatsappNumber(existingReferral.referrerWhatsApp || user.phone || '');
+            } else {
+                // Create a new referral link automatically
+                await createReferralLink();
             }
 
             // Load referral statistics
@@ -59,49 +87,175 @@ const ReferralPage: React.FC<ReferralPageProps> = ({ user, userCoins: _userCoins
         }
     };
 
-    // Commented out function - placeholder for future implementation
-    // const _createReferralLink = async () => {
-    //     console.log('Create referral link functionality not implemented');
-    // };
-
-    const _handleCopyCode = () => {
-        console.log('Copy code functionality not implemented');
+    const createReferralLink = async () => {
+        setLoading(true);
+        setError('');
+        
+        try {
+            const result = await enhancedReferralService.createReferralLink(
+                user.$id,
+                user.name,
+                whatsappNumber || user.phone || `+62${Math.floor(Math.random() * 1000000000)}`
+            );
+            
+            if (result.success) {
+                setReferralData({
+                    referralCode: result.referralCode,
+                    referralLink: result.referralLink,
+                    shareText: result.shareText
+                });
+            } else {
+                setError(result.error || 'Failed to create referral link');
+            }
+        } catch (error) {
+            console.error('Error creating referral link:', error);
+            setError('Failed to create referral link');
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const _handleCopyLink = () => {
-        console.log('Copy link functionality not implemented');
+    const handleCopyCode = async () => {
+        if (referralData?.referralCode) {
+            try {
+                await navigator.clipboard.writeText(referralData.referralCode);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+            } catch (error) {
+                console.error('Failed to copy code:', error);
+            }
+        }
     };
 
-    const _handleShare = async () => {
-        console.log('Share functionality not implemented');
+    const handleCopyLink = async () => {
+        if (referralData?.referralLink) {
+            try {
+                await navigator.clipboard.writeText(referralData.referralLink);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+            } catch (error) {
+                console.error('Failed to copy link:', error);
+            }
+        }
+    };
+
+    const handleShare = async () => {
+        if (referralData?.shareText && referralData?.referralLink) {
+            try {
+                if (navigator.share) {
+                    await navigator.share({
+                        title: 'Join IndaStreet - Massage Booking Platform',
+                        text: referralData.shareText,
+                        url: referralData.referralLink
+                    });
+                } else {
+                    // Fallback to copying to clipboard
+                    await navigator.clipboard.writeText(referralData.shareText);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                }
+            } catch (error) {
+                console.error('Failed to share:', error);
+            }
+        }
+    };
+
+    const handleWhatsAppShare = () => {
+        if (referralData?.shareText) {
+            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(referralData.shareText)}`;
+            window.open(whatsappUrl, '_blank');
+        }
     };
 
     // const _shareUrls = null; // Placeholder for share URLs
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
-            {/* Header */}
-            <header className="bg-white shadow-sm p-4 sticky top-0 z-10">
-                <div className="max-w-4xl mx-auto flex justify-between items-center">
-                    <button onClick={() => _onNavigate?.('home')} className="text-gray-600 hover:text-gray-800">
-                        ← Back
-                    </button>
-                    <h1 className="text-xl font-bold">
-                        <span className="text-gray-900">Inda</span>
+        <div className="min-h-screen bg-gray-50">
+            {/* Flying Butterfly Animation */}
+            <FlyingButterfly />
+            
+            <header className="bg-white p-4 shadow-md sticky top-0 z-20">
+                <div className="flex justify-between items-center">
+                    <h1 className="text-2xl font-bold text-gray-800">
+                        <span className="text-black">Inda</span>
                         <span className="text-orange-500">Street</span>
                     </h1>
-                    <div className="text-sm font-semibold text-orange-600">
-                        🪙 {_userCoins}
+                    <div className="flex items-center gap-3 text-gray-600">
+                        {/* Quick Access Buttons */}
+                        <button 
+                            onClick={() => {
+                                if (_onNavigate) {
+                                    _onNavigate('notifications');
+                                }
+                            }} 
+                            className="p-2 hover:bg-gray-100 rounded-full transition-colors" 
+                            title="Notifications"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            </svg>
+                        </button>
+                        
+                        <button 
+                            onClick={() => {
+                                if (_onNavigate) {
+                                    _onNavigate('referral');
+                                }
+                            }} 
+                            className="p-2 hover:bg-gray-100 rounded-full transition-colors" 
+                            title="Invite Friends"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                        </button>
+
+                        {/* Coins Display */}
+                        <div className="text-sm font-semibold text-orange-600">
+                            🪙 {_userCoins || 0}
+                        </div>
+
+                        <button onClick={() => setIsMenuOpen(true)} title="Menu">
+                           <BurgerMenuIcon className="w-6 h-6" />
+                        </button>
                     </div>
                 </div>
             </header>
+            
+            {/* Global App Drawer */}
+            <AppDrawer
+                isOpen={isMenuOpen}
+                onClose={() => setIsMenuOpen(false)}
+                onMassageJobsClick={onMassageJobsClick}
+                onHotelPortalClick={onHotelPortalClick}
+                onVillaPortalClick={onVillaPortalClick}
+                onTherapistPortalClick={onTherapistPortalClick}
+                onMassagePlacePortalClick={onMassagePlacePortalClick}
+                onAgentPortalClick={onAgentPortalClick}
+                onCustomerPortalClick={onCustomerPortalClick}
+                onAdminPortalClick={onAdminPortalClick}
+                onNavigate={_onNavigate}
+            />
 
+            {/* Referral Page Content */}
+            <div className="bg-gradient-to-b from-orange-50 to-white min-h-screen">
             <div className="max-w-4xl mx-auto p-4 pb-20">
                 {/* Hero Section */}
                 <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-3xl p-8 text-white mb-6 shadow-lg">
                     <div className="text-center mb-6">
-                        <div className="text-6xl mb-4">🎁</div>
-                        <h2 className="text-3xl font-bold mb-2">Invite Friends,</h2>
+                        {/* Title Above Image */}
+                        <h2 className="text-3xl font-bold mb-6">Invite Friends</h2>
+                        
+                        {/* Invite Friends Image - Full Size with Rounded Corners */}
+                        <div className="mb-6">
+                            <img 
+                                src="https://ik.imagekit.io/7grri5v7d/INDASTREET%20INVITE%20FRIENDS.png?updatedAt=1762146851297"
+                                alt="Invite Friends - IndaStreet"
+                                className="w-full h-auto mx-auto object-contain rounded-3xl drop-shadow-lg hover:scale-105 transition-transform duration-300"
+                            />
+                        </div>
+                        
+                        {/* Subtitle Below Image */}
                         <h3 className="text-2xl font-semibold mb-4">Earn Coins Together!</h3>
                         <p className="text-orange-100 text-lg">
                             Get 100 coins for each friend who signs up + 50 coins for them!
@@ -155,14 +309,24 @@ const ReferralPage: React.FC<ReferralPageProps> = ({ user, userCoins: _userCoins
                     <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl p-4 mb-4 border-2 border-orange-200 border-dashed">
                         <div className="text-center">
                             <p className="text-sm text-gray-600 mb-2">Share this code:</p>
-                            <p className="text-3xl font-bold text-orange-600 tracking-wider mb-3">
-                                {referralData?.referralCode || 'Create Link First'}
-                            </p>
+                            {loading ? (
+                                <div className="text-2xl font-bold text-orange-600 mb-3">
+                                    Generating...
+                                </div>
+                            ) : (
+                                <p className="text-3xl font-bold text-orange-600 tracking-wider mb-3">
+                                    {referralData?.referralCode || 'LOADING...'}
+                                </p>
+                            )}
+                            {error && (
+                                <p className="text-red-500 text-sm mb-3">{error}</p>
+                            )}
                             <button
-                                onClick={_handleCopyCode}
-                                className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg font-semibold transition-all shadow-md flex items-center gap-2 mx-auto"
+                                onClick={handleCopyCode}
+                                disabled={!referralData?.referralCode || loading}
+                                className="bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white px-6 py-2 rounded-lg font-semibold transition-all shadow-md flex items-center gap-2 mx-auto"
                             >
-                                {_copied ? (
+                                {copied ? (
                                     <>
                                         <CheckCircle className="w-5 h-5" />
                                         Copied!
@@ -182,13 +346,15 @@ const ReferralPage: React.FC<ReferralPageProps> = ({ user, userCoins: _userCoins
                         <div className="flex gap-2">
                             <input
                                 type="text"
-                                value={referralData?.referralLink || ''}
+                                value={referralData?.referralLink || (loading ? 'Generating link...' : 'No link available')}
                                 readOnly
                                 className="flex-1 px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-700"
+                                placeholder="Your referral link will appear here"
                             />
                             <button
-                                onClick={_handleCopyLink}
-                                className="px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all border border-gray-300"
+                                onClick={handleCopyLink}
+                                disabled={!referralData?.referralLink || loading}
+                                className="px-4 py-3 bg-gray-100 hover:bg-gray-200 disabled:bg-gray-50 rounded-lg transition-all border border-gray-300"
                             >
                                 <Copy className="w-5 h-5 text-gray-700" />
                             </button>
@@ -204,15 +370,17 @@ const ReferralPage: React.FC<ReferralPageProps> = ({ user, userCoins: _userCoins
                     </h3>
                     <div className="grid grid-cols-2 gap-3">
                         <button
-                            onClick={_handleShare}
-                            className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 py-4 rounded-xl font-semibold transition-all shadow-md flex items-center justify-center gap-2"
+                            onClick={handleShare}
+                            disabled={!referralData?.shareText || loading}
+                            className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 disabled:from-gray-400 disabled:to-gray-500 text-white px-6 py-4 rounded-xl font-semibold transition-all shadow-md flex items-center justify-center gap-2"
                         >
                             <Share2 className="w-5 h-5" />
                             Share Now
                         </button>
                         <button
-                            onClick={() => console.log('WhatsApp share not implemented')}
-                            className="bg-green-500 hover:bg-green-600 text-white px-6 py-4 rounded-xl font-semibold transition-all shadow-md flex items-center justify-center gap-2"
+                            onClick={handleWhatsAppShare}
+                            disabled={!referralData?.shareText || loading}
+                            className="bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white px-6 py-4 rounded-xl font-semibold transition-all shadow-md flex items-center justify-center gap-2"
                         >
                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
@@ -268,6 +436,91 @@ const ReferralPage: React.FC<ReferralPageProps> = ({ user, userCoins: _userCoins
                         <li>• Coins cannot be transferred or exchanged for cash</li>
                     </ul>
                 </div>
+
+                {/* Footer */}
+                <footer className="mt-12 pt-8 border-t border-gray-200 bg-white rounded-2xl p-6 shadow-sm">
+                    <div className="text-center">
+                        <div className="flex justify-center items-center gap-2 mb-4">
+                            <h3 className="text-xl font-bold">
+                                <span className="text-gray-900">Inda</span>
+                                <span className="text-orange-500">Street</span>
+                            </h3>
+                        </div>
+                        
+                        <p className="text-gray-600 text-sm mb-4">
+                            Indonesia's Premier Massage Booking Platform
+                        </p>
+                        
+                        <div className="flex flex-wrap justify-center gap-4 text-xs text-gray-500 mb-4">
+                            <button 
+                                onClick={() => _onNavigate?.('home')} 
+                                className="hover:text-orange-500 transition-colors"
+                            >
+                                Home
+                            </button>
+                            <button 
+                                onClick={() => _onNavigate?.('about')} 
+                                className="hover:text-orange-500 transition-colors"
+                            >
+                                About Us
+                            </button>
+                            <button 
+                                onClick={() => _onNavigate?.('terms')} 
+                                className="hover:text-orange-500 transition-colors"
+                            >
+                                Terms of Service
+                            </button>
+                            <button 
+                                onClick={() => _onNavigate?.('privacy')} 
+                                className="hover:text-orange-500 transition-colors"
+                            >
+                                Privacy Policy
+                            </button>
+                            <button 
+                                onClick={() => _onNavigate?.('support')} 
+                                className="hover:text-orange-500 transition-colors"
+                            >
+                                Support
+                            </button>
+                        </div>
+                        
+                        <div className="flex justify-center space-x-6 mb-4">
+                            <a 
+                                href="#" 
+                                className="text-gray-400 hover:text-orange-500 transition-colors"
+                                aria-label="Facebook"
+                            >
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                                </svg>
+                            </a>
+                            <a 
+                                href="#" 
+                                className="text-gray-400 hover:text-orange-500 transition-colors"
+                                aria-label="Instagram"
+                            >
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 6.62 5.367 11.987 11.988 11.987c6.62 0 11.987-5.367 11.987-11.987C24.014 5.367 18.637.001 12.017.001zM8.449 16.988c-1.297 0-2.448-.73-3.016-1.789L4.659 17.36l-1.125-1.125l1.773-.774c-.061-.311-.093-.633-.093-.961 0-.328.032-.65.093-.961L3.534 12.765l1.125-1.125l.774 2.161c.568-1.059 1.719-1.789 3.016-1.789s2.448.73 3.016 1.789l.774-2.161l1.125 1.125l-1.773.774c.061.311.093.633.093.961 0 .328-.032.65-.093.961l1.773.774l-1.125 1.125l-.774-2.161c-.568 1.059-1.719 1.789-3.016 1.789z"/>
+                                </svg>
+                            </a>
+                            <a 
+                                href="#" 
+                                className="text-gray-400 hover:text-orange-500 transition-colors"
+                                aria-label="WhatsApp"
+                            >
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                                </svg>
+                            </a>
+                        </div>
+                        
+                        <div className="text-xs text-gray-400 border-t border-gray-100 pt-4">
+                            <p className="mb-1">© 2024 IndaStreet. All rights reserved.</p>
+                            <p>Connecting you with professional massage therapists across Indonesia.</p>
+                        </div>
+                    </div>
+                </footer>
+            </div>
             </div>
         </div>
     );

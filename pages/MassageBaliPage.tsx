@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { therapistService, placeService } from '../lib/appwriteService';
+import { parseLanguages } from '../utils/appwriteHelpers';
 import { AppDrawer } from '../components/AppDrawer';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 
@@ -590,15 +591,23 @@ const MassageBaliPage: React.FC<MassageBaliPageProps> = ({
                                                 ({therapist.reviewCount || 0} reviews)
                                             </span>
                                         </div>
-                                        {therapist.languages && Array.isArray(therapist.languages) && therapist.languages.length > 0 && (
-                                            <div className="flex flex-wrap gap-1 justify-center">
-                                                {therapist.languages.map((lang: string, i: number) => (
-                                                    <span key={i} className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
-                                                        {lang}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        )}
+                                        {(() => {
+                                            const languages = therapist.languages 
+                                                ? (typeof therapist.languages === 'string' 
+                                                    ? parseLanguages(therapist.languages) 
+                                                    : therapist.languages)
+                                                : [];
+                                            
+                                            return languages && Array.isArray(languages) && languages.length > 0 && (
+                                                <div className="flex flex-wrap gap-1 justify-center">
+                                                    {languages.map((lang: string, i: number) => (
+                                                        <span key={i} className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
+                                                            {lang}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            );
+                                        })()}
                                     </div>
                                     <button 
                                         onClick={() => {

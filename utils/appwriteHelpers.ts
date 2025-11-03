@@ -62,3 +62,16 @@ export const parseMassageTypes = (massageTypesString: string): string[] => {
 export const stringifyMassageTypes = (massageTypes: string[]): string => {
   return JSON.stringify(massageTypes);
 };
+
+// Languages helpers
+export const parseLanguages = (languagesString: string): string[] => {
+  try {
+    return JSON.parse(languagesString);
+  } catch {
+    return [];
+  }
+};
+
+export const stringifyLanguages = (languages: string[]): string => {
+  return JSON.stringify(languages);
+};

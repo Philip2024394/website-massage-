@@ -10,6 +10,8 @@ import QRCodeGenerator from 'qrcode';
 import PushNotificationSettings from '../components/PushNotificationSettings';
 import MemberChatWindow from '../components/MemberChatWindow';
 import HotelVillaServicesSettingsPage from './HotelVillaServicesSettingsPage';
+import HotelBookingModal from '../components/hotel/PropertyBookingModal';
+import HotelAnalyticsSection from '../components/hotel/PropertyAnalyticsSection';
 
 type DurationKey = '60' | '90' | '120';
 type ProviderType = 'therapist' | 'place';
@@ -524,138 +526,10 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                 );
             case 'analytics':
                 return (
-                    <div className="space-y-6">
-                        {/* Page Header */}
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
-                                <svg className="w-5 h-5 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                                </svg>
-                            </div>
-                            <div>
-                                <h2 className="text-2xl font-bold text-gray-900">Performance Analytics</h2>
-                                <p className="text-xs text-gray-500">Track your guest engagement and service usage</p>
-                            </div>
-                        </div>
-
-                        {/* Analytics Cards */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-                            <div className="bg-white p-6 rounded-xl border-2 border-gray-200 hover:border-orange-300 transition-all">
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
-                                        <QrCode className="w-6 h-6 text-orange-600" />
-                                    </div>
-                                    <span className="text-xs font-semibold text-orange-600 bg-orange-50 px-3 py-1 rounded-full">This Month</span>
-                                </div>
-                                <h3 className="text-3xl font-bold text-gray-900">
-                                    {isLoadingAnalytics ? '...' : (analytics?.totalQRScans || 0).toLocaleString()}
-                                </h3>
-                                <p className="text-sm text-gray-600 mt-1">QR Code Scans</p>
-                                <div className="mt-4 flex items-center text-xs">
-                                    <span className="text-orange-600 font-semibold">Real-time</span>
-                                    <span className="text-gray-400 ml-2">Last 30 days</span>
-                                </div>
-                            </div>
-
-                            <div className="bg-white p-6 rounded-xl border-2 border-gray-200 hover:border-orange-300 transition-all">
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
-                                        <Users className="w-6 h-6 text-orange-600" />
-                                    </div>
-                                    <span className="text-xs font-semibold text-orange-600 bg-orange-50 px-3 py-1 rounded-full">Unique</span>
-                                </div>
-                                <h3 className="text-3xl font-bold text-gray-900">
-                                    {isLoadingAnalytics ? '...' : (analytics?.uniqueGuestViews || 0).toLocaleString()}
-                                </h3>
-                                <p className="text-sm text-gray-600 mt-1">Guest Views</p>
-                                <div className="mt-4 flex items-center text-xs">
-                                    <span className="text-orange-600 font-semibold">Real-time</span>
-                                    <span className="text-gray-400 ml-2">Last 30 days</span>
-                                </div>
-                            </div>
-
-                            <div className="bg-white p-6 rounded-xl border-2 border-gray-200 hover:border-orange-300 transition-all">
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
-                                        <svg className="w-6 h-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                        </svg>
-                                    </div>
-                                    <span className="text-xs font-semibold text-orange-600 bg-orange-50 px-3 py-1 rounded-full">Total</span>
-                                </div>
-                                <h3 className="text-3xl font-bold text-gray-900">
-                                    {isLoadingAnalytics ? '...' : (analytics?.totalBookings || 0).toLocaleString()}
-                                </h3>
-                                <p className="text-sm text-gray-600 mt-1">Bookings Made</p>
-                                <div className="mt-4 flex items-center text-xs">
-                                    <span className="text-orange-600 font-semibold">Real-time</span>
-                                    <span className="text-gray-400 ml-2">Last 30 days</span>
-                                </div>
-                            </div>
-
-                            <div className="bg-white p-6 rounded-xl border-2 border-gray-200 hover:border-orange-300 transition-all">
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
-                                        <Star className="w-6 h-6 text-orange-600" fill="currentColor" />
-                                    </div>
-                                    <span className="text-xs font-semibold text-orange-600 bg-orange-50 px-3 py-1 rounded-full">Average</span>
-                                </div>
-                                <h3 className="text-3xl font-bold text-gray-900">4.8</h3>
-                                <p className="text-sm text-gray-600 mt-1">Guest Rating</p>
-                                <div className="mt-4 flex items-center text-xs">
-                                    <span className="text-green-600 font-semibold">↑ 0.2</span>
-                                    <span className="text-gray-400 ml-2">vs last month</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Top Providers */}
-                        <div className="bg-white border-2 border-gray-200 rounded-xl p-6">
-                            <h3 className="text-lg font-bold text-gray-900 mb-4">Top Performing Providers</h3>
-                            <div className="space-y-3">
-                                {[
-                                    { name: 'Ayu Prameswari', type: 'Therapist', bookings: 45, rating: 4.9 },
-                                    { name: 'Serenity Spa', type: 'Place', bookings: 38, rating: 4.8 },
-                                    { name: 'Made Wijaya', type: 'Therapist', bookings: 32, rating: 4.7 },
-                                ].map((provider, idx) => (
-                                    <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-orange-50 transition-colors border border-gray-200">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                                                {idx + 1}
-                                            </div>
-                                            <div>
-                                                <p className="font-semibold text-gray-900">{provider.name}</p>
-                                                <p className="text-xs text-gray-500">{provider.type}</p>
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="font-bold text-gray-900 text-sm">{provider.bookings} bookings</p>
-                                            <div className="flex items-center gap-1 text-yellow-500 text-sm">
-                                                <Star size={14} fill="currentColor" />
-                                                <span className="font-semibold">{provider.rating}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Peak Hours Chart */}
-                        <div className="bg-white border-2 border-gray-200 rounded-xl p-6">
-                            <h3 className="text-lg font-bold text-gray-900 mb-4">Peak Booking Hours</h3>
-                            <div className="grid grid-cols-12 gap-2 items-end h-40">
-                                {[20, 35, 45, 60, 80, 95, 100, 85, 70, 50, 30, 15].map((height, idx) => (
-                                    <div key={idx} className="flex flex-col items-center">
-                                        <div 
-                                            className="w-full bg-gradient-to-t from-orange-500 to-orange-300 rounded-t-lg hover:from-orange-600 hover:to-orange-400 transition-all cursor-pointer"
-                                            style={{ height: `${height}%` }}
-                                        />
-                                        <span className="text-xs text-gray-500 mt-2">{idx + 9}h</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
+                    <HotelAnalyticsSection 
+                        analytics={analytics}
+                        isLoadingAnalytics={isLoadingAnalytics}
+                    />
                 );
             case 'discounts':
                 return (
@@ -2164,147 +2038,24 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                 </div>
             )}
 
-            {/* Booking Modal */}
-            {bookingOpen && selectedProvider && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
-                        {!bookingConfirmed ? (
-                            <>
-                                {/* Booking Form */}
-                                <div className="p-6">
-                                    <div className="flex justify-between items-center mb-6">
-                                        <h2 className="text-2xl font-bold text-gray-900">Complete Booking</h2>
-                                        <button 
-                                            onClick={closeBookingModal}
-                                            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                                        >
-                                            <X className="w-6 h-6 text-gray-600" />
-                                        </button>
-                                    </div>
-
-                                    {/* Therapist Info */}
-                                    <div className="flex items-center gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
-                                        <img 
-                                            src={selectedProvider.image} 
-                                            alt={selectedProvider.name}
-                                            className="w-16 h-16 rounded-full object-cover border-2 border-orange-500"
-                                        />
-                                        <div className="flex-1">
-                                            <h3 className="font-bold text-lg text-gray-900">{selectedProvider.name}</h3>
-                                            <div className="flex items-center gap-2 mt-1">
-                                                <Star className="w-4 h-4 text-yellow-400 fill-yellow-400"/>
-                                                <span className="text-sm text-gray-600">{selectedProvider.rating.toFixed(1)}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Selected Service */}
-                                    <div className="mb-6 p-4 bg-orange-50 rounded-lg border border-orange-200">
-                                        <div className="flex justify-between items-center">
-                                            <div>
-                                                <p className="text-sm text-gray-600">Duration</p>
-                                                <p className="font-bold text-lg text-orange-600">{selectedDuration} minutes</p>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className="text-sm text-gray-600">Price</p>
-                                                <p className="font-bold text-lg text-orange-600">
-                                                    Rp {(selectedProvider.pricing[selectedDuration] / 1000).toFixed(0)}K
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Guest Information Form */}
-                                    <div className="space-y-4 mb-6">
-                                        <div>
-                                            <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                                Guest Name
-                                            </label>
-                                            <input 
-                                                type="text"
-                                                value={guestName}
-                                                onChange={(e) => setGuestName(e.target.value)}
-                                                placeholder="Enter your name"
-                                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                                Room Number
-                                            </label>
-                                            <input 
-                                                type="text"
-                                                value={roomNumber}
-                                                onChange={(e) => setRoomNumber(e.target.value)}
-                                                placeholder="Enter your room number"
-                                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Proceed Button */}
-                                    <button 
-                                        onClick={handleProceedBooking}
-                                        disabled={!guestName || !roomNumber || isProcessing}
-                                        className="w-full bg-orange-500 text-white font-bold py-4 rounded-lg hover:bg-orange-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                                    >
-                                        {isProcessing ? (
-                                            <>
-                                                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                </svg>
-                                                Processing...
-                                            </>
-                                        ) : (
-                                            'Proceed'
-                                        )}
-                                    </button>
-                                </div>
-                            </>
-                        ) : (
-                            <>
-                                {/* Confirmation Message */}
-                                <div className="p-8 text-center">
-                                    <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <svg className="w-10 h-10 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                        </svg>
-                                    </div>
-                                    
-                                    <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                                        Massage Booked Successfully!
-                                    </h2>
-                                    
-                                    <p className="text-gray-600 mb-6">
-                                        Your massage therapist will arrive at your room shortly.
-                                    </p>
-
-                                    {/* Booking Details */}
-                                    <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left">
-                                        <div className="flex justify-between items-center mb-3 pb-3 border-b border-gray-200">
-                                            <span className="text-sm text-gray-600">Booking ID:</span>
-                                            <span className="font-bold text-gray-900">{bookingId}</span>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-sm text-gray-600">Booking Time:</span>
-                                            <span className="font-semibold text-gray-900 text-sm">{bookingTime}</span>
-                                        </div>
-                                    </div>
-
-                                    <button 
-                                        onClick={closeBookingModal}
-                                        className="w-full bg-orange-500 text-white font-bold py-3 rounded-lg hover:bg-orange-600 transition-colors"
-                                    >
-                                        Done
-                                    </button>
-                                </div>
-                            </>
-                        )}
-                    </div>
-                </div>
-            )}
+            {/* Hotel Booking Modal */}
+            <HotelBookingModal
+                isOpen={bookingOpen}
+                onClose={closeBookingModal}
+                selectedProvider={selectedProvider}
+                selectedDuration={selectedDuration}
+                onDurationChange={setSelectedDuration}
+                guestName={guestName}
+                onGuestNameChange={setGuestName}
+                roomNumber={roomNumber}
+                onRoomNumberChange={setRoomNumber}
+                onProceedBooking={handleProceedBooking}
+                isProcessing={isProcessing}
+                bookingConfirmed={bookingConfirmed}
+                bookingId={bookingId}
+                bookingTime={bookingTime}
+                onCloseBookingModal={closeBookingModal}
+            />
         </div>
     );
 };

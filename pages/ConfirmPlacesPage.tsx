@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import Button from '../components/Button';
 import ImageUpload from '../components/ImageUpload';
 import { placeService, authService } from '../lib/appwriteService';
+import { membershipOptions } from '../constants/languages';
+import { LanguageSelector } from '../components/admin/LanguageSelector';
 
 interface PendingPlace {
   $id: string;
@@ -34,7 +36,6 @@ interface EditPlaceModalData {
   $id: string;
   name: string;
   email: string;
-  city: string;
   country: string;
   whatsappNumber: string;
   mainImage: string;
@@ -48,14 +49,9 @@ interface EditPlaceModalData {
   };
   additionalImages: string[];
   amenities: string[];
+  languages: string[];
+  discountPercentage: number;
 }
-
-const membershipOptions = [
-  { label: '1 Month', value: '1', months: 1 },
-  { label: '3 Months', value: '3', months: 3 },
-  { label: '6 Months', value: '6', months: 6 },
-  { label: '1 Year', value: '12', months: 12 },
-];
 
 const ConfirmPlacesPage: React.FC = () => {
   const [places, setPlaces] = useState<PendingPlace[]>([]);
@@ -141,7 +137,6 @@ const ConfirmPlacesPage: React.FC = () => {
       $id: place.$id,
       name: place.name || '',
       email: place.email || '',
-      city: place.city || '',
       country: place.country || '',
       whatsappNumber: place.whatsappNumber || '',
       mainImage: place.mainImage || '',
@@ -154,7 +149,9 @@ const ConfirmPlacesPage: React.FC = () => {
         luxury: ''
       },
       additionalImages: Array.isArray(place.additionalImages) ? place.additionalImages : [],
-      amenities: Array.isArray(place.amenities) ? place.amenities : []
+      amenities: Array.isArray(place.amenities) ? place.amenities : [],
+      languages: Array.isArray(place.languages) ? place.languages : [],
+      discountPercentage: place.discountPercentage || 0
     };
     setEditingPlace(editData);
     setShowEditModal(true);
@@ -168,7 +165,6 @@ const ConfirmPlacesPage: React.FC = () => {
       await placeService.update(editingPlace.$id, {
         name: editingPlace.name,
         email: editingPlace.email,
-        city: editingPlace.city,
         country: editingPlace.country,
         whatsappNumber: editingPlace.whatsappNumber,
         mainImage: editingPlace.mainImage,
@@ -177,7 +173,9 @@ const ConfirmPlacesPage: React.FC = () => {
         facilities: editingPlace.facilities,
         pricing: editingPlace.pricing,
         additionalImages: editingPlace.additionalImages,
-        amenities: editingPlace.amenities
+        amenities: editingPlace.amenities,
+        languages: editingPlace.languages,
+        discountPercentage: editingPlace.discountPercentage
       });
 
       await fetchPlaces();
@@ -630,17 +628,6 @@ const ConfirmPlacesPage: React.FC = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      City
-                    </label>
-                    <input
-                      type="text"
-                      value={editingPlace.city}
-                      onChange={(e) => setEditingPlace({...editingPlace, city: e.target.value})}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-green focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Country
                     </label>
                     <input
@@ -651,6 +638,15 @@ const ConfirmPlacesPage: React.FC = () => {
                     />
                   </div>
                 </div>
+
+                {/* Languages */}
+                <LanguageSelector
+                  selectedLanguages={editingPlace.languages}
+                  onLanguagesChange={(languages) => setEditingPlace({
+                    ...editingPlace,
+                    languages
+                  })}
+                />
 
                 {/* Address */}
                 <div>

@@ -163,6 +163,47 @@ const TherapistJobRegistrationPage: React.FC<TherapistJobRegistrationPageProps> 
                 </div>
             </header>
 
+            {/* Promotional Banner */}
+            <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white py-6 px-4">
+                <div className="max-w-4xl mx-auto text-center">
+                    <div className="flex items-center justify-center gap-2 mb-3">
+                        <span className="bg-white text-green-600 px-3 py-1 rounded-full text-sm font-bold">🎉 LIMITED TIME</span>
+                        <span className="bg-yellow-400 text-green-800 px-3 py-1 rounded-full text-sm font-bold animate-pulse">FIRST 100 ONLY</span>
+                    </div>
+                    <h2 className="text-2xl md:text-3xl font-bold mb-2">
+                        Start Your Professional Journey Today!
+                    </h2>
+                    <div className="flex flex-col md:flex-row items-center justify-center gap-4 mb-4">
+                        <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg px-6 py-3">
+                            <div className="text-3xl font-bold">Only IDR 5,000/day</div>
+                            <div className="text-sm opacity-90">= IDR 150,000/month</div>
+                        </div>
+                        <div className="text-2xl font-bold">+</div>
+                        <div className="bg-yellow-400 text-green-800 rounded-lg px-6 py-3">
+                            <div className="text-2xl font-bold">FREE 1-Month Trial</div>
+                            <div className="text-sm">For first 100 therapists</div>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div className="flex items-center justify-center gap-2">
+                            <span className="text-xl">✅</span>
+                            <span>Unlimited bookings</span>
+                        </div>
+                        <div className="flex items-center justify-center gap-2">
+                            <span className="text-xl">💰</span>
+                            <span>Keep 100% of earnings</span>
+                        </div>
+                        <div className="flex items-center justify-center gap-2">
+                            <span className="text-xl">🚀</span>
+                            <span>Professional platform</span>
+                        </div>
+                    </div>
+                    <div className="mt-4 text-sm opacity-90">
+                        <strong>Break-even with just 1 session per month!</strong> • Much cheaper than commission-based platforms
+                    </div>
+                </div>
+            </div>
+
             {/* Form */}
             <div className="max-w-4xl mx-auto p-6">
                 <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-lg p-6 space-y-6">
