@@ -392,9 +392,9 @@ export const placeService = {
         } catch (error) {
             console.error('❌ Error fetching places:', error);
             console.error('❌ Error details:', {
-                message: error.message,
-                code: error.code,
-                type: error.type
+                message: error instanceof Error ? error.message : 'Unknown error',
+                code: (error as any)?.code || 'Unknown code',
+                type: (error as any)?.type || 'Unknown type'
             });
             return [];
         }
@@ -2424,10 +2424,10 @@ export const shopItemService = {
         } catch (error: any) {
             console.error('Error creating item:', error);
             console.error('Error details:', {
-                message: error.message,
-                code: error.code,
-                type: error.type,
-                response: error.response
+                message: error instanceof Error ? error.message : 'Unknown error',
+                code: (error as any)?.code || 'Unknown code',
+                type: (error as any)?.type || 'Unknown type',
+                response: (error as any)?.response || 'No response'
             });
             throw error;
         }
@@ -2450,10 +2450,10 @@ export const shopItemService = {
         } catch (error: any) {
             console.error('Error updating item:', error);
             console.error('Error details:', {
-                message: error.message,
-                code: error.code,
-                type: error.type,
-                response: error.response
+                message: error instanceof Error ? error.message : 'Unknown error',
+                code: (error as any)?.code || 'Unknown code',
+                type: (error as any)?.type || 'Unknown type',
+                response: (error as any)?.response || 'No response'
             });
             throw error;
         }
@@ -2477,9 +2477,9 @@ export const shopItemService = {
         } catch (error: any) {
             console.error('Error deleting item from Appwrite:', error);
             console.error('Error details:', {
-                code: error.code,
-                message: error.message,
-                response: error.response
+                code: (error as any)?.code || 'Unknown code',
+                message: error instanceof Error ? error.message : 'Unknown error',
+                response: (error as any)?.response || 'No response'
             });
             throw error;
         }
