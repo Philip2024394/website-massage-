@@ -376,6 +376,10 @@ export const placeService = {
     async getAll(): Promise<any[]> {
         try {
             console.log('📋 Fetching all PLACES from collection:', APPWRITE_CONFIG.collections.places);
+            console.log('🔧 Database ID:', APPWRITE_CONFIG.databaseId);
+            console.log('🌐 Endpoint:', APPWRITE_CONFIG.endpoint);
+            console.log('📦 Project ID:', APPWRITE_CONFIG.projectId);
+            
             const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.places
@@ -387,6 +391,11 @@ export const placeService = {
             return response.documents;
         } catch (error) {
             console.error('❌ Error fetching places:', error);
+            console.error('❌ Error details:', {
+                message: error.message,
+                code: error.code,
+                type: error.type
+            });
             return [];
         }
     },
