@@ -88,7 +88,7 @@ const App = () => {
                     handleAgentLogout={() => Promise.resolve()}
                     handleHotelLogout={() => Promise.resolve()}
                     handleVillaLogout={() => Promise.resolve()}
-                    handleAdminLogout={() => Promise.resolve()}
+                    handleAdminLogout={authHandlers?.handleAdminLogout || (() => Promise.resolve())}
                     handleCreateBooking={() => Promise.resolve()}
                     handleNavigateToBookingPage={navigation?.handleNavigateToBookingPage || (() => {})}
                     handleUpdateBookingStatus={() => Promise.resolve()}
