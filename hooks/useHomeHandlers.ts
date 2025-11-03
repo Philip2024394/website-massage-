@@ -8,6 +8,11 @@ import type { Therapist, Place, Booking, User, Analytics } from '../types';
 import type { Page, Language } from '../types/pageTypes';
 import { BookingStatus } from '../types';
 
+// Helper function to convert Language to chat-compatible language
+const getChatLanguage = (lang: Language): 'en' | 'id' => {
+    return ['en', 'id'].includes(lang as 'en' | 'id') ? lang as 'en' | 'id' : 'en';
+};
+
 interface LoggedInCustomer {
     $id: string;
     name: string;
@@ -109,11 +114,11 @@ export const useHomeHandlers = ({
                 bookingId: newBooking.id,
                 customerId: currentUserId,
                 customerName: currentUserName,
-                customerLanguage: language,
+                customerLanguage: getChatLanguage(language),
                 customerPhoto: loggedInCustomer?.profilePhoto || '',
                 therapistId: providerId,
                 therapistName: provider.name,
-                therapistLanguage: 'en' as Language,
+                therapistLanguage: 'en',
                 therapistType: type,
                 therapistPhoto: '',
                 expiresAt
@@ -164,11 +169,11 @@ export const useHomeHandlers = ({
                 bookingId: tempBooking.id,
                 customerId: currentUserId,
                 customerName: currentUserName,
-                customerLanguage: language,
+                customerLanguage: getChatLanguage(language),
                 customerPhoto: loggedInCustomer?.profilePhoto || '',
                 therapistId: tempBooking.providerId,
                 therapistName: therapist.name,
-                therapistLanguage: 'en' as Language,
+                therapistLanguage: 'en',
                 therapistType: 'therapist',
                 therapistPhoto: '',
                 expiresAt

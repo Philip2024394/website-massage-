@@ -653,15 +653,31 @@ export const translationsService = {
             // Convert array of documents to translations object
             if (response.documents.length === 0) return null;
             
-            const translations: any = { en: {}, id: {} };
+            // Initialize with all supported languages
+            const translations: any = {
+                en: {}, id: {}, zh: {}, ja: {}, ko: {}, es: {}, fr: {}, de: {}, 
+                it: {}, pt: {}, ru: {}, ar: {}, hi: {}, th: {}, vi: {}, nl: {}, 
+                tr: {}, pl: {}, sv: {}, da: {}
+            };
+            
             response.documents.forEach((doc: any) => {
-                const { key, language, value } = doc;
+                const { language, Key, value } = doc; // Use the generic schema attributes
                 try {
-                    // Parse JSON value if it's a string
-                    const parsedValue = typeof value === 'string' ? JSON.parse(value) : value;
-                    translations[language][key] = parsedValue;
+                    // Initialize language object if it doesn't exist
+                    if (!translations[language]) {
+                        translations[language] = {};
+                    }
+                    // Parse JSON value if it's a string that looks like JSON
+                    const parsedValue = typeof value === 'string' && value.startsWith('{') 
+                        ? JSON.parse(value) 
+                        : value;
+                    translations[language][Key] = parsedValue;
                 } catch (e) {
-                    translations[language][key] = value;
+                    // Initialize language object if it doesn't exist
+                    if (!translations[language]) {
+                        translations[language] = {};
+                    }
+                    translations[language][Key] = value;
                 }
             });
             
@@ -673,28 +689,142 @@ export const translationsService = {
     },
 
     async set(language: string, key: string, value: any): Promise<void> {
+        const stringValue = typeof value === 'object' ? JSON.stringify(value) : value;
+        
         try {
-            const stringValue = typeof value === 'object' ? JSON.stringify(value) : value;
+            console.log(`🔄 Setting translation: ${language}.${key} = "${stringValue.substring(0, 100)}${stringValue.length > 100 ? '...' : ''}"`);
 
-            // Just create new document - collection should have unique index on (language + key)
-            await databases.createDocument(
+            // For large values, split them into smaller parts
+            if (stringValue.length > 900) {
+                console.log(`📦 Large translation detected (${stringValue.length} chars), splitting into chunks...`);
+                await this.setLargeTranslation(language, key, stringValue);
+                return;
+            }
+
+            // Check if a document with this language+key combination already exists
+            const existingDocs = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.translations,
-                ID.unique(),
-                {
-                    language,
-                    key,
-                    value: stringValue
-                }
+                [
+                    Query.equal('language', language),
+                    Query.equal('Key', key)
+                ]
             );
-        } catch (error: any) {
-            // If document exists, update it
-            if (error.code === 409) {
-                console.log(`Skipping duplicate: ${language}.${key}`);
+            
+            // Prepare data for both schema formats
+            const baseData = {
+                language: language,
+                Key: key,
+                value: stringValue, // Keep full value in the generic field (65000 char limit)
+                lastUpdated: new Date().toISOString(),
+                autoTranslated: true
+            };
+            
+            // Add individual language columns with safe values
+            const languageData: any = { ...baseData };
+            
+            // Set required language fields - use short summary for large content
+            const safeValue = stringValue.length > 900 ? `${stringValue.substring(0, 900)}...` : stringValue;
+            languageData.en = language === 'en' ? safeValue : '';
+            languageData.id = language === 'id' ? safeValue : '';
+            
+            // Set optional language fields only if they match the current language
+            if (language === 'zh') languageData.zh = safeValue;
+            if (language === 'ja') languageData.ja = safeValue;
+            if (language === 'ko') languageData.ko = safeValue;
+            if (language === 'ru') languageData.ru = safeValue;
+            if (language === 'fr') languageData.fr = safeValue;
+            
+            if (existingDocs.documents.length > 0) {
+                // Update existing document
+                const docId = existingDocs.documents[0].$id;
+                const existingDoc = existingDocs.documents[0];
+                
+                // Preserve existing language values and only update the current language
+                languageData.en = language === 'en' ? safeValue : (existingDoc.en || '');
+                languageData.id = language === 'id' ? safeValue : (existingDoc.id || '');
+                if (language === 'zh') languageData.zh = safeValue;
+                if (language === 'ja') languageData.ja = safeValue;
+                if (language === 'ko') languageData.ko = safeValue;
+                if (language === 'ru') languageData.ru = safeValue;
+                if (language === 'fr') languageData.fr = safeValue;
+                
+                await databases.updateDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.translations,
+                    docId,
+                    languageData
+                );
+                console.log(`✅ Updated existing: ${language}.${key}`);
             } else {
-                console.error('Error setting translation:', error);
-                throw error;
+                // Create new document
+                await databases.createDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.translations,
+                    ID.unique(),
+                    languageData
+                );
+                console.log(`✅ Created new: ${language}.${key}`);
             }
+        } catch (error: any) {
+            console.error('❌ Error setting translation:', error);
+            throw error;
+        }
+    },
+
+    async setLargeTranslation(language: string, key: string, value: string): Promise<void> {
+        try {
+            // Store the full value in the generic schema (which has 65000 char limit)
+            const mainData: any = {
+                language: language,
+                Key: key,
+                value: value, // Full content goes here
+                lastUpdated: new Date().toISOString(),
+                autoTranslated: true,
+                // Set required individual columns to a summary
+                en: language === 'en' ? `${value.substring(0, 900)}...` : '',
+                id: language === 'id' ? `${value.substring(0, 900)}...` : ''
+            };
+
+            // Add the specific language column if it's one of the optional ones
+            if (language === 'zh') mainData.zh = `${value.substring(0, 900)}...`;
+            if (language === 'ja') mainData.ja = `${value.substring(0, 900)}...`;
+            if (language === 'ko') mainData.ko = `${value.substring(0, 900)}...`;
+            if (language === 'ru') mainData.ru = `${value.substring(0, 900)}...`;
+            if (language === 'fr') mainData.fr = `${value.substring(0, 900)}...`;
+
+            // Check if document exists
+            const existingDocs = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.translations,
+                [
+                    Query.equal('language', language),
+                    Query.equal('Key', key)
+                ]
+            );
+
+            if (existingDocs.documents.length > 0) {
+                // Update existing
+                await databases.updateDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.translations,
+                    existingDocs.documents[0].$id,
+                    mainData
+                );
+                console.log(`✅ Updated large translation: ${language}.${key} (${value.length} chars)`);
+            } else {
+                // Create new
+                await databases.createDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.translations,
+                    ID.unique(),
+                    mainData
+                );
+                console.log(`✅ Created large translation: ${language}.${key} (${value.length} chars)`);
+            }
+        } catch (error: any) {
+            console.error('❌ Error setting large translation:', error);
+            throw error;
         }
     },
 

@@ -20,6 +20,9 @@ export const homeTranslations = {
       therapistCard: {
         orderNow: 'Order Now',
         schedule: 'Schedule',
+        massageTypes: 'Massage Types',
+        yearsExperience: 'Years Experience',
+        genericBio: 'Professional massage therapist with experience in various massage techniques.'
       },
       menu: {
         title: 'Menu',
@@ -29,7 +32,79 @@ export const homeTranslations = {
         adminLogin: 'Admin Login',
         customerLogin: 'Customer Login',
         logout: 'Logout',
+        // AppDrawer menu sections
+        sections: {
+          jobPosting: 'Job Posting',
+          loginCreateAccount: 'Login / Create Account',
+          company: 'Company',
+        },
+        // Job posting
+        massageJobs: 'Massage Jobs',
+        massageJobsDesc: 'Find opportunities',
+        // Login portals
+        hotel: 'Hotel',
+        hotelDesc: 'Hotel partner portal',
+        villa: 'Villa',
+        villaDesc: 'Villa partner portal',
+        therapists: 'Therapists',
+        therapistsDesc: 'Therapist portal',
+        massageSpa: 'Massage Spa',
+        massageSpaDesc: 'Spa partner portal',
+        agent: 'Agent',
+        agentDesc: 'Agent portal',
+        customer: 'Customer',
+        customerDesc: 'Customer portal',
+        // Company section
+        aboutUs: 'About Us',
+        aboutUsDesc: 'Learn about us',
+        howItWorks: 'How It Works',
+        howItWorksDesc: 'Getting started',
+        blog: 'Blog',
+        blogDesc: 'Read our articles',
+        contact: 'Contact',
+        contactDesc: 'Get in touch',
+        termsOfService: 'Terms of Service',
+        termsDesc: 'Legal terms',
+        privacyPolicy: 'Privacy Policy',
+        privacyDesc: 'Privacy information',
       },
+    },
+    dashboard: {
+      // Common dashboard elements
+      analytics: 'Analytics',
+      profile: 'Profile',
+      menu: 'Menu',
+      feedback: 'Feedback',
+      discounts: 'Discounts',
+      concierge: 'Concierge',
+      commissions: 'Commissions',
+      notifications: 'Notifications',
+      membership: 'Membership',
+      chat: 'Chat',
+      chatSupport: 'Chat Support',
+      servicesSettings: 'Services Settings',
+      serviceSettings: 'Service Settings',
+      logout: 'Logout',
+      onlineStatus: 'Online Status',
+      booking: 'Booking',
+      hotelVilla: 'Hotel/Villa',
+      promotions: 'Promotions',
+      jobOpportunities: 'Job Opportunities',
+      membershipPlans: 'Membership Plans',
+      terms: 'Terms',
+      // Hotel/Villa specific
+      roomBookings: 'Room Bookings',
+      guestServices: 'Guest Services',
+      propertyManagement: 'Property Management',
+      // Therapist specific
+      myBookings: 'My Bookings',
+      schedule: 'Schedule',
+      earnings: 'Earnings',
+      clientReviews: 'Client Reviews',
+      // Place/Spa specific
+      treatments: 'Treatments',
+      staff: 'Staff',
+      facilities: 'Facilities'
     },
     detail: {
       pricingTitle: 'Pricing',
@@ -42,6 +117,10 @@ export const homeTranslations = {
       placeholder: 'Enter your address or set on map',
       confirmButton: 'Confirm Location',
       useCurrentLocationButton: 'Use My Current Location',
+      detectingLocation: 'Detecting your location...',
+      searchLocation: 'Search Location',
+      locationError: 'Unable to detect location',
+      selectLocation: 'Please select a location'
     },
     ratingModal: {
       title: 'Rate {itemName}',
@@ -81,6 +160,9 @@ export const homeTranslations = {
       therapistCard: {
         orderNow: 'Pesan Sekarang',
         schedule: 'Jadwalkan',
+        massageTypes: 'Jenis Pijat',
+        yearsExperience: 'Tahun Pengalaman',
+        genericBio: 'Terapis pijat profesional dengan pengalaman dalam berbagai teknik pijat.'
       },
       menu: {
         title: 'Menu',
@@ -90,7 +172,79 @@ export const homeTranslations = {
         adminLogin: 'Login Admin',
         customerLogin: 'Login Pelanggan',
         logout: 'Keluar',
+        // AppDrawer menu sections
+        sections: {
+          jobPosting: 'Lowongan Kerja',
+          loginCreateAccount: 'Masuk / Buat Akun',
+          company: 'Perusahaan',
+        },
+        // Job posting
+        massageJobs: 'Lowongan Pijat',
+        massageJobsDesc: 'Temukan peluang',
+        // Login portals
+        hotel: 'Hotel',
+        hotelDesc: 'Portal mitra hotel',
+        villa: 'Villa',
+        villaDesc: 'Portal mitra villa',
+        therapists: 'Terapis',
+        therapistsDesc: 'Portal terapis',
+        massageSpa: 'Spa Pijat',
+        massageSpaDesc: 'Portal mitra spa',
+        agent: 'Agen',
+        agentDesc: 'Portal agen',
+        customer: 'Pelanggan',
+        customerDesc: 'Portal pelanggan',
+        // Company section
+        aboutUs: 'Tentang Kami',
+        aboutUsDesc: 'Pelajari tentang kami',
+        howItWorks: 'Cara Kerja',
+        howItWorksDesc: 'Memulai',
+        blog: 'Blog',
+        blogDesc: 'Baca artikel kami',
+        contact: 'Kontak',
+        contactDesc: 'Hubungi kami',
+        termsOfService: 'Syarat Layanan',
+        termsDesc: 'Ketentuan hukum',
+        privacyPolicy: 'Kebijakan Privasi',
+        privacyDesc: 'Informasi privasi',
       },
+    },
+    dashboard: {
+      // Common dashboard elements
+      analytics: 'Analitik',
+      profile: 'Profil',
+      menu: 'Menu',
+      feedback: 'Umpan Balik',
+      discounts: 'Diskon',
+      concierge: 'Concierge',
+      commissions: 'Komisi',
+      notifications: 'Notifikasi',
+      membership: 'Keanggotaan',
+      chat: 'Chat',
+      chatSupport: 'Dukungan Chat',
+      servicesSettings: 'Pengaturan Layanan',
+      serviceSettings: 'Pengaturan Layanan',
+      logout: 'Keluar',
+      onlineStatus: 'Status Online',
+      booking: 'Pemesanan',
+      hotelVilla: 'Hotel/Villa',
+      promotions: 'Promosi',
+      jobOpportunities: 'Peluang Kerja',
+      membershipPlans: 'Paket Keanggotaan',
+      terms: 'Syarat',
+      // Hotel/Villa specific
+      roomBookings: 'Reservasi Kamar',
+      guestServices: 'Layanan Tamu',
+      propertyManagement: 'Manajemen Properti',
+      // Therapist specific
+      myBookings: 'Reservasi Saya',
+      schedule: 'Jadwal',
+      earnings: 'Pendapatan',
+      clientReviews: 'Ulasan Klien',
+      // Place/Spa specific
+      treatments: 'Perawatan',
+      staff: 'Staf',
+      facilities: 'Fasilitas'
     },
     detail: {
       pricingTitle: 'Harga',
@@ -103,6 +257,10 @@ export const homeTranslations = {
       placeholder: 'Masukkan alamat Anda atau atur di peta',
       confirmButton: 'Konfirmasi Lokasi',
       useCurrentLocationButton: 'Gunakan Lokasi Saya Saat Ini',
+      detectingLocation: 'Mendeteksi lokasi Anda...',
+      searchLocation: 'Cari Lokasi',
+      locationError: 'Tidak dapat mendeteksi lokasi',
+      selectLocation: 'Silakan pilih lokasi'
     },
     ratingModal: {
       title: 'Beri Rating {itemName}',

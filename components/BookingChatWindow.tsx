@@ -10,6 +10,12 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { ChatRoom, ChatMessage, ChatRoomStatus, MessageSenderType, Booking } from '../types';
+import type { Language } from '../types/pageTypes';
+
+// Helper function to convert Language to chat-compatible language
+const getChatLanguage = (lang: Language): 'en' | 'id' => {
+    return ['en', 'id'].includes(lang as 'en' | 'id') ? lang as 'en' | 'id' : 'en';
+};
 import { 
     getChatMessages, 
     sendMessage, 
@@ -29,7 +35,7 @@ interface BookingChatWindowProps {
     currentUserId: string;
     currentUserType: 'customer' | 'therapist' | 'place';
     currentUserName: string;
-    currentUserLanguage: 'en' | 'id';
+    currentUserLanguage: Language;
     onClose: () => void;
     onAccept?: () => void;
     onDecline?: () => void;
@@ -112,7 +118,7 @@ export const BookingChatWindow: React.FC<BookingChatWindowProps> = ({
         }
     };
 
-    const t = translations[currentUserLanguage];
+    const t = translations[currentUserLanguage] || translations.en;
 
     // Load messages on mount
     useEffect(() => {
@@ -203,7 +209,7 @@ export const BookingChatWindow: React.FC<BookingChatWindowProps> = ({
                 senderType,
                 senderName: currentUserName,
                 text: messageInput,
-                senderLanguage: currentUserLanguage,
+                senderLanguage: getChatLanguage(currentUserLanguage),
                 recipientLanguage
             });
 
@@ -277,7 +283,7 @@ export const BookingChatWindow: React.FC<BookingChatWindowProps> = ({
                 senderType,
                 senderName: currentUserName,
                 text: fileMessage,
-                senderLanguage: currentUserLanguage,
+                senderLanguage: getChatLanguage(currentUserLanguage),
                 recipientLanguage
             });
 
@@ -335,7 +341,7 @@ export const BookingChatWindow: React.FC<BookingChatWindowProps> = ({
                         senderType,
                         senderName: currentUserName,
                         text: locationText,
-                        senderLanguage: currentUserLanguage,
+                        senderLanguage: getChatLanguage(currentUserLanguage),
                         recipientLanguage
                     });
 
@@ -500,7 +506,7 @@ export const BookingChatWindow: React.FC<BookingChatWindowProps> = ({
                                 <CountdownTimer 
                                     expiresAt={chatRoom.expiresAt} 
                                     onExpire={handleExpire}
-                                    language={currentUserLanguage}
+                                    language={getChatLanguage(currentUserLanguage)}
                                 />
                             ) : null}
                         </div>
@@ -599,7 +605,7 @@ export const BookingChatWindow: React.FC<BookingChatWindowProps> = ({
                                         key={msg.$id}
                                         message={msg}
                                         currentUserId={currentUserId}
-                                        currentUserLanguage={currentUserLanguage}
+                                        currentUserLanguage={getChatLanguage(currentUserLanguage)}
                                         senderPhoto={isMessageFromCustomer ? chatRoom.customerPhoto : chatRoom.therapistPhoto}
                                         recipientPhoto={isMessageFromCustomer ? chatRoom.customerPhoto : chatRoom.therapistPhoto}
                                     />

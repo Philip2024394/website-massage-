@@ -1,5 +1,6 @@
 import React from 'react';
 import type { ChatRoom, Booking } from '../types';
+import type { Language } from '../types/pageTypes';
 import BookingChatWindow from '../components/BookingChatWindow';
 
 interface ChatListPageProps {
@@ -9,7 +10,7 @@ interface ChatListPageProps {
     onMenuClick?: () => void;
     onHomeClick?: () => void;
     onBack?: () => void;
-    language: 'en' | 'id';
+    language: Language;
     activeChatRoom?: ChatRoom | null;
     chatBooking?: Booking | null;
     currentUserId?: string;
@@ -63,7 +64,7 @@ const ChatListPage: React.FC<ChatListPageProps> = ({
         }
     };
 
-    const t = welcomeText[language];
+    const t = welcomeText[language] || welcomeText.en;
 
     return (
         <div className={activeChatRoom ? "min-h-screen bg-gray-50" : "min-h-screen bg-gray-50 pb-20"}>

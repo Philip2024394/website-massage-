@@ -6,6 +6,7 @@ import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages, stri
 import { therapistService, notificationService } from '../lib/appwriteService';
 import { soundNotificationService } from '../utils/soundNotificationService';
 import { User, Calendar, TrendingUp, Hotel, FileCheck, LogOut, Bell, Briefcase, MessageSquare, Tag, Activity, Megaphone, Menu, Crown } from 'lucide-react';
+import { useTranslations } from '../lib/useTranslations';
 import DiscountSharePage from './DiscountSharePage';
 import MembershipPlansPage from './MembershipPlansPage';
 import HotelVillaOptIn from '../components/HotelVillaOptIn';
@@ -79,6 +80,7 @@ const BookingCard: React.FC<{ booking: Booking; onUpdateStatus: (id: number, sta
 }
 
 const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave, onLogout, onNavigateToNotifications: _onNavigateToNotifications, onNavigateToHome, onNavigate, onUpdateBookingStatus, onStatusChange, handleNavigateToAdminLogin, therapistId, bookings, notifications, t }) => {
+    const { t: t_new } = useTranslations(); // New translation system
     const [therapist, setTherapist] = useState<Therapist | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -1158,7 +1160,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                 }`}
                             >
                                 <Activity className="w-5 h-5" />
-                                <span className="font-medium">Online Status</span>
+                                <span className="font-medium">{t_new('dashboard.onlineStatus')}</span>
                             </button>
                             <button
                                 onClick={() => {
@@ -1170,7 +1172,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                 }`}
                             >
                                 <User className="w-5 h-5" />
-                                <span className="font-medium">Profile</span>
+                                <span className="font-medium">{t_new('dashboard.profile')}</span>
                             </button>
                             <button
                                 onClick={() => {
@@ -1182,7 +1184,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                 }`}
                             >
                                 <Calendar className="w-5 h-5" />
-                                <span className="font-medium">Booking</span>
+                                <span className="font-medium">{t_new('dashboard.booking')}</span>
                                 {upcomingBookings.length > 0 && (
                                     <span className="ml-auto bg-orange-500 text-white text-xs rounded-full px-2.5 py-0.5 font-bold">
                                         {upcomingBookings.length}
@@ -1199,7 +1201,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                 }`}
                             >
                                 <TrendingUp className="w-5 h-5" />
-                                <span className="font-medium">Analytic</span>
+                                <span className="font-medium">{t_new('dashboard.analytics')}</span>
                             </button>
                             <button
                                 onClick={() => {
@@ -1211,7 +1213,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                 }`}
                             >
                                 <Hotel className="w-5 h-5" />
-                                <span className="font-medium">Hotel/Villa</span>
+                                <span className="font-medium">{t_new('dashboard.hotelVilla')}</span>
                             </button>
                             <button
                                 onClick={() => {
@@ -1223,7 +1225,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                 }`}
                             >
                                 <Bell className="w-5 h-5" />
-                                <span className="font-medium">Notifications</span>
+                                <span className="font-medium">{t_new('dashboard.notifications')}</span>
                                 {notifications.filter(n => !n.isRead).length > 0 && (
                                     <span className="ml-auto bg-orange-500 text-white text-xs rounded-full px-2.5 py-0.5 font-bold">
                                         {notifications.filter(n => !n.isRead).length}
@@ -1240,7 +1242,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                 }`}
                             >
                                 <MessageSquare className="w-5 h-5" />
-                                <span className="font-medium">Chat Support</span>
+                                <span className="font-medium">{t_new('dashboard.chatSupport')}</span>
                             </button>
                             <button
                                 onClick={() => {
@@ -1252,7 +1254,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                 }`}
                             >
                                 <Megaphone className="w-5 h-5" />
-                                <span className="font-medium">Promotions</span>
+                                <span className="font-medium">{t_new('dashboard.promotions')}</span>
                             </button>
                             <button
                                 onClick={() => {
@@ -1264,7 +1266,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                 }`}
                             >
                                 <Tag className="w-5 h-5" />
-                                <span className="font-medium">Discounts</span>
+                                <span className="font-medium">{t_new('dashboard.discounts')}</span>
                             </button>
                             <button
                                 onClick={() => {
@@ -1276,7 +1278,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                 }`}
                             >
                                 <Briefcase className="w-5 h-5" />
-                                <span className="font-medium">Job Opportunities</span>
+                                <span className="font-medium">{t_new('dashboard.jobOpportunities')}</span>
                             </button>
                             <button
                                 onClick={() => {
@@ -1288,7 +1290,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                 }`}
                             >
                                 <Crown className="w-5 h-5" />
-                                <span className="font-medium">Membership Plans</span>
+                                <span className="font-medium">{t_new('dashboard.membershipPlans')}</span>
                             </button>
                             <button
                                 onClick={() => {
@@ -1300,7 +1302,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                 }`}
                             >
                                 <FileCheck className="w-5 h-5" />
-                                <span className="font-medium">Terms</span>
+                                <span className="font-medium">{t_new('dashboard.terms')}</span>
                             </button>
 
                             {/* Divider */}
@@ -1315,7 +1317,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                 className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-red-50 transition-colors text-red-600 border-l-4 border-transparent hover:border-red-500"
                             >
                                 <LogOut className="w-5 h-5" />
-                                <span className="font-medium">Logout</span>
+                                <span className="font-medium">{t_new('dashboard.logout')}</span>
                             </button>
 
                             {/* Admin Link */}

@@ -6,6 +6,7 @@
 import { useState, useCallback } from 'react';
 import type { Therapist, Place } from '../types';
 import { therapistService, placeService } from '../lib/appwriteService';
+import { reviewService } from '../lib/reviewService';
 import { APP_CONFIG } from '../config/appConfig';
 
 export const useDataFetching = () => {
@@ -74,9 +75,20 @@ export const useDataFetching = () => {
             console.log('  ❌ Not Live (isLive=false):', allTherapists.filter((t: any) => t.isLive === false).length);
             console.log('  ⚠️ Unknown (isLive=undefined):', allTherapists.filter((t: any) => t.isLive === undefined).length);
             
+            // Initialize review data for new accounts
+            const therapistsWithReviews = (therapistsData || []).map((therapist: Therapist) => 
+                reviewService.initializeProvider(therapist)
+            );
+            
+            const placesWithReviews = (placesData || []).map((place: Place) => 
+                reviewService.initializeProvider(place)
+            );
+            
+            console.log('⭐ Initialized review data for', therapistsWithReviews.length, 'therapists and', placesWithReviews.length, 'places');
+            
             return {
-                therapists: therapistsData || [],
-                places: placesData || []
+                therapists: therapistsWithReviews,
+                places: placesWithReviews
             };
         } catch (error) {
             console.error('❌ Error fetching public data from Appwrite:', error);
@@ -159,9 +171,18 @@ export const useDataFetching = () => {
             console.log('  👤 Mock therapists:', mockTherapists.length);
             console.log('  🏨 Mock places:', mockPlaces.length);
             
+            // Initialize review data for mock accounts too
+            const mockTherapistsWithReviews = mockTherapists.map((therapist: any) => 
+                reviewService.initializeProvider(therapist as Therapist)
+            );
+            
+            const mockPlacesWithReviews = mockPlaces.map((place: any) => 
+                reviewService.initializeProvider(place as Place)
+            );
+            
             return {
-                therapists: mockTherapists as any[],
-                places: mockPlaces as any[]
+                therapists: mockTherapistsWithReviews as any[],
+                places: mockPlacesWithReviews as any[]
             };
         } finally {
             setIsLoading(false);

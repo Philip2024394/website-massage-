@@ -2,6 +2,11 @@ import type { Booking, Therapist, Place, User } from '../types';
 import { BookingStatus } from '../types';
 import type { Language, Page } from '../types/pageTypes';
 
+// Helper function to convert Language to chat-compatible language
+const getChatLanguage = (lang: Language): 'en' | 'id' => {
+    return ['en', 'id'].includes(lang as 'en' | 'id') ? lang as 'en' | 'id' : 'en';
+};
+
 interface LoggedInCustomer {
     $id: string;
     name: string;
@@ -123,7 +128,7 @@ export const useBookingHandlers = ({
                 const whatsappResult = await whatsappService.sendBookingNotification(
                     providerWhatsApp,
                     providerLanguage,
-                    language,
+                    getChatLanguage(language),
                     {
                         customerName: currentUserName,
                         service: `${newBooking.service} minute massage`,
@@ -152,7 +157,7 @@ export const useBookingHandlers = ({
                 bookingId: newBooking.id,
                 customerId: currentUserId,
                 customerName: currentUserName,
-                customerLanguage: language,
+                customerLanguage: getChatLanguage(language),
                 customerPhoto: loggedInCustomer?.profilePhoto || '',
                 therapistId: provider.id as number,
                 therapistName: provider.name,
@@ -314,7 +319,7 @@ export const useBookingHandlers = ({
                                     await whatsappService.sendBookingNotification(
                                         nearbyWhatsApp,
                                         nearbyLanguage,
-                                        language,
+                                        getChatLanguage(language),
                                         {
                                             customerName: currentUserName,
                                             service: `${newBooking.service} minute massage`,

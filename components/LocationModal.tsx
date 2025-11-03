@@ -14,6 +14,35 @@ const LocationModal: React.FC<LocationModalProps> = ({ onConfirm, onClose, t }) 
     const [error, setError] = useState('');
     const [mapsApiLoaded, setMapsApiLoaded] = useState(false);
 
+    // Debug logging for LocationModal translations
+    console.log('🗺️ LocationModal received translations:', {
+        t,
+        tExists: !!t,
+        tKeys: t ? Object.keys(t) : 'No t',
+        fullStructure: t
+    });
+
+    // Improved translation handling to prevent flashing
+    const getSafeTranslation = (key: string, fallback: string): string => {
+        if (t && typeof t === 'object' && t[key]) {
+            return t[key];
+        }
+        return fallback;
+    };
+
+    // Safety fallback for translations with proper mapping  
+    const safeT = {
+        title: getSafeTranslation('title', 'Atur Lokasi Anda'),
+        prompt: getSafeTranslation('prompt', 'Kami memerlukan lokasi Anda untuk menemukan layanan terbaik di dekat Anda.'),
+        searchPlaceholder: getSafeTranslation('placeholder', 'Masukkan alamat Anda atau atur di peta'),
+        detectingLocation: getSafeTranslation('detectingLocation', 'Mendeteksi lokasi Anda...'),
+        useCurrentLocation: getSafeTranslation('useCurrentLocationButton', 'Gunakan Lokasi Saya Saat Ini'),
+        searchLocation: getSafeTranslation('searchLocation', 'Cari Lokasi'),
+        confirm: getSafeTranslation('confirmButton', 'Konfirmasi Lokasi'),
+        locationError: getSafeTranslation('locationError', 'Tidak dapat mendeteksi lokasi'),
+        selectLocation: getSafeTranslation('selectLocation', 'Silakan pilih lokasi')
+    };
+
     const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -99,14 +128,14 @@ const LocationModal: React.FC<LocationModalProps> = ({ onConfirm, onClose, t }) 
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm">
                 <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold text-gray-800">{t.title}</h2>
+                    <h2 className="text-xl font-bold text-gray-800">{safeT.title}</h2>
                     <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
-                <p className="text-gray-600 mb-4 text-center">{t.prompt}</p>
+                <p className="text-gray-600 mb-4 text-center">{safeT.prompt}</p>
 
                 {/* World Map with Pulsing Red Dot */}
                 <div className="relative h-48 bg-gray-200 rounded-lg mb-4 overflow-hidden">
@@ -135,7 +164,7 @@ const LocationModal: React.FC<LocationModalProps> = ({ onConfirm, onClose, t }) 
                         ref={inputRef}
                         type="text" 
                         className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-green focus:border-brand-green"
-                        placeholder={t.placeholder}
+                        placeholder={safeT.searchPlaceholder}
                         disabled={!mapsApiLoaded || isLoading}
                     />
                 </div>
@@ -146,13 +175,13 @@ const LocationModal: React.FC<LocationModalProps> = ({ onConfirm, onClose, t }) 
                     disabled={isLoading} 
                     className="text-sm py-2.5 bg-green-600 hover:bg-green-700 text-white"
                 >
-                    {isLoading ? 'Getting Location...' : (t.useCurrentLocationButton || 'Use My Current Location')}
+                    {isLoading ? (safeT.detectingLocation || 'Mendeteksi lokasi...') : safeT.useCurrentLocation}
                 </Button>
                 
                 {error && <p className="text-red-500 text-sm text-center mt-2">{error}</p>}
 
                 <Button onClick={handleConfirm} disabled={!selectedLocation} className="mt-4">
-                    {t.confirmButton}
+                    {safeT.confirm}
                 </Button>
             </div>
         </div>

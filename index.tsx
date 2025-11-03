@@ -1,8 +1,9 @@
 
-import React from 'react';
 import ReactDOM from 'react-dom/client';
-// Force cache bust: 2024-10-31-10:15:00
+// Force cache bust: 2024-11-03-21:25:00
 import App from './App';
+import { SimpleLanguageProvider } from './context/SimpleLanguageContext';
+import ErrorBoundary from './components/ErrorBoundary';
 import './index.css';
 
 const rootElement = document.getElementById('root');
@@ -12,7 +13,9 @@ if (!rootElement) {
 
 const root = ReactDOM.createRoot(rootElement);
 root.render(
-    <React.StrictMode>
-        <App />
-    </React.StrictMode>
+    <ErrorBoundary>
+        <SimpleLanguageProvider>
+            <App />
+        </SimpleLanguageProvider>
+    </ErrorBoundary>
 );

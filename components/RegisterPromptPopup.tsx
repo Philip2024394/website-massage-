@@ -1,10 +1,11 @@
 import React from 'react';
+import type { Language } from '../types/pageTypes';
 
 interface RegisterPromptPopupProps {
     isOpen: boolean;
     onClose: () => void;
     onRegister: () => void;
-    language: 'en' | 'id';
+    language: Language;
     context?: 'booking' | 'chat'; // Context for customized messaging
 }
 
@@ -44,7 +45,7 @@ const RegisterPromptPopup: React.FC<RegisterPromptPopupProps> = ({
         }
     };
 
-    const t = translations[language];
+    const t = translations[language] || translations.en;
     const contextData = t[context];
 
     return (

@@ -7,6 +7,12 @@ export const commonTranslations = {
     header: {
       welcome: 'Welcome Back',
     },
+    landing: {
+      getStarted: 'Get Started',
+      selectLanguage: 'Select Language',
+      enter: 'Enter',
+      welcomeDescription: 'Professional Massage Services',
+    },
     common: {
       loading: 'Loading...',
       confirm: 'Confirm',
@@ -31,6 +37,12 @@ export const commonTranslations = {
     },
     header: {
       welcome: 'Selamat Datang Kembali',
+    },
+    landing: {
+      getStarted: 'Mulai',
+      selectLanguage: 'Pilih Bahasa',
+      enter: 'Masuk',
+      welcomeDescription: 'Layanan Pijat Profesional',
     },
     common: {
       loading: 'Memuat...',

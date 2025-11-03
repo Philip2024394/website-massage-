@@ -1,7 +1,7 @@
 
 
 import React, { useState, useEffect } from 'react';
-import { BarChart, Users, Building, Settings, Percent, LogOut, CreditCard, DollarSign, ShoppingBag, MessageSquare, UserCheck, Menu, X, Package, Briefcase } from 'lucide-react';
+import { BarChart, Users, Building, Settings, Percent, LogOut, CreditCard, DollarSign, ShoppingBag, MessageSquare, UserCheck, Menu, X, Package, Briefcase, Globe } from 'lucide-react';
 import ConfirmTherapistsPage from './ConfirmTherapistsPage';
 import ConfirmPlacesPage from './ConfirmPlacesPage';
 import ConfirmAccountsPage from './ConfirmAccountsPage';
@@ -15,16 +15,20 @@ import AdminShopManagementPage from './AdminShopManagementPage';
 import MembershipPricingPage from './MembershipPricingPage';
 import AdminJobPostingsPage from './AdminJobPostingsPage';
 import AdminFooter from '../components/footers/AdminFooter';
+import TranslationManager from '../components/TranslationManager';
+import AdminTranslationPanel from '../components/AdminTranslationPanel';
 import { authService } from '../lib/appwriteService';
 
 interface AdminDashboardPageProps {
     onLogout: () => void;
     initialTab?: DashboardPage;
 }
-type DashboardPage = 'platform-analytics' | 'confirm-therapists' | 'confirm-places' | 'confirm-accounts' | 'chat-messages' | 'drawer-buttons' | 'agent-commission' | 'bank-details' | 'payment-transactions' | 'shop-management' | 'membership-pricing' | 'job-postings';
+type DashboardPage = 'platform-analytics' | 'confirm-therapists' | 'confirm-places' | 'confirm-accounts' | 'chat-messages' | 'drawer-buttons' | 'agent-commission' | 'bank-details' | 'payment-transactions' | 'shop-management' | 'membership-pricing' | 'job-postings' | 'translations' | 'therapist-translations';
 const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'initialTab'>> = ({ onLogout, initialTab }) => {
   const [activePage, setActivePage] = useState<DashboardPage>(initialTab || 'platform-analytics');
   const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
+  const [showTranslationManager, setShowTranslationManager] = useState(false);
+  const [showTherapistTranslations, setShowTherapistTranslations] = useState(false);
 
   useEffect(() => {
     // Initialize anonymous session for Appwrite access
@@ -244,6 +248,28 @@ const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'i
             <Settings className="w-5 h-5" />
             <span className="font-medium">Settings</span>
           </button>
+
+          <button
+            onClick={() => {
+              setShowTranslationManager(true);
+              setIsSideDrawerOpen(false);
+            }}
+            className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-gray-700 hover:bg-gray-100"
+          >
+            <Globe className="w-5 h-5" />
+            <span className="font-medium">UI Translations</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setShowTherapistTranslations(true);
+              setIsSideDrawerOpen(false);
+            }}
+            className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-gray-700 hover:bg-gray-100"
+          >
+            <Users className="w-5 h-5" />
+            <span className="font-medium">Therapist Data Translations</span>
+          </button>
         </nav>
 
         {/* Drawer Footer - Logout Button */}
@@ -304,6 +330,16 @@ const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'i
         onAlertsClick={() => setActivePage('payment-transactions')}
         onSettingsClick={() => setActivePage('drawer-buttons')}
       />
+
+      {/* Translation Manager Modal */}
+      {showTranslationManager && (
+        <TranslationManager onClose={() => setShowTranslationManager(false)} />
+      )}
+
+      {/* Therapist Data Translation Panel */}
+      {showTherapistTranslations && (
+        <AdminTranslationPanel onClose={() => setShowTherapistTranslations(false)} />
+      )}
     </div>
   );
 };

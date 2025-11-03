@@ -116,10 +116,13 @@ export const useAllHooks = () => {
         loggedInAgent: state.loggedInAgent,
         impersonatedAgent: state.impersonatedAgent,
         therapists: state.therapists,
+        places: state.places,
         setLoggedInAgent: state.setLoggedInAgent,
         setImpersonatedAgent: state.setImpersonatedAgent,
         setAdminMessages: state.setAdminMessages,
-        setPage: state.setPage
+        setPage: state.setPage,
+        setTherapists: state.setTherapists,
+        setPlaces: state.setPlaces
     });
     
     // @ts-ignore - Footer navigation

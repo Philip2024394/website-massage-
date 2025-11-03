@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { Place, Analytics } from '../types';
 import Button from '../components/Button';
+import ReviewSystem from '../components/ReviewSystem';
 import { analyticsService } from '../services/analyticsService';
 import { notificationService } from '../lib/appwriteService';
 import BookingConfirmationPopup from '../components/BookingConfirmationPopup';
@@ -244,6 +245,17 @@ const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({
                         )}
                     </div>
                 </div>
+            </div>
+
+            {/* Review System */}
+            <div className="p-4">
+                <ReviewSystem
+                    provider={place}
+                    providerType="place"
+                    currentUserId={isCustomerLoggedIn ? "customer-123" : undefined} // TODO: Get actual customer ID
+                    currentUserName={isCustomerLoggedIn ? "Customer" : undefined} // TODO: Get actual customer name
+                    showAddReview={isCustomerLoggedIn}
+                />
             </div>
 
             <div className="p-4 mt-4 sticky bottom-0 bg-white border-t flex gap-2">

@@ -1,45 +1,57 @@
 import React, { useState, useEffect } from 'react';
 import Button from '../components/Button';
+import { useTranslations } from '../lib/useTranslations';
 import type { UserLocation } from '../types';
+import type { Language } from '../types/pageTypes';
 
 interface LandingPageProps {
-    onLanguageSelect: (lang: 'en' | 'id') => void;
-    onEnterApp: (language: 'en' | 'id', location: UserLocation) => void;
+    onLanguageSelect: (lang: Language) => void;
+    onEnterApp: (language: Language, location: UserLocation) => void;
 }
 
 const imageSrc = 'https://ik.imagekit.io/7grri5v7d/indastreet%20massage.png?updatedAt=1761978080830';
 
 // Language options with flags - Indonesian first, then English, then others
 const languages = [
-    { code: 'id', name: 'Bahasa Indonesia', flag: '��' },
-    { code: 'en', name: 'English', flag: '��' },
-    { code: 'zh', name: '中文', flag: '🇨🇳' },
-    { code: 'ja', name: '日本語', flag: '🇯🇵' },
-    { code: 'ko', name: '한국어', flag: '🇰🇷' },
-    { code: 'es', name: 'Español', flag: '🇪🇸' },
-    { code: 'fr', name: 'Français', flag: '🇫🇷' },
-    { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
-    { code: 'it', name: 'Italiano', flag: '🇮🇹' },
-    { code: 'pt', name: 'Português', flag: '🇵🇹' },
-    { code: 'ru', name: 'Русский', flag: '🇷🇺' },
-    { code: 'ar', name: 'العربية', flag: '🇸🇦' },
-    { code: 'hi', name: 'हिन्दी', flag: '🇮🇳' },
-    { code: 'th', name: 'ไทย', flag: '🇹🇭' },
-    { code: 'vi', name: 'Tiếng Việt', flag: '🇻🇳' },
-    { code: 'nl', name: 'Nederlands', flag: '🇳🇱' },
-    { code: 'tr', name: 'Türkçe', flag: '🇹🇷' },
-    { code: 'pl', name: 'Polski', flag: '🇵🇱' },
-    { code: 'sv', name: 'Svenska', flag: '🇸🇪' },
-    { code: 'da', name: 'Dansk', flag: '🇩🇰' },
+    { code: 'id', name: 'Bahasa Indonesia', flag: '🇮🇩' },
+    { code: 'en', name: 'English', flag: '🇬�' },
 ];
 
-const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
+const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect }) => {
     console.log('🎨 LandingPage: Component rendering');
     console.log('onEnterApp prop received:', !!onEnterApp);
     
     const [imageLoaded, setImageLoaded] = useState(false);
-    const [selectedLanguage, setSelectedLanguage] = useState<'en' | 'id'>('id'); // Default to Indonesian
+    const [selectedLanguage, setSelectedLanguage] = useState<Language>('id'); // Default to Indonesian
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    
+    // Get translations for the selected language
+    const { t, loading: translationsLoading, refresh: refreshTranslations, hasLanguage } = useTranslations(selectedLanguage);
+
+    // Debug logging
+    useEffect(() => {
+        console.log('🔍 LandingPage Debug:');
+        console.log('  - Selected Language:', selectedLanguage);
+        console.log('  - Has Language in Translations:', hasLanguage);
+        console.log('  - Translation Loading:', translationsLoading);
+        console.log('  - Translation function type:', typeof t);
+        console.log('  - Testing landing translation:', t ? t('landing.welcome') : 'No translation function');
+        console.log('  - Testing common translation:', t ? t('common.loading') : 'No translation function');
+        if (t && typeof t === 'function') {
+            console.log('  - ✅ Translation function is available');
+        } else {
+            console.log('  - ❌ No translation function found');
+        }
+        console.log('  - Fallback text will be used for missing translations');
+    }, [selectedLanguage, hasLanguage, translationsLoading, t]);
+
+    // Effect to refresh translations when language changes
+    useEffect(() => {
+        if (selectedLanguage) {
+            console.log('🌐 Language changed to:', selectedLanguage, 'refreshing translations...');
+            refreshTranslations();
+        }
+    }, [selectedLanguage]); // Remove refreshTranslations from dependencies
 
     useEffect(() => {
         console.log('🖼️ LandingPage: Attempting to load image:', imageSrc);
@@ -73,7 +85,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
     const selectedLang = languages.find(lang => lang.code === selectedLanguage) || languages[0];
 
     return (
-        <div className="h-screen flex relative overflow-hidden">
+        <div className="h-screen w-full flex relative overflow-hidden">
             <div
                 className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ease-in-out"
                 style={{
@@ -83,83 +95,32 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                     opacity: imageLoaded ? 1 : 0,
                 }}
             />
-            <div className="relative z-10 flex-grow flex flex-col items-center justify-center bg-black bg-opacity-50 text-white p-4 sm:p-6 text-center">
-                <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold">
-                    <span className="text-white">Inda</span>
-                    <span className="text-orange-400">Street</span>
+            <div className="relative z-10 flex-grow flex flex-col items-center justify-center bg-black bg-opacity-50 text-white px-4 py-6 text-center min-h-screen">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
+                    <span className="text-white">Inda</span><span className="text-orange-400">Street</span>
                 </h1>
-                <p className="text-lg sm:text-xl mt-2 mb-4 px-4">Your personal wellness companion.</p>
+                <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold text-white mb-6">
+                    {t('landing.welcomeDescription')}
+                </p>
                 
-                {/* Therapist Promotional Banner */}
-                <div className="bg-gradient-to-r from-green-500 via-green-400 to-emerald-500 border-2 border-white rounded-xl p-6 mb-6 shadow-2xl max-w-lg mx-auto transform hover:scale-105 transition-transform duration-300">
-                    <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg p-4 border border-white border-opacity-30">
-                        <div className="flex items-center justify-center mb-3">
-                            <div className="bg-white rounded-full p-2 mr-3">
-                                <svg className="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                </svg>
-                            </div>
-                            <h2 className="text-xl font-bold text-white">🌟 Therapist Special Offer!</h2>
-                        </div>
-                        
-                        <div className="text-center space-y-2">
-                            <div className="bg-white bg-opacity-90 text-green-800 rounded-lg py-2 px-4 font-bold text-lg">
-                                Only IDR 5,000/day = IDR 150,000/month
-                            </div>
-                            
-                            <div className="bg-yellow-400 bg-opacity-95 text-green-900 rounded-lg py-2 px-4 font-bold text-base animate-pulse">
-                                🎁 FREE 1-Month Trial for First 100 Therapists!
-                            </div>
-                            
-                            <div className="text-white text-sm mt-3 space-y-1">
-                                <p className="flex items-center justify-center gap-2">
-                                    <span className="text-green-200">✓</span> Unlimited Bookings
-                                </p>
-                                <p className="flex items-center justify-center gap-2">
-                                    <span className="text-green-200">✓</span> Professional Platform
-                                </p>
-                                <p className="flex items-center justify-center gap-2">
-                                    <span className="text-green-200">✓</span> No Commission Fees
-                                </p>
-                            </div>
-                            
-                            <div className="mt-4">
-                                <button className="bg-white text-green-600 font-bold py-2 px-6 rounded-full hover:bg-green-50 transition-colors shadow-lg text-sm">
-                                    🚀 Join Now - Limited Spots!
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                {/* Join Today Free Limited Spaces Badge */}
-                <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-full px-6 py-2 mb-8 shadow-lg animate-pulse">
-                    <p className="text-white font-bold text-base sm:text-lg flex items-center gap-2">
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                        Join Today Free Limited Spaces
-                    </p>
-                </div>
-                
-                <div className="w-full max-w-md px-4 space-y-4">
-                    <h2 className="text-base sm:text-lg font-semibold mb-4">Get Started</h2>
+                <div className="w-full max-w-sm sm:max-w-md px-2 space-y-3 sm:space-y-4">
+                    <h2 className="text-sm sm:text-base lg:text-lg font-semibold mb-3">{t('landing.getStarted')}</h2>
                     
                     {/* Language Dropdown */}
                     <div className="relative">
-                        <label className="block text-sm font-medium mb-2 text-left">Select Language</label>
+                        <label className="block text-xs sm:text-sm font-medium mb-2 text-left">{t('landing.selectLanguage')}</label>
                         <button
                             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                            className="w-full bg-black text-white rounded-lg px-4 py-3 flex items-center justify-between hover:bg-gray-900 transition-colors shadow-lg border border-gray-800"
+                            className="w-full bg-black text-white rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between hover:bg-gray-900 transition-colors shadow-lg border border-gray-800"
                         >
-                            <div className="flex items-center gap-3">
-                                <span className="text-2xl w-8 h-8 flex items-center justify-center bg-gray-900 rounded-full">
+                            <div className="flex items-center gap-2 sm:gap-3">
+                                <span className="text-xl sm:text-2xl w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center bg-gray-900 rounded-full">
                                     {selectedLang.flag}
                                 </span>
-                                <span className="font-medium">{selectedLang.name}</span>
+                                <span className="font-medium text-sm sm:text-base">{selectedLang.name}</span>
                             </div>
                             <svg
-                                className={`w-5 h-5 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
+                                className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
                                 fill="none"
                                 viewBox="0 0 24 24"
                                 stroke="currentColor"
@@ -185,15 +146,23 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                                             key={lang.code}
                                             onClick={() => {
                                                 console.log('Language selected:', lang.name);
-                                                setSelectedLanguage(lang.code as 'en' | 'id');
+                                                const newLanguage = lang.code as Language;
+                                                setSelectedLanguage(newLanguage);
+                                                
+                                                // Also call the parent's language select handler
+                                                if (onLanguageSelect) {
+                                                    console.log('🌐 Calling onLanguageSelect with:', newLanguage);
+                                                    onLanguageSelect(newLanguage);
+                                                }
+                                                
                                                 setIsDropdownOpen(false);
                                             }}
-                                            className="w-full px-4 py-3 flex items-center gap-3 hover:bg-orange-50 transition-colors text-left"
+                                            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3 hover:bg-orange-50 transition-colors text-left"
                                         >
-                                            <span className="text-2xl w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full">
+                                            <span className="text-xl sm:text-2xl w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center bg-gray-100 rounded-full">
                                                 {lang.flag}
                                             </span>
-                                            <span className="text-gray-800 font-medium">{lang.name}</span>
+                                            <span className="text-gray-800 font-medium text-sm sm:text-base">{lang.name}</span>
                                             {lang.code === selectedLanguage && (
                                                 <svg className="w-5 h-5 ml-auto text-orange-500" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -220,10 +189,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                             handleEnterApp();
                         }}
                         variant="primary"
-                        className="!py-4 !text-lg font-bold relative z-10"
+                        className="!py-2.5 sm:!py-4 !text-base sm:!text-lg font-bold relative z-10"
                     >
                         <div className="flex items-center justify-center gap-2">
-                            Enter
+                            {t('landing.enter')}
                             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                             </svg>

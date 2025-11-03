@@ -3,49 +3,84 @@ import { AppFooterLayout } from './components/layout/AppFooterLayout';
 import { AppRouter } from './AppRouter';
 import { useAllHooks } from './hooks/useAllHooks';
 import { useTranslations } from './lib/useTranslations';
+// Temporarily removed: import { useSimpleLanguage } from './context/SimpleLanguageContext';
+// Temporarily removed: import SimpleLanguageSelector from './components/SimpleLanguageSelector';
 
 const App = () => {
-    // All hooks combined
+    // Temporarily use fallback language while debugging
+    const language: 'en' | 'id' = 'id';
+    const setLanguage = (lang: 'en' | 'id') => {
+        console.log('🌍 App.tsx: Language change to:', lang);
+    };
+    
+    // All hooks combined (but override language with our working one)
     const hooks = useAllHooks();
     const { state, navigation, authHandlers, providerAgentHandlers, footerNav, derived } = hooks;
     
-    // Get translations
-    const { t } = useTranslations(state.language);
+    // Override the language state with our working one
+    const overriddenState = { ...state, language };
+    
+    // Debug: Check what navigation handlers we have
+    console.log('🔧 App.tsx with SimpleLanguage:', {
+        handleLanguageSelect: !!setLanguage,
+        currentLanguage: language
+    });
+    
+    // Get translations using our working language
+    const { t } = useTranslations(language);
+    
+    // Debug: Check what translations we're getting and t function type
+    console.log('🔍 App.tsx translation debug:', {
+        language,
+        tType: typeof t,
+        tIsFunction: typeof t === 'function',
+        headerWelcome: typeof t === 'function' ? t('header.welcome') : 'T_NOT_FUNCTION',
+        landingGetStarted: typeof t === 'function' ? t('landing.getStarted') : 'T_NOT_FUNCTION',
+        sampleTranslation: typeof t === 'function' ? t('common.loading') : 'T_NOT_FUNCTION',
+        currentPage: overriddenState.page
+    });
+
+    // Create a simple language handler that works
+    const handleLanguageSelect = async (lang: 'en' | 'id') => {
+        console.log('🌍 App.tsx: Simple handleLanguageSelect called with:', lang);
+        setLanguage(lang);
+        return Promise.resolve();
+    };
 
     return (
         <AppLayout
-            isFullScreen={state.isFullScreen}
+            isFullScreen={overriddenState.isFullScreen}
         >
-            <div className={state.isFullScreen ? "flex-grow" : "flex-grow pb-16"}>
+            <div className={overriddenState.isFullScreen ? "flex-grow" : "flex-grow pb-16"}>
                 <AppRouter
-                    page={state.page}
-                    language={state.language}
+                    page={overriddenState.page}
+                    language={language}
                     t={t}
-                    isLoading={state.isLoading}
-                    loggedInUser={state.loggedInUser}
-                    loggedInProvider={state.loggedInProvider}
-                    loggedInCustomer={state.loggedInCustomer}
-                    loggedInAgent={state.loggedInAgent}
-                    isAdminLoggedIn={state.isAdminLoggedIn}
-                    isHotelLoggedIn={state.isHotelLoggedIn}
-                    isVillaLoggedIn={state.isVillaLoggedIn}
-                    therapists={state.therapists}
-                    places={state.places}
-                    notifications={state.notifications}
-                    bookings={state.bookings}
-                    user={state.user}
-                    userLocation={state.userLocation}
-                    selectedPlace={state.selectedPlace}
-                    selectedMassageType={state.selectedMassageType}
-                    providerForBooking={state.providerForBooking}
-                    adminMessages={state.adminMessages}
-                    providerAuthInfo={state.providerAuthInfo}
+                    isLoading={overriddenState.isLoading}
+                    loggedInUser={overriddenState.loggedInUser}
+                    loggedInProvider={overriddenState.loggedInProvider}
+                    loggedInCustomer={overriddenState.loggedInCustomer}
+                    loggedInAgent={overriddenState.loggedInAgent}
+                    isAdminLoggedIn={overriddenState.isAdminLoggedIn}
+                    isHotelLoggedIn={overriddenState.isHotelLoggedIn}
+                    isVillaLoggedIn={overriddenState.isVillaLoggedIn}
+                    therapists={overriddenState.therapists}
+                    places={overriddenState.places}
+                    notifications={overriddenState.notifications}
+                    bookings={overriddenState.bookings}
+                    user={overriddenState.user}
+                    userLocation={overriddenState.userLocation}
+                    selectedPlace={overriddenState.selectedPlace}
+                    selectedMassageType={overriddenState.selectedMassageType}
+                    providerForBooking={overriddenState.providerForBooking}
+                    adminMessages={overriddenState.adminMessages}
+                    providerAuthInfo={overriddenState.providerAuthInfo}
                     selectedTherapist={null}
                     selectedJobId={null}
-                    venueMenuId={state.venueMenuId}
+                    venueMenuId={overriddenState.venueMenuId}
                     hotelVillaLogo={null}
-                    impersonatedAgent={state.impersonatedAgent}
-                    handleLanguageSelect={navigation?.handleLanguageSelect || (() => Promise.resolve())}
+                    impersonatedAgent={overriddenState.impersonatedAgent}
+                    handleLanguageSelect={handleLanguageSelect}
                     handleEnterApp={navigation?.handleEnterApp || (() => Promise.resolve())}
                     handleSetUserLocation={navigation?.handleSetUserLocation || (() => {})}
                     handleSetSelectedPlace={navigation?.handleSetSelectedPlace || (() => {})}

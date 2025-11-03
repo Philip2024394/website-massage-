@@ -5,6 +5,7 @@ import { parsePricing } from '../utils/appwriteHelpers';
 import { analyticsService } from '../services/analyticsService';
 import { databases, ID } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
+import { useTranslations } from '../lib/useTranslations';
 import QRCodeGenerator from 'qrcode';
 // import Header from '../components/dashboard/Header';
 import PushNotificationSettings from '../components/PushNotificationSettings';
@@ -41,6 +42,8 @@ interface HotelDashboardPageProps {
 }
 
 const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, therapists = [], places = [], hotelId = '1', initialTab = 'analytics' }) => {
+    const { t } = useTranslations();
+    
     // Therapist banner images pool for randomization (must be defined before useMemo)
     const therapistBannerImages = [
         'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?q=80&w=1200&auto=format&fit=crop',
@@ -1378,7 +1381,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         {/* Info */}
                         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                             <p className="text-sm text-blue-800">
-                                <strong>Note:</strong> All packages include full access to Inda Street platform features. Contact us via WhatsApp to upgrade your membership.
+                                <strong>Note:</strong> All packages include full access to IndaStreet platform features. Contact us via WhatsApp to upgrade your membership.
                             </p>
                         </div>
                     </div>
@@ -1442,7 +1445,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                         </svg>
-                        <span className="font-medium">Analytics</span>
+                        <span className="font-medium">{t('dashboard.analytics')}</span>
                     </button>
 
                     <button
@@ -1457,7 +1460,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         }`}
                     >
                         <Tag className="w-5 h-5" />
-                        <span className="font-medium">Discounts</span>
+                        <span className="font-medium">{t('dashboard.discounts')}</span>
                     </button>
 
                     <button
@@ -1472,7 +1475,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         }`}
                     >
                         <User className="w-5 h-5" />
-                        <span className="font-medium">Profile</span>
+                        <span className="font-medium">{t('dashboard.profile')}</span>
                     </button>
 
                     <button
@@ -1487,7 +1490,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         }`}
                     >
                         <Menu className="w-5 h-5" />
-                        <span className="font-medium">Menu</span>
+                        <span className="font-medium">{t('dashboard.menu')}</span>
                         {providers.length > 0 && (
                             <span className="ml-auto bg-orange-500 text-white text-xs rounded-full px-2.5 py-0.5 font-bold">
                                 {providers.length}
@@ -1507,7 +1510,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         }`}
                     >
                         <Star className="w-5 h-5" />
-                        <span className="font-medium">Feedback</span>
+                        <span className="font-medium">{t('dashboard.feedback')}</span>
                     </button>
 
                     <button
@@ -1522,7 +1525,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         }`}
                     >
                         <Users className="w-5 h-5" />
-                        <span className="font-medium">Concierge</span>
+                        <span className="font-medium">{t('dashboard.concierge')}</span>
                     </button>
 
                     <button
@@ -1539,7 +1542,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <span className="font-medium">Commissions</span>
+                        <span className="font-medium">{t('dashboard.commissions')}</span>
                     </button>
 
                     <button
@@ -1554,7 +1557,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         }`}
                     >
                         <Bell className="w-5 h-5" />
-                        <span className="font-medium">Notifications</span>
+                        <span className="font-medium">{t('dashboard.notifications')}</span>
                     </button>
 
                     <button
@@ -1569,7 +1572,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         }`}
                     >
                         <MessageSquare className="w-5 h-5" />
-                        <span className="font-medium">Chat Support</span>
+                        <span className="font-medium">{t('dashboard.chatSupport')}</span>
                     </button>
 
                     <button
@@ -1584,7 +1587,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         }`}
                     >
                         <Settings className="w-5 h-5" />
-                        <span className="font-medium">Service Settings</span>
+                        <span className="font-medium">{t('dashboard.serviceSettings')}</span>
                     </button>
 
                     <button
@@ -1599,7 +1602,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         }`}
                     >
                         <Package className="w-5 h-5" />
-                        <span className="font-medium">Membership</span>
+                        <span className="font-medium">{t('dashboard.membership')}</span>
                     </button>
                 </nav>
 
@@ -1613,7 +1616,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors shadow-md"
                     >
                         <LogOut className="w-5 h-5" />
-                        <span className="font-medium">Logout</span>
+                        <span className="font-medium">{t('dashboard.logout')}</span>
                     </button>
                 </div>
             </div>

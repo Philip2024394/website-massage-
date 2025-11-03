@@ -9,6 +9,9 @@ interface AppDrawerProps {
     isOpen: boolean;
     onClose: () => void;
     
+    // Translation function
+    t?: (key: string) => string;
+    
     // Navigation callbacks
     onMassageJobsClick?: () => void;
     onHotelPortalClick?: () => void;
@@ -30,6 +33,7 @@ interface AppDrawerProps {
 export const AppDrawer: React.FC<AppDrawerProps> = ({
     isOpen,
     onClose,
+    t,
     onMassageJobsClick,
     onHotelPortalClick,
     onVillaPortalClick,
@@ -44,7 +48,57 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
     therapists = [],
     places = []
 }) => {
+    console.log('🚪 AppDrawer rendered with isOpen:', isOpen);
+    console.log('🔤 AppDrawer t prop:', { t, tType: typeof t, tIsFunction: typeof t === 'function' });
     if (!isOpen) return null;
+
+    // Default fallback translations
+    const translate = (key: string): string => {
+        if (t && typeof t === 'function') {
+            try {
+                const result = t(key);
+                // If translation returns the key itself, it means translation not found
+                if (result !== key) return result;
+            } catch (error) {
+                console.error('Translation function error:', error);
+            }
+        }
+        
+        // Fallback translations for AppDrawer
+        const fallbacks: Record<string, string> = {
+            'home.menu.sections.jobPosting': 'Job Posting',
+            'home.menu.sections.loginCreateAccount': 'Login / Create Account',
+            'home.menu.sections.company': 'Company',
+            'home.menu.massageJobs': 'Massage Jobs',
+            'home.menu.massageJobsDesc': 'Find opportunities',
+            'home.menu.hotel': 'Hotel',
+            'home.menu.hotelDesc': 'Hotel partner portal',
+            'home.menu.villa': 'Villa',
+            'home.menu.villaDesc': 'Villa partner portal',
+            'home.menu.therapists': 'Therapists',
+            'home.menu.therapistsDesc': 'Therapist portal',
+            'home.menu.massageSpa': 'Massage Spa',
+            'home.menu.massageSpaDesc': 'Spa partner portal',
+            'home.menu.agent': 'Agent',
+            'home.menu.agentDesc': 'Agent portal',
+            'home.menu.customer': 'Customer',
+            'home.menu.customerDesc': 'Customer portal',
+            'home.menu.aboutUs': 'About Us',
+            'home.menu.aboutUsDesc': 'Learn about us',
+            'home.menu.howItWorks': 'How It Works',
+            'home.menu.howItWorksDesc': 'Getting started',
+            'home.menu.blog': 'Blog',
+            'home.menu.blogDesc': 'Read our articles',
+            'home.menu.contact': 'Contact',
+            'home.menu.contactDesc': 'Get in touch',
+            'home.menu.termsOfService': 'Terms of Service',
+            'home.menu.termsDesc': 'Legal terms',
+            'home.menu.privacyPolicy': 'Privacy Policy',
+            'home.menu.privacyDesc': 'Privacy information',
+        };
+        
+        return fallbacks[key] || key;
+    };
 
     const handleItemClick = (callback?: () => void) => {
         callback?.();
@@ -65,8 +119,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                 {/* Header */}
                 <div className="p-6 flex justify-between items-center border-b border-gray-200">
                     <h2 className="font-bold text-2xl">
-                        <span className="text-black">inda</span>
-                        <span className="text-orange-500">Street</span>
+                        <span className="text-black">Inda</span><span className="text-orange-500">Street</span>
                     </h2>
                     <button 
                         onClick={onClose}
@@ -84,7 +137,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                         {/* JOB POSTING SECTION */}
                         <div className="mb-6">
                             <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2">
-                                Job Posting
+                                {translate('home.menu.sections.jobPosting')}
                             </h3>
                             <div className="space-y-2">
                                 <button 
@@ -96,9 +149,9 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                     </div>
                                     <div className="flex-grow">
                                         <p className="font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
-                                            Massage Jobs
+                                            {translate('home.menu.massageJobs')}
                                         </p>
-                                        <p className="text-xs text-gray-500">Find opportunities</p>
+                                        <p className="text-xs text-gray-500">{translate('home.menu.massageJobsDesc')}</p>
                                     </div>
                                 </button>
                             </div>
@@ -107,7 +160,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                         {/* LOGIN / CREATE ACCOUNT SECTION */}
                         <div className="mb-6">
                             <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2">
-                                Login / Create Account
+                                {translate('home.menu.sections.loginCreateAccount')}
                             </h3>
                             <div className="space-y-2">
                                 <button 
@@ -119,9 +172,9 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                     </div>
                                     <div className="flex-grow">
                                         <p className="font-semibold text-gray-800 group-hover:text-purple-600 transition-colors">
-                                            Hotel
+                                            {translate('home.menu.hotel')}
                                         </p>
-                                        <p className="text-xs text-gray-500">Hotel partner portal</p>
+                                        <p className="text-xs text-gray-500">{translate('home.menu.hotelDesc')}</p>
                                     </div>
                                 </button>
 
@@ -134,9 +187,9 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                     </div>
                                     <div className="flex-grow">
                                         <p className="font-semibold text-gray-800 group-hover:text-pink-600 transition-colors">
-                                            Villa
+                                            {translate('home.menu.villa')}
                                         </p>
-                                        <p className="text-xs text-gray-500">Villa partner portal</p>
+                                        <p className="text-xs text-gray-500">{translate('home.menu.villaDesc')}</p>
                                     </div>
                                 </button>
 
@@ -149,9 +202,9 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                     </div>
                                     <div className="flex-grow">
                                         <p className="font-semibold text-gray-800 group-hover:text-teal-600 transition-colors">
-                                            Therapists
+                                            {translate('home.menu.therapists')}
                                         </p>
-                                        <p className="text-xs text-gray-500">Therapist portal</p>
+                                        <p className="text-xs text-gray-500">{translate('home.menu.therapistsDesc')}</p>
                                     </div>
                                 </button>
 
@@ -164,9 +217,9 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                     </div>
                                     <div className="flex-grow">
                                         <p className="font-semibold text-gray-800 group-hover:text-indigo-600 transition-colors">
-                                            Massage Spa
+                                            {translate('home.menu.massageSpa')}
                                         </p>
-                                        <p className="text-xs text-gray-500">Spa partner portal</p>
+                                        <p className="text-xs text-gray-500">{translate('home.menu.massageSpaDesc')}</p>
                                     </div>
                                 </button>
 
@@ -179,9 +232,9 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                     </div>
                                     <div className="flex-grow">
                                         <p className="font-semibold text-gray-800 group-hover:text-yellow-600 transition-colors">
-                                            Agent
+                                            {translate('home.menu.agent')}
                                         </p>
-                                        <p className="text-xs text-gray-500">Agent portal</p>
+                                        <p className="text-xs text-gray-500">{translate('home.menu.agentDesc')}</p>
                                     </div>
                                 </button>
 
@@ -195,9 +248,9 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                         </div>
                                         <div className="flex-grow">
                                             <p className="font-semibold text-gray-800 group-hover:text-red-600 transition-colors">
-                                                Customer
+                                                {translate('home.menu.customer')}
                                             </p>
-                                            <p className="text-xs text-gray-500">Customer portal</p>
+                                            <p className="text-xs text-gray-500">{translate('home.menu.customerDesc')}</p>
                                         </div>
                                     </button>
                                 )}
@@ -207,7 +260,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                         {/* COMPANY SECTION */}
                         <div className="mb-6">
                             <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2">
-                                Company
+                                {translate('home.menu.sections.company')}
                             </h3>
                             <div className="space-y-2">
                                 <button 
@@ -218,8 +271,10 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                         <Info className="w-5 h-5 text-white" />
                                     </div>
                                     <div className="flex-grow">
-                                        <p className="font-semibold text-gray-800 group-hover:text-cyan-600 transition-colors">About Us</p>
-                                        <p className="text-xs text-gray-500">Learn about us</p>
+                                        <p className="font-semibold text-gray-800 group-hover:text-cyan-600 transition-colors">
+                                            {translate('home.menu.aboutUs')}
+                                        </p>
+                                        <p className="text-xs text-gray-500">{translate('home.menu.aboutUsDesc')}</p>
                                     </div>
                                 </button>
 
@@ -231,8 +286,10 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                         <HelpCircle className="w-5 h-5 text-white" />
                                     </div>
                                     <div className="flex-grow">
-                                        <p className="font-semibold text-gray-800 group-hover:text-cyan-600 transition-colors">How It Works</p>
-                                        <p className="text-xs text-gray-500">Getting started</p>
+                                        <p className="font-semibold text-gray-800 group-hover:text-cyan-600 transition-colors">
+                                            {translate('home.menu.howItWorks')}
+                                        </p>
+                                        <p className="text-xs text-gray-500">{translate('home.menu.howItWorksDesc')}</p>
                                     </div>
                                 </button>
 
@@ -244,8 +301,10 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                         <BookOpen className="w-5 h-5 text-white" />
                                     </div>
                                     <div className="flex-grow">
-                                        <p className="font-semibold text-gray-800 group-hover:text-cyan-600 transition-colors">Blog</p>
-                                        <p className="text-xs text-gray-500">Read our articles</p>
+                                        <p className="font-semibold text-gray-800 group-hover:text-cyan-600 transition-colors">
+                                            {translate('home.menu.blog')}
+                                        </p>
+                                        <p className="text-xs text-gray-500">{translate('home.menu.blogDesc')}</p>
                                     </div>
                                 </button>
 

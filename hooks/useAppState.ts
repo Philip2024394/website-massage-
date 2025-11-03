@@ -34,7 +34,7 @@ export const useAppState = () => {
     setToLocalStorage('app_user', newUser);
   };
 
-  const [page, _setPage] = useState<Page>('home'); // Changed from 'landing' to 'home' for testing
+  const [page, _setPage] = useState<Page>('landing'); // Start with landing page
   const setPage = (newPage: Page) => {
     console.log('📍 Page change:', newPage);
     _setPage(newPage);

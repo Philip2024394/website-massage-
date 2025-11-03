@@ -563,5 +563,38 @@ translations.id.privacyPolicy = {
   },
 };
 
+// Hotel/Villa Menu translations
+translations.en.hotelVillaMenu = {
+  loadingMenu: 'Loading menu...',
+  venueNotFound: 'Venue Not Found',
+  menuNotAvailable: 'This menu is not available.',
+  welcomeTitle: 'Welcome to Our Wellness Menu',
+  welcomeDescription: 'Browse our exclusive selection of professional therapists and wellness centers.',
+  bookingNote: 'Note the ID number and contact our front desk to book your perfect relaxation experience.',
+  therapistsTab: 'Therapists',
+  wellnessCentersTab: 'Wellness Centers',
+  noTherapistsAvailable: 'No therapists available at the moment',
+  noWellnessCentersAvailable: 'No wellness centers available at the moment',
+  bookingId: 'BOOKING ID',
+  showToFrontDesk: 'Show this number to our front desk',
+  allRightsReserved: 'All Rights Reserved',
+};
+
+translations.id.hotelVillaMenu = {
+  loadingMenu: 'Memuat menu...',
+  venueNotFound: 'Venue Tidak Ditemukan',
+  menuNotAvailable: 'Menu ini tidak tersedia.',
+  welcomeTitle: 'Selamat Datang di Menu Wellness Kami',
+  welcomeDescription: 'Jelajahi pilihan eksklusif terapis profesional dan pusat kesehatan kami.',
+  bookingNote: 'Catat nomor ID dan hubungi front desk kami untuk memesan pengalaman relaksasi yang sempurna.',
+  therapistsTab: 'Terapis',
+  wellnessCentersTab: 'Pusat Wellness',
+  noTherapistsAvailable: 'Tidak ada terapis yang tersedia saat ini',
+  noWellnessCentersAvailable: 'Tidak ada pusat wellness yang tersedia saat ini',
+  bookingId: 'ID BOOKING',
+  showToFrontDesk: 'Tunjukkan nomor ini ke front desk kami',
+  allRightsReserved: 'Hak Cipta Dilindungi',
+};
+
 export default translations;
 export { translations };

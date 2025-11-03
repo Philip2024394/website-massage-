@@ -34,10 +34,13 @@ interface UseProviderAgentHandlersProps {
     loggedInAgent: Agent | null;
     impersonatedAgent: Agent | null;
     therapists: Therapist[];
+    places: Place[];
     setLoggedInAgent: (agent: Agent | null) => void;
     setImpersonatedAgent: (agent: Agent | null) => void;
     setAdminMessages: (messages: any[]) => void;
     setPage: (page: Page) => void;
+    setTherapists: (therapists: Therapist[]) => void;
+    setPlaces: (places: Place[]) => void;
 }
 
 export const useProviderAgentHandlers = ({
@@ -45,10 +48,13 @@ export const useProviderAgentHandlers = ({
     loggedInAgent,
     impersonatedAgent,
     therapists,
+    places,
     setLoggedInAgent,
     setImpersonatedAgent,
     setAdminMessages,
-    setPage
+    setPage,
+    setTherapists,
+    setPlaces
 }: UseProviderAgentHandlersProps) => {
 
     const handleTherapistStatusChange = async (status: string, handleSaveTherapist: any) => {
@@ -133,6 +139,40 @@ export const useProviderAgentHandlers = ({
             }
             
             console.log('✅ Therapist profile saved successfully');
+            
+            // Update the therapists state to reflect the changes immediately
+            const updatedTherapists = therapists.map(therapist => {
+                const therapistAny = therapist as any;
+                if (therapist.id === loggedInProvider.id || therapistAny.$id === therapistId) {
+                    return {
+                        ...therapist,
+                        ...updateData,
+                        id: therapist.id || therapistId, // Preserve the existing ID structure
+                        $id: therapistAny.$id || therapistId // Preserve Appwrite ID if exists
+                    };
+                }
+                return therapist;
+            });
+            
+            // If this is a new therapist (wasn't found in the list), add it
+            const therapistExists = therapists.some(t => t.id === loggedInProvider.id || (t as any).$id === therapistId);
+            if (!therapistExists) {
+                const newTherapist = {
+                    ...updateData,
+                    id: loggedInProvider.id,
+                    $id: therapistId,
+                    isLive: false,
+                    rating: 0,
+                    reviewCount: 0,
+                    activeMembershipDate: new Date().toISOString().split('T')[0],
+                    email: `therapist${therapistId}@indostreet.com`,
+                };
+                updatedTherapists.push(newTherapist as any);
+            }
+            
+            setTherapists(updatedTherapists);
+            console.log('🔄 Updated therapists state with new data');
+            
             showToast('Profile saved successfully! All your changes have been saved.', 'success');
         } catch (error: any) {
             console.error('❌ Save error:', error);
@@ -160,6 +200,24 @@ export const useProviderAgentHandlers = ({
             const placeId = typeof loggedInProvider.id === 'string' ? loggedInProvider.id : loggedInProvider.id.toString();
             await placeService.update(placeId, updateData);
             console.log('✅ Place profile saved successfully');
+            
+            // Update the places state to reflect the changes immediately
+            const updatedPlaces = places.map(place => {
+                const placeAny = place as any;
+                if (place.id === loggedInProvider.id || placeAny.$id === placeId) {
+                    return {
+                        ...place,
+                        ...updateData,
+                        id: place.id || placeId, // Preserve the existing ID structure
+                        $id: placeAny.$id || placeId // Preserve Appwrite ID if exists
+                    };
+                }
+                return place;
+            });
+            
+            setPlaces(updatedPlaces);
+            console.log('🔄 Updated places state with new data');
+            
             showToast('Profile saved successfully! All your changes have been saved.', 'success');
         } catch (error: any) {
             console.error('❌ Save error:', error);

@@ -15,7 +15,7 @@ import AdminLoginPage from './pages/AdminLoginPage';
 import RegistrationChoicePage from './pages/RegistrationChoicePage';
 import TherapistDashboardPage from './pages/TherapistDashboardPage';
 import TherapistStatusPage from './pages/TherapistStatusPage';
-import PlaceDashboardPage from './pages/PlaceDashboardPage';
+import MassagePlaceAdminDashboard from './pages/MassagePlaceAdminDashboard';
 import AgentPage from './pages/AgentPage';
 import AgentAuthPage from './pages/AgentAuthPage';
 import AgentDashboardPage from './pages/AgentDashboardPage';
@@ -222,7 +222,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         handleSelectRegistration,
         handleTherapistStatusChange,
         handleSaveTherapist,
-        handleSavePlace,
+        handleSavePlace: _handleSavePlace,
         handleAgentRegister,
         handleAgentLogin,
         handleAgentAcceptTerms,
@@ -393,17 +393,13 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 t={t.providerDashboard}
             /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice} />;
             
-        case 'placeDashboard': 
-            return loggedInProvider && loggedInProvider.type === 'place' ? <PlaceDashboardPage 
-                placeId={typeof loggedInProvider.id === 'string' ? parseInt(loggedInProvider.id) : loggedInProvider.id}
-                onSave={handleSavePlace}
+        case 'placeDashboard': {
+            const currentPlace = places.find(p => p.id === loggedInProvider?.id);
+            return loggedInProvider && loggedInProvider.type === 'place' && currentPlace ? <MassagePlaceAdminDashboard 
+                place={currentPlace}
                 onLogout={handleProviderLogout}
-                onNavigateToNotifications={handleNavigateToNotifications}
-                onUpdateBookingStatus={handleUpdateBookingStatus}
-                bookings={bookings.filter(b => b.providerId === loggedInProvider.id && b.providerType === 'place')}
-                notifications={notifications.filter(n => n.providerId === loggedInProvider.id)}
-                t={t.providerDashboard}
-            /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice} />;        case 'agent': 
+            /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice} />;
+        }        case 'agent': 
             return <AgentPage onBack={handleBackToHome} onNavigateToAgentAuth={handleNavigateToAgentAuth} t={t.agentPage} contactNumber={APP_CONFIG.CONTACT_NUMBER} />;
             
         case 'agentAuth': 
@@ -783,6 +779,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 logo={hotelVillaLogo || ''}
                 therapists={therapists}
                 places={places}
+                language={language}
                 onBook={handleNavigateToBooking}
                 onBack={handleBackToHome}
                 onNavigate={(page: Page) => setPage(page as Page)}

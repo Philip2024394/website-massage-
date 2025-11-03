@@ -4,6 +4,7 @@ import type { Page } from '../types/pageTypes';
 import PlaceCard from '../components/PlaceCard';
 import TherapistCard from '../components/TherapistCard';
 import { getRandomLiveMenuImage } from '../lib/appwriteService';
+import { useTranslations } from '../lib/useTranslations';
 
 interface VenueProfile {
     id: string;
@@ -20,6 +21,7 @@ interface HotelVillaMenuPageProps {
     logo?: string;
     therapists: Therapist[];
     places: Place[];
+    language?: string;
     onBook: (provider: Therapist | Place, type: 'therapist' | 'place') => void;
     onBack?: () => void;
     onNavigate?: (page: Page) => void;
@@ -30,11 +32,15 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
     venueId, 
     therapists, 
     places, 
+    language = 'en',
     onBook 
 }) => {
     const [venue, setVenue] = useState<VenueProfile | null>(null);
     const [activeTab, setActiveTab] = useState<'therapists' | 'places'>('therapists');
     const [loading, setLoading] = useState(true);
+    
+    // Use translations
+    const { t } = useTranslations(language as 'en' | 'id');
 
     useEffect(() => {
         // TODO: Fetch venue profile from Appwrite using venueId
@@ -69,7 +75,7 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
             <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white flex items-center justify-center">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-orange-500 mx-auto"></div>
-                    <p className="mt-4 text-gray-600">Loading menu...</p>
+                    <p className="mt-4 text-gray-600">{t('hotelVillaMenu.loadingMenu')}</p>
                 </div>
             </div>
         );
@@ -79,8 +85,8 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
         return (
             <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white flex items-center justify-center p-4">
                 <div className="text-center">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-2">Venue Not Found</h2>
-                    <p className="text-gray-600">This menu is not available.</p>
+                    <h2 className="text-2xl font-bold text-gray-800 mb-2">{t('hotelVillaMenu.venueNotFound')}</h2>
+                    <p className="text-gray-600">{t('hotelVillaMenu.menuNotAvailable')}</p>
                 </div>
             </div>
         );
@@ -135,11 +141,11 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
             <div className="bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 text-white py-8 px-4 shadow-lg">
                 <div className="max-w-4xl mx-auto text-center">
                     <h2 className="text-3xl md:text-4xl font-bold mb-3">
-                        Welcome to Our Wellness Menu
+                        {t('hotelVillaMenu.welcomeTitle')}
                     </h2>
                     <p className="text-orange-50 text-base md:text-lg leading-relaxed max-w-3xl mx-auto">
-                        Browse our exclusive selection of professional therapists and wellness centers. 
-                        <span className="block mt-2 font-semibold">Note the ID number and contact our front desk to book your perfect relaxation experience.</span>
+                        {t('hotelVillaMenu.welcomeDescription')}
+                        <span className="block mt-2 font-semibold">{t('hotelVillaMenu.bookingNote')}</span>
                     </p>
                 </div>
             </div>
@@ -159,7 +165,7 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
-                            <span>Therapists ({liveTherapists.length})</span>
+                            <span>{t('hotelVillaMenu.therapistsTab')} ({liveTherapists.length})</span>
                         </div>
                     </button>
                     <button
@@ -174,7 +180,7 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                             </svg>
-                            <span>Wellness Centers ({livePlaces.length})</span>
+                            <span>{t('hotelVillaMenu.wellnessCentersTab')} ({livePlaces.length})</span>
                         </div>
                     </button>
                 </div>
@@ -189,7 +195,7 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
                                 <svg className="w-20 h-20 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                                 </svg>
-                                <p className="text-gray-500 text-lg">No therapists available at the moment</p>
+                                <p className="text-gray-500 text-lg">{t('hotelVillaMenu.noTherapistsAvailable')}</p>
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -200,16 +206,16 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
                                             onRate={() => {}}
                                             onBook={() => onBook(therapist, 'therapist')}
                                             onIncrementAnalytics={() => {}}
-                                            t={{}}
+                                            t={t}
                                         />
                                         {/* ID Number Badge */}
                                         <div className="bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 px-6 py-4 text-center relative overflow-hidden">
                                             <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
-                                            <p className="text-white/90 text-sm font-semibold mb-1 tracking-wide relative z-10">BOOKING ID</p>
+                                            <p className="text-white/90 text-sm font-semibold mb-1 tracking-wide relative z-10">{t('hotelVillaMenu.bookingId')}</p>
                                             <p className="text-white text-3xl md:text-4xl font-bold tracking-wider relative z-10 drop-shadow-lg">
                                                 #{String(therapist.id).padStart(4, '0')}
                                             </p>
-                                            <p className="text-white/80 text-xs mt-2 relative z-10">Show this number to our front desk</p>
+                                            <p className="text-white/80 text-xs mt-2 relative z-10">{t('hotelVillaMenu.showToFrontDesk')}</p>
                                         </div>
                                     </div>
                                 ))}
@@ -223,7 +229,7 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
                                 <svg className="w-20 h-20 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                 </svg>
-                                <p className="text-gray-500 text-lg">No wellness centers available at the moment</p>
+                                <p className="text-gray-500 text-lg">{t('hotelVillaMenu.noWellnessCentersAvailable')}</p>
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -237,11 +243,11 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
                                         {/* ID Number Badge */}
                                         <div className="bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 px-6 py-4 text-center relative overflow-hidden">
                                             <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
-                                            <p className="text-white/90 text-sm font-semibold mb-1 tracking-wide relative z-10">BOOKING ID</p>
+                                            <p className="text-white/90 text-sm font-semibold mb-1 tracking-wide relative z-10">{t('hotelVillaMenu.bookingId')}</p>
                                             <p className="text-white text-3xl md:text-4xl font-bold tracking-wider relative z-10 drop-shadow-lg">
                                                 #{String(place.id).padStart(4, '0')}
                                             </p>
-                                            <p className="text-white/80 text-xs mt-2 relative z-10">Show this number to our front desk</p>
+                                            <p className="text-white/80 text-xs mt-2 relative z-10">{t('hotelVillaMenu.showToFrontDesk')}</p>
                                         </div>
                                     </div>
                                 ))}
@@ -255,7 +261,7 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
             <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white py-8 px-4 mt-20 border-t-4 border-orange-500">
                 <div className="max-w-4xl mx-auto text-center">
                     <p className="text-gray-400 text-sm">
-                        © {new Date().getFullYear()} | All Rights Reserved
+                        © {new Date().getFullYear()} | {t('hotelVillaMenu.allRightsReserved')}
                     </p>
                 </div>
             </div>

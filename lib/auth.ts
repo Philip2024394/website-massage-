@@ -55,7 +55,7 @@ export const adminAuth = {
             // Get user
             const user = await account.get();
             
-            // Get admin document
+            // Get admin document - with improved error handling
             try {
                 const admins = await databases.listDocuments(
                     DATABASE_ID,
@@ -65,14 +65,15 @@ export const adminAuth = {
                 const admin = admins.documents.find((doc: any) => doc.userId === user.$id);
                 
                 if (!admin) {
-                    console.warn('⚠️ Admin document not found for user');
-                    return { success: true, userId: user.$id, error: 'Admin document not found' };
+                    console.warn('⚠️ Admin document not found for user, but allowing login');
+                    return { success: true, userId: user.$id, error: 'Admin document not found but login allowed' };
                 }
                 
                 return { success: true, userId: user.$id, documentId: admin.$id };
             } catch (dbError: any) {
-                console.warn('⚠️ Admins collection not found');
-                return { success: true, userId: user.$id, error: 'Admin collection not configured' };
+                console.warn('⚠️ Admins collection query failed, but allowing login anyway:', dbError.message);
+                // Allow admin access even if collection query fails
+                return { success: true, userId: user.$id, error: 'Admin collection query failed but login allowed' };
             }
         } catch (error: any) {
             console.error('Admin sign in error:', error);

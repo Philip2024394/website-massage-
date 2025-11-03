@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import type { Language } from '../types/pageTypes';
 
 interface CookieConsentProps {
-  language: 'en' | 'id';
+  language: Language;
   hasLocation: boolean;
   onNavigateToCookiesPolicy?: () => void;
 }
@@ -55,7 +56,7 @@ const CookieConsent: React.FC<CookieConsentProps> = ({ language, hasLocation, on
     }
   };
 
-  const t = translations[language];
+  const t = translations[language] || translations.en;
 
   return (
     <div 

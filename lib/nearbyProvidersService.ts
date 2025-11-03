@@ -51,16 +51,31 @@ const calculateEnhancedDistance = async (
 };
 
 /**
- * Parse coordinates string from therapist/place data
+ * Parse coordinates from therapist/place data - handles string, object, or array formats
  */
-const parseCoordinates = (coordinatesString: string): { lat: number; lng: number } | null => {
+const parseCoordinates = (coordinates: any): { lat: number; lng: number } | null => {
     try {
-        const coords = JSON.parse(coordinatesString);
+        let coords = coordinates;
+        
+        // If it's a string, parse it
+        if (typeof coordinates === 'string') {
+            coords = JSON.parse(coordinates);
+        }
+        
+        // Handle object format: {lat: number, lng: number}
         if (coords && typeof coords.lat === 'number' && typeof coords.lng === 'number') {
             return coords;
         }
+        
+        // Handle array format: [lat, lng]
+        if (Array.isArray(coords) && coords.length === 2 && 
+            typeof coords[0] === 'number' && typeof coords[1] === 'number') {
+            return { lat: coords[0], lng: coords[1] };
+        }
+        
+        console.warn('Coordinates format not recognized:', coords);
     } catch (error) {
-        console.warn('Failed to parse coordinates:', coordinatesString);
+        console.warn('Failed to parse coordinates:', coordinates, error);
     }
     return null;
 };

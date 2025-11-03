@@ -6,7 +6,6 @@ import MassagePlaceCard from '../components/MassagePlaceCard';
 import RatingModal from '../components/RatingModal';
 import { MASSAGE_TYPES_CATEGORIZED } from '../constants/rootConstants';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
-import AddToHomeScreenPrompt from '../components/AddToHomeScreenPrompt';
 import { customLinksService, reviewService } from '../lib/appwriteService';
 import { AppDrawer } from '../components/AppDrawer';
 import { Users, Building, Sparkles } from 'lucide-react';
@@ -93,17 +92,109 @@ const HomePage: React.FC<HomePageProps> = ({
     onNavigate, 
     t 
 }) => {
-    // Safety check for translations
+    // Enhanced debug logging for translations
+    console.log('🏠 HomePage received translations:', {
+        tExists: !!t,
+        tType: typeof t,
+        tIsFunction: typeof t === 'function',
+        tKeys: t && typeof t === 'object' ? Object.keys(t) : 'not an object',
+    });
+    
+    // Create a safe translation function
+    const safeT = typeof t === 'function' ? t : (key: string) => {
+        console.warn(`Translation function not available for key: ${key}`);
+        return key;
+    };
+
+    // Adapter: Convert translation function to object structure for HomePage compatibility
+    if (t && typeof t === 'function') {
+        console.log('🔄 Converting translation function to object structure for HomePage');
+        const homeTranslations = {
+            homeServiceTab: t('home.homeServiceTab'),
+            massagePlacesTab: t('home.massagePlacesTab'),
+            loading: t('home.loading'),
+            loginSignUp: t('home.loginSignUp'), 
+            noMoreTherapists: t('home.noMoreTherapists'),
+            setLocation: t('home.setLocation'),
+            updateLocation: t('home.updateLocation'),
+            massageType: t('home.massageType'),
+            therapistsOnline: t('home.therapistsOnline'),
+            searchPlaceholder: t('home.searchPlaceholder'),
+            noResults: t('home.noResults')
+        };
+        
+        // Create object structure that HomePage expects
+        t = {
+            home: homeTranslations,
+            detail: {},
+            locationModal: {
+                title: t('locationModal.title'),
+                prompt: t('locationModal.prompt'),
+                placeholder: t('locationModal.placeholder'),
+                detectingLocation: t('locationModal.detectingLocation') || 'Mendeteksi lokasi Anda...',
+                useCurrentLocationButton: t('locationModal.useCurrentLocationButton'),
+                searchLocation: t('locationModal.searchLocation') || 'Cari Lokasi',
+                confirmButton: t('locationModal.confirmButton'),
+                locationError: t('locationModal.locationError') || 'Tidak dapat mendeteksi lokasi',
+                selectLocation: t('locationModal.selectLocation') || 'Silakan pilih lokasi'
+            },
+            common: {}
+        };
+        console.log('✅ Converted function-based translations to object structure for HomePage');
+    }
+
+    // Safety check for translations - use fallback if needed
     if (!t || !t.home) {
-        console.error('HomePage: Missing translations object or t.home', { t });
-        return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="text-center">
-                    <p className="text-red-600 font-bold">Translation Error</p>
-                    <p className="text-gray-600">Unable to load translations. Please refresh the page.</p>
-                </div>
-            </div>
-        );
+        console.warn('HomePage: Missing translations object or t.home, using fallback', { 
+            t, 
+            hasT: !!t, 
+            tKeys: t ? Object.keys(t) : [],
+            hasHome: t ? !!t.home : false 
+        });
+        
+        // Import fallback translations if needed
+        const fallbackHome = {
+            homeServiceTab: t('home.homeServiceTab') || "Layanan Rumah",
+            massagePlacesTab: t('home.massagePlacesTab') || "Tempat Pijat",
+            loading: t('home.loading') || "Memuat...",
+            loginSignup: t('home.loginSignUp') || "Masuk / Daftar",
+            locationLabel: "Lokasi Anda",
+            selectLocation: "Pilih Lokasi",
+            setLocation: t('home.setLocation') || "Atur Lokasi",
+            nearbyTherapists: "Terapis Terdekat",
+            nearbyMassagePlaces: "Tempat Pijat Terdekat",
+            noTherapists: "Tidak ada terapis ditemukan di area Anda",
+            noMassagePlaces: "Tidak ada tempat pijat ditemukan di area Anda",
+            distanceAway: "jauhnya",
+            bookNow: "Pesan Sekarang",
+            viewProfile: "Lihat Profil",
+            whatsapp: "WhatsApp",
+            rating: "Rating",
+            priceFrom: "Mulai dari",
+            priceSession: "per sesi",
+            locationRequired: "Lokasi Diperlukan",
+            locationRequiredDesc: "Silakan atur lokasi Anda untuk melihat layanan terdekat",
+            getAllServices: "Dapatkan Semua Layanan",
+            filterByMassageType: "Filter berdasarkan jenis pijat",
+            allMassageTypes: "Semua Jenis",
+            requestLocation: "Minta Akses Lokasi",
+            therapistsOnline: t('home.therapistsOnline') || "{count} dari {total} terapis online",
+            footer: {
+                agentLink: "Become an Agent",
+                termsLink: "Terms of Service", 
+                privacyLink: "Privacy Policy"
+            }
+        };
+        
+        // Create a temporary t object with fallback
+        const fallbackT = { 
+            home: fallbackHome,
+            ...(t || {})
+        };
+        
+        console.log('✅ Using fallback translations for HomePage');
+        // Continue with fallback instead of showing error
+        t = fallbackT;
     }
 
     const [activeTab, setActiveTab] = useState('home');
@@ -358,7 +449,12 @@ const HomePage: React.FC<HomePageProps> = ({
                             </svg>
                         </button>
 
-                        <button onClick={() => setIsMenuOpen(true)} title="Menu">
+                        <button onClick={() => {
+                            console.log('🍔 Burger menu clicked! Current isMenuOpen:', isMenuOpen);
+                            console.log('🍔 Setting isMenuOpen to true');
+                            setIsMenuOpen(true);
+                            console.log('🍔 After setting - isMenuOpen should be true');
+                        }} title="Menu" style={{ zIndex: 9999, position: 'relative' }}>
                            <BurgerMenuIcon className="w-6 h-6" />
                         </button>
                     </div>
@@ -368,7 +464,11 @@ const HomePage: React.FC<HomePageProps> = ({
             {/* Global App Drawer */}
             <AppDrawer
                 isOpen={isMenuOpen}
-                onClose={() => setIsMenuOpen(false)}
+                onClose={() => {
+                    console.log('🍔 AppDrawer onClose called');
+                    setIsMenuOpen(false);
+                }}
+                t={safeT}
                 onMassageJobsClick={onMassageJobsClick}
                 onHotelPortalClick={onHotelPortalClick}
                 onVillaPortalClick={onVillaPortalClick}
@@ -388,7 +488,11 @@ const HomePage: React.FC<HomePageProps> = ({
             <main className="p-4">
                 <div className="flex items-center justify-center gap-2 text-gray-500 mb-4">
                     <Users className="w-5 h-5"/>
-                    <span className="font-medium">{t.home.therapistsOnline.replace('{count}', onlineTherapistsCount).replace('{total}', therapists.length)}</span>
+                    <span className="font-medium">
+                        {(t.home.therapistsOnline || "{count} of {total} therapists online")
+                            .replace('{count}', onlineTherapistsCount.toString())
+                            .replace('{total}', therapists.length.toString())}
+                    </span>
                 </div>
 
                 <div className="flex bg-gray-200 rounded-full p-1 mb-4">
@@ -493,8 +597,8 @@ const HomePage: React.FC<HomePageProps> = ({
                 {activeTab === 'home' && (
                     <div>
                         <div className="mb-6 text-center">
-                            <h3 className="text-2xl font-bold text-gray-900 mb-2">Home Massage Therapists</h3>
-                            <p className="text-gray-600">Discover top-rated massage therapists in Bali</p>
+                            <h3 className="text-2xl font-bold text-gray-900 mb-2">Terapis Pijat Rumahan</h3>
+                            <p className="text-gray-600">Temukan terapis pijat terbaik di Bali</p>
                         </div>
                         
                         <div className="space-y-4">
@@ -529,7 +633,7 @@ const HomePage: React.FC<HomePageProps> = ({
                             })}
                         {nearbyTherapists.filter((t: any) => t.isLive === true).length === 0 && (
                             <div className="text-center py-12 bg-white rounded-lg">
-                                <p className="text-gray-500">No therapists available in your area at the moment.</p>
+                                <p className="text-gray-500">Tidak ada terapis tersedia di area Anda saat ini.</p>
                                 {autoDetectedLocation && (
                                     <p className="text-gray-400 text-sm mt-2">
                                         Showing providers within 15km of your location
@@ -565,8 +669,8 @@ const HomePage: React.FC<HomePageProps> = ({
                 {activeTab === 'places' && (
                     <div>
                         <div className="mb-6 text-center">
-                            <h3 className="text-2xl font-bold text-gray-900 mb-2">Featured Massage Spas</h3>
-                            <p className="text-gray-600">Discover top-rated massage places in Bali</p>
+                            <h3 className="text-2xl font-bold text-gray-900 mb-2">Spa Pijat Unggulan</h3>
+                            <p className="text-gray-600">Temukan tempat pijat terbaik di Bali</p>
                         </div>
                         
                         {/* Show places from Appwrite */}
@@ -587,7 +691,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                             </svg>
                                         </div>
-                                        <p className="text-gray-500 mb-2 text-lg font-semibold">No massage places available in your area</p>
+                                        <p className="text-gray-500 mb-2 text-lg font-semibold">Tidak ada tempat pijat tersedia di area Anda</p>
                                         <p className="text-sm text-gray-400">Check back soon for featured spas!</p>
                                         {autoDetectedLocation && (
                                             <p className="text-xs text-gray-300 mt-2">
@@ -637,7 +741,6 @@ const HomePage: React.FC<HomePageProps> = ({
 
                 {/* ...existing code for therapists/places rendering, modals, etc. should follow here... */}
             </main>
-            <AddToHomeScreenPrompt t={t.a2hsPrompt} hasLocation={!!userLocation} />
             {isLocationModalOpen && (
                 <LocationModal
                     onConfirm={(location) => {

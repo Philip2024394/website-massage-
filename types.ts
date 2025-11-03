@@ -254,6 +254,16 @@ export interface Therapist {
     activeMembershipDate: string;
     membershipStartDate?: string; // Date when therapist first became active
     
+    // Multi-language support for auto-translation
+    description_en?: string; // English description
+    description_id?: string; // Indonesian description
+    location_en?: string; // English location
+    location_id?: string; // Indonesian location
+    massageTypes_en?: MassageTypesString; // English massage types
+    massageTypes_id?: MassageTypesString; // Indonesian massage types
+    name_en?: string; // English name (for international therapists)
+    name_id?: string; // Indonesian name
+    
     // Verification badge fields
     isVerified?: boolean;
     verifiedAt?: string;

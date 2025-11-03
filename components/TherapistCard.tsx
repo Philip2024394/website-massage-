@@ -468,19 +468,27 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                             <div className="flex-grow">
                             </div>
                         </div>
-                         <p className="text-sm text-gray-600 mt-10">{therapist.description}</p>
+                         <p className="text-sm text-gray-600 mt-10">
+                             {(() => {
+                                 const currentLanguage = _t?.home?.homeServiceTab === 'Layanan Rumah' ? 'id' : 'en';
+                                 const translatedDesc = currentLanguage === 'id' 
+                                     ? (therapist.description_id || therapist.description)
+                                     : (therapist.description_en || therapist.description);
+                                 return translatedDesc || _t.home?.therapistCard?.genericBio || 'Terapis pijat profesional dengan pengalaman dalam berbagai teknik pijat.';
+                             })()}
+                         </p>
                     </div>
                 </div>
 
             <div>
                 <div className="flex justify-between items-center mb-3">
-                    <h4 className="text-sm font-semibold text-gray-700">Massage Types</h4>
+                    <h4 className="text-sm font-semibold text-gray-700">{_t.home?.therapistCard?.massageTypes || 'Jenis Pijat'}</h4>
                     {therapist.yearsOfExperience && (
                         <span className="text-sm font-semibold text-gray-700 flex items-center gap-1">
                             <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
                                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
                             </svg>
-                            {therapist.yearsOfExperience} Years Experience
+                            {therapist.yearsOfExperience} {_t.home?.therapistCard?.yearsExperience || 'Tahun Pengalaman'}
                         </span>
                     )}
                 </div>
@@ -615,7 +623,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     className="w-1/2 flex items-center justify-center gap-2 bg-green-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-600 transition-colors duration-300"
                 >
                     <WhatsAppIcon className="w-5 h-5"/>
-                    <span>Book Now</span>
+                    <span>{_t.home?.therapistCard?.orderNow || 'Pesan Sekarang'}</span>
                 </button>
                  <button 
                     onClick={() => {
@@ -630,7 +638,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     className="w-1/2 flex items-center justify-center gap-2 bg-orange-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-orange-600 transition-colors duration-300"
                 >
                     <CalendarIcon className="w-5 h-5"/>
-                    <span>Schedule</span>
+                    <span>{_t.home?.therapistCard?.schedule || 'Jadwalkan'}</span>
                 </button>
             </div>
 

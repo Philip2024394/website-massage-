@@ -141,25 +141,10 @@ export const useNavigation = ({
 
     // Landing page navigation handlers
     const handleLanguageSelect = useCallback(async (lang: Language) => {
-        // Set flag to start fresh (prevent session restore)
-        sessionStorage.setItem('start_fresh', 'true');
-        
-        // Clear all dashboard sessions when entering from landing page
-        setIsAdminLoggedIn(false);
-        setIsHotelLoggedIn(false);
-        setIsVillaLoggedIn(false);
-        setLoggedInProvider(null);
-        setLoggedInAgent(null);
-        setImpersonatedAgent(null);
-        setLoggedInCustomer(null);
-        
-        // Clear session storage
-        await logout();
-        
+        console.log('🌐 Language selection on landing page:', lang);
+        // Only set language, don't navigate or logout
         setLanguage(lang);
-        setPage('home');
-    }, [setIsAdminLoggedIn, setIsHotelLoggedIn, setIsVillaLoggedIn, setLoggedInProvider, 
-        setLoggedInAgent, setImpersonatedAgent, setLoggedInCustomer, setLanguage, setPage]);
+    }, [setLanguage]);
 
     const handleEnterApp = useCallback(async (lang: Language, location: UserLocation) => {
         // Set flag to start fresh (prevent session restore)
