@@ -3,12 +3,16 @@ import type { Place, Analytics } from '../types';
 import Button from '../components/Button';
 import { analyticsService } from '../services/analyticsService';
 import { notificationService } from '../lib/appwriteService';
+import BookingConfirmationPopup from '../components/BookingConfirmationPopup';
 
 interface PlaceDetailPageProps {
     place: Place;
     onBack: () => void;
     onBook: (place: Place) => void;
+    onQuickBookWithChat?: (place: Place) => void; // Quick book with chat
     onIncrementAnalytics: (metric: keyof Analytics) => void;
+    onShowRegisterPrompt?: () => void; // Show registration popup
+    isCustomerLoggedIn?: boolean; // Check if customer is logged in
     t: any;
     loggedInProviderId?: number; // To prevent self-notification
 }
@@ -20,12 +24,42 @@ const WhatsAppIcon: React.FC<{className?: string}> = ({ className }) => (
 );
 
 
-const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({ place, onBack, onBook, onIncrementAnalytics, t, loggedInProviderId }) => {
+const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({ 
+    place, 
+    onBack, 
+    onBook, 
+    onQuickBookWithChat,
+    onIncrementAnalytics, 
+    onShowRegisterPrompt,
+    isCustomerLoggedIn = false,
+    t, 
+    loggedInProviderId 
+}) => {
     const [currentMainImage, setCurrentMainImage] = useState(place.mainImage);
+    const [showBookingConfirmation, setShowBookingConfirmation] = useState(false);
+    
+    // Detect language from translations object
+    const currentLanguage: 'en' | 'id' = t?.contactButton === 'Contact' ? 'en' : 'id';
 
     // Parse JSON strings
     const massageTypes = typeof place.massageTypes === 'string' ? JSON.parse(place.massageTypes) : place.massageTypes;
     const pricing = typeof place.pricing === 'string' ? JSON.parse(place.pricing) : place.pricing;
+    
+    // Check if place has active discount
+    const hasDiscount = place.discountPercentage && place.discountPercentage > 0;
+    
+    // Calculate discounted prices
+    const getDiscountedPrice = (originalPrice: number) => {
+        if (hasDiscount) {
+            return Math.round(originalPrice * (1 - place.discountPercentage! / 100));
+        }
+        return originalPrice;
+    };
+
+    // Format price for display (adds K suffix)
+    const formatPrice = (price: number) => {
+        return price.toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false});
+    };
 
     useEffect(() => {
         // Track real analytics
@@ -40,11 +74,6 @@ const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({ place, onBack, onBook
     }, [place.id]);
 
     const openWhatsApp = () => {
-        // Play click sound
-        const audio = new Audio('/sounds/success-notification.mp3');
-        audio.volume = 0.3; // Quiet click sound
-        audio.play().catch(err => console.log('Sound play failed:', err));
-
         // Convert place.id to number for comparison
         const placeIdNumber = typeof place.id === 'string' ? parseInt(place.id) : place.id;
 
@@ -145,34 +174,116 @@ const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({ place, onBack, onBook
 
             <div className="px-4 py-2 mt-4">
                 <h3 className="text-xl font-semibold text-gray-800 mb-2">{t.pricingTitle}</h3>
-                 <div className="grid grid-cols-3 gap-2 text-center text-sm text-gray-600">
-                    <div className="bg-brand-green-light p-3 rounded-lg">
+                <div className="grid grid-cols-3 gap-2 text-center text-sm text-gray-600">
+                    {/* 60 min pricing */}
+                    <div className={`bg-brand-green-light p-3 rounded-lg border border-gray-200 shadow-md relative transition-all duration-500 ${
+                        hasDiscount 
+                            ? 'shadow-orange-500/60 shadow-xl ring-4 ring-orange-400/40 bg-gradient-to-br from-orange-50 to-orange-100 animate-pulse border-orange-300' 
+                            : ''
+                    }`}>
                         <p>60 min</p>
-                        <p className="font-bold text-lg text-brand-green-dark">Rp {Number(pricing[60]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
+                        {hasDiscount ? (
+                            <>
+                                <p className="font-bold text-lg text-brand-green-dark">
+                                    Rp {formatPrice(getDiscountedPrice(Number(pricing[60])))}K
+                                </p>
+                                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-10 h-10 flex items-center justify-center shadow-lg animate-bounce">
+                                    -{place.discountPercentage}%
+                                </span>
+                            </>
+                        ) : (
+                            <p className="font-bold text-lg text-brand-green-dark">
+                                Rp {formatPrice(Number(pricing[60]))}K
+                            </p>
+                        )}
                     </div>
-                    <div className="bg-brand-green-light p-3 rounded-lg">
+                    
+                    {/* 90 min pricing */}
+                    <div className={`bg-brand-green-light p-3 rounded-lg border border-gray-200 shadow-md relative transition-all duration-500 ${
+                        hasDiscount 
+                            ? 'shadow-orange-500/60 shadow-xl ring-4 ring-orange-400/40 bg-gradient-to-br from-orange-50 to-orange-100 animate-pulse border-orange-300' 
+                            : ''
+                    }`}>
                         <p>90 min</p>
-                        <p className="font-bold text-lg text-brand-green-dark">Rp {Number(pricing[90]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
+                        {hasDiscount ? (
+                            <>
+                                <p className="font-bold text-lg text-brand-green-dark">
+                                    Rp {formatPrice(getDiscountedPrice(Number(pricing[90])))}K
+                                </p>
+                                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-10 h-10 flex items-center justify-center shadow-lg animate-bounce">
+                                    -{place.discountPercentage}%
+                                </span>
+                            </>
+                        ) : (
+                            <p className="font-bold text-lg text-brand-green-dark">
+                                Rp {formatPrice(Number(pricing[90]))}K
+                            </p>
+                        )}
                     </div>
-                    <div className="bg-brand-green-light p-3 rounded-lg">
+                    
+                    {/* 120 min pricing */}
+                    <div className={`bg-brand-green-light p-3 rounded-lg border border-gray-200 shadow-md relative transition-all duration-500 ${
+                        hasDiscount 
+                            ? 'shadow-orange-500/60 shadow-xl ring-4 ring-orange-400/40 bg-gradient-to-br from-orange-50 to-orange-100 animate-pulse border-orange-300' 
+                            : ''
+                    }`}>
                         <p>120 min</p>
-                        <p className="font-bold text-lg text-brand-green-dark">Rp {Number(pricing[120]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
+                        {hasDiscount ? (
+                            <>
+                                <p className="font-bold text-lg text-brand-green-dark">
+                                    Rp {formatPrice(getDiscountedPrice(Number(pricing[120])))}K
+                                </p>
+                                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-10 h-10 flex items-center justify-center shadow-lg animate-bounce">
+                                    -{place.discountPercentage}%
+                                </span>
+                            </>
+                        ) : (
+                            <p className="font-bold text-lg text-brand-green-dark">
+                                Rp {formatPrice(Number(pricing[120]))}K
+                            </p>
+                        )}
                     </div>
                 </div>
             </div>
 
             <div className="p-4 mt-4 sticky bottom-0 bg-white border-t flex gap-2">
                  <button
-                    onClick={openWhatsApp}
-                    className="w-1/2 flex items-center justify-center gap-2 bg-green-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-600 transition-colors duration-300"
+                    onClick={() => {
+                        console.log('🟢 WhatsApp button clicked - will play sound');
+                        openWhatsApp();
+                    }}
+                    className="w-1/2 flex items-center justify-center gap-2 bg-green-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-600 transition-colors duration-300 shadow-md"
                 >
                     <WhatsAppIcon className="w-5 h-5"/>
                     <span>{t.contactButton}</span>
                 </button>
-                <Button onClick={() => onBook(place)} className="w-1/2">
-                    {t.bookButton}
+                <Button 
+                    onClick={() => {
+                        console.log('🔵 Book button clicked - using industry standard booking flow');
+                        // Industry standard: Show confirmation first, then redirect to chat
+                        if (!isCustomerLoggedIn) {
+                            onShowRegisterPrompt?.();
+                            return;
+                        }
+                        setShowBookingConfirmation(true);
+                    }} 
+                    className="w-1/2 shadow-md"
+                >
+                    📅 {t.bookButton}
                 </Button>
             </div>
+
+            {/* Booking Confirmation Popup */}
+            <BookingConfirmationPopup
+                isOpen={showBookingConfirmation}
+                onClose={() => setShowBookingConfirmation(false)}
+                onOpenChat={() => {
+                    setShowBookingConfirmation(false);
+                    onQuickBookWithChat?.(place);
+                }}
+                providerName={place.name}
+                language={currentLanguage}
+            />
         </div>
     );
 };

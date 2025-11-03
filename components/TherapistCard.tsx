@@ -4,6 +4,7 @@ import { AvailabilityStatus } from '../types';
 import { parsePricing, parseMassageTypes, parseCoordinates, parseLanguages } from '../utils/appwriteHelpers';
 import { notificationService } from '../lib/appwriteService';
 import DistanceDisplay from './DistanceDisplay';
+import BookingConfirmationPopup from './BookingConfirmationPopup';
 
 interface TherapistCardProps {
     therapist: Therapist;
@@ -99,9 +100,13 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     const [showBusyModal, setShowBusyModal] = useState(false);
     const [showReferModal, setShowReferModal] = useState(false);
     const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
+    const [showBookingConfirmation, setShowBookingConfirmation] = useState(false);
     const [countdown, setCountdown] = useState<string>('');
     const [isOvertime, setIsOvertime] = useState(false);
     const [discountTimeLeft, setDiscountTimeLeft] = useState<string>('');
+    
+    // Detect language from translations object
+    const currentLanguage: 'en' | 'id' = _t?.schedule === 'Schedule' ? 'en' : 'id';
     
     // Countdown timer for active discount
     useEffect(() => {
@@ -233,11 +238,6 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         : (mainImage || 'https://ik.imagekit.io/7grri5v7d/massage%20image%201.png?updatedAt=1760186885261');
 
     const openWhatsApp = () => {
-        // Play click sound
-        const audio = new Audio('/sounds/success-notification.mp3');
-        audio.volume = 0.3; // Quiet click sound
-        audio.play().catch(err => console.log('Sound play failed:', err));
-
         // Send notification to therapist ONLY if it's not them clicking their own button
         const therapistIdNum = typeof therapist.id === 'string' ? parseInt(therapist.id) : therapist.id;
         if (loggedInProviderId !== therapistIdNum) {
@@ -273,11 +273,6 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     };
     
     const handleConfirmBusyContact = () => {
-        // Play click sound
-        const audio = new Audio('/sounds/success-notification.mp3');
-        audio.volume = 0.3;
-        audio.play().catch(err => console.log('Sound play failed:', err));
-
         // Send notification to therapist ONLY if it's not them clicking their own button
         const therapistIdNum = typeof therapist.id === 'string' ? parseInt(therapist.id) : therapist.id;
         if (loggedInProviderId !== therapistIdNum) {
@@ -623,7 +618,15 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     <span>Book Now</span>
                 </button>
                  <button 
-                    onClick={() => onBook(therapist)} 
+                    onClick={() => {
+                        console.log('Schedule button clicked - using industry standard booking flow');
+                        // Industry standard: Show confirmation first, then redirect to chat
+                        if (!isCustomerLoggedIn) {
+                            onShowRegisterPrompt?.();
+                            return;
+                        }
+                        setShowBookingConfirmation(true);
+                    }} 
                     className="w-1/2 flex items-center justify-center gap-2 bg-orange-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-orange-600 transition-colors duration-300"
                 >
                     <CalendarIcon className="w-5 h-5"/>
@@ -874,6 +877,18 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     </div>
                 </div>
             )}
+
+            {/* Booking Confirmation Popup */}
+            <BookingConfirmationPopup
+                isOpen={showBookingConfirmation}
+                onClose={() => setShowBookingConfirmation(false)}
+                onOpenChat={() => {
+                    setShowBookingConfirmation(false);
+                    onQuickBookWithChat?.(therapist);
+                }}
+                providerName={therapist.name}
+                language={currentLanguage}
+            />
         </div>
     );
 };
