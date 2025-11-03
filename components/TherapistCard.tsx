@@ -87,7 +87,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     therapist, 
     userLocation,
     onRate, 
-    onBook, 
+    // onBook, // Removed - using industry standard booking flow instead
     onQuickBookWithChat,
     onChatWithBusyTherapist,
     onIncrementAnalytics,

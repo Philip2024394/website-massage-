@@ -27,7 +27,7 @@ const WhatsAppIcon: React.FC<{className?: string}> = ({ className }) => (
 const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({ 
     place, 
     onBack, 
-    onBook, 
+    // onBook, // Removed - using industry standard booking flow instead
     onQuickBookWithChat,
     onIncrementAnalytics, 
     onShowRegisterPrompt,
