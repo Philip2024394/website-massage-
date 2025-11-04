@@ -117,10 +117,34 @@ export const useNavigation = ({
         setPage('therapistJobRegistration');
     }, [setPage]);
 
-    // Booking navigation handlers
+    // Booking navigation handlers - Updated to use advanced booking system
     const handleNavigateToBooking = useCallback((provider: Therapist | Place, type: 'therapist' | 'place') => {
-        setProviderForBooking({ provider, type });
-        setPage('booking');
+        // Use the global booking popup system with orange Indastreet branding
+        const globalBookingOpener = (window as any).openBookingPopup;
+        if (globalBookingOpener) {
+            console.log('🔥 Hotel/Villa booking using advanced system:', {
+                providerName: provider.name,
+                providerId: provider.id?.toString(),
+                providerType: type,
+                profilePicture: (provider as any).profilePicture || (provider as any).mainImage
+            });
+            
+            globalBookingOpener(
+                provider.name,
+                (provider as any).whatsappNumber || '+6281234567890', // Default WhatsApp
+                provider.id?.toString(),
+                type,
+                undefined, // hotelVillaId - will be handled by venue context
+                undefined, // hotelVillaName - will be handled by venue context  
+                undefined, // hotelVillaType - will be handled by venue context
+                (provider as any).profilePicture || (provider as any).mainImage
+            );
+        } else {
+            // Fallback to old booking page if global handler not available
+            console.warn('⚠️ Global booking popup not available, using fallback');
+            setProviderForBooking({ provider, type });
+            setPage('booking');
+        }
     }, [setProviderForBooking, setPage]);
 
     const handleNavigateToBookingPage = useCallback((therapist: Therapist) => {

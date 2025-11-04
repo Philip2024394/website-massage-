@@ -57,7 +57,7 @@ export const useHomeHandlers = ({
         console.log(`Incrementing ${metric} for ${type} ${id}`);
     }, []);
 
-    // Navigate to booking page
+    // Navigate to booking page - Updated to use advanced booking system
     const handleNavigateToBooking = useCallback((provider: Therapist | Place, type: 'therapist' | 'place') => {
         // Allow hotel/villa users or regular customers to book
         if (!user && !isHotelLoggedIn && !isVillaLoggedIn && !loggedInCustomer) {
@@ -65,8 +65,35 @@ export const useHomeHandlers = ({
             setShowRegisterPrompt(true);
             return;
         }
-        setProviderForBooking({ provider, type });
-        setPage('booking');
+        
+        // Use the global booking popup system with orange Indastreet branding
+        const globalBookingOpener = (window as any).openBookingPopup;
+        if (globalBookingOpener) {
+            console.log('🔥 Home booking using advanced system:', {
+                providerName: provider.name,
+                providerId: provider.id?.toString(),
+                providerType: type,
+                profilePicture: (provider as any).profilePicture || (provider as any).mainImage,
+                isHotelUser: isHotelLoggedIn,
+                isVillaUser: isVillaLoggedIn
+            });
+            
+            globalBookingOpener(
+                provider.name,
+                (provider as any).whatsappNumber || '+6281234567890', // Default WhatsApp
+                provider.id?.toString(),
+                type,
+                undefined, // hotelVillaId - context will determine
+                undefined, // hotelVillaName - context will determine
+                isHotelLoggedIn ? 'hotel' : isVillaLoggedIn ? 'villa' : undefined, // hotelVillaType
+                (provider as any).profilePicture || (provider as any).mainImage
+            );
+        } else {
+            // Fallback to old booking page if global handler not available
+            console.warn('⚠️ Global booking popup not available, using fallback');
+            setProviderForBooking({ provider, type });
+            setPage('booking');
+        }
     }, [user, isHotelLoggedIn, isVillaLoggedIn, loggedInCustomer, setRegisterPromptContext, setShowRegisterPrompt, setProviderForBooking, setPage]);
 
     // Quick book with chat

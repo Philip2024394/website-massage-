@@ -198,8 +198,15 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
         // Include hotel/villa details if booking from venue
         ...(hotelVillaId && { hotelVillaId }),
         ...(hotelVillaId && { hotelId: hotelVillaId }), // Map to your hotelId field
+        ...(hotelVillaName && { hotelVillaName }),
+        ...(hotelVillaType && { hotelVillaType }),
         ...(roomNumber && { roomNumber }),
-        ...(roomNumber && { hotelRoomNumber: roomNumber }) // Map to your hotelRoomNumber field
+        ...(roomNumber && { hotelRoomNumber: roomNumber }), // Map to your hotelRoomNumber field
+        // Commission tracking for hotel/villa bookings
+        ...(hotelVillaId && roomNumber && { 
+          commissionStatus: 'pending',
+          therapistStatusLocked: true // Therapist will be busy until commission confirmed
+        })
       };
 
       console.log('📝 Creating booking with data:', bookingData);
@@ -216,7 +223,27 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
 
       // Send WhatsApp notification to therapist
       const acceptUrl = `${window.location.origin}/accept-booking/${booking.$id}`;
-      const message = `New Scheduled Booking!\n\nCustomer: ${customerName}\nWhatsApp: ${customerWhatsApp}\nTime: ${selectedTime.label}\nDuration: ${selectedDuration} min\nPrice: $${bookingData.price}\n\nAccept booking: ${acceptUrl}\n\nIMPORTANT: You have 15 minutes to respond!`;
+      
+      // Enhanced WhatsApp message with hotel/villa details
+      let message = `📅 SCHEDULED BOOKING REQUEST - INDASTREET\n\n`;
+      message += `👤 Customer: ${customerName}\n`;
+      message += `📱 WhatsApp: ${customerWhatsApp}\n`;
+      message += `⏰ Scheduled Time: ${selectedTime.label}\n`;
+      message += `💼 Service: ${selectedDuration} min Professional Massage\n`;
+      message += `💰 Price: $${bookingData.price}\n\n`;
+      
+      if (hotelVillaId && roomNumber) {
+        message += `🏨 ${hotelVillaType === 'hotel' ? 'HOTEL' : 'VILLA'} BOOKING\n`;
+        message += `🏢 ${hotelVillaType === 'hotel' ? 'Hotel' : 'Villa'}: ${hotelVillaName}\n`;
+        message += `🚪 Room: ${roomNumber}\n\n`;
+        message += `💼 COMMISSION TRACKING:\n`;
+        message += `- You will be marked BUSY during service\n`;
+        message += `- Status returns to AVAILABLE when ${hotelVillaType} confirms commission received\n\n`;
+      }
+      
+      message += `✅ Accept booking: ${acceptUrl}\n\n`;
+      message += `⏰ IMPORTANT: You have 15 minutes to respond!\n`;
+      message += `📞 INDASTREET SUPPORT: +62-XXX-XXXX`;
 
       const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
       window.open(whatsappUrl, '_blank');

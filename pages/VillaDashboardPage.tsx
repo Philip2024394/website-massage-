@@ -1137,6 +1137,77 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({ onLogout, thera
                         <div className="bg-white border-2 border-gray-200 rounded-xl p-6">
                             <div className="flex items-center justify-between mb-6">
                                 <h3 className="text-lg font-bold text-gray-900">Recent Commission Transactions</h3>
+                                
+                                {/* Pending Commission Confirmations - New Section */}
+                                <div className="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-xl">
+                                    <h4 className="font-semibold text-gray-900 mb-3">⏳ Pending Commission Confirmations</h4>
+                                    <p className="text-xs text-gray-600 mb-4">
+                                        These bookings are completed but waiting for your commission confirmation. 
+                                        <strong className="text-orange-600"> Therapists are currently BUSY and cannot accept new bookings until you confirm.</strong>
+                                    </p>
+                                    
+                                    <div className="space-y-3">
+                                        {[
+                                            { 
+                                                bookingId: 'V101', 
+                                                date: 'Oct 28, 2025 - 2:15 PM', 
+                                                provider: 'Kadek Sari', 
+                                                service: '90 min', 
+                                                room: 'Master Suite',
+                                                amount: 400000, 
+                                                commission: 80000,
+                                                therapistId: 'T003'
+                                            },
+                                            { 
+                                                bookingId: 'V102', 
+                                                date: 'Oct 28, 2025 - 5:00 PM', 
+                                                provider: 'Wayan Yoga', 
+                                                service: '120 min', 
+                                                room: 'Pool Villa',
+                                                amount: 520000, 
+                                                commission: 104000,
+                                                therapistId: 'T004'
+                                            }
+                                        ].map((booking, idx) => (
+                                            <div key={idx} className="bg-white p-4 rounded-lg border border-gray-200">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <span className="font-semibold text-gray-900">{booking.provider}</span>
+                                                            <span className="px-2 py-1 bg-red-100 text-red-700 text-xs rounded-full font-semibold">BUSY</span>
+                                                        </div>
+                                                        <div className="text-sm text-gray-600">
+                                                            <div>🏖️ {booking.room} • {booking.service} • {booking.date}</div>
+                                                            <div>💰 Service: Rp {booking.amount.toLocaleString()} • Your Commission: <span className="text-green-600 font-semibold">Rp {booking.commission.toLocaleString()}</span></div>
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => {
+                                                            // TODO: Implement commission confirmation API call
+                                                            console.log('Confirming commission for booking:', booking.bookingId);
+                                                            alert(`Commission confirmed for ${booking.provider}! They are now available for new bookings.`);
+                                                        }}
+                                                        className="ml-4 px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white text-sm font-bold rounded-lg hover:from-green-600 hover:to-green-700 transition-all shadow-lg"
+                                                    >
+                                                        ✓ Confirm Commission
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    
+                                    {/* Instructions */}
+                                    <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                        <div className="flex items-start gap-2">
+                                            <svg className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                            </svg>
+                                            <div className="text-xs text-blue-800">
+                                                <strong>How it works:</strong> When therapists complete villa bookings, they become unavailable for new bookings until you confirm receiving your commission. This ensures proper commission tracking and therapist availability management.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                                 <button className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600 transition-colors">
                                     Export Report
                                 </button>

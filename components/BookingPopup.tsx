@@ -29,6 +29,9 @@ interface BookingPopupProps {
   profilePicture?: string;
   providerType?: string;
   hotelVillaId?: string;
+  hotelVillaName?: string;
+  hotelVillaType?: 'hotel' | 'villa';
+  hotelVillaLocation?: string;
 }
 
 const BookingPopup: React.FC<BookingPopupProps> = ({
@@ -38,11 +41,18 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
   therapistName,
   profilePicture,
   providerType,
-  hotelVillaId
+  hotelVillaId,
+  hotelVillaName,
+  hotelVillaType,
+  hotelVillaLocation
 }) => {
   const [showWarning, setShowWarning] = useState(true);
   const [selectedDuration, setSelectedDuration] = useState<number | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [roomNumber, setRoomNumber] = useState<string>('');
+
+  // Check if this is a hotel/villa booking
+  const isHotelVillaBooking = Boolean(hotelVillaId && hotelVillaName);
 
   const bookingOptions: BookingOption[] = [
     { duration: 60, price: 50 },
@@ -91,7 +101,16 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
         bookingType: 'immediate', // Optional - booking type
         service: 'massage', // Required in your schema
         ...(hotelVillaId && { hotelVillaId }),
-        ...(hotelVillaId && { hotelId: hotelVillaId }) // Map to your hotelId field
+        ...(hotelVillaId && { hotelId: hotelVillaId }), // Map to your hotelId field
+        ...(hotelVillaName && { hotelVillaName }),
+        ...(hotelVillaType && { hotelVillaType }),
+        ...(hotelVillaLocation && { hotelVillaLocation }),
+        ...(isHotelVillaBooking && roomNumber.trim() && { roomNumber: roomNumber.trim() }),
+        // Commission tracking for hotel/villa bookings
+        ...(isHotelVillaBooking && { 
+          commissionStatus: 'pending',
+          therapistStatusLocked: true // Therapist will be busy until commission confirmed
+        })
       };
 
       console.log('📝 Creating immediate booking with data:', bookingData);
@@ -108,7 +127,27 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
 
       const acceptUrl = `${window.location.origin}/accept-booking/${booking.$id}`;
       
-      const message = `New Booking Request!\n\nDuration: ${selectedOption.duration} min\nPrice: $${selectedOption.price}\n\nAccept booking: ${acceptUrl}\n\nNote: You have 5 minutes to respond.`;
+      // Enhanced WhatsApp message with hotel/villa details
+      let message = `🏨 NEW BOOKING REQUEST - INDASTREET\n\n`;
+      message += `💼 Service: ${selectedOption.duration} min Professional Massage\n`;
+      message += `💰 Price: $${selectedOption.price}\n`;
+      message += `📅 Time: ${now.toLocaleString()}\n\n`;
+      
+      if (isHotelVillaBooking) {
+        message += `🏨 ${hotelVillaType === 'hotel' ? 'HOTEL' : 'VILLA'} BOOKING\n`;
+        message += `🏢 ${hotelVillaType === 'hotel' ? 'Hotel' : 'Villa'}: ${hotelVillaName}\n`;
+        if (hotelVillaLocation) {
+          message += `📍 Location: ${hotelVillaLocation}\n`;
+        }
+        message += `🚪 Room: ${roomNumber}\n\n`;
+        message += `💼 COMMISSION TRACKING:\n`;
+        message += `- You will be marked BUSY during service\n`;
+        message += `- Status returns to AVAILABLE when ${hotelVillaType} confirms commission received\n\n`;
+      }
+      
+      message += `✅ Accept booking: ${acceptUrl}\n\n`;
+      message += `⏰ Note: You have 5 minutes to respond.\n`;
+      message += `📞 INDASTREET SUPPORT: +62-XXX-XXXX`;
 
       const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
       window.open(whatsappUrl, '_blank');
@@ -254,11 +293,38 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
             </button>
           ))}
 
+          {/* Hotel/Villa Room Number Field */}
+          {isHotelVillaBooking && (
+            <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
+              <h3 className="font-semibold text-gray-800 mb-2 text-sm">
+                {hotelVillaType === 'hotel' ? 'Hotel' : 'Villa'} Details
+              </h3>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Room Number <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={roomNumber}
+                    onChange={(e) => setRoomNumber(e.target.value)}
+                    placeholder="Enter room number"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm"
+                  />
+                </div>
+                <div className="text-xs text-gray-600">
+                  <div><strong>{hotelVillaType === 'hotel' ? 'Hotel' : 'Villa'}:</strong> {hotelVillaName}</div>
+                  {hotelVillaLocation && <div><strong>Location:</strong> {hotelVillaLocation}</div>}
+                </div>
+              </div>
+            </div>
+          )}
+
           <button
             onClick={createBookingRecord}
-            disabled={!selectedDuration || isCreating}
+            disabled={!selectedDuration || isCreating || (isHotelVillaBooking && !roomNumber.trim())}
             className={`w-full font-bold py-3 rounded-xl transition-all shadow-lg ${
-              selectedDuration && !isCreating
+              selectedDuration && !isCreating && (!isHotelVillaBooking || roomNumber.trim())
                 ? 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700'
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
             }`}

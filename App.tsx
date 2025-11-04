@@ -23,6 +23,7 @@ const App = () => {
         hotelVillaId?: string;
         hotelVillaName?: string;
         hotelVillaType?: 'hotel' | 'villa';
+        hotelVillaLocation?: string;
     } | null>(null);
 
     // Booking Status Tracker state
@@ -45,6 +46,7 @@ const App = () => {
         hotelVillaId?: string;
         hotelVillaName?: string;
         hotelVillaType?: 'hotel' | 'villa';
+        hotelVillaLocation?: string;
     } | null>(null);
 
     // Start booking expiration service on mount
@@ -98,7 +100,8 @@ const App = () => {
         hotelVillaId?: string,
         hotelVillaName?: string,
         hotelVillaType?: 'hotel' | 'villa',
-        profilePicture?: string
+        profilePicture?: string,
+        hotelVillaLocation?: string
     ) => {
         console.log('📱 Opening booking popup for:', {
             providerName,
@@ -107,7 +110,8 @@ const App = () => {
             profilePicture,
             hotelVillaId,
             hotelVillaName,
-            hotelVillaType
+            hotelVillaType,
+            hotelVillaLocation
         });
         setBookingProviderInfo({
             name: providerName,
@@ -117,7 +121,8 @@ const App = () => {
             profilePicture,
             hotelVillaId,
             hotelVillaName,
-            hotelVillaType
+            hotelVillaType,
+            hotelVillaLocation
         });
         setIsBookingPopupOpen(true);
     };
@@ -150,6 +155,7 @@ const App = () => {
         hotelVillaId?: string;
         hotelVillaName?: string;
         hotelVillaType?: 'hotel' | 'villa';
+        hotelVillaLocation?: string;
     }) => {
         console.log('📅 Opening schedule booking popup:', bookingInfo);
         setScheduleBookingInfo(bookingInfo);
@@ -313,6 +319,9 @@ const App = () => {
                 profilePicture={bookingProviderInfo?.profilePicture}
                 providerType={bookingProviderInfo?.providerType}
                 hotelVillaId={bookingProviderInfo?.hotelVillaId}
+                hotelVillaName={bookingProviderInfo?.hotelVillaName}
+                hotelVillaType={bookingProviderInfo?.hotelVillaType}
+                hotelVillaLocation={bookingProviderInfo?.hotelVillaLocation}
             />
 
             {/* Global Booking Status Tracker */}
