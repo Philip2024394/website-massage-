@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { account, databases, DATABASE_ID, COLLECTIONS, ID } from '../lib/appwrite';
 import { saveSessionCache } from '../lib/sessionManager';
 import { checkRateLimit, handleAppwriteError, resetRateLimit } from '../lib/rateLimitUtils';
+import { validateUserAuthentication } from '../utils/authGuards';
 import { LogIn, UserPlus } from 'lucide-react';
 
 interface HotelLoginPageProps {
@@ -148,34 +149,31 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) =>
                 // Get user details
                 const user = await account.get();
                 
-                // Find hotel record
-                console.log('🔍 Finding hotel record...');
-                const response = await databases.listDocuments(
-                    DATABASE_ID,
-                    COLLECTIONS.HOTELS,
-                    []
-                );
+                // Validate that this user is actually a hotel user
+                console.log('🔍 Validating hotel user authentication...');
+                const authResult = await validateUserAuthentication('hotel', user.$id);
                 
-                const hotel = response.documents.find((h: any) => h.userId === user.$id && h.type === 'hotel');
-                
-                if (!hotel) {
-                    setError('Hotel account not found. Please create an account first.');
+                if (!authResult.success) {
+                    console.log('❌ Hotel authentication failed:', authResult.error);
+                    setError(authResult.error || 'Hotel account not found. Please create an account first.');
+                    
+                    // Clean up the session since this is not a valid hotel login
                     await account.deleteSession('current');
                     setLoading(false);
                     return;
                 }
                 
-                // Save session cache
+                // Save session cache with validated hotel data
                 saveSessionCache({
                     type: 'hotel',
                     id: user.$id,
                     email: user.email,
-                    documentId: hotel.$id,
-                    data: hotel
+                    documentId: authResult.documentId!,
+                    data: authResult.data
                 });
                 
                 console.log('✅ Hotel login successful');
-                onSuccess(hotel.$id);
+                onSuccess(authResult.documentId!);
             }
         } catch (err: any) {
             console.error('Hotel authentication error:', err);

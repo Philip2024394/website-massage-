@@ -96,6 +96,11 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
     const [hotelVillaPricing, setHotelVillaPricing] = useState<Pricing>({ 60: 0, 90: 0, 120: 0 });
     const [useSamePricing, setUseSamePricing] = useState(true);
     const [discountPercentage, setDiscountPercentage] = useState<number>(0);
+    const [discountDuration, setDiscountDuration] = useState<number>(0); // Hours for discount duration
+    const [discountEndTime, setDiscountEndTime] = useState<Date | null>(null); // When discount expires
+    const [isDiscountActive, setIsDiscountActive] = useState(false);
+    const [selectedDiscountPercentage, setSelectedDiscountPercentage] = useState<number | null>(null);
+    const [selectedDiscountDuration, setSelectedDiscountDuration] = useState<number | null>(null);
     const [location, setLocation] = useState('');
     const [coordinates, setCoordinates] = useState({ lat: 0, lng: 0 });
     const [status, setStatus] = useState<AvailabilityStatus>(AvailabilityStatus.Offline);
@@ -435,6 +440,77 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
         return <div className="p-4 text-center text-red-500">Could not load therapist data. Please try logging in again.</div>
     }
 
+    // Discount management functions
+    const handleDiscountActivation = async (percentage: number, duration: number) => {
+        try {
+            const endTime = new Date();
+            endTime.setHours(endTime.getHours() + duration);
+            
+            setDiscountPercentage(percentage);
+            setDiscountDuration(duration);
+            setDiscountEndTime(endTime);
+            setIsDiscountActive(true);
+            
+            // Reset selections
+            setSelectedDiscountPercentage(null);
+            setSelectedDiscountDuration(null);
+            
+            // Auto-save discount to database
+            const therapistIdString = typeof therapistId === 'string' ? therapistId : therapistId.toString();
+            await therapistService.update(therapistIdString, { 
+                discountPercentage: percentage,
+                discountEndTime: endTime.toISOString(),
+                isDiscountActive: true
+            });
+            
+            setToast({ message: `${percentage}% discount activated for ${duration} hours!`, type: 'success' });
+            console.log(`✅ Discount activated: ${percentage}% for ${duration}h`);
+        } catch (error) {
+            console.error('❌ Error activating discount:', error);
+            setToast({ message: 'Error activating discount', type: 'error' });
+        }
+    };
+
+    const handleDiscountDeactivation = async () => {
+        try {
+            setDiscountPercentage(0);
+            setDiscountDuration(0);
+            setDiscountEndTime(null);
+            setIsDiscountActive(false);
+            
+            // Reset selections
+            setSelectedDiscountPercentage(null);
+            setSelectedDiscountDuration(null);
+            
+            // Auto-save to database
+            const therapistIdString = typeof therapistId === 'string' ? therapistId : therapistId.toString();
+            await therapistService.update(therapistIdString, { 
+                discountPercentage: 0,
+                discountEndTime: null,
+                isDiscountActive: false
+            });
+            
+            setToast({ message: 'Discount deactivated', type: 'success' });
+            console.log('✅ Discount deactivated');
+        } catch (error) {
+            console.error('❌ Error deactivating discount:', error);
+            setToast({ message: 'Error deactivating discount', type: 'error' });
+        }
+    };
+
+    // Check if discount has expired
+    const checkDiscountExpiry = () => {
+        if (isDiscountActive && discountEndTime && new Date() > discountEndTime) {
+            handleDiscountDeactivation();
+        }
+    };
+
+    // Use effect to check discount expiry periodically
+    useEffect(() => {
+        const interval = setInterval(checkDiscountExpiry, 60000); // Check every minute
+        return () => clearInterval(interval);
+    }, [isDiscountActive, discountEndTime, discountDuration]); // Include discountDuration as dependency
+
     const renderContent = () => {
         switch (activeTab) {
             case 'status':
@@ -565,6 +641,105 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                         )}
                                     </div>
                                 </button>
+                            </div>
+
+                            {/* Discount Management Section */}
+                            <div className="mt-6 p-6 bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl border border-orange-200">
+                                <div className="text-center mb-4">
+                                    <h3 className="text-lg font-bold text-orange-900 mb-2">💰 Attract More Clients</h3>
+                                    <p className="text-sm text-orange-700">Activate discount badges to boost your bookings!</p>
+                                </div>
+
+                                {/* Active Discount Display */}
+                                {isDiscountActive && discountEndTime && (
+                                    <div className="mb-4 p-3 bg-green-100 border border-green-300 rounded-lg">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="text-sm font-bold text-green-800">
+                                                    🎉 {discountPercentage}% Discount Active
+                                                </p>
+                                                <p className="text-xs text-green-600">
+                                                    Expires: {discountEndTime.toLocaleString()}
+                                                </p>
+                                            </div>
+                                            <button
+                                                onClick={handleDiscountDeactivation}
+                                                className="bg-red-500 text-white px-3 py-1 rounded-md text-xs font-bold hover:bg-red-600 transition-colors"
+                                            >
+                                                Deactivate
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Discount Percentage Selection */}
+                                <div className="mb-4">
+                                    <p className="text-sm font-bold text-orange-900 mb-2">Select Discount Percentage:</p>
+                                    <div className="grid grid-cols-4 gap-2">
+                                        {[5, 10, 15, 20].map((percentage) => (
+                                            <button
+                                                key={percentage}
+                                                onClick={() => setSelectedDiscountPercentage(percentage)}
+                                                disabled={isDiscountActive}
+                                                className={`py-2 px-3 rounded-lg font-bold text-sm transition-all ${
+                                                    isDiscountActive 
+                                                        ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                                        : selectedDiscountPercentage === percentage
+                                                            ? 'bg-orange-600 text-white scale-95'
+                                                            : 'bg-orange-500 text-white hover:bg-orange-600 active:scale-95'
+                                                }`}
+                                            >
+                                                {percentage}%
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Duration Selection */}
+                                <div>
+                                    <p className="text-sm font-bold text-orange-900 mb-2">Select Duration:</p>
+                                    <div className="grid grid-cols-4 gap-2">
+                                        {[
+                                            { hours: 4, label: '4h' },
+                                            { hours: 8, label: '8h' },
+                                            { hours: 12, label: '12h' },
+                                            { hours: 24, label: '24h' }
+                                        ].map(({ hours, label }) => (
+                                            <button
+                                                key={hours}
+                                                onClick={() => setSelectedDiscountDuration(hours)}
+                                                disabled={isDiscountActive}
+                                                className={`py-2 px-3 rounded-lg font-bold text-sm transition-all ${
+                                                    isDiscountActive 
+                                                        ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                                        : selectedDiscountDuration === hours
+                                                            ? 'bg-blue-600 text-white scale-95'
+                                                            : 'bg-blue-500 text-white hover:bg-blue-600 active:scale-95'
+                                                }`}
+                                            >
+                                                {label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Activate Discount Button */}
+                                {selectedDiscountPercentage && selectedDiscountDuration && !isDiscountActive && (
+                                    <div className="mt-4">
+                                        <button
+                                            onClick={() => handleDiscountActivation(selectedDiscountPercentage, selectedDiscountDuration)}
+                                            className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-4 rounded-lg font-bold text-sm hover:from-green-600 hover:to-green-700 transition-all active:scale-95"
+                                        >
+                                            🚀 Activate {selectedDiscountPercentage}% Discount for {selectedDiscountDuration}h
+                                        </button>
+                                    </div>
+                                )}
+
+                                <div className="mt-3 text-center">
+                                    <p className="text-xs text-orange-600">
+                                        💡 Select both percentage and duration to activate discount badge
+                                    </p>
+                                </div>
                             </div>
 
                             {/* Current Status Display */}

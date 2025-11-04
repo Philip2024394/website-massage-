@@ -6,6 +6,7 @@
 import { useCallback } from 'react';
 import type { Page } from '../types/pageTypes';
 import { logout as sessionLogout } from '../lib/sessionManager';
+import { performSafeLogout } from '../utils/authGuards';
 
 interface UseAuthHandlersProps {
     setPage: (page: Page) => void;
@@ -32,26 +33,46 @@ export const useAuthHandlers = ({
 }: UseAuthHandlersProps) => {
 
     const handleProviderLogout = useCallback(async () => {
-        await sessionLogout();
-        setLoggedInProvider(null);
-        setPage('home');
-    }, [setLoggedInProvider, setPage]);
+        console.log('👤 Starting provider (therapist/place) logout...');
+        await performSafeLogout(sessionLogout, {
+            setIsHotelLoggedIn,
+            setIsVillaLoggedIn,
+            setIsAdminLoggedIn,
+            setLoggedInUser,
+            setLoggedInProvider,
+            setLoggedInAgent,
+            setLoggedInCustomer,
+            setImpersonatedAgent
+        }, setPage);
+    }, [setLoggedInProvider, setIsHotelLoggedIn, setIsVillaLoggedIn, setIsAdminLoggedIn, setLoggedInUser, setPage]);
 
     const handleHotelLogout = useCallback(async () => {
-        await sessionLogout();
-        setIsHotelLoggedIn(false);
-        setLoggedInUser(null);
-        setPage('home');
-        console.log('✅ Hotel logout successful');
-    }, [setIsHotelLoggedIn, setLoggedInUser, setPage]);
+        console.log('🏨 Starting hotel logout...');
+        await performSafeLogout(sessionLogout, {
+            setIsHotelLoggedIn,
+            setIsVillaLoggedIn,
+            setIsAdminLoggedIn,
+            setLoggedInUser,
+            setLoggedInProvider,
+            setLoggedInAgent,
+            setLoggedInCustomer,
+            setImpersonatedAgent
+        }, setPage);
+    }, [setIsHotelLoggedIn, setIsVillaLoggedIn, setIsAdminLoggedIn, setLoggedInUser, setLoggedInProvider, setPage]);
 
     const handleVillaLogout = useCallback(async () => {
-        await sessionLogout();
-        setIsVillaLoggedIn(false);
-        setLoggedInUser(null);
-        setPage('home');
-        console.log('✅ Villa logout successful');
-    }, [setIsVillaLoggedIn, setLoggedInUser, setPage]);
+        console.log('🏡 Starting villa logout...');
+        await performSafeLogout(sessionLogout, {
+            setIsVillaLoggedIn,
+            setIsHotelLoggedIn,
+            setIsAdminLoggedIn,
+            setLoggedInUser,
+            setLoggedInProvider,
+            setLoggedInAgent,
+            setLoggedInCustomer,
+            setImpersonatedAgent
+        }, setPage);
+    }, [setIsVillaLoggedIn, setIsHotelLoggedIn, setIsAdminLoggedIn, setLoggedInUser, setLoggedInProvider, setPage]);
 
     const handleAdminLogout = useCallback(async () => {
         await sessionLogout();

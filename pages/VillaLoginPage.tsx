@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { account, databases, DATABASE_ID, COLLECTIONS, ID } from '../lib/appwrite';
 import { saveSessionCache } from '../lib/sessionManager';
 import { checkRateLimit, handleAppwriteError, resetRateLimit } from '../lib/rateLimitUtils';
+import { validateUserAuthentication } from '../utils/authGuards';
 import { LogIn, UserPlus } from 'lucide-react';
 
 interface VillaLoginPageProps {
@@ -148,34 +149,31 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onSuccess, onBack }) =>
                 // Get user details
                 const user = await account.get();
                 
-                // Find villa record
-                console.log('🔍 Finding villa record...');
-                const response = await databases.listDocuments(
-                    DATABASE_ID,
-                    COLLECTIONS.HOTELS,
-                    []
-                );
+                // Validate that this user is actually a villa user
+                console.log('🔍 Validating villa user authentication...');
+                const authResult = await validateUserAuthentication('villa', user.$id);
                 
-                const villa = response.documents.find((v: any) => v.userId === user.$id && v.type === 'villa');
-                
-                if (!villa) {
-                    setError('Villa account not found. Please create an account first.');
+                if (!authResult.success) {
+                    console.log('❌ Villa authentication failed:', authResult.error);
+                    setError(authResult.error || 'Villa account not found. Please create an account first.');
+                    
+                    // Clean up the session since this is not a valid villa login
                     await account.deleteSession('current');
                     setLoading(false);
                     return;
                 }
                 
-                // Save session cache
+                // Save session cache with validated villa data
                 saveSessionCache({
                     type: 'villa',
                     id: user.$id,
                     email: user.email,
-                    documentId: villa.$id,
-                    data: villa
+                    documentId: authResult.documentId!,
+                    data: authResult.data
                 });
                 
                 console.log('✅ Villa login successful');
-                onSuccess(villa.$id);
+                onSuccess(authResult.documentId!);
             }
         } catch (err: any) {
             console.error('Villa authentication error:', err);
