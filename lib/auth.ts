@@ -124,6 +124,7 @@ export const therapistAuth = {
                     isLive: false,
                     hourlyRate: 100, // Required by Appwrite schema (50-500 range)
                     therapistId: therapistId, // Required by Appwrite schema
+                    hotelId: '', // Required by Appwrite schema - empty for independent therapists
                     specialization: 'Massage Therapist',
                     availability: 'Available',
                     
@@ -135,15 +136,6 @@ export const therapistAuth = {
                     massageTypes: '',
                     languages: '',
                     coordinates: JSON.stringify({ lat: 0, lng: 0 }),
-                    rating: 0,
-                    reviewCount: 0,
-                    isLicensed: false,
-                    licenseNumber: '',
-                    analytics: JSON.stringify({ impressions: 0, profileViews: 0, whatsappClicks: 0 }),
-                    hotelVillaServiceStatus: '',
-                    hotelDiscount: 0,
-                    villaDiscount: 0,
-                    serviceRadius: 0,
                 }
             );
             

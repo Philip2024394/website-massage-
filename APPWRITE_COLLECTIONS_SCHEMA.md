@@ -78,6 +78,7 @@
 | activeMembershipDate | DateTime | ❌ | Membership expiry |
 | analytics | String (JSON) | ❌ | {impressions, profileViews, whatsappClicks} |
 | hotelVillaServiceStatus | String | ❌ | NotOptedIn/Active/Inactive |
+| hotelId | String | ✅ | Associated hotel ID (empty for independent) |
 | hotelDiscount | Integer | ❌ | Hotel discount % |
 | villaDiscount | Integer | ❌ | Villa discount % |
 | serviceRadius | Integer | ❌ | Service radius (km) |

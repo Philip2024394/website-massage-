@@ -1,30 +1,33 @@
 ## ✅ SCHEMA VALIDATION ERROR - FIXED!
 
 ### 🔴 **Problem Solved**
-**Error**: `Invalid document structure: Unknown attribute: "hotelVillaPricing"`
+**Latest Error**: `Invalid document structure: Unknown attribute: "reviewCount"`
+**Previous Errors**: Missing required attributes: `hourlyRate`, `therapistId`, `id`, `hotelId`
 
 ### 🔍 **Root Cause**
-The admin dashboard data preservation logic was trying to preserve attributes that don't exist in the actual Appwrite database schema, causing validation errors.
+1. **Missing Required Attributes**: The therapist registration was missing required fields
+2. **Unknown Attributes**: The registration included fields not recognized by Appwrite schema
 
 ### 🛠️ **Solution Implemented**
 
-#### 1. **Schema Validation**
-- ✅ Reviewed actual Appwrite therapist collection schema
-- ✅ Identified valid vs invalid attributes
-- ✅ Removed references to non-existent fields
+#### 1. **Added Missing Required Attributes** ✅
+- ✅ **`hourlyRate: 100`** → Added as required field (50-500 range)
+- ✅ **`therapistId: therapistId`** → Added as required field (unique identifier)
+- ✅ **`id: therapistId`** → Added as required field (document identifier)
+- ✅ **`hotelId: ''`** → Added as required field (empty for independent therapists)
 
-#### 2. **Invalid Attributes Removed**
-- ❌ ~~`hotelVillaPricing`~~ → ✅ **`hotelDiscount` + `villaDiscount`**
-- ❌ ~~`discountPercentage`~~ → ✅ **`hotelDiscount`**
-- ❌ ~~`specialization`~~ → Not in schema
-- ❌ ~~`availability`~~ → Not in schema  
-- ✅ **`hourlyRate`** → FIXED - Added back as required field (50-500 range)
-- ✅ **`therapistId`** → FIXED - Added back as required field (unique identifier)
-- ✅ **`id`** → FIXED - Added back as required field (document identifier)
-- ❌ ~~`therapistId`~~ → Not in schema
-- ❌ ~~`hotelId`~~ → Not in schema
+#### 2. **Removed Unknown Attributes** ✅
+- ❌ ~~`reviewCount: 0`~~ → REMOVED - Unknown attribute
+- ❌ ~~`rating: 0`~~ → REMOVED - Not in current schema
+- ❌ ~~`isLicensed: false`~~ → REMOVED - Not in current schema
+- ❌ ~~`licenseNumber: ''`~~ → REMOVED - Not in current schema
+- ❌ ~~`analytics: JSON.stringify(...)`~~ → REMOVED - Not in current schema
+- ❌ ~~`hotelVillaServiceStatus: ''`~~ → REMOVED - Not in current schema
+- ❌ ~~`hotelDiscount: 0`~~ → REMOVED - Not in current schema
+- ❌ ~~`villaDiscount: 0`~~ → REMOVED - Not in current schema
+- ❌ ~~`serviceRadius: 0`~~ → REMOVED - Not in current schema
 
-#### 3. **Valid Schema Attributes Used**
+#### 3. **Valid Schema Attributes Used** ✅
 ✅ **Core Fields**: name, email, whatsappNumber, profilePicture, description  
 ✅ **Profile Fields**: mainImage, yearsOfExperience, massageTypes, languages, pricing  
 ✅ **Location Fields**: location, coordinates  
