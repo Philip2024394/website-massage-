@@ -24,7 +24,6 @@ interface AppFooterLayoutProps {
     handleRegisterPromptRegister: () => void;
     setPage: (page: Page) => void;
     setLoyaltyEvent: (event: any) => void;
-    t: (key: string) => string;
 }
 
 export const AppFooterLayout: React.FC<AppFooterLayoutProps> = ({
@@ -42,8 +41,7 @@ export const AppFooterLayout: React.FC<AppFooterLayoutProps> = ({
     handleRegisterPromptClose,
     handleRegisterPromptRegister,
     setPage,
-    setLoyaltyEvent,
-    t
+    setLoyaltyEvent
 }) => {
     return (
         <>
@@ -51,13 +49,12 @@ export const AppFooterLayout: React.FC<AppFooterLayoutProps> = ({
                 <GlobalFooter 
                     currentPage={page}
                     onNavigate={(targetPage: string) => {
-                        console.log('� Global footer navigation:', targetPage);
+                        console.log('🔄 Global footer navigation:', targetPage);
                         setPage(targetPage as Page);
                     }}
                     userRole={getUserRole()}
                     unreadNotifications={unreadNotifications}
                     hasNewBookings={hasNewBookings}
-                    t={t}
                 />
             )}
             {showFloatingButton && <FloatingWebsiteButton />}

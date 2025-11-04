@@ -289,7 +289,6 @@ const App = () => {
                 handleRegisterPromptRegister={() => state.setPage('registrationChoice')}
                 setPage={state.setPage}
                 setLoyaltyEvent={state.setLoyaltyEvent}
-                t={t}
             />
             
             {/* Global Booking Popup */}

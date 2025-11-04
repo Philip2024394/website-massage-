@@ -7,7 +7,6 @@ interface GlobalFooterProps {
     userRole?: 'user' | 'therapist' | 'place' | 'admin' | 'hotel' | 'villa' | 'agent' | 'customer' | null;
     unreadNotifications?: number;
     hasNewBookings?: boolean;
-    t?: any;
 }
 
 const GlobalFooter: React.FC<GlobalFooterProps> = ({
@@ -15,8 +14,7 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
     onNavigate,
     userRole,
     unreadNotifications = 0,
-    hasNewBookings = false,
-    t
+    hasNewBookings = false
 }) => {
     // Helper function to determine if a button is active
     const isActive = (buttonType: string) => {
@@ -53,21 +51,21 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
         {
             key: 'home',
             icon: <Home className={`w-6 h-6 ${getColor('home')}`} />,
-            label: t?.('footer.home') || 'Home',
+            label: 'Home',
             onClick: () => onNavigate('home'),
             badgeCount: 0
         },
         {
             key: 'search',
             icon: <Search className={`w-6 h-6 ${getColor('search')}`} />,
-            label: t?.('footer.search') || 'Search',
+            label: 'Search',
             onClick: () => onNavigate('therapists'),
             badgeCount: 0
         },
         {
             key: 'booking',
             icon: <Calendar className={`w-6 h-6 ${getColor('booking')}`} />,
-            label: t?.('footer.booking') || 'Booking',
+            label: 'Booking',
             onClick: () => {
                 // Navigate based on user role
                 if (userRole === 'therapist' || userRole === 'place') {
@@ -84,14 +82,14 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
         {
             key: 'shop',
             icon: <ShoppingBag className={`w-6 h-6 ${getColor('shop')}`} />,
-            label: t?.('footer.shop') || 'Shop',
+            label: 'Shop',
             onClick: () => onNavigate('coin-shop'),
             badgeCount: 0
         },
         {
             key: 'profile',
             icon: <User className={`w-6 h-6 ${getColor('profile')}`} />,
-            label: t?.('footer.profile') || 'Profile',
+            label: 'Profile',
             onClick: () => {
                 // Navigate to appropriate profile/dashboard based on user role
                 switch (userRole) {
