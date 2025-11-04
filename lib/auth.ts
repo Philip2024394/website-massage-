@@ -121,6 +121,7 @@ export const therapistAuth = {
                     pricing: JSON.stringify({ '60': 100, '90': 150, '120': 200 }),
                     status: 'Offline',
                     isLive: false,
+                    hourlyRate: 100, // Required by Appwrite schema (50-500 range)
                     specialization: 'Massage Therapist',
                     availability: 'Available',
                     

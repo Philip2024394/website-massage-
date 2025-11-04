@@ -18,7 +18,7 @@ The admin dashboard data preservation logic was trying to preserve attributes th
 - ❌ ~~`discountPercentage`~~ → ✅ **`hotelDiscount`**
 - ❌ ~~`specialization`~~ → Not in schema
 - ❌ ~~`availability`~~ → Not in schema  
-- ❌ ~~`hourlyRate`~~ → Not in schema
+- ✅ **`hourlyRate`** → FIXED - Added back as required field (50-500 range)
 - ❌ ~~`therapistId`~~ → Not in schema
 - ❌ ~~`hotelId`~~ → Not in schema
 

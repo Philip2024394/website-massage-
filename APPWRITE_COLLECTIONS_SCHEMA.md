@@ -64,6 +64,7 @@
 | massageTypes | String (JSON) | ❌ | Array of massage types |
 | languages | String (JSON) | ❌ | Languages spoken |
 | pricing | String (JSON) | ✅ | {60: price, 90: price, 120: price} |
+| hourlyRate | Integer | ✅ | Base hourly rate (50-500 range) |
 | location | String | ✅ | Address/location |
 | coordinates | String (JSON) | ❌ | {lat: number, lng: number} |
 | status | String | ✅ | Available/Busy/Offline |
