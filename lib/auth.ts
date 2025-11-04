@@ -125,6 +125,7 @@ export const therapistAuth = {
                     hourlyRate: 100, // Required by Appwrite schema (50-500 range)
                     therapistId: therapistId, // Required by Appwrite schema
                     hotelId: '', // Required by Appwrite schema - empty for independent therapists
+                    isLicensed: false, // Required by Appwrite schema - license verification
                     specialization: 'Massage Therapist',
                     availability: 'Available',
                     

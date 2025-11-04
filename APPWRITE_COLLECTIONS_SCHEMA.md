@@ -73,7 +73,7 @@
 | isLive | Boolean | ✅ | Admin approval status |
 | rating | Float | ❌ | Average rating (0-5) |
 | reviewCount | Integer | ❌ | Number of reviews |
-| isLicensed | Boolean | ❌ | License verification |
+| isLicensed | Boolean | ✅ | License verification |
 | licenseNumber | String | ❌ | License ID |
 | activeMembershipDate | DateTime | ❌ | Membership expiry |
 | analytics | String (JSON) | ❌ | {impressions, profileViews, whatsappClicks} |

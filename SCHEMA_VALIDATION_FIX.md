@@ -15,11 +15,11 @@
 - ✅ **`therapistId: therapistId`** → Added as required field (unique identifier)
 - ✅ **`id: therapistId`** → Added as required field (document identifier)
 - ✅ **`hotelId: ''`** → Added as required field (empty for independent therapists)
+- ✅ **`isLicensed: false`** → Added back as required field (license verification)
 
 #### 2. **Removed Unknown Attributes** ✅
 - ❌ ~~`reviewCount: 0`~~ → REMOVED - Unknown attribute
 - ❌ ~~`rating: 0`~~ → REMOVED - Not in current schema
-- ❌ ~~`isLicensed: false`~~ → REMOVED - Not in current schema
 - ❌ ~~`licenseNumber: ''`~~ → REMOVED - Not in current schema
 - ❌ ~~`analytics: JSON.stringify(...)`~~ → REMOVED - Not in current schema
 - ❌ ~~`hotelVillaServiceStatus: ''`~~ → REMOVED - Not in current schema
