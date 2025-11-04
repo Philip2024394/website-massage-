@@ -3,6 +3,7 @@ import type { Therapist, Analytics } from '../types';
 import { AvailabilityStatus } from '../types';
 import { parsePricing, parseMassageTypes, parseCoordinates, parseLanguages } from '../utils/appwriteHelpers';
 import { notificationService } from '../lib/appwriteService';
+import { getRandomTherapistImage } from '../utils/therapistImageUtils';
 import DistanceDisplay from './DistanceDisplay';
 import BookingConfirmationPopup from './BookingConfirmationPopup';
 
@@ -242,10 +243,10 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         type.toLowerCase().includes('mobile') || type.toLowerCase().includes('corporate')
     );
     
-    // Use corporate image if mobile/corporate massage type exists, otherwise use therapist's mainImage or fallback
+    // Use corporate image if mobile/corporate massage type exists, otherwise use therapist's mainImage or random Appwrite fallback
     const displayImage = isMobileCorporate 
         ? 'https://ik.imagekit.io/7grri5v7d/massage%20villa%20service%20indonisea.png?updatedAt=1761583264188'
-        : (mainImage || 'https://ik.imagekit.io/7grri5v7d/massage%20image%201.png?updatedAt=1760186885261');
+        : (mainImage || getRandomTherapistImage(therapist.id.toString()));
 
     const openWhatsApp = () => {
         // No login required for WhatsApp booking - direct contact allowed

@@ -1,5 +1,6 @@
 import { account, databases, DATABASE_ID, COLLECTIONS } from './appwrite';
 import { ID } from 'appwrite';
+import { getRandomTherapistImage } from '../utils/therapistImageUtils';
 
 export interface AuthResponse {
     success: boolean;
@@ -132,7 +133,7 @@ export const therapistAuth = {
                     // Optional fields with defaults per schema
                     description: '',
                     profilePicture: '',
-                    mainImage: '',
+                    mainImage: getRandomTherapistImage(therapistId), // Random Appwrite image for professional display
                     yearsOfExperience: 0,
                     massageTypes: '',
                     languages: '',

@@ -3,7 +3,7 @@ import type { Therapist, Place } from '../types';
 import type { Page } from '../types/pageTypes';
 import PlaceCard from '../components/PlaceCard';
 import TherapistCard from '../components/TherapistCard';
-import { getRandomLiveMenuImage } from '../lib/appwriteService';
+import { getRandomTherapistImageRandom } from '../utils/therapistImageUtils';
 import { useTranslations } from '../lib/useTranslations';
 
 interface VenueProfile {
@@ -64,7 +64,7 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
     const liveTherapists = useMemo(() => {
         return therapists.map(therapist => ({
             ...therapist,
-            mainImage: (therapist as any).mainImage || getRandomLiveMenuImage()
+            mainImage: (therapist as any).mainImage || getRandomTherapistImageRandom()
         }));
     }, [therapists]);
     
