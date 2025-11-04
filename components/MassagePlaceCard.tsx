@@ -283,7 +283,11 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                 {/* Pricing */}
                 <div className="grid grid-cols-3 gap-2 text-center text-sm">
                     {/* 60 min pricing */}
-                    <div className="bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative">
+                    <div className={`bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative transition-all duration-500 ${
+                        ((place as any).discountPercentage && (place as any).discountPercentage > 0) || (activeDiscount && discountTimeLeft !== 'EXPIRED')
+                            ? 'shadow-orange-500/60 shadow-xl ring-4 ring-orange-400/40 bg-gradient-to-br from-orange-50 to-orange-100 animate-pulse border-orange-300' 
+                            : ''
+                    }`}>
                         <p className="text-gray-600">60 min</p>
                         {(place as any).discountPercentage && (place as any).discountPercentage > 0 ? (
                             <>
@@ -294,13 +298,26 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                                     -{(place as any).discountPercentage}%
                                 </span>
                             </>
+                        ) : activeDiscount && discountTimeLeft !== 'EXPIRED' ? (
+                            <>
+                                <p className="font-bold text-gray-800">
+                                    Rp {Math.round(Number(pricing["60"]) * (1 - activeDiscount.percentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
+                                </p>
+                                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-10 h-10 flex items-center justify-center shadow-lg animate-bounce">
+                                    -{activeDiscount.percentage}%
+                                </span>
+                            </>
                         ) : (
                             <p className="font-bold text-gray-800">Rp {Number(pricing["60"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
                         )}
                     </div>
                     
                     {/* 90 min pricing */}
-                    <div className="bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative">
+                    <div className={`bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative transition-all duration-500 ${
+                        ((place as any).discountPercentage && (place as any).discountPercentage > 0) || (activeDiscount && discountTimeLeft !== 'EXPIRED')
+                            ? 'shadow-orange-500/60 shadow-xl ring-4 ring-orange-400/40 bg-gradient-to-br from-orange-50 to-orange-100 animate-pulse border-orange-300' 
+                            : ''
+                    }`}>
                         <p className="text-gray-600">90 min</p>
                         {(place as any).discountPercentage && (place as any).discountPercentage > 0 ? (
                             <>
@@ -311,13 +328,26 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                                     -{(place as any).discountPercentage}%
                                 </span>
                             </>
+                        ) : activeDiscount && discountTimeLeft !== 'EXPIRED' ? (
+                            <>
+                                <p className="font-bold text-gray-800">
+                                    Rp {Math.round(Number(pricing["90"]) * (1 - activeDiscount.percentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
+                                </p>
+                                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-10 h-10 flex items-center justify-center shadow-lg animate-bounce">
+                                    -{activeDiscount.percentage}%
+                                </span>
+                            </>
                         ) : (
                             <p className="font-bold text-gray-800">Rp {Number(pricing["90"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
                         )}
                     </div>
                     
                     {/* 120 min pricing */}
-                    <div className="bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative">
+                    <div className={`bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative transition-all duration-500 ${
+                        ((place as any).discountPercentage && (place as any).discountPercentage > 0) || (activeDiscount && discountTimeLeft !== 'EXPIRED')
+                            ? 'shadow-orange-500/60 shadow-xl ring-4 ring-orange-400/40 bg-gradient-to-br from-orange-50 to-orange-100 animate-pulse border-orange-300' 
+                            : ''
+                    }`}>
                         <p className="text-gray-600">120 min</p>
                         {(place as any).discountPercentage && (place as any).discountPercentage > 0 ? (
                             <>
@@ -326,6 +356,15 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                                 </p>
                                 <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-10 h-10 flex items-center justify-center shadow-lg animate-bounce">
                                     -{(place as any).discountPercentage}%
+                                </span>
+                            </>
+                        ) : activeDiscount && discountTimeLeft !== 'EXPIRED' ? (
+                            <>
+                                <p className="font-bold text-gray-800">
+                                    Rp {Math.round(Number(pricing["120"]) * (1 - activeDiscount.percentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
+                                </p>
+                                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-10 h-10 flex items-center justify-center shadow-lg animate-bounce">
+                                    -{activeDiscount.percentage}%
                                 </span>
                             </>
                         ) : (

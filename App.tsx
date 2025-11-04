@@ -3,30 +3,72 @@ import { AppFooterLayout } from './components/layout/AppFooterLayout';
 import { AppRouter } from './AppRouter';
 import { useAllHooks } from './hooks/useAllHooks';
 import { useTranslations } from './lib/useTranslations';
+import BookingPopup from './components/BookingPopup';
+import BookingStatusTracker from './components/BookingStatusTracker';
+import ScheduleBookingPopup from './components/ScheduleBookingPopup';
+import { useState, useEffect } from 'react';
+import { bookingExpirationService } from './services/bookingExpirationService';
 // Temporarily removed: import { useSimpleLanguage } from './context/SimpleLanguageContext';
 // Temporarily removed: import SimpleLanguageSelector from './components/SimpleLanguageSelector';
 
 const App = () => {
-    // Temporarily use fallback language while debugging
-    const language: 'en' | 'id' = 'id';
-    const setLanguage = (lang: 'en' | 'id') => {
-        console.log('🌍 App.tsx: Language change to:', lang);
-    };
-    
-    // All hooks combined (but override language with our working one)
+    // Booking popup state
+    const [isBookingPopupOpen, setIsBookingPopupOpen] = useState(false);
+    const [bookingProviderInfo, setBookingProviderInfo] = useState<{
+        name: string;
+        whatsappNumber: string;
+        providerId: string;
+        providerType: 'therapist' | 'place';
+        profilePicture?: string;
+        hotelVillaId?: string;
+        hotelVillaName?: string;
+        hotelVillaType?: 'hotel' | 'villa';
+    } | null>(null);
+
+    // Booking Status Tracker state
+    const [isStatusTrackerOpen, setIsStatusTrackerOpen] = useState(false);
+    const [bookingStatusInfo, setBookingStatusInfo] = useState<{
+        bookingId: string;
+        therapistName: string;
+        duration: number;
+        price: number;
+        responseDeadline: Date;
+    } | null>(null);
+
+    // Schedule Booking Popup state
+    const [isScheduleBookingOpen, setIsScheduleBookingOpen] = useState(false);
+    const [scheduleBookingInfo, setScheduleBookingInfo] = useState<{
+        therapistId: string;
+        therapistName: string;
+        therapistType: 'therapist' | 'place';
+        profilePicture?: string;
+        hotelVillaId?: string;
+        hotelVillaName?: string;
+        hotelVillaType?: 'hotel' | 'villa';
+    } | null>(null);
+
+    // Start booking expiration service on mount
+    useEffect(() => {
+        bookingExpirationService.start();
+        return () => {
+            bookingExpirationService.stop();
+        };
+    }, []);
+
+    // All hooks combined
     const hooks = useAllHooks();
     const { state, navigation, authHandlers, providerAgentHandlers, footerNav, derived } = hooks;
     
-    // Override the language state with our working one
-    const overriddenState = { ...state, language };
+    // Use the actual language from hooks, not hardcoded
+    const { language, setLanguage } = state;
     
     // Debug: Check what navigation handlers we have
-    console.log('🔧 App.tsx with SimpleLanguage:', {
+    console.log('🔧 App.tsx with Language State:', {
         handleLanguageSelect: !!setLanguage,
         currentLanguage: language
     });
     
-    // Get translations using our working language
+    // Get translations using the actual language state
     const { t } = useTranslations(language);
     
     // Debug: Check what translations we're getting and t function type
@@ -37,49 +79,125 @@ const App = () => {
         headerWelcome: typeof t === 'function' ? t('header.welcome') : 'T_NOT_FUNCTION',
         landingGetStarted: typeof t === 'function' ? t('landing.getStarted') : 'T_NOT_FUNCTION',
         sampleTranslation: typeof t === 'function' ? t('common.loading') : 'T_NOT_FUNCTION',
-        currentPage: overriddenState.page
+        currentPage: state.page
     });
 
-    // Create a simple language handler that works
+    // Use the actual language handler from hooks
     const handleLanguageSelect = async (lang: 'en' | 'id') => {
-        console.log('🌍 App.tsx: Simple handleLanguageSelect called with:', lang);
+        console.log('🌍 App.tsx: handleLanguageSelect called with:', lang);
         setLanguage(lang);
         return Promise.resolve();
     };
 
+    // Global booking popup handler - can be called from anywhere
+    const handleOpenBookingPopup = (
+        providerName: string, 
+        whatsappNumber?: string,
+        providerId?: string,
+        providerType?: 'therapist' | 'place',
+        hotelVillaId?: string,
+        hotelVillaName?: string,
+        hotelVillaType?: 'hotel' | 'villa',
+        profilePicture?: string
+    ) => {
+        console.log('📱 Opening booking popup for:', {
+            providerName,
+            providerId,
+            providerType,
+            profilePicture,
+            hotelVillaId,
+            hotelVillaName,
+            hotelVillaType
+        });
+        setBookingProviderInfo({
+            name: providerName,
+            whatsappNumber: whatsappNumber || '1234567890', // Default number
+            providerId: providerId || '',
+            providerType: providerType || 'therapist',
+            profilePicture,
+            hotelVillaId,
+            hotelVillaName,
+            hotelVillaType
+        });
+        setIsBookingPopupOpen(true);
+    };
+
+    // Make booking popup available globally
+    (window as any).openBookingPopup = handleOpenBookingPopup;
+
+    // Global booking status tracker handler
+    const handleOpenBookingStatusTracker = (statusInfo: {
+        bookingId: string;
+        therapistName: string;
+        duration: number;
+        price: number;
+        responseDeadline: Date;
+    }) => {
+        console.log('📊 Opening booking status tracker:', statusInfo);
+        setBookingStatusInfo(statusInfo);
+        setIsStatusTrackerOpen(true);
+    };
+
+    // Make status tracker available globally
+    (window as any).openBookingStatusTracker = handleOpenBookingStatusTracker;
+
+    // Global schedule booking handler
+    const handleOpenScheduleBookingPopup = (bookingInfo: {
+        therapistId: string;
+        therapistName: string;
+        therapistType: 'therapist' | 'place';
+        profilePicture?: string;
+        hotelVillaId?: string;
+        hotelVillaName?: string;
+        hotelVillaType?: 'hotel' | 'villa';
+    }) => {
+        console.log('📅 Opening schedule booking popup:', bookingInfo);
+        setScheduleBookingInfo(bookingInfo);
+        setIsScheduleBookingOpen(true);
+    };
+
+    // Make schedule booking available globally
+    (window as any).openScheduleBookingPopup = handleOpenScheduleBookingPopup;
+
+    const handleFindNewTherapist = () => {
+        setIsStatusTrackerOpen(false);
+        // Optionally navigate back to therapist list
+        state.setPage('home');
+    };
+
     return (
         <AppLayout
-            isFullScreen={overriddenState.isFullScreen}
+            isFullScreen={state.isFullScreen}
         >
-            <div className={overriddenState.isFullScreen ? "flex-grow" : "flex-grow pb-16"}>
+            <div className={state.isFullScreen ? "flex-grow" : "flex-grow pb-16"}>
                 <AppRouter
-                    page={overriddenState.page}
+                    page={state.page}
                     language={language}
                     t={t}
-                    isLoading={overriddenState.isLoading}
-                    loggedInUser={overriddenState.loggedInUser}
-                    loggedInProvider={overriddenState.loggedInProvider}
-                    loggedInCustomer={overriddenState.loggedInCustomer}
-                    loggedInAgent={overriddenState.loggedInAgent}
-                    isAdminLoggedIn={overriddenState.isAdminLoggedIn}
-                    isHotelLoggedIn={overriddenState.isHotelLoggedIn}
-                    isVillaLoggedIn={overriddenState.isVillaLoggedIn}
-                    therapists={overriddenState.therapists}
-                    places={overriddenState.places}
-                    notifications={overriddenState.notifications}
-                    bookings={overriddenState.bookings}
-                    user={overriddenState.user}
-                    userLocation={overriddenState.userLocation}
-                    selectedPlace={overriddenState.selectedPlace}
-                    selectedMassageType={overriddenState.selectedMassageType}
-                    providerForBooking={overriddenState.providerForBooking}
-                    adminMessages={overriddenState.adminMessages}
-                    providerAuthInfo={overriddenState.providerAuthInfo}
+                    isLoading={state.isLoading}
+                    loggedInUser={state.loggedInUser}
+                    loggedInProvider={state.loggedInProvider}
+                    loggedInCustomer={state.loggedInCustomer}
+                    loggedInAgent={state.loggedInAgent}
+                    isAdminLoggedIn={state.isAdminLoggedIn}
+                    isHotelLoggedIn={state.isHotelLoggedIn}
+                    isVillaLoggedIn={state.isVillaLoggedIn}
+                    therapists={state.therapists}
+                    places={state.places}
+                    notifications={state.notifications}
+                    bookings={state.bookings}
+                    user={state.user}
+                    userLocation={state.userLocation}
+                    selectedPlace={state.selectedPlace}
+                    selectedMassageType={state.selectedMassageType}
+                    providerForBooking={state.providerForBooking}
+                    adminMessages={state.adminMessages}
+                    providerAuthInfo={state.providerAuthInfo}
                     selectedTherapist={null}
                     selectedJobId={null}
-                    venueMenuId={overriddenState.venueMenuId}
+                    venueMenuId={state.venueMenuId}
                     hotelVillaLogo={null}
-                    impersonatedAgent={overriddenState.impersonatedAgent}
+                    impersonatedAgent={state.impersonatedAgent}
                     handleLanguageSelect={handleLanguageSelect}
                     handleEnterApp={navigation?.handleEnterApp || (() => Promise.resolve())}
                     handleSetUserLocation={navigation?.handleSetUserLocation || (() => {})}
@@ -90,7 +208,10 @@ const App = () => {
                     handleNavigateToBooking={navigation?.handleNavigateToBooking || (() => {})}
                     handleQuickBookWithChat={() => Promise.resolve()}
                     handleChatWithBusyTherapist={() => Promise.resolve()}
-                    handleShowRegisterPromptForChat={() => {}}
+                    handleShowRegisterPromptForChat={() => {
+                        state.setRegisterPromptContext('booking');
+                        state.setShowRegisterPrompt(true);
+                    }}
                     handleIncrementAnalytics={() => Promise.resolve()}
                     handleNavigateToHotelLogin={navigation?.handleNavigateToHotelLogin || (() => {})}
                     handleNavigateToVillaLogin={navigation?.handleNavigateToVillaLogin || (() => {})}
@@ -150,7 +271,6 @@ const App = () => {
                 userLocation={state.userLocation}
                 unreadNotifications={derived.unreadNotifications}
                 hasNewBookings={derived.hasNewBookings}
-                hasWhatsAppClick={derived.hasWhatsAppClick}
                 isAdminLoggedIn={state.isAdminLoggedIn}
                 isHotelLoggedIn={state.isHotelLoggedIn}
                 isVillaLoggedIn={state.isVillaLoggedIn}
@@ -173,7 +293,6 @@ const App = () => {
                 handleFooterProfile={footerNav.handleFooterProfile}
                 handleFooterDashboard={footerNav.handleFooterDashboard}
                 handleFooterMenu={footerNav.handleFooterMenu}
-                handleFooterSearch={() => state.setPage('home')}
                 handleRegisterPromptClose={() => state.setShowRegisterPrompt(false)}
                 handleRegisterPromptRegister={() => state.setPage('registrationChoice')}
                 setPage={state.setPage}
@@ -183,6 +302,42 @@ const App = () => {
                 setLoyaltyEvent={state.setLoyaltyEvent}
                 setIsChatWindowVisible={state.setIsChatWindowVisible}
                 t={t}
+            />
+            
+            {/* Global Booking Popup */}
+            <BookingPopup
+                isOpen={isBookingPopupOpen}
+                onClose={() => setIsBookingPopupOpen(false)}
+                therapistId={bookingProviderInfo?.providerId || ''}
+                therapistName={bookingProviderInfo?.name || ''}
+                profilePicture={bookingProviderInfo?.profilePicture}
+                providerType={bookingProviderInfo?.providerType}
+                hotelVillaId={bookingProviderInfo?.hotelVillaId}
+            />
+
+            {/* Global Booking Status Tracker */}
+            <BookingStatusTracker
+                isOpen={isStatusTrackerOpen}
+                onClose={() => setIsStatusTrackerOpen(false)}
+                bookingId={bookingStatusInfo?.bookingId || ''}
+                therapistName={bookingStatusInfo?.therapistName || ''}
+                duration={bookingStatusInfo?.duration || 60}
+                price={bookingStatusInfo?.price || 0}
+                responseDeadline={bookingStatusInfo?.responseDeadline || new Date()}
+                onFindNewTherapist={handleFindNewTherapist}
+            />
+
+            {/* Global Schedule Booking Popup */}
+            <ScheduleBookingPopup
+                isOpen={isScheduleBookingOpen}
+                onClose={() => setIsScheduleBookingOpen(false)}
+                therapistId={scheduleBookingInfo?.therapistId || ''}
+                therapistName={scheduleBookingInfo?.therapistName || ''}
+                therapistType={scheduleBookingInfo?.therapistType || 'therapist'}
+                profilePicture={scheduleBookingInfo?.profilePicture}
+                hotelVillaId={scheduleBookingInfo?.hotelVillaId}
+                hotelVillaName={scheduleBookingInfo?.hotelVillaName}
+                hotelVillaType={scheduleBookingInfo?.hotelVillaType}
             />
         </AppLayout>
     );

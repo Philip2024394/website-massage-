@@ -295,10 +295,32 @@ const DiscountSharePage: React.FC<DiscountSharePageProps> = ({
             const link = document.createElement('a');
             link.href = url;
             link.download = `${providerName}-${discount.percentage}-percent-discount.png`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
+            
+            // React-safe DOM manipulation with error handling
+            try {
+                document.body.appendChild(link);
+                setTimeout(() => {
+                    try {
+                        link.click();
+                        setTimeout(() => {
+                            try {
+                                if (link.parentNode === document.body) {
+                                    document.body.removeChild(link);
+                                }
+                            } catch (removeErr) {
+                                console.warn('Element already removed:', removeErr);
+                            }
+                            window.URL.revokeObjectURL(url);
+                        }, 100);
+                    } catch (clickErr) {
+                        console.error('Click failed:', clickErr);
+                        window.URL.revokeObjectURL(url);
+                    }
+                }, 10);
+            } catch (appendErr) {
+                console.error('Failed to append link:', appendErr);
+                window.URL.revokeObjectURL(url);
+            }
         } catch (err) {
             console.error('Failed to download:', err);
         }

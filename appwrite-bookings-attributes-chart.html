@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appwrite Bookings Collection - Required Attributes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .subtitle {
+            color: rgba(255,255,255,0.9);
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        
+        .section-title {
+            font-size: 1.8rem;
+            color: #667eea;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .badge-required {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .badge-optional {
+            background: #10b981;
+            color: white;
+        }
+        
+        .badge-new {
+            background: #f59e0b;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 20px;
+        }
+        
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        th {
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        th:first-child {
+            border-top-left-radius: 8px;
+        }
+        
+        th:last-child {
+            border-top-right-radius: 8px;
+        }
+        
+        tbody tr {
+            transition: all 0.3s ease;
+        }
+        
+        tbody tr:hover {
+            background: #f3f4f6;
+            transform: scale(1.01);
+        }
+        
+        td {
+            padding: 16px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        tbody tr:last-child td:first-child {
+            border-bottom-left-radius: 8px;
+        }
+        
+        tbody tr:last-child td:last-child {
+            border-bottom-right-radius: 8px;
+        }
+        
+        .type {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .type-string {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .type-integer {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .type-datetime {
+            background: #fce7f3;
+            color: #9f1239;
+        }
+        
+        .attribute-name {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 0.95rem;
+        }
+        
+        .description {
+            color: #6b7280;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .highlight-row {
+            background: #fef3c7 !important;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin-top: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .icon {
+            font-size: 1.5rem;
+            margin-right: 8px;
+        }
+        
+        .alert {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        
+        .alert-title {
+            color: #991b1b;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+        
+        .alert-text {
+            color: #7f1d1d;
+            line-height: 1.6;
+        }
+        
+        .success {
+            background: #f0fdf4;
+            border-left: 4px solid #10b981;
+        }
+        
+        .success .alert-title {
+            color: #065f46;
+        }
+        
+        .success .alert-text {
+            color: #064e3b;
+        }
+        
+        .code-block {
+            background: #1f2937;
+            color: #f3f4f6;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        
+        .code-block pre {
+            margin: 0;
+            line-height: 1.6;
+        }
+        
+        .key {
+            color: #8b5cf6;
+        }
+        
+        .value-string {
+            color: #34d399;
+        }
+        
+        .value-number {
+            color: #fbbf24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Appwrite Bookings Collection</h1>
+        <p class="subtitle">Complete Attribute Schema Reference</p>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number">9</div>
+                <div class="stat-label">Required Attributes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">8</div>
+                <div class="stat-label">Optional Attributes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">17</div>
+                <div class="stat-label">Total Attributes</div>
+            </div>
+        </div>
+        
+        <div class="alert">
+            <div class="alert-title">⚠️ Action Required</div>
+            <div class="alert-text">
+                You must add the <strong>bookingId</strong> attribute to your Appwrite bookings collection before creating any bookings. 
+                Without this attribute, all booking creations will fail with "Missing required attribute 'bookingId'" error.
+            </div>
+        </div>
+        
+        <!-- Required Attributes -->
+        <div class="section">
+            <h2 class="section-title">
+                <span class="icon">✅</span>
+                Required Attributes
+                <span class="badge badge-required">Must Add</span>
+            </h2>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Attribute Name</th>
+                        <th>Type</th>
+                        <th>Size/Range</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="highlight-row">
+                        <td><span class="attribute-name">bookingId</span></td>
+                        <td><span class="type type-string">String</span></td>
+                        <td>255</td>
+                        <td class="description">Unique booking identifier (auto-generated UUID or timestamp)</td>
+                    </tr>
+                    <tr>
+                        <td><span class="attribute-name">therapistId</span></td>
+                        <td><span class="type type-string">String</span></td>
+                        <td>255</td>
+                        <td class="description">ID of the therapist or massage place</td>
+                    </tr>
+                    <tr>
+                        <td><span class="attribute-name">therapistName</span></td>
+                        <td><span class="type type-string">String</span></td>
+                        <td>255</td>
+                        <td class="description">Display name of the therapist or place</td>
+                    </tr>
+                    <tr>
+                        <td><span class="attribute-name">therapistType</span></td>
+                        <td><span class="type type-string">String</span></td>
+                        <td>50</td>
+                        <td class="description">Either 'therapist' or 'place'</td>
+                    </tr>
+                    <tr>
+                        <td><span class="attribute-name">duration</span></td>
+                        <td><span class="type type-integer">Integer</span></td>
+                        <td>Min: 60, Max: 120</td>
+                        <td class="description">Service duration in minutes (60, 90, or 120)</td>
+                    </tr>
+                    <tr>
+                        <td><span class="attribute-name">price</span></td>
+                        <td><span class="type type-integer">Integer</span></td>
+                        <td>Min: 0, Max: 1000</td>
+                        <td class="description">Service price in dollars</td>
+                    </tr>
+                    <tr>
+                        <td><span class="attribute-name">status</span></td>
+                        <td><span class="type type-string">String</span></td>
+                        <td>50</td>
+                        <td class="description">Booking status: 'pending', 'confirmed', 'expired', 'completed'</td>
+                    </tr>
+                    <tr>
+                        <td><span class="attribute-name">createdAt</span></td>
+                        <td><span class="type type-datetime">DateTime</span></td>
+                        <td>-</td>
+                        <td class="description">When the booking was created</td>
+                    </tr>
+                    <tr>
+                        <td><span class="attribute-name">responseDeadline</span></td>
+                        <td><span class="type type-datetime">DateTime</span></td>
+                        <td>-</td>
+                        <td class="description">Therapist must respond before this time (5 or 15 minutes)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Optional Attributes -->
+        <div class="section">
+            <h2 class="section-title">
+                <span class="icon">⭐</span>
+                Optional Attributes
+                <span class="badge badge-optional">Recommended</span>
+            </h2>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Attribute Name</th>
+                        <th>Type</th>
+                        <th>Size/Range</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="attribute-name">scheduledTime</span></td>
+                        <td><span class="type type-datetime">DateTime</span></td>
+                        <td>-</td>
+                        <td class="description">For scheduled bookings - the future time slot selected by customer</td>
+                    </tr>
+                    <tr>
+                        <td><span class="attribute-name">customerName</span></td>
+                        <td><span class="type type-string">String</span></td>
+                        <td>255</td>
+                        <td class="description">Customer's full name (collected in scheduled bookings)</td>
+                    </tr>
+                    <tr>
+                        <td><span class="attribute-name">customerWhatsApp</span></td>
+                        <td><span class="type type-string">String</span></td>
+                        <td>50</td>
+                        <td class="description">Customer's WhatsApp number for communication</td>
+                    </tr>
+                    <tr>
+                        <td><span class="attribute-name">bookingType</span></td>
+                        <td><span class="type type-string">String</span></td>
+                        <td>50</td>
+                        <td class="description">Either 'immediate' (5-min) or 'scheduled' (15-min)</td>
+                    </tr>
+                    <tr>
+                        <td><span class="attribute-name">providerId</span></td>
+                        <td><span class="type type-string">String</span></td>
+                        <td>255</td>
+                        <td class="description">Alternative provider ID (if different from therapistId)</td>
+                    </tr>
+                    <tr>
+                        <td><span class="attribute-name">providerType</span></td>
+                        <td><span class="type type-string">String</span></td>
+                        <td>50</td>
+                        <td class="description">Alternative provider type</td>
+                    </tr>
+                    <tr>
+                        <td><span class="attribute-name">hotelVillaId</span></td>
+                        <td><span class="type type-string">String</span></td>
+                        <td>255</td>
+                        <td class="description">Hotel or villa ID if booking is made from venue live menu</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td>
+                            <span class="attribute-name">roomNumber</span>
+                            <span class="badge badge-new">NEW</span>
+                        </td>
+                        <td><span class="type type-string">String</span></td>
+                        <td>50</td>
+                        <td class="description">Hotel/Villa room number for service delivery (e.g., "101", "205A")</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Example Data -->
+        <div class="section">
+            <h2 class="section-title">
+                <span class="icon">📝</span>
+                Example Booking Data (Scheduled with Room Number)
+            </h2>
+            
+            <div class="code-block">
+                <pre>{
+  <span class="key">"bookingId"</span>: <span class="value-string">"550e8400-e29b-41d4-a716-446655440000"</span>,
+  <span class="key">"therapistId"</span>: <span class="value-string">"therapist_12345"</span>,
+  <span class="key">"therapistName"</span>: <span class="value-string">"John Massage Expert"</span>,
+  <span class="key">"therapistType"</span>: <span class="value-string">"therapist"</span>,
+  <span class="key">"duration"</span>: <span class="value-number">90</span>,
+  <span class="key">"price"</span>: <span class="value-number">70</span>,
+  <span class="key">"status"</span>: <span class="value-string">"pending"</span>,
+  <span class="key">"createdAt"</span>: <span class="value-string">"2025-11-04T10:00:00.000Z"</span>,
+  <span class="key">"responseDeadline"</span>: <span class="value-string">"2025-11-04T10:15:00.000Z"</span>,
+  <span class="key">"scheduledTime"</span>: <span class="value-string">"2025-11-04T14:30:00.000Z"</span>,
+  <span class="key">"customerName"</span>: <span class="value-string">"Jane Smith"</span>,
+  <span class="key">"customerWhatsApp"</span>: <span class="value-string">"+628123456789"</span>,
+  <span class="key">"bookingType"</span>: <span class="value-string">"scheduled"</span>,
+  <span class="key">"hotelVillaId"</span>: <span class="value-string">"hotel_luxury_resort"</span>,
+  <span class="key">"roomNumber"</span>: <span class="value-string">"205A"</span> <span style="color: #f59e0b;">← NEW for live menu!</span>
+}</pre>
+            </div>
+        </div>
+        
+        <!-- Setup Instructions -->
+        <div class="section success">
+            <h2 class="section-title">
+                <span class="icon">🚀</span>
+                Quick Setup Instructions
+            </h2>
+            
+            <div class="alert-text">
+                <ol style="line-height: 2; margin-left: 20px;">
+                    <li><strong>Go to Appwrite Console:</strong> https://cloud.appwrite.io/console</li>
+                    <li><strong>Navigate to:</strong> Your Project → Database → <code>bookings</code> collection → Attributes tab</li>
+                    <li><strong>Click:</strong> "+ Create Attribute" button</li>
+                    <li><strong>Add each attribute above</strong> with the exact name, type, and size</li>
+                    <li><strong>Most Important:</strong> Add <code>bookingId</code> (String, 255) first!</li>
+                    <li><strong>Wait:</strong> 1-2 minutes for Appwrite to sync the schema</li>
+                    <li><strong>Test:</strong> Refresh your app and try creating a booking</li>
+                </ol>
+            </div>
+        </div>
+        
+        <div style="text-align: center; color: white; margin-top: 40px; padding: 20px;">
+            <p style="font-size: 1.2rem; margin-bottom: 10px;">📚 For detailed setup instructions, see:</p>
+            <p style="font-family: monospace; background: rgba(255,255,255,0.2); padding: 10px; border-radius: 8px; display: inline-block;">
+                APPWRITE_BOOKINGS_SCHEMA.md
+            </p>
+        </div>
+    </div>
+</body>
+</html>

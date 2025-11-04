@@ -22,7 +22,6 @@ interface PendingTherapist {
   experience?: string;
   specialties?: string[];
   pricing?: any;
-  hotelVillaPricing?: any;
   mainImage?: string;
   additionalImages?: string[];
   languages?: string[];
@@ -30,6 +29,15 @@ interface PendingTherapist {
   yearsOfExperience?: number;
   massageTypes?: string;
   discountPercentage?: number;
+  // Schema-compliant fields from database
+  hotelDiscount?: number;
+  villaDiscount?: number;
+  hotelVillaServiceStatus?: string;
+  hotelVillaPricing?: any;
+  location?: string;
+  coordinates?: string;
+  isLicensed?: boolean;
+  licenseNumber?: string;
 }
 
 interface EditModalData {
@@ -71,8 +79,11 @@ const ConfirmTherapistsPage: React.FC = () => {
     setLoading(true);
     try {
       const data = await therapistService.getAll();
-      console.log('🔍 Raw therapist data from database:', data);
-      console.log('📊 Number of therapists found:', data.length);
+      console.log('🔍 Fetched therapists:', data.length);
+      
+      // Quick check for pricing data
+      const withPricing = data.filter(t => t.pricing && t.pricing !== '{"60":0,"90":0,"120":0}').length;
+      console.log(`💰 Pricing status: ${withPricing}/${data.length} therapists have pricing data`);
       
       const formattedData = data.map((t: any) => ({
         $id: t.$id,
@@ -86,6 +97,23 @@ const ConfirmTherapistsPage: React.FC = () => {
         membershipPackage: t.membershipPackage,
         activeMembershipDate: t.activeMembershipDate,
         isLive: t.isLive || false,
+        pricing: t.pricing, // Add pricing data to formatted object
+        hotelVillaPricing: t.hotelVillaPricing, // Add hotel villa pricing data
+        // Add missing fields needed for editing
+        description: t.description || '',
+        experience: t.experience || '',
+        specialties: t.specialties || [],
+        languages: t.languages || [],
+        massageTypes: t.massageTypes || [],
+        discountPercentage: t.discountPercentage || 0,
+        additionalImages: t.additionalImages || [],
+        hotelDiscount: t.hotelDiscount || 20,
+        villaDiscount: t.villaDiscount || 20,
+        location: t.location || '',
+        coordinates: t.coordinates || '',
+        yearsOfExperience: t.yearsOfExperience || 0,
+        isLicensed: t.isLicensed || false,
+        licenseNumber: t.licenseNumber || ''
       }));
       
       console.log('✅ Formatted therapist data:', formattedData);
@@ -107,23 +135,63 @@ const ConfirmTherapistsPage: React.FC = () => {
       newExpiryDate.setMonth(newExpiryDate.getMonth() + membershipMonths);
       const newExpiryDateString = newExpiryDate.toISOString().split('T')[0];
 
-      console.log('🔄 Activating therapist:', therapistId);
+      console.log('🔄 Admin activating therapist:', therapistId);
       console.log('📅 Setting expiry date:', newExpiryDateString);
       console.log('✅ Setting isLive: true');
 
-      await therapistService.update(therapistId, {
+      // Fetch existing data to preserve all fields
+      let existingTherapist: any = null;
+      try {
+        existingTherapist = await therapistService.getById(therapistId);
+        console.log('📖 Found existing therapist for activation');
+      } catch (error) {
+        console.log('⚠️ Could not fetch existing data for activation');
+      }
+
+      // Prepare activation update with data preservation
+      const updateData = {
         isLive: true,
         activeMembershipDate: newExpiryDateString,
-      });
+        // Preserve all existing fields if available (valid schema attributes only)
+        ...(existingTherapist && {
+          name: existingTherapist.name,
+          email: existingTherapist.email,
+          whatsappNumber: existingTherapist.whatsappNumber,
+          profilePicture: existingTherapist.profilePicture,
+          description: existingTherapist.description,
+          mainImage: existingTherapist.mainImage,
+          yearsOfExperience: existingTherapist.yearsOfExperience,
+          massageTypes: existingTherapist.massageTypes,
+          languages: existingTherapist.languages,
+          pricing: existingTherapist.pricing,
+          location: existingTherapist.location,
+          coordinates: existingTherapist.coordinates,
+          status: existingTherapist.status,
+          rating: existingTherapist.rating,
+          reviewCount: existingTherapist.reviewCount,
+          isLicensed: existingTherapist.isLicensed,
+          licenseNumber: existingTherapist.licenseNumber,
+          analytics: existingTherapist.analytics,
+          hotelVillaServiceStatus: existingTherapist.hotelVillaServiceStatus,
+          serviceRadius: existingTherapist.serviceRadius,
+          password: existingTherapist.password,
+          createdAt: existingTherapist.createdAt
+        }),
+        // Only include discount fields if they exist in the existing record
+        ...(existingTherapist?.hotelDiscount !== undefined && { hotelDiscount: existingTherapist.hotelDiscount }),
+        ...(existingTherapist?.villaDiscount !== undefined && { villaDiscount: existingTherapist.villaDiscount })
+      };
 
-      console.log('✅ Therapist activation completed');
+      await therapistService.update(therapistId, updateData);
+
+      console.log('✅ Therapist activation completed successfully');
 
       // Refresh list
       await fetchTherapists();
-      alert(`Therapist activated with ${membershipMonths} month(s) membership!`);
+      alert(`Therapist activated with ${membershipMonths} month(s) membership! All therapist data preserved.`);
     } catch (error: any) {
       console.error('❌ Error activating therapist:', error);
-      alert('Error activating therapist: ' + (error.message || 'Unknown error'));
+      alert('Error activating therapist: ' + (error.message || 'Unknown error. Please try again.'));
     } finally {
       setUpdatingId(null);
     }
@@ -132,22 +200,109 @@ const ConfirmTherapistsPage: React.FC = () => {
   const handleDeactivate = async (therapistId: string) => {
     setUpdatingId(therapistId);
     try {
-      await therapistService.update(therapistId, {
+      console.log('🔄 Admin deactivating therapist:', therapistId);
+      
+      // Fetch existing data to preserve all fields
+      let existingTherapist: any = null;
+      try {
+        existingTherapist = await therapistService.getById(therapistId);
+        console.log('📖 Found existing therapist for deactivation');
+      } catch (error) {
+        console.log('⚠️ Could not fetch existing data for deactivation');
+      }
+
+      // Prepare deactivation update with data preservation
+      const updateData = {
         status: 'deactivated',
         isLive: false,
-      });
+        // Preserve all existing fields if available (valid schema attributes only)
+        ...(existingTherapist && {
+          name: existingTherapist.name,
+          email: existingTherapist.email,
+          whatsappNumber: existingTherapist.whatsappNumber,
+          profilePicture: existingTherapist.profilePicture,
+          description: existingTherapist.description,
+          mainImage: existingTherapist.mainImage,
+          yearsOfExperience: existingTherapist.yearsOfExperience,
+          massageTypes: existingTherapist.massageTypes,
+          languages: existingTherapist.languages,
+          pricing: existingTherapist.pricing,
+          location: existingTherapist.location,
+          coordinates: existingTherapist.coordinates,
+          rating: existingTherapist.rating,
+          reviewCount: existingTherapist.reviewCount,
+          isLicensed: existingTherapist.isLicensed,
+          licenseNumber: existingTherapist.licenseNumber,
+          analytics: existingTherapist.analytics,
+          hotelVillaServiceStatus: existingTherapist.hotelVillaServiceStatus,
+          serviceRadius: existingTherapist.serviceRadius,
+          password: existingTherapist.password,
+          activeMembershipDate: existingTherapist.activeMembershipDate,
+          createdAt: existingTherapist.createdAt
+        }),
+        // Only include discount fields if they exist in the existing record
+        ...(existingTherapist?.hotelDiscount !== undefined && { hotelDiscount: existingTherapist.hotelDiscount }),
+        ...(existingTherapist?.villaDiscount !== undefined && { villaDiscount: existingTherapist.villaDiscount })
+      };
 
+      await therapistService.update(therapistId, updateData);
+
+      console.log('✅ Therapist deactivation completed successfully');
       await fetchTherapists();
-      alert('Therapist deactivated successfully!');
+      alert('Therapist deactivated successfully! All therapist data preserved.');
     } catch (error: any) {
-      console.error('Error deactivating therapist:', error);
-      alert('Error deactivating therapist: ' + (error.message || 'Unknown error'));
+      console.error('❌ Error deactivating therapist:', error);
+      alert('Error deactivating therapist: ' + (error.message || 'Unknown error. Please try again.'));
     } finally {
       setUpdatingId(null);
     }
   };
 
   const handleEditTherapist = (therapist: PendingTherapist) => {
+    // Parse pricing data from JSON string format to edit modal format
+    const parsePricingForEdit = (pricingString: any, hotelDiscount?: number, villaDiscount?: number) => {
+      if (!pricingString || typeof pricingString !== 'string') {
+        return {
+          home: { '60min': '', '90min': '', '120min': '' },
+          hotelVilla: { '60min': '', '90min': '', '120min': '' }
+        };
+      }
+      
+      try {
+        const parsed = JSON.parse(pricingString);
+        const avgDiscount = ((hotelDiscount || 20) + (villaDiscount || 20)) / 2;
+        
+        // Calculate hotel/villa pricing from home pricing + discount
+        const hotelPricing = {
+          '60min': parsed['60'] ? Math.round(parsed['60'] * (1 - avgDiscount/100)).toString() : '',
+          '90min': parsed['90'] ? Math.round(parsed['90'] * (1 - avgDiscount/100)).toString() : '',
+          '120min': parsed['120'] ? Math.round(parsed['120'] * (1 - avgDiscount/100)).toString() : ''
+        };
+        
+        return {
+          home: { 
+            '60min': parsed['60'] ? parsed['60'].toString() : '', 
+            '90min': parsed['90'] ? parsed['90'].toString() : '', 
+            '120min': parsed['120'] ? parsed['120'].toString() : '' 
+          },
+          hotelVilla: hotelPricing
+        };
+      } catch {
+        return {
+          home: { '60min': '', '90min': '', '120min': '' },
+          hotelVilla: { '60min': '', '90min': '', '120min': '' }
+        };
+      }
+    };
+
+    const pricingData = parsePricingForEdit(therapist.pricing, therapist.hotelDiscount, therapist.villaDiscount);
+    
+    // Combined pricing structure for edit modal
+    const combinedPricing = {
+      home: pricingData.home,
+      hotelVilla: pricingData.hotelVilla
+    };
+
     const editData: EditModalData = {
       $id: therapist.$id,
       name: therapist.name || '',
@@ -158,10 +313,7 @@ const ConfirmTherapistsPage: React.FC = () => {
       description: therapist.description || '',
       experience: therapist.experience || '',
       specialties: Array.isArray(therapist.specialties) ? therapist.specialties : [],
-      pricing: therapist.pricing || {
-        home: { '60min': '', '90min': '', '120min': '' },
-        hotelVilla: { '60min': '', '90min': '', '120min': '' }
-      },
+      pricing: combinedPricing,
       discountPercentage: therapist.discountPercentage || 0,
       additionalImages: Array.isArray(therapist.additionalImages) ? therapist.additionalImages : [],
       languages: therapist.languages 
@@ -181,44 +333,149 @@ const ConfirmTherapistsPage: React.FC = () => {
     
     setUpdatingId(editingTherapist.$id);
     try {
-      // Convert pricing object to JSON string and validate length
-      const pricingString = typeof editingTherapist.pricing === 'string' 
-        ? editingTherapist.pricing 
-        : JSON.stringify(editingTherapist.pricing);
+      console.log('💾 Admin saving therapist data...');
       
-      if (pricingString.length > 255) {
-        alert('Pricing data is too long. Please simplify the pricing structure.');
-        return;
+      // First, fetch the current complete therapist data to preserve all fields
+      let existingTherapist: any = null;
+      try {
+        existingTherapist = await therapistService.getById(editingTherapist.$id);
+        console.log('📖 Found existing therapist data for preservation:', existingTherapist);
+      } catch (error) {
+        console.log('⚠️ Could not fetch existing data, proceeding with admin updates only');
       }
+      
+      // Convert edit modal pricing format to database JSON string format
+      const convertPricingForDatabase = (pricingData: any) => {
+        if (!pricingData || typeof pricingData !== 'object') {
+          return '{"60":0,"90":0,"120":0}';
+        }
+        
+        // Extract home pricing values and convert to database format
+        const homePricing = pricingData.home || {};
+        const pricing = {
+          "60": parseInt(homePricing['60min']) || 0,
+          "90": parseInt(homePricing['90min']) || 0,
+          "120": parseInt(homePricing['120min']) || 0
+        };
+        
+        return JSON.stringify(pricing);
+      };
 
-      // Convert arrays to JSON strings
-      const languagesString = typeof editingTherapist.languages === 'string'
+      const finalPricingString = convertPricingForDatabase(editingTherapist.pricing);
+      
+      // Calculate hotel and villa discounts based on hotel/villa pricing vs home pricing
+      const calculateDiscounts = (pricingData: any) => {
+        if (!pricingData || typeof pricingData !== 'object') {
+          return { hotelDiscount: 20, villaDiscount: 20 }; // Default 20% discount
+        }
+        
+        const homePricing = pricingData.home || {};
+        const hotelPricing = pricingData.hotelVilla || {};
+        
+        // Get average home price
+        const homeAvg = (
+          (parseInt(homePricing['60min']) || 0) +
+          (parseInt(homePricing['90min']) || 0) +
+          (parseInt(homePricing['120min']) || 0)
+        ) / 3;
+        
+        // Get average hotel price
+        const hotelAvg = (
+          (parseInt(hotelPricing['60min']) || 0) +
+          (parseInt(hotelPricing['90min']) || 0) +
+          (parseInt(hotelPricing['120min']) || 0)
+        ) / 3;
+        
+        // Calculate discount percentage
+        let discountPercent = 20; // Default 20%
+        if (homeAvg > 0 && hotelAvg > 0) {
+          discountPercent = Math.round(((homeAvg - hotelAvg) / homeAvg) * 100);
+          discountPercent = Math.max(0, Math.min(50, discountPercent)); // Clamp between 0-50%
+        }
+        
+        return { 
+          hotelDiscount: discountPercent, 
+          villaDiscount: discountPercent 
+        };
+      };
+
+      const { hotelDiscount, villaDiscount } = calculateDiscounts(editingTherapist.pricing);
+      
+      console.log('🏠 Pricing for database:', finalPricingString);
+      console.log('🏨 Calculated discounts:', { hotelDiscount, villaDiscount });
+
+      // Convert arrays to JSON strings with length validation
+      let languagesString = typeof editingTherapist.languages === 'string'
         ? editingTherapist.languages
         : JSON.stringify(editingTherapist.languages);
+      
+      if (languagesString.length > 255) {
+        console.warn('⚠️ Languages string too long, using fallback');
+        languagesString = '[]';
+      }
 
-      const massageTypesString = typeof editingTherapist.massageTypes === 'string'
+      let massageTypesString = typeof editingTherapist.massageTypes === 'string'
         ? editingTherapist.massageTypes
         : JSON.stringify(editingTherapist.massageTypes);
+        
+      if (massageTypesString.length > 255) {
+        console.warn('⚠️ MassageTypes string too long, using fallback');
+        massageTypesString = '[]';
+      }
 
-      await therapistService.update(editingTherapist.$id, {
+      // Prepare update data with complete data preservation
+      const updateData = {
+        // Admin-controlled fields (these get updated)
         name: editingTherapist.name,
         email: editingTherapist.email,
         whatsappNumber: editingTherapist.whatsappNumber,
         profilePicture: editingTherapist.profilePicture,
         description: editingTherapist.description,
         yearsOfExperience: parseInt(editingTherapist.experience) || 0,
-        pricing: pricingString,
+        pricing: finalPricingString,
         languages: languagesString,
-        massageTypes: massageTypesString
+        massageTypes: massageTypesString,
+        
+        // Only include discount fields if they exist in the existing therapist record
+        ...(existingTherapist?.hotelDiscount !== undefined && { hotelDiscount: hotelDiscount }),
+        ...(existingTherapist?.villaDiscount !== undefined && { villaDiscount: villaDiscount }),
+        
+        // Preserve all other existing fields that the therapist may have set (valid schema attributes only)
+        ...(existingTherapist && {
+          mainImage: existingTherapist.mainImage,
+          location: existingTherapist.location,
+          coordinates: existingTherapist.coordinates,
+          status: existingTherapist.status,
+          rating: existingTherapist.rating,
+          reviewCount: existingTherapist.reviewCount,
+          isLicensed: existingTherapist.isLicensed,
+          licenseNumber: existingTherapist.licenseNumber,
+          analytics: existingTherapist.analytics,
+          hotelVillaServiceStatus: existingTherapist.hotelVillaServiceStatus,
+          serviceRadius: existingTherapist.serviceRadius,
+          // System fields that should be preserved
+          password: existingTherapist.password,
+          isLive: existingTherapist.isLive,
+          activeMembershipDate: existingTherapist.activeMembershipDate,
+          createdAt: existingTherapist.createdAt
+        })
+      };
+
+      console.log('💾 Admin update preserving existing data:', {
+        preservedFields: ['mainImage', 'location', 'coordinates', 'status', 'analytics', 'hotelDiscount', 'villaDiscount'],
+        updatedFields: ['name', 'email', 'whatsappNumber', 'pricing', 'description', 'yearsOfExperience']
       });
 
+      await therapistService.update(editingTherapist.$id, updateData);
+
+      console.log('✅ Admin save completed successfully');
       await fetchTherapists();
       setShowEditModal(false);
       setEditingTherapist(null);
-      alert('Therapist updated successfully!');
+      alert('Therapist updated successfully! All existing therapist data has been preserved while updating the admin-controlled fields.');
     } catch (error: any) {
-      console.error('Error updating therapist:', error);
-      alert('Error updating therapist: ' + (error.message || 'Unknown error'));
+      console.error('❌ Admin save error:', error);
+      alert('Error updating therapist: ' + (error.message || 'Unknown error. Please try again.'));
     } finally {
       setUpdatingId(null);
     }
@@ -232,16 +489,59 @@ const ConfirmTherapistsPage: React.FC = () => {
   const handleDiscountUpdate = async (therapistId: string, discountPercentage: number) => {
     setUpdatingId(therapistId);
     try {
-      // Note: discountPercentage field doesn't exist in schema, using hotelDiscount as fallback
-      await therapistService.update(therapistId, {
-        hotelDiscount: discountPercentage
-      });
+      console.log('💰 Admin updating discount percentage...');
       
+      // Fetch existing data to preserve all fields
+      let existingTherapist: any = null;
+      try {
+        existingTherapist = await therapistService.getById(therapistId);
+        console.log('📖 Found existing therapist for discount update');
+      } catch (error) {
+        console.log('⚠️ Could not fetch existing data for discount update');
+      }
+      
+      // Update only the discount field while preserving everything else
+      const updateData = {
+        hotelDiscount: discountPercentage,
+        // Preserve all existing fields if available (valid schema attributes only)
+        ...(existingTherapist && {
+          name: existingTherapist.name,
+          email: existingTherapist.email,
+          whatsappNumber: existingTherapist.whatsappNumber,
+          profilePicture: existingTherapist.profilePicture,
+          description: existingTherapist.description,
+          mainImage: existingTherapist.mainImage,
+          yearsOfExperience: existingTherapist.yearsOfExperience,
+          massageTypes: existingTherapist.massageTypes,
+          languages: existingTherapist.languages,
+          pricing: existingTherapist.pricing,
+          location: existingTherapist.location,
+          coordinates: existingTherapist.coordinates,
+          status: existingTherapist.status,
+          isLive: existingTherapist.isLive,
+          rating: existingTherapist.rating,
+          reviewCount: existingTherapist.reviewCount,
+          isLicensed: existingTherapist.isLicensed,
+          licenseNumber: existingTherapist.licenseNumber,
+          analytics: existingTherapist.analytics,
+          hotelVillaServiceStatus: existingTherapist.hotelVillaServiceStatus,
+          serviceRadius: existingTherapist.serviceRadius,
+          password: existingTherapist.password,
+          activeMembershipDate: existingTherapist.activeMembershipDate,
+          createdAt: existingTherapist.createdAt
+        }),
+        // Only include villaDiscount if it exists in the existing record
+        ...(existingTherapist?.villaDiscount !== undefined && { villaDiscount: existingTherapist.villaDiscount })
+      };
+      
+      await therapistService.update(therapistId, updateData);
+      
+      console.log('✅ Discount updated successfully');
       await fetchTherapists();
-      alert(`Hotel discount updated to ${discountPercentage}%!`);
+      alert(`Discount updated to ${discountPercentage}%! All other therapist data has been preserved.`);
     } catch (error: any) {
-      console.error('Error updating discount:', error);
-      alert('Error updating discount: ' + (error.message || 'Unknown error'));
+      console.error('❌ Error updating discount:', error);
+      alert('Error updating discount: ' + (error.message || 'Unknown error. Please try again.'));
     } finally {
       setUpdatingId(null);
     }
@@ -297,6 +597,26 @@ const ConfirmTherapistsPage: React.FC = () => {
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold text-gray-800">Confirm Therapist Accounts</h2>
         <div className="flex gap-2">
+          <button
+            onClick={async () => {
+              try {
+                const pricingHelper = (window as any).pricingHelper;
+                if (pricingHelper) {
+                  const result = await pricingHelper.addSamplePricingToAllTherapists();
+                  alert(`✅ Updated pricing for ${result.updated} therapists!`);
+                  fetchTherapists(); // Refresh the list
+                } else {
+                  alert('❌ Pricing helper not loaded. Please refresh the page.');
+                }
+              } catch (error) {
+                console.error('Error adding pricing:', error);
+                alert('❌ Error adding pricing data. Check console for details.');
+              }
+            }}
+            className="px-3 py-1.5 text-sm bg-green-600 text-white rounded hover:bg-green-700"
+          >
+            🏷️ Add Sample Pricing
+          </button>
           <button
             onClick={async () => {
               console.log('🔍 Manual Debug Check:');
@@ -460,12 +780,19 @@ const ConfirmTherapistsPage: React.FC = () => {
                                   </div>
                                 </div>
                               );
-                            } catch {
-                              return <span className="text-xs text-gray-400">No pricing set</span>;
+                            } catch (error) {
+                              console.error(`❌ Error parsing pricing for ${therapist.name}:`, error);
+                              return (
+                                <div className="text-xs text-red-500 p-2 bg-red-50 rounded">
+                                  Invalid pricing data. Use console: pricingHelper.addPricingToTherapist('{therapist.$id}', {`{60: 350, 90: 500, 120: 650}`})
+                                </div>
+                              );
                             }
                           })()
                         ) : (
-                          <span className="text-xs text-gray-400">No pricing set</span>
+                          <div className="text-xs text-orange-500 p-2 bg-orange-50 rounded">
+                            No pricing set. Use console: pricingHelper.addSamplePricingToAllTherapists()
+                          </div>
                         )}
                       </div>
                     </div>
@@ -474,23 +801,31 @@ const ConfirmTherapistsPage: React.FC = () => {
                     <div>
                       <h4 className="font-semibold text-gray-900 mb-2">Hotel/Villa Rates</h4>
                       <div className="space-y-1">
-                        {therapist.hotelVillaPricing && typeof therapist.hotelVillaPricing === 'string' ? (
+                        {therapist.pricing && typeof therapist.pricing === 'string' ? (
                           (() => {
                             try {
-                              const hotelPricing = JSON.parse(therapist.hotelVillaPricing);
+                              const pricing = JSON.parse(therapist.pricing);
+                              // Calculate discounted rates using hotelDiscount/villaDiscount from schema
+                              const hotelDiscount = therapist.hotelDiscount || 20; // Default 20% discount
+                              const villaDiscount = therapist.villaDiscount || 20; // Default 20% discount
+                              const avgDiscount = (hotelDiscount + villaDiscount) / 2;
+                              
                               return (
                                 <div className="grid grid-cols-3 gap-2 text-xs">
                                   <div className="bg-purple-50 p-2 rounded text-center">
                                     <div className="font-medium">60min</div>
-                                    <div className="text-purple-600">{hotelPricing['60'] || 0}k</div>
+                                    <div className="text-purple-600">{Math.round((pricing['60'] || 0) * (1 - avgDiscount/100))}k</div>
+                                    <div className="text-xs text-gray-500">-{avgDiscount}%</div>
                                   </div>
                                   <div className="bg-purple-50 p-2 rounded text-center">
                                     <div className="font-medium">90min</div>
-                                    <div className="text-purple-600">{hotelPricing['90'] || 0}k</div>
+                                    <div className="text-purple-600">{Math.round((pricing['90'] || 0) * (1 - avgDiscount/100))}k</div>
+                                    <div className="text-xs text-gray-500">-{avgDiscount}%</div>
                                   </div>
                                   <div className="bg-purple-50 p-2 rounded text-center">
                                     <div className="font-medium">120min</div>
-                                    <div className="text-purple-600">{hotelPricing['120'] || 0}k</div>
+                                    <div className="text-purple-600">{Math.round((pricing['120'] || 0) * (1 - avgDiscount/100))}k</div>
+                                    <div className="text-xs text-gray-500">-{avgDiscount}%</div>
                                   </div>
                                 </div>
                               );

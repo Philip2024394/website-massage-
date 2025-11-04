@@ -41,17 +41,14 @@ export const useDerivedState = ({
         b => b.providerId === loggedInProvider?.id
     );
 
-    const hasWhatsAppClick = false;
-
     // @ts-ignore - Page type needs updating
-    const pagesWithoutFooter: Page[] = ['landing', 'language', 'login', 'register', 'adminLogin'];
+    const pagesWithoutFooter: Page[] = ['landing', 'language', 'login', 'register', 'adminLogin', 'adminDashboard'];
     const showFooter = !pagesWithoutFooter.includes(page) && !(page === 'chatList' && activeChatRoom);
 
     return {
         getUserRole,
         unreadNotifications,
         hasNewBookings,
-        hasWhatsAppClick,
         showFooter
     };
 };

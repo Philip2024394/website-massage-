@@ -197,7 +197,21 @@ const TodaysDiscountsPage: React.FC<TodaysDiscountsPageProps> = ({ onBack }) => 
                                         </div>
                                         <span className="text-xs text-gray-500">per session</span>
                                     </div>
-                                    <button className="bg-gradient-to-r from-orange-500 to-pink-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-200 hover:scale-105">
+                                    <button 
+                                        onClick={() => {
+                                            // Use global booking popup
+                                            const openBookingPopup = (window as any).openBookingPopup;
+                                            if (openBookingPopup) {
+                                                openBookingPopup(
+                                                    therapist.name,
+                                                    therapist.whatsappNumber,
+                                                    typeof therapist.id === 'string' ? therapist.id : therapist.id?.toString(),
+                                                    'therapist'
+                                                );
+                                            }
+                                        }}
+                                        className="bg-gradient-to-r from-orange-500 to-pink-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-200 hover:scale-105"
+                                    >
                                         Book Now
                                     </button>
                                 </div>

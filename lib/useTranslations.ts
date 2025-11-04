@@ -33,8 +33,19 @@ const cacheTranslations = (data: any) => {
     }
 };
 
-export function useTranslations(language: 'en' | 'id' = 'en') {
-    console.log(`🚀 useTranslations called with language: ${language}`);
+export function useTranslations(language?: 'en' | 'id') {
+    // Get stored language preference if no language is provided
+    const getStoredLanguage = (): 'en' | 'id' => {
+        try {
+            const stored = localStorage.getItem('app_language');
+            return (stored === 'id' || stored === 'en') ? stored : 'en';
+        } catch {
+            return 'en';
+        }
+    };
+    
+    const currentLanguage = language || getStoredLanguage();
+    console.log(`🚀 useTranslations called with language: ${currentLanguage} (provided: ${language}, stored: ${getStoredLanguage()})`);
     
     const [translations, setTranslations] = useState(fallbackTranslations);
     const [loading, setLoading] = useState(false);
@@ -50,35 +61,35 @@ export function useTranslations(language: 'en' | 'id' = 'en') {
 
     const loadTranslations = useCallback(async () => {
         try {
-            console.log(`🌐 Loading translations for language: ${language}`);
+            console.log(`🌐 Loading translations for language: ${currentLanguage}`);
             
             // Check cache first
             const cached = getCachedTranslations();
-            if (cached && cached[language]) {
-                console.log(`✅ Found cached translations for ${language}`);
+            if (cached && cached[currentLanguage]) {
+                console.log(`✅ Found cached translations for ${currentLanguage}`);
                 setTranslations(cached);
                 setLoading(false);
                 return;
             }
 
-            console.log(` Loading translations from Appwrite for ${language}...`);
+            console.log(` Loading translations from Appwrite for ${currentLanguage}...`);
             // Load from Appwrite
             const appwriteTranslations = await translationsService.getAll();
             
-            if (appwriteTranslations && appwriteTranslations[language] && Object.keys(appwriteTranslations[language]).length > 0) {
-                console.log(`✅ Loaded ${Object.keys(appwriteTranslations[language]).length} keys for ${language} from Appwrite`);
-                console.log(`🔧 Available translation keys for ${language}:`, Object.keys(appwriteTranslations[language]));
+            if (appwriteTranslations && appwriteTranslations[currentLanguage] && Object.keys(appwriteTranslations[currentLanguage]).length > 0) {
+                console.log(`✅ Loaded ${Object.keys(appwriteTranslations[currentLanguage]).length} keys for ${currentLanguage} from Appwrite`);
+                console.log(`🔧 Available translation keys for ${currentLanguage}:`, Object.keys(appwriteTranslations[currentLanguage]));
                 setTranslations(appwriteTranslations);
                 cacheTranslations(appwriteTranslations);
             } else {
-                console.log(`⚠️ No translations found for ${language} in Appwrite, using fallback`);
-                console.log(`📁 Available fallback keys for ${language}:`, Object.keys((fallbackTranslations as any)[language] || {}));
-                console.log(`🏠 Fallback has landing?`, !!((fallbackTranslations as any)[language]?.landing));
+                console.log(`⚠️ No translations found for ${currentLanguage} in Appwrite, using fallback`);
+                console.log(`📁 Available fallback keys for ${currentLanguage}:`, Object.keys((fallbackTranslations as any)[currentLanguage] || {}));
+                console.log(`🏠 Fallback has landing?`, !!((fallbackTranslations as any)[currentLanguage]?.landing));
                 // FIXED: Use fallback translations when Appwrite is empty
                 // Don't merge with empty appwriteTranslations - just use fallback
                 setTranslations(fallbackTranslations);
                 cacheTranslations(fallbackTranslations);
-                console.log(`🔄 Using fallback translation keys for ${language}:`, Object.keys((fallbackTranslations as any)[language] || {}));
+                console.log(`🔄 Using fallback translation keys for ${currentLanguage}:`, Object.keys((fallbackTranslations as any)[currentLanguage] || {}));
             }
         } catch (error) {
             console.error('Error loading translations, using fallback:', error);
@@ -86,7 +97,7 @@ export function useTranslations(language: 'en' | 'id' = 'en') {
         } finally {
             setLoading(false);
         }
-    }, [language]);
+    }, [currentLanguage]);
 
     useEffect(() => {
         loadTranslations();
@@ -97,31 +108,31 @@ export function useTranslations(language: 'en' | 'id' = 'en') {
     
     // TEMPORARY: Force Indonesian fallback for testing
     let finalTranslations;
-    if (language === 'id') {
+    if (currentLanguage === 'id') {
         finalTranslations = (fallbackTranslations as any).id || fallbackTranslations.en;
         console.log(`🔧 FORCED Indonesian fallback. Keys:`, Object.keys(finalTranslations || {}));
         console.log(`🔧 FORCED Home section:`, finalTranslations?.home ? Object.keys(finalTranslations.home) : 'no home');
     } else {
         finalTranslations = 
-            (hasTranslationContent(translations[language]) ? translations[language] : null) ||
+            (hasTranslationContent(translations[currentLanguage]) ? translations[currentLanguage] : null) ||
             (hasTranslationContent(translations.en) ? translations.en : null) ||
-            (hasTranslationContent((fallbackTranslations as any)[language]) ? (fallbackTranslations as any)[language] : null) ||
+            (hasTranslationContent((fallbackTranslations as any)[currentLanguage]) ? (fallbackTranslations as any)[currentLanguage] : null) ||
             fallbackTranslations.en ||
             fallbackTranslations;
     }
     
-    console.log(`🧭 useTranslations Debug for ${language}:`);
-    console.log(`  📦 translations[${language}] exists:`, !!translations[language]);
-    console.log(`  📦 translations[${language}] keys:`, translations[language] ? Object.keys(translations[language]) : 'none');
-    console.log(`  📦 translations[${language}] has content:`, hasTranslationContent(translations[language]));
-    console.log(`  🏠 translations[${language}].home exists:`, !!(translations[language] && translations[language].home));
-    console.log(`  📦 fallbackTranslations[${language}] exists:`, !!((fallbackTranslations as any)[language]));
-    console.log(`  📦 fallbackTranslations[${language}] keys:`, (fallbackTranslations as any)[language] ? Object.keys((fallbackTranslations as any)[language]) : 'none');
-    console.log(`  📦 fallbackTranslations[${language}] has content:`, hasTranslationContent((fallbackTranslations as any)[language]));
-    console.log(`  🏠 fallbackTranslations[${language}].home exists:`, !!((fallbackTranslations as any)[language] && (fallbackTranslations as any)[language].home));
+    console.log(`🧭 useTranslations Debug for ${currentLanguage}:`);
+    console.log(`  📦 translations[${currentLanguage}] exists:`, !!translations[currentLanguage]);
+    console.log(`  📦 translations[${currentLanguage}] keys:`, translations[currentLanguage] ? Object.keys(translations[currentLanguage]) : 'none');
+    console.log(`  📦 translations[${currentLanguage}] has content:`, hasTranslationContent(translations[currentLanguage]));
+    console.log(`  🏠 translations[${currentLanguage}].home exists:`, !!(translations[currentLanguage] && translations[currentLanguage].home));
+    console.log(`  📦 fallbackTranslations[${currentLanguage}] exists:`, !!((fallbackTranslations as any)[currentLanguage]));
+    console.log(`  📦 fallbackTranslations[${currentLanguage}] keys:`, (fallbackTranslations as any)[currentLanguage] ? Object.keys((fallbackTranslations as any)[currentLanguage]) : 'none');
+    console.log(`  📦 fallbackTranslations[${currentLanguage}] has content:`, hasTranslationContent((fallbackTranslations as any)[currentLanguage]));
+    console.log(`  🏠 fallbackTranslations[${currentLanguage}].home exists:`, !!((fallbackTranslations as any)[currentLanguage] && (fallbackTranslations as any)[currentLanguage].home));
     console.log(`  ✅ Final translation keys:`, Object.keys(finalTranslations || {}));
     console.log(`  🏠 Final translation has home:`, !!(finalTranslations && finalTranslations.home));
-    console.log(`  🎯 Translation source: ${hasTranslationContent(translations[language]) ? 'Appwrite' : hasTranslationContent((fallbackTranslations as any)[language]) ? 'Fallback' : 'Default'}`);
+    console.log(`  🎯 Translation source: ${hasTranslationContent(translations[currentLanguage]) ? 'Appwrite' : hasTranslationContent((fallbackTranslations as any)[currentLanguage]) ? 'Fallback' : 'Default'}`);
 
     // Helper function to get nested translation values
     const getNestedValue = (obj: any, path: string): string => {
@@ -152,15 +163,15 @@ export function useTranslations(language: 'en' | 'id' = 'en') {
         },
         loading,
         refresh: loadTranslations,
-        hasLanguage: !!(translations[language] && Object.keys(translations[language]).length > 0),
+        hasLanguage: !!(translations[currentLanguage] && Object.keys(translations[currentLanguage]).length > 0),
         // Add debug info
         debug: {
-            requestedLanguage: language,
+            requestedLanguage: currentLanguage,
             availableLanguages: Object.keys(translations),
-            hasRequestedLang: !!(translations[language]),
-            fallbackUsed: !translations[language],
-            translationKeys: translations[language] ? Object.keys(translations[language]) : [],
-            hasHomeKey: !!(translations[language] && translations[language].home)
+            hasRequestedLang: !!(translations[currentLanguage]),
+            fallbackUsed: !translations[currentLanguage],
+            translationKeys: translations[currentLanguage] ? Object.keys(translations[currentLanguage]) : [],
+            hasHomeKey: !!(translations[currentLanguage] && translations[currentLanguage].home)
         }
     };
 }

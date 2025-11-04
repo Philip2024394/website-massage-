@@ -85,7 +85,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
     const selectedLang = languages.find(lang => lang.code === selectedLanguage) || languages[0];
 
     return (
-        <div className="h-screen w-full flex relative overflow-hidden">
+        <div className="fixed inset-0 w-full h-full flex overflow-hidden">
             <div
                 className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ease-in-out"
                 style={{
@@ -95,7 +95,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
                     opacity: imageLoaded ? 1 : 0,
                 }}
             />
-            <div className="relative z-10 flex-grow flex flex-col items-center justify-center bg-black bg-opacity-50 text-white px-4 py-6 text-center min-h-screen">
+            <div className="relative z-10 flex-grow flex flex-col items-center justify-center bg-black bg-opacity-50 text-white px-4 text-center w-full h-full">
                 <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
                     <span className="text-white">Inda</span><span className="text-orange-400">Street</span>
                 </h1>

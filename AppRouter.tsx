@@ -41,7 +41,8 @@ import JobUnlockPaymentPage from './pages/JobUnlockPaymentPage';
 import AdminBankSettingsPage from './pages/AdminBankSettingsPage';
 import CustomerAuthPage from './pages/CustomerAuthPage';
 import CustomerDashboardPage from './pages/CustomerDashboardPage';
-import ChatListPage from './pages/ChatListPage';
+// Removed chat import - chat system removed
+// import ChatListPage from './pages/ChatListPage';
 import AboutUsPage from './pages/AboutUsPage';
 import HowItWorksPage from './pages/HowItWorksPage';
 import MassageBaliPage from './pages/MassageBaliPage';
@@ -85,6 +86,8 @@ import ReferralPage from './pages/ReferralPage';
 import CoinHistoryPage from './pages/CoinHistoryPage';
 import CoinSystemTestPage from './pages/CoinSystemTestPage';
 import TodaysDiscountsPage from './pages/TodaysDiscountsPage';
+import BookingPopup from './components/BookingPopup';
+import AcceptBookingPage from './pages/AcceptBookingPage';
 import { APP_CONFIG } from './config/appConfig';
 
 interface AppRouterProps {
@@ -373,6 +376,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'adminDashboard': 
             return isAdminLoggedIn && <AdminDashboardPage 
                 onLogout={handleAdminLogout}
+                onNavigateToHome={handleBackToHome}
             /> || null;
             
         case 'providerAuth': 
@@ -596,14 +600,14 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'adminBankSettings': 
             return isAdminLoggedIn && <AdminBankSettingsPage onBack={() => setPage('adminDashboard')} t={t} /> || null;
             
-        case 'chatList': 
-            // @ts-ignore - Prop interface mismatch 
-            return <ChatListPage 
-                userId={loggedInCustomer?.$id || user?.id || ''}
-                userType="customer"
-                language={language}
-                onBack={handleBackToHome}
-            />;
+        // Chat system removed - no longer needed with WhatsApp booking
+        // case 'chatList': 
+        //     return <ChatListPage 
+        //         userId={loggedInCustomer?.$id || user?.id || ''}
+        //         userType="customer"
+        //         language={language}
+        //         onBack={handleBackToHome}
+        //     />;
             
         case 'about-us': 
             return <AboutUsPage 
@@ -819,6 +823,9 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             
         case 'todaysDiscounts': 
             return <TodaysDiscountsPage onBack={handleBackToHome} onNavigate={(page: Page) => setPage(page as Page)} t={t} />;
+            
+        case 'accept-booking':
+            return <AcceptBookingPage />;
             
         default: 
             return null;

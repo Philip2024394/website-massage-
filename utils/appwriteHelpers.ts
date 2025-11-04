@@ -5,8 +5,14 @@ import type { Pricing, Analytics } from '../types';
 // Pricing helpers
 export const parsePricing = (pricingString: string): Pricing => {
   try {
-    return JSON.parse(pricingString);
-  } catch {
+    if (!pricingString || pricingString.trim() === '') {
+      console.warn('⚠️ Empty or null pricing string, using default values');
+      return { "60": 0, "90": 0, "120": 0 };
+    }
+    const result = JSON.parse(pricingString);
+    return result;
+  } catch (error) {
+    console.warn('⚠️ parsePricing failed, using fallback:', error);
     return { "60": 0, "90": 0, "120": 0 };
   }
 };

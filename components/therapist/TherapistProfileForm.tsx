@@ -98,9 +98,14 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
 
     const handleMassageTypeChange = (type: string) => {
         if (massageTypes.includes(type)) {
+            // Remove if already selected
             setMassageTypes(massageTypes.filter(t => t !== type));
         } else {
-            setMassageTypes([...massageTypes, type]);
+            // Add only if less than 2 are selected
+            if (massageTypes.length < 2) {
+                setMassageTypes([...massageTypes, type]);
+            }
+            // Silently ignore if trying to select more than 2
         }
     };
 
@@ -452,7 +457,12 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
             </div>
 
             <div>
-                <label className="block text-sm font-medium text-gray-700">{t.massageTypesLabel}</label>
+                <label className="block text-sm font-medium text-gray-700">
+                    {t.massageTypesLabel}
+                    <span className="text-xs text-gray-500 ml-2">
+                        (Select up to 2 specialties - {massageTypes.length}/2 selected)
+                    </span>
+                </label>
                 <div className="mt-2 p-3 bg-white border border-gray-200 rounded-lg space-y-4">
                     {MASSAGE_TYPES_CATEGORIZED.map((category: any) => (
                         <div key={category.category}>
@@ -464,6 +474,7 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                                         label={type}
                                         checked={massageTypes.includes(type)}
                                         onChange={() => handleMassageTypeChange(type)}
+                                        disabled={!massageTypes.includes(type) && massageTypes.length >= 2}
                                     />
                                 ))}
                             </div>

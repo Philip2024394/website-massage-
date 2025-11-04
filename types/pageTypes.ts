@@ -107,7 +107,8 @@ export type Page =
     | 'referral' 
     | 'coin-history' 
     | 'coin-test' 
-    | 'todays-discounts';
+    | 'todays-discounts'
+    | 'accept-booking';
 
 export type Language = 'en' | 'id';
 

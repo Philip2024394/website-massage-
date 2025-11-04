@@ -271,7 +271,17 @@ export function saveSessionCache(sessionUser: SessionUser): void {
 export function clearSessionCache(): void {
     try {
         localStorage.removeItem('session_cache');
-        // Also clear any other auth-related items
+        // Clear the correct localStorage keys that match useAppState
+        localStorage.removeItem('app_is_admin_logged_in');
+        localStorage.removeItem('app_logged_in_user');
+        localStorage.removeItem('app_logged_in_customer');
+        localStorage.removeItem('app_logged_in_provider');
+        localStorage.removeItem('app_logged_in_agent');
+        localStorage.removeItem('app_impersonated_agent');
+        localStorage.removeItem('app_hotel_logged_in');
+        localStorage.removeItem('app_villa_logged_in');
+        
+        // Also clear legacy session keys for compatibility
         localStorage.removeItem('hotel_session');
         localStorage.removeItem('villa_session');
         localStorage.removeItem('admin_session');

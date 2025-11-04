@@ -1,10 +1,12 @@
 import React from 'react';
-import Footer from '../Footer';
+import UnifiedFooter from '../UnifiedFooter';
 import FloatingWebsiteButton from '../FloatingWebsiteButton';
 import CookieConsent from '../CookieConsent';
 import RegisterPromptPopup from '../RegisterPromptPopup';
 import { CoinEarnedCelebration } from '../CoinEarnedCelebration';
-import BookingChatWindow from '../BookingChatWindow';
+// Removed chat import - chat system removed
+// import BookingChatWindow from '../BookingChatWindow';
+import { useFooterChatCounts } from '../../hooks/useFooterChatCounts';
 import type { Page, Language } from '../../types/pageTypes';
 import type { Booking } from '../../types';
 
@@ -16,7 +18,6 @@ interface AppFooterLayoutProps {
     userLocation: any;
     unreadNotifications: number;
     hasNewBookings: boolean;
-    hasWhatsAppClick: boolean;
     isAdminLoggedIn: boolean;
     isHotelLoggedIn: boolean;
     isVillaLoggedIn: boolean;
@@ -35,7 +36,6 @@ interface AppFooterLayoutProps {
     handleFooterProfile: () => void;
     handleFooterDashboard: () => void;
     handleFooterMenu: () => void;
-    handleFooterSearch: () => void;
     handleRegisterPromptClose: () => void;
     handleRegisterPromptRegister: () => void;
     setPage: (page: Page) => void;
@@ -55,7 +55,6 @@ export const AppFooterLayout: React.FC<AppFooterLayoutProps> = ({
     userLocation,
     unreadNotifications,
     hasNewBookings,
-    hasWhatsAppClick,
     isAdminLoggedIn,
     isHotelLoggedIn,
     isVillaLoggedIn,
@@ -74,7 +73,6 @@ export const AppFooterLayout: React.FC<AppFooterLayoutProps> = ({
     handleFooterProfile,
     handleFooterDashboard,
     handleFooterMenu,
-    handleFooterSearch,
     handleRegisterPromptClose,
     handleRegisterPromptRegister,
     setPage,
@@ -85,15 +83,22 @@ export const AppFooterLayout: React.FC<AppFooterLayoutProps> = ({
     setIsChatWindowVisible,
     t
 }) => {
+    // Get real-time chat counts
+    const { unreadChats } = useFooterChatCounts({
+        userRole: getUserRole(),
+        userId: user?.id || loggedInCustomer?.id,
+        providerId: loggedInUser?.id
+    });
+
     return (
         <>
             {showFooter && (
-                <Footer 
+                <UnifiedFooter 
                     userRole={getUserRole()}
                     currentPage={page}
                     unreadNotifications={unreadNotifications}
+                    unreadChats={unreadChats}
                     hasNewBookings={hasNewBookings}
-                    hasWhatsAppClick={hasWhatsAppClick}
                     onHomeClick={handleFooterHome}
                     onNotificationsClick={() => {
                         // Admin check first
@@ -109,7 +114,6 @@ export const AppFooterLayout: React.FC<AppFooterLayoutProps> = ({
                     onProfileClick={handleFooterProfile}
                     onDashboardClick={handleFooterDashboard}
                     onMenuClick={handleFooterMenu}
-                    onSearchClick={handleFooterSearch}
                     onChatClick={() => {
                         console.log('🔍 Chat clicked - Admin check:', { isAdminLoggedIn, loggedInUserType: loggedInUser?.type });
                         
@@ -176,7 +180,8 @@ export const AppFooterLayout: React.FC<AppFooterLayoutProps> = ({
                 onClose={() => setLoyaltyEvent(null)}
             />
 
-            {/* Booking Chat Window */}
+            {/* Chat system removed - using WhatsApp booking instead */}
+            {/* Booking Chat Window - Removed
             {activeChatRoom && chatBooking && isChatWindowVisible && (
                 <BookingChatWindow
                     chatRoom={activeChatRoom}
@@ -191,6 +196,7 @@ export const AppFooterLayout: React.FC<AppFooterLayoutProps> = ({
                     }}
                 />
             )}
+            */}
         </>
     );
 };

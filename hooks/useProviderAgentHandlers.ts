@@ -12,20 +12,24 @@ const showToast = (message: string, type: 'success' | 'error' | 'warning' = 'suc
     toast.innerHTML = `<strong>${icon}</strong> ${message}`;
     toast.style.opacity = '1';
     
-    // Append to body safely
+    // Append to body safely with React-friendly approach
     if (document.body) {
-        document.body.appendChild(toast);
-        
-        // Fade out and remove
-        setTimeout(() => {
-            toast.style.opacity = '0';
+        try {
+            document.body.appendChild(toast);
+            
+            // Fade out and remove with proper cleanup
             setTimeout(() => {
-                // Check if element still exists and has parent before removing
-                if (toast && toast.parentNode) {
-                    toast.parentNode.removeChild(toast);
-                }
-            }, 300);
-        }, 4000);
+                toast.style.opacity = '0';
+                setTimeout(() => {
+                    // Use a safer removal approach that avoids React conflicts
+                    if (toast && toast.parentNode === document.body) {
+                        document.body.removeChild(toast);
+                    }
+                }, 300);
+            }, 4000);
+        } catch (error) {
+            console.warn('Toast notification could not be displayed:', error);
+        }
     }
 };
 
@@ -100,21 +104,66 @@ export const useProviderAgentHandlers = ({
             } catch (error) {
                 console.log('📝 No existing profile found, will create new one');
             }
-            
+
+            // Helper function to ensure JSON strings are compact and under 255 chars
+            const compactJsonString = (value: any, fieldName: string, fallback: string = '[]'): string => {
+                let jsonString = typeof value === 'string' ? value : JSON.stringify(value);
+                if (jsonString.length > 255) {
+                    console.warn(`⚠️ ${fieldName} string too long (${jsonString.length} chars), using fallback`);
+                    return fallback;
+                }
+                return jsonString;
+            };
+
+            // Prepare pricing string with 255-character validation
+            let pricingString = typeof therapistData.pricing === 'string' ? therapistData.pricing : JSON.stringify(therapistData.pricing);
+            if (pricingString.length > 255) {
+                console.warn('⚠️ Therapist pricing string too long, creating compact version');
+                try {
+                    const parsed = JSON.parse(pricingString);
+                    // Create a minimal pricing object with only the essential fields
+                    const compactPricing = {
+                        "60": parsed["60"] || parsed[60] || 0,
+                        "90": parsed["90"] || parsed[90] || 0,
+                        "120": parsed["120"] || parsed[120] || 0
+                    };
+                    pricingString = JSON.stringify(compactPricing);
+                    console.log('✅ Created compact therapist pricing:', pricingString);
+                } catch (error) {
+                    console.error('❌ Failed to create compact pricing, using default');
+                    pricingString = '{"60":0,"90":0,"120":0}';
+                }
+            }
+
+            // Prepare update data with better data preservation (valid schema attributes only)
             const updateData: any = {
-                ...therapistData,
+                name: therapistData.name,
+                description: therapistData.description,
+                whatsappNumber: therapistData.whatsappNumber,
                 profilePicture: profilePicture,
-                mainImage: therapistData.mainImage || '',
-                id: therapistId,
-                therapistId: therapistId,
-                hotelId: '',
-                pricing: typeof therapistData.pricing === 'string' ? therapistData.pricing : JSON.stringify(therapistData.pricing),
-                analytics: typeof therapistData.analytics === 'string' ? therapistData.analytics : JSON.stringify(therapistData.analytics),
-                specialization: 'Massage Therapist',
+                mainImage: therapistData.mainImage || existingTherapist?.mainImage || '',
                 yearsOfExperience: (therapistData as any).yearsOfExperience || 0,
+                massageTypes: compactJsonString(therapistData.massageTypes, 'massageTypes', '[]'),
+                languages: compactJsonString((therapistData as any).languages || [], 'languages', '[]'),
+                pricing: pricingString,
+                location: therapistData.location,
+                coordinates: compactJsonString(therapistData.coordinates, 'coordinates', '{"lat":0,"lng":0}'),
+                status: therapistData.status,
+                rating: existingTherapist?.rating || 0,
+                reviewCount: existingTherapist?.reviewCount || 0,
                 isLicensed: (therapistData as any).isLicensed || false,
-                availability: '[]',
-                hourlyRate: 100,
+                licenseNumber: (therapistData as any).licenseNumber || '',
+                analytics: compactJsonString(therapistData.analytics, 'analytics', '{"impressions":0,"views":0,"profileViews":0,"whatsappClicks":0}'),
+                hotelVillaServiceStatus: existingTherapist?.hotelVillaServiceStatus || 'NotOptedIn',
+                hotelDiscount: existingTherapist?.hotelDiscount || 0,
+                villaDiscount: existingTherapist?.villaDiscount || 0,
+                serviceRadius: existingTherapist?.serviceRadius || 10,
+                // Preserve system fields
+                email: existingTherapist?.email || `therapist${therapistId}@indostreet.com`,
+                password: existingTherapist?.password || '',
+                isLive: existingTherapist?.isLive || false,
+                activeMembershipDate: existingTherapist?.activeMembershipDate || new Date().toISOString().split('T')[0],
+                createdAt: existingTherapist?.createdAt || new Date().toISOString()
             };
             
             console.log('💾 Saving therapist data:', {

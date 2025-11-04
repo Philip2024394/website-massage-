@@ -16,7 +16,6 @@ import {
     Hotel,
     Calendar
 } from 'lucide-react';
-import AdminFooter from '../components/footers/AdminFooter';
 import { authService } from '../lib/appwriteService';
 import { Place } from '../types';
 
@@ -260,12 +259,9 @@ const MassagePlaceAdminDashboard: React.FC<MassagePlaceAdminDashboardProps> = ({
                 </header>
 
                 {/* Page Content */}
-                <main className="flex-1 p-6">
+                <main className="flex-1 p-6 pb-20">
                     {renderContent()}
                 </main>
-
-                {/* Footer */}
-                <AdminFooter />
             </div>
         </div>
     );

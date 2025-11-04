@@ -1,11 +1,12 @@
 
 
 import React, { useState, useEffect } from 'react';
-import { BarChart, Users, Building, Settings, Percent, LogOut, CreditCard, DollarSign, ShoppingBag, MessageSquare, UserCheck, Menu, X, Package, Briefcase, Globe } from 'lucide-react';
+import { BarChart, Users, Building, Settings, Percent, LogOut, CreditCard, DollarSign, ShoppingBag, UserCheck, Menu, X, Package, Briefcase, Globe } from 'lucide-react';
 import ConfirmTherapistsPage from './ConfirmTherapistsPage';
 import ConfirmPlacesPage from './ConfirmPlacesPage';
 import ConfirmAccountsPage from './ConfirmAccountsPage';
-import AdminChatListPage from './AdminChatListPage';
+// Removed chat import - chat system removed
+// import AdminChatListPage from './AdminChatListPage';
 import DrawerButtonsPage from './DrawerButtonsPage';
 import AgentCommissionPage from './AgentCommissionPage';
 import PlatformAnalyticsPage from './PlatformAnalyticsPage';
@@ -14,17 +15,18 @@ import PaymentTransactionsPage from './PaymentTransactionsPage';
 import AdminShopManagementPage from './AdminShopManagementPage';
 import MembershipPricingPage from './MembershipPricingPage';
 import AdminJobPostingsPage from './AdminJobPostingsPage';
-import AdminFooter from '../components/footers/AdminFooter';
 import TranslationManager from '../components/TranslationManager';
 import AdminTranslationPanel from '../components/AdminTranslationPanel';
 import { authService } from '../lib/appwriteService';
+import '../utils/pricingHelper'; // Load pricing helper for console access
 
 interface AdminDashboardPageProps {
     onLogout: () => void;
     initialTab?: DashboardPage;
+    onNavigateToHome?: () => void;
 }
-type DashboardPage = 'platform-analytics' | 'confirm-therapists' | 'confirm-places' | 'confirm-accounts' | 'chat-messages' | 'drawer-buttons' | 'agent-commission' | 'bank-details' | 'payment-transactions' | 'shop-management' | 'membership-pricing' | 'job-postings' | 'translations' | 'therapist-translations';
-const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'initialTab'>> = ({ onLogout, initialTab }) => {
+type DashboardPage = 'platform-analytics' | 'confirm-therapists' | 'confirm-places' | 'confirm-accounts' | 'drawer-buttons' | 'agent-commission' | 'bank-details' | 'payment-transactions' | 'shop-management' | 'membership-pricing' | 'job-postings' | 'translations' | 'therapist-translations';
+const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'initialTab' | 'onNavigateToHome'>> = ({ onLogout, initialTab, onNavigateToHome }) => {
   const [activePage, setActivePage] = useState<DashboardPage>(initialTab || 'platform-analytics');
   const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
   const [showTranslationManager, setShowTranslationManager] = useState(false);
@@ -144,7 +146,8 @@ const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'i
             <span className="font-medium">Job Postings</span>
           </button>
 
-          <button
+          {/* Chat system removed - using WhatsApp booking */}
+          {/* <button
             onClick={() => {
               setActivePage('chat-messages');
               setIsSideDrawerOpen(false);
@@ -157,7 +160,7 @@ const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'i
           >
             <MessageSquare className="w-5 h-5" />
             <span className="font-medium">Messages</span>
-          </button>
+          </button> */}
 
           <button
             onClick={() => {
@@ -292,7 +295,7 @@ const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'i
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
             <h1 className="text-base sm:text-2xl font-bold">
-              <span className="text-black">Inda </span>
+              <span className="text-black">Inda</span>
               <span className="text-orange-500">Street</span>
             </h1>
           </div>
@@ -313,7 +316,8 @@ const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'i
         {activePage === 'confirm-places' && <ConfirmPlacesPage />}
         {activePage === 'confirm-accounts' && <ConfirmAccountsPage />}
         {activePage === 'job-postings' && <AdminJobPostingsPage />}
-        {activePage === 'chat-messages' && <AdminChatListPage />}
+        {/* Chat system removed - using WhatsApp booking */}
+        {/* {activePage === 'chat-messages' && <AdminChatListPage />} */}
         {activePage === 'bank-details' && <BankDetailsManagementPage />}
         {activePage === 'payment-transactions' && <PaymentTransactionsPage />}
         {activePage === 'shop-management' && <AdminShopManagementPage onNavigate={() => {}} />}
@@ -321,15 +325,6 @@ const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'i
         {activePage === 'drawer-buttons' && <DrawerButtonsPage />}
         {activePage === 'agent-commission' && <AgentCommissionPage />}
       </main>
-
-      {/* Admin Footer */}
-      <AdminFooter
-        onDashboardClick={() => setActivePage('platform-analytics')}
-        onMembersClick={() => setActivePage('confirm-therapists')}
-        onMessagesClick={() => setActivePage('chat-messages')}
-        onAlertsClick={() => setActivePage('payment-transactions')}
-        onSettingsClick={() => setActivePage('drawer-buttons')}
-      />
 
       {/* Translation Manager Modal */}
       {showTranslationManager && (

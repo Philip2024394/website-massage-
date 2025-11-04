@@ -215,11 +215,21 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     
     // Parse Appwrite string fields with fallbacks
     const pricing = parsePricing(therapist.pricing) || { "60": 0, "90": 0, "120": 0 };
+    
+    // Debug logging for pricing issues
+    if (!therapist.pricing || (pricing["60"] === 0 && pricing["90"] === 0 && pricing["120"] === 0)) {
+        console.warn(`⚠️ TherapistCard - ${therapist.name} has no pricing data:`, {
+            rawPricing: therapist.pricing,
+            parsedPricing: pricing
+        });
+    }
     const massageTypes = parseMassageTypes(therapist.massageTypes) || [];
     
     // Helper function to format price in "123K" format
     const formatPrice = (price: number): string => {
-        if (!price || price === 0 || isNaN(price)) return "0K";
+        if (!price || price === 0 || isNaN(price)) {
+            return "Call"; // Show "Call" instead of "0K" when no price is set
+        }
         // Prices are already in thousands (e.g., 400 = 400K), so just add K suffix
         return `${price}K`;
     };
@@ -238,6 +248,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         : (mainImage || 'https://ik.imagekit.io/7grri5v7d/massage%20image%201.png?updatedAt=1760186885261');
 
     const openWhatsApp = () => {
+        // No login required for WhatsApp booking - direct contact allowed
+        
         // Send notification to therapist ONLY if it's not them clicking their own button
         const therapistIdNum = typeof therapist.id === 'string' ? parseInt(therapist.id) : therapist.id;
         if (loggedInProviderId !== therapistIdNum) {
@@ -249,15 +261,10 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             console.log('🔇 Skipping self-notification (you clicked your own button)');
         }
 
-        // If displaying as Busy, show confirmation modal OR registration prompt
+        // If displaying as Busy, show confirmation modal
         if (displayStatus === AvailabilityStatus.Busy) {
-            // If customer is not logged in, show registration prompt instead of busy modal
-            if (!isCustomerLoggedIn && onShowRegisterPrompt) {
-                onShowRegisterPrompt();
-            } else {
-                // Customer is logged in, show the busy modal
-                setShowBusyModal(true);
-            }
+            // Customer is logged in, show the busy modal
+            setShowBusyModal(true);
         } else {
             // Available or Offline (the 20% that show as offline)
             onIncrementAnalytics('whatsapp_clicks');
@@ -271,27 +278,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             }
         }
     };
-    
-    const handleConfirmBusyContact = () => {
-        // Send notification to therapist ONLY if it's not them clicking their own button
-        const therapistIdNum = typeof therapist.id === 'string' ? parseInt(therapist.id) : therapist.id;
-        if (loggedInProviderId !== therapistIdNum) {
-            notificationService.createWhatsAppContactNotification(
-                therapistIdNum,
-                therapist.name
-            ).catch(err => console.log('Notification failed:', err));
-        } else {
-            console.log('🔇 Skipping self-notification (you clicked your own button)');
-        }
 
-        onIncrementAnalytics('whatsapp_clicks');
-        setShowBusyModal(false);
-        
-        // Open chat with automated welcome message (removed WhatsApp)
-        if (onChatWithBusyTherapist) {
-            onChatWithBusyTherapist(therapist);
-        }
-    };
+    // Removed handleConfirmBusyContact - chat system deactivated
 
 
     return (
@@ -482,7 +470,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
 
             <div>
                 <div className="flex justify-between items-center mb-3">
-                    <h4 className="text-sm font-semibold text-gray-700">{_t.home?.therapistCard?.massageTypes || 'Jenis Pijat'}</h4>
+                    <h4 className="text-sm font-semibold text-gray-700">
+                        {_t.home?.therapistCard?.experiencedArea || 'Experienced Area'}
+                    </h4>
                     {therapist.yearsOfExperience && (
                         <span className="text-sm font-semibold text-gray-700 flex items-center gap-1">
                             <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
@@ -493,9 +483,12 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     )}
                 </div>
                 <div className="flex flex-wrap gap-2">
-                    {massageTypes.map(type => (
+                    {massageTypes.slice(0, 2).map(type => (
                         <span key={type} className="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded-full">{type}</span>
                     ))}
+                    {massageTypes.length === 0 && (
+                        <span className="text-xs text-gray-400">No specialties selected</span>
+                    )}
                 </div>
             </div>
 
@@ -627,13 +620,19 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 </button>
                  <button 
                     onClick={() => {
-                        console.log('Schedule button clicked - using industry standard booking flow');
-                        // Industry standard: Show confirmation first, then redirect to chat
-                        if (!isCustomerLoggedIn) {
-                            onShowRegisterPrompt?.();
-                            return;
+                        console.log('Schedule button clicked - using scheduled booking system');
+                        
+                        // Open scheduled booking popup with time slot selection
+                        const openScheduleBookingPopup = (window as any).openScheduleBookingPopup;
+                        if (openScheduleBookingPopup) {
+                            openScheduleBookingPopup({
+                                therapistId: typeof therapist.id === 'string' ? therapist.id : therapist.id?.toString(),
+                                therapistName: therapist.name,
+                                therapistType: 'therapist'
+                            });
+                        } else {
+                            console.error('Schedule booking popup not available');
                         }
-                        setShowBookingConfirmation(true);
                     }} 
                     className="w-1/2 flex items-center justify-center gap-2 bg-orange-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-orange-600 transition-colors duration-300"
                 >
@@ -682,28 +681,16 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                             </div>
                             <h3 className="text-xl font-bold text-gray-900 mb-2">Therapist Currently Busy</h3>
                             <p className="text-gray-600 mb-6 text-sm leading-relaxed">
-                                This therapist is booked at present and we cannot ensure how many hours they will be busy. 
-                                Please send a message and when the therapist is available, they will reply.
+                                This therapist is currently booked and unavailable. Please try booking another available therapist or check back later.
                             </p>
                             <p className="text-sm font-semibold text-orange-600 mb-6">- <span className="text-black">Inda</span>Street Admin</p>
                             
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={() => setShowBusyModal(false)}
-                                    className="flex-1 px-4 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleConfirmBusyContact}
-                                    className="flex-1 px-4 py-3 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 transition-colors flex items-center justify-center gap-2"
-                                >
-                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                    </svg>
-                                    Chat Now
-                                </button>
-                            </div>
+                            <button
+                                onClick={() => setShowBusyModal(false)}
+                                className="w-full px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg"
+                            >
+                                Close
+                            </button>
                         </div>
                     </div>
                 </div>

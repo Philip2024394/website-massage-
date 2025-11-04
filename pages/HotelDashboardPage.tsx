@@ -9,7 +9,8 @@ import { useTranslations } from '../lib/useTranslations';
 import QRCodeGenerator from 'qrcode';
 // import Header from '../components/dashboard/Header';
 import PushNotificationSettings from '../components/PushNotificationSettings';
-import MemberChatWindow from '../components/MemberChatWindow';
+// Removed chat import - chat system removed
+// import MemberChatWindow from '../components/MemberChatWindow';
 import HotelVillaServicesSettingsPage from './HotelVillaServicesSettingsPage';
 import HotelBookingModal from '../components/hotel/PropertyBookingModal';
 import HotelAnalyticsSection from '../components/hotel/PropertyAnalyticsSection';
@@ -443,12 +444,29 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
 
     const downloadQR = () => {
         const qrUrl = `https://chart.googleapis.com/chart?chs=600x600&cht=qr&chl=${encodeURIComponent(qrLink)}&choe=UTF-8`;
-        const link = document.createElement('a');
-        link.href = qrUrl;
-        link.download = `${hotelName.replace(/\s+/g, '-')}-menu-qr.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        
+        // Use a safer approach that doesn't interfere with React's DOM management
+        try {
+            const link = document.createElement('a');
+            link.style.display = 'none';
+            link.href = qrUrl;
+            link.download = `${hotelName.replace(/\s+/g, '-')}-menu-qr.png`;
+            
+            // Temporarily append to body, click, and immediately remove
+            document.body.appendChild(link);
+            link.click();
+            
+            // Use setTimeout to avoid conflicts with React's reconciliation
+            setTimeout(() => {
+                if (link.parentNode) {
+                    document.body.removeChild(link);
+                }
+            }, 100);
+        } catch (error) {
+            console.error('Error downloading QR code:', error);
+            // Fallback: open in new window
+            window.open(qrUrl, '_blank');
+        }
     };
 
     const shareWhatsApp = () => {
@@ -519,12 +537,18 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                                 QR codes, provider management, commissions, or any questions you may have.
                             </p>
                         </div>
-                        <MemberChatWindow
+                        {/* Chat system removed - using WhatsApp booking */}
+                        {/* <MemberChatWindow
                             userId={hotelId || '1'}
                             userName="Hotel Manager"
                             userType="hotel"
                             onClose={() => setActiveTab('analytics')}
-                        />
+                        /> */}
+                        <div className="bg-white rounded-xl shadow-sm p-6">
+                            <p className="text-sm text-gray-600">
+                                For support, please use the chat icon in the footer to connect with our team via WhatsApp.
+                            </p>
+                        </div>
                     </div>
                 );
             case 'analytics':

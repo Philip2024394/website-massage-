@@ -127,6 +127,7 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
 
                             {/* Header Text */}
                             <div className="text-center py-4 bg-gradient-to-r from-orange-500 to-orange-600">
+                                <div className="text-3xl font-bold text-white mb-1">+15 🪙</div>
                                 <h2 className="text-2xl font-bold text-white">Day 7 Reward</h2>
                                 <p className="text-lg font-semibold text-orange-100 mt-1">🔥 Week Complete!</p>
                             </div>
@@ -134,14 +135,14 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
             {/* Image */}
             <div className="w-full">
                 <img 
-                    src="https://ik.imagekit.io/7grri5v7d/indastreet%2050%20coins.png?updatedAt=1761799817780" 
-                    alt="Day 7 Reward"
+                    src="https://ik.imagekit.io/7grri5v7d/day%207%20reward%2015%20coins.png?updatedAt=1761762660089" 
+                    alt="Day 7 Reward - 15 Coins"
                     className="w-full h-auto"
                 />
             </div>                            {/* Next Milestone Info */}
                             <div className="px-6 py-4 bg-orange-50">
                                 <div className="text-center">
-                                    <p className="text-orange-800 font-semibold">💎 Keep going! Day 14 unlocks 75 coins</p>
+                                    <p className="text-orange-800 font-semibold">💎 Keep going! Day 30 unlocks 30 coins</p>
                                 </div>
                             </div>
 
@@ -199,6 +200,7 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
 
                             {/* Header Text */}
                             <div className="text-center py-4 bg-gradient-to-r from-orange-500 to-orange-600">
+                                <div className="text-3xl font-bold text-white mb-1">+30 🪙</div>
                                 <h2 className="text-2xl font-bold text-white">Day 30 Reward</h2>
                                 <p className="text-lg font-semibold text-yellow-200 mt-1">👑 VIP Member Status</p>
                             </div>
@@ -206,8 +208,8 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
                             {/* Image */}
                             <div className="w-full">
                                 <img 
-                                    src="https://ik.imagekit.io/7grri5v7d/indastreet%20200%20coins.png?updatedAt=1761801301902" 
-                                    alt="Day 30 Reward"
+                                    src="https://ik.imagekit.io/7grri5v7d/day%2030%20reward%2030%20coins.png?updatedAt=1761762660089" 
+                                    alt="Day 30 Reward - 30 Coins"
                                     className="w-full h-auto"
                                 />
                             </div>
@@ -341,6 +343,7 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
 
                             {/* Header Text */}
                             <div className="text-center py-4 bg-gradient-to-r from-orange-500 to-orange-600">
+                                <div className="text-3xl font-bold text-white mb-1">+30 🪙</div>
                                 <h2 className="text-2xl font-bold text-white">Day 7 Reward</h2>
                                 <p className="text-lg font-semibold text-orange-100 mt-1">💪 Pro Therapist</p>
                             </div>
@@ -348,8 +351,8 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
             {/* Image */}
             <div className="w-full">
                 <img 
-                    src="https://ik.imagekit.io/7grri5v7d/indastreet%20100%20coins.png?updatedAt=1761799943286" 
-                    alt="Therapist Day 7 Reward"
+                    src="https://ik.imagekit.io/7grri5v7d/therapist%20day%207%20reward%2030%20coins.png?updatedAt=1761762660089" 
+                    alt="Therapist Day 7 Reward - 30 Coins"
                     className="w-full h-auto"
                 />
             </div>
@@ -357,7 +360,7 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
             {/* Next Milestone Info */}
             <div className="px-6 py-4 bg-orange-50">
                 <div className="text-center">
-                    <p className="text-orange-800 font-semibold">🔥 7 days of excellence! Keep it up!</p>
+                    <p className="text-orange-800 font-semibold">🔥 7 days of excellence! Keep it up for Day 30!</p>
                 </div>
             </div>                            {/* Close Button */}
                             <div className="p-6">
@@ -413,6 +416,7 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
 
                             {/* Header Text */}
                             <div className="text-center py-4 bg-gradient-to-r from-orange-500 to-orange-600">
+                                <div className="text-3xl font-bold text-white mb-1">+50 🪙</div>
                                 <h2 className="text-2xl font-bold text-white">Day 30 Reward</h2>
                                 <p className="text-lg font-semibold text-yellow-200 mt-1">👑 Master Therapist</p>
                             </div>
@@ -420,8 +424,8 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
             {/* Image */}
             <div className="w-full">
                 <img 
-                    src="https://ik.imagekit.io/7grri5v7d/indastreet%20500.png?updatedAt=1761801217762" 
-                    alt="Therapist Day 30 Reward"
+                    src="https://ik.imagekit.io/7grri5v7d/therapist%20day%2030%20reward%2050%20coins.png?updatedAt=1761762660089" 
+                    alt="Therapist Day 30 Reward - 50 Coins"
                     className="w-full h-auto"
                 />
             </div>
@@ -560,6 +564,7 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
 
                             {/* Header Text */}
                             <div className="text-center py-4 bg-gradient-to-r from-orange-500 to-orange-600">
+                                <div className="text-3xl font-bold text-white mb-1">+25 🪙</div>
                                 <h2 className="text-2xl font-bold text-white">7-Day Business Streak!</h2>
                                 <p className="text-lg font-semibold text-orange-100 mt-1">🎁 Premium Bonus</p>
                             </div>
@@ -567,8 +572,8 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
                             {/* Image */}
                             <div className="w-full">
                                 <img 
-                                    src="https://ik.imagekit.io/7grri5v7d/indastreet%20100%20coins.png?updatedAt=1761799943286" 
-                                    alt="Place Day 7 Reward"
+                                    src="https://ik.imagekit.io/7grri5v7d/place%20day%207%20reward%2025%20coins.png?updatedAt=1761762660089" 
+                                    alt="Place Day 7 Reward - 25 Coins"
                                     className="w-full h-auto"
                                 />
                             </div>
@@ -635,6 +640,7 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
 
                             {/* Header Text */}
                             <div className="text-center py-4 bg-gradient-to-r from-orange-500 to-orange-600">
+                                <div className="text-3xl font-bold text-white mb-1">+30 🪙</div>
                                 <h2 className="text-2xl font-bold text-white">Day 30 Reward</h2>
                                 <p className="text-lg font-semibold text-yellow-200 mt-1">👑 Elite Business Status</p>
                             </div>
@@ -642,8 +648,8 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
                             {/* Image */}
                             <div className="w-full">
                                 <img 
-                                    src="https://ik.imagekit.io/7grri5v7d/day%201%20rewardss.png?updatedAt=1761765423768" 
-                                    alt="Place Day 30 Reward"
+                                    src="https://ik.imagekit.io/7grri5v7d/place%20day%2030%20reward%2030%20coins.png?updatedAt=1761762660089" 
+                                    alt="Place Day 30 Reward - 30 Coins"
                                     className="w-full h-auto"
                                 />
                             </div>
@@ -1547,13 +1553,13 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
                                 onClick={() => setActiveModal('daily-signin-user-day7')}
                                 className="px-4 py-3 bg-purple-500 text-white rounded-lg font-semibold hover:bg-purple-600 transition-colors"
                             >
-                                Day 7 - 50 Coins
+                                Day 7 - 15 Coins
                             </button>
                             <button
                                 onClick={() => setActiveModal('daily-signin-user-day30')}
                                 className="px-4 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg font-semibold hover:from-yellow-600 hover:to-orange-600 transition-colors"
                             >
-                                Day 30 - 200 Coins
+                                Day 30 - 30 Coins
                             </button>
                         </div>
                     </div>
@@ -1571,13 +1577,13 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
                                 onClick={() => setActiveModal('daily-signin-therapist-day7')}
                                 className="px-4 py-3 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition-colors"
                             >
-                                Day 7 - 100 Coins
+                                Day 7 - 30 Coins
                             </button>
                             <button
                                 onClick={() => setActiveModal('daily-signin-therapist-day30')}
                                 className="px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-colors"
                             >
-                                Day 30 - 500 Coins
+                                Day 30 - 50 Coins
                             </button>
                         </div>
                     </div>
@@ -1595,13 +1601,13 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
                                 onClick={() => setActiveModal('daily-signin-place-day7')}
                                 className="px-4 py-3 bg-emerald-500 text-white rounded-lg font-semibold hover:bg-emerald-600 transition-colors"
                             >
-                                Day 7 - 150 Coins
+                                Day 7 - 25 Coins
                             </button>
                             <button
                                 onClick={() => setActiveModal('daily-signin-place-day30')}
                                 className="px-4 py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-lg font-semibold hover:from-amber-600 hover:to-orange-700 transition-colors"
                             >
-                                Day 30 - 750 Coins
+                                Day 30 - 30 Coins
                             </button>
                         </div>
                     </div>

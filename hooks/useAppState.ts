@@ -27,6 +27,26 @@ const setToLocalStorage = (key: string, value: any) => {
 };
 
 export const useAppState = () => {
+  // Check URL parameters for page navigation (useful for testing)
+  const getInitialPage = (): Page => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const pageParam = urlParams.get('page');
+      
+      // Allow specific test pages via URL parameter
+      if (pageParam === 'rewardBannersTest' || pageParam === 'reward-banners-test') {
+        console.log('🎯 URL parameter detected: Opening reward banners test page');
+        return 'rewardBannersTest';
+      }
+      
+      // Default to landing page
+      return 'landing';
+    } catch (error) {
+      console.log('⚠️ URL parameter parsing failed, defaulting to landing page');
+      return 'landing';
+    }
+  };
+
   // Core user state - with localStorage persistence
   const [user, _setUser] = useState<User | null>(() => getFromLocalStorage('app_user'));
   const setUser = (newUser: User | null) => {
@@ -34,7 +54,7 @@ export const useAppState = () => {
     setToLocalStorage('app_user', newUser);
   };
 
-  const [page, _setPage] = useState<Page>('landing'); // Start with landing page
+  const [page, _setPage] = useState<Page>(getInitialPage()); // Start with URL-aware page detection
   const setPage = (newPage: Page) => {
     console.log('📍 Page change:', newPage);
     _setPage(newPage);
@@ -66,8 +86,11 @@ export const useAppState = () => {
   };
   
   // Admin state - with localStorage persistence
-  // Admin authentication - managed by Appwrite sessions, not localStorage
-  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
+  const [isAdminLoggedIn, _setIsAdminLoggedIn] = useState<boolean>(() => getFromLocalStorage('app_is_admin_logged_in', false));
+  const setIsAdminLoggedIn = (value: boolean) => {
+    _setIsAdminLoggedIn(value);
+    setToLocalStorage('app_is_admin_logged_in', value);
+  };
 
   const [adminDashboardTab, setAdminDashboardTab] = useState<'platform-analytics' | 'confirm-therapists' | 'confirm-places' | 'confirm-accounts' | 'chat-messages' | 'drawer-buttons' | 'agent-commission' | 'bank-details' | 'payment-transactions' | 'shop-management' | 'membership-pricing'>('platform-analytics');
 

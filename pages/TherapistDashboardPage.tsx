@@ -10,12 +10,13 @@ import { useTranslations } from '../lib/useTranslations';
 import DiscountSharePage from './DiscountSharePage';
 import MembershipPlansPage from './MembershipPlansPage';
 import HotelVillaOptIn from '../components/HotelVillaOptIn';
-import Footer from '../components/Footer';
 import { TherapistProfileForm } from '../components/therapist/TherapistProfileForm';
 import TherapistTermsPage from './TherapistTermsPage';
 import TherapistJobOpportunitiesPage from './TherapistJobOpportunitiesPage';
 import PushNotificationSettings from '../components/PushNotificationSettings';
-import MemberChatWindow from '../components/MemberChatWindow';
+// Removed chat import - chat system removed
+// import MemberChatWindow from '../components/MemberChatWindow';
+import '../utils/pricingHelper'; // Load pricing helper for console access
 
 
 interface TherapistDashboardPageProps {
@@ -340,16 +341,25 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
 
     const handleSave = () => {
         console.log('💾 SAVE BUTTON CLICKED - Starting save process...');
-        console.log('📋 Profile data:', {
+        console.log('📋 Profile data being saved:', {
             name,
             whatsappNumber,
             yearsOfExperience,
             location,
-            status
+            status,
+            pricing: pricing,
+            hotelVillaPricing: useSamePricing ? 'Same as home pricing' : hotelVillaPricing,
+            useSamePricing
         });
         
+        // Validate required fields
+        if (!name || !whatsappNumber) {
+            alert('Name and WhatsApp number are required!');
+            return;
+        }
+        
         try {
-            onSave({
+            const saveData = {
                 name,
                 description,
                 profilePicture,
@@ -374,7 +384,10 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                 }),
                 massageTypes: stringifyMassageTypes(massageTypes),
                 languages,
-            } as any);
+            };
+            
+            console.log('💾 Calling onSave with data:', saveData);
+            onSave(saveData as any);
             console.log('✅ Save function called successfully');
             setShowConfirmation(true);
         } catch (error) {
@@ -571,7 +584,8 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
             case 'chat':
                 return (
                     <div className="max-w-7xl mx-auto px-2 sm:px-4 py-6">
-                        <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+                        {/* Chat system removed - using WhatsApp booking */}
+                        {/* <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
                             <h2 className="text-2xl font-bold text-gray-900 mb-2">Chat with Support</h2>
                             <p className="text-sm text-gray-600 mb-4">
                                 Need help? Chat with our IndaStreet support team for assistance with bookings, 
@@ -583,7 +597,13 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                             userName={therapist?.name || 'Therapist'}
                             userType="therapist"
                             onClose={() => setActiveTab('profile')}
-                        />
+                        /> */}
+                        <div className="bg-white rounded-xl shadow-sm p-6">
+                            <h2 className="text-2xl font-bold text-gray-900 mb-2">Contact Support</h2>
+                            <p className="text-sm text-gray-600">
+                                For support, please use the chat icon in the footer to connect with our team via WhatsApp.
+                            </p>
+                        </div>
                     </div>
                 );
             case 'jobOpportunities':
@@ -1379,20 +1399,6 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                     {toast.message}
                 </div>
             )}
-
-            {/* Footer */}
-            <Footer
-                currentPage={activeTab}
-                userRole="therapist"
-                onHomeClick={onNavigateToHome || (() => onNavigate?.('home')) || (() => {})}
-                onNotificationsClick={() => setActiveTab('notifications')}
-                onBookingsClick={() => setActiveTab('bookings')}
-                onProfileClick={() => setActiveTab('profile')}
-                onChatClick={() => setActiveTab('chat')}
-                unreadNotifications={notifications.filter(n => !n.isRead).length}
-                hasNewBookings={upcomingBookings.length > 0}
-                t={t}
-            />
         </div>
     );
 };
