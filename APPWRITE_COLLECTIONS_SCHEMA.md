@@ -53,6 +53,7 @@
 
 | Attribute | Type | Required | Description |
 |-----------|------|----------|-------------|
+| id | String | ✅ | Unique document identifier |
 | name | String | ✅ | Therapist full name |
 | description | String | ❌ | Bio/description |
 | profilePicture | String (URL) | ❌ | Profile photo URL |
@@ -89,6 +90,7 @@
 
 | Attribute | Type | Required | Description |
 |-----------|------|----------|-------------|
+| id | String | ✅ | Unique document identifier |
 | name | String | ✅ | Business name |
 | description | String | ❌ | Business description |
 | mainImage | String (URL) | ❌ | Main photo |

@@ -113,6 +113,7 @@ export const therapistAuth = {
                 therapistId,
                 {
                     // Required fields per schema
+                    id: therapistId, // Required by Appwrite schema - document ID
                     email,
                     name: email.split('@')[0],
                     whatsappNumber: '',
@@ -223,12 +224,14 @@ export const placeAuth = {
     async signUp(email: string, password: string): Promise<AuthResponse> {
         try {
             const user = await account.create(ID.unique(), email, password);
+            const placeId = ID.unique();
             
             const place = await databases.createDocument(
                 DATABASE_ID,
                 COLLECTIONS.PLACES,
-                ID.unique(),
+                placeId,
                 {
+                    id: placeId, // Required by Appwrite schema - document ID
                     email,
                     userId: user.$id,
                     name: email.split('@')[0],
