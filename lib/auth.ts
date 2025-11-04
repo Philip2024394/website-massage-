@@ -122,6 +122,7 @@ export const therapistAuth = {
                     status: 'Offline',
                     isLive: false,
                     hourlyRate: 100, // Required by Appwrite schema (50-500 range)
+                    therapistId: therapistId, // Required by Appwrite schema
                     specialization: 'Massage Therapist',
                     availability: 'Available',
                     

@@ -53,18 +53,21 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
         {
             key: 'home',
             icon: <Home className={`w-6 h-6 ${getColor('home')}`} />,
+            label: t?.('footer.home') || 'Home',
             onClick: () => onNavigate('home'),
             badgeCount: 0
         },
         {
             key: 'search',
             icon: <Search className={`w-6 h-6 ${getColor('search')}`} />,
+            label: t?.('footer.search') || 'Search',
             onClick: () => onNavigate('therapists'),
             badgeCount: 0
         },
         {
             key: 'booking',
             icon: <Calendar className={`w-6 h-6 ${getColor('booking')}`} />,
+            label: t?.('footer.booking') || 'Booking',
             onClick: () => {
                 // Navigate based on user role
                 if (userRole === 'therapist' || userRole === 'place') {
@@ -81,12 +84,14 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
         {
             key: 'shop',
             icon: <ShoppingBag className={`w-6 h-6 ${getColor('shop')}`} />,
+            label: t?.('footer.shop') || 'Shop',
             onClick: () => onNavigate('coin-shop'),
             badgeCount: 0
         },
         {
             key: 'profile',
             icon: <User className={`w-6 h-6 ${getColor('profile')}`} />,
+            label: t?.('footer.profile') || 'Profile',
             onClick: () => {
                 // Navigate to appropriate profile/dashboard based on user role
                 switch (userRole) {
@@ -140,6 +145,11 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
                                 <span className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full border-2 border-white animate-pulse"></span>
                             )}
                         </div>
+                        <span className={`text-xs mt-1 font-medium transition-colors ${
+                            isActive(item.key) ? 'text-orange-600' : 'text-gray-500 group-hover:text-gray-700'
+                        }`}>
+                            {item.label}
+                        </span>
                     </button>
                 ))}
             </div>
