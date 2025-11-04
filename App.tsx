@@ -59,7 +59,7 @@ const App = () => {
 
     // All hooks combined
     const hooks = useAllHooks();
-    const { state, navigation, authHandlers, providerAgentHandlers, footerNav, derived } = hooks;
+    const { state, navigation, authHandlers, providerAgentHandlers, derived } = hooks;
     
     // Use the actual language from hooks, not hardcoded
     const { language, setLanguage } = state;
@@ -277,36 +277,18 @@ const App = () => {
                 userLocation={state.userLocation}
                 unreadNotifications={derived.unreadNotifications}
                 hasNewBookings={derived.hasNewBookings}
-                isAdminLoggedIn={state.isAdminLoggedIn}
-                isHotelLoggedIn={state.isHotelLoggedIn}
-                isVillaLoggedIn={state.isVillaLoggedIn}
-                loggedInUser={state.loggedInUser}
-                loggedInAgent={state.loggedInAgent}
-                loggedInCustomer={state.loggedInCustomer}
-                user={state.user}
                 showRegisterPrompt={state.showRegisterPrompt}
                 registerPromptContext={state.registerPromptContext}
                 loyaltyEvent={state.loyaltyEvent}
-                activeChatRoom={state.activeChatRoom}
-                chatBooking={state.chatBooking}
-                isChatWindowVisible={state.isChatWindowVisible}
                 getUserRole={() => {
                     const role = derived.getUserRole();
                     if (role === 'customer') return 'user';
                     return role;
                 }}
-                handleFooterHome={footerNav.handleFooterHome}
-                handleFooterProfile={footerNav.handleFooterProfile}
-                handleFooterDashboard={footerNav.handleFooterDashboard}
-                handleFooterMenu={footerNav.handleFooterMenu}
                 handleRegisterPromptClose={() => state.setShowRegisterPrompt(false)}
                 handleRegisterPromptRegister={() => state.setPage('registrationChoice')}
                 setPage={state.setPage}
-                setAdminDashboardTab={state.setAdminDashboardTab}
-                setRegisterPromptContext={state.setRegisterPromptContext}
-                setShowRegisterPrompt={state.setShowRegisterPrompt}
                 setLoyaltyEvent={state.setLoyaltyEvent}
-                setIsChatWindowVisible={state.setIsChatWindowVisible}
                 t={t}
             />
             
