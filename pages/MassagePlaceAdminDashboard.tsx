@@ -14,14 +14,19 @@ import {
     Camera,
     Scissors,
     Hotel,
-    Calendar
+    Calendar,
+    Coins,
+    History
 } from 'lucide-react';
 import { authService } from '../lib/appwriteService';
 import { Place } from '../types';
+import CoinHistoryPage from './CoinHistoryPage';
+import CoinShopPage from './CoinShopPage';
 
 interface MassagePlaceAdminDashboardProps {
     place: Place;
     onLogout: () => void;
+    onNavigate?: (page: string) => void;
     initialTab?: PlaceDashboardPage;
 }
 
@@ -37,11 +42,14 @@ type PlaceDashboardPage =
     | 'place-bookings'
     | 'place-payments'
     | 'place-staff'
-    | 'place-settings';
+    | 'place-settings'
+    | 'coin-history'
+    | 'coin-shop';
 
 const MassagePlaceAdminDashboard: React.FC<MassagePlaceAdminDashboardProps> = ({ 
     place, 
     onLogout, 
+    onNavigate,
     initialTab 
 }) => {
     const [activePage, setActivePage] = useState<PlaceDashboardPage>(initialTab || 'place-analytics');
@@ -127,6 +135,18 @@ const MassagePlaceAdminDashboard: React.FC<MassagePlaceAdminDashboardProps> = ({
             description: 'Manage payment methods and transactions'
         },
         {
+            id: 'coin-history',
+            label: 'Coin History',
+            icon: History,
+            description: 'View your coin rewards and transaction history'
+        },
+        {
+            id: 'coin-shop',
+            label: 'Coin Shop',
+            icon: Coins,
+            description: 'Redeem coins for rewards and products'
+        },
+        {
             id: 'place-settings',
             label: 'Settings',
             icon: Settings,
@@ -137,7 +157,7 @@ const MassagePlaceAdminDashboard: React.FC<MassagePlaceAdminDashboardProps> = ({
     const renderContent = () => {
         switch (activePage) {
             case 'place-analytics':
-                return <PlaceAnalyticsPage place={place} />;
+                return <PlaceAnalyticsPage place={place} onNavigate={onNavigate} />;
             case 'place-profile':
                 return <PlaceProfilePage place={place} />;
             case 'place-services':
@@ -158,6 +178,10 @@ const MassagePlaceAdminDashboard: React.FC<MassagePlaceAdminDashboardProps> = ({
                 return <PlaceStaffPage place={place} />;
             case 'place-payments':
                 return <PlacePaymentsPage place={place} />;
+            case 'coin-history':
+                return onNavigate ? <CoinHistoryPage onNavigate={onNavigate} /> : null;
+            case 'coin-shop':
+                return onNavigate ? <CoinShopPage onNavigate={onNavigate} /> : null;
             case 'place-settings':
                 return <PlaceSettingsPage place={place} />;
             default:
@@ -268,7 +292,7 @@ const MassagePlaceAdminDashboard: React.FC<MassagePlaceAdminDashboardProps> = ({
 };
 
 // Placeholder components for different pages
-const PlaceAnalyticsPage: React.FC<{ place: Place }> = ({ place }) => (
+const PlaceAnalyticsPage: React.FC<{ place: Place; onNavigate?: (page: string) => void }> = ({ place, onNavigate }) => (
     <div className="space-y-6">
         <h2 className="text-3xl font-bold text-gray-900">Analytics Overview</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -309,6 +333,44 @@ const PlaceAnalyticsPage: React.FC<{ place: Place }> = ({ place }) => (
                 </div>
             </div>
         </div>
+
+        {/* Coin History Button */}
+        {onNavigate && (
+            <button
+                onClick={() => onNavigate('coin-history')}
+                className="w-full flex items-center justify-between p-4 bg-white rounded-xl shadow-md hover:shadow-lg transition-all border-2 border-orange-200 hover:border-orange-400 mt-6"
+            >
+                <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center text-white text-2xl">
+                        💰
+                    </div>
+                    <div className="text-left">
+                        <h3 className="font-bold text-gray-900">Coin History</h3>
+                        <p className="text-sm text-gray-600">View your coin rewards and transactions</p>
+                    </div>
+                </div>
+                <History className="w-6 h-6 text-orange-600" />
+            </button>
+        )}
+
+        {/* Coin Shop Button */}
+        {onNavigate && (
+            <button
+                onClick={() => onNavigate('coin-shop')}
+                className="w-full flex items-center justify-between p-4 bg-white rounded-xl shadow-md hover:shadow-lg transition-all border-2 border-green-200 hover:border-green-400 mt-4"
+            >
+                <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white text-2xl">
+                        🛍️
+                    </div>
+                    <div className="text-left">
+                        <h3 className="font-bold text-gray-900">Coin Rewards Shop</h3>
+                        <p className="text-sm text-gray-600">Redeem coins for rewards</p>
+                    </div>
+                </div>
+                <Coins className="w-6 h-6 text-green-600" />
+            </button>
+        )}
     </div>
 );
 
@@ -318,6 +380,55 @@ const PlaceProfilePage: React.FC<{ place: Place }> = ({ place: _ }) => (
         <div className="bg-white p-6 rounded-lg shadow-sm border">
             <p className="text-gray-600">Manage your massage place profile, description, location, and contact information.</p>
             {/* Profile management form would go here */}
+        </div>
+
+        {/* Website Information Section - For Indastreet Partners Directory */}
+        <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-xl border-2 border-orange-200">
+            <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                🤝 Indastreet Partners Directory (Optional)
+            </h3>
+            <p className="text-gray-700 mb-4">
+                Add your website to be featured in our <strong>Indastreet Partners</strong> directory for better SEO ranking and exposure.
+            </p>
+            
+            <div className="bg-white p-4 rounded-lg border border-orange-300 mb-4">
+                <h4 className="font-semibold text-gray-900 mb-2">📈 Benefits of Partnership:</h4>
+                <ul className="text-sm text-gray-700 space-y-1">
+                    <li>✅ <strong>Additional Traffic:</strong> Being part of the Indastreet Partnership will drive additional traffic to your website</li>
+                    <li>✅ <strong>SEO Boost:</strong> Live website previews with direct links improve your search rankings</li>
+                    <li>✅ <strong>Professional Directory:</strong> Professional showcase with hotel and villa services</li>
+                    <li>✅ <strong>Enhanced Visibility:</strong> Featured in our partners directory with verification badges</li>
+                </ul>
+            </div>
+
+            <div className="space-y-4">
+                <div>
+                    <label className="block text-sm font-medium text-gray-900 mb-2">
+                        🌐 Website URL (Optional)
+                    </label>
+                    <input
+                        type="url"
+                        placeholder="https://your-massage-place-website.com"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 placeholder-gray-500"
+                    />
+                    <p className="text-xs text-gray-600 mt-1">
+                        Add your website to be featured in our Indastreet Partners directory
+                    </p>
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-900 mb-2">
+                        🏢 Business Category
+                    </label>
+                    <select className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900">
+                        <option value="">Select your primary service type</option>
+                        <option value="massage-place">Massage Place</option>
+                        <option value="hotel">Hotel with Spa Services</option>
+                        <option value="villa">Villa with Wellness Services</option>
+                        <option value="wellness-center">Wellness Center</option>
+                    </select>
+                </div>
+            </div>
         </div>
     </div>
 );

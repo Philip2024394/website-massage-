@@ -6,7 +6,6 @@ import { getAllTherapistImages } from '../utils/therapistImageUtils';
 import { analyticsService } from '../services/analyticsService';
 import { databases, ID } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
-import { useTranslations } from '../lib/useTranslations';
 import QRCodeGenerator from 'qrcode';
 // import Header from '../components/dashboard/Header';
 import PushNotificationSettings from '../components/PushNotificationSettings';
@@ -15,6 +14,7 @@ import PushNotificationSettings from '../components/PushNotificationSettings';
 import HotelVillaServicesSettingsPage from './HotelVillaServicesSettingsPage';
 import HotelBookingModal from '../components/hotel/PropertyBookingModal';
 import HotelAnalyticsSection from '../components/hotel/PropertyAnalyticsSection';
+import { safeDownload } from '../utils/domSafeHelpers';
 
 type DurationKey = '60' | '90' | '120';
 type ProviderType = 'therapist' | 'place';
@@ -44,14 +44,12 @@ interface HotelDashboardPageProps {
 }
 
 const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, therapists = [], places = [], hotelId = '1', initialTab = 'analytics' }) => {
-    const { t } = useTranslations();
     
     // Therapist banner images pool for randomization - Using Appwrite curated collection
     const therapistBannerImages = getAllTherapistImages();
 
     const [activeTab, setActiveTab] = useState<'analytics' | 'discounts' | 'profile' | 'menu' | 'feedback' | 'concierge' | 'commissions' | 'notifications' | 'membership' | 'chat' | 'services-settings'>(initialTab);
     const [customWelcomeMessage, setCustomWelcomeMessage] = useState('Welcome to our exclusive wellness experience');
-    const [selectedLanguage, setSelectedLanguage] = useState('en');
     const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
     
     // Real analytics state
@@ -148,7 +146,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
             description: 'Certified Balinese therapist specializing in deep tissue and relaxation massage.',
             massageTypes: ['Deep Tissue', 'Swedish', 'Hot Stone', 'Aromatherapy', 'Balinese'],
             status: 'Available',
-            languages: ['id', 'en', 'ja'],
+            languages: ['id', 'en'],
         },
         {
             id: 't-002',
@@ -164,7 +162,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
             description: 'Expert in traditional Balinese massage with 10 years experience.',
             massageTypes: ['Balinese', 'Deep Tissue', 'Reflexology'],
             status: 'Busy',
-            languages: ['id', 'en', 'zh', 'ko'],
+            languages: ['id', 'en'],
         },
         {
             id: 'p-001',
@@ -179,7 +177,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
             description: 'Modern wellness center offering aromatherapy and traditional Balinese treatments.',
             massageTypes: ['Aromatherapy', 'Balinese', 'Reflexology', 'Thai Massage'],
             status: 'Available',
-            languages: ['id', 'en', 'zh', 'ja', 'ko', 'ru'],
+            languages: ['id', 'en'],
         },
     ], [therapistBannerImages]);
 
@@ -261,7 +259,6 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                     setMainImage(hotelData.bannerImage || null);
                     setProfileImage(hotelData.logoImage || null);
                     setCustomWelcomeMessage(hotelData.welcomeMessage || 'Welcome to our exclusive wellness experience');
-                    setSelectedLanguage(hotelData.defaultLanguage || 'en');
                     console.log('✅ Loaded hotel profile from Appwrite:', hotelData);
                 } else {
                     console.log('ℹ️ No existing hotel profile found, will create on first save');
@@ -298,7 +295,6 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                 bannerImage: mainImage || '',
                 logoImage: profileImage || '',
                 welcomeMessage: customWelcomeMessage,
-                defaultLanguage: selectedLanguage,
                 type: 'hotel',
                 updatedAt: new Date().toISOString()
             };
@@ -436,29 +432,10 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
 
     const downloadQR = () => {
         const qrUrl = `https://chart.googleapis.com/chart?chs=600x600&cht=qr&chl=${encodeURIComponent(qrLink)}&choe=UTF-8`;
+        const filename = `${hotelName.replace(/\s+/g, '-')}-menu-qr.png`;
         
-        // Use a safer approach that doesn't interfere with React's DOM management
-        try {
-            const link = document.createElement('a');
-            link.style.display = 'none';
-            link.href = qrUrl;
-            link.download = `${hotelName.replace(/\s+/g, '-')}-menu-qr.png`;
-            
-            // Temporarily append to body, click, and immediately remove
-            document.body.appendChild(link);
-            link.click();
-            
-            // Use setTimeout to avoid conflicts with React's reconciliation
-            setTimeout(() => {
-                if (link.parentNode) {
-                    document.body.removeChild(link);
-                }
-            }, 100);
-        } catch (error) {
-            console.error('Error downloading QR code:', error);
-            // Fallback: open in new window
-            window.open(qrUrl, '_blank');
-        }
+        // Use React 19 safe download helper
+        safeDownload(qrUrl, filename);
     };
 
     const shareWhatsApp = () => {
@@ -716,39 +693,6 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                                 value={hotelPhone} 
                                 onChange={(e) => setHotelPhone(e.target.value)} 
                             />
-                        </div>
-
-                        {/* Multi-Language Support */}
-                        <div>
-                            <h3 className="text-lg font-bold text-gray-900 mb-2">Multi-Language Support</h3>
-                            <p className="text-sm text-gray-600 mb-4">
-                                Select languages to enable for your guest menu
-                            </p>
-                            <div className="grid grid-cols-4 gap-3">
-                                {[
-                                    { code: 'en', name: 'English', flag: '🇬🇧' },
-                                    { code: 'id', name: 'Indonesian', flag: '🇮🇩' },
-                                    { code: 'zh', name: 'Chinese', flag: '🇨🇳' },
-                                    { code: 'ja', name: 'Japanese', flag: '🇯🇵' },
-                                    { code: 'ko', name: 'Korean', flag: '🇰🇷' },
-                                    { code: 'ru', name: 'Russian', flag: '🇷🇺' },
-                                    { code: 'fr', name: 'French', flag: '🇫🇷' },
-                                    { code: 'de', name: 'German', flag: '🇩🇪' },
-                                ].map((lang) => (
-                                    <button
-                                        key={lang.code}
-                                        onClick={() => setSelectedLanguage(lang.code)}
-                                        className={`flex flex-col items-center p-2 rounded-lg border transition-all ${
-                                            selectedLanguage === lang.code
-                                                ? 'border-orange-500 bg-orange-50 ring-2 ring-orange-200'
-                                                : 'border-gray-300 bg-white hover:border-orange-300'
-                                        }`}
-                                    >
-                                        <div className="text-xl mb-1">{lang.flag}</div>
-                                        <div className="text-[10px] font-medium text-gray-700 text-center">{lang.name}</div>
-                                    </button>
-                                ))}
-                            </div>
                         </div>
 
                         <div className="flex justify-end pt-4 border-t border-gray-200">
@@ -1532,7 +1476,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                         </svg>
-                        <span className="font-medium">{t('dashboard.analytics')}</span>
+                        <span className="font-medium">Analytics</span>
                     </button>
 
                     <button
@@ -1547,7 +1491,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         }`}
                     >
                         <Tag className="w-5 h-5" />
-                        <span className="font-medium">{t('dashboard.discounts')}</span>
+                        <span className="font-medium">Discounts</span>
                     </button>
 
                     <button
@@ -1562,7 +1506,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         }`}
                     >
                         <User className="w-5 h-5" />
-                        <span className="font-medium">{t('dashboard.profile')}</span>
+                        <span className="font-medium">Profile</span>
                     </button>
 
                     <button
@@ -1577,7 +1521,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         }`}
                     >
                         <Menu className="w-5 h-5" />
-                        <span className="font-medium">{t('dashboard.menu')}</span>
+                        <span className="font-medium">Menu</span>
                         {providers.length > 0 && (
                             <span className="ml-auto bg-orange-500 text-white text-xs rounded-full px-2.5 py-0.5 font-bold">
                                 {providers.length}
@@ -1597,7 +1541,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         }`}
                     >
                         <Star className="w-5 h-5" />
-                        <span className="font-medium">{t('dashboard.feedback')}</span>
+                        <span className="font-medium">Feedback</span>
                     </button>
 
                     <button
@@ -1612,7 +1556,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         }`}
                     >
                         <Users className="w-5 h-5" />
-                        <span className="font-medium">{t('dashboard.concierge')}</span>
+                        <span className="font-medium">Concierge</span>
                     </button>
 
                     <button
@@ -1629,7 +1573,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <span className="font-medium">{t('dashboard.commissions')}</span>
+                        <span className="font-medium">Commissions</span>
                     </button>
 
                     <button
@@ -1644,7 +1588,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         }`}
                     >
                         <Bell className="w-5 h-5" />
-                        <span className="font-medium">{t('dashboard.notifications')}</span>
+                        <span className="font-medium">Notifications</span>
                     </button>
 
                     <button
@@ -1659,7 +1603,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         }`}
                     >
                         <MessageSquare className="w-5 h-5" />
-                        <span className="font-medium">{t('dashboard.chatSupport')}</span>
+                        <span className="font-medium">Chat Support</span>
                     </button>
 
                     <button
@@ -1674,7 +1618,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         }`}
                     >
                         <Settings className="w-5 h-5" />
-                        <span className="font-medium">{t('dashboard.serviceSettings')}</span>
+                        <span className="font-medium">Service Settings</span>
                     </button>
 
                     <button
@@ -1689,7 +1633,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         }`}
                     >
                         <Package className="w-5 h-5" />
-                        <span className="font-medium">{t('dashboard.membership')}</span>
+                        <span className="font-medium">Membership</span>
                     </button>
                 </nav>
 
@@ -1703,7 +1647,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors shadow-md"
                     >
                         <LogOut className="w-5 h-5" />
-                        <span className="font-medium">{t('dashboard.logout')}</span>
+                        <span className="font-medium">Log Out</span>
                     </button>
                 </div>
             </div>
@@ -1890,20 +1834,11 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 max-w-lg mx-auto">
                                             {[
                                                 { code: 'en', flag: 'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe465d0003abec873e/view?project=68f23b11000d25eb3664', name: 'English' },
-                                                { code: 'id', flag: 'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe465e001e949c568b/view?project=68f23b11000d25eb3664', name: 'Indonesian' },
-                                                { code: 'zh', flag: 'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe465f002a12d99ed7/view?project=68f23b11000d25eb3664', name: 'Chinese' },
-                                                { code: 'ja', flag: 'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe46600031867275b5/view?project=68f23b11000d25eb3664', name: 'Japanese' },
-                                                { code: 'kp', flag: 'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4661003cb293c3b6/view?project=68f23b11000d25eb3664', name: 'North Korean' },
-                                                { code: 'ko', flag: 'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4663000b35ef92d7/view?project=68f23b11000d25eb3664', name: 'Korean' },
-                                                { code: 'ru', flag: 'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4664001947c227e6/view?project=68f23b11000d25eb3664', name: 'Russian' },
-                                                { code: 'fr', flag: 'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe46650025458f2175/view?project=68f23b11000d25eb3664', name: 'French' },
-                                                { code: 'de', flag: 'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe466600307d55fcb3/view?project=68f23b11000d25eb3664', name: 'German' },
-                                                { code: 'es', flag: 'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4667003c1bf2059c/view?project=68f23b11000d25eb3664', name: 'Spanish' }
+                                                { code: 'id', flag: 'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe465e001e949c568b/view?project=68f23b11000d25eb3664', name: 'Indonesian' }
                                             ].map(lang => (
                                                 <button
                                                     key={lang.code}
                                                     onClick={() => {
-                                                        setSelectedLanguage(lang.code);
                                                         setShowLandingPage(false);
                                                     }}
                                                     className="flex flex-col items-center gap-1 sm:gap-2 p-2 sm:p-3 bg-transparent hover:bg-yellow-50/30 rounded-xl transition-all transform hover:scale-105"
@@ -2102,12 +2037,6 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                                     ))}
                                 </div>
 
-                                {/* Language Indicator */}
-                                <div className="mt-6 pt-4 border-t border-gray-200 text-center">
-                                    <p className="text-xs text-gray-500">
-                                        Language: {selectedLanguage.toUpperCase()}
-                                    </p>
-                                </div>
                             </div>
                             </>
                             )}

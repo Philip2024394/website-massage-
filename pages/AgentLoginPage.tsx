@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import Button from '../components/Button';
 import PasswordInput from '../components/PasswordInput';
+import { agentAuth } from '../lib/auth';
+import { trackDailySignIn } from '../lib/coinHooks';
 import { LogIn, UserPlus } from 'lucide-react';
 
 interface AgentLoginPageProps {
@@ -29,28 +31,23 @@ const AgentLoginPage: React.FC<AgentLoginPageProps> = ({ onSuccess, onBack, t })
 
         try {
             if (isSignUp) {
-                const response = await fetch('/api/auth/agent/signup', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
+                const response = await agentAuth.signUp(email, password);
                 
-                if (!response.ok) throw new Error('Sign up failed');
-                
-                setIsSignUp(false);
-                setError('Account created! Please sign in.');
-                setPassword('');
+                if (response.success) {
+                    setIsSignUp(false);
+                    setError('✅ Account created! Please sign in.');
+                    setPassword('');
+                } else {
+                    throw new Error(response.error || 'Sign up failed');
+                }
             } else {
-                const response = await fetch('/api/auth/agent/signin', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
+                const response = await agentAuth.signIn(email, password);
                 
-                if (!response.ok) throw new Error('Sign in failed');
-                
-                const data = await response.json();
-                onSuccess(data.agentId);
+                if (response.success && response.userId) {
+                    onSuccess(response.userId);
+                } else {
+                    throw new Error(response.error || 'Sign in failed');
+                }
             }
         } catch (err: any) {
             setError(err.message || 'Authentication failed');

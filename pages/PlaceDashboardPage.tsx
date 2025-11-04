@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { Place, Pricing, Booking, Notification } from '../types';
 import { BookingStatus, HotelVillaServiceStatus } from '../types';
-import { User, Calendar, TrendingUp, Hotel, FileCheck, LogOut, Bell, MessageSquare, Tag, X, Crown } from 'lucide-react';
+import { User, Calendar, TrendingUp, Hotel, FileCheck, LogOut, Bell, MessageSquare, Tag, X, Crown, Megaphone } from 'lucide-react';
 import Button from '../components/Button';
 import DiscountSharePage from './DiscountSharePage';
 import MembershipPlansPage from './MembershipPlansPage';
@@ -20,7 +20,8 @@ import { MASSAGE_TYPES_CATEGORIZED, ADDITIONAL_SERVICES } from '../constants/roo
 import { notificationService } from '../lib/appwriteService';
 import { soundNotificationService } from '../utils/soundNotificationService';
 import PushNotificationSettings from '../components/PushNotificationSettings';
-import MemberChatWindow from '../components/MemberChatWindow';
+// Removed chat import - chat system removed
+// import MemberChatWindow from '../components/MemberChatWindow';
 
 
 interface PlaceDashboardPageProps {
@@ -335,11 +336,19 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     };
 
     const handleMassageTypeChange = (type: string) => {
-        setMassageTypes(prev =>
-            prev.includes(type)
-                ? prev.filter(t => t !== type)
-                : [...prev, type]
-        );
+        setMassageTypes(prev => {
+            if (prev.includes(type)) {
+                // Remove if already selected
+                return prev.filter(t => t !== type);
+            } else {
+                // Add only if less than 5 are selected
+                if (prev.length < 5) {
+                    return [...prev, type];
+                }
+                // Silently ignore if trying to select more than 5
+                return prev;
+            }
+        });
     };
 
     const handleLanguageChange = (langCode: string) => {
@@ -408,22 +417,94 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
 
     const renderContent = () => {
         switch (activeTab) {
-            case 'chat':
+            case 'promotional':
                 return (
-                    <div className="max-w-7xl mx-auto px-2 sm:px-4 py-6">
-                        <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-                            <h2 className="text-2xl font-bold text-gray-900 mb-2">Chat with Support</h2>
-                            <p className="text-sm text-gray-600 mb-4">
-                                Need help? Chat with our IndaStreet support team for assistance with bookings, 
-                                payments, account issues, or any questions you may have.
-                            </p>
+                    <div className="max-w-4xl mx-auto px-4 py-6">
+                        <div className="bg-white rounded-xl shadow-sm p-6">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                                    <Megaphone className="w-5 h-5 text-orange-600" />
+                                </div>
+                                <div>
+                                    <h2 className="text-2xl font-bold text-gray-900">Promotional Tools</h2>
+                                    <p className="text-sm text-gray-600">Share discount banners to promote your services</p>
+                                </div>
+                            </div>
+
+                            {/* Discount Banners */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {[
+                                    { percentage: 5, url: 'https://ik.imagekit.io/7grri5v7d/massage%20discount%205.png?updatedAt=1761803670532' },
+                                    { percentage: 10, url: 'https://ik.imagekit.io/7grri5v7d/massage%20discount%2010.png?updatedAt=1761803828896' },
+                                    { percentage: 15, url: 'https://ik.imagekit.io/7grri5v7d/massage%20discount%2015.png?updatedAt=1761803805221' },
+                                    { percentage: 20, url: 'https://ik.imagekit.io/7grri5v7d/massage%20discount%2020.png?updatedAt=1761803783034' }
+                                ].map((banner) => (
+                                    <div key={banner.percentage} className="bg-gray-50 rounded-xl p-4">
+                                        <div className="aspect-video bg-white rounded-lg mb-4 overflow-hidden">
+                                            <img
+                                                src={banner.url}
+                                                alt={`${banner.percentage}% Discount Banner`}
+                                                className="w-full h-full object-cover"
+                                                onError={(e) => {
+                                                    e.currentTarget.style.display = 'none';
+                                                    const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
+                                                    if (nextElement) {
+                                                        nextElement.style.display = 'flex';
+                                                    }
+                                                }}
+                                            />
+                                            <div 
+                                                className="w-full h-full bg-gradient-to-br from-orange-400 to-orange-600 hidden items-center justify-center text-white font-bold text-xl"
+                                                style={{ display: 'none' }}
+                                            >
+                                                {banner.percentage}% OFF
+                                            </div>
+                                        </div>
+                                        <h3 className="font-semibold text-gray-900 mb-2">{banner.percentage}% Discount Banner</h3>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => {
+                                                    const whatsappText = `🌟 Special Offer! Get ${banner.percentage}% OFF on massage services! Book now through IndaStreet app. ${banner.url}`;
+                                                    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(whatsappText)}`;
+                                                    window.open(whatsappUrl, '_blank');
+                                                }}
+                                                className="flex-1 bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center gap-2 text-sm"
+                                            >
+                                                <MessageSquare className="w-4 h-4" />
+                                                WhatsApp
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    if (navigator.share) {
+                                                        navigator.share({
+                                                            title: `${banner.percentage}% Discount on Massage Services`,
+                                                            text: `Special offer! Get ${banner.percentage}% OFF on massage services!`,
+                                                            url: banner.url
+                                                        });
+                                                    } else {
+                                                        navigator.clipboard.writeText(banner.url);
+                                                        // Note: Place dashboard would need toast state for this
+                                                        console.log('Banner URL copied to clipboard!');
+                                                    }
+                                                }}
+                                                className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 text-sm"
+                                            >
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                                                </svg>
+                                                Share
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="mt-6 p-4 bg-orange-50 rounded-lg">
+                                <p className="text-sm text-orange-700">
+                                    💡 <strong>Tip:</strong> Share these banners on your social media, WhatsApp status, or send directly to customers to promote your massage services and attract more bookings!
+                                </p>
+                            </div>
                         </div>
-                        <MemberChatWindow
-                            userId={String(placeId)}
-                            userName={place?.name || 'Massage Place'}
-                            userType="place"
-                            onClose={() => setActiveTab('profile')}
-                        />
                     </div>
                 );
             case 'discounts':
@@ -707,7 +788,12 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                             </div>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-900">{t.massageTypesLabel}</label>
+                            <label className="block text-sm font-medium text-gray-900">
+                                {t.massageTypesLabel}
+                                <span className="text-xs text-gray-500 ml-2">
+                                    (Select up to 5 specialties - {massageTypes.length}/5 selected)
+                                </span>
+                            </label>
                             <div className="mt-2 p-3 bg-white border border-gray-200 rounded-lg space-y-4">
                                 {MASSAGE_TYPES_CATEGORIZED.map(category => (
                                     <div key={category.category}>
@@ -719,6 +805,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                                     label={type}
                                                     checked={massageTypes.includes(type)}
                                                     onChange={() => handleMassageTypeChange(type)}
+                                                    disabled={!massageTypes.includes(type) && massageTypes.length >= 5}
                                                 />
                                             ))}
                                         </div>
@@ -1102,17 +1189,17 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
 
                             <button
                                 onClick={() => {
-                                    setActiveTab('chat');
+                                    setActiveTab('promotional');
                                     setIsSideDrawerOpen(false);
                                 }}
                                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                                    activeTab === 'chat' 
+                                    activeTab === 'promotional' 
                                         ? 'bg-orange-100 text-orange-600 border-l-4 border-orange-500' 
                                         : 'text-gray-700 hover:bg-gray-100'
                                 }`}
                             >
-                                <MessageSquare className="w-5 h-5" />
-                                Chat Support
+                                <Megaphone className="w-5 h-5" />
+                                Promotional Tools
                             </button>
 
                             <button
@@ -1181,7 +1268,6 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                 currentPage="profile"
                 userRole="place"
                 onProfileClick={() => setActiveTab('profile')}
-                onChatClick={() => setActiveTab('chat')}
                 unreadNotifications={notifications.filter(n => !n.isRead).length}
                 t={t}
             />

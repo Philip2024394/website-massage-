@@ -23,10 +23,9 @@ import '../utils/pricingHelper'; // Load pricing helper for console access
 interface AdminDashboardPageProps {
     onLogout: () => void;
     initialTab?: DashboardPage;
-    onNavigateToHome?: () => void;
 }
 type DashboardPage = 'platform-analytics' | 'confirm-therapists' | 'confirm-places' | 'confirm-accounts' | 'drawer-buttons' | 'agent-commission' | 'bank-details' | 'payment-transactions' | 'shop-management' | 'membership-pricing' | 'job-postings' | 'translations' | 'therapist-translations';
-const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'initialTab' | 'onNavigateToHome'>> = ({ onLogout, initialTab, onNavigateToHome }) => {
+const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'initialTab'>> = ({ onLogout, initialTab }) => {
   const [activePage, setActivePage] = useState<DashboardPage>(initialTab || 'platform-analytics');
   const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
   const [showTranslationManager, setShowTranslationManager] = useState(false);

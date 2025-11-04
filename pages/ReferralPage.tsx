@@ -458,7 +458,6 @@ const ReferralPage: React.FC<ReferralPageProps> = ({
                 currentPage="referral"
                 onHomeClick={onFooterHome || (() => _onNavigate?.('home'))}
                 onNotificationsClick={() => {}}
-                onBookingsClick={() => {}}
                 onProfileClick={onFooterProfile || (() => _onNavigate?.('profile'))}
                 onDashboardClick={onFooterDashboard}
                 onSearchClick={onFooterSearch || (() => _onNavigate?.('search'))}

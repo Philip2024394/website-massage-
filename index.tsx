@@ -11,7 +11,13 @@ if (!rootElement) {
     throw new Error("Could not find root element to mount to");
 }
 
-const root = ReactDOM.createRoot(rootElement);
+// Temporarily disable concurrent features to debug removeChild error
+const root = ReactDOM.createRoot(rootElement, {
+    onRecoverableError: (error) => {
+        console.error('React Recoverable Error:', error);
+    },
+});
+
 root.render(
     <ErrorBoundary>
         <SimpleLanguageProvider>

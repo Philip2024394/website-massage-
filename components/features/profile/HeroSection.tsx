@@ -1,17 +1,10 @@
 import React, { useState } from 'react';
 import { Star, MapPin, Clock, Calendar, Globe, ShieldCheck } from 'lucide-react';
 
-// Language display mapping
+// Language display mapping - Only English and Indonesian
 const LANGUAGE_MAP: Record<string, { flag: string; name: string }> = {
     'en': { flag: '🇬🇧', name: 'English' },
-    'id': { flag: '🇮🇩', name: 'Indonesian' },
-    'zh': { flag: '🇨🇳', name: 'Chinese' },
-    'ja': { flag: '🇯🇵', name: 'Japanese' },
-    'ko': { flag: '🇰🇷', name: 'Korean' },
-    'ru': { flag: '🇷🇺', name: 'Russian' },
-    'fr': { flag: '🇫🇷', name: 'French' },
-    'de': { flag: '🇩🇪', name: 'German' },
-    'es': { flag: '🇪🇸', name: 'Spanish' }
+    'id': { flag: '🇮🇩', name: 'Indonesian' }
 };
 
 interface Place {

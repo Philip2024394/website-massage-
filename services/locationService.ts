@@ -1,0 +1,358 @@
+// Location service for automatic GPS detection and management
+import type { UserLocation } from '../types';
+
+export interface LocationOptions {
+    enableHighAccuracy?: boolean;
+    timeout?: number;
+    maximumAge?: number;
+}
+
+export interface LocationError {
+    code: number;
+    message: string;
+    isPermissionDenied: boolean;
+    isUnavailable: boolean;
+    isTimeout: boolean;
+}
+
+class LocationService {
+    private static instance: LocationService;
+    private currentLocation: UserLocation | null = null;
+    private lastLocationUpdate: number = 0;
+    private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+    
+    public static getInstance(): LocationService {
+        if (!LocationService.instance) {
+            LocationService.instance = new LocationService();
+        }
+        return LocationService.instance;
+    }
+    
+    /**
+     * Check if geolocation is supported by the device/browser
+     */
+    public isGeolocationSupported(): boolean {
+        return 'geolocation' in navigator;
+    }
+    
+    /**
+     * Check if we're on an Android device
+     */
+    public isAndroidDevice(): boolean {
+        const userAgent = navigator.userAgent.toLowerCase();
+        return userAgent.includes('android');
+    }
+    
+    /**
+     * Check if we're on a mobile device
+     */
+    public isMobileDevice(): boolean {
+        const userAgent = navigator.userAgent.toLowerCase();
+        return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+    }
+    
+    /**
+     * Get current device location using GPS with automatic error handling
+     */
+    public async getCurrentLocation(options?: LocationOptions): Promise<UserLocation> {
+        console.log('📍 LocationService: Getting current location...');
+        console.log('🔧 Device info:', {
+            isGeolocationSupported: this.isGeolocationSupported(),
+            isAndroidDevice: this.isAndroidDevice(),
+            isMobileDevice: this.isMobileDevice(),
+            userAgent: navigator.userAgent
+        });
+        
+        // Check if geolocation is supported
+        if (!this.isGeolocationSupported()) {
+            throw this.createLocationError(0, 'Geolocation is not supported on this device');
+        }
+        
+        // Check cache first (for recent locations)
+        if (this.currentLocation && this.isLocationCacheValid()) {
+            console.log('📍 Using cached location:', this.currentLocation);
+            return this.currentLocation;
+        }
+        
+        const defaultOptions: LocationOptions = {
+            enableHighAccuracy: true, // Use GPS for high accuracy
+            timeout: 15000, // 15 seconds timeout
+            maximumAge: 60000, // Accept 1-minute old position
+            ...options
+        };
+        
+        return new Promise((resolve, reject) => {
+            console.log('📍 Requesting GPS location with options:', defaultOptions);
+            
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    console.log('✅ GPS location obtained:', position);
+                    try {
+                        const location = await this.processGPSPosition(position);
+                        this.cacheLocation(location);
+                        resolve(location);
+                    } catch (error) {
+                        console.error('❌ Error processing GPS position:', error);
+                        reject(this.createLocationError(0, 'Failed to process GPS location'));
+                    }
+                },
+                (error) => {
+                    console.error('❌ GPS location error:', error);
+                    reject(this.handleGeolocationError(error));
+                },
+                defaultOptions
+            );
+        });
+    }
+    
+    /**
+     * Convert GPS coordinates to address using reverse geocoding
+     */
+    private async processGPSPosition(position: GeolocationPosition): Promise<UserLocation> {
+        const { latitude, longitude } = position.coords;
+        
+        console.log('📍 Processing GPS coordinates:', { latitude, longitude });
+        console.log('📍 Position accuracy:', position.coords.accuracy, 'meters');
+        
+        // Try to get address using reverse geocoding
+        let address = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`; // Default to coordinates
+        
+        try {
+            address = await this.reverseGeocode(latitude, longitude);
+            console.log('📍 Address resolved:', address);
+        } catch (error) {
+            console.warn('⚠️ Reverse geocoding failed, using coordinates:', error);
+        }
+        
+        return {
+            address,
+            lat: latitude,
+            lng: longitude
+        };
+    }
+    
+    /**
+     * Reverse geocode coordinates to human-readable address
+     */
+    private async reverseGeocode(lat: number, lng: number): Promise<string> {
+        // Check if Google Maps API is available
+        if (typeof window !== 'undefined' && (window as any).google?.maps?.Geocoder) {
+            console.log('📍 Using Google Maps for reverse geocoding');
+            return this.googleMapsReverseGeocode(lat, lng);
+        }
+        
+        // Fallback to a free geocoding service
+        console.log('📍 Using fallback geocoding service');
+        return this.fallbackReverseGeocode(lat, lng);
+    }
+    
+    /**
+     * Google Maps reverse geocoding
+     */
+    private async googleMapsReverseGeocode(lat: number, lng: number): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const geocoder = new (window as any).google.maps.Geocoder();
+            const latlng = { lat, lng };
+            
+            geocoder.geocode({ location: latlng }, (results: any, status: string) => {
+                if (status === 'OK' && results[0]) {
+                    resolve(results[0].formatted_address);
+                } else {
+                    reject(new Error(`Google Maps geocoding failed: ${status}`));
+                }
+            });
+        });
+    }
+    
+    /**
+     * Fallback reverse geocoding using OpenStreetMap Nominatim
+     */
+    private async fallbackReverseGeocode(lat: number, lng: number): Promise<string> {
+        try {
+            const response = await fetch(
+                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=16&addressdetails=1`,
+                {
+                    headers: {
+                        'User-Agent': 'IndaStreet-Massage-App/1.0'
+                    }
+                }
+            );
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.display_name) {
+                return data.display_name;
+            } else {
+                throw new Error('No address found');
+            }
+        } catch (error) {
+            console.warn('⚠️ Fallback geocoding failed:', error);
+            throw error;
+        }
+    }
+    
+    /**
+     * Handle geolocation errors with user-friendly messages
+     */
+    private handleGeolocationError(error: GeolocationPositionError): LocationError {
+        console.error('🚨 Geolocation error details:', error);
+        
+        switch (error.code) {
+            case error.PERMISSION_DENIED:
+                return this.createLocationError(
+                    error.code,
+                    'Location access denied. Please enable location sharing in your browser settings.',
+                    true
+                );
+            case error.POSITION_UNAVAILABLE:
+                return this.createLocationError(
+                    error.code,
+                    'Location information is unavailable. Please check your GPS settings.',
+                    false,
+                    true
+                );
+            case error.TIMEOUT:
+                return this.createLocationError(
+                    error.code,
+                    'Location request timed out. Please try again.',
+                    false,
+                    false,
+                    true
+                );
+            default:
+                return this.createLocationError(
+                    error.code,
+                    'An unknown location error occurred. Please try again.'
+                );
+        }
+    }
+    
+    /**
+     * Create standardized location error object
+     */
+    private createLocationError(
+        code: number,
+        message: string,
+        isPermissionDenied = false,
+        isUnavailable = false,
+        isTimeout = false
+    ): LocationError {
+        return {
+            code,
+            message,
+            isPermissionDenied,
+            isUnavailable,
+            isTimeout
+        };
+    }
+    
+    /**
+     * Cache location with timestamp
+     */
+    private cacheLocation(location: UserLocation): void {
+        this.currentLocation = location;
+        this.lastLocationUpdate = Date.now();
+        
+        // Also save to localStorage for persistence
+        try {
+            localStorage.setItem('cached_location', JSON.stringify({
+                location,
+                timestamp: this.lastLocationUpdate
+            }));
+        } catch (error) {
+            console.warn('Failed to cache location to localStorage:', error);
+        }
+    }
+    
+    /**
+     * Check if cached location is still valid
+     */
+    private isLocationCacheValid(): boolean {
+        if (!this.currentLocation || !this.lastLocationUpdate) {
+            return false;
+        }
+        
+        return (Date.now() - this.lastLocationUpdate) < this.CACHE_DURATION;
+    }
+    
+    /**
+     * Load cached location from localStorage
+     */
+    public loadCachedLocation(): UserLocation | null {
+        try {
+            const cached = localStorage.getItem('cached_location');
+            if (cached) {
+                const { location, timestamp } = JSON.parse(cached);
+                
+                // Check if cache is still valid
+                if ((Date.now() - timestamp) < this.CACHE_DURATION) {
+                    this.currentLocation = location;
+                    this.lastLocationUpdate = timestamp;
+                    return location;
+                }
+            }
+        } catch (error) {
+            console.warn('Failed to load cached location:', error);
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Get default location for users who deny GPS access
+     */
+    public getDefaultLocation(): UserLocation {
+        // Default to Jakarta, Indonesia (center of the app's target market)
+        return {
+            address: 'Jakarta, Indonesia',
+            lat: -6.2088,
+            lng: 106.8456
+        };
+    }
+    
+    /**
+     * Request location with user-friendly prompts and fallbacks
+     */
+    public async requestLocationWithFallback(): Promise<UserLocation> {
+        console.log('📍 Requesting location with fallback options...');
+        
+        // First, try to load from cache
+        const cachedLocation = this.loadCachedLocation();
+        if (cachedLocation) {
+            console.log('📍 Using cached location:', cachedLocation);
+            return cachedLocation;
+        }
+        
+        try {
+            // Try to get current GPS location
+            const location = await this.getCurrentLocation();
+            console.log('✅ GPS location successful:', location);
+            return location;
+        } catch (error) {
+            console.warn('⚠️ GPS location failed:', error);
+            
+            const locationError = error as LocationError;
+            
+            // Show appropriate message based on error type
+            if (locationError.isPermissionDenied) {
+                console.log('📍 Location permission denied, using default location');
+            } else if (locationError.isUnavailable) {
+                console.log('📍 GPS unavailable, using default location');
+            } else if (locationError.isTimeout) {
+                console.log('📍 GPS timeout, using default location');
+            }
+            
+            // Return default location
+            const defaultLocation = this.getDefaultLocation();
+            console.log('📍 Using default location:', defaultLocation);
+            return defaultLocation;
+        }
+    }
+}
+
+// Export singleton instance
+export const locationService = LocationService.getInstance();

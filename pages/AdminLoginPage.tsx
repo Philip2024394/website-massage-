@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { account } from '../lib/appwrite';
+import { adminAuth } from '../lib/auth';
 import { saveSessionCache } from '../lib/sessionManager';
 import { checkRateLimit, handleAppwriteError, resetRateLimit, resetAllRateLimits } from '../lib/rateLimitUtils';
+import { trackDailySignIn } from '../lib/coinHooks';
 
 interface AdminLoginPageProps {
     onAdminLogin: () => void;
@@ -56,34 +57,28 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin: _onAdminL
 
             console.log('🔄 Starting admin login for:', email);
 
-            // Delete any existing session first
-            try {
-                await account.deleteSession('current');
-                console.log('🗑️ Existing session cleared before admin login');
-            } catch (err) {
-                // No session to delete, continue
-                console.log('ℹ️ No existing session to clear');
-            }
-
-            // Create session with Appwrite
-            console.log('🔐 Creating session...');
-            const session = await account.createEmailPasswordSession(email, password);
+            // Use the new admin auth function
+            const response = await adminAuth.signIn(email, password);
             
-            // Get user details
-            const user = await account.get();
+            if (!response.success) {
+                throw new Error(response.error || 'Login failed');
+            }
             
             // Save session cache for persistence
             saveSessionCache({
                 type: 'admin',
-                id: user.$id,
-                email: user.email,
-                documentId: session.$id,
-                data: user
+                id: response.userId!,
+                email: email,
+                documentId: response.documentId || '',
+                data: { $id: response.userId, email }
             });
             
-            // Store admin session flag - DO NOT set localStorage directly
-            // The setIsAdminLoggedIn function handles localStorage automatically
-            // localStorage.setItem('adminLoggedIn', 'true'); // REMOVED - causes state mismatch
+            // Track daily sign-in for coin rewards
+            try {
+                await trackDailySignIn(response.userId!);
+            } catch (coinError) {
+                console.warn('Daily sign-in tracking failed:', coinError);
+            }
             
             console.log('✅ Admin login successful');
             
@@ -122,72 +117,31 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin: _onAdminL
             }
 
             console.log('🔄 Starting admin account creation...');
-            console.log('📧 Email:', email);
-            console.log('🔑 Password length:', password.length);
 
-            // Delete any existing session first
-            try {
-                await account.deleteSession('current');
-                console.log('🗑️ Existing session cleared');
-            } catch (err) {
-                // No session to delete, continue
-                console.log('ℹ️ No existing session to clear');
+            // Use the new admin auth function
+            const response = await adminAuth.signUp(email, password);
+            
+            if (!response.success) {
+                // Handle user already exists case specially
+                if (response.error?.includes('already exists')) {
+                    console.log('🔄 User already exists, switching to sign-in mode');
+                    setIsSignUp(false);
+                    setError('This email is already registered. Switched to Sign In mode - please enter your password.');
+                    setIsLoading(false);
+                    return;
+                }
+                throw new Error(response.error || 'Signup failed');
             }
-
-            // Create new admin account
-            console.log('📝 Creating admin account for:', email);
-            const newUser = await account.create(
-                'unique()',
-                email,
-                password,
-                'Admin User'
-            );
-
-            console.log('✅ Account created successfully!', { userId: newUser.$id });
-            console.log('🔐 Now creating session...');
-
-            // Automatically login after signup
-            const session = await account.createEmailPasswordSession(email, password);
-            console.log('✅ Session created!', { sessionId: session.$id });
             
-            // Get user details
-            const user = await account.get();
-            console.log('✅ User details retrieved!', { email: user.email });
+            console.log('✅ Admin account created successfully!');
             
-            // Save session cache for persistence
-            saveSessionCache({
-                type: 'admin',
-                id: user.$id,
-                email: user.email,
-                documentId: session.$id,
-                data: user
-            });
-            
-            // Store admin session flag - DO NOT set localStorage directly
-            // The setIsAdminLoggedIn function handles localStorage automatically
-            // localStorage.setItem('adminLoggedIn', 'true'); // REMOVED - causes state mismatch
-            
-            console.log('✅ Admin account created and logged in successfully!');
-            
-            // Reset loading before calling onAdminLogin
+            // Switch to login mode after successful signup
+            setIsSignUp(false);
+            setError('✅ Account created successfully! Please sign in with your credentials.');
+            setPassword(''); // Clear password for security
             setIsLoading(false);
-            _onAdminLogin();
         } catch (err: any) {
             console.error('❌ Admin signup error:', err);
-            console.error('❌ Error code:', err.code);
-            console.error('❌ Error type:', err.type);
-            console.error('❌ Error message:', err.message);
-            
-            // Handle user already exists case specially
-            if (err.code === 409 || err.message?.includes('already exists')) {
-                console.log('🔄 User already exists, switching to sign-in mode');
-                setIsSignUp(false);
-                setError('This email is already registered. Switched to Sign In mode - please enter your password.');
-                setIsLoading(false);
-                return;
-            }
-            
-            // Use centralized error handling for other errors
             setError(handleAppwriteError(err, 'account creation'));
             setIsLoading(false);
         }

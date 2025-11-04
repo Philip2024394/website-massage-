@@ -220,16 +220,16 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate, activeDis
                     }
                     return Array.isArray(massageTypes) && massageTypes.length > 0 ? (
                         <div className="mt-3">
-                            <h4 className="text-xs font-semibold text-gray-700 mb-1.5">Massage Types</h4>
+                            <h4 className="text-xs font-semibold text-gray-700 mb-1.5">Massage Specializations</h4>
                             <div className="flex flex-wrap gap-1.5">
-                                {massageTypes.slice(0, 3).map((type, index) => (
-                                    <span key={index} className="px-2 py-0.5 bg-gray-100 text-gray-800 text-xs font-medium rounded-full">
+                                {massageTypes.slice(0, 5).map((type, index) => (
+                                    <span key={index} className="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs font-medium rounded-full border border-orange-200">
                                         {type}
                                     </span>
                                 ))}
-                                {massageTypes.length > 3 && (
+                                {massageTypes.length > 5 && (
                                     <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
-                                        +{massageTypes.length - 3} more
+                                        +{massageTypes.length - 5} more
                                     </span>
                                 )}
                             </div>

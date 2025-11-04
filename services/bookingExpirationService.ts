@@ -115,9 +115,6 @@ class BookingExpirationService {
 
       console.log(`Broadcasting booking ${booking.$id} to ${availableTherapists.documents.length} therapist(s)`);
 
-      const acceptUrl = `${window.location.origin}/accept-booking/${booking.$id}`;
-      const message = ` New Booking Available (Broadcast)!\n\nDuration: ${booking.duration} min\nPrice: $${booking.price}\n\nAccept booking: ${acceptUrl}\n\nNote: First to accept gets the booking!`;
-
       // In a real app, you'd send WhatsApp messages or notifications here
       // For now, we'll just log it
       for (const therapist of availableTherapists.documents) {

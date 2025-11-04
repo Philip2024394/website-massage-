@@ -32,15 +32,16 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
     venueId, 
     therapists, 
     places, 
-    language = 'en',
+    language: propLanguage = 'en',
     onBook 
 }) => {
     const [venue, setVenue] = useState<VenueProfile | null>(null);
     const [activeTab, setActiveTab] = useState<'therapists' | 'places'>('therapists');
     const [loading, setLoading] = useState(true);
+    const [currentLanguage, setCurrentLanguage] = useState<'en' | 'id'>(propLanguage as 'en' | 'id');
     
-    // Use translations
-    const { t } = useTranslations(language as 'en' | 'id');
+    // Use translations with current language
+    const { t } = useTranslations(currentLanguage);
 
     useEffect(() => {
         // TODO: Fetch venue profile from Appwrite using venueId
@@ -134,6 +135,36 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
                         </svg>
                         <span className="font-semibold">{venue.contactNumber}</span>
                     </p>
+                </div>
+            </div>
+
+            {/* Language Selection */}
+            <div className="bg-white border-b border-gray-200 py-4 px-4">
+                <div className="max-w-4xl mx-auto flex justify-center">
+                    <div className="flex bg-gray-100 rounded-lg p-1">
+                        <button
+                            onClick={() => setCurrentLanguage('en')}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-all ${
+                                currentLanguage === 'en'
+                                    ? 'bg-orange-500 text-white shadow-sm'
+                                    : 'text-gray-600 hover:bg-gray-200'
+                            }`}
+                        >
+                            <span className="text-lg">🇬🇧</span>
+                            <span>English</span>
+                        </button>
+                        <button
+                            onClick={() => setCurrentLanguage('id')}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-all ${
+                                currentLanguage === 'id'
+                                    ? 'bg-orange-500 text-white shadow-sm'
+                                    : 'text-gray-600 hover:bg-gray-200'
+                            }`}
+                        >
+                            <span className="text-lg">🇮🇩</span>
+                            <span>Indonesian</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 

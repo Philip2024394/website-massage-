@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import Button from '../components/Button';
-import PasswordInput from '../components/PasswordInput';
-import { account } from '../lib/appwrite';
-import { placeService } from '../lib/appwriteService';
+import { placeAuth } from '../lib/auth';
+import { saveSessionCache } from '../lib/sessionManager';
+import { checkRateLimit, handleAppwriteError, resetRateLimit } from '../lib/rateLimitUtils';
+import { trackDailySignIn } from '../lib/coinHooks';
+import { LogIn, UserPlus } from 'lucide-react';
 
 interface MassagePlaceLoginPageProps {
     onSuccess: (placeId: string) => void;
@@ -16,71 +17,31 @@ const HomeIcon: React.FC<{className?: string}> = ({ className }) => (
     </svg>
 );
 
-const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess: _onSuccess, onBack }) => {
+const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess, onBack }) => {
     const [isSignUp, setIsSignUp] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [placeName, setPlaceName] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    const handleLogin = async (e: React.FormEvent) => {
+    // Make rate limit reset functions available in browser console for testing
+    React.useEffect(() => {
+        (window as any).resetPlaceRateLimit = () => {
+            resetRateLimit('place-login');
+            resetRateLimit('place-signup');
+            console.log('✅ Place rate limits reset! You can now try logging in again.');
+        };
+    }, []);
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         setLoading(true);
 
         try {
+            // Validate inputs
             if (!email || !password) {
-                setError('Please fill in all fields');
-                setLoading(false);
-                return;
-            }
-
-            // Delete any existing session first
-            try {
-                await account.deleteSession('current');
-                console.log('🗑️ Existing session cleared before massage place login');
-            } catch (err) {
-                // No session to delete, continue
-                console.log('ℹ️ No existing session to clear');
-            }
-
-            // Login with Appwrite
-            await account.createEmailPasswordSession(email, password);
-            
-            // Verify this account is associated with a massage place
-            const places = await placeService.getAll();
-            const place = places.find((p: any) => p.email === email);
-            
-            if (!place) {
-                // Not a massage place account
-                await account.deleteSession('current');
-                setError('No massage place account found with this email');
-                setLoading(false);
-                return;
-            }
-            
-            // Store place session
-            localStorage.setItem('placeLoggedIn', 'true');
-            localStorage.setItem('placeData', JSON.stringify(place));
-            
-            console.log('✅ Massage place login successful:', place.name);
-            _onSuccess(place.$id || place.id);
-        } catch (err: any) {
-            console.error('Massage place login error:', err);
-            setError(err.message || 'Login failed. Please try again.');
-            setLoading(false);
-        }
-    };
-
-    const handleSignUp = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError('');
-        setLoading(true);
-
-        try {
-            if (!email || !password || !placeName) {
-                setError('Please fill in all fields');
+                setError('Please enter both email and password');
                 setLoading(false);
                 return;
             }
@@ -91,173 +52,173 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
                 return;
             }
 
-            // Delete any existing session first
-            try {
-                await account.deleteSession('current');
-                console.log('🗑️ Existing session cleared before massage place signup');
-            } catch (err) {
-                // No session to delete, continue
-                console.log('ℹ️ No existing session to clear');
+            const operation = isSignUp ? 'place-signup' : 'place-login';
+            const maxAttempts = isSignUp ? 3 : 5;
+            const windowMs = isSignUp ? 600000 : 300000; // 10 min for signup, 5 min for login
+
+            if (!checkRateLimit(operation, maxAttempts, windowMs)) {
+                setError(`Too many ${isSignUp ? 'signup' : 'login'} attempts. Please wait before trying again.`);
+                setLoading(false);
+                return;
             }
 
-            // Create Appwrite account
-            await account.create(
-                'unique()',
-                email,
-                password,
-                placeName
-            );
+            console.log(`🔄 Starting place ${isSignUp ? 'signup' : 'login'} for:`, email);
 
-            // Login automatically
-            await account.createEmailPasswordSession(email, password);
-            
-            // Create place profile in database
-            const newPlace = await placeService.create({
-                name: placeName,
-                email: email,
-                status: 'pending',
-                createdAt: new Date().toISOString()
-            });
-            
-            localStorage.setItem('placeLoggedIn', 'true');
-            localStorage.setItem('placeData', JSON.stringify(newPlace));
-            
-            console.log('✅ Massage place account created:', newPlace.name);
-            _onSuccess(newPlace.$id || newPlace.id);
+            if (isSignUp) {
+                const response = await placeAuth.signUp(email, password);
+                
+                if (response.success) {
+                    console.log('✅ Place account created successfully!');
+                    setIsSignUp(false);
+                    setError('✅ Account created successfully! Please sign in.');
+                    setPassword('');
+                } else {
+                    throw new Error(response.error || 'Sign up failed');
+                }
+            } else {
+                const response = await placeAuth.signIn(email, password);
+                
+                if (response.success && response.userId) {
+                    // Authentication successful - save session cache
+                    saveSessionCache({
+                        type: 'place',
+                        id: response.userId,
+                        email: email,
+                        documentId: response.documentId || '',
+                        data: { $id: response.userId, email }
+                    });
+                    
+                    // Track daily sign-in for coin rewards (only for login, not signup)
+                    if (!isSignUp) {
+                        try {
+                            await trackDailySignIn(response.userId);
+                        } catch (coinError) {
+                            console.warn('Daily sign-in tracking failed:', coinError);
+                        }
+                    }
+                    
+                    console.log('✅ Place login successful');
+                    onSuccess(response.userId);
+                } else {
+                    throw new Error(response.error || 'Sign in failed');
+                }
+            }
         } catch (err: any) {
-            console.error('Massage place signup error:', err);
-            setError(err.message || 'Account creation failed. Please try again.');
+            console.error(`Place ${isSignUp ? 'signup' : 'login'} error:`, err);
+            setError(handleAppwriteError(err, isSignUp ? 'signup' : 'login'));
+        } finally {
             setLoading(false);
         }
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
-        if (isSignUp) {
-            handleSignUp(e);
-        } else {
-            handleLogin(e);
-        }
-    };
-
     return (
-        <div 
-            className="min-h-screen flex items-center justify-center p-4 relative"
-            style={{
-                backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/garden%20forest.png?updatedAt=1761334454082)',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat'
-            }}
-        >
-            {/* Overlay for better readability */}
-            <div className="absolute inset-0 bg-black/40"></div>
-
-            {/* Home Button */}
-            <button
-                onClick={onBack}
-                className="fixed top-6 left-6 w-12 h-12 bg-orange-500 hover:bg-orange-600 rounded-full shadow-lg flex items-center justify-center transition-all z-20 border border-orange-400"
-                aria-label="Go to home"
-            >
-                <HomeIcon className="w-6 h-6 text-white" />
-            </button>
-
-            {/* Glass Effect Login Container */}
-            <div className="max-w-md w-full bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-8 relative z-10 border border-white/20">
+        <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
+                {/* Header */}
                 <div className="text-center mb-8">
-                    <h1 className="text-4xl font-bold mb-2">
-                        <span className="text-white">Inda</span>
-                        <span className="text-orange-400">Street</span>
-                    </h1>
-                    <p className="text-white/90 font-medium">Massage Place Account</p>
-                </div>
-
-                <div className="flex mb-6 bg-white/10 backdrop-blur-sm rounded-lg p-1 border border-white/20">
-                    <button
-                        onClick={() => setIsSignUp(false)}
-                        className={`flex-1 py-2 px-4 rounded-md transition-all ${
-                            !isSignUp ? 'bg-orange-500 shadow-lg text-white font-semibold' : 'text-white/90 hover:bg-white/5'
-                        }`}
-                    >
-                        Sign In
-                    </button>
-                    <button
-                        onClick={() => setIsSignUp(true)}
-                        className={`flex-1 py-2 px-4 rounded-md transition-all ${
-                            isSignUp ? 'bg-orange-500 shadow-lg text-white font-semibold' : 'text-white/90 hover:bg-white/5'
-                        }`}
-                    >
-                        Create Account
-                    </button>
-                </div>
-
-                {error && (
-                    <div className={`mb-4 p-3 rounded-lg backdrop-blur-sm ${error.includes('created') ? 'bg-green-500/20 text-green-100 border border-green-400/30' : 'bg-red-500/20 text-red-100 border border-red-400/30'}`}>
-                        {error}
-                    </div>
-                )}
-
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    {isSignUp && (
-                        <div>
-                            <label className="block text-sm font-medium text-white/90 mb-2">
-                                Place Name
-                            </label>
-                            <input
-                                type="text"
-                                value={placeName}
-                                onChange={(e) => setPlaceName(e.target.value)}
-                                className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
-                                placeholder="Enter massage place name"
-                                required={isSignUp}
-                            />
+                    <div className="flex items-center justify-center mb-4">
+                        <div className="p-3 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl">
+                            {isSignUp ? (
+                                <UserPlus className="w-8 h-8 text-white" />
+                            ) : (
+                                <LogIn className="w-8 h-8 text-white" />
+                            )}
                         </div>
-                    )}
+                    </div>
+                    <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                        {isSignUp ? 'Create Place Account' : 'Place Sign In'}
+                    </h1>
+                    <p className="text-gray-600">
+                        {isSignUp 
+                            ? 'Register your massage place with IndaStreet'
+                            : 'Access your place dashboard'
+                        }
+                    </p>
+                </div>
+
+                {/* Form */}
+                <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
-                        <label className="block text-sm font-medium text-white/90 mb-2">
-                            Email
+                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                            Email Address
                         </label>
                         <input
+                            id="email"
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
-                            placeholder="place@indastreet.com"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                            placeholder="place@example.com"
                             required
                         />
                     </div>
 
-                    <PasswordInput
-                        value={password}
-                        onChange={setPassword}
-                        placeholder="Enter your password"
-                        required
-                        minLength={8}
-                    />
+                    <div>
+                        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                            Password
+                        </label>
+                        <input
+                            id="password"
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                            placeholder="••••••••"
+                            required
+                            minLength={8}
+                        />
+                    </div>
 
-                    <Button
+                    {error && (
+                        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                            <p className="text-red-600 text-sm">{error}</p>
+                        </div>
+                    )}
+
+                    <button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 mt-6 shadow-lg flex items-center justify-center gap-2"
+                        className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white py-3 px-4 rounded-lg font-medium hover:from-amber-600 hover:to-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                     >
                         {loading ? (
-                            'Processing...'
-                        ) : isSignUp ? (
-                            <>
-                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
-                                Create Account
-                            </>
+                            <div className="flex items-center justify-center">
+                                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
+                                {isSignUp ? 'Creating Account...' : 'Signing In...'}
+                            </div>
                         ) : (
-                            <>
-                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                                </svg>
-                                Sign In
-                            </>
+                            isSignUp ? 'Create Account' : 'Sign In'
                         )}
-                    </Button>
+                    </button>
                 </form>
+
+                {/* Toggle Mode */}
+                <div className="mt-6 text-center">
+                    <button
+                        onClick={() => {
+                            setIsSignUp(!isSignUp);
+                            setError('');
+                            setEmail('');
+                            setPassword('');
+                        }}
+                        className="text-amber-600 hover:text-amber-700 font-medium"
+                    >
+                        {isSignUp 
+                            ? 'Already have an account? Sign In' 
+                            : "Don't have an account? Sign Up"
+                        }
+                    </button>
+                </div>
+
+                {/* Back Button */}
+                <div className="mt-6 text-center">
+                    <button
+                        onClick={onBack}
+                        className="flex items-center justify-center mx-auto text-gray-600 hover:text-gray-800 transition-colors"
+                    >
+                        <HomeIcon className="w-5 h-5 mr-2" />
+                        Back to Home
+                    </button>
+                </div>
             </div>
         </div>
     );

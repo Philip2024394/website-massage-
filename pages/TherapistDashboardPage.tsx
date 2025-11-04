@@ -5,15 +5,17 @@ import { AvailabilityStatus, BookingStatus, HotelVillaServiceStatus } from '../t
 import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages, stringifyPricing, stringifyCoordinates, stringifyMassageTypes, stringifyAnalytics } from '../utils/appwriteHelpers';
 import { therapistService, notificationService } from '../lib/appwriteService';
 import { soundNotificationService } from '../utils/soundNotificationService';
-import { User, Calendar, TrendingUp, Hotel, FileCheck, LogOut, Bell, Briefcase, MessageSquare, Tag, Activity, Megaphone, Menu, Crown } from 'lucide-react';
+import { User, Calendar, TrendingUp, Hotel, FileCheck, LogOut, Bell, Tag, Activity, Menu, Crown, Coins, History } from 'lucide-react';
 import { useTranslations } from '../lib/useTranslations';
 import DiscountSharePage from './DiscountSharePage';
 import MembershipPlansPage from './MembershipPlansPage';
 import HotelVillaOptIn from '../components/HotelVillaOptIn';
 import { TherapistProfileForm } from '../components/therapist/TherapistProfileForm';
 import TherapistTermsPage from './TherapistTermsPage';
-import TherapistJobOpportunitiesPage from './TherapistJobOpportunitiesPage';
+// Removed import - Job Opportunities page removed as it's available in live app
+// import TherapistJobOpportunitiesPage from './TherapistJobOpportunitiesPage';
 import PushNotificationSettings from '../components/PushNotificationSettings';
+import Footer from '../components/Footer';
 // Removed chat import - chat system removed
 // import MemberChatWindow from '../components/MemberChatWindow';
 import '../utils/pricingHelper'; // Load pricing helper for console access
@@ -23,13 +25,12 @@ interface TherapistDashboardPageProps {
     onSave: (data: Omit<Therapist, 'id' | 'isLive' | 'rating' | 'reviewCount' | 'activeMembershipDate' | 'email'>) => void;
     onLogout: () => void;
     onNavigateToNotifications: () => void;
-    onNavigateToHome?: () => void;
     onNavigate?: (page: Page) => void;
     onUpdateBookingStatus: (bookingId: number, status: BookingStatus) => void;
     onStatusChange?: (status: AvailabilityStatus) => void; // Add status change handler
     handleNavigateToAdminLogin?: () => void;
     therapistId: number | string; // Support both for Appwrite compatibility
-    bookings: Booking[];
+    bookings?: Booking[]; // Make optional to handle undefined cases
     notifications: Notification[];
     t: any;
 }
@@ -80,7 +81,7 @@ const BookingCard: React.FC<{ booking: Booking; onUpdateStatus: (id: number, sta
     );
 }
 
-const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave, onLogout, onNavigateToNotifications: _onNavigateToNotifications, onNavigateToHome, onNavigate, onUpdateBookingStatus, onStatusChange, handleNavigateToAdminLogin, therapistId, bookings, notifications, t }) => {
+const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave, onLogout, onNavigateToNotifications: _onNavigateToNotifications, onNavigate, onUpdateBookingStatus, onStatusChange, handleNavigateToAdminLogin, therapistId, bookings, notifications, t }) => {
     const { t: t_new } = useTranslations(); // New translation system
     const [therapist, setTherapist] = useState<Therapist | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -99,8 +100,6 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
     const [discountDuration, setDiscountDuration] = useState<number>(0); // Hours for discount duration
     const [discountEndTime, setDiscountEndTime] = useState<Date | null>(null); // When discount expires
     const [isDiscountActive, setIsDiscountActive] = useState(false);
-    const [selectedDiscountPercentage, setSelectedDiscountPercentage] = useState<number | null>(null);
-    const [selectedDiscountDuration, setSelectedDiscountDuration] = useState<number | null>(null);
     const [location, setLocation] = useState('');
     const [coordinates, setCoordinates] = useState({ lat: 0, lng: 0 });
     const [status, setStatus] = useState<AvailabilityStatus>(AvailabilityStatus.Offline);
@@ -169,6 +168,49 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
             setStatus(existingTherapist.status || AvailabilityStatus.Offline);
             setIsLicensed((existingTherapist as any).isLicensed || false);
             setLicenseNumber((existingTherapist as any).licenseNumber || '');
+            
+            // Load discount data from analytics field
+            try {
+                const analyticsData = existingTherapist.analytics ? 
+                    (typeof existingTherapist.analytics === 'string' ? JSON.parse(existingTherapist.analytics) : existingTherapist.analytics) : 
+                    {};
+                
+                if (analyticsData.discountData) {
+                    const discountData = analyticsData.discountData;
+                    const endTime = new Date(discountData.endTime);
+                    const now = new Date();
+                    
+                    // Check if discount is still active (hasn't expired)
+                    if (discountData.isActive && endTime > now) {
+                        setDiscountPercentage(discountData.percentage);
+                        setDiscountDuration(discountData.duration);
+                        setDiscountEndTime(endTime);
+                        setIsDiscountActive(true);
+                        console.log('📊 Loaded active discount:', discountData.percentage + '%');
+                    } else if (discountData.isActive && endTime <= now) {
+                        // Discount has expired, auto-deactivate
+                        console.log('⏰ Discount expired, auto-deactivating...');
+                        setDiscountPercentage(0);
+                        setDiscountDuration(0);
+                        setDiscountEndTime(null);
+                        setIsDiscountActive(false);
+                        
+                        // Update database to mark as inactive
+                        const updatedAnalytics = {
+                            ...analyticsData,
+                            discountData: {
+                                ...discountData,
+                                isActive: false
+                            }
+                        };
+                        therapistService.update(therapistId.toString(), { 
+                            analytics: JSON.stringify(updatedAnalytics)
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Error loading discount data:', error);
+            }
         } else {
             console.log('📝 No existing profile found, starting with empty form');
             // No existing profile - start with empty data
@@ -344,6 +386,58 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
         }
     }, [mapsApiLoaded]);
 
+    // Use effect to check discount expiry periodically - moved here to maintain hooks order
+    useEffect(() => {
+        const checkDiscountExpiry = async () => {
+            if (isDiscountActive && discountEndTime) {
+                const now = new Date();
+                if (now >= discountEndTime) {
+                    console.log('⏰ Discount expired, auto-deactivating...');
+                    setIsDiscountActive(false);
+                    setDiscountPercentage(0);
+                    setDiscountEndTime(null);
+                    setDiscountDuration(0);
+                    
+                    // Update database to mark discount as inactive
+                    try {
+                        const therapistIdString = typeof therapistId === 'string' ? therapistId : therapistId.toString();
+                        const currentAnalytics = therapist?.analytics ? 
+                            (typeof therapist.analytics === 'string' ? JSON.parse(therapist.analytics) : therapist.analytics) : 
+                            {};
+                        
+                        const updatedAnalytics = {
+                            ...currentAnalytics,
+                            discountData: {
+                                ...currentAnalytics.discountData,
+                                isActive: false
+                            }
+                        };
+                        
+                        await therapistService.update(therapistIdString, { 
+                            analytics: JSON.stringify(updatedAnalytics)
+                        });
+                        
+                        setToast({ message: 'Discount expired and deactivated automatically', type: 'warning' });
+                    } catch (error) {
+                        console.error('❌ Error updating expired discount:', error);
+                    }
+                }
+            }
+        };
+
+        const interval = setInterval(checkDiscountExpiry, 60000); // Check every minute
+        return () => clearInterval(interval);
+    }, [isDiscountActive, discountEndTime, discountDuration, therapistId, therapist?.analytics]); // Include all dependencies
+
+    // Early returns moved here after all hooks are declared to fix Rules of Hooks violation
+    if (isLoading) {
+        return <div className="flex justify-center items-center h-screen"><div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand-orange"></div></div>;
+    }
+
+    if (!therapist) {
+        return <div className="p-4 text-center text-red-500">Could not load therapist data. Please try logging in again.</div>
+    }
+
     const handleSave = () => {
         console.log('💾 SAVE BUTTON CLICKED - Starting save process...');
         console.log('📋 Profile data being saved:', {
@@ -429,88 +523,10 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
     };
 
     const now = new Date();
-    const upcomingBookings = bookings.filter(b => new Date(b.startTime) >= now).sort((a,b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
-    const pastBookings = bookings.filter(b => new Date(b.startTime) < now).sort((_, b) => new Date(b.startTime).getTime() - new Date(b.startTime).getTime());
-
-    if (isLoading) {
-        return <div className="flex justify-center items-center h-screen"><div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand-orange"></div></div>;
-    }
-
-    if (!therapist) {
-        return <div className="p-4 text-center text-red-500">Could not load therapist data. Please try logging in again.</div>
-    }
+    const upcomingBookings = (bookings || []).filter(b => new Date(b.startTime) >= now).sort((a,b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+    const pastBookings = (bookings || []).filter(b => new Date(b.startTime) < now).sort((_, b) => new Date(b.startTime).getTime() - new Date(b.startTime).getTime());
 
     // Discount management functions
-    const handleDiscountActivation = async (percentage: number, duration: number) => {
-        try {
-            const endTime = new Date();
-            endTime.setHours(endTime.getHours() + duration);
-            
-            setDiscountPercentage(percentage);
-            setDiscountDuration(duration);
-            setDiscountEndTime(endTime);
-            setIsDiscountActive(true);
-            
-            // Reset selections
-            setSelectedDiscountPercentage(null);
-            setSelectedDiscountDuration(null);
-            
-            // Auto-save discount to database
-            const therapistIdString = typeof therapistId === 'string' ? therapistId : therapistId.toString();
-            await therapistService.update(therapistIdString, { 
-                discountPercentage: percentage,
-                discountEndTime: endTime.toISOString(),
-                isDiscountActive: true
-            });
-            
-            setToast({ message: `${percentage}% discount activated for ${duration} hours!`, type: 'success' });
-            console.log(`✅ Discount activated: ${percentage}% for ${duration}h`);
-        } catch (error) {
-            console.error('❌ Error activating discount:', error);
-            setToast({ message: 'Error activating discount', type: 'error' });
-        }
-    };
-
-    const handleDiscountDeactivation = async () => {
-        try {
-            setDiscountPercentage(0);
-            setDiscountDuration(0);
-            setDiscountEndTime(null);
-            setIsDiscountActive(false);
-            
-            // Reset selections
-            setSelectedDiscountPercentage(null);
-            setSelectedDiscountDuration(null);
-            
-            // Auto-save to database
-            const therapistIdString = typeof therapistId === 'string' ? therapistId : therapistId.toString();
-            await therapistService.update(therapistIdString, { 
-                discountPercentage: 0,
-                discountEndTime: null,
-                isDiscountActive: false
-            });
-            
-            setToast({ message: 'Discount deactivated', type: 'success' });
-            console.log('✅ Discount deactivated');
-        } catch (error) {
-            console.error('❌ Error deactivating discount:', error);
-            setToast({ message: 'Error deactivating discount', type: 'error' });
-        }
-    };
-
-    // Check if discount has expired
-    const checkDiscountExpiry = () => {
-        if (isDiscountActive && discountEndTime && new Date() > discountEndTime) {
-            handleDiscountDeactivation();
-        }
-    };
-
-    // Use effect to check discount expiry periodically
-    useEffect(() => {
-        const interval = setInterval(checkDiscountExpiry, 60000); // Check every minute
-        return () => clearInterval(interval);
-    }, [isDiscountActive, discountEndTime, discountDuration]); // Include discountDuration as dependency
-
     const renderContent = () => {
         switch (activeTab) {
             case 'status':
@@ -534,261 +550,320 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                 };
                 
                 return (
-                    <div className="max-w-2xl mx-auto h-full flex flex-col">
-                        {/* Promotional Banner */}
-                        <div className="bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-xl p-4 mb-4 shadow-lg">
-                            <div className="text-center">
-                                <div className="flex items-center justify-center gap-2 mb-2">
-                                    <span className="bg-white text-green-600 px-2 py-1 rounded-full text-xs font-bold">💰 SAVE MONEY</span>
-                                    <span className="bg-yellow-400 text-green-800 px-2 py-1 rounded-full text-xs font-bold">LIMITED TIME</span>
-                                </div>
-                                <h3 className="text-lg font-bold mb-1">Only IDR 5,000/day!</h3>
-                                <p className="text-sm opacity-90 mb-2">= IDR 150,000/month membership</p>
-                                <div className="flex items-center justify-center gap-4 text-xs">
-                                    <span>✅ Unlimited bookings</span>
-                                    <span>💰 Keep 100% earnings</span>
-                                    <span>🚀 Professional platform</span>
-                                </div>
-                                <div className="mt-2 text-xs">
-                                    <strong>🎁 FREE 1-month trial for first 100 therapists!</strong>
-                                </div>
-                            </div>
+                    <div className="max-w-3xl mx-auto h-full flex flex-col bg-gradient-to-br from-gray-50 via-white to-gray-50 min-h-screen">
+                        {/* Animated Background Pattern */}
+                        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                            <div className="absolute -top-4 -left-4 w-20 h-20 bg-orange-100 rounded-full opacity-20 animate-pulse"></div>
+                            <div className="absolute top-1/4 right-8 w-16 h-16 bg-blue-100 rounded-full opacity-20 animate-bounce"></div>
+                            <div className="absolute bottom-1/4 left-8 w-12 h-12 bg-green-100 rounded-full opacity-20 animate-pulse"></div>
                         </div>
 
-                        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 flex-1 flex flex-col">
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
-                                    <Activity className="w-5 h-5 text-orange-600" />
-                                </div>
-                                <div>
-                                    <h2 className="text-xl font-bold text-gray-900">Online Status</h2>
-                                    <p className="text-xs text-gray-600">Set your availability for customers</p>
+                        <div className="relative z-10 flex-1 flex flex-col p-6 space-y-6">
+                            {/* Header */}
+                            <div className="text-center">
+                                <div className="inline-flex items-center gap-3 bg-white/90 backdrop-blur-sm rounded-2xl px-6 py-4 shadow-lg border border-gray-200/50">
+                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
+                                        <Activity className="w-6 h-6 text-white" />
+                                    </div>
+                                    <div className="text-left">
+                                        <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                                            Online Status
+                                        </h1>
+                                        <p className="text-sm text-gray-600">Manage your availability</p>
+                                    </div>
                                 </div>
                             </div>
-                            
-                            <div className="space-y-3 flex-1 overflow-y-auto">
-                                {/* Available Option */}
-                                <button
-                                    onClick={() => handleStatusChange(AvailabilityStatus.Available)}
-                                    className={`w-full p-4 rounded-xl border-2 transition-all ${
-                                        status === AvailabilityStatus.Available
-                                            ? 'border-green-500 bg-green-100'
-                                            : 'border-gray-200 hover:border-green-300 bg-white'
-                                    }`}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className={`w-5 h-5 rounded-full status-dot-satellite flex-shrink-0 ${
-                                            status === AvailabilityStatus.Available ? 'bg-green-500 text-green-500' : 'bg-gray-300'
-                                        }`} />
-                                        <div className="flex-1 text-left">
-                                            <h3 className="text-lg font-bold text-gray-900">Available</h3>
-                                            <p className="text-xs text-gray-600">You're ready to accept bookings</p>
-                                        </div>
-                                        {status === AvailabilityStatus.Available && (
-                                            <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+
+                            {/* Membership Timer */}
+                            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200/50">
+                                <div className="text-center">
+                                    <div className="inline-flex items-center gap-2 mb-3">
+                                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center">
+                                            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
                                             </svg>
-                                        )}
-                                    </div>
-                                </button>
-
-                                {/* Busy Option */}
-                                <button
-                                    onClick={() => handleStatusChange(AvailabilityStatus.Busy)}
-                                    className={`w-full p-4 rounded-xl border-2 transition-all ${
-                                        status === AvailabilityStatus.Busy
-                                            ? 'border-yellow-500 bg-yellow-100'
-                                            : 'border-gray-200 hover:border-yellow-300 bg-white'
-                                    }`}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className={`w-5 h-5 rounded-full status-dot-satellite flex-shrink-0 ${
-                                            status === AvailabilityStatus.Busy ? 'bg-yellow-500 text-yellow-500' : 'bg-gray-300'
-                                        }`} />
-                                        <div className="flex-1 text-left">
-                                            <h3 className="text-lg font-bold text-gray-900">Busy</h3>
-                                            <p className="text-xs text-gray-600">You're currently occupied</p>
                                         </div>
-                                        {status === AvailabilityStatus.Busy && (
-                                            <svg className="w-5 h-5 text-yellow-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                            </svg>
-                                        )}
+                                        <h3 className="text-lg font-bold text-gray-900">Membership Status</h3>
                                     </div>
-                                </button>
-
-                                {/* Offline Option */}
-                                <button
-                                    onClick={() => handleStatusChange(AvailabilityStatus.Offline)}
-                                    className={`w-full p-4 rounded-xl border-2 transition-all ${
-                                        status === AvailabilityStatus.Offline
-                                            ? 'border-red-500 bg-red-100'
-                                            : 'border-gray-200 hover:border-red-400 bg-white'
-                                    }`}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className={`w-5 h-5 rounded-full status-dot-satellite flex-shrink-0 ${
-                                            status === AvailabilityStatus.Offline ? 'bg-red-500 text-red-500' : 'bg-gray-300'
-                                        }`} />
-                                        <div className="flex-1 text-left">
-                                            <h3 className="text-lg font-bold text-gray-900">Offline</h3>
-                                            <p className="text-xs text-gray-600">You're not accepting bookings</p>
-                                        </div>
-                                        {status === AvailabilityStatus.Offline && (
-                                            <svg className="w-5 h-5 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                            </svg>
-                                        )}
-                                    </div>
-                                </button>
-                            </div>
-
-                            {/* Discount Management Section */}
-                            <div className="mt-6 p-6 bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl border border-orange-200">
-                                <div className="text-center mb-4">
-                                    <h3 className="text-lg font-bold text-orange-900 mb-2">💰 Attract More Clients</h3>
-                                    <p className="text-sm text-orange-700">Activate discount badges to boost your bookings!</p>
-                                </div>
-
-                                {/* Active Discount Display */}
-                                {isDiscountActive && discountEndTime && (
-                                    <div className="mb-4 p-3 bg-green-100 border border-green-300 rounded-lg">
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <p className="text-sm font-bold text-green-800">
-                                                    🎉 {discountPercentage}% Discount Active
-                                                </p>
-                                                <p className="text-xs text-green-600">
-                                                    Expires: {discountEndTime.toLocaleString()}
+                                    
+                                    {therapist?.activeMembershipDate ? (
+                                        <div className="space-y-2">
+                                            <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200">
+                                                <p className="text-sm font-semibold text-green-800 mb-1">Premium Membership</p>
+                                                <div className="flex items-center justify-center gap-2">
+                                                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                                    <p className="text-xs text-green-700">
+                                                        Expires: {new Date(therapist.activeMembershipDate).toLocaleDateString()}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg p-3 border border-blue-200">
+                                                <p className="text-xs text-blue-800 font-medium">
+                                                    ⏰ {Math.max(0, Math.ceil((new Date(therapist.activeMembershipDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))} days remaining
                                                 </p>
                                             </div>
-                                            <button
-                                                onClick={handleDiscountDeactivation}
-                                                className="bg-red-500 text-white px-3 py-1 rounded-md text-xs font-bold hover:bg-red-600 transition-colors"
-                                            >
-                                                Deactivate
-                                            </button>
+                                            
+                                            {/* Profile Activation Status */}
+                                            <div className={`rounded-lg p-3 border ${
+                                                therapist?.isLive 
+                                                    ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200'
+                                                    : 'bg-gradient-to-r from-red-50 to-orange-50 border-red-200'
+                                            }`}>
+                                                <div className="flex items-center justify-center gap-2">
+                                                    <div className={`w-2 h-2 rounded-full ${
+                                                        therapist?.isLive ? 'bg-green-500 animate-pulse' : 'bg-red-500'
+                                                    }`}></div>
+                                                    <p className={`text-xs font-medium ${
+                                                        therapist?.isLive ? 'text-green-800' : 'text-red-800'
+                                                    }`}>
+                                                        {therapist?.isLive ? '✅ Profile Activated' : '🔒 Awaiting Admin Approval'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-2">
+                                            <div className="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl p-4 border border-orange-200">
+                                                <div className="flex items-center justify-center gap-2 mb-2">
+                                                    <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce"></div>
+                                                    <p className="text-sm font-bold text-orange-800">Free Membership Trial</p>
+                                                </div>
+                                                <p className="text-xs text-orange-700">Unlimited access during trial period</p>
+                                            </div>
+                                            
+                                            {/* Profile Activation Status for Free Trial */}
+                                            <div className={`rounded-lg p-3 border ${
+                                                therapist?.isLive 
+                                                    ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200'
+                                                    : 'bg-gradient-to-r from-red-50 to-orange-50 border-red-200'
+                                            }`}>
+                                                <div className="flex items-center justify-center gap-2">
+                                                    <div className={`w-2 h-2 rounded-full ${
+                                                        therapist?.isLive ? 'bg-green-500 animate-pulse' : 'bg-red-500'
+                                                    }`}></div>
+                                                    <p className={`text-xs font-medium ${
+                                                        therapist?.isLive ? 'text-green-800' : 'text-red-800'
+                                                    }`}>
+                                                        {therapist?.isLive ? '✅ Profile Activated' : '🔒 Awaiting Admin Approval'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Status Buttons with Animated Borders */}
+                            <div className="space-y-4">
+                                <div className="text-center mb-6">
+                                    <h2 className="text-xl font-bold text-gray-900 mb-2">Choose Your Status</h2>
+                                    <p className="text-sm text-gray-600">Let clients know your availability</p>
+                                </div>
+
+                                {/* Available Button */}
+                                <div className="relative">
+                                    <button
+                                        onClick={() => handleStatusChange(AvailabilityStatus.Available)}
+                                        className={`w-full p-6 rounded-2xl border-2 transition-all duration-300 transform hover:scale-[1.02] ${
+                                            status === AvailabilityStatus.Available
+                                                ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-300 shadow-lg'
+                                                : 'bg-white/80 backdrop-blur-sm border-gray-200 hover:border-green-300 hover:shadow-md'
+                                        }`}
+                                    >
+                                        {/* Animated Border for Selected State */}
+                                        {status === AvailabilityStatus.Available && (
+                                            <div className="absolute inset-0 rounded-2xl">
+                                                <div className="absolute inset-0 rounded-2xl border-2 border-green-500 opacity-50"></div>
+                                                <div className="absolute inset-0 rounded-2xl border-2 border-green-400 animate-ping opacity-30"></div>
+                                                <div className="absolute top-0 left-0 w-full h-full rounded-2xl overflow-hidden">
+                                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-green-200 to-transparent opacity-20 animate-pulse"></div>
+                                                </div>
+                                            </div>
+                                        )}
+                                        
+                                        <div className="relative flex items-center gap-4">
+                                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${
+                                                status === AvailabilityStatus.Available 
+                                                    ? 'bg-gradient-to-br from-green-400 to-green-600 shadow-lg' 
+                                                    : 'bg-gray-100'
+                                            }`}>
+                                                <div className={`w-6 h-6 rounded-full ${
+                                                    status === AvailabilityStatus.Available ? 'bg-white' : 'bg-gray-400'
+                                                } ${status === AvailabilityStatus.Available ? 'animate-pulse' : ''}`} />
+                                            </div>
+                                            <div className="flex-1 text-left">
+                                                <h3 className="text-xl font-bold text-gray-900 mb-1">Available</h3>
+                                                <p className="text-sm text-gray-600">Ready to accept new bookings</p>
+                                            </div>
+                                            {status === AvailabilityStatus.Available && (
+                                                <div className="flex items-center justify-center w-10 h-10 bg-green-500 rounded-full animate-bounce">
+                                                    <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                    </svg>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </button>
+                                </div>
+
+                                {/* Busy Button */}
+                                <div className="relative">
+                                    <button
+                                        onClick={() => handleStatusChange(AvailabilityStatus.Busy)}
+                                        className={`w-full p-6 rounded-2xl border-2 transition-all duration-300 transform hover:scale-[1.02] ${
+                                            status === AvailabilityStatus.Busy
+                                                ? 'bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-300 shadow-lg'
+                                                : 'bg-white/80 backdrop-blur-sm border-gray-200 hover:border-yellow-300 hover:shadow-md'
+                                        }`}
+                                    >
+                                        {/* Animated Border for Selected State */}
+                                        {status === AvailabilityStatus.Busy && (
+                                            <div className="absolute inset-0 rounded-2xl">
+                                                <div className="absolute inset-0 rounded-2xl border-2 border-yellow-500 opacity-50"></div>
+                                                <div className="absolute inset-0 rounded-2xl border-2 border-yellow-400 animate-ping opacity-30"></div>
+                                                <div className="absolute top-0 left-0 w-full h-full rounded-2xl overflow-hidden">
+                                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-yellow-200 to-transparent opacity-20 animate-pulse"></div>
+                                                </div>
+                                            </div>
+                                        )}
+                                        
+                                        <div className="relative flex items-center gap-4">
+                                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${
+                                                status === AvailabilityStatus.Busy 
+                                                    ? 'bg-gradient-to-br from-yellow-400 to-yellow-600 shadow-lg' 
+                                                    : 'bg-gray-100'
+                                            }`}>
+                                                <div className={`w-6 h-6 rounded-full ${
+                                                    status === AvailabilityStatus.Busy ? 'bg-white' : 'bg-gray-400'
+                                                } ${status === AvailabilityStatus.Busy ? 'animate-pulse' : ''}`} />
+                                            </div>
+                                            <div className="flex-1 text-left">
+                                                <h3 className="text-xl font-bold text-gray-900 mb-1">Busy</h3>
+                                                <p className="text-sm text-gray-600">Currently with a client</p>
+                                            </div>
+                                            {status === AvailabilityStatus.Busy && (
+                                                <div className="flex items-center justify-center w-10 h-10 bg-yellow-500 rounded-full animate-bounce">
+                                                    <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                    </svg>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </button>
+                                </div>
+
+                                {/* Offline Button */}
+                                <div className="relative">
+                                    <button
+                                        onClick={() => handleStatusChange(AvailabilityStatus.Offline)}
+                                        className={`w-full p-6 rounded-2xl border-2 transition-all duration-300 transform hover:scale-[1.02] ${
+                                            status === AvailabilityStatus.Offline
+                                                ? 'bg-gradient-to-r from-red-50 to-rose-50 border-red-300 shadow-lg'
+                                                : 'bg-white/80 backdrop-blur-sm border-gray-200 hover:border-red-300 hover:shadow-md'
+                                        }`}
+                                    >
+                                        {/* Animated Border for Selected State */}
+                                        {status === AvailabilityStatus.Offline && (
+                                            <div className="absolute inset-0 rounded-2xl">
+                                                <div className="absolute inset-0 rounded-2xl border-2 border-red-500 opacity-50"></div>
+                                                <div className="absolute inset-0 rounded-2xl border-2 border-red-400 animate-ping opacity-30"></div>
+                                                <div className="absolute top-0 left-0 w-full h-full rounded-2xl overflow-hidden">
+                                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-red-200 to-transparent opacity-20 animate-pulse"></div>
+                                                </div>
+                                            </div>
+                                        )}
+                                        
+                                        <div className="relative flex items-center gap-4">
+                                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${
+                                                status === AvailabilityStatus.Offline 
+                                                    ? 'bg-gradient-to-br from-red-400 to-red-600 shadow-lg' 
+                                                    : 'bg-gray-100'
+                                            }`}>
+                                                <div className={`w-6 h-6 rounded-full ${
+                                                    status === AvailabilityStatus.Offline ? 'bg-white' : 'bg-gray-400'
+                                                }`} />
+                                            </div>
+                                            <div className="flex-1 text-left">
+                                                <h3 className="text-xl font-bold text-gray-900 mb-1">Offline</h3>
+                                                <p className="text-sm text-gray-600">Not accepting bookings</p>
+                                            </div>
+                                            {status === AvailabilityStatus.Offline && (
+                                                <div className="flex items-center justify-center w-10 h-10 bg-red-500 rounded-full">
+                                                    <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                    </svg>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Promotional Banners Redirect Section */}
+                            <div className="bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-300 rounded-2xl p-6 shadow-lg">
+                                <div className="text-center">
+                                    <div className="inline-flex items-center gap-3 mb-4">
+                                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-700 flex items-center justify-center">
+                                            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd"/>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h3 className="text-xl font-bold text-orange-800">🎁 Promotional Discount Banners</h3>
+                                            <p className="text-sm text-orange-600">Professional 5%, 10%, 15%, 20% discount campaigns</p>
                                         </div>
                                     </div>
-                                )}
-
-                                {/* Discount Percentage Selection */}
-                                <div className="mb-4">
-                                    <p className="text-sm font-bold text-orange-900 mb-2">Select Discount Percentage:</p>
-                                    <div className="grid grid-cols-4 gap-2">
-                                        {[5, 10, 15, 20].map((percentage) => (
-                                            <button
-                                                key={percentage}
-                                                onClick={() => setSelectedDiscountPercentage(percentage)}
-                                                disabled={isDiscountActive}
-                                                className={`py-2 px-3 rounded-lg font-bold text-sm transition-all ${
-                                                    isDiscountActive 
-                                                        ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                                                        : selectedDiscountPercentage === percentage
-                                                            ? 'bg-orange-600 text-white scale-95'
-                                                            : 'bg-orange-500 text-white hover:bg-orange-600 active:scale-95'
-                                                }`}
-                                            >
-                                                {percentage}%
-                                            </button>
-                                        ))}
+                                    
+                                    <div className="bg-white bg-opacity-70 rounded-xl p-4 mb-4">
+                                        <div className="grid grid-cols-2 gap-4 text-center mb-4">
+                                            <div>
+                                                <p className="text-2xl font-bold text-orange-600">4</p>
+                                                <p className="text-xs text-orange-700">Banner Options</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-2xl font-bold text-green-600">📱</p>
+                                                <p className="text-xs text-orange-700">WhatsApp Ready</p>
+                                            </div>
+                                        </div>
+                                        <p className="text-sm text-orange-700 font-medium">
+                                            ✨ Create professional discount banners that link directly to your therapist profile on the Indastreet app
+                                        </p>
                                     </div>
-                                </div>
-
-                                {/* Duration Selection */}
-                                <div>
-                                    <p className="text-sm font-bold text-orange-900 mb-2">Select Duration:</p>
-                                    <div className="grid grid-cols-4 gap-2">
-                                        {[
-                                            { hours: 4, label: '4h' },
-                                            { hours: 8, label: '8h' },
-                                            { hours: 12, label: '12h' },
-                                            { hours: 24, label: '24h' }
-                                        ].map(({ hours, label }) => (
-                                            <button
-                                                key={hours}
-                                                onClick={() => setSelectedDiscountDuration(hours)}
-                                                disabled={isDiscountActive}
-                                                className={`py-2 px-3 rounded-lg font-bold text-sm transition-all ${
-                                                    isDiscountActive 
-                                                        ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                                                        : selectedDiscountDuration === hours
-                                                            ? 'bg-blue-600 text-white scale-95'
-                                                            : 'bg-blue-500 text-white hover:bg-blue-600 active:scale-95'
-                                                }`}
-                                            >
-                                                {label}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Activate Discount Button */}
-                                {selectedDiscountPercentage && selectedDiscountDuration && !isDiscountActive && (
-                                    <div className="mt-4">
-                                        <button
-                                            onClick={() => handleDiscountActivation(selectedDiscountPercentage, selectedDiscountDuration)}
-                                            className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-4 rounded-lg font-bold text-sm hover:from-green-600 hover:to-green-700 transition-all active:scale-95"
-                                        >
-                                            🚀 Activate {selectedDiscountPercentage}% Discount for {selectedDiscountDuration}h
-                                        </button>
-                                    </div>
-                                )}
-
-                                <div className="mt-3 text-center">
-                                    <p className="text-xs text-orange-600">
-                                        💡 Select both percentage and duration to activate discount badge
-                                    </p>
+                                    
+                                    <button
+                                        onClick={() => setActiveTab('discounts')}
+                                        className="w-full bg-gradient-to-r from-orange-500 via-orange-600 to-red-600 text-white py-4 px-6 rounded-xl font-bold text-lg hover:from-orange-600 hover:via-orange-700 hover:to-red-700 transition-all duration-300 transform hover:scale-[1.02] active:scale-95 shadow-lg hover:shadow-xl flex items-center justify-center gap-3"
+                                    >
+                                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"/>
+                                        </svg>
+                                        Create & Share Promotional Banners
+                                    </button>
                                 </div>
                             </div>
 
-                            {/* Current Status Display */}
-                            <div className="mt-4 p-3 rounded-lg bg-gray-50 border border-gray-200">
-                                <p className="text-xs text-gray-600 mb-1">Current Status:</p>
-                                <p className="text-base font-bold text-gray-900 flex items-center gap-2">
-                                    <span className={`w-2.5 h-2.5 rounded-full status-dot-satellite ${
-                                        status === AvailabilityStatus.Available ? 'bg-green-500 text-green-500' :
-                                        status === AvailabilityStatus.Busy ? 'bg-yellow-500 text-yellow-500' : 'bg-red-500 text-red-500'
-                                    }`} />
-                                    {status}
-                                </p>
+                            {/* Current Status Footer */}
+                            <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-4 shadow-md border border-gray-200/50 mt-6">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="text-sm text-gray-600 font-medium">Current Status:</div>
+                                        <div className="flex items-center gap-2">
+                                            <div className={`w-3 h-3 rounded-full ${
+                                                status === AvailabilityStatus.Available ? 'bg-green-500 animate-pulse' :
+                                                status === AvailabilityStatus.Busy ? 'bg-yellow-500 animate-pulse' : 
+                                                'bg-red-500'
+                                            }`} />
+                                            <span className="font-bold text-gray-900">{status}</span>
+                                        </div>
+                                    </div>
+                                    <div className="text-xs text-gray-500">
+                                        Last updated: {new Date().toLocaleTimeString()}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                );
-            case 'chat':
-                return (
-                    <div className="max-w-7xl mx-auto px-2 sm:px-4 py-6">
-                        {/* Chat system removed - using WhatsApp booking */}
-                        {/* <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-                            <h2 className="text-2xl font-bold text-gray-900 mb-2">Chat with Support</h2>
-                            <p className="text-sm text-gray-600 mb-4">
-                                Need help? Chat with our IndaStreet support team for assistance with bookings, 
-                                payments, account issues, or any questions you may have.
-                            </p>
-                        </div>
-                        <MemberChatWindow
-                            userId={String(therapistId)}
-                            userName={therapist?.name || 'Therapist'}
-                            userType="therapist"
-                            onClose={() => setActiveTab('profile')}
-                        /> */}
-                        <div className="bg-white rounded-xl shadow-sm p-6">
-                            <h2 className="text-2xl font-bold text-gray-900 mb-2">Contact Support</h2>
-                            <p className="text-sm text-gray-600">
-                                For support, please use the chat icon in the footer to connect with our team via WhatsApp.
-                            </p>
-                        </div>
-                    </div>
-                );
-            case 'jobOpportunities':
-                return (
-                    <TherapistJobOpportunitiesPage
-                        therapistId={therapistId}
-                        therapistName={therapist?.name || ''}
-                        isActiveMember={therapist?.activeMembershipDate ? new Date(therapist.activeMembershipDate) > new Date() : false}
-                        onClose={() => setActiveTab('profile')}
-                    />
                 );
             case 'bookings':
                 return (
@@ -798,17 +873,17 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                 <Calendar className="w-5 h-5 text-orange-600" />
                             </div>
                             <div>
-                                <h2 className="text-2xl font-bold text-gray-900">{t.bookings.upcoming}</h2>
+                                <h2 className="text-2xl font-bold text-gray-900">{t_new('bookings.upcoming')}</h2>
                                 <p className="text-xs text-gray-500">Manage your upcoming bookings</p>
                             </div>
                         </div>
                         {upcomingBookings.length > 0 ? (
                             <div className="grid gap-4">
-                                {upcomingBookings.map(b => <BookingCard key={b.id} booking={b} onUpdateStatus={onUpdateBookingStatus} t={t.bookings} />)}
+                                {upcomingBookings.map(b => <BookingCard key={b.id} booking={b} onUpdateStatus={onUpdateBookingStatus} t={t_new('bookings')} />)}
                             </div>
                         ) : (
                             <div className="bg-white border-2 border-gray-200 rounded-xl p-12 text-center">
-                                <p className="text-gray-500">{t.bookings.noUpcoming}</p>
+                                <p className="text-gray-500">{t_new('bookings.noUpcoming')}</p>
                             </div>
                         )}
                         
@@ -817,17 +892,17 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                 <Calendar className="w-5 h-5 text-orange-600" />
                             </div>
                             <div>
-                                <h2 className="text-2xl font-bold text-gray-900">{t.bookings.past}</h2>
+                                <h2 className="text-2xl font-bold text-gray-900">{t_new('bookings.past')}</h2>
                                 <p className="text-xs text-gray-500">View past bookings</p>
                             </div>
                         </div>
                         {pastBookings.length > 0 ? (
                             <div className="grid gap-4">
-                                {pastBookings.map(b => <BookingCard key={b.id} booking={b} onUpdateStatus={onUpdateBookingStatus} t={t.bookings} />)}
+                                {pastBookings.map(b => <BookingCard key={b.id} booking={b} onUpdateStatus={onUpdateBookingStatus} t={t_new('bookings')} />)}
                             </div>
                         ) : (
                             <div className="bg-white border-2 border-gray-200 rounded-xl p-12 text-center">
-                                <p className="text-gray-500">{t.bookings.noPast}</p>
+                                <p className="text-gray-500">{t_new('bookings.noPast')}</p>
                             </div>
                         )}
                     </div>
@@ -840,29 +915,29 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                 <TrendingUp className="w-5 h-5 text-orange-600" />
                             </div>
                             <div>
-                                <h2 className="text-2xl font-bold text-gray-900">{t.analytics.title || 'Analytics'}</h2>
+                                <h2 className="text-2xl font-bold text-gray-900">{t?.analytics?.title || 'Analytics'}</h2>
                                 <p className="text-xs text-gray-500">Track your performance metrics</p>
                             </div>
                         </div>
                         <div className="grid gap-4">
-                            <AnalyticsCard title={t.analytics.impressions} value={(() => {
+                            <AnalyticsCard title={t?.analytics?.impressions || 'Impressions'} value={(() => {
                                 try {
                                     const analytics = typeof therapist?.analytics === 'string' ? JSON.parse(therapist.analytics) : therapist?.analytics;
                                     return analytics?.impressions ?? 0;
                                 } catch { return 0; }
-                            })()} description={t.analytics.impressionsDesc} />
-                            <AnalyticsCard title={t.analytics.profileViews} value={(() => {
+                            })()} description={t?.analytics?.impressionsDesc || 'Number of profile impressions'} />
+                            <AnalyticsCard title={t?.analytics?.profileViews || 'Profile Views'} value={(() => {
                                 try {
                                     const analytics = typeof therapist?.analytics === 'string' ? JSON.parse(therapist.analytics) : therapist?.analytics;
                                     return analytics?.profileViews ?? 0;
                                 } catch { return 0; }
-                            })()} description={t.analytics.profileViewsDesc} />
-                            <AnalyticsCard title={t.analytics.whatsappClicks} value={(() => {
+                            })()} description={t?.analytics?.profileViewsDesc || 'Number of profile views'} />
+                            <AnalyticsCard title={t?.analytics?.whatsappClicks || 'WhatsApp Clicks'} value={(() => {
                                 try {
                                     const analytics = typeof therapist?.analytics === 'string' ? JSON.parse(therapist.analytics) : therapist?.analytics;
                                     return analytics?.whatsappClicks ?? 0;
                                 } catch { return 0; }
-                            })()} description={t.analytics.whatsappClicksDesc} />
+                            })()} description={t?.analytics?.whatsappClicksDesc || 'Number of WhatsApp clicks'} />
                         </div>
 
                         {/* Coin History Button */}
@@ -881,6 +956,27 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                     </div>
                                 </div>
                                 <svg className="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                        )}
+
+                        {/* Coin Shop Button */}
+                        {onNavigate && (
+                            <button
+                                onClick={() => onNavigate('coin-shop')}
+                                className="w-full flex items-center justify-between p-4 bg-white rounded-xl shadow-md hover:shadow-lg transition-all border-2 border-yellow-200 hover:border-yellow-400 mt-4"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center text-white text-2xl">
+                                        🪙
+                                    </div>
+                                    <div className="text-left">
+                                        <h3 className="font-bold text-gray-900">Coin Rewards Shop</h3>
+                                        <p className="text-sm text-gray-600">Redeem coins for rewards</p>
+                                    </div>
+                                </div>
+                                <svg className="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                 </svg>
                             </button>
@@ -928,301 +1024,6 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                         providerName={therapist?.name || 'Therapist'}
                         providerType="therapist"
                     />
-                );
-            case 'promotions':
-                return (
-                    <div className="max-w-4xl mx-auto">
-                        <div className="bg-white rounded-xl shadow-sm p-6">
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
-                                    <Megaphone className="w-6 h-6 text-orange-600" />
-                                </div>
-                                <div>
-                                    <h2 className="text-2xl font-bold text-orange-700">Promotional Tools</h2>
-                                    <p className="text-sm text-gray-600">Create and share special offers with customers</p>
-                                </div>
-                            </div>
-
-                            {/* Quick Action Buttons - 2 Rows */}
-                            <div className="mb-6 space-y-2">
-                                {/* First Row */}
-                                <div className="grid grid-cols-3 gap-2">
-                                    <button
-                                        onClick={() => {
-                                            const message = discountPercentage > 0 
-                                                ? `🌟 Special ${discountPercentage}% OFF! ${therapist?.name || 'Professional Massage'}\n\n60min: Rp ${Math.round(pricing["60"] * (1 - discountPercentage / 100))}k (was ${pricing["60"]}k)\n90min: Rp ${Math.round(pricing["90"] * (1 - discountPercentage / 100))}k (was ${pricing["90"]}k)\n120min: Rp ${Math.round(pricing["120"] * (1 - discountPercentage / 100))}k (was ${pricing["120"]}k)\n\nBook now! WhatsApp: ${therapist?.whatsappNumber || ''}`
-                                                : `${therapist?.name || 'Professional Massage Services'}\n\n60min: Rp ${pricing["60"]}k\n90min: Rp ${pricing["90"]}k\n120min: Rp ${pricing["120"]}k\n\nWhatsApp: ${therapist?.whatsappNumber || ''}`;
-                                            navigator.clipboard.writeText(message);
-                                            setToast({ message: '✅ Promotional text copied!', type: 'success' });
-                                            setTimeout(() => setToast(null), 3000);
-                                        }}
-                                        className="flex flex-col items-center justify-center gap-1 bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-2 px-2 rounded-lg font-medium transition-all shadow-sm hover:shadow-md"
-                                    >
-                                        <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
-                                            <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/>
-                                            <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/>
-                                        </svg>
-                                        <span className="text-[10px] sm:text-xs">Copy Text</span>
-                                    </button>
-                                    
-                                    <button
-                                        onClick={() => {
-                                            const message = discountPercentage > 0 
-                                                ? `🌟 Special ${discountPercentage}% OFF! Book now!`
-                                                : `Book professional massage services now!`;
-                                            const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
-                                            window.open(url, '_blank');
-                                        }}
-                                        className="flex flex-col items-center justify-center gap-1 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-2 px-2 rounded-lg font-medium transition-all shadow-sm hover:shadow-md"
-                                    >
-                                        <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                                        </svg>
-                                        <span className="text-[10px] sm:text-xs">WhatsApp</span>
-                                    </button>
-                                    
-                                    <button
-                                        onClick={() => {
-                                            const message = discountPercentage > 0 
-                                                ? `🌟 ${discountPercentage}% OFF Massage Services!`
-                                                : `Professional Massage Services`;
-                                            const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodeURIComponent(message)}`;
-                                            window.open(url, '_blank', 'width=600,height=400');
-                                        }}
-                                        className="flex flex-col items-center justify-center gap-1 bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-2 px-2 rounded-lg font-medium transition-all shadow-sm hover:shadow-md"
-                                    >
-                                        <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                                        </svg>
-                                        <span className="text-[10px] sm:text-xs">Facebook</span>
-                                    </button>
-                                </div>
-
-                                {/* Second Row */}
-                                <div className="grid grid-cols-3 gap-2">
-                                    <button
-                                        onClick={() => {
-                                            const url = `https://www.instagram.com/`;
-                                            window.open(url, '_blank');
-                                            setToast({ message: '📱 Opening Instagram - Paste your promo!', type: 'success' });
-                                            setTimeout(() => setToast(null), 3000);
-                                        }}
-                                        className="flex flex-col items-center justify-center gap-1 bg-gradient-to-br from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white py-2 px-2 rounded-lg font-medium transition-all shadow-sm hover:shadow-md"
-                                    >
-                                        <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z"/>
-                                        </svg>
-                                        <span className="text-[10px] sm:text-xs">Instagram</span>
-                                    </button>
-                                    
-                                    <button
-                                        onClick={() => {
-                                            const message = discountPercentage > 0 
-                                                ? `🌟 Special ${discountPercentage}% OFF! ${therapist?.name || 'Massage'} - Book now!`
-                                                : `${therapist?.name || 'Professional Massage Services'} - Book now!`;
-                                            const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}`;
-                                            window.open(url, '_blank', 'width=600,height=400');
-                                        }}
-                                        className="flex flex-col items-center justify-center gap-1 bg-gradient-to-br from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white py-2 px-2 rounded-lg font-medium transition-all shadow-sm hover:shadow-md"
-                                    >
-                                        <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
-                                        </svg>
-                                        <span className="text-[10px] sm:text-xs">Twitter/X</span>
-                                    </button>
-                                    
-                                    <button
-                                        onClick={async () => {
-                                            try {
-                                                const therapistIdString = typeof therapistId === 'string' ? therapistId : therapistId.toString();
-                                                await therapistService.update(therapistIdString, { hotelDiscount: discountPercentage });
-                                                setToast({ message: '💾 Hotel discount saved successfully!', type: 'success' });
-                                                setTimeout(() => setToast(null), 3000);
-                                            } catch (error) {
-                                                console.error('Error saving discount:', error);
-                                                setToast({ message: '❌ Failed to save discount', type: 'error' });
-                                                setTimeout(() => setToast(null), 3000);
-                                            }
-                                        }}
-                                        className="flex flex-col items-center justify-center gap-1 bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white py-2 px-2 rounded-lg font-medium transition-all shadow-sm hover:shadow-md"
-                                    >
-                                        <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
-                                            <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z"/>
-                                        </svg>
-                                        <span className="text-[10px] sm:text-xs">Save Promo</span>
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Discount Promotion Section */}
-                            <div className="mb-8 bg-gradient-to-r from-orange-50 to-yellow-50 border-2 border-orange-200 rounded-lg p-6">
-                                <div className="flex items-center gap-3 mb-4">
-                                    <svg className="w-6 h-6 text-orange-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
-                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd"/>
-                                    </svg>
-                                    <h3 className="text-xl font-semibold text-gray-800">Special Discount Promotion</h3>
-                                </div>
-                                <p className="text-sm text-gray-600 mb-4">
-                                    Attract more customers by offering a limited-time discount on your services.
-                                </p>
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-orange-700 mb-2">Promotional Discounts - Activate limited-time offers to attract customers</label>
-                                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 md:gap-3">
-                                            {[0, 5, 10, 15, 20].map((discount) => (
-                                                <button
-                                                    key={discount}
-                                                    type="button"
-                                                    onClick={() => setDiscountPercentage(discount)}
-                                                    className={`px-2 py-2 md:px-4 md:py-3 rounded-lg text-xs md:text-sm font-semibold transition-all ${
-                                                        discountPercentage === discount
-                                                            ? 'bg-orange-600 text-white shadow-lg transform scale-105 border-2 border-orange-600'
-                                                            : 'bg-white text-gray-700 border-2 border-orange-300 hover:border-orange-500 hover:bg-orange-50 hover:shadow-md'
-                                                    }`}
-                                                >
-                                                    {discount === 0 ? 'None' : `-${discount}%`}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                    {discountPercentage > 0 && (
-                                        <div className="mt-4 p-4 bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg border-2 border-orange-300">
-                                            <div className="bg-orange-600 text-white px-4 py-2 rounded-lg mb-3 text-center">
-                                                <p className="text-sm font-bold">🎉 {discountPercentage}% OFF Special Prices</p>
-                                            </div>
-                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                                <div className="bg-white p-3 rounded-lg text-center border-2 border-orange-200 shadow-sm">
-                                                    <div className="bg-orange-500 text-white px-2 py-1 rounded-md text-xs font-bold mb-2">1 Hour</div>
-                                                    <p className="text-gray-400 line-through text-sm">Rp {pricing["60"]}k</p>
-                                                    <p className="font-bold text-orange-600 text-lg">Rp {Math.round(pricing["60"] * (1 - discountPercentage / 100))}k</p>
-                                                    <p className="text-xs text-gray-600">60 minutes</p>
-                                                </div>
-                                                <div className="bg-white p-3 rounded-lg text-center border-2 border-orange-200 shadow-sm">
-                                                    <div className="bg-orange-500 text-white px-2 py-1 rounded-md text-xs font-bold mb-2">1.5 Hours</div>
-                                                    <p className="text-gray-400 line-through text-sm">Rp {pricing["90"]}k</p>
-                                                    <p className="font-bold text-orange-600 text-lg">Rp {Math.round(pricing["90"] * (1 - discountPercentage / 100))}k</p>
-                                                    <p className="text-xs text-gray-600">90 minutes</p>
-                                                </div>
-                                                <div className="bg-white p-3 rounded-lg text-center border-2 border-orange-200 shadow-sm">
-                                                    <div className="bg-orange-500 text-white px-2 py-1 rounded-md text-xs font-bold mb-2">2 Hours</div>
-                                                    <p className="text-gray-400 line-through text-sm">Rp {pricing["120"]}k</p>
-                                                    <p className="font-bold text-orange-600 text-lg">Rp {Math.round(pricing["120"] * (1 - discountPercentage / 100))}k</p>
-                                                    <p className="text-xs text-gray-600">120 minutes</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Shareable Discount Banner */}
-                            <div 
-                                className="bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-200 rounded-lg p-4 md:p-6"
-                                style={{
-                                    backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/hotel%20staffs.png?updatedAt=1761578921097)',
-                                    backgroundSize: 'cover',
-                                    backgroundPosition: 'center',
-                                    backgroundRepeat: 'no-repeat'
-                                }}
-                            >
-                                {/* Overlay for better text readability */}
-                                <div className="bg-white/90 rounded-lg p-4 md:p-6">
-                                    <div className="flex items-center gap-3 mb-4">
-                                        <svg className="w-6 h-6 text-orange-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                            <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"/>
-                                        </svg>
-                                        <h3 className="text-lg md:text-xl font-semibold text-orange-700">Share Your Discount</h3>
-                                    </div>
-                                    <p className="text-sm text-gray-600 mb-4">
-                                        Create a beautiful promotional banner to share on social media and with customers via chat.
-                                    </p>
-                                    
-                                    {/* Discount Banner Preview */}
-                                    <div className="bg-white rounded-xl p-4 md:p-6 mb-4 border-4 border-dashed border-orange-300">
-                                        <div className="text-center">
-                                            <div className={`text-white inline-block px-4 md:px-6 py-2 rounded-full text-lg md:text-2xl font-bold mb-3 ${
-                                                discountPercentage > 0 
-                                                    ? 'bg-gradient-to-r from-orange-500 to-red-500' 
-                                                    : 'bg-gradient-to-r from-gray-400 to-gray-500'
-                                            }`}>
-                                                {discountPercentage > 0 ? `${discountPercentage}% OFF` : 'NO DISCOUNT SET'}
-                                            </div>
-                                            <h4 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">{therapist?.name || 'Your Name'}</h4>
-                                            <p className="text-gray-600 mb-4">Professional Massage Services</p>
-                                            {discountPercentage > 0 && (
-                                                <div className="bg-orange-50 rounded-lg p-3 md:p-4 inline-block border-2 border-orange-200">
-                                                    <div className="bg-orange-600 text-white px-3 py-1 rounded-md text-sm font-bold mb-2">
-                                                        💰 Special Prices
-                                                    </div>
-                                                    <div className="flex flex-col sm:flex-row gap-2 md:gap-4 justify-center">
-                                                        <div className="bg-white rounded-lg p-2 md:p-3 border border-orange-200">
-                                                            <div className="bg-orange-500 text-white px-2 py-1 rounded text-xs font-bold mb-1">1 Hour</div>
-                                                            <p className="text-xs text-gray-500 line-through">Rp {pricing["60"]}k</p>
-                                                            <p className="text-base md:text-lg font-bold text-orange-600">Rp {Math.round(pricing["60"] * (1 - discountPercentage / 100))}k</p>
-                                                            <p className="text-xs text-gray-600">60 minutes</p>
-                                                        </div>
-                                                        <div className="bg-white rounded-lg p-2 md:p-3 border border-orange-200">
-                                                            <div className="bg-orange-500 text-white px-2 py-1 rounded text-xs font-bold mb-1">1.5 Hours</div>
-                                                            <p className="text-xs text-gray-500 line-through">Rp {pricing["90"]}k</p>
-                                                            <p className="text-base md:text-lg font-bold text-orange-600">Rp {Math.round(pricing["90"] * (1 - discountPercentage / 100))}k</p>
-                                                            <p className="text-xs text-gray-600">90 minutes</p>
-                                                        </div>
-                                                        <div className="bg-white rounded-lg p-2 md:p-3 border border-orange-200">
-                                                            <div className="bg-orange-500 text-white px-2 py-1 rounded text-xs font-bold mb-1">2 Hours</div>
-                                                            <p className="text-xs text-gray-500 line-through">Rp {pricing["120"]}k</p>
-                                                            <p className="text-base md:text-lg font-bold text-orange-600">Rp {Math.round(pricing["120"] * (1 - discountPercentage / 100))}k</p>
-                                                            <p className="text-xs text-gray-600">120 minutes</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
-                                            <p className="text-xs text-gray-500 mt-4">📱 WhatsApp: {therapist?.whatsappNumber || 'Not Set'}</p>
-                                        </div>
-                                    </div>
-
-                                    {/* Share Buttons */}
-                                    <div className="space-y-3">
-                                        <p className="text-sm font-medium text-orange-700 text-center">Share this promotion:</p>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                            <button 
-                                                onClick={() => {
-                                                    const message = discountPercentage > 0 
-                                                        ? `🌟 Special ${discountPercentage}% OFF! ${therapist?.name || 'Professional Massage'}\n\n1 Hour (60min): Rp ${Math.round(pricing["60"] * (1 - discountPercentage / 100))}k (was ${pricing["60"]}k)\n1.5 Hours (90min): Rp ${Math.round(pricing["90"] * (1 - discountPercentage / 100))}k (was ${pricing["90"]}k)\n2 Hours (120min): Rp ${Math.round(pricing["120"] * (1 - discountPercentage / 100))}k (was ${pricing["120"]}k)\n\nBook now! WhatsApp: ${therapist?.whatsappNumber || ''}`
-                                                        : `${therapist?.name || 'Professional Massage Services'}\n\n1 Hour: Rp ${pricing["60"]}k\n1.5 Hours: Rp ${pricing["90"]}k\n2 Hours: Rp ${pricing["120"]}k\n\nWhatsApp: ${therapist?.whatsappNumber || ''}`;
-                                                    navigator.clipboard.writeText(message);
-                                                    setToast({ message: '✅ Promotional text copied! Paste it anywhere.', type: 'success' });
-                                                    setTimeout(() => setToast(null), 3000);
-                                                }}
-                                                className="flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white py-3 px-4 rounded-lg font-medium transition-colors shadow-md hover:shadow-lg"
-                                            >
-                                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/>
-                                                    <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/>
-                                                </svg>
-                                                <span className="text-sm md:text-base">Copy Text</span>
-                                            </button>
-                                            <button 
-                                                onClick={() => {
-                                                    const message = discountPercentage > 0 
-                                                        ? `🌟 Special ${discountPercentage}% OFF! Book now!`
-                                                        : `Book professional massage services now!`;
-                                                    const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
-                                                    window.open(url, '_blank');
-                                                }}
-                                                className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg font-medium transition-colors shadow-md hover:shadow-lg"
-                                            >
-                                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                                                </svg>
-                                                <span className="text-sm md:text-base">Share WhatsApp</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 );
             case 'membership':
                 return (
@@ -1277,7 +1078,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                         
                         // Additional props
                         therapistId={therapistId}
-                        t={t}
+                        t={t_new}
                         locationInputRef={locationInputRef}
                         mapsApiLoaded={mapsApiLoaded}
                         setToast={setToast}
@@ -1429,30 +1230,6 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                             </button>
                             <button
                                 onClick={() => {
-                                    setActiveTab('chat');
-                                    setIsSideDrawerOpen(false);
-                                }}
-                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
-                                    activeTab === 'chat' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
-                                }`}
-                            >
-                                <MessageSquare className="w-5 h-5" />
-                                <span className="font-medium">Chat Support</span>
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setActiveTab('promotions');
-                                    setIsSideDrawerOpen(false);
-                                }}
-                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
-                                    activeTab === 'promotions' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
-                                }`}
-                            >
-                                <Megaphone className="w-5 h-5" />
-                                <span className="font-medium">Promotions</span>
-                            </button>
-                            <button
-                                onClick={() => {
                                     setActiveTab('discounts');
                                     setIsSideDrawerOpen(false);
                                 }}
@@ -1462,18 +1239,6 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                             >
                                 <Tag className="w-5 h-5" />
                                 <span className="font-medium">Discounts</span>
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setActiveTab('jobOpportunities');
-                                    setIsSideDrawerOpen(false);
-                                }}
-                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
-                                    activeTab === 'jobOpportunities' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
-                                }`}
-                            >
-                                <Briefcase className="w-5 h-5" />
-                                <span className="font-medium">Job Opportunities</span>
                             </button>
                             <button
                                 onClick={() => {
@@ -1499,6 +1264,32 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                 <FileCheck className="w-5 h-5" />
                                 <span className="font-medium">Terms & Conditions</span>
                             </button>
+
+                            {/* Coin Rewards Menu Items */}
+                            {onNavigate && (
+                                <>
+                                    <button
+                                        onClick={() => {
+                                            setIsSideDrawerOpen(false);
+                                            onNavigate('coin-history');
+                                        }}
+                                        className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 border-transparent hover:border-orange-500"
+                                    >
+                                        <History className="w-5 h-5" />
+                                        <span className="font-medium">💰 Coin History</span>
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setIsSideDrawerOpen(false);
+                                            onNavigate('coin-shop');
+                                        }}
+                                        className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-green-50 transition-colors border-l-4 border-transparent hover:border-green-500"
+                                    >
+                                        <Coins className="w-5 h-5" />
+                                        <span className="font-medium">🛍️ Coin Shop</span>
+                                    </button>
+                                </>
+                            )}
 
                             {/* Divider */}
                             <div className="my-2 border-t border-gray-200"></div>
@@ -1574,6 +1365,13 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                     {toast.message}
                 </div>
             )}
+
+            {/* Footer */}
+            <Footer
+                userRole="therapist"
+                currentPage="dashboard"
+                t={t}
+            />
         </div>
     );
 };

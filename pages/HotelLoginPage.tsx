@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { account, databases, DATABASE_ID, COLLECTIONS, ID } from '../lib/appwrite';
+import { hotelAuth } from '../lib/auth';
 import { saveSessionCache } from '../lib/sessionManager';
 import { checkRateLimit, handleAppwriteError, resetRateLimit } from '../lib/rateLimitUtils';
-import { validateUserAuthentication } from '../utils/authGuards';
+import { trackDailySignIn } from '../lib/coinHooks';
 import { LogIn, UserPlus } from 'lucide-react';
 
 interface HotelLoginPageProps {
@@ -21,7 +21,6 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) =>
     const [isSignUp, setIsSignUp] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [hotelName, setHotelName] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -47,19 +46,13 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) =>
                 return;
             }
 
-            if (isSignUp && !hotelName.trim()) {
-                setError('Hotel name is required');
-                setLoading(false);
-                return;
-            }
-
             if (password.length < 8) {
                 setError('Password must be at least 8 characters');
                 setLoading(false);
                 return;
             }
 
-            // Check rate limit
+            // Rate limiting
             const operation = isSignUp ? 'hotel-signup' : 'hotel-login';
             const maxAttempts = isSignUp ? 3 : 5;
             const windowMs = isSignUp ? 600000 : 300000; // 10 min for signup, 5 min for login
@@ -72,251 +65,161 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) =>
 
             console.log(`🔄 Starting hotel ${isSignUp ? 'signup' : 'login'} for:`, email);
 
-            // Delete any existing session
-            try {
-                await account.deleteSession('current');
-                console.log('🗑️ Existing session cleared');
-            } catch (err) {
-                console.log('ℹ️ No existing session to clear');
-            }
-
             if (isSignUp) {
-                // Create account
-                console.log('📝 Creating hotel account for:', email);
-                const newUser = await account.create(
-                    'unique()',
-                    email,
-                    password,
-                    hotelName
-                );
-
-                console.log('✅ Account created successfully!', { userId: newUser.$id });
-
-                // Automatically login after signup
-                console.log('🔐 Creating session...');
-                await account.createEmailPasswordSession(email, password);
+                const response = await hotelAuth.signUp(email, password);
                 
-                // Get user details
-                const user = await account.get();
-                
-                // Create hotel record in database
-                const hotelData = {
-                    userId: user.$id,
-                    name: hotelName,
-                    email: email,
-                    type: 'hotel',
-                    address: 'To be updated',
-                    contactNumber: 'To be updated',
-                    hotelId: Math.floor(Math.random() * 1000000),
-                    hotelName: hotelName,
-                    hotelAddress: 'To be updated',
-                    totalRooms: 1,
-                    availableRooms: 1,
-                    pricePerNight: 0,
-                    amenities: null,
-                    phoneNumber: null,
-                    profilePicture: null,
-                    mainImage: null
-                };
-                
-                console.log('📝 Creating hotel database record...');
-                const hotelDoc = await databases.createDocument(
-                    DATABASE_ID,
-                    COLLECTIONS.HOTELS,
-                    ID.unique(),
-                    hotelData
-                );
-                
-                // Save session cache
-                saveSessionCache({
-                    type: 'hotel',
-                    id: user.$id,
-                    email: user.email,
-                    documentId: hotelDoc.$id,
-                    data: hotelDoc
-                });
-                
-                console.log('✅ Hotel account created and logged in successfully!');
-                setError('✅ Account created successfully! Redirecting to dashboard...');
-                setTimeout(() => {
-                    onSuccess(hotelDoc.$id);
-                }, 1500);
-            } else {
-                // Login
-                console.log('🔐 Creating session...');
-                await account.createEmailPasswordSession(email, password);
-                
-                // Get user details
-                const user = await account.get();
-                
-                // Validate that this user is actually a hotel user
-                console.log('🔍 Validating hotel user authentication...');
-                const authResult = await validateUserAuthentication('hotel', user.$id);
-                
-                if (!authResult.success) {
-                    console.log('❌ Hotel authentication failed:', authResult.error);
-                    setError(authResult.error || 'Hotel account not found. Please create an account first.');
-                    
-                    // Clean up the session since this is not a valid hotel login
-                    await account.deleteSession('current');
-                    setLoading(false);
-                    return;
+                if (response.success) {
+                    console.log('✅ Hotel account created successfully!');
+                    setIsSignUp(false);
+                    setError('✅ Account created successfully! Please sign in.');
+                    setPassword('');
+                } else {
+                    throw new Error(response.error || 'Sign up failed');
                 }
+            } else {
+                const response = await hotelAuth.signIn(email, password);
                 
-                // Save session cache with validated hotel data
-                saveSessionCache({
-                    type: 'hotel',
-                    id: user.$id,
-                    email: user.email,
-                    documentId: authResult.documentId!,
-                    data: authResult.data
-                });
-                
-                console.log('✅ Hotel login successful');
-                onSuccess(authResult.documentId!);
+                if (response.success && response.userId) {
+                    // Authentication successful - save session cache
+                    saveSessionCache({
+                        type: 'hotel',
+                        id: response.userId,
+                        email: email,
+                        documentId: response.documentId || '',
+                        data: { $id: response.userId, email }
+                    });
+                    
+                    // Track daily sign-in for coin rewards (only for login, not signup)
+                    if (!isSignUp) {
+                        try {
+                            await trackDailySignIn(response.userId, 1, 'hotel');
+                        } catch (coinError) {
+                            console.warn('Daily sign-in tracking failed:', coinError);
+                        }
+                    }
+                    
+                    console.log('✅ Hotel login successful');
+                    onSuccess(response.userId);
+                } else {
+                    throw new Error(response.error || 'Sign in failed');
+                }
             }
         } catch (err: any) {
-            console.error('Hotel authentication error:', err);
-            
-            // Handle user already exists case
-            if (err.code === 409 || err.message?.includes('already exists')) {
-                console.log('🔄 User already exists, switching to sign-in mode');
-                setIsSignUp(false);
-                setError('This email is already registered. Switched to Sign In mode - please enter your password.');
-                setLoading(false);
-                return;
-            }
-            
-            setError(handleAppwriteError(err, isSignUp ? 'account creation' : 'login'));
+            console.error(`Hotel ${isSignUp ? 'signup' : 'login'} error:`, err);
+            setError(handleAppwriteError(err, isSignUp ? 'signup' : 'login'));
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div 
-            className="min-h-screen flex items-center justify-center p-4 relative"
-            style={{
-                backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/garden%20forest.png?updatedAt=1761334454082)',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat'
-            }}
-        >
-            {/* Overlay for better readability */}
-            <div className="absolute inset-0 bg-black/40"></div>
-
-            {/* Home Button */}
-            <button
-                onClick={onBack}
-                className="fixed top-6 left-6 w-12 h-12 bg-orange-500 hover:bg-orange-600 rounded-full shadow-lg flex items-center justify-center transition-all z-20 border border-orange-400"
-                aria-label="Go to home"
-            >
-                <HomeIcon className="w-6 h-6 text-white" />
-            </button>
-
-            {/* Glass Effect Login Container */}
-            <div className="max-w-md w-full bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-8 relative z-10 border border-white/20">
+        <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
+                {/* Header */}
                 <div className="text-center mb-8">
-                    <h1 className="text-4xl font-bold mb-2">
-                        <span className="text-white">Inda</span>
-                        <span className="text-orange-400">Street</span>
-                    </h1>
-                    <p className="text-white/90 font-medium">Hotel Account</p>
-                </div>
-
-                <div className="flex mb-6 bg-white/10 backdrop-blur-sm rounded-lg p-1 border border-white/20">
-                    <button
-                        onClick={() => setIsSignUp(false)}
-                        className={`flex-1 py-2 px-4 rounded-md transition-all ${
-                            !isSignUp ? 'bg-orange-500 shadow-lg text-white font-semibold' : 'text-white/90 hover:bg-white/5'
-                        }`}
-                    >
-                        Sign In
-                    </button>
-                    <button
-                        onClick={() => setIsSignUp(true)}
-                        className={`flex-1 py-2 px-4 rounded-md transition-all ${
-                            isSignUp ? 'bg-orange-500 shadow-lg text-white font-semibold' : 'text-white/90 hover:bg-white/5'
-                        }`}
-                    >
-                        Create Account
-                    </button>
-                </div>
-
-                {error && (
-                    <div className={`mb-4 p-3 rounded-lg backdrop-blur-sm ${error.includes('created') ? 'bg-green-500/20 text-green-100 border border-green-400/30' : 'bg-red-500/20 text-red-100 border border-red-400/30'}`}>
-                        {error}
-                    </div>
-                )}
-
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    {isSignUp && (
-                        <div>
-                            <label className="block text-sm font-medium text-white/90 mb-2">
-                                Hotel Name
-                            </label>
-                            <input
-                                type="text"
-                                value={hotelName}
-                                onChange={(e) => setHotelName(e.target.value)}
-                                className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
-                                placeholder="Enter your hotel name"
-                                required={isSignUp}
-                            />
+                    <div className="flex items-center justify-center mb-4">
+                        <div className="p-3 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl">
+                            {isSignUp ? (
+                                <UserPlus className="w-8 h-8 text-white" />
+                            ) : (
+                                <LogIn className="w-8 h-8 text-white" />
+                            )}
                         </div>
-                    )}
-                    
+                    </div>
+                    <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                        {isSignUp ? 'Create Hotel Account' : 'Hotel Sign In'}
+                    </h1>
+                    <p className="text-gray-600">
+                        {isSignUp 
+                            ? 'Register your hotel with IndaStreet'
+                            : 'Access your hotel dashboard'
+                        }
+                    </p>
+                </div>
+
+                {/* Form */}
+                <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
-                        <label className="block text-sm font-medium text-white/90 mb-2">
-                            Email
+                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                            Email Address
                         </label>
                         <input
+                            id="email"
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
-                            placeholder="hotel@indastreet.com"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                            placeholder="hotel@example.com"
                             required
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-white/90 mb-2">
+                        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                             Password
                         </label>
                         <input
+                            id="password"
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
-                            placeholder="Enter your password"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                            placeholder="••••••••"
                             required
                             minLength={8}
-                            onKeyDown={(e) => e.key === 'Enter' && handleSubmit}
                         />
                     </div>
+
+                    {error && (
+                        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                            <p className="text-red-600 text-sm">{error}</p>
+                        </div>
+                    )}
 
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 px-4 mt-6 shadow-lg rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium flex items-center justify-center gap-2"
+                        className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white py-3 px-4 rounded-lg font-medium hover:from-amber-600 hover:to-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                     >
                         {loading ? (
-                            'Processing...'
-                        ) : isSignUp ? (
-                            <>
-                                <UserPlus className="w-5 h-5" />
-                                Create Account
-                            </>
+                            <div className="flex items-center justify-center">
+                                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
+                                {isSignUp ? 'Creating Account...' : 'Signing In...'}
+                            </div>
                         ) : (
-                            <>
-                                <LogIn className="w-5 h-5" />
-                                Sign In
-                            </>
+                            isSignUp ? 'Create Account' : 'Sign In'
                         )}
                     </button>
                 </form>
+
+                {/* Toggle Mode */}
+                <div className="mt-6 text-center">
+                    <button
+                        onClick={() => {
+                            setIsSignUp(!isSignUp);
+                            setError('');
+                            setEmail('');
+                            setPassword('');
+                        }}
+                        className="text-amber-600 hover:text-amber-700 font-medium"
+                    >
+                        {isSignUp 
+                            ? 'Already have an account? Sign In' 
+                            : "Don't have an account? Sign Up"
+                        }
+                    </button>
+                </div>
+
+                {/* Back Button */}
+                <div className="mt-6 text-center">
+                    <button
+                        onClick={onBack}
+                        className="flex items-center justify-center mx-auto text-gray-600 hover:text-gray-800 transition-colors"
+                    >
+                        <HomeIcon className="w-5 h-5 mr-2" />
+                        Back to Home
+                    </button>
+                </div>
             </div>
         </div>
     );

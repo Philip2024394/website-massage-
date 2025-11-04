@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOM Error Debug Tool</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .error { color: red; font-weight: bold; }
+        .success { color: green; font-weight: bold; }
+        .warning { color: orange; font-weight: bold; }
+        .log { margin: 5px 0; padding: 5px; background: #f5f5f5; border-radius: 3px; }
+        pre { background: #f0f0f0; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>React removeChild Error Diagnostic</h1>
+    <p>This tool helps identify the source of "removeChild" errors in React applications.</p>
+    
+    <h2>Instructions:</h2>
+    <ol>
+        <li>Open your React app in another tab</li>
+        <li>Press F12 to open DevTools</li>
+        <li>Copy and paste the script below into the console</li>
+        <li>Navigate through your app to trigger the error</li>
+        <li>Check the console for detailed error information</li>
+    </ol>
+
+    <h2>Diagnostic Script:</h2>
+    <pre id="script">
+// Enhanced DOM Error Diagnostic for React removeChild Issues
+console.log('🚀 React removeChild Diagnostic Tool v2.0');
+console.log('🔍 Monitoring all DOM modifications...');
+
+// Store original methods
+const originalRemoveChild = Node.prototype.removeChild;
+const originalAppendChild = Node.prototype.appendChild;
+const originalInsertBefore = Node.prototype.insertBefore;
+
+// Track DOM operations
+let operationCount = 0;
+const domOperations = [];
+
+// Enhanced removeChild monitor
+Node.prototype.removeChild = function(child) {
+    const operation = {
+        id: ++operationCount,
+        type: 'removeChild',
+        timestamp: new Date().toISOString(),
+        parent: this,
+        child: child,
+        parentTagName: this.tagName || 'TEXT/COMMENT',
+        childTagName: child.tagName || 'TEXT/COMMENT',
+        parentContainsChild: this.contains(child),
+        childParentNode: child.parentNode,
+        isParentSame: child.parentNode === this
+    };
+    
+    domOperations.push(operation);
+    
+    console.group(`🗑️ removeChild #${operation.id}`);
+    console.log('📍 Parent:', this);
+    console.log('👶 Child:', child);
+    console.log('🔗 Child.parentNode:', child.parentNode);
+    console.log('✅ Parent contains child:', operation.parentContainsChild);
+    console.log('🎯 Parent === child.parentNode:', operation.isParentSame);
+    
+    try {
+        if (!operation.parentContainsChild || !operation.isParentSame) {
+            console.error('❌ POTENTIAL ERROR CONDITIONS DETECTED!');
+            console.error('🚨 This removeChild call will likely fail');
+            console.trace('📊 Stack trace:');
+            
+            // Additional React-specific debugging
+            if (child._reactInternalFiber || child._reactInternalInstance) {
+                console.log('⚛️ React component detected on child');
+            }
+            if (this._reactInternalFiber || this._reactInternalInstance) {
+                console.log('⚛️ React component detected on parent');
+            }
+        }
+        
+        const result = originalRemoveChild.call(this, child);
+        console.log('✅ removeChild succeeded');
+        console.groupEnd();
+        return result;
+        
+    } catch (error) {
+        console.error('💥 removeChild FAILED:', error.message);
+        console.error('🔍 Error details:', error);
+        console.error('📋 Operation details:', operation);
+        console.trace('📊 Full stack trace:');
+        console.groupEnd();
+        
+        // Store failed operation for analysis
+        operation.failed = true;
+        operation.error = error.message;
+        
+        throw error;
+    }
+};
+
+// Monitor appendChild for context
+Node.prototype.appendChild = function(child) {
+    const operation = {
+        id: ++operationCount,
+        type: 'appendChild',
+        timestamp: new Date().toISOString(),
+        parent: this,
+        child: child
+    };
+    
+    domOperations.push(operation);
+    console.log(`➕ appendChild #${operation.id}:`, this, '->', child);
+    
+    return originalAppendChild.call(this, child);
+};
+
+// Helper function to analyze failed operations
+window.analyzeDOMOperations = function() {
+    console.group('📊 DOM Operations Analysis');
+    console.log(`Total operations: ${domOperations.length}`);
+    
+    const failed = domOperations.filter(op => op.failed);
+    if (failed.length > 0) {
+        console.error(`Failed operations: ${failed.length}`);
+        failed.forEach(op => {
+            console.error(`❌ #${op.id} ${op.type}: ${op.error}`);
+        });
+    }
+    
+    const recent = domOperations.slice(-10);
+    console.log('Last 10 operations:', recent);
+    console.groupEnd();
+    
+    return { total: domOperations.length, failed: failed.length, recent };
+};
+
+// Set up error monitoring
+window.addEventListener('error', (event) => {
+    if (event.message.includes('removeChild')) {
+        console.error('🚨 Global removeChild error detected:', event);
+        window.analyzeDOMOperations();
+    }
+});
+
+console.log('✅ Enhanced DOM monitoring active!');
+console.log('💡 Use analyzeDOMOperations() to review operations');
+console.log('🎯 Navigate your app to detect removeChild issues');
+    </pre>
+
+    <h2>Quick Actions:</h2>
+    <button onclick="copyScript()">📋 Copy Script to Clipboard</button>
+    <button onclick="openApp()">🚀 Open App (localhost:3005)</button>
+
+    <h2>Common Causes:</h2>
+    <ul>
+        <li><strong>React StrictMode:</strong> Double-rendering in development</li>
+        <li><strong>Hot Module Replacement:</strong> Components being replaced during development</li>
+        <li><strong>Event Listener Cleanup:</strong> useEffect cleanup trying to remove already-removed elements</li>
+        <li><strong>Portal Issues:</strong> React Portals with timing conflicts</li>
+        <li><strong>Manual DOM Manipulation:</strong> Direct DOM changes conflicting with React</li>
+        <li><strong>Third-party Libraries:</strong> Libraries manipulating DOM outside React's control</li>
+    </ul>
+
+    <script>
+        function copyScript() {
+            const script = document.getElementById('script').textContent;
+            navigator.clipboard.writeText(script).then(() => {
+                alert('Script copied to clipboard! Paste it into your browser console.');
+            });
+        }
+        
+        function openApp() {
+            window.open('http://localhost:3005/', '_blank');
+        }
+    </script>
+</body>
+</html>

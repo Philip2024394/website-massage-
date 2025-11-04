@@ -12,6 +12,7 @@ import QRCodeGenerator from 'qrcode';
 import PushNotificationSettings from '../components/PushNotificationSettings';
 import VillaBookingModal from '../components/hotel/PropertyBookingModal';
 import VillaAnalyticsSection from '../components/hotel/PropertyAnalyticsSection';
+import { safeDownload } from '../utils/domSafeHelpers';
 
 type DurationKey = '60' | '90' | '120';
 type ProviderType = 'therapist' | 'place';
@@ -436,29 +437,10 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({ onLogout, thera
 
     const downloadQR = () => {
         const qrUrl = `https://chart.googleapis.com/chart?chs=600x600&cht=qr&chl=${encodeURIComponent(qrLink)}&choe=UTF-8`;
+        const filename = `${hotelName.replace(/\s+/g, '-')}-menu-qr.png`;
         
-        // Use a safer approach that doesn't interfere with React's DOM management
-        try {
-            const link = document.createElement('a');
-            link.style.display = 'none';
-            link.href = qrUrl;
-            link.download = `${hotelName.replace(/\s+/g, '-')}-menu-qr.png`;
-            
-            // Temporarily append to body, click, and immediately remove
-            document.body.appendChild(link);
-            link.click();
-            
-            // Use setTimeout to avoid conflicts with React's reconciliation
-            setTimeout(() => {
-                if (link.parentNode) {
-                    document.body.removeChild(link);
-                }
-            }, 100);
-        } catch (error) {
-            console.error('Error downloading QR code:', error);
-            // Fallback: open in new window
-            window.open(qrUrl, '_blank');
-        }
+        // Use React 19 safe download helper
+        safeDownload(qrUrl, filename);
     };
 
     const shareWhatsApp = () => {

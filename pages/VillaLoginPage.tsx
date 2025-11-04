@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { account, databases, DATABASE_ID, COLLECTIONS, ID } from '../lib/appwrite';
+import { villaAuth } from '../lib/auth';
 import { saveSessionCache } from '../lib/sessionManager';
 import { checkRateLimit, handleAppwriteError, resetRateLimit } from '../lib/rateLimitUtils';
-import { validateUserAuthentication } from '../utils/authGuards';
+import { trackDailySignIn } from '../lib/coinHooks';
 import { LogIn, UserPlus } from 'lucide-react';
 
 interface VillaLoginPageProps {
@@ -21,7 +21,6 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onSuccess, onBack }) =>
     const [isSignUp, setIsSignUp] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [villaName, setVillaName] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -47,12 +46,6 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onSuccess, onBack }) =>
                 return;
             }
 
-            if (isSignUp && !villaName.trim()) {
-                setError('Villa name is required');
-                setLoading(false);
-                return;
-            }
-
             if (password.length < 8) {
                 setError('Password must be at least 8 characters');
                 setLoading(false);
@@ -72,122 +65,48 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onSuccess, onBack }) =>
 
             console.log(`🔄 Starting villa ${isSignUp ? 'signup' : 'login'} for:`, email);
 
-            // Delete any existing session
-            try {
-                await account.deleteSession('current');
-                console.log('🗑️ Existing session cleared');
-            } catch (err) {
-                console.log('ℹ️ No existing session to clear');
-            }
-
             if (isSignUp) {
-                // Create account
-                console.log('📝 Creating villa account for:', email);
-                const newUser = await account.create(
-                    'unique()',
-                    email,
-                    password,
-                    villaName
-                );
-
-                console.log('✅ Account created successfully!', { userId: newUser.$id });
-
-                // Automatically login after signup
-                console.log('🔐 Creating session...');
-                await account.createEmailPasswordSession(email, password);
+                const response = await villaAuth.signUp(email, password);
                 
-                // Get user details
-                const user = await account.get();
-                
-                // Create villa record in database
-                const villaData = {
-                    userId: user.$id,
-                    name: villaName,
-                    email: email,
-                    type: 'villa',
-                    address: 'To be updated',
-                    contactNumber: 'To be updated',
-                    hotelId: Math.floor(Math.random() * 1000000),
-                    hotelName: villaName,
-                    hotelAddress: 'To be updated',
-                    totalRooms: 1,
-                    availableRooms: 1,
-                    pricePerNight: 0,
-                    amenities: null,
-                    phoneNumber: null,
-                    profilePicture: null,
-                    mainImage: null
-                };
-                
-                console.log('📝 Creating villa database record...');
-                const villaDoc = await databases.createDocument(
-                    DATABASE_ID,
-                    COLLECTIONS.HOTELS,
-                    ID.unique(),
-                    villaData
-                );
-                
-                // Save session cache
-                saveSessionCache({
-                    type: 'villa',
-                    id: user.$id,
-                    email: user.email,
-                    documentId: villaDoc.$id,
-                    data: villaDoc
-                });
-                
-                console.log('✅ Villa account created and logged in successfully!');
-                setError('✅ Account created successfully! Redirecting to dashboard...');
-                setTimeout(() => {
-                    onSuccess(villaDoc.$id);
-                }, 1500);
-            } else {
-                // Login
-                console.log('🔐 Creating session...');
-                await account.createEmailPasswordSession(email, password);
-                
-                // Get user details
-                const user = await account.get();
-                
-                // Validate that this user is actually a villa user
-                console.log('🔍 Validating villa user authentication...');
-                const authResult = await validateUserAuthentication('villa', user.$id);
-                
-                if (!authResult.success) {
-                    console.log('❌ Villa authentication failed:', authResult.error);
-                    setError(authResult.error || 'Villa account not found. Please create an account first.');
-                    
-                    // Clean up the session since this is not a valid villa login
-                    await account.deleteSession('current');
-                    setLoading(false);
-                    return;
+                if (response.success) {
+                    console.log('✅ Villa account created successfully!');
+                    setIsSignUp(false);
+                    setError('✅ Account created successfully! Please sign in.');
+                    setPassword('');
+                } else {
+                    throw new Error(response.error || 'Sign up failed');
                 }
+            } else {
+                const response = await villaAuth.signIn(email, password);
                 
-                // Save session cache with validated villa data
-                saveSessionCache({
-                    type: 'villa',
-                    id: user.$id,
-                    email: user.email,
-                    documentId: authResult.documentId!,
-                    data: authResult.data
-                });
-                
-                console.log('✅ Villa login successful');
-                onSuccess(authResult.documentId!);
+                if (response.success && response.userId) {
+                    // Authentication successful - save session cache
+                    saveSessionCache({
+                        type: 'villa',
+                        id: response.userId,
+                        email: email,
+                        documentId: response.documentId || '',
+                        data: { $id: response.userId, email }
+                    });
+                    
+                    // Track daily sign-in for coin rewards (only for login, not signup)
+                    if (!isSignUp) {
+                        try {
+                            await trackDailySignIn(response.userId);
+                        } catch (coinError) {
+                            console.warn('Daily sign-in tracking failed:', coinError);
+                        }
+                    }
+                    
+                    console.log('✅ Villa login successful');
+                    onSuccess(response.userId);
+                } else {
+                    throw new Error(response.error || 'Sign in failed');
+                }
             }
         } catch (err: any) {
-            console.error('Villa authentication error:', err);
-            
-            // Handle user already exists case
-            if (err.code === 409 || err.message?.includes('already exists')) {
-                console.log('🔄 User already exists, switching to sign-in mode');
-                setIsSignUp(false);
-                setError('This email is already registered. Switched to Sign In mode - please enter your password.');
-                setLoading(false);
-                return;
-            }
-            
-            setError(handleAppwriteError(err, isSignUp ? 'account creation' : 'login'));
+            console.error(`Villa ${isSignUp ? 'signup' : 'login'} error:`, err);
+            setError(handleAppwriteError(err, isSignUp ? 'signup' : 'login'));
         } finally {
             setLoading(false);
         }
@@ -195,7 +114,7 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onSuccess, onBack }) =>
 
     return (
         <div 
-            className="min-h-screen flex items-center justify-center p-4 relative"
+            className="h-screen flex items-center justify-center p-4 relative overflow-hidden"
             style={{
                 backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/garden%20forest.png?updatedAt=1761334454082)',
                 backgroundSize: 'cover',
@@ -261,23 +180,6 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onSuccess, onBack }) =>
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    {isSignUp && (
-                        <div>
-                            <label className="block text-sm font-medium text-white/90 mb-2">
-                                Villa Name
-                            </label>
-                            <input
-                                type="text"
-                                value={villaName}
-                                onChange={(e) => setVillaName(e.target.value)}
-                                className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
-                                placeholder="Enter your villa name"
-                                required={isSignUp}
-                                onKeyDown={(e) => e.key === 'Enter' && handleSubmit}
-                            />
-                        </div>
-                    )}
-                    
                     <div>
                         <label className="block text-sm font-medium text-white/90 mb-2">
                             Email

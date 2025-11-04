@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Button from '../components/Button';
 import { useTranslations } from '../lib/useTranslations';
+import { locationService } from '../services/locationService';
 import type { UserLocation } from '../types';
 import type { Language } from '../types/pageTypes';
 
@@ -19,11 +20,13 @@ const languages = [
 
 const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect }) => {
     console.log('🎨 LandingPage: Component rendering');
+    console.log('🎨 LandingPage: Props received:', { onEnterApp: !!onEnterApp, onLanguageSelect: !!onLanguageSelect });
     console.log('onEnterApp prop received:', !!onEnterApp);
     
     const [imageLoaded, setImageLoaded] = useState(false);
     const [selectedLanguage, setSelectedLanguage] = useState<Language>('id'); // Default to Indonesian
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [isDetectingLocation, setIsDetectingLocation] = useState(false);
     
     // Get translations for the selected language
     const { t, loading: translationsLoading, refresh: refreshTranslations, hasLanguage } = useTranslations(selectedLanguage);
@@ -53,6 +56,28 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
         }
     }, [selectedLanguage]); // Remove refreshTranslations from dependencies
 
+    // Auto-detect location on component mount for mobile devices
+    useEffect(() => {
+        const autoDetectLocation = async () => {
+            // Only auto-detect for mobile devices (especially Android)
+            if (locationService.isMobileDevice() && locationService.isGeolocationSupported()) {
+                console.log('📱 Mobile device detected, pre-loading location...');
+                
+                try {
+                    // Pre-load location silently in the background
+                    await locationService.requestLocationWithFallback();
+                    console.log('✅ Location pre-loaded successfully');
+                } catch (error) {
+                    console.warn('⚠️ Failed to pre-load location:', error);
+                }
+            }
+        };
+        
+        // Delay slightly to ensure page is loaded
+        const timer = setTimeout(autoDetectLocation, 1000);
+        return () => clearTimeout(timer);
+    }, []);
+
     useEffect(() => {
         console.log('🖼️ LandingPage: Attempting to load image:', imageSrc);
         const img = new Image();
@@ -68,18 +93,44 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
         };
     }, []);
 
-    const handleEnterApp = () => {
+    const handleEnterApp = async () => {
         console.log('🔘 Enter button clicked!');
         console.log('Selected language:', selectedLanguage);
-        // Create a default location - user will set it on home page
-        const defaultLocation: UserLocation = {
-            address: 'Not Set',
-            lat: 0,
-            lng: 0,
-        };
-        console.log('Calling onEnterApp with:', selectedLanguage, defaultLocation);
-        onEnterApp(selectedLanguage, defaultLocation);
-        console.log('✅ onEnterApp called');
+        console.log('🔧 Device info:', {
+            isAndroid: locationService.isAndroidDevice(),
+            isMobile: locationService.isMobileDevice(),
+            supportsGPS: locationService.isGeolocationSupported()
+        });
+        
+        setIsDetectingLocation(true);
+        
+        try {
+            console.log('📍 Detecting user location automatically...');
+            
+            // Automatically get user's GPS location
+            const userLocation = await locationService.requestLocationWithFallback();
+            
+            console.log('✅ Location detected:', userLocation);
+            console.log('Calling onEnterApp with:', selectedLanguage, userLocation);
+            
+            onEnterApp(selectedLanguage, userLocation);
+            console.log('✅ onEnterApp called successfully');
+            
+        } catch (error) {
+            console.error('❌ Failed to get location:', error);
+            
+            // Fallback to default location if everything fails
+            const defaultLocation: UserLocation = {
+                address: 'Jakarta, Indonesia',
+                lat: -6.2088,
+                lng: 106.8456
+            };
+            
+            console.log('📍 Using fallback location:', defaultLocation);
+            onEnterApp(selectedLanguage, defaultLocation);
+        } finally {
+            setIsDetectingLocation(false);
+        }
     };
 
     const selectedLang = languages.find(lang => lang.code === selectedLanguage) || languages[0];
@@ -189,13 +240,26 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
                             handleEnterApp();
                         }}
                         variant="primary"
+                        disabled={isDetectingLocation}
                         className="!py-2.5 sm:!py-4 !text-base sm:!text-lg font-bold relative z-10"
                     >
                         <div className="flex items-center justify-center gap-2">
-                            {t('landing.enter')}
-                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                            </svg>
+                            {isDetectingLocation ? (
+                                <>
+                                    <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    {t('landing.detectingLocation') || 'Detecting location...'}
+                                </>
+                            ) : (
+                                <>
+                                    {t('landing.enter')}
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                    </svg>
+                                </>
+                            )}
                         </div>
                     </Button>
                 </div>

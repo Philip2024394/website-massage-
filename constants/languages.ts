@@ -1,28 +1,10 @@
 /**
- * Common languages spoken in Indonesia and by international visitors
+ * Supported languages - Only Indonesian and English
  * Used across therapist and massage place admin interfaces
  */
 export const commonLanguages = [
   'Indonesian (Bahasa Indonesia)',
-  'English',
-  'Mandarin Chinese',
-  'Japanese',
-  'Korean',
-  'Arabic',
-  'Javanese',
-  'Sundanese',
-  'Balinese',
-  'Minangkabau',
-  'Dutch',
-  'German',
-  'French',
-  'Spanish',
-  'Italian',
-  'Russian',
-  'Thai',
-  'Vietnamese',
-  'Hindi',
-  'Tagalog'
+  'English'
 ];
 
 /**

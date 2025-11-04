@@ -12,6 +12,7 @@ export const commonTranslations = {
       selectLanguage: 'Select Language',
       enter: 'Enter',
       welcomeDescription: 'Professional Massage Services',
+      detectingLocation: 'Detecting location...',
     },
     common: {
       loading: 'Loading...',
@@ -43,6 +44,7 @@ export const commonTranslations = {
       selectLanguage: 'Pilih Bahasa',
       enter: 'Masuk',
       welcomeDescription: 'Layanan Pijat Profesional',
+      detectingLocation: 'Mendeteksi lokasi...',
     },
     common: {
       loading: 'Memuat...',

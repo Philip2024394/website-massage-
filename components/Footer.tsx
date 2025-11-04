@@ -6,11 +6,9 @@ interface FooterProps {
     currentPage?: string;
     unreadNotifications?: number;
     unreadChats?: number;
-    hasNewBookings?: boolean;
     hasWhatsAppClick?: boolean;
     onHomeClick?: () => void;
     onNotificationsClick?: () => void;
-    onBookingsClick?: () => void;
     onProfileClick?: () => void;
     onDashboardClick?: () => void;
     onSearchClick?: () => void;
@@ -18,13 +16,6 @@ interface FooterProps {
     onChatClick?: () => void;
     t: any;
 }
-
-// Calendar Icon
-const CalendarIcon = ({ className = 'w-6 h-6' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-    </svg>
-);
 
 // Bell Icon
 const BellIcon = ({ className = 'w-6 h-6' }) => (
@@ -88,11 +79,9 @@ const Footer: React.FC<FooterProps> = ({
     currentPage = 'home',
     unreadNotifications = 0,
     unreadChats = 0,
-    hasNewBookings = false,
     hasWhatsAppClick = false,
     onHomeClick = () => {},
     onNotificationsClick = () => {},
-    onBookingsClick = () => {},
     onProfileClick = () => {},
     onDashboardClick = () => {},
     onSearchClick = () => {},
@@ -197,18 +186,20 @@ const Footer: React.FC<FooterProps> = ({
                         <span className="text-xs mt-1 text-black">Chat</span>
                     </button>
 
-                    {/* Bookings */}
+                    {/* Notifications */}
                     <button 
-                        onClick={onBookingsClick}
+                        onClick={onNotificationsClick}
                         className="flex flex-col items-center justify-center flex-1 h-full relative"
                     >
                         <div className="relative">
-                            <CalendarIcon className="w-6 h-6 text-orange-500" />
-                            {hasNewBookings && (
-                                <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
+                            <BellIcon className="w-6 h-6 text-orange-500" />
+                            {unreadNotifications > 0 && (
+                                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                                    {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                                </span>
                             )}
                         </div>
-                        <span className="text-xs mt-1 text-black">Bookings</span>
+                        <span className="text-xs mt-1 text-black">Notifications</span>
                     </button>
 
                     {/* Home */}
@@ -247,18 +238,20 @@ const Footer: React.FC<FooterProps> = ({
                         <span className="text-xs mt-1 text-black">QR Menu</span>
                     </button>
 
-                    {/* Bookings */}
+                    {/* Notifications */}
                     <button 
-                        onClick={onBookingsClick}
+                        onClick={onNotificationsClick}
                         className="flex flex-col items-center justify-center flex-1 h-full relative"
                     >
                         <div className="relative">
-                            <CalendarIcon className="w-6 h-6 text-orange-500" />
-                            {hasNewBookings && (
-                                <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
+                            <BellIcon className="w-6 h-6 text-orange-500" />
+                            {unreadNotifications > 0 && (
+                                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                                    {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                                </span>
                             )}
                         </div>
-                        <span className="text-xs mt-1 text-black">Bookings</span>
+                        <span className="text-xs mt-1 text-black">Notifications</span>
                     </button>
 
                     {/* Profile */}
@@ -319,8 +312,7 @@ const Footer: React.FC<FooterProps> = ({
         );
     }
 
-    // Therapist Footer
-    // Therapist Footer
+    // Therapist Footer - Enhanced with prominent notifications
     if (userRole === 'therapist' || userRole === 'place') {
         return (
             <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40">
@@ -332,6 +324,25 @@ const Footer: React.FC<FooterProps> = ({
                     >
                         <HomeIcon className="w-6 h-6 text-orange-500" />
                         <span className="text-xs mt-1 text-black">Home</span>
+                    </button>
+
+                    {/* Notifications - Enhanced and More Prominent */}
+                    <button 
+                        onClick={onNotificationsClick}
+                        className="flex flex-col items-center justify-center flex-1 h-full relative"
+                    >
+                        <div className="relative">
+                            <BellIcon className="w-7 h-7 text-orange-500" />
+                            {(unreadNotifications > 0 || hasWhatsAppClick) && (
+                                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
+                            )}
+                            {unreadNotifications > 0 && (
+                                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full min-w-[20px] h-5 flex items-center justify-center font-bold border-2 border-white">
+                                    {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                                </span>
+                            )}
+                        </div>
+                        <span className="text-xs mt-1 text-black font-semibold">Notifications</span>
                     </button>
 
                     {/* Chat */}
@@ -350,40 +361,7 @@ const Footer: React.FC<FooterProps> = ({
                         <span className="text-xs mt-1 text-black">Chat</span>
                     </button>
 
-                    {/* Bookings/Calendar with alert dot */}
-                    <button 
-                        onClick={onBookingsClick}
-                        className="flex flex-col items-center justify-center flex-1 h-full relative"
-                    >
-                        <div className="relative">
-                            <CalendarIcon className="w-6 h-6 text-orange-500" />
-                            {hasNewBookings && (
-                                <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
-                            )}
-                        </div>
-                        <span className="text-xs mt-1 text-black">Bookings</span>
-                    </button>
-
-                    {/* Notifications with badge and WhatsApp alert */}
-                    <button 
-                        onClick={onNotificationsClick}
-                        className="flex flex-col items-center justify-center flex-1 h-full relative"
-                    >
-                        <div className="relative">
-                            <BellIcon className="w-6 h-6 text-orange-500" />
-                            {(unreadNotifications > 0 || hasWhatsAppClick) && (
-                                <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
-                            )}
-                            {unreadNotifications > 0 && (
-                                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                                    {unreadNotifications > 9 ? '9+' : unreadNotifications}
-                                </span>
-                            )}
-                        </div>
-                        <span className="text-xs mt-1 text-black">Alerts</span>
-                    </button>
-
-                    {/* Profile */}
+                    {/* Dashboard */}
                     <button 
                         onClick={onProfileClick}
                         className="flex flex-col items-center justify-center flex-1 h-full relative"

@@ -23,9 +23,16 @@ export const adminAuth = {
                     COLLECTIONS.ADMINS || 'admins_collection_id',
                     ID.unique(),
                     {
-                        email,
-                        userId: user.$id,
-                        createdAt: new Date().toISOString(),
+                        // Required fields per schema
+                        username: email.split('@')[0], // Required
+                        password: '', // Password handled by Appwrite auth
+                        email, // Required
+                        role: 'regular', // Required - default to regular admin
+                        createdAt: new Date().toISOString(), // Required
+                        userId: user.$id, // Store reference to Appwrite user
+                        
+                        // Optional fields
+                        lastLogin: null,
                     }
                 );
                 return { success: true, userId: user.$id, documentId: admin.$id };
@@ -118,7 +125,6 @@ export const therapistAuth = {
                     email,
                     name: email.split('@')[0],
                     whatsappNumber: '',
-                    password: '',
                     location: '',
                     pricing: JSON.stringify({ '60': 100, '90': 150, '120': 200 }),
                     status: 'Offline',
@@ -127,8 +133,8 @@ export const therapistAuth = {
                     therapistId: therapistId, // Required by Appwrite schema
                     hotelId: '', // Required by Appwrite schema - empty for independent therapists
                     isLicensed: false, // Required by Appwrite schema - license verification
-                    specialization: 'Massage Therapist',
-                    availability: 'Available',
+                    specialization: 'General Massage', // Required by actual Appwrite collection
+                    availability: 'full-time', // Required by actual Appwrite collection
                     
                     // Optional fields with defaults per schema
                     description: '',
@@ -225,27 +231,27 @@ export const placeAuth = {
                 COLLECTIONS.PLACES,
                 placeId,
                 {
+                    // Required fields per schema
                     id: placeId, // Required by Appwrite schema - document ID
                     email,
-                    userId: user.$id,
                     name: email.split('@')[0],
-                    isLive: false,
-                    rating: 0,
-                    reviewCount: 0,
-                    pricing: JSON.stringify({ '60': 0, '90': 0, '120': 0 }),
                     whatsappNumber: '',
+                    pricing: JSON.stringify({ '60': 100, '90': 150, '120': 200 }),
+                    location: '',
+                    status: 'Closed', // Required by schema
+                    isLive: false, // Required by schema
+                    createdAt: new Date().toISOString(), // Required by schema
+                    
+                    // Optional fields with defaults per schema
                     description: '',
                     mainImage: '',
-                    thumbnailImages: [],
                     massageTypes: JSON.stringify([]),
                     coordinates: JSON.stringify({ lat: 0, lng: 0 }),
-                    location: '',
-                    distance: 0,
-                    openingTime: '09:00',
-                    closingTime: '21:00',
-                    activeMembershipDate: '',
+                    operatingHours: '09:00-21:00',
+                    rating: 0.0,
+                    reviewCount: 0,
+                    activeMembershipDate: null,
                     analytics: JSON.stringify({ impressions: 0, profileViews: 0, whatsappClicks: 0 }),
-                    createdAt: new Date().toISOString(),
                 }
             );
             
@@ -275,7 +281,7 @@ export const placeAuth = {
                 COLLECTIONS.PLACES
             );
             
-            const place = places.documents.find((doc: any) => doc.userId === user.$id);
+            const place = places.documents.find((doc: any) => doc.email === email);
             
             if (!place) {
                 throw new Error('Place not found');
@@ -300,14 +306,21 @@ export const hotelAuth = {
                 COLLECTIONS.HOTELS,
                 ID.unique(),
                 {
-                    email,
-                    userId: user.$id,
+                    // Required fields per schema
                     name: email.split('@')[0],
-                    brandLogo: '',
-                    customMessage: '',
-                    qrCode: '',
-                    isActive: false,
-                    createdAt: new Date().toISOString(),
+                    type: 'hotel', // Required - hotel or villa
+                    location: '', // Required
+                    contactPerson: email.split('@')[0], // Required
+                    email, // Required
+                    password: '', // Required - handled by Appwrite auth
+                    whatsappNumber: '', // Required
+                    qrCodeEnabled: false, // Required
+                    isActive: false, // Required - admin approval needed
+                    createdAt: new Date().toISOString(), // Required
+                    
+                    // Optional fields
+                    partnerTherapists: JSON.stringify([]),
+                    discountRate: 0,
                 }
             );
             
@@ -337,7 +350,7 @@ export const hotelAuth = {
                 COLLECTIONS.HOTELS
             );
             
-            const hotel = hotels.documents.find((doc: any) => doc.userId === user.$id);
+            const hotel = hotels.documents.find((doc: any) => doc.email === email);
             
             if (!hotel) {
                 throw new Error('Hotel not found');
@@ -359,17 +372,24 @@ export const villaAuth = {
             
             const villa = await databases.createDocument(
                 DATABASE_ID,
-                COLLECTIONS.VILLAS,
+                COLLECTIONS.HOTELS, // Villas are stored in hotels collection
                 ID.unique(),
                 {
-                    email,
-                    userId: user.$id,
+                    // Required fields per schema
                     name: email.split('@')[0],
-                    brandLogo: '',
-                    customMessage: '',
-                    qrCode: '',
-                    isActive: false,
-                    createdAt: new Date().toISOString(),
+                    type: 'villa', // Required - hotel or villa
+                    location: '', // Required
+                    contactPerson: email.split('@')[0], // Required
+                    email, // Required
+                    password: '', // Required - handled by Appwrite auth
+                    whatsappNumber: '', // Required
+                    qrCodeEnabled: false, // Required
+                    isActive: false, // Required - admin approval needed
+                    createdAt: new Date().toISOString(), // Required
+                    
+                    // Optional fields
+                    partnerTherapists: JSON.stringify([]),
+                    discountRate: 0,
                 }
             );
             
@@ -396,10 +416,10 @@ export const villaAuth = {
             
             const villas = await databases.listDocuments(
                 DATABASE_ID,
-                COLLECTIONS.VILLAS
+                COLLECTIONS.HOTELS // Villas are stored in hotels collection
             );
             
-            const villa = villas.documents.find((doc: any) => doc.userId === user.$id);
+            const villa = villas.documents.find((doc: any) => doc.email === email && doc.type === 'villa');
             
             if (!villa) {
                 throw new Error('Villa not found');
@@ -424,15 +444,19 @@ export const agentAuth = {
                 COLLECTIONS.AGENTS,
                 ID.unique(),
                 {
-                    email,
-                    userId: user.$id,
+                    // Required fields per schema
                     name: email.split('@')[0],
-                    whatsapp: '',
-                    commission: 0,
-                    totalEarnings: 0,
-                    providersCount: 0,
-                    isActive: false,
-                    createdAt: new Date().toISOString(),
+                    email,
+                    password: '', // Password handled by Appwrite auth
+                    whatsappNumber: '',
+                    commissionRate: 20, // Default to standard tier
+                    tier: 'Standard', // Required field
+                    isActive: false, // Required field - admin approval needed
+                    createdAt: new Date().toISOString(), // Required field
+                    
+                    // Optional fields with defaults
+                    totalEarnings: 0.0,
+                    clients: JSON.stringify([]),
                 }
             );
             
@@ -462,7 +486,7 @@ export const agentAuth = {
                 COLLECTIONS.AGENTS
             );
             
-            const agent = agents.documents.find((doc: any) => doc.userId === user.$id);
+            const agent = agents.documents.find((doc: any) => doc.email === email);
             
             if (!agent) {
                 throw new Error('Agent not found');

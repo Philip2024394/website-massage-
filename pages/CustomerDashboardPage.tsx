@@ -4,7 +4,7 @@ import { Booking, BookingStatus, LoyaltyWallet, CoinTransaction } from '../types
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import { getUserWallets, getTransactionHistory } from '../lib/loyaltyService';
-import { X, Calendar as CalendarIcon, Wallet, CreditCard, User, Coins, Camera, Users } from 'lucide-react';
+import { X, Calendar as CalendarIcon, Wallet, CreditCard, User, Coins, Camera, Users, History } from 'lucide-react';
 
 interface CustomerDashboardPageProps {
   customer?: any;
@@ -243,6 +243,18 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
                 Profile
               </button>
 
+              {/* Coin History Link */}
+              <button
+                onClick={() => {
+                  onNavigate?.('coin-history');
+                  setIsSideDrawerOpen(false);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors text-gray-700 hover:bg-gray-100"
+              >
+                <History className="w-5 h-5" />
+                💰 Coin History
+              </button>
+
               {/* Coin Shop Link */}
               <button
                 onClick={() => {
@@ -252,7 +264,7 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors text-gray-700 hover:bg-gray-100"
               >
                 <Coins className="w-5 h-5" />
-                Coin Shop
+                🛍️ Coin Shop
               </button>
 
               {/* Profile Upload Link */}

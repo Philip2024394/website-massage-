@@ -19,8 +19,6 @@ export const useDataFetching = () => {
         try {
             setIsLoading(true);
             
-            console.log('🔄 Attempting to fetch data from Appwrite...');
-            
             // Add timeout to prevent infinite loading
             const timeout = new Promise((_, reject) => 
                 setTimeout(() => reject(new Error('Fetch timeout')), APP_CONFIG.DATA_FETCH_TIMEOUT)
@@ -28,52 +26,10 @@ export const useDataFetching = () => {
             
             const dataFetch = Promise.all([
                 therapistService.getTherapists(),
-                (async () => {
-                    console.log('🔥 About to call placeService.getPlaces()');
-                    const result = await placeService.getPlaces();
-                    console.log('🔥 placeService.getPlaces() returned:', result?.length, 'places');
-                    return result;
-                })()
+                placeService.getPlaces()
             ]);
             
             const [therapistsData, placesData] = await Promise.race([dataFetch, timeout]) as any;
-            
-            console.log('🏠 HomePage: Fetched therapists:', therapistsData?.length);
-            therapistsData?.forEach((t: any) => {
-                console.log(`  👤 ${t.name}:`, {
-                    mainImage: t.mainImage?.substring(0, 60) + '...',
-                    profilePicture: t.profilePicture?.substring(0, 60) + '...',
-                    isLive: t.isLive,
-                    id: t.id || t.$id
-                });
-            });
-            
-            const liveTherapists = therapistsData?.filter((t: any) => t.isLive === true);
-            console.log('✅ Live therapists count:', liveTherapists?.length);
-            
-            console.log('🏨 HomePage: Fetched PLACES:', placesData?.length);
-            placesData?.forEach((p: any) => {
-                console.log(`  🏨 ${p.name}:`, {
-                    mainImage: p.mainImage?.substring(0, 60) + '...',
-                    isLive: p.isLive,
-                    id: p.id || p.$id,
-                    location: p.location
-                });
-            });
-            
-            const livePlaces = placesData?.filter((p: any) => p.isLive === true);
-            console.log('✅ Live PLACES count:', livePlaces?.length);
-            console.log('📊 Live therapists details:');
-            liveTherapists?.forEach((t: any, index: number) => {
-                console.log(`  ${index + 1}. ${t.name} (ID: ${t.id || t.$id}) - Rating: ${t.rating || 'N/A'}`);
-            });
-            
-            const allTherapists = therapistsData || [];
-            console.log('📊 Total therapists in database:', allTherapists.length);
-            console.log('📊 Breakdown:');
-            console.log('  ✅ Live (isLive=true):', allTherapists.filter((t: any) => t.isLive === true).length);
-            console.log('  ❌ Not Live (isLive=false):', allTherapists.filter((t: any) => t.isLive === false).length);
-            console.log('  ⚠️ Unknown (isLive=undefined):', allTherapists.filter((t: any) => t.isLive === undefined).length);
             
             // Initialize review data for new accounts
             const therapistsWithReviews = (therapistsData || []).map((therapist: Therapist) => 
@@ -83,8 +39,6 @@ export const useDataFetching = () => {
             const placesWithReviews = (placesData || []).map((place: Place) => 
                 reviewService.initializeProvider(place)
             );
-            
-            console.log('⭐ Initialized review data for', therapistsWithReviews.length, 'therapists and', placesWithReviews.length, 'places');
             
             return {
                 therapists: therapistsWithReviews,
@@ -106,7 +60,7 @@ export const useDataFetching = () => {
                     isLive: true,
                     location: 'Ubud, Bali',
                     price: 250000,
-                    massageTypes: ['Swedish', 'Deep Tissue', 'Aromatherapy'],
+                    massageTypes: ['Swedish Massage', 'Deep Tissue Massage', 'Aromatherapy Massage', 'Hot Stone Massage', 'Reflexology'],
                     mainImage: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400',
                     profilePicture: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=200'
                 },
@@ -120,7 +74,7 @@ export const useDataFetching = () => {
                     isLive: true,
                     location: 'Seminyak, Bali',
                     price: 300000,
-                    massageTypes: ['Balinese', 'Hot Stone', 'Reflexology'],
+                    massageTypes: ['Balinese Massage', 'Thai Massage', 'Shiatsu Massage', 'Acupressure', 'Jamu Massage'],
                     mainImage: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400',
                     profilePicture: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=200'
                 },
@@ -134,9 +88,37 @@ export const useDataFetching = () => {
                     isLive: true,
                     location: 'Canggu, Bali',
                     price: 280000,
-                    massageTypes: ['Sports', 'Thai', 'Myofascial'],
+                    massageTypes: ['Sports Massage', 'Lymphatic Massage', 'Deep Tissue Massage', 'Prenatal Massage', 'Reflexology'],
                     mainImage: 'https://images.unsplash.com/photo-1594824804732-ca8db0cd94e0?w=400',
                     profilePicture: 'https://images.unsplash.com/photo-1594824804732-ca8db0cd94e0?w=200'
+                },
+                {
+                    $id: 'mock-4',
+                    id: 'mock-4',
+                    name: 'Kadek Sari',
+                    bio: 'Traditional Indonesian massage expert specializing in heritage techniques',
+                    rating: 4.9,
+                    experience: '10 years',
+                    isLive: true,
+                    location: 'Denpasar, Bali',
+                    price: 320000,
+                    massageTypes: ['Javanese Massage', 'Kerokan (Coin Rub)', 'Jamu Massage', 'Acupressure', 'Lomi Lomi Massage'],
+                    mainImage: 'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=400',
+                    profilePicture: 'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=200'
+                },
+                {
+                    $id: 'mock-5',
+                    id: 'mock-5',
+                    name: 'Alex Rodriguez',
+                    bio: 'Certified therapeutic massage specialist with western and eastern techniques',
+                    rating: 4.6,
+                    experience: '4 years',
+                    isLive: true,
+                    location: 'Sanur, Bali',
+                    price: 260000,
+                    massageTypes: ['Indian Head Massage', 'Hot Stone Massage', 'Aromatherapy Massage', 'Thai Massage', 'Prenatal Massage'],
+                    mainImage: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=400',
+                    profilePicture: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=200'
                 }
             ];
 
@@ -151,6 +133,7 @@ export const useDataFetching = () => {
                     location: 'Ubud, Bali',
                     averagePrice: 350000,
                     services: ['Full Body Massage', 'Facial', 'Body Scrub'],
+                    massageTypes: ['Swedish Massage', 'Balinese Massage', 'Aromatherapy Massage', 'Hot Stone Massage', 'Javanese Massage'],
                     mainImage: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=400'
                 },
                 {
@@ -163,7 +146,34 @@ export const useDataFetching = () => {
                     location: 'Seminyak, Bali',
                     averagePrice: 400000,
                     services: ['Couples Massage', 'Hot Stone', 'Aromatherapy'],
+                    massageTypes: ['Thai Massage', 'Lomi Lomi Massage', 'Deep Tissue Massage', 'Shiatsu Massage', 'Indian Head Massage'],
                     mainImage: 'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=400'
+                },
+                {
+                    $id: 'place-3',
+                    id: 'place-3',
+                    name: 'Traditional Healing Sanctuary',
+                    description: 'Authentic Indonesian healing and massage center',
+                    rating: 4.7,
+                    isLive: true,
+                    location: 'Sanur, Bali',
+                    averagePrice: 275000,
+                    services: ['Traditional Healing', 'Herbal Treatments', 'Jamu Massage'],
+                    massageTypes: ['Jamu Massage', 'Kerokan (Coin Rub)', 'Acupressure', 'Reflexology', 'Prenatal Massage'],
+                    mainImage: 'https://images.unsplash.com/photo-1596178065887-1198b6148b2b?w=400'
+                },
+                {
+                    $id: 'place-4',
+                    id: 'place-4',
+                    name: 'Sports Recovery Clinic',
+                    description: 'Professional sports massage and rehabilitation center',
+                    rating: 4.6,
+                    isLive: true,
+                    location: 'Canggu, Bali',
+                    averagePrice: 320000,
+                    services: ['Sports Massage', 'Injury Recovery', 'Physiotherapy'],
+                    massageTypes: ['Sports Massage', 'Lymphatic Massage', 'Deep Tissue Massage', 'Hot Stone Massage', 'Swedish Massage'],
+                    mainImage: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400'
                 }
             ];
 

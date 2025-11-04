@@ -11,6 +11,7 @@ interface Therapist {
     discount: number;
     timeLeft: string;
     services: string[];
+    whatsappNumber: string;
 }
 
 interface TodaysDiscountsPageProps {
@@ -30,7 +31,8 @@ const TodaysDiscountsPage: React.FC<TodaysDiscountsPageProps> = ({ onBack }) => 
             rating: 4.9,
             discount: 30,
             timeLeft: '2h 45m',
-            services: ['Swedish Massage', 'Deep Tissue', 'Hot Stone']
+            services: ['Swedish Massage', 'Deep Tissue', 'Hot Stone'],
+            whatsappNumber: '+6281234567890'
         },
         {
             id: '2',
@@ -40,7 +42,8 @@ const TodaysDiscountsPage: React.FC<TodaysDiscountsPageProps> = ({ onBack }) => 
             rating: 4.8,
             discount: 25,
             timeLeft: '4h 15m',
-            services: ['Balinese Massage', 'Aromatherapy', 'Reflexology']
+            services: ['Balinese Massage', 'Aromatherapy', 'Reflexology'],
+            whatsappNumber: '+6281234567891'
         },
         {
             id: '3',
@@ -50,7 +53,8 @@ const TodaysDiscountsPage: React.FC<TodaysDiscountsPageProps> = ({ onBack }) => 
             rating: 5.0,
             discount: 40,
             timeLeft: '1h 30m',
-            services: ['Thai Massage', 'Sports Massage', 'Prenatal']
+            services: ['Thai Massage', 'Sports Massage', 'Prenatal'],
+            whatsappNumber: '+6281234567892'
         },
         {
             id: '4',
@@ -60,7 +64,8 @@ const TodaysDiscountsPage: React.FC<TodaysDiscountsPageProps> = ({ onBack }) => 
             rating: 4.7,
             discount: 20,
             timeLeft: '5h 20m',
-            services: ['Traditional Balinese', 'Lomi Lomi', 'Shiatsu']
+            services: ['Traditional Balinese', 'Lomi Lomi', 'Shiatsu'],
+            whatsappNumber: '+6281234567893'
         },
         {
             id: '5',
@@ -70,7 +75,8 @@ const TodaysDiscountsPage: React.FC<TodaysDiscountsPageProps> = ({ onBack }) => 
             rating: 4.6,
             discount: 35,
             timeLeft: '3h 10m',
-            services: ['Deep Tissue', 'Trigger Point', 'Cupping']
+            services: ['Deep Tissue', 'Trigger Point', 'Cupping'],
+            whatsappNumber: '+6281234567894'
         },
         {
             id: '6',
@@ -80,7 +86,8 @@ const TodaysDiscountsPage: React.FC<TodaysDiscountsPageProps> = ({ onBack }) => 
             rating: 4.9,
             discount: 15,
             timeLeft: '6h 45m',
-            services: ['Swedish', 'Hot Stone', 'Couples Massage']
+            services: ['Swedish', 'Hot Stone', 'Couples Massage'],
+            whatsappNumber: '+6281234567895'
         }
     ]);
 
@@ -205,7 +212,7 @@ const TodaysDiscountsPage: React.FC<TodaysDiscountsPageProps> = ({ onBack }) => 
                                                 openBookingPopup(
                                                     therapist.name,
                                                     therapist.whatsappNumber,
-                                                    typeof therapist.id === 'string' ? therapist.id : therapist.id?.toString(),
+                                                    therapist.id,
                                                     'therapist'
                                                 );
                                             }

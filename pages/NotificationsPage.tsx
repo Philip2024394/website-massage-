@@ -2,12 +2,14 @@ import React from 'react';
 import type { Notification } from '../types';
 import { NotificationType } from '../types';
 import ClockIcon from '../components/icons/ClockIcon';
+import TherapistNotifications from '../components/TherapistNotifications';
 
 interface NotificationsPageProps {
     notifications: Notification[];
     onMarkAsRead: (notificationId: number) => void;
     onBack: () => void;
     t: any;
+    userRole?: string; // Added userRole prop
 }
 
 const BellIcon = ({ className = 'w-5 h-5' }) => (
@@ -23,7 +25,26 @@ const ExclamationIcon = ({ className = 'w-5 h-5' }) => (
 );
 
 
-const NotificationsPage: React.FC<NotificationsPageProps> = ({ notifications, onMarkAsRead, onBack, t }) => {
+const NotificationsPage: React.FC<NotificationsPageProps> = ({ 
+    notifications, 
+    onMarkAsRead, 
+    onBack, 
+    t, 
+    userRole 
+}) => {
+
+    // Use TherapistNotifications for therapists
+    if (userRole === 'therapist' || userRole === 'place') {
+        return (
+            <TherapistNotifications
+                notifications={notifications}
+                onMarkAsRead={onMarkAsRead}
+                onBack={onBack}
+                t={t}
+                userRole={userRole}
+            />
+        );
+    }
 
     const sortedNotifications = [...notifications].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 

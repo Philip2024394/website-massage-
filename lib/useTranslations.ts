@@ -45,51 +45,30 @@ export function useTranslations(language?: 'en' | 'id') {
     };
     
     const currentLanguage = language || getStoredLanguage();
-    console.log(`🚀 useTranslations called with language: ${currentLanguage} (provided: ${language}, stored: ${getStoredLanguage()})`);
     
     const [translations, setTranslations] = useState(fallbackTranslations);
     const [loading, setLoading] = useState(false);
 
-    console.log(`🔍 fallbackTranslations check:`, {
-        fallbackExists: !!fallbackTranslations,
-        fallbackKeys: Object.keys(fallbackTranslations),
-        hasEnglish: !!fallbackTranslations.en,
-        hasIndonesian: !!fallbackTranslations.id,
-        englishKeys: fallbackTranslations.en ? Object.keys(fallbackTranslations.en) : 'none',
-        indonesianKeys: fallbackTranslations.id ? Object.keys(fallbackTranslations.id) : 'none'
-    });
-
     const loadTranslations = useCallback(async () => {
         try {
-            console.log(`🌐 Loading translations for language: ${currentLanguage}`);
-            
             // Check cache first
             const cached = getCachedTranslations();
             if (cached && cached[currentLanguage]) {
-                console.log(`✅ Found cached translations for ${currentLanguage}`);
                 setTranslations(cached);
                 setLoading(false);
                 return;
             }
 
-            console.log(` Loading translations from Appwrite for ${currentLanguage}...`);
             // Load from Appwrite
             const appwriteTranslations = await translationsService.getAll();
             
             if (appwriteTranslations && appwriteTranslations[currentLanguage] && Object.keys(appwriteTranslations[currentLanguage]).length > 0) {
-                console.log(`✅ Loaded ${Object.keys(appwriteTranslations[currentLanguage]).length} keys for ${currentLanguage} from Appwrite`);
-                console.log(`🔧 Available translation keys for ${currentLanguage}:`, Object.keys(appwriteTranslations[currentLanguage]));
                 setTranslations(appwriteTranslations);
                 cacheTranslations(appwriteTranslations);
             } else {
-                console.log(`⚠️ No translations found for ${currentLanguage} in Appwrite, using fallback`);
-                console.log(`📁 Available fallback keys for ${currentLanguage}:`, Object.keys((fallbackTranslations as any)[currentLanguage] || {}));
-                console.log(`🏠 Fallback has landing?`, !!((fallbackTranslations as any)[currentLanguage]?.landing));
-                // FIXED: Use fallback translations when Appwrite is empty
-                // Don't merge with empty appwriteTranslations - just use fallback
+                // Use fallback translations when Appwrite is empty
                 setTranslations(fallbackTranslations);
                 cacheTranslations(fallbackTranslations);
-                console.log(`🔄 Using fallback translation keys for ${currentLanguage}:`, Object.keys((fallbackTranslations as any)[currentLanguage] || {}));
             }
         } catch (error) {
             console.error('Error loading translations, using fallback:', error);

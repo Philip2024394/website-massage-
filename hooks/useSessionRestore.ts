@@ -5,7 +5,6 @@
 
 import { useEffect, useCallback } from 'react';
 import { restoreSession } from '../lib/sessionManager';
-import type { Page } from '../types/pageTypes';
 
 interface UseSessionRestoreProps {
     setIsAdminLoggedIn: (value: boolean) => void;
@@ -15,7 +14,6 @@ interface UseSessionRestoreProps {
     setLoggedInAgent: (agent: any) => void;
     setIsHotelLoggedIn: (value: boolean) => void;
     setIsVillaLoggedIn: (value: boolean) => void;
-    setPage: (page: Page) => void;
     setAdminDashboardTab: (tab: 'platform-analytics' | 'confirm-therapists' | 'confirm-places' | 'confirm-accounts' | 'chat-messages' | 'drawer-buttons' | 'agent-commission' | 'bank-details' | 'payment-transactions' | 'shop-management' | 'membership-pricing') => void;
 }
 
@@ -28,7 +26,6 @@ export const useSessionRestore = (props: UseSessionRestoreProps) => {
         setLoggedInAgent,
         setIsHotelLoggedIn,
         setIsVillaLoggedIn,
-        setPage,
         setAdminDashboardTab
     } = props;
 
@@ -44,25 +41,25 @@ export const useSessionRestore = (props: UseSessionRestoreProps) => {
 
             console.log('✅ Session restored for:', sessionUser.type, sessionUser.email);
 
-            // Restore state based on user type
+            // Restore state based on user type (but don't auto-navigate to dashboards)
             switch (sessionUser.type) {
                 case 'admin':
                     setIsAdminLoggedIn(true);
                     setLoggedInUser({ id: sessionUser.id, type: 'admin', email: sessionUser.email });
                     setAdminDashboardTab('membership-pricing');
-                    setPage('adminDashboard');
+                    // Don't auto-navigate to admin dashboard - let user manually access it
                     break;
                 
                 case 'hotel':
                     setIsHotelLoggedIn(true);
                     setLoggedInUser({ id: sessionUser.id, type: 'hotel', email: sessionUser.email });
-                    setPage('hotelDashboard');
+                    // Don't auto-navigate to hotel dashboard - let user manually access it
                     break;
                 
                 case 'villa':
                     setIsVillaLoggedIn(true);
                     setLoggedInUser({ id: sessionUser.id, type: 'villa', email: sessionUser.email });
-                    setPage('villaDashboard');
+                    // Don't auto-navigate to villa dashboard - let user manually access it
                     break;
                 
                 case 'therapist':
@@ -72,7 +69,7 @@ export const useSessionRestore = (props: UseSessionRestoreProps) => {
                         email: sessionUser.email,
                         ...sessionUser.data
                     });
-                    setPage('therapistDashboard');
+                    // Don't auto-navigate to therapist dashboard - let user manually access it
                     break;
                 
                 case 'place':
@@ -82,7 +79,7 @@ export const useSessionRestore = (props: UseSessionRestoreProps) => {
                         email: sessionUser.email,
                         ...sessionUser.data
                     });
-                    setPage('placeDashboard');
+                    // Don't auto-navigate to place dashboard - let user manually access it
                     break;
                 
                 case 'agent':
@@ -91,7 +88,7 @@ export const useSessionRestore = (props: UseSessionRestoreProps) => {
                         email: sessionUser.email,
                         ...sessionUser.data
                     });
-                    setPage('agentDashboard');
+                    // Don't auto-navigate to agent dashboard - let user manually access it
                     break;
                 
                 case 'user':
@@ -100,7 +97,7 @@ export const useSessionRestore = (props: UseSessionRestoreProps) => {
                         email: sessionUser.email,
                         ...sessionUser.data
                     });
-                    setPage('customerDashboard');
+                    // Don't auto-navigate to customer dashboard - let user manually access it
                     break;
                 
                 default:
@@ -117,21 +114,38 @@ export const useSessionRestore = (props: UseSessionRestoreProps) => {
         setLoggedInAgent,
         setIsHotelLoggedIn,
         setIsVillaLoggedIn,
-        setPage,
         setAdminDashboardTab
     ]);
 
-    // Restore session on app startup
+    // Restore session on app startup - ALWAYS call this hook in the same order
     useEffect(() => {
-        // Skip session restoration if the user explicitly wants to start fresh
-        const startFresh = sessionStorage.getItem('start_fresh');
-        if (startFresh) {
-            console.log('🔄 Starting fresh - skipping session restoration');
-            return;
-        }
+        let isMounted = true;
+        
+        const runSessionRestore = async () => {
+            try {
+                // Skip session restoration if the user explicitly wants to start fresh
+                const startFresh = sessionStorage.getItem('start_fresh');
+                if (startFresh) {
+                    console.log('🔄 Starting fresh - skipping session restoration');
+                    return;
+                }
 
-        restoreUserSession();
-    }, [restoreUserSession]);
+                if (isMounted) {
+                    await restoreUserSession();
+                }
+            } catch (error) {
+                if (isMounted) {
+                    console.error('❌ Session restoration error:', error);
+                }
+            }
+        };
+
+        runSessionRestore();
+        
+        return () => {
+            isMounted = false;
+        };
+    }, []); // Empty dependency array to run only once
 
     return { restoreUserSession };
 };

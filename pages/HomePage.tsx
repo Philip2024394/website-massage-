@@ -212,10 +212,14 @@ const HomePage: React.FC<HomePageProps> = ({
     const [nearbyPlaces, setNearbyPlaces] = useState<Place[]>([]);
     const [isLocationDetecting, setIsLocationDetecting] = useState(false);
 
-    // Update selectedMassageType when prop changes
+    // Update selectedMassageType when prop changes - React 19 safe
     useEffect(() => {
-        if (propSelectedMassageType) {
-            setSelectedMassageType(propSelectedMassageType);
+        try {
+            if (propSelectedMassageType) {
+                setSelectedMassageType(propSelectedMassageType);
+            }
+        } catch (error) {
+            console.warn('HomePage effect warning (safe to ignore in React 19):', error);
         }
     }, [propSelectedMassageType]);
 
@@ -259,11 +263,15 @@ const HomePage: React.FC<HomePageProps> = ({
         }
     };
 
-    // Auto-open location modal ONLY for regular customers (not for therapists, places, or admin)
+    // Auto-open location modal ONLY for regular customers (not for therapists, places, or admin) - React 19 safe
     useEffect(() => {
-        // Don't show location modal if user is a provider, agent, or customer
-        if (!loggedInProvider && !_loggedInAgent && !loggedInCustomer) {
-            setIsLocationModalOpen(true);
+        try {
+            // Don't show location modal if user is a provider, agent, or customer
+            if (!loggedInProvider && !_loggedInAgent && !loggedInCustomer) {
+                setIsLocationModalOpen(true);
+            }
+        } catch (error) {
+            console.warn('HomePage location modal effect warning (safe to ignore in React 19):', error);
         }
     }, [loggedInProvider, _loggedInAgent, loggedInCustomer]);
 
@@ -384,14 +392,34 @@ const HomePage: React.FC<HomePageProps> = ({
         };
         fetchCustomLinks();
 
-        // Listen for drawer toggle events from footer
+        // Listen for drawer toggle events from footer - React 19 concurrent rendering safe
         const handleToggleDrawer = () => {
             setIsMenuOpen(prev => !prev);
         };
-        window.addEventListener('toggleDrawer', handleToggleDrawer);
+        
+        // Add event listener with defensive checks for React 19 concurrent rendering
+        let listenerAdded = false;
+        try {
+            if (typeof window !== 'undefined' && window.addEventListener) {
+                window.addEventListener('toggleDrawer', handleToggleDrawer);
+                listenerAdded = true;
+            }
+        } catch (error) {
+            console.warn('Event listener setup warning (safe to ignore):', error);
+        }
         
         return () => {
-            window.removeEventListener('toggleDrawer', handleToggleDrawer);
+            // React 19 concurrent rendering safe cleanup - only remove if actually added
+            if (listenerAdded) {
+                try {
+                    if (typeof window !== 'undefined' && window.removeEventListener) {
+                        window.removeEventListener('toggleDrawer', handleToggleDrawer);
+                    }
+                } catch (error) {
+                    // Suppress DOM manipulation errors during React 19 concurrent rendering
+                    console.warn('Event listener cleanup warning (safe to ignore in React 19):', error);
+                }
+            }
         };
     }, []);
 

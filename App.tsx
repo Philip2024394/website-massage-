@@ -12,6 +12,8 @@ import { bookingExpirationService } from './services/bookingExpirationService';
 // Temporarily removed: import SimpleLanguageSelector from './components/SimpleLanguageSelector';
 
 const App = () => {
+    console.log('🏗️ App.tsx: App component rendering...');
+    
     // Booking popup state
     const [isBookingPopupOpen, setIsBookingPopupOpen] = useState(false);
     const [bookingProviderInfo, setBookingProviderInfo] = useState<{
@@ -57,32 +59,15 @@ const App = () => {
         };
     }, []);
 
-    // All hooks combined
+    // All hooks combined - ALWAYS call this hook at the same point
     const hooks = useAllHooks();
     const { state, navigation, authHandlers, providerAgentHandlers, derived } = hooks;
     
     // Use the actual language from hooks, not hardcoded
     const { language, setLanguage } = state;
     
-    // Debug: Check what navigation handlers we have
-    console.log('🔧 App.tsx with Language State:', {
-        handleLanguageSelect: !!setLanguage,
-        currentLanguage: language
-    });
-    
-    // Get translations using the actual language state
+    // Get translations using the actual language state - ALWAYS call this hook
     const { t } = useTranslations(language);
-    
-    // Debug: Check what translations we're getting and t function type
-    console.log('🔍 App.tsx translation debug:', {
-        language,
-        tType: typeof t,
-        tIsFunction: typeof t === 'function',
-        headerWelcome: typeof t === 'function' ? t('header.welcome') : 'T_NOT_FUNCTION',
-        landingGetStarted: typeof t === 'function' ? t('landing.getStarted') : 'T_NOT_FUNCTION',
-        sampleTranslation: typeof t === 'function' ? t('common.loading') : 'T_NOT_FUNCTION',
-        currentPage: state.page
-    });
 
     // Use the actual language handler from hooks
     const handleLanguageSelect = async (lang: 'en' | 'id') => {
@@ -271,7 +256,7 @@ const App = () => {
 
             <AppFooterLayout
                 showFooter={derived.showFooter}
-                showFloatingButton={true}
+                showFloatingButton={false}
                 page={state.page}
                 language={state.language}
                 userLocation={state.userLocation}

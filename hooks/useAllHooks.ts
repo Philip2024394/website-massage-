@@ -16,7 +16,7 @@ import { useSessionRestore } from './useSessionRestore';
 import { useEffect } from 'react';
 
 export const useAllHooks = () => {
-    // @ts-ignore - Centralized state
+    // ALWAYS call hooks in the same order - never conditionally
     const state = useAppState();
     const dataFetching = useDataFetching();
     
@@ -24,10 +24,7 @@ export const useAllHooks = () => {
     useEffect(() => {
         const initializeData = async () => {
             try {
-                console.log('🚀 Initializing app data...');
                 const { therapists, places } = await dataFetching.fetchPublicData();
-                console.log('✅ Setting therapists in state:', therapists.length);
-                console.log('✅ Setting places in state:', places.length);
                 state.setTherapists(therapists);
                 state.setPlaces(places);
             } catch (error) {
@@ -39,9 +36,9 @@ export const useAllHooks = () => {
         };
 
         initializeData();
-    }, []); // Only run once on mount
+    }, []); // Empty dependency array - only run once on mount
     
-    // @ts-ignore - Navigation hook
+    // ALWAYS call navigation hook in the same order
     const navigation = useNavigation({
         setPage: state.setPage,
         setSelectedPlace: state.setSelectedPlace,
@@ -65,7 +62,7 @@ export const useAllHooks = () => {
         setShowRegisterPrompt: state.setShowRegisterPrompt
     });
     
-    // @ts-ignore - Auth handlers
+    // ALWAYS call auth handlers in the same order
     const authHandlers = useAuthHandlers({
         setPage: state.setPage,
         setIsAdminLoggedIn: state.setIsAdminLoggedIn,
@@ -86,11 +83,10 @@ export const useAllHooks = () => {
         setLoggedInAgent: state.setLoggedInAgent,
         setIsHotelLoggedIn: state.setIsHotelLoggedIn,
         setIsVillaLoggedIn: state.setIsVillaLoggedIn,
-        setPage: state.setPage,
         setAdminDashboardTab: state.setAdminDashboardTab
     });
     
-    // @ts-ignore - Booking handlers
+    // ALWAYS call booking handlers in the same order
     const bookingHandlers = useBookingHandlers({
         language: state.language,
         user: state.user,
@@ -110,7 +106,7 @@ export const useAllHooks = () => {
         t: {} // Will be provided by App.tsx
     });
     
-    // @ts-ignore - Provider/Agent handlers
+    // ALWAYS call provider/agent handlers in the same order
     const providerAgentHandlers = useProviderAgentHandlers({
         loggedInProvider: state.loggedInProvider,
         loggedInAgent: state.loggedInAgent,
@@ -125,7 +121,7 @@ export const useAllHooks = () => {
         setPlaces: state.setPlaces
     });
     
-    // @ts-ignore - Footer navigation
+    // ALWAYS call footer navigation in the same order
     const footerNav = useFooterNavigation({
         setPage: state.setPage,
         loggedInUser: state.loggedInUser,
@@ -134,8 +130,8 @@ export const useAllHooks = () => {
         loggedInCustomer: state.loggedInCustomer,
         isHotelLoggedIn: state.isHotelLoggedIn
     });
-    
-    // @ts-ignore - Derived state
+
+    // ALWAYS call derived state in the same order
     const derived = useDerivedState({
         isAdminLoggedIn: state.isAdminLoggedIn,
         loggedInProvider: state.loggedInProvider,
@@ -148,7 +144,7 @@ export const useAllHooks = () => {
         activeChatRoom: state.activeChatRoom
     });
 
-    // @ts-ignore - Home page handlers
+    // ALWAYS call home handlers in the same order
     const homeHandlers = useHomeHandlers({
         user: state.user,
         language: state.language,

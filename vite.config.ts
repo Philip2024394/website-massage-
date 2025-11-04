@@ -39,10 +39,11 @@ export default defineConfig({
         '**/*.log',
       ],
     },
-    // Increase timeout to prevent connection drops
+    // Increase timeout to prevent connection drops with conservative HMR
     hmr: {
       timeout: 30000,
-      overlay: true,
+      overlay: false, // Disable error overlay to prevent conflicts
+      port: 24682, // Use different port for HMR to avoid conflicts
     },
     // Graceful shutdown handling
     strictPort: false,

@@ -48,6 +48,8 @@ import HowItWorksPage from './pages/HowItWorksPage';
 import MassageBaliPage from './pages/MassageBaliPage';
 import BlogIndexPage from './pages/BlogIndexPage';
 import FAQPage from './pages/FAQPage';
+import IndastreetPartnersPage from './pages/IndastreetPartnersPage';
+import ErrorBoundary from './components/ErrorBoundary';
 import BalineseMassagePage from './pages/BalineseMassagePage';
 import DeepTissueMassagePage from './pages/DeepTissueMassagePage';
 import SwedishMassagePage from './pages/SwedishMassagePage';
@@ -86,7 +88,6 @@ import ReferralPage from './pages/ReferralPage';
 import CoinHistoryPage from './pages/CoinHistoryPage';
 import CoinSystemTestPage from './pages/CoinSystemTestPage';
 import TodaysDiscountsPage from './pages/TodaysDiscountsPage';
-import BookingPopup from './components/BookingPopup';
 import AcceptBookingPage from './pages/AcceptBookingPage';
 import { APP_CONFIG } from './config/appConfig';
 
@@ -253,8 +254,20 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
     } = props;
 
     if (isLoading && page !== 'landing') {
-        return <div className="flex justify-center items-center h-screen"><div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand-green"></div></div>;
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand-green"></div>
+            </div>
+        );
     }
+
+    console.log('🔄 AppRouter rendering with page:', page);
+    console.log('🔄 AppRouter props check:', { 
+        page, 
+        isLoading, 
+        hasLanguageSelect: !!handleLanguageSelect, 
+        hasEnterApp: !!handleEnterApp 
+    });
 
     switch (page) {
         case 'landing': 
@@ -264,13 +277,17 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return <UnifiedLoginPage />;
             
         case 'therapistLogin': 
-            return <TherapistLoginPage 
-                onSuccess={(therapistId) => {
-                    setLoggedInProvider({ id: therapistId, type: 'therapist' });
-                    setPage('therapistDashboard');
-                }} 
-                onBack={handleBackToHome} 
-            />;
+            return (
+                <ErrorBoundary>
+                    <TherapistLoginPage 
+                        onSuccess={(therapistId) => {
+                            setLoggedInProvider({ id: therapistId, type: 'therapist' });
+                            setPage('therapistDashboard');
+                        }} 
+                        onBack={handleBackToHome} 
+                    />
+                </ErrorBoundary>
+            );
             
         case 'home':
             return <HomePage 
@@ -376,7 +393,6 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'adminDashboard': 
             return isAdminLoggedIn && <AdminDashboardPage 
                 onLogout={handleAdminLogout}
-                onNavigateToHome={handleBackToHome}
             /> || null;
             
         case 'providerAuth': 
@@ -389,7 +405,6 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onLogout={handleProviderLogout}
                 onNavigateToNotifications={handleNavigateToNotifications}
                 onUpdateBookingStatus={handleUpdateBookingStatus}
-                onNavigateToHome={handleBackToHome}
                 onNavigate={(page: Page) => setPage(page as Page)}
                 handleNavigateToAdminLogin={handleNavigateToAdminLogin}
                 bookings={bookings.filter(b => b.providerId === loggedInProvider.id && b.providerType === 'therapist')}
@@ -498,11 +513,26 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             </div>;
             
         case 'notifications': 
+            // Determine user role
+            let userRole = 'user'; // default
+            if (isAdminLoggedIn) {
+                userRole = 'admin';
+            } else if (isHotelLoggedIn) {
+                userRole = 'hotel';
+            } else if (isVillaLoggedIn) {
+                userRole = 'villa';
+            } else if (loggedInAgent) {
+                userRole = 'agent';
+            } else if (loggedInProvider) {
+                userRole = loggedInProvider.type; // 'therapist' or 'place'
+            }
+            
             return <NotificationsPage 
                 notifications={notifications}
                 onMarkAsRead={handleMarkNotificationAsRead}
                 onBack={handleBackToHome}
                 t={t.notifications}
+                userRole={userRole}
             />;
             
         case 'massageTypes': 
@@ -669,6 +699,9 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 therapists={therapists}
                 places={places}
             />;
+            
+        case 'indastreet-partners': 
+            return <IndastreetPartnersPage />;
             
         case 'balinese-massage': 
             // @ts-ignore - Prop interface mismatch 

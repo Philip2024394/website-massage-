@@ -11,16 +11,10 @@ import { ID, Query } from 'appwrite';
 const GOOGLE_TRANSLATE_API_KEY = (import.meta as any).env?.VITE_GOOGLE_TRANSLATE_API_KEY || '';
 const GOOGLE_TRANSLATE_ENDPOINT = 'https://translation.googleapis.com/language/translate/v2';
 
-// Supported languages
+// Supported languages - Only English and Indonesian
 export const SUPPORTED_LANGUAGES = {
   en: 'English',
-  id: 'Indonesian',
-  zh: 'Chinese (Simplified)',
-  ja: 'Japanese',
-  ko: 'Korean',
-  ru: 'Russian',
-  fr: 'French',
-  de: 'German'
+  id: 'Indonesian'
 } as const;
 
 export type LanguageCode = keyof typeof SUPPORTED_LANGUAGES;
@@ -33,12 +27,6 @@ export interface TranslationEntry {
   key: string; // Unique key for the text (e.g., "bookingPage.guestName")
   en: string;  // Source text in English
   id?: string; // Indonesian translation
-  zh?: string; // Chinese translation
-  ja?: string; // Japanese translation
-  ko?: string; // Korean translation
-  ru?: string; // Russian translation
-  fr?: string; // French translation
-  de?: string; // German translation
   lastUpdated?: string;
   autoTranslated?: boolean;
 }

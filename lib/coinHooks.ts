@@ -9,12 +9,13 @@
  */
 
 import { coinService } from './coinService';
+import { rewardBannerService, UserType } from './rewardBannerService';
 
 /**
  * Track daily sign-in and award coins
  * Call this when user opens the app each day
  */
-export async function trackDailySignIn(userId: string, currentStreak: number = 1): Promise<boolean> {
+export async function trackDailySignIn(userId: string, currentStreak: number = 1, userType: UserType = 'user'): Promise<boolean> {
     try {
         const today = new Date().toDateString();
         const lastSignIn = localStorage.getItem(`lastSignIn_${userId}`);
@@ -26,6 +27,14 @@ export async function trackDailySignIn(userId: string, currentStreak: number = 1
 
         // Award coins based on streak
         await coinService.awardDailySignIn(userId, currentStreak);
+        
+        // Queue reward banner for display
+        rewardBannerService.queueRewardBanner(
+            userType,
+            'daily-signin',
+            currentStreak >= 7 ? 25 : currentStreak >= 2 ? 15 : 10,
+            currentStreak
+        );
         
         // Update last sign-in
         localStorage.setItem(`lastSignIn_${userId}`, today);
@@ -44,7 +53,8 @@ export async function trackDailySignIn(userId: string, currentStreak: number = 1
 export async function trackBookingCompletion(
     userId: string,
     bookingId: string,
-    totalBookings: number
+    totalBookings: number,
+    userType: UserType = 'user'
 ): Promise<boolean> {
     try {
         // Check if this booking already awarded coins
@@ -56,6 +66,16 @@ export async function trackBookingCompletion(
         // Award coins
         const isFirstBooking = totalBookings === 1;
         await coinService.awardBookingCompletion(userId, totalBookings, isFirstBooking);
+        
+        // Queue reward banner for display
+        const coinAmount = totalBookings >= 10 ? 100 : 50;
+        rewardBannerService.queueRewardBanner(
+            userType,
+            'booking-completion',
+            coinAmount,
+            undefined,
+            totalBookings
+        );
         
         // Mark as awarded
         localStorage.setItem(awardedKey, 'true');

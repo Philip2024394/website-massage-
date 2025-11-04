@@ -81,6 +81,7 @@ export type Page =
     | 'coinSystemTest'
     | 'todaysDiscounts' 
     | 'faq' 
+    | 'indastreet-partners'
     | 'balinese-massage' 
     | 'deep-tissue-massage' 
     | 'swedish-massage'

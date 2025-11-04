@@ -309,6 +309,21 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                 </button>
 
                                 <button 
+                                    onClick={() => handleItemClick(() => onNavigate?.('indastreet-partners'))}
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-orange-500 group transform hover:scale-105"
+                                >
+                                    <div className="p-2 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg">
+                                        <Users className="w-5 h-5 text-white" />
+                                    </div>
+                                    <div className="flex-grow">
+                                        <p className="font-semibold text-gray-800 group-hover:text-orange-600 transition-colors">
+                                            🤝 Indastreet Partners
+                                        </p>
+                                        <p className="text-xs text-gray-500">View our partner directory</p>
+                                    </div>
+                                </button>
+
+                                <button 
                                     onClick={() => handleItemClick(() => onNavigate?.('about-us'))}
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-cyan-500 group transform hover:scale-105"
                                 >
