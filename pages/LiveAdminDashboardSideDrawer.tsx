@@ -12,7 +12,7 @@ import {
     bookingService
 } from '../lib/appwriteService';
 import { analyticsService } from '../services/analyticsService';
-import AdminChatListPage from './AdminChatListPage';
+// import AdminChatListPage from './AdminChatListPage'; // Chat system removed
 
 interface LiveStats {
     totalUsers: number;
@@ -292,7 +292,11 @@ const LiveAdminDashboardSideDrawer: React.FC<LiveAdminDashboardProps> = ({ onLog
     // Main Content Component
     const MainContent = () => {
         if (activeView === 'chat') {
-            return <AdminChatListPage />;
+            return (
+                <div className="p-6 text-center text-gray-500">
+                    Chat system is currently disabled
+                </div>
+            );
         }
 
         if (activeView === 'dashboard') {

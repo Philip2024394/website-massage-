@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { adminAuth } from '../lib/auth';
 import { saveSessionCache } from '../lib/sessionManager';
 import { checkRateLimit, handleAppwriteError, resetRateLimit, resetAllRateLimits } from '../lib/rateLimitUtils';
-import { trackDailySignIn } from '../lib/coinHooks';
 
 interface AdminLoginPageProps {
     onAdminLogin: () => void;
@@ -72,13 +71,6 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin: _onAdminL
                 documentId: response.documentId || '',
                 data: { $id: response.userId, email }
             });
-            
-            // Track daily sign-in for coin rewards
-            try {
-                await trackDailySignIn(response.userId!);
-            } catch (coinError) {
-                console.warn('Daily sign-in tracking failed:', coinError);
-            }
             
             console.log('✅ Admin login successful');
             

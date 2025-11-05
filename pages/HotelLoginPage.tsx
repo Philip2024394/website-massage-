@@ -113,113 +113,124 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) =>
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
-                {/* Header */}
+        <div 
+            className="h-screen flex items-center justify-center p-4 relative overflow-hidden"
+            style={{
+                backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/garden%20forest.png?updatedAt=1761334454082)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat'
+            }}
+        >
+            {/* Overlay for better readability */}
+            <div className="absolute inset-0 bg-black/40"></div>
+
+            {/* Home Button */}
+            <button
+                onClick={onBack}
+                className="fixed top-6 left-6 w-12 h-12 bg-orange-500 hover:bg-orange-600 rounded-full shadow-lg flex items-center justify-center transition-all z-20 border border-orange-400"
+                aria-label="Go to home"
+            >
+                <HomeIcon className="w-6 h-6 text-white" />
+            </button>
+
+            {/* Glass Effect Login Container */}
+            <div className="max-w-md w-full bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-8 relative z-10 border border-white/20">
                 <div className="text-center mb-8">
-                    <div className="flex items-center justify-center mb-4">
-                        <div className="p-3 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl">
-                            {isSignUp ? (
-                                <UserPlus className="w-8 h-8 text-white" />
-                            ) : (
-                                <LogIn className="w-8 h-8 text-white" />
-                            )}
-                        </div>
-                    </div>
-                    <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                        {isSignUp ? 'Create Hotel Account' : 'Hotel Sign In'}
+                    <h1 className="text-4xl font-bold mb-2">
+                        <span className="text-white">Inda</span>
+                        <span className="text-orange-400">Street</span>
                     </h1>
-                    <p className="text-gray-600">
-                        {isSignUp 
-                            ? 'Register your hotel with IndaStreet'
-                            : 'Access your hotel dashboard'
-                        }
-                    </p>
+                    <p className="text-white/90 font-medium">Hotel Account</p>
                 </div>
 
-                {/* Form */}
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="flex mb-6 bg-white/10 backdrop-blur-sm rounded-lg p-1 border border-white/20">
+                    <button
+                        onClick={() => {
+                            setIsSignUp(false);
+                            setError(''); // Clear error when switching modes
+                        }}
+                        className={`flex-1 py-2 px-4 rounded-md transition-all ${
+                            !isSignUp ? 'bg-orange-500 shadow-lg text-white font-semibold' : 'text-white/90 hover:bg-white/5'
+                        }`}
+                    >
+                        Sign In
+                    </button>
+                    <button
+                        onClick={() => {
+                            setIsSignUp(true);
+                            setError(''); // Clear error when switching modes
+                        }}
+                        className={`flex-1 py-2 px-4 rounded-md transition-all ${
+                            isSignUp ? 'bg-orange-500 shadow-lg text-white font-semibold' : 'text-white/90 hover:bg-white/5'
+                        }`}
+                    >
+                        Create Account
+                    </button>
+                </div>
+
+                {error && (
+                    <div className={`mb-4 p-3 rounded-lg backdrop-blur-sm border ${
+                        error.includes('created') || error.includes('Switched to Sign In mode')
+                            ? 'bg-blue-500/20 text-blue-100 border-blue-400/30' 
+                            : 'bg-red-500/20 text-red-100 border-red-400/30'
+                    }`}>
+                        {error}
+                    </div>
+                )}
+
+                <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                            Email Address
+                        <label className="block text-sm font-medium text-white/90 mb-2">
+                            Email
                         </label>
                         <input
-                            id="email"
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                            className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
                             placeholder="hotel@example.com"
                             required
+                            onKeyDown={(e) => e.key === 'Enter' && handleSubmit}
                         />
                     </div>
 
                     <div>
-                        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-white/90 mb-2">
                             Password
                         </label>
                         <input
-                            id="password"
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                            placeholder="••••••••"
+                            className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
+                            placeholder="Enter your password"
                             required
                             minLength={8}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSubmit}
                         />
                     </div>
-
-                    {error && (
-                        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                            <p className="text-red-600 text-sm">{error}</p>
-                        </div>
-                    )}
 
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white py-3 px-4 rounded-lg font-medium hover:from-amber-600 hover:to-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                        className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 px-4 mt-6 shadow-lg rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium flex items-center justify-center gap-2"
                     >
                         {loading ? (
-                            <div className="flex items-center justify-center">
-                                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
-                                {isSignUp ? 'Creating Account...' : 'Signing In...'}
-                            </div>
+                            'Processing...'
+                        ) : isSignUp ? (
+                            <>
+                                <UserPlus className="w-5 h-5" />
+                                Create Account
+                            </>
                         ) : (
-                            isSignUp ? 'Create Account' : 'Sign In'
+                            <>
+                                <LogIn className="w-5 h-5" />
+                                Sign In
+                            </>
                         )}
                     </button>
                 </form>
-
-                {/* Toggle Mode */}
-                <div className="mt-6 text-center">
-                    <button
-                        onClick={() => {
-                            setIsSignUp(!isSignUp);
-                            setError('');
-                            setEmail('');
-                            setPassword('');
-                        }}
-                        className="text-amber-600 hover:text-amber-700 font-medium"
-                    >
-                        {isSignUp 
-                            ? 'Already have an account? Sign In' 
-                            : "Don't have an account? Sign Up"
-                        }
-                    </button>
-                </div>
-
-                {/* Back Button */}
-                <div className="mt-6 text-center">
-                    <button
-                        onClick={onBack}
-                        className="flex items-center justify-center mx-auto text-gray-600 hover:text-gray-800 transition-colors"
-                    >
-                        <HomeIcon className="w-5 h-5 mr-2" />
-                        Back to Home
-                    </button>
-                </div>
             </div>
         </div>
     );

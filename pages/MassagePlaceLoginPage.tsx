@@ -112,12 +112,31 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
+        <div 
+            className="min-h-screen flex items-center justify-center p-4 relative"
+            style={{
+                backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/garden%20forest.png?updatedAt=1761334454082)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat'
+            }}
+        >
+            {/* Dark Overlay */}
+            <div className="absolute inset-0 bg-black/40"></div>
+
+            {/* Back Button */}
+            <button
+                onClick={onBack}
+                className="fixed top-6 left-6 w-12 h-12 bg-orange-500 hover:bg-orange-600 rounded-full shadow-lg flex items-center justify-center transition-all z-20 border border-orange-400"
+            >
+                <HomeIcon className="w-6 h-6 text-white" />
+            </button>
+
+            <div className="max-w-md w-full bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-8 relative z-10 border border-white/20 max-h-[90vh] overflow-y-auto">
                 {/* Header */}
                 <div className="text-center mb-8">
                     <div className="flex items-center justify-center mb-4">
-                        <div className="p-3 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl">
+                        <div className="p-3 bg-orange-500 rounded-xl shadow-lg">
                             {isSignUp ? (
                                 <UserPlus className="w-8 h-8 text-white" />
                             ) : (
@@ -125,13 +144,36 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
                             )}
                         </div>
                     </div>
-                    <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                        {isSignUp ? 'Create Place Account' : 'Place Sign In'}
+
+                    {/* Toggle Buttons */}
+                    <div className="flex mb-6 bg-white/10 backdrop-blur-sm rounded-lg p-1 border border-white/20">
+                        <button
+                            type="button"
+                            onClick={() => setIsSignUp(false)}
+                            className={`flex-1 py-2 px-4 rounded-md text-sm transition-all ${
+                                !isSignUp ? 'bg-orange-500 shadow-lg text-white font-semibold' : 'text-white/90 hover:bg-white/5'
+                            }`}
+                        >
+                            Sign In
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setIsSignUp(true)}
+                            className={`flex-1 py-2 px-4 rounded-md text-sm transition-all ${
+                                isSignUp ? 'bg-orange-500 shadow-lg text-white font-semibold' : 'text-white/90 hover:bg-white/5'
+                            }`}
+                        >
+                            Create Account
+                        </button>
+                    </div>
+
+                    <h1 className="text-2xl font-bold text-white mb-2">
+                        {isSignUp ? 'Create Massage Place Account' : 'Massage Place Sign In'}
                     </h1>
-                    <p className="text-gray-600">
+                    <p className="text-white/80">
                         {isSignUp 
                             ? 'Register your massage place with IndaStreet'
-                            : 'Access your place dashboard'
+                            : 'Access your place management dashboard'
                         }
                     </p>
                 </div>
@@ -139,7 +181,7 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                        <label htmlFor="email" className="block text-sm font-medium text-white/90 mb-2">
                             Email Address
                         </label>
                         <input
@@ -147,14 +189,14 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                            className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
                             placeholder="place@example.com"
                             required
                         />
                     </div>
 
                     <div>
-                        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                        <label htmlFor="password" className="block text-sm font-medium text-white/90 mb-2">
                             Password
                         </label>
                         <input
@@ -162,7 +204,7 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                            className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
                             placeholder="••••••••"
                             required
                             minLength={8}
@@ -170,15 +212,15 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
                     </div>
 
                     {error && (
-                        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                            <p className="text-red-600 text-sm">{error}</p>
+                        <div className={`p-4 rounded-lg backdrop-blur-sm ${error.includes('✅') ? 'bg-green-500/20 text-green-100 border border-green-400/30' : 'bg-red-500/20 text-red-100 border border-red-400/30'}`}>
+                            <p className="text-sm">{error}</p>
                         </div>
                     )}
 
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white py-3 px-4 rounded-lg font-medium hover:from-amber-600 hover:to-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                        className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 px-4 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg"
                     >
                         {loading ? (
                             <div className="flex items-center justify-center">
@@ -200,7 +242,7 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
                             setEmail('');
                             setPassword('');
                         }}
-                        className="text-amber-600 hover:text-amber-700 font-medium"
+                        className="text-white/90 hover:text-white font-medium backdrop-blur-sm bg-white/10 px-4 py-2 rounded-lg border border-white/20 transition-all hover:bg-white/20"
                     >
                         {isSignUp 
                             ? 'Already have an account? Sign In' 

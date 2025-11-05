@@ -3,8 +3,6 @@
  * Handles displaying reward banners when users earn coins
  */
 
-import React from 'react';
-
 export type UserType = 'user' | 'therapist' | 'place' | 'admin' | 'agent' | 'hotel' | 'villa';
 export type RewardType = 'daily-signin' | 'booking-completion' | 'milestone' | 'referral';
 

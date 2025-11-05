@@ -11,7 +11,7 @@ import {
     bookingService
 } from '../lib/appwriteService';
 import { analyticsService } from '../services/analyticsService';
-import AdminChatListPage from './AdminChatListPage';
+// import AdminChatListPage from './AdminChatListPage'; // Chat system removed
 
 // Add custom styles for better mobile experience
 const mobileStyles = `
@@ -407,7 +407,10 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                         <span>Logout</span>
                     </button>
                 </div>
-                <AdminChatListPage />
+                {/* <AdminChatListPage /> */}
+                <div className="p-6 text-center text-gray-500">
+                    Chat system is currently disabled
+                </div>
             </div>
         );
     }
