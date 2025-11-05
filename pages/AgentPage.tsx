@@ -79,9 +79,12 @@ const AgentPage: React.FC<AgentPageProps> = ({ onBack, onNavigateToAgentAuth, t:
                         As an IndaStreet Agent, you'll represent Indonesia's most trusted premium wellness platform, 
                         connecting professional massage therapists and spas with customers who value quality and convenience.
                     </p>
-                    <div className="inline-block bg-white text-orange-600 px-6 py-2 rounded-full font-semibold">
+                    <button 
+                        onClick={onNavigateToAgentAuth}
+                        className="inline-block bg-white text-orange-600 px-6 py-2 rounded-full font-semibold hover:bg-gray-100 transition-colors cursor-pointer"
+                    >
                         Join the Elite Network
-                    </div>
+                    </button>
                 </div>
 
                 {/* Income Benefits */}

@@ -21,6 +21,8 @@ export type Page =
     | 'agentDashboard' 
     | 'agentTerms' 
     | 'serviceTerms' 
+    | 'placeTerms' 
+    | 'placeDiscountBadge' 
     | 'privacy' 
     | 'cookies-policy' 
     | 'membership' 
@@ -112,6 +114,7 @@ export type Page =
     | 'coin-history' 
     | 'coinSystemTest'
     | 'coin-test' 
+    | 'website-management'
     | 'todays-discounts'
     | 'accept-booking';
 

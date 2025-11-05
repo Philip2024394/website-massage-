@@ -343,20 +343,42 @@ export interface User {
 }
 
 export interface Agent {
-    id: number;
+    // Document identifiers
     $id?: string; // Appwrite document ID
-    name: string;
-    email: string;
-    agentCode: string;
-    lastLogin?: string;
-    hasAcceptedTerms: boolean;
-    bankName?: string;
-    bankAccountNumber?: string;
-    bankAccountName?: string;
-    idCardImage?: string;
-    contactNumber?: string;
-    homeAddress?: string;
-    tier?: 'Standard' | 'Toptier';
+    agentId: string; // Required: Agent identifier
+    
+    // Required fields
+    name: string; // Required: Agent name
+    email: string; // Required: Email address
+    contactNumber: string; // Required: Contact number
+    agentCode: string; // Required: Unique agent code
+    hasAcceptedTerms: boolean; // Required: Terms acceptance
+    isActive: boolean; // Required: Account status
+    
+    // Optional fields
+    assignedDate?: string; // Assignment date
+    region?: string; // Region assignment
+    successRate?: number; // Success rate (0-1)
+    tier?: 'Standard' | 'Toptier'; // Agent tier
+    lastLogin?: string; // Last login timestamp
+    isLive?: boolean; // Live status
+    activeTherapists?: number; // Active therapist count
+    password?: string; // Password (managed by Auth)
+    whatsappNumber?: string; // WhatsApp number
+    commissionRate?: number; // Commission rate (max 23)
+    createdAt?: string; // Creation timestamp
+    totalEarnings?: number; // Total earnings
+    clients?: string; // Client list JSON
+    idCardImage?: string; // ID card image URL
+    
+    // Bank details
+    bankName?: string; // Bank name
+    bankAccountNumber?: string; // Bank account number
+    bankAccountName?: string; // Bank account holder name
+    homeAddress?: string; // Home address
+    
+    // Additional identifier
+    id?: string; // Alternative ID field
 }
 
 export interface UserLocation {

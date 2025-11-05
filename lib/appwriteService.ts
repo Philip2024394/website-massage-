@@ -2836,6 +2836,32 @@ export const shopOrderService = {
                     notes: order.notes || ''
                 }
             );
+
+            // Send admin notification for the cash out order
+            try {
+                const items = JSON.parse(JSON.stringify(order.items || []));
+                const itemNames = items.map((item: any) => item.itemName).join(', ');
+                
+                await adminMessageService.sendMessage({
+                    senderId: 'system',
+                    senderName: 'Coin Shop System',
+                    senderType: 'admin',
+                    receiverId: 'admin',
+                    message: `🏪 NEW COIN SHOP ORDER
+Order #: ${orderNumber}
+Customer: ${order.userName} (${order.userType})
+Phone: ${order.userPhone}
+Items: ${itemNames}
+Total Coins: ${order.totalCoins} 🪙
+Status: Pending
+                    
+Please process this order for delivery.`
+                });
+                console.log('✅ Admin notification sent for order:', orderNumber);
+            } catch (notificationError) {
+                console.warn('⚠️ Failed to send admin notification for order:', orderNumber, notificationError);
+                // Don't throw error as order was created successfully
+            }
             
             return newOrder as unknown as ShopOrder;
         } catch (error) {

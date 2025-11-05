@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { Place, Pricing, Booking, Notification } from '../types';
 import { BookingStatus, HotelVillaServiceStatus } from '../types';
-import { User, Calendar, TrendingUp, Hotel, FileCheck, LogOut, Bell, MessageSquare, Tag, X, Crown, Megaphone } from 'lucide-react';
+import { Calendar, TrendingUp, LogOut, Bell, MessageSquare, X, Megaphone, Menu } from 'lucide-react';
 import Button from '../components/Button';
 import DiscountSharePage from './DiscountSharePage';
 import MembershipPlansPage from './MembershipPlansPage';
 import ImageUpload from '../components/ImageUpload';
 import HotelVillaOptIn from '../components/HotelVillaOptIn';
 import Footer from '../components/Footer';
+import { placeService } from '../lib/appwriteService';
+import TherapistTermsPage from './TherapistTermsPage';
 import UserSolidIcon from '../components/icons/UserSolidIcon';
 import DocumentTextIcon from '../components/icons/DocumentTextIcon';
 import PhoneIcon from '../components/icons/PhoneIcon';
@@ -20,6 +22,19 @@ import { MASSAGE_TYPES_CATEGORIZED, ADDITIONAL_SERVICES } from '../constants/roo
 import { notificationService } from '../lib/appwriteService';
 import { soundNotificationService } from '../utils/soundNotificationService';
 import PushNotificationSettings from '../components/PushNotificationSettings';
+import { 
+    ColoredProfileIcon, 
+    ColoredCalendarIcon, 
+    ColoredAnalyticsIcon, 
+    ColoredHotelIcon, 
+    ColoredBellIcon, 
+    ColoredTagIcon, 
+    ColoredCrownIcon, 
+    ColoredDocumentIcon, 
+    ColoredGlobeIcon, 
+    ColoredHistoryIcon, 
+    ColoredCoinsIcon 
+} from '../components/ColoredIcons';
 // Removed chat import - chat system removed
 // import MemberChatWindow from '../components/MemberChatWindow';
 
@@ -28,11 +43,12 @@ interface PlaceDashboardPageProps {
     onSave: (data: Omit<Place, 'id' | 'isLive' | 'rating' | 'reviewCount' | 'email'>) => void;
     onLogout: () => void;
     onNavigateToNotifications: () => void;
+    onNavigate?: (page: any) => void;
     onUpdateBookingStatus: (bookingId: number, status: BookingStatus) => void;
     placeId: number;
     place?: Place | null;
-    bookings: Booking[];
-    notifications: Notification[];
+    bookings?: Booking[];
+    notifications?: Notification[];
     t: any;
 }
 
@@ -63,15 +79,15 @@ const BookingCard: React.FC<{ booking: Booking; onUpdateStatus: (id: number, sta
             <div className="flex justify-between items-start mb-3">
                 <div>
                     <p className="font-bold text-gray-900 text-lg">{booking.userName}</p>
-                    <p className="text-sm text-gray-600 mt-1">{t.service}: {booking.service} min</p>
+                    <p className="text-sm text-gray-600 mt-1">{t?.service || 'Service'}: {booking.service} min</p>
                 </div>
                 <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${statusColors[booking.status]}`}>{booking.status}</span>
             </div>
-            <p className="text-sm text-gray-600">{t.date}: {new Date(booking.startTime).toLocaleString()}</p>
+            <p className="text-sm text-gray-600">{t?.date || 'Date'}: {new Date(booking.startTime).toLocaleString()}</p>
             {isPending && isUpcoming && (
                  <div className="flex gap-2 pt-4 mt-4 border-t">
-                    <button onClick={() => onUpdateStatus(booking.id, BookingStatus.Confirmed)} className="flex-1 bg-orange-500 text-white font-semibold py-2.5 px-4 rounded-lg hover:bg-orange-600 transition-all">{t.confirm}</button>
-                    <button onClick={() => onUpdateStatus(booking.id, BookingStatus.Cancelled)} className="flex-1 bg-white text-gray-700 font-semibold py-2.5 px-4 rounded-lg border-2 border-gray-300 hover:bg-gray-50 transition-all">{t.cancel}</button>
+                    <button onClick={() => onUpdateStatus(booking.id, BookingStatus.Confirmed)} className="flex-1 bg-orange-500 text-white font-semibold py-2.5 px-4 rounded-lg hover:bg-orange-600 transition-all">{t?.confirm || 'Confirm'}</button>
+                    <button onClick={() => onUpdateStatus(booking.id, BookingStatus.Cancelled)} className="flex-1 bg-white text-gray-700 font-semibold py-2.5 px-4 rounded-lg border-2 border-gray-300 hover:bg-gray-50 transition-all">{t?.cancel || 'Cancel'}</button>
                 </div>
             )}
         </div>
@@ -79,7 +95,7 @@ const BookingCard: React.FC<{ booking: Booking; onUpdateStatus: (id: number, sta
 }
 
 
-const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogout, onNavigateToNotifications, onUpdateBookingStatus, placeId: _placeId, place: placeProp, bookings, notifications, t }) => {
+const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogout, onNavigateToNotifications, onNavigate, onUpdateBookingStatus, placeId: _placeId, place: placeProp, bookings, notifications, t }) => {
     const [place] = useState<Place | null>(placeProp || null);
     const [isLoading, setIsLoading] = useState(true);
     
@@ -90,14 +106,13 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     const [description, setDescription] = useState('');
     const [mainImage, setMainImage] = useState('');
     const [profilePicture, setProfilePicture] = useState('');
-    const [thumbnailImages, setThumbnailImages] = useState(['', '', '']);
-    const [galleryImages, setGalleryImages] = useState<Array<{ imageUrl: string; caption: string }>>([
-        { imageUrl: '', caption: '' },
-        { imageUrl: '', caption: '' },
-        { imageUrl: '', caption: '' },
-        { imageUrl: '', caption: '' },
-        { imageUrl: '', caption: '' },
-        { imageUrl: '', caption: '' }
+    const [galleryImages, setGalleryImages] = useState<Array<{ imageUrl: string; caption: string; description: string }>>([
+        { imageUrl: '', caption: '', description: '' },
+        { imageUrl: '', caption: '', description: '' },
+        { imageUrl: '', caption: '', description: '' },
+        { imageUrl: '', caption: '', description: '' },
+        { imageUrl: '', caption: '', description: '' },
+        { imageUrl: '', caption: '', description: '' }
     ]);
     const [whatsappNumber, setWhatsappNumber] = useState('');
     const [pricing, setPricing] = useState<Pricing>({ 60: 0, 90: 0, 120: 0 });
@@ -114,61 +129,132 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     const [mapsApiLoaded, setMapsApiLoaded] = useState(false);
     const [activeTab, setActiveTab] = useState('profile');
     const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
+    
+    // Website information for Indastreet Partners Directory
+    const [websiteUrl, setWebsiteUrl] = useState('');
+    const [websiteTitle, setWebsiteTitle] = useState('');
+    const [websiteDescription, setWebsiteDescription] = useState('');
+    
+    // Image upload warning modal states
+    const [showImageRequirementModal, setShowImageRequirementModal] = useState(false);
+    const [pendingImageUrl, setPendingImageUrl] = useState('');
 
     const locationInputRef = useRef<HTMLInputElement>(null);
 
-    // Note: Place data should be passed via props or fetched from Appwrite
-    // For now, using mock data structure
+    // Load place data from database or use passed prop
     useEffect(() => {
-        // Initialize with default values if place prop exists
-        if (place) {
-            setName(place.name || '');
-            setDescription(place.description || '');
-            setMainImage(place.mainImage || '');
-            setProfilePicture((place as any).profilePicture || place.mainImage || '');
-            setThumbnailImages([...(place.thumbnailImages || []), '', '', ''].slice(0, 3));
+        const loadPlaceData = async () => {
+            setIsLoading(true);
             
-            // Load gallery images with captions
-            if ((place as any).galleryImages && Array.isArray((place as any).galleryImages)) {
-                const loadedGallery = [...(place as any).galleryImages];
-                // Ensure we always have 6 slots
-                while (loadedGallery.length < 6) {
-                    loadedGallery.push({ imageUrl: '', caption: '' });
-                }
-                setGalleryImages(loadedGallery.slice(0, 6));
-            }
-            
-            setWhatsappNumber(place.whatsappNumber || '');
-            
-            // Parse JSON strings from Appwrite
             try {
-                setPricing(typeof place.pricing === 'string' ? JSON.parse(place.pricing) : place.pricing || { '60': 0, '90': 0, '120': 0 });
+                // Check if place prop has actual data or just default values
+                const hasActualData = place && (place.name || place.description || place.mainImage);
                 
-                // Load hotel/villa pricing if exists
-                if ((place as any).hotelVillaPricing) {
-                    setHotelVillaPricing(typeof (place as any).hotelVillaPricing === 'string' ? JSON.parse((place as any).hotelVillaPricing) : (place as any).hotelVillaPricing);
-                    setUseSamePricing(false);
+                if (hasActualData) {
+                    console.log('📋 Using passed place data:', place);
+                    initializeWithPlaceData(place);
+                } else if (place?.id) {
+                    console.log('🔄 Loading place data from database for ID:', place.id);
+                    const loadedPlace = await placeService.getById(place.id.toString());
+                    if (loadedPlace) {
+                        console.log('✅ Loaded place data from database:', loadedPlace);
+                        initializeWithPlaceData(loadedPlace);
+                    } else {
+                        console.log('⚠️ No saved data found, using defaults');
+                        initializeWithDefaults();
+                    }
                 } else {
-                    setHotelVillaPricing(typeof place.pricing === 'string' ? JSON.parse(place.pricing) : place.pricing || { '60': 0, '90': 0, '120': 0 });
-                    setUseSamePricing(true);
+                    console.log('⚠️ No place ID available, using defaults');
+                    initializeWithDefaults();
                 }
-                
-                setDiscountPercentage((place as any).discountPercentage || 0);
-                
-                setCoordinates(typeof place.coordinates === 'string' ? JSON.parse(place.coordinates) : place.coordinates || { lat: 0, lng: 0 });
-                setMassageTypes(typeof place.massageTypes === 'string' ? JSON.parse(place.massageTypes) : place.massageTypes || []);
-            } catch (e) {
-                console.error('Error parsing place data:', e);
+            } catch (error) {
+                console.error('❌ Error loading place data:', error);
+                initializeWithDefaults();
             }
             
-            setLanguages(place.languages || []);
-            setAdditionalServices((place as any).additionalServices || []);
-            setLocation(place.location || '');
-            setOpeningTime(place.openingTime || '09:00');
-            setClosingTime(place.closingTime || '21:00');
-        }
-        setIsLoading(false);
+            setIsLoading(false);
+        };
+        
+        loadPlaceData();
     }, [place]);
+    
+    const initializeWithPlaceData = (placeData: Place) => {
+        setName(placeData.name || '');
+        setDescription(placeData.description || '');
+        setMainImage(placeData.mainImage || '');
+        setProfilePicture((placeData as any).profilePicture || placeData.mainImage || '');
+        
+        // Load gallery images with captions and descriptions
+        if ((placeData as any).galleryImages && Array.isArray((placeData as any).galleryImages)) {
+            const loadedGallery = [...(placeData as any).galleryImages].map((item: any) => ({
+                imageUrl: item.imageUrl || '',
+                caption: item.caption || '',
+                description: item.description || ''
+            }));
+            // Ensure we always have 6 slots
+            while (loadedGallery.length < 6) {
+                loadedGallery.push({ imageUrl: '', caption: '', description: '' });
+            }
+            setGalleryImages(loadedGallery.slice(0, 6));
+        }
+        
+        setWhatsappNumber(placeData.whatsappNumber || '');
+        
+        // Parse JSON strings from Appwrite
+        try {
+            setPricing(typeof placeData.pricing === 'string' ? JSON.parse(placeData.pricing) : placeData.pricing || { '60': 0, '90': 0, '120': 0 });
+            
+            // Load hotel/villa pricing if exists
+            if ((placeData as any).hotelVillaPricing) {
+                setHotelVillaPricing(typeof (placeData as any).hotelVillaPricing === 'string' ? JSON.parse((placeData as any).hotelVillaPricing) : (placeData as any).hotelVillaPricing);
+                setUseSamePricing(false);
+            } else {
+                setHotelVillaPricing(typeof placeData.pricing === 'string' ? JSON.parse(placeData.pricing) : placeData.pricing || { '60': 0, '90': 0, '120': 0 });
+                setUseSamePricing(true);
+            }
+            
+            setDiscountPercentage((placeData as any).discountPercentage || 0);
+            
+            setCoordinates(typeof placeData.coordinates === 'string' ? JSON.parse(placeData.coordinates) : placeData.coordinates || { lat: 0, lng: 0 });
+            setMassageTypes(typeof placeData.massageTypes === 'string' ? JSON.parse(placeData.massageTypes) : placeData.massageTypes || []);
+        } catch (e) {
+            console.error('Error parsing place data:', e);
+        }
+        
+        setLanguages(placeData.languages || []);
+        setAdditionalServices((placeData as any).additionalServices || []);
+        setLocation(placeData.location || '');
+        setOpeningTime(placeData.openingTime || '09:00');
+        setClosingTime(placeData.closingTime || '21:00');
+        
+        // Initialize website information
+        setWebsiteUrl((placeData as any).websiteUrl || '');
+        setWebsiteTitle((placeData as any).websiteTitle || '');
+        setWebsiteDescription((placeData as any).websiteDescription || '');
+    };
+    
+    const initializeWithDefaults = () => {
+        setName('');
+        setDescription('');
+        setMainImage('');
+        setProfilePicture('');
+        setGalleryImages(Array(6).fill({ imageUrl: '', caption: '', description: '' }));
+        setWhatsappNumber('');
+        setPricing({ '60': 0, '90': 0, '120': 0 });
+        setHotelVillaPricing({ '60': 0, '90': 0, '120': 0 });
+        setUseSamePricing(true);
+        setDiscountPercentage(0);
+        setCoordinates({ lat: 0, lng: 0 });
+        setMassageTypes([]);
+        setLanguages([]);
+        setAdditionalServices([]);
+        setLocation('');
+        setOpeningTime('09:00');
+        setClosingTime('21:00');
+        setWebsiteUrl('');
+        setWebsiteTitle('');
+        setWebsiteDescription('');
+    };
 
     // Poll for WhatsApp contact notifications
     useEffect(() => {
@@ -180,8 +266,8 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             try {
                 const unreadNotifications = await notificationService.getUnread(placeId);
                 
-                // Filter for WhatsApp contact notifications
-                const whatsappNotifications = unreadNotifications.filter(
+                // Filter for WhatsApp contact notifications with null safety
+                const whatsappNotifications = (unreadNotifications || []).filter(
                     (n: any) => n.type === 'whatsapp_contact'
                 );
 
@@ -257,14 +343,14 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
 
     const handleSave = () => {
         // Filter out empty gallery images
-        const filteredGallery = galleryImages.filter(img => img.imageUrl.trim() !== '');
+        const safeGalleryImages = galleryImages || [];
+        const filteredGallery = safeGalleryImages.filter(img => img && img.imageUrl && img.imageUrl.trim() !== '');
         
         onSave({
             name,
             description,
             mainImage,
             profilePicture,
-            thumbnailImages: thumbnailImages.filter(img => img), // remove empty strings
             galleryImages: filteredGallery.length > 0 ? filteredGallery : undefined,
             whatsappNumber,
             pricing: JSON.stringify(pricing),
@@ -281,21 +367,86 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             activeMembershipDate: place?.activeMembershipDate || '',
             password: place?.password,
             analytics: JSON.stringify(place?.analytics || { impressions: 0, profileViews: 0, whatsappClicks: 0 }),
+            websiteUrl,
+            websiteTitle,
+            websiteDescription,
         } as any);
+
+        // Show admin approval message
+        const notification = document.createElement('div');
+        notification.innerHTML = `
+            <div class="fixed top-4 left-4 right-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white p-6 rounded-xl shadow-2xl z-50 max-w-md mx-auto">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center flex-shrink-0">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-bold text-lg mb-1">Profile Saved Successfully!</h3>
+                        <p class="text-orange-100 text-sm leading-relaxed">
+                            Thank you for updating your profile. The <strong>IndaStreet Team</strong> will review and confirm your changes for approval soon.
+                        </p>
+                        <div class="mt-3 flex items-center gap-2 text-xs text-orange-200">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span>Usually processed within 24 hours</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(notification);
+        
+        // Add haptic feedback if available
+        if ('vibrate' in navigator) {
+            navigator.vibrate([100, 50, 100]);
+        }
+        
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 6000);
+    };
+    
+    // Helper functions for pricing format (supporting 345k format)
+    const formatPriceForDisplay = (value: number): string => {
+        if (value === 0) return '';
+        if (value >= 1000) {
+            return Math.floor(value / 1000) + 'k';
+        }
+        return value.toString();
+    };
+    
+    const parsePriceFromInput = (value: string): number => {
+        if (!value) return 0;
+        
+        // Handle 'k' suffix (e.g., "345k" becomes 345000)
+        if (value.toLowerCase().endsWith('k')) {
+            const numPart = value.slice(0, -1);
+            const num = parseInt(numPart, 10);
+            return isNaN(num) ? 0 : num * 1000;
+        }
+        
+        // Handle regular numbers
+        const num = parseInt(value, 10);
+        return isNaN(num) ? 0 : num;
     };
     
     const handlePriceChange = (duration: keyof Pricing, value: string) => {
-        const numValue = parseInt(value, 10);
-        setPricing(prev => ({ ...prev, [duration]: isNaN(numValue) ? 0 : numValue }));
+        const numValue = parsePriceFromInput(value);
+        setPricing(prev => ({ ...prev, [duration]: numValue }));
         
         // If "use same pricing" is checked, update hotel/villa pricing too
         if (useSamePricing) {
-            setHotelVillaPricing(prev => ({ ...prev, [duration]: isNaN(numValue) ? 0 : numValue }));
+            setHotelVillaPricing(prev => ({ ...prev, [duration]: numValue }));
         }
     };
     
     const handleHotelVillaPriceChange = (duration: keyof Pricing, value: string) => {
-        let numValue = parseInt(value, 10);
+        let numValue = parsePriceFromInput(value);
         
         // Validate: Hotel/villa price cannot be more than 20% higher than regular price
         const regularPrice = pricing[duration];
@@ -306,7 +457,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             numValue = Math.floor(maxAllowedPrice);
         }
         
-        setHotelVillaPricing(prev => ({ ...prev, [duration]: isNaN(numValue) ? 0 : numValue }));
+        setHotelVillaPricing(prev => ({ ...prev, [duration]: numValue }));
     };
     
     const handleUseSamePricingChange = (checked: boolean) => {
@@ -317,12 +468,6 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         }
     };
     
-    const handleThumbnailChange = (index: number, value: string) => {
-        const newThumbs = [...thumbnailImages];
-        newThumbs[index] = value;
-        setThumbnailImages(newThumbs);
-    };
-
     const handleGalleryImageChange = (index: number, imageUrl: string) => {
         const newGallery = [...galleryImages];
         newGallery[index] = { ...newGallery[index], imageUrl };
@@ -335,40 +480,53 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         setGalleryImages(newGallery);
     };
 
+    const handleGalleryDescriptionChange = (index: number, description: string) => {
+        const newGallery = [...galleryImages];
+        newGallery[index] = { ...newGallery[index], description };
+        setGalleryImages(newGallery);
+    };
+
     const handleMassageTypeChange = (type: string) => {
         setMassageTypes(prev => {
-            if (prev.includes(type)) {
+            // Additional safety check
+            const currentTypes = prev || [];
+            if (currentTypes.includes(type)) {
                 // Remove if already selected
-                return prev.filter(t => t !== type);
+                return currentTypes.filter(t => t !== type);
             } else {
                 // Add only if less than 5 are selected
-                if (prev.length < 5) {
-                    return [...prev, type];
+                if (currentTypes.length < 5) {
+                    return [...currentTypes, type];
                 }
                 // Silently ignore if trying to select more than 5
-                return prev;
+                return currentTypes;
             }
         });
     };
 
     const handleLanguageChange = (langCode: string) => {
-        setLanguages(prev =>
-            prev.includes(langCode)
-                ? prev.filter(l => l !== langCode)
-                : [...prev, langCode]
-        );
+        setLanguages(prev => {
+            const currentLanguages = prev || [];
+            return currentLanguages.includes(langCode)
+                ? currentLanguages.filter(l => l !== langCode)
+                : [...currentLanguages, langCode];
+        });
     };
 
     const handleAdditionalServiceChange = (service: string) => {
-        setAdditionalServices(prev =>
-            prev.includes(service)
-                ? prev.filter(s => s !== service)
-                : [...prev, service]
-        );
+        setAdditionalServices(prev => {
+            const currentServices = prev || [];
+            return currentServices.includes(service)
+                ? currentServices.filter(s => s !== service)
+                : [...currentServices, service];
+        });
     };
 
+    const [isGettingLocation, setIsGettingLocation] = useState(false);
+    
     const handleSetLocation = () => {
         if (navigator.geolocation) {
+            setIsGettingLocation(true);
             navigator.geolocation.getCurrentPosition(position => {
                 const geocoder = new (window as any).google.maps.Geocoder();
                 const latlng = {
@@ -377,20 +535,78 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                 };
                 setCoordinates(latlng);
                 geocoder.geocode({ location: latlng }, (results: any, status: string) => {
+                    setIsGettingLocation(false);
                     if (status === 'OK' && results[0]) {
                         setLocation(results[0].formatted_address);
-                        alert(t.locationSetConfirmation);
+                        // Mobile-friendly notification
+                        if ('vibrate' in navigator) {
+                            navigator.vibrate(200);
+                        }
+                        // Show a better mobile notification
+                        const notification = document.createElement('div');
+                        notification.innerHTML = `
+                            <div class="fixed top-4 left-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-lg z-50 flex items-center gap-3">
+                                <div class="w-6 h-6 bg-white rounded-full flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                                <span class="font-medium">📍 Location set successfully!</span>
+                            </div>
+                        `;
+                        document.body.appendChild(notification);
+                        setTimeout(() => {
+                            if (notification.parentNode) {
+                                notification.parentNode.removeChild(notification);
+                            }
+                        }, 3000);
                     } else {
                         console.error('Geocoder failed due to: ' + status);
                         alert('Could not find address for your location.');
                     }
                 });
-            }, () => {
-                alert('Could not get your location.');
+            }, (error) => {
+                setIsGettingLocation(false);
+                let errorMessage = 'Could not get your location.';
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        errorMessage = 'Location access denied. Please enable location permissions in your browser settings.';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        errorMessage = 'Location information unavailable. Please try again.';
+                        break;
+                    case error.TIMEOUT:
+                        errorMessage = 'Location request timed out. Please try again.';
+                        break;
+                }
+                alert(errorMessage);
+            }, {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 60000
             });
         } else {
             alert('Geolocation is not supported by this browser.');
         }
+    };
+
+    // Profile image handling with warning modal
+    const handleProfilePictureChange = (imageUrl: string) => {
+        if (imageUrl && imageUrl.trim() !== '') {
+            setPendingImageUrl(imageUrl);
+            setShowImageRequirementModal(true);
+        }
+    };
+
+    const handleAcceptImageRequirement = () => {
+        setProfilePicture(pendingImageUrl);
+        setShowImageRequirementModal(false);
+        setPendingImageUrl('');
+    };
+
+    const handleRejectImageRequirement = () => {
+        setShowImageRequirementModal(false);
+        setPendingImageUrl('');
     };
 
     const renderInput = (value: string, onChange: (val: string) => void, Icon: React.FC<{className?:string}>, placeholder?: string, type: string = 'text') => (
@@ -402,10 +618,10 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         </div>
     );
     
-    const unreadNotificationsCount = notifications.filter(n => !n.isRead).length;
+    const unreadNotificationsCount = (notifications || []).filter(n => !n.isRead).length;
     const now = new Date();
-    const upcomingBookings = bookings.filter(b => new Date(b.startTime) >= now).sort((a,b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
-    const pastBookings = bookings.filter(b => new Date(b.startTime) < now).sort((a,b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
+    const upcomingBookings = (bookings || []).filter(b => new Date(b.startTime) >= now).sort((a,b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+    const pastBookings = (bookings || []).filter(b => new Date(b.startTime) < now).sort((a,b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
 
     if (isLoading) {
         return <div className="flex justify-center items-center h-screen"><div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand-green"></div></div>;
@@ -504,6 +720,49 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                     💡 <strong>Tip:</strong> Share these banners on your social media, WhatsApp status, or send directly to customers to promote your massage services and attract more bookings!
                                 </p>
                             </div>
+
+                            {/* Coin Rewards Shop Section */}
+                            {onNavigate && (
+                                <div className="mt-6">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center">
+                                            <svg className="w-5 h-5 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.51-1.31c-.562-.649-1.413-1.076-2.353-1.253V5z" clipRule="evenodd"/>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h3 className="text-lg font-bold text-gray-900">Rewards & Incentives</h3>
+                                            <p className="text-sm text-gray-600">Manage your coin rewards and loyalty programs</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Coin Shop Button */}
+                                    <button
+                                        onClick={() => onNavigate('coin-shop')}
+                                        className="w-full flex items-center justify-between p-4 bg-white rounded-xl shadow-md hover:shadow-lg transition-all border-2 border-yellow-200 hover:border-yellow-400"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center text-white text-2xl">
+                                                🪙
+                                            </div>
+                                            <div className="text-left">
+                                                <h3 className="font-bold text-gray-900">Coin Rewards Shop</h3>
+                                                <p className="text-sm text-gray-600">Redeem coins for rewards and cash out</p>
+                                            </div>
+                                        </div>
+                                        <svg className="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </button>
+
+                                    <div className="mt-4 p-3 bg-yellow-50 rounded-lg">
+                                        <p className="text-sm text-yellow-700">
+                                            🎯 <strong>Earn Coins:</strong> Complete bookings, get positive reviews, and maintain active status to earn reward coins that can be redeemed for cash and prizes!
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 );
@@ -526,8 +785,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             case 'terms':
                 return (
                     <div className="bg-white p-6 rounded-lg shadow">
-                        <h2 className="text-xl font-bold mb-4">Terms and Conditions</h2>
-                        <p className="text-gray-600">Terms content will be displayed here.</p>
+                        <TherapistTermsPage />
                     </div>
                 );
             case 'bookings':
@@ -538,17 +796,17 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                 <Calendar className="w-5 h-5 text-orange-600" />
                             </div>
                             <div>
-                                <h2 className="text-2xl font-bold text-gray-900">{t.bookings.upcoming}</h2>
+                                <h2 className="text-2xl font-bold text-gray-900">{t?.bookings?.upcoming || 'Upcoming Bookings'}</h2>
                                 <p className="text-xs text-gray-500">Manage your upcoming bookings</p>
                             </div>
                         </div>
                         {upcomingBookings.length > 0 ? (
                             <div className="grid gap-4">
-                                {upcomingBookings.map(b => <BookingCard key={b.id} booking={b} onUpdateStatus={onUpdateBookingStatus} t={t.bookings} />)}
+                                {upcomingBookings.map(b => <BookingCard key={b.id} booking={b} onUpdateStatus={onUpdateBookingStatus} t={t?.bookings || {}} />)}
                             </div>
                         ) : (
                             <div className="bg-white border-2 border-gray-200 rounded-xl p-12 text-center">
-                                <p className="text-gray-500">{t.bookings.noUpcoming}</p>
+                                <p className="text-gray-500">{t?.bookings?.noUpcoming || 'No upcoming bookings'}</p>
                             </div>
                         )}
                         
@@ -557,17 +815,17 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                 <Calendar className="w-5 h-5 text-orange-600" />
                             </div>
                             <div>
-                                <h2 className="text-2xl font-bold text-gray-900">{t.bookings.past}</h2>
+                                <h2 className="text-2xl font-bold text-gray-900">{t?.bookings?.past || 'Past Bookings'}</h2>
                                 <p className="text-xs text-gray-500">View past bookings</p>
                             </div>
                         </div>
                         {pastBookings.length > 0 ? (
                             <div className="grid gap-4">
-                                {pastBookings.map(b => <BookingCard key={b.id} booking={b} onUpdateStatus={onUpdateBookingStatus} t={t.bookings} />)}
+                                {pastBookings.map(b => <BookingCard key={b.id} booking={b} onUpdateStatus={onUpdateBookingStatus} t={t?.bookings || {}} />)}
                             </div>
                         ) : (
                             <div className="bg-white border-2 border-gray-200 rounded-xl p-12 text-center">
-                                <p className="text-gray-500">{t.bookings.noPast}</p>
+                                <p className="text-gray-500">{t?.bookings?.noPast || 'No past bookings'}</p>
                             </div>
                         )}
                     </div>
@@ -589,14 +847,14 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                 <TrendingUp className="w-5 h-5 text-orange-600" />
                             </div>
                             <div>
-                                <h2 className="text-2xl font-bold text-gray-900">{t.analytics.title || 'Analytics'}</h2>
+                                <h2 className="text-2xl font-bold text-gray-900">{t?.analytics?.title || 'Analytics'}</h2>
                                 <p className="text-xs text-gray-500">Track your performance metrics</p>
                             </div>
                         </div>
                         <div className="grid gap-4">
-                            <AnalyticsCard title={t.analytics.impressions} value={analytics.impressions ?? 0} description={t.analytics.impressionsDesc} />
-                            <AnalyticsCard title={t.analytics.profileViews} value={analytics.profileViews ?? 0} description={t.analytics.profileViewsDesc} />
-                            <AnalyticsCard title={t.analytics.whatsappClicks} value={analytics.whatsappClicks ?? 0} description={t.analytics.whatsappClicksDesc} />
+                            <AnalyticsCard title={t?.analytics?.impressions || 'Impressions'} value={analytics.impressions ?? 0} description={t?.analytics?.impressionsDesc || 'Total profile impressions'} />
+                            <AnalyticsCard title={t?.analytics?.profileViews || 'Profile Views'} value={analytics.profileViews ?? 0} description={t?.analytics?.profileViewsDesc || 'Profile view count'} />
+                            <AnalyticsCard title={t?.analytics?.whatsappClicks || 'WhatsApp Clicks'} value={analytics.whatsappClicks ?? 0} description={t?.analytics?.whatsappClicksDesc || 'WhatsApp contact clicks'} />
                         </div>
                     </div>
                 );
@@ -638,9 +896,10 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             default:
                 return (
                     <div className="space-y-6">
+                        
                         <ImageUpload
                             id="main-image-upload"
-                            label={t.uploadMainImage}
+                            label={t?.uploadMainImage || 'Upload Main Image'}
                             currentImage={mainImage}
                             onImageChange={setMainImage}
                         />
@@ -648,43 +907,150 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                         {/* Profile Picture Upload (Circular Logo) */}
                         <div className="mb-6">
                             <label className="block text-sm font-medium text-gray-900 mb-2">
-                                {t.uploadProfilePicture || "Upload Profile Picture (Circular Logo)"}
+                                {t?.uploadProfilePicture || "Upload Profile Picture (Circular Logo)"}
                             </label>
-                            <ImageUpload
-                                id="profile-picture-upload"
-                                label=""
-                                currentImage={profilePicture}
-                                onImageChange={setProfilePicture}
-                                heightClass="h-40 w-40 rounded-full mx-auto"
-                            />
-                            <p className="text-xs text-gray-500 mt-2 text-center">
-                                This will appear as a circular logo overlapping your banner image
-                            </p>
+                            
+                            {/* Image Requirement Modal - Professional Design */}
+                            {showImageRequirementModal && (
+                                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                                    <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden">
+                                        {/* Header */}
+                                        <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center flex-shrink-0">
+                                                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                                    </svg>
+                                                </div>
+                                                <div>
+                                                    <h3 className="text-xl font-bold text-white">Business Logo Requirements</h3>
+                                                    <p className="text-orange-100 text-sm">Please read carefully before uploading</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        {/* Content */}
+                                        <div className="p-6 space-y-4">
+                                            {/* Important Notice */}
+                                            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                                                <p className="font-semibold text-orange-900 text-sm flex items-center gap-2">
+                                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                                    </svg>
+                                                    Required for Business Profile
+                                                </p>
+                                            </div>
+                                            
+                                            {/* Requirements Section */}
+                                            <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                                                <p className="font-semibold text-gray-900 text-sm">✓ Your business logo must include:</p>
+                                                <ul className="space-y-2">
+                                                    <li className="flex items-start gap-2 text-sm text-gray-700">
+                                                        <svg className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                                        </svg>
+                                                        <span>Clear, professional business logo or name</span>
+                                                    </li>
+                                                    <li className="flex items-start gap-2 text-sm text-gray-700">
+                                                        <svg className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                                        </svg>
+                                                        <span>High quality image (min 400x400px)</span>
+                                                    </li>
+                                                    <li className="flex items-start gap-2 text-sm text-gray-700">
+                                                        <svg className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                                        </svg>
+                                                        <span>Represents your actual business</span>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                            
+                                            {/* Warning Section */}
+                                            <div className="bg-red-50 border border-red-200 rounded-lg p-4 space-y-2">
+                                                <p className="font-semibold text-red-900 text-sm flex items-center gap-2">
+                                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fillRule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clipRule="evenodd" />
+                                                    </svg>
+                                                    Account Suspension Policy
+                                                </p>
+                                                <ul className="space-y-1.5 text-xs text-red-800">
+                                                    <li className="flex items-start gap-1.5">
+                                                        <span className="text-red-600">•</span>
+                                                        <span>Fake or misleading business information</span>
+                                                    </li>
+                                                    <li className="flex items-start gap-1.5">
+                                                        <span className="text-red-600">•</span>
+                                                        <span>Using another business's logo</span>
+                                                    </li>
+                                                    <li className="flex items-start gap-1.5">
+                                                        <span className="text-red-600">•</span>
+                                                        <span>Inappropriate or unrelated images</span>
+                                                    </li>
+                                                </ul>
+                                                <p className="text-xs text-red-900 font-semibold pt-1">
+                                                    May result in immediate account suspension
+                                                </p>
+                                            </div>
+                                            
+                                            {/* Confirmation Text */}
+                                            <p className="text-xs text-gray-500 italic text-center pt-2">
+                                                By confirming, you verify this is your authentic business logo and meets all requirements
+                                            </p>
+                                        </div>
+                                        
+                                        {/* Footer Buttons */}
+                                        <div className="bg-gray-50 px-6 py-4 flex gap-3">
+                                            <button
+                                                onClick={handleRejectImageRequirement}
+                                                className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                            >
+                                                Cancel
+                                            </button>
+                                            <button
+                                                onClick={handleAcceptImageRequirement}
+                                                className="flex-1 px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-green-600 to-green-700 rounded-lg hover:from-green-700 hover:to-green-800 shadow-md transition-all"
+                                            >
+                                                I Understand & Confirm
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            
+                            <div className="flex flex-col items-center">
+                                <div className="relative">
+                                    <ImageUpload
+                                        id="profile-picture-upload"
+                                        label=""
+                                        currentImage={profilePicture}
+                                        onImageChange={handleProfilePictureChange}
+                                        heightClass="h-40 w-40 rounded-full mx-auto border-4 border-orange-200 shadow-lg hover:border-orange-300 transition-all"
+                                    />
+                                    {profilePicture && (
+                                        <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full border-4 border-white shadow-md flex items-center justify-center">
+                                            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                            </svg>
+                                        </div>
+                                    )}
+                                </div>
+                                <p className="text-xs text-gray-500 mt-3 text-center max-w-xs">
+                                    This will appear as a circular logo overlapping your banner image
+                                </p>
+                            </div>
                         </div>
                         
-                        <div className="grid grid-cols-3 gap-4">
-                            {thumbnailImages.map((thumb, index) => (
-                                <ImageUpload
-                                    key={index}
-                                    id={`thumb-upload-${index}`}
-                                    label={`${t.uploadThumb} ${index + 1}`}
-                                    currentImage={thumb}
-                                    onImageChange={(dataUrl) => handleThumbnailChange(index, dataUrl)}
-                                    heightClass="h-28"
-                                />
-                            ))}
-                        </div>
-                        
-                        {/* Gallery Images with Captions (6 images) */}
+                        {/* Gallery Images with Captions and Descriptions (6 images) */}
                         <div className="mt-8">
                             <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                                Gallery Images (with Captions)
+                                Gallery Images (with Captions & Descriptions)
                             </h3>
                             <p className="text-sm text-gray-600 mb-4">
-                                Upload up to 6 images for your gallery. Add a caption/bio for each image to describe what it shows.
+                                Upload up to 6 images for your gallery. Add a caption (header name) and description (small bio) for each image to describe what it shows.
                             </p>
                             <div className="grid grid-cols-2 gap-6">
-                                {galleryImages.map((galleryItem, index) => (
+                                {(galleryImages || []).map((galleryItem, index) => (
                                     <div key={index} className="space-y-2">
                                         <ImageUpload
                                             id={`gallery-upload-${index}`}
@@ -706,7 +1072,23 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                                 maxLength={50}
                                             />
                                             <p className="text-xs text-gray-500 mt-1">
-                                                {galleryItem.caption.length}/50 characters
+                                                {(galleryItem.caption || '').length}/50 characters
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-medium text-gray-700 mb-1">
+                                                Description for Image {index + 1}
+                                            </label>
+                                            <textarea
+                                                value={galleryItem.description}
+                                                onChange={(e) => handleGalleryDescriptionChange(index, e.target.value)}
+                                                placeholder="e.g., Our peaceful relaxation room with ambient lighting and comfortable seating where guests can unwind before and after their massage treatments..."
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+                                                maxLength={250}
+                                                rows={4}
+                                            />
+                                            <p className="text-xs text-gray-500 mt-1">
+                                                {(galleryItem.description || '').length}/250 characters
                                             </p>
                                         </div>
                                     </div>
@@ -715,11 +1097,11 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                         </div>
                         
                         <div>
-                            <label className="block text-sm font-medium text-gray-900">{t.nameLabel}</label>
+                            <label className="block text-sm font-medium text-gray-900">{t?.nameLabel || 'Name'}</label>
                             {renderInput(name, setName, UserSolidIcon)}
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-900">{t.descriptionLabel}</label>
+                            <label className="block text-sm font-medium text-gray-900">{t?.descriptionLabel || 'Description'}</label>
                             <div className="relative">
                                 <div className="absolute top-3.5 left-0 pl-3 flex items-center pointer-events-none">
                                     <DocumentTextIcon className="h-5 w-5 text-gray-400" />
@@ -741,31 +1123,8 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                             </div>
                         </div>
                         
-                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg p-4">
-                            <div className="flex items-center gap-2 mb-3">
-                                <svg className="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                </svg>
-                                <label className="text-sm font-semibold text-green-800">Qualified Business Badge</label>
-                            </div>
-                            <div className="bg-white/50 rounded-lg p-3 space-y-2">
-                                <div className="text-xs text-green-800">
-                                    <p className="font-semibold mb-2">Badge Requirements:</p>
-                                    <ul className="space-y-1 ml-4 list-disc">
-                                        <li>3 consecutive months of paid membership</li>
-                                        <li>Maximum 5-day grace period between renewals</li>
-                                        <li>Maintain a rating of 4.0 stars or higher</li>
-                                    </ul>
-                                </div>
-                                <div className="text-xs text-green-700 bg-green-100 rounded p-2 mt-2">
-                                    <p className="font-semibold">📢 Membership Reminder:</p>
-                                    <p className="mt-1">You will receive a WhatsApp notification 7 days before your membership expires with renewal instructions and badge status.</p>
-                                </div>
-                            </div>
-                        </div>
-                        
                         <div>
-                            <label className="block text-sm font-medium text-gray-900">{t.whatsappLabel}</label>
+                            <label className="block text-sm font-medium text-gray-900">{t?.whatsappLabel || 'WhatsApp Number'}</label>
                             {renderInput(whatsappNumber, setWhatsappNumber, PhoneIcon, '6281234567890')}
                         </div>
                         <div>
@@ -789,17 +1148,17 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-900">
-                                {t.massageTypesLabel}
+                                {t?.massageTypesLabel || 'Massage Types'}
                                 <span className="text-xs text-gray-500 ml-2">
                                     (Select up to 5 specialties - {massageTypes.length}/5 selected)
                                 </span>
                             </label>
                             <div className="mt-2 p-3 bg-white border border-gray-200 rounded-lg space-y-4">
-                                {MASSAGE_TYPES_CATEGORIZED.map(category => (
+                                {(MASSAGE_TYPES_CATEGORIZED || []).map(category => (
                                     <div key={category.category}>
                                         <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{category.category}</h4>
                                         <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-2">
-                                            {category.types.map(type => (
+                                            {(category.types || []).map(type => (
                                                 <CustomCheckbox
                                                     key={type}
                                                     label={type}
@@ -858,7 +1217,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                             <label className="block text-sm font-medium text-gray-900">Additional Services</label>
                             <div className="mt-2 p-3 bg-white border border-gray-200 rounded-lg">
                                 <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-                                    {ADDITIONAL_SERVICES.map((service: string) => (
+                                    {(ADDITIONAL_SERVICES || []).map((service: string) => (
                                         <CustomCheckbox
                                             key={service}
                                             label={service}
@@ -870,55 +1229,155 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                             </div>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-900">{t.locationLabel}</label>
+                            <label className="block text-sm font-medium text-gray-900">{t?.locationLabel || 'Location'}</label>
+                            
+                            {/* Coordinates Display */}
+                            <div className="mt-1 mb-2 p-2 bg-gray-50 border border-gray-200 rounded-md">
+                                <div className="flex items-center gap-2 text-xs text-gray-600">
+                                    <MapPinIcon className="h-4 w-4" />
+                                    <span className="font-medium">Coordinates:</span>
+                                    <span className="font-mono">
+                                        {coordinates.lat !== 0 || coordinates.lng !== 0 
+                                            ? `${coordinates.lat.toFixed(6)}, ${coordinates.lng.toFixed(6)}`
+                                            : 'Not set'
+                                        }
+                                    </span>
+                                    {(coordinates.lat !== 0 || coordinates.lng !== 0) && (
+                                        <div className="ml-auto flex items-center gap-1">
+                                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                            <span className="text-green-600 font-medium">Live</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                            
                             {mapsApiLoaded ? (
                                 <>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <MapPinIcon className="h-5 w-5 text-gray-400" />
+                                    {/* Location Display */}
+                                    <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <MapPinIcon className="h-5 w-5 text-gray-600" />
+                                            <span className="text-sm font-medium text-gray-700">Current Location:</span>
+                                            {(coordinates.lat !== 0 || coordinates.lng !== 0) && (
+                                                <div className="ml-auto flex items-center gap-1">
+                                                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                                    <span className="text-green-600 font-medium text-xs">Live</span>
+                                                </div>
+                                            )}
                                         </div>
-                                        <input ref={locationInputRef} type="text" value={location} onChange={e => setLocation(e.target.value)} placeholder={t.locationPlaceholder} className="mt-1 block w-full pl-10 pr-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-green focus:border-brand-green text-gray-900" />
+                                        <p className="text-sm text-gray-600">
+                                            {location || 'No location set'}
+                                        </p>
                                     </div>
+                                    
+                                    {/* Mobile Location Button */}
                                     <Button 
                                         onClick={handleSetLocation} 
+                                        disabled={isGettingLocation}
                                         variant="secondary" 
-                                        className={`flex items-center justify-center gap-2 mt-2 text-sm py-2 ${
-                                            location ? 'bg-green-500 hover:bg-green-600 text-white' : ''
+                                        className={`w-full flex items-center justify-center gap-3 py-4 text-base font-semibold rounded-xl transition-all duration-200 ${
+                                            isGettingLocation
+                                                ? 'bg-gray-400 text-white cursor-not-allowed'
+                                                : coordinates.lat !== 0 || coordinates.lng !== 0
+                                                ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg' 
+                                                : 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg'
                                         }`}
-                                    >
-                                        <MapPinIcon className="w-4 h-4" />
-                                        <span>{location ? 'Location Set ✓' : t.setLocation}</span>
-                                    </Button>
+                                        >
+                                            <div className={`w-6 h-6 ${isGettingLocation ? 'animate-spin' : coordinates.lat !== 0 || coordinates.lng !== 0 ? 'animate-pulse' : ''}`}>
+                                                {isGettingLocation ? (
+                                                    <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                    </svg>
+                                                ) : (
+                                                    <MapPinIcon className="w-full h-full" />
+                                                )}
+                                            </div>
+                                            <span>
+                                                {isGettingLocation
+                                                    ? '🔍 Getting your location...'
+                                                    : coordinates.lat !== 0 || coordinates.lng !== 0 
+                                                    ? '📍 Location Set Successfully' 
+                                                    : '📱 Set My Current Location'
+                                                }
+                                            </span>
+                                            {coordinates.lat === 0 && coordinates.lng === 0 && (
+                                                <div className="ml-2 w-2 h-2 bg-white rounded-full animate-bounce"></div>
+                                            )}
+                                        </Button>
+                                        
+                                        {/* Mobile Location Tips */}
+                                        <div className="text-center mt-3">
+                                            <p className="text-xs text-gray-500">
+                                                {coordinates.lat !== 0 || coordinates.lng !== 0 
+                                                    ? '✅ Your location is now active and visible to customers'
+                                                    : '💡 Tap the button above to use your phone\'s GPS location'
+                                                }
+                                            </p>
+                                        </div>
                                 </>
                             ) : (
                                 <div className="mt-2 p-3 bg-yellow-100 text-yellow-800 text-sm rounded-md">
-                                {t.mapsApiError}
+                                {t?.mapsApiError || 'Maps API error'}
                                 </div>
                             )}
                         </div>
                         <div>
-                            <h3 className="text-md font-medium text-gray-800">{t.pricingTitle}</h3>
+                            <h3 className="text-md font-medium text-gray-800">{t?.pricingTitle || 'Pricing'}</h3>
+                            <p className="text-xs text-gray-500 mt-1">Enter prices as: 345k for 345,000 or full amount like 400000</p>
                             <div className="grid grid-cols-3 gap-2 mt-2">
                                 <div>
-                                <label className="block text-xs font-medium text-gray-900">{t['60min']}</label>
+                                <label className="block text-xs font-medium text-gray-900">{t?.['60min'] || '60 min'}</label>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
-                                    <input type="number" value={pricing['60']} onChange={e => handlePriceChange('60', e.target.value)} className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
+                                    <input 
+                                        type="text" 
+                                        value={formatPriceForDisplay(pricing['60'])} 
+                                        onChange={e => handlePriceChange('60', e.target.value)} 
+                                        placeholder="345k"
+                                        className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900 font-mono"
+                                    />
                                     </div>
+                                    {pricing['60'] > 0 && (
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            = Rp {pricing['60'].toLocaleString('id-ID')}
+                                        </p>
+                                    )}
                                 </div>
                                 <div>
-                                <label className="block text-xs font-medium text-gray-900">{t['90min']}</label>
+                                <label className="block text-xs font-medium text-gray-900">{t?.['90min'] || '90 min'}</label>
                                     <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
-                                    <input type="number" value={pricing['90']} onChange={e => handlePriceChange('90', e.target.value)} className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
+                                    <input 
+                                        type="text" 
+                                        value={formatPriceForDisplay(pricing['90'])} 
+                                        onChange={e => handlePriceChange('90', e.target.value)} 
+                                        placeholder="450k"
+                                        className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900 font-mono"
+                                    />
                                     </div>
+                                    {pricing['90'] > 0 && (
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            = Rp {pricing['90'].toLocaleString('id-ID')}
+                                        </p>
+                                    )}
                                 </div>
                                 <div>
-                                <label className="block text-xs font-medium text-gray-900">{t['120min']}</label>
+                                <label className="block text-xs font-medium text-gray-900">{t?.['120min'] || '120 min'}</label>
                                     <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
-                                    <input type="number" value={pricing['120']} onChange={e => handlePriceChange('120', e.target.value)} className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" />
+                                    <input 
+                                        type="text" 
+                                        value={formatPriceForDisplay(pricing['120'])} 
+                                        onChange={e => handlePriceChange('120', e.target.value)} 
+                                        placeholder="600k"
+                                        className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900 font-mono"
+                                    />
                                     </div>
+                                    {pricing['120'] > 0 && (
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            = Rp {pricing['120'].toLocaleString('id-ID')}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -948,18 +1407,24 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
                                     <input 
-                                        type="number" 
-                                        value={hotelVillaPricing['60']} 
+                                        type="text" 
+                                        value={useSamePricing ? formatPriceForDisplay(pricing['60']) : formatPriceForDisplay(hotelVillaPricing['60'])} 
                                         onChange={e => handleHotelVillaPriceChange('60', e.target.value)} 
                                         disabled={useSamePricing}
-                                        className={`mt-1 block w-full pl-9 pr-2 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 ${
+                                        placeholder="365k"
+                                        className={`mt-1 block w-full pl-9 pr-2 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 font-mono ${
                                             useSamePricing ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
                                         }`}
                                     />
                                 </div>
                                 {!useSamePricing && pricing['60'] > 0 && (
                                     <p className="text-xs text-gray-500 mt-1">
-                                        Max: Rp {Math.floor(pricing['60'] * 1.2).toLocaleString('id-ID')}
+                                        Max: {formatPriceForDisplay(Math.floor(pricing['60'] * 1.2))} (Rp {Math.floor(pricing['60'] * 1.2).toLocaleString('id-ID')})
+                                    </p>
+                                )}
+                                {hotelVillaPricing['60'] > 0 && (
+                                    <p className="text-xs text-green-600 mt-1">
+                                        = Rp {hotelVillaPricing['60'].toLocaleString('id-ID')}
                                     </p>
                                 )}
                                 </div>
@@ -968,18 +1433,24 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                     <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
                                     <input 
-                                        type="number" 
-                                        value={hotelVillaPricing['90']} 
+                                        type="text" 
+                                        value={useSamePricing ? formatPriceForDisplay(pricing['90']) : formatPriceForDisplay(hotelVillaPricing['90'])} 
                                         onChange={e => handleHotelVillaPriceChange('90', e.target.value)} 
                                         disabled={useSamePricing}
-                                        className={`mt-1 block w-full pl-9 pr-2 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 ${
+                                        placeholder="480k"
+                                        className={`mt-1 block w-full pl-9 pr-2 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 font-mono ${
                                             useSamePricing ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
                                         }`}
                                     />
                                     </div>
                                     {!useSamePricing && pricing['90'] > 0 && (
                                         <p className="text-xs text-gray-500 mt-1">
-                                            Max: Rp {Math.floor(pricing['90'] * 1.2).toLocaleString('id-ID')}
+                                            Max: {formatPriceForDisplay(Math.floor(pricing['90'] * 1.2))} (Rp {Math.floor(pricing['90'] * 1.2).toLocaleString('id-ID')})
+                                        </p>
+                                    )}
+                                    {hotelVillaPricing['90'] > 0 && (
+                                        <p className="text-xs text-green-600 mt-1">
+                                            = Rp {hotelVillaPricing['90'].toLocaleString('id-ID')}
                                         </p>
                                     )}
                                 </div>
@@ -988,61 +1459,34 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                     <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
                                     <input 
-                                        type="number" 
-                                        value={hotelVillaPricing['120']} 
+                                        type="text" 
+                                        value={useSamePricing ? formatPriceForDisplay(pricing['120']) : formatPriceForDisplay(hotelVillaPricing['120'])} 
                                         onChange={e => handleHotelVillaPriceChange('120', e.target.value)} 
                                         disabled={useSamePricing}
-                                        className={`mt-1 block w-full pl-9 pr-2 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 ${
+                                        placeholder="650k"
+                                        className={`mt-1 block w-full pl-9 pr-2 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 font-mono ${
                                             useSamePricing ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
                                         }`}
                                     />
                                     </div>
                                     {!useSamePricing && pricing['120'] > 0 && (
                                         <p className="text-xs text-gray-500 mt-1">
-                                            Max: Rp {Math.floor(pricing['120'] * 1.2).toLocaleString('id-ID')}
+                                            Max: {formatPriceForDisplay(Math.floor(pricing['120'] * 1.2))} (Rp {Math.floor(pricing['120'] * 1.2).toLocaleString('id-ID')})
+                                        </p>
+                                    )}
+                                    {hotelVillaPricing['120'] > 0 && (
+                                        <p className="text-xs text-green-600 mt-1">
+                                            = Rp {hotelVillaPricing['120'].toLocaleString('id-ID')}
                                         </p>
                                     )}
                                 </div>
                             </div>
                         </div>
 
-                        {/* Discount Percentage Section */}
-                        <div className="border-t border-gray-200 pt-4">
-                            <div>
-                                <h3 className="text-md font-medium text-gray-800">Discount Promotion</h3>
-                                <p className="text-xs text-gray-500 mt-1">
-                                    Set a discount percentage to display on your profile (0-100%)
-                                </p>
-                            </div>
-                            <div className="mt-3 max-w-xs">
-                                <label className="block text-xs font-medium text-gray-900">Discount %</label>
-                                <div className="relative mt-1">
-                                    <input 
-                                        type="number" 
-                                        min="0"
-                                        max="100"
-                                        value={discountPercentage} 
-                                        onChange={(e) => {
-                                            const value = Math.min(100, Math.max(0, Number(e.target.value)));
-                                            setDiscountPercentage(value);
-                                        }}
-                                        className="block w-full pr-10 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900"
-                                        placeholder="0"
-                                    />
-                                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                        <span className="text-gray-400">%</span>
-                                    </div>
-                                </div>
-                                {discountPercentage > 0 && (
-                                    <p className="text-xs text-green-600 mt-1">
-                                        ✓ {discountPercentage}% discount will be displayed with animated badge
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-
                         <div className="pt-4">
-                            <Button onClick={handleSave}>{t.saveButton}</Button>
+                            <Button onClick={handleSave} className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition-all">
+                                💾 Save Profile
+                            </Button>
                         </div>
                     </div>
                 );
@@ -1054,28 +1498,17 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             {/* Header with Burger Menu */}
             <header className="bg-white shadow-sm px-4 py-3 sticky top-0 z-40">
                 <div className="max-w-7xl mx-auto flex justify-between items-center">
-                    <div className="flex items-center gap-3">
+                    <h1 className="text-xl sm:text-2xl font-bold">
+                        <span className="text-gray-900">Inda</span>
+                        <span className="text-orange-500">Street</span>
+                    </h1>
+                    <div className="flex items-center gap-2">
+                        <NotificationBell count={unreadNotificationsCount} onClick={onNavigateToNotifications} />
                         <button
                             onClick={() => setIsSideDrawerOpen(true)}
                             className="p-2 text-gray-700 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-colors"
                         >
-                            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                            </svg>
-                        </button>
-                        <h1 className="text-xl sm:text-2xl font-bold">
-                            <span className="text-gray-900">Inda</span>
-                            <span className="text-orange-500">Street</span> Place
-                        </h1>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <NotificationBell count={unreadNotificationsCount} onClick={onNavigateToNotifications} />
-                        <button
-                            onClick={onLogout}
-                            className="flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                        >
-                            <LogOut className="w-4 h-4" />
-                            <span className="hidden sm:inline">Logout</span>
+                            <Menu className="w-5 h-5 text-orange-600" />
                         </button>
                     </div>
                 </div>
@@ -1091,11 +1524,13 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                     ></div>
                     
                     {/* Drawer */}
-                    <div className="absolute left-0 top-0 h-full w-80 bg-white shadow-xl">
+                    <div className="absolute right-0 top-0 h-full w-80 bg-white shadow-xl">
                         {/* Drawer Header */}
                         <div className="bg-orange-500 px-6 py-4">
                             <div className="flex items-center justify-between">
-                                <h2 className="text-white text-lg font-semibold">Place Dashboard</h2>
+                                <div>
+                                    <h2 className="text-xl font-bold text-white">Menu</h2>
+                                </div>
                                 <button
                                     onClick={() => setIsSideDrawerOpen(false)}
                                     className="text-white hover:text-orange-200 transition-colors"
@@ -1105,158 +1540,188 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                             </div>
                         </div>
 
-                        {/* Navigation Items */}
-                        <div className="p-4 space-y-2">
+                        {/* Drawer Menu Items */}
+                        <div className="py-2">
                             <button
                                 onClick={() => {
                                     setActiveTab('profile');
                                     setIsSideDrawerOpen(false);
                                 }}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                                    activeTab === 'profile' 
-                                        ? 'bg-orange-100 text-orange-600 border-l-4 border-orange-500' 
-                                        : 'text-gray-700 hover:bg-gray-100'
+                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
+                                    activeTab === 'profile' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
                                 }`}
                             >
-                                <User className="w-5 h-5" />
-                                Profile
+                                <ColoredProfileIcon className="w-6 h-6" />
+                                <span className="font-medium">Profile</span>
                             </button>
-
                             <button
                                 onClick={() => {
                                     setActiveTab('bookings');
                                     setIsSideDrawerOpen(false);
                                 }}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                                    activeTab === 'bookings' 
-                                        ? 'bg-orange-100 text-orange-600 border-l-4 border-orange-500' 
-                                        : 'text-gray-700 hover:bg-gray-100'
+                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
+                                    activeTab === 'bookings' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
                                 }`}
                             >
-                                <Calendar className="w-5 h-5" />
-                                Bookings
+                                <ColoredCalendarIcon className="w-6 h-6" />
+                                <span className="font-medium">Bookings</span>
                                 {upcomingBookings.length > 0 && (
-                                    <span className="ml-auto bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
+                                    <span className="ml-auto bg-orange-500 text-white text-xs rounded-full px-2.5 py-0.5 font-bold">
                                         {upcomingBookings.length}
                                     </span>
                                 )}
                             </button>
-
                             <button
                                 onClick={() => {
                                     setActiveTab('analytics');
                                     setIsSideDrawerOpen(false);
                                 }}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                                    activeTab === 'analytics' 
-                                        ? 'bg-orange-100 text-orange-600 border-l-4 border-orange-500' 
-                                        : 'text-gray-700 hover:bg-gray-100'
+                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
+                                    activeTab === 'analytics' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
                                 }`}
                             >
-                                <TrendingUp className="w-5 h-5" />
-                                Analytics
+                                <ColoredAnalyticsIcon className="w-6 h-6" />
+                                <span className="font-medium">Analytics</span>
                             </button>
-
                             <button
                                 onClick={() => {
                                     setActiveTab('hotelVilla');
                                     setIsSideDrawerOpen(false);
                                 }}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                                    activeTab === 'hotelVilla' 
-                                        ? 'bg-orange-100 text-orange-600 border-l-4 border-orange-500' 
-                                        : 'text-gray-700 hover:bg-gray-100'
+                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
+                                    activeTab === 'hotelVilla' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
                                 }`}
                             >
-                                <Hotel className="w-5 h-5" />
-                                Hotel/Villa
+                                <ColoredHotelIcon className="w-6 h-6" />
+                                <span className="font-medium">Hotel & Villa</span>
                             </button>
-
                             <button
                                 onClick={() => {
                                     setActiveTab('notifications');
                                     setIsSideDrawerOpen(false);
                                 }}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                                    activeTab === 'notifications' 
-                                        ? 'bg-orange-100 text-orange-600 border-l-4 border-orange-500' 
-                                        : 'text-gray-700 hover:bg-gray-100'
+                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
+                                    activeTab === 'notifications' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
                                 }`}
                             >
-                                <Bell className="w-5 h-5" />
-                                Notifications
+                                <ColoredBellIcon className="w-6 h-6" />
+                                <span className="font-medium">Notifications</span>
+                                {(notifications || []).filter(n => !n.isRead).length > 0 && (
+                                    <span className="ml-auto bg-orange-500 text-white text-xs rounded-full px-2.5 py-0.5 font-bold">
+                                        {(notifications || []).filter(n => !n.isRead).length}
+                                    </span>
+                                )}
                             </button>
-
-                            <button
-                                onClick={() => {
-                                    setActiveTab('promotional');
-                                    setIsSideDrawerOpen(false);
-                                }}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                                    activeTab === 'promotional' 
-                                        ? 'bg-orange-100 text-orange-600 border-l-4 border-orange-500' 
-                                        : 'text-gray-700 hover:bg-gray-100'
-                                }`}
-                            >
-                                <Megaphone className="w-5 h-5" />
-                                Promotional Tools
-                            </button>
-
                             <button
                                 onClick={() => {
                                     setActiveTab('discounts');
                                     setIsSideDrawerOpen(false);
                                 }}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                                    activeTab === 'discounts' 
-                                        ? 'bg-orange-100 text-orange-600 border-l-4 border-orange-500' 
-                                        : 'text-gray-700 hover:bg-gray-100'
+                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
+                                    activeTab === 'discounts' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
                                 }`}
                             >
-                                <Tag className="w-5 h-5" />
-                                Discounts
+                                <ColoredTagIcon className="w-6 h-6" />
+                                <span className="font-medium">Discounts</span>
                             </button>
-
+                            
+                            {/* Discount Badge Management */}
+                            {onNavigate && (
+                                <button
+                                    onClick={() => {
+                                        setIsSideDrawerOpen(false);
+                                        onNavigate('placeDiscountBadge');
+                                    }}
+                                    className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-purple-50 transition-colors border-l-4 border-transparent hover:border-purple-500"
+                                >
+                                    <ColoredTagIcon className="w-6 h-6" />
+                                    <span className="font-medium">Discount Badges</span>
+                                </button>
+                            )}
+                            
                             <button
                                 onClick={() => {
                                     setActiveTab('membership');
                                     setIsSideDrawerOpen(false);
                                 }}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                                    activeTab === 'membership' 
-                                        ? 'bg-orange-100 text-orange-600 border-l-4 border-orange-500' 
-                                        : 'text-gray-700 hover:bg-gray-100'
+                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
+                                    activeTab === 'membership' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
                                 }`}
                             >
-                                <Crown className="w-5 h-5" />
-                                Membership Plans
+                                <ColoredCrownIcon className="w-6 h-6" />
+                                <span className="font-medium">Membership Plans</span>
                             </button>
-
                             <button
                                 onClick={() => {
-                                    setActiveTab('terms');
                                     setIsSideDrawerOpen(false);
+                                    if (onNavigate) {
+                                        onNavigate('placeTerms');
+                                    }
                                 }}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                                    activeTab === 'terms' 
-                                        ? 'bg-orange-100 text-orange-600 border-l-4 border-orange-500' 
-                                        : 'text-gray-700 hover:bg-gray-100'
-                                }`}
+                                className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 border-transparent hover:border-orange-500"
                             >
-                                <FileCheck className="w-5 h-5" />
-                                Terms
+                                <ColoredDocumentIcon className="w-6 h-6" />
+                                <span className="font-medium">Terms & Conditions</span>
+                            </button>
+
+                            {/* Website Management Menu Item */}
+                            {onNavigate && (
+                                <button
+                                    onClick={() => {
+                                        setIsSideDrawerOpen(false);
+                                        onNavigate('website-management');
+                                    }}
+                                    className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-indigo-50 transition-colors border-l-4 border-transparent hover:border-indigo-500"
+                                >
+                                    <ColoredGlobeIcon className="w-6 h-6" />
+                                    <span className="font-medium">Website Management</span>
+                                </button>
+                            )}
+
+                            {/* Coin Rewards Menu Items */}
+                            {onNavigate && (
+                                <>
+                                    <button
+                                        onClick={() => {
+                                            setIsSideDrawerOpen(false);
+                                            onNavigate('coin-history');
+                                        }}
+                                        className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 border-transparent hover:border-orange-500"
+                                    >
+                                        <ColoredHistoryIcon className="w-6 h-6" />
+                                        <span className="font-medium">Coin History</span>
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setIsSideDrawerOpen(false);
+                                            onNavigate('coin-shop');
+                                        }}
+                                        className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-green-50 transition-colors border-l-4 border-transparent hover:border-green-500"
+                                    >
+                                        <ColoredCoinsIcon className="w-6 h-6" />
+                                        <span className="font-medium">Coin Shop</span>
+                                    </button>
+                                </>
+                            )}
+
+                            {/* Divider */}
+                            <div className="my-2 border-t border-gray-200"></div>
+
+                            {/* Logout Button */}
+                            <button
+                                onClick={() => {
+                                    setIsSideDrawerOpen(false);
+                                    onLogout();
+                                }}
+                                className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-red-50 transition-colors text-red-600 border-l-4 border-transparent hover:border-red-500"
+                            >
+                                <LogOut className="w-5 h-5" />
+                                <span className="font-medium">Log Out</span>
                             </button>
                         </div>
                     </div>
                 </div>
             )}
-
-            {/* Status Banner */}
-            <div className="max-w-7xl mx-auto px-2 sm:px-4 pt-4">
-                <div className={`rounded-xl p-4 text-center text-sm font-medium ${place?.isLive ? 'bg-green-100 border-2 border-green-300 text-green-800' : 'bg-yellow-100 border-2 border-yellow-300 text-yellow-800'}`}>
-                    {place?.isLive ? t.profileLive : t.pendingApproval}
-                </div>
-            </div>
 
             {/* Content Area */}
             <main className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-6 pb-20">
@@ -1268,7 +1733,8 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                 currentPage="profile"
                 userRole="place"
                 onProfileClick={() => setActiveTab('profile')}
-                unreadNotifications={notifications.filter(n => !n.isRead).length}
+                onNotificationsClick={onNavigateToNotifications}
+                unreadNotifications={(notifications || []).filter(n => !n.isRead).length}
                 t={t}
             />
         </div>

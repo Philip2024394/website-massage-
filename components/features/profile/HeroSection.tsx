@@ -48,7 +48,46 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     const [showReferModal, setShowReferModal] = useState(false);
     const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
     return (
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
+        <>
+            <style>{`
+                @keyframes coin-fall-1 {
+                    0% { transform: translateY(-120px) rotate(0deg); opacity: 0; }
+                    10% { opacity: 0.6; }
+                    100% { transform: translateY(80px) rotate(360deg); opacity: 0; }
+                }
+                @keyframes coin-fall-2 {
+                    0% { transform: translateY(-120px) rotate(0deg); opacity: 0; }
+                    10% { opacity: 0.6; }
+                    100% { transform: translateY(85px) rotate(360deg); opacity: 0; }
+                }
+                @keyframes coin-fall-3 {
+                    0% { transform: translateY(-120px) rotate(0deg); opacity: 0; }
+                    10% { opacity: 0.6; }
+                    100% { transform: translateY(90px) rotate(360deg); opacity: 0; }
+                }
+                @keyframes coin-fall-4 {
+                    0% { transform: translateY(-120px) rotate(0deg); opacity: 0; }
+                    10% { opacity: 0.6; }
+                    100% { transform: translateY(75px) rotate(360deg); opacity: 0; }
+                }
+                @keyframes coin-fall-5 {
+                    0% { transform: translateY(-120px) rotate(0deg); opacity: 0; }
+                    10% { opacity: 0.6; }
+                    100% { transform: translateY(95px) rotate(360deg); opacity: 0; }
+                }
+                @keyframes coin-fall-6 {
+                    0% { transform: translateY(-120px) rotate(0deg); opacity: 0; }
+                    10% { opacity: 0.6; }
+                    100% { transform: translateY(88px) rotate(360deg); opacity: 0; }
+                }
+                .animate-coin-fall-1 { animation: coin-fall-1 2s infinite ease-in-out; }
+                .animate-coin-fall-2 { animation: coin-fall-2 2s infinite ease-in-out; }
+                .animate-coin-fall-3 { animation: coin-fall-3 2s infinite ease-in-out; }
+                .animate-coin-fall-4 { animation: coin-fall-4 2s infinite ease-in-out; }
+                .animate-coin-fall-5 { animation: coin-fall-5 2s infinite ease-in-out; }
+                .animate-coin-fall-6 { animation: coin-fall-6 2s infinite ease-in-out; }
+            `}</style>
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
             {/* Main Banner Image - Increased height by 10% */}
             <div className="relative h-48 md:h-72">
                 <img
@@ -340,11 +379,44 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setShowReferModal(false)}>
                     <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[90vw] sm:max-w-md p-3 sm:p-5 animate-fadeIn" onClick={(e) => e.stopPropagation()}>
                         <div className="text-center">
-                            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <svg className="w-8 h-8 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
-                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" />
-                                </svg>
+                            <div className="w-32 h-32 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4 overflow-hidden relative">
+                                {/* Main coin image */}
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/INDASTREET_coins_new-removebg-preview.png?updatedAt=1762338892035"
+                                    alt="IndaStreet Coins"
+                                    className="w-28 h-28 object-contain z-10 relative"
+                                />
+                                
+                                {/* Falling coins animation */}
+                                {[...Array(6)].map((_, i) => (
+                                    <img
+                                        key={i}
+                                        src="https://ik.imagekit.io/7grri5v7d/INDASTREET_coins_new-removebg-preview.png?updatedAt=1762338892035"
+                                        alt=""
+                                        className={`absolute w-4 h-4 opacity-60 animate-coin-fall-${i + 1}`}
+                                        style={{
+                                            left: `${15 + (i * 12)}%`,
+                                            animationDelay: `${i * 0.3}s`,
+                                            animationDuration: '2s',
+                                            animationIterationCount: 'infinite'
+                                        }}
+                                    />
+                                ))}
+                                
+                                {/* Accumulated coins at bottom */}
+                                {[...Array(4)].map((_, i) => (
+                                    <img
+                                        key={`bottom-${i}`}
+                                        src="https://ik.imagekit.io/7grri5v7d/INDASTREET_coins_new-removebg-preview.png?updatedAt=1762338892035"
+                                        alt=""
+                                        className="absolute w-3 h-3 opacity-40 animate-pulse"
+                                        style={{
+                                            bottom: '8px',
+                                            left: `${20 + (i * 15)}%`,
+                                            animationDelay: `${i * 0.5}s`
+                                        }}
+                                    />
+                                ))}
                             </div>
                             
                             <h3 className="text-2xl font-bold text-gray-900 mb-2">Refer a Friend</h3>
@@ -446,7 +518,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                             
                             <button
                                 onClick={() => setShowReferModal(false)}
-                                className="w-full px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors"
+                                className="w-full px-6 py-3 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 transition-colors"
                             >
                                 Close
                             </button>
@@ -506,6 +578,56 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     </div>
                 </div>
             )}
-        </div>
+            
+            <style>{`
+                @keyframes coin-fall-1 {
+                    0% { transform: translateY(-120px) rotate(0deg); opacity: 0; }
+                    10% { opacity: 0.8; }
+                    90% { transform: translateY(85px) rotate(360deg); opacity: 0.8; }
+                    100% { transform: translateY(90px) rotate(360deg); opacity: 0.6; }
+                }
+                @keyframes coin-fall-2 {
+                    0% { transform: translateY(-120px) rotate(0deg); opacity: 0; }
+                    10% { opacity: 0.8; }
+                    90% { transform: translateY(88px) rotate(360deg); opacity: 0.8; }
+                    100% { transform: translateY(93px) rotate(360deg); opacity: 0.6; }
+                }
+                @keyframes coin-fall-3 {
+                    0% { transform: translateY(-120px) rotate(0deg); opacity: 0; }
+                    10% { opacity: 0.8; }
+                    90% { transform: translateY(82px) rotate(360deg); opacity: 0.8; }
+                    100% { transform: translateY(87px) rotate(360deg); opacity: 0.6; }
+                }
+                @keyframes coin-fall-4 {
+                    0% { transform: translateY(-120px) rotate(0deg); opacity: 0; }
+                    10% { opacity: 0.8; }
+                    90% { transform: translateY(86px) rotate(360deg); opacity: 0.8; }
+                    100% { transform: translateY(91px) rotate(360deg); opacity: 0.6; }
+                }
+                @keyframes coin-fall-5 {
+                    0% { transform: translateY(-120px) rotate(0deg); opacity: 0; }
+                    10% { opacity: 0.8; }
+                    90% { transform: translateY(84px) rotate(360deg); opacity: 0.8; }
+                    100% { transform: translateY(89px) rotate(360deg); opacity: 0.6; }
+                }
+                @keyframes coin-fall-6 {
+                    0% { transform: translateY(-120px) rotate(0deg); opacity: 0; }
+                    10% { opacity: 0.8; }
+                    90% { transform: translateY(87px) rotate(360deg); opacity: 0.8; }
+                    100% { transform: translateY(92px) rotate(360deg); opacity: 0.6; }
+                }
+                @keyframes coin-float {
+                    0%, 100% { transform: translateY(0px); }
+                    50% { transform: translateY(-3px); }
+                }
+                .animate-coin-fall-1 { animation: coin-fall-1 3s ease-in forwards, coin-float 2s ease-in-out 3s infinite; }
+                .animate-coin-fall-2 { animation: coin-fall-2 3s ease-in forwards, coin-float 2s ease-in-out 3.3s infinite; }
+                .animate-coin-fall-3 { animation: coin-fall-3 3s ease-in forwards, coin-float 2s ease-in-out 3.6s infinite; }
+                .animate-coin-fall-4 { animation: coin-fall-4 3s ease-in forwards, coin-float 2s ease-in-out 3.9s infinite; }
+                .animate-coin-fall-5 { animation: coin-fall-5 3s ease-in forwards, coin-float 2s ease-in-out 4.2s infinite; }
+                .animate-coin-fall-6 { animation: coin-fall-6 3s ease-in forwards, coin-float 2s ease-in-out 4.5s infinite; }
+            `}</style>
+            </div>
+        </>
     );
 };

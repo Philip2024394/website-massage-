@@ -6,7 +6,8 @@ import { AvailabilityStatus, BookingStatus, HotelVillaServiceStatus } from '../t
 import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages, stringifyPricing, stringifyCoordinates, stringifyMassageTypes, stringifyAnalytics } from '../utils/appwriteHelpers';
 import { therapistService, notificationService } from '../lib/appwriteService';
 import { soundNotificationService } from '../utils/soundNotificationService';
-import { User, Calendar, TrendingUp, Hotel, FileCheck, LogOut, Bell, Tag, Activity, Menu, Crown, Coins, History } from 'lucide-react';
+import { LogOut, Activity, Menu } from 'lucide-react';
+import { ColoredProfileIcon, ColoredCalendarIcon, ColoredAnalyticsIcon, ColoredHotelIcon, ColoredTagIcon, ColoredCrownIcon, ColoredDocumentIcon, ColoredGlobeIcon, ColoredHistoryIcon, ColoredCoinsIcon, ColoredBellIcon } from '../components/ColoredIcons';
 import { useTranslations } from '../lib/useTranslations';
 import DiscountSharePage from './DiscountSharePage';
 import MembershipPlansPage from './MembershipPlansPage';
@@ -1179,7 +1180,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                     activeTab === 'profile' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
                                 }`}
                             >
-                                <User className="w-5 h-5" />
+                                <ColoredProfileIcon className="w-6 h-6" />
                                 <span className="font-medium">{t_new('profile')}</span>
                             </button>
                             <button
@@ -1191,7 +1192,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                     activeTab === 'bookings' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
                                 }`}
                             >
-                                <Calendar className="w-5 h-5" />
+                                <ColoredCalendarIcon className="w-6 h-6" />
                                 <span className="font-medium">Bookings</span>
                                 {upcomingBookings.length > 0 && (
                                     <span className="ml-auto bg-orange-500 text-white text-xs rounded-full px-2.5 py-0.5 font-bold">
@@ -1208,7 +1209,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                     activeTab === 'analytics' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
                                 }`}
                             >
-                                <TrendingUp className="w-5 h-5" />
+                                <ColoredAnalyticsIcon className="w-6 h-6" />
                                 <span className="font-medium">Analytics</span>
                             </button>
                             <button
@@ -1220,7 +1221,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                     activeTab === 'hotelVilla' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
                                 }`}
                             >
-                                <Hotel className="w-5 h-5" />
+                                <ColoredHotelIcon className="w-6 h-6" />
                                 <span className="font-medium">Hotel & Villa</span>
                             </button>
                             <button
@@ -1232,7 +1233,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                     activeTab === 'notifications' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
                                 }`}
                             >
-                                <Bell className="w-5 h-5" />
+                                <ColoredBellIcon className="w-6 h-6" />
                                 <span className="font-medium">Notifications</span>
                                 {notifications.filter(n => !n.isRead).length > 0 && (
                                     <span className="ml-auto bg-orange-500 text-white text-xs rounded-full px-2.5 py-0.5 font-bold">
@@ -1249,7 +1250,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                     activeTab === 'discounts' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
                                 }`}
                             >
-                                <Tag className="w-5 h-5" />
+                                <ColoredTagIcon className="w-6 h-6" />
                                 <span className="font-medium">Discounts</span>
                             </button>
                             <button
@@ -1261,7 +1262,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                     activeTab === 'membership' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
                                 }`}
                             >
-                                <Crown className="w-5 h-5" />
+                                <ColoredCrownIcon className="w-6 h-6" />
                                 <span className="font-medium">Membership Plans</span>
                             </button>
                             <button
@@ -1273,9 +1274,23 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                     activeTab === 'terms' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
                                 }`}
                             >
-                                <FileCheck className="w-5 h-5" />
+                                <ColoredDocumentIcon className="w-6 h-6" />
                                 <span className="font-medium">Terms & Conditions</span>
                             </button>
+
+                            {/* Website Management Menu Item */}
+                            {onNavigate && (
+                                <button
+                                    onClick={() => {
+                                        setIsSideDrawerOpen(false);
+                                        onNavigate('website-management');
+                                    }}
+                                    className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-indigo-50 transition-colors border-l-4 border-transparent hover:border-indigo-500"
+                                >
+                                    <ColoredGlobeIcon className="w-6 h-6" />
+                                    <span className="font-medium">Website Management</span>
+                                </button>
+                            )}
 
                             {/* Coin Rewards Menu Items */}
                             {onNavigate && (
@@ -1287,8 +1302,8 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                         }}
                                         className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 border-transparent hover:border-orange-500"
                                     >
-                                        <History className="w-5 h-5" />
-                                        <span className="font-medium">💰 Coin History</span>
+                                        <ColoredHistoryIcon className="w-6 h-6" />
+                                        <span className="font-medium">Coin History</span>
                                     </button>
                                     <button
                                         onClick={() => {
@@ -1297,8 +1312,8 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                         }}
                                         className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-green-50 transition-colors border-l-4 border-transparent hover:border-green-500"
                                     >
-                                        <Coins className="w-5 h-5" />
-                                        <span className="font-medium">🛍️ Coin Shop</span>
+                                        <ColoredCoinsIcon className="w-6 h-6" />
+                                        <span className="font-medium">Coin Shop</span>
                                     </button>
                                 </>
                             )}

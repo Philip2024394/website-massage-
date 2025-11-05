@@ -307,11 +307,14 @@ export const dataService = {
         if (APP_CONFIG.DATA_SOURCE === 'mock') {
             return [
                 { 
-                    id: 1, 
+                    id: '1', 
+                    agentId: 'AGT001',
                     name: 'Agent Smith', 
                     email: 'agent@example.com', 
+                    contactNumber: '+1234567890',
                     agentCode: 'AGT001',
-                    hasAcceptedTerms: true 
+                    hasAcceptedTerms: true,
+                    isActive: true
                 }
             ];
         } else {

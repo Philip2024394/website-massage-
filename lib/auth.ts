@@ -229,12 +229,11 @@ export const placeAuth = {
             console.log('🏢 Creating massage place with required attributes only...');
             
             const placeData = {
-                // REQUIRED ATTRIBUTES ONLY (based on actual Appwrite schema requirements)
+                // CORE REQUIRED ATTRIBUTES (verified to exist in Appwrite)
                 id: generatedPlaceId,                          // ✅ Required: Document identifier
                 placeId: generatedPlaceId,                     // ✅ Required: Place-specific ID field
                 name: email.split('@')[0],                     // ✅ Required: Business name
                 category: 'massage-place',                     // ✅ Required: Business category
-                // whatsappNumber: '+62000000000',                // ❌ Unknown attribute - removing temporarily
                 email,                                         // ✅ Required: Email address
                 password: '',                                  // ✅ Required: Managed by Appwrite auth
                 pricing: JSON.stringify({ '60': 100, '90': 150, '120': 200 }), // ✅ Required: Pricing structure
@@ -243,7 +242,7 @@ export const placeAuth = {
                 isLive: false,                                // ✅ Required: Admin approval
                 openingTime: '09:00',                         // ✅ Required: Opening time
                 closingTime: '21:00',                         // ✅ Required: Closing time
-                coordinates: JSON.stringify({ lat: -6.2088, lng: 106.8456 }), // ✅ Required: Default Jakarta coordinates
+                coordinates: [106.8456, -6.2088],             // ✅ Required: Point format [lng, lat] for Jakarta
                 hotelId: '',                                  // ✅ Required: Empty for independent massage places
             };
             

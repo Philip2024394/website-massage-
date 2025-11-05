@@ -106,7 +106,17 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
     };
 
     return (
-        <div className="fixed inset-0 z-50" role="dialog" aria-modal="true">
+        <>
+            <style>{`
+                @keyframes float {
+                    0%, 100% { transform: translateY(0px); }
+                    50% { transform: translateY(-10px); }
+                }
+                .animate-float {
+                    animation: float 3s ease-in-out infinite;
+                }
+            `}</style>
+            <div className="fixed inset-0 z-50" role="dialog" aria-modal="true">
             {/* Backdrop */}
             <div 
                 className="absolute inset-0 bg-black bg-opacity-50 transition-opacity" 
@@ -119,7 +129,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                 {/* Header */}
                 <div className="p-6 flex justify-between items-center border-b border-gray-200">
                     <h2 className="font-bold text-2xl">
-                        <span className="text-black">Inda</span><span className="text-orange-500">Street</span>
+                        <span className="text-black">Inda</span><span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
                     </h2>
                     <button 
                         onClick={onClose}
@@ -459,6 +469,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                 </nav>
             </div>
         </div>
+        </>
     );
 };
 

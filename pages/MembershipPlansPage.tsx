@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Crown, Check, Star, Calendar, Database, Users } from 'lucide-react';
+import { Crown, Check, Star, Calendar, Database, Users, Menu } from 'lucide-react';
 import Button from '../components/Button';
+import NotificationBell from '../components/NotificationBell';
 
 interface MembershipPlan {
   id: string;
@@ -17,14 +18,38 @@ interface MembershipPlansPageProps {
   onBack: () => void;
   userType: 'therapist' | 'place';
   currentPlan?: string;
+  onNavigateToNotifications?: () => void;
+  unreadNotificationsCount?: number;
 }
 
 const MembershipPlansPage: React.FC<MembershipPlansPageProps> = ({ 
   userType, 
-  currentPlan = 'free'
+  currentPlan = 'free',
+  onBack,
+  onNavigateToNotifications,
+  unreadNotificationsCount = 0
 }) => {
   const [plans, setPlans] = useState<MembershipPlan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
+
+  // Helper function to get current plan status
+  const getCurrentPlanStatus = () => {
+    switch (currentPlan) {
+      case 'free':
+        return { name: 'Free Plan', status: 'Active', color: 'text-gray-600', bgColor: 'bg-gray-100' };
+      case '1month':
+        return { name: '1 Month Plan', status: 'Active', color: 'text-green-600', bgColor: 'bg-green-100' };
+      case '3month':
+        return { name: '3 Months Plan', status: 'Active', color: 'text-blue-600', bgColor: 'bg-blue-100' };
+      case '6month':
+        return { name: '6 Months Plan', status: 'Active', color: 'text-purple-600', bgColor: 'bg-purple-100' };
+      case '1year':
+        return { name: '1 Year Plan', status: 'Active', color: 'text-orange-600', bgColor: 'bg-orange-100' };
+      default:
+        return { name: 'Free Plan', status: 'Active', color: 'text-gray-600', bgColor: 'bg-gray-100' };
+    }
+  };
 
   // Mock data - this will be replaced with admin-updated data
   const defaultPlans: MembershipPlan[] = [
@@ -124,17 +149,99 @@ const MembershipPlansPage: React.FC<MembershipPlansPageProps> = ({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Membership Plans</h1>
+      {/* Header with Burger Menu */}
+      <header className="bg-white shadow-sm px-4 py-3 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <h1 className="text-xl sm:text-2xl font-bold">
+            <span className="text-gray-900">Inda</span>
+            <span className="text-orange-500">Street</span>
+          </h1>
+          <div className="flex items-center gap-2">
+            {onNavigateToNotifications && (
+              <NotificationBell count={unreadNotificationsCount} onClick={onNavigateToNotifications} />
+            )}
+            <button
+              onClick={() => setIsSideDrawerOpen(true)}
+              className="p-2 text-gray-700 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-colors"
+            >
+              <Menu className="w-5 h-5 text-orange-600" />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Side Drawer */}
+      {isSideDrawerOpen && (
+        <div className="fixed inset-0 z-50">
+          {/* Overlay */}
+          <div 
+            className="absolute inset-0 bg-black bg-opacity-50"
+            onClick={() => setIsSideDrawerOpen(false)}
+          />
+          
+          {/* Drawer */}
+          <div className="absolute right-0 top-0 h-full w-80 bg-gradient-to-br from-orange-500 to-red-500 shadow-xl">
+            {/* Drawer Header */}
+            <div className="p-6 border-b border-orange-400">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-bold text-white">Menu</h2>
+                <button
+                  onClick={() => setIsSideDrawerOpen(false)}
+                  className="p-2 text-white hover:bg-orange-600 rounded-lg transition-colors"
+                >
+                  <Star className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            
+            {/* Drawer Content */}
+            <div className="p-6">
+              <div className="space-y-1">
+                <button
+                  onClick={() => {
+                    setIsSideDrawerOpen(false);
+                    onBack();
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-white hover:bg-orange-600 rounded-lg transition-colors text-left"
+                >
+                  <Crown className="w-5 h-5" />
+                  <span>Back to Dashboard</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
+      )}
+
+      {/* Plan Status Section */}
+      <div className="max-w-6xl mx-auto px-4 py-6">
+        <div className={`${getCurrentPlanStatus().bgColor} border border-opacity-20 rounded-lg p-6 mb-6`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Crown className={`w-6 h-6 ${getCurrentPlanStatus().color}`} />
+              <div>
+                <h2 className={`text-lg font-semibold ${getCurrentPlanStatus().color}`}>
+                  Current Plan: {getCurrentPlanStatus().name}
+                </h2>
+                <p className={`text-sm ${getCurrentPlanStatus().color} opacity-80`}>
+                  Status: {getCurrentPlanStatus().status}
+                </p>
+              </div>
+            </div>
+            <div className={`px-3 py-1 rounded-full text-xs font-medium ${getCurrentPlanStatus().bgColor} ${getCurrentPlanStatus().color} border border-current border-opacity-20`}>
+              {getCurrentPlanStatus().status}
+            </div>
+          </div>
+        </div>
+
+        {/* Page Title */}
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Membership Plans</h1>
+          <p className="text-gray-600">Choose the perfect plan for your business needs</p>
+        </div>
       </div>
 
+      {/* Header */}
       {/* Notice */}
       <div className="max-w-6xl mx-auto px-4 py-6">
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">

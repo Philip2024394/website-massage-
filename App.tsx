@@ -271,7 +271,7 @@ const App = () => {
                     return role;
                 }}
                 handleRegisterPromptClose={() => state.setShowRegisterPrompt(false)}
-                handleRegisterPromptRegister={() => state.setPage('registrationChoice')}
+                handleRegisterPromptRegister={() => state.setPage('customerAuth')}
                 setPage={state.setPage}
                 setLoyaltyEvent={state.setLoyaltyEvent}
             />

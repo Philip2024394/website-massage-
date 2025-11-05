@@ -171,25 +171,37 @@ export const useNavigation = ({
     }, [setLanguage]);
 
     const handleEnterApp = useCallback(async (lang: Language, location: UserLocation) => {
-        // Set flag to start fresh (prevent session restore)
-        sessionStorage.setItem('start_fresh', 'true');
-        
-        // Clear all dashboard sessions when entering from landing page
-        setIsAdminLoggedIn(false);
-        setIsHotelLoggedIn(false);
-        setIsVillaLoggedIn(false);
-        setLoggedInProvider(null);
-        setLoggedInAgent(null);
-        setImpersonatedAgent(null);
-        setLoggedInCustomer(null);
-        
-        // Clear session storage
-        await logout();
-        
-        setLanguage(lang);
-        setUserLocation(location);
-        localStorage.setItem('user_location', JSON.stringify(location));
-        setPage('home');
+        try {
+            // Set flag to start fresh (prevent session restore)
+            sessionStorage.setItem('start_fresh', 'true');
+            
+            // Clear all dashboard sessions when entering from landing page
+            setIsAdminLoggedIn(false);
+            setIsHotelLoggedIn(false);
+            setIsVillaLoggedIn(false);
+            setLoggedInProvider(null);
+            setLoggedInAgent(null);
+            setImpersonatedAgent(null);
+            setLoggedInCustomer(null);
+            
+            // Clear session storage with small delay to prevent DOM conflicts
+            await new Promise(resolve => setTimeout(resolve, 100));
+            await logout();
+            
+            // Set new state with delay to ensure DOM cleanup
+            await new Promise(resolve => setTimeout(resolve, 50));
+            setLanguage(lang);
+            setUserLocation(location);
+            localStorage.setItem('user_location', JSON.stringify(location));
+            setPage('home');
+        } catch (error) {
+            console.warn('Navigation error during app entry:', error);
+            // Fallback navigation even if logout fails
+            setLanguage(lang);
+            setUserLocation(location);
+            localStorage.setItem('user_location', JSON.stringify(location));
+            setPage('home');
+        }
     }, [setIsAdminLoggedIn, setIsHotelLoggedIn, setIsVillaLoggedIn, setLoggedInProvider, 
         setLoggedInAgent, setImpersonatedAgent, setLoggedInCustomer, setLanguage, 
         setUserLocation, setPage]);

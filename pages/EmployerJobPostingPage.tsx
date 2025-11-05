@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Building2, MapPin, DollarSign, Home, Briefcase, Phone, Mail, X } from 'lucide-react';
+import { Building2, MapPin, DollarSign, Home, Briefcase, Phone, Mail, X, Menu } from 'lucide-react';
 import { databases, ID } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
+import { AppDrawer } from '../components/AppDrawer';
 
 interface EmployerJobPostingPageProps {
     onNavigateToPayment?: (jobId: string) => void;
@@ -10,7 +11,11 @@ interface EmployerJobPostingPageProps {
     t?: any;
 }
 
-const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({ onNavigateToPayment }) => {
+const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({ 
+    onNavigateToPayment, 
+    onNavigate,
+    t 
+}) => {
     // Array of professional massage/spa images - will cycle through all before repeating
     const jobPostingImages = [
         'https://ik.imagekit.io/7grri5v7d/jungle%20massage.png?updatedAt=1761594798827',
@@ -83,6 +88,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({ onNavig
     const [showBenefitsDropdown, setShowBenefitsDropdown] = useState(false);
     const [showMassageTypesDropdown, setShowMassageTypesDropdown] = useState(false);
     const [showLanguagesDropdown, setShowLanguagesDropdown] = useState(false);
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
     const businessTypes = [
         { value: 'hotel', label: 'Hotel' },
@@ -329,11 +335,25 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({ onNavig
             {/* Header - HomePage Style */}
             <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
                 <div className="flex justify-between items-center">
+                    <button 
+                        onClick={() => setIsDrawerOpen(true)}
+                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                        <Menu className="w-6 h-6 text-gray-600" />
+                    </button>
                     <h1 className="text-2xl font-bold text-gray-800">
                         <span className="text-black">Inda</span><span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
                     </h1>
+                    <div className="w-10"> {/* Spacer for balance */}</div>
                 </div>
             </header>
+
+            <AppDrawer 
+                isOpen={isDrawerOpen} 
+                onClose={() => setIsDrawerOpen(false)} 
+                onNavigate={onNavigate}
+                t={t}
+            />
 
             <div className="max-w-4xl mx-auto px-4 py-6">
                 <form onSubmit={handleSubmit} className="space-y-6">

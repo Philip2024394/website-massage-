@@ -8,7 +8,6 @@ import ImageUpload from '../ImageUpload';
 import CustomCheckbox from '../CustomCheckbox';
 import { MASSAGE_TYPES_CATEGORIZED } from '../../constants/rootConstants';
 import CurrencyRpIcon from '../icons/CurrencyRpIcon';
-import { Globe as GlobeAltIcon, Star as StarIcon } from 'lucide-react';
 
 interface TherapistProfileFormProps {
     // Profile data
@@ -74,11 +73,9 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
     profilePicture, name, yearsOfExperience, description, whatsappNumber,
     massageTypes, languages, location, coordinates, pricing, hotelVillaPricing,
     useSamePricing, isLicensed, licenseNumber,
-    websiteUrl, websiteTitle, websiteDescription,
     setProfilePicture, setName, setYearsOfExperience, setDescription, setWhatsappNumber,
     setMassageTypes, setLanguages, setLocation, setPricing,
     setHotelVillaPricing, setUseSamePricing, setLicenseNumber,
-    setWebsiteUrl, setWebsiteTitle, setWebsiteDescription,
     showImageRequirementModal, setShowImageRequirementModal, pendingImageUrl, setPendingImageUrl,
     therapistId, t, locationInputRef, mapsApiLoaded, setToast,
     handleSave, handleSetLocation
@@ -467,68 +464,6 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                     <PhoneIcon className="w-4 h-4" />
                     <span>Test WhatsApp Connection</span>
                 </Button>
-            </div>
-
-            {/* Website Information Section - For Indastreet Partners Directory */}
-            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg border border-indigo-200">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                    <GlobeAltIcon className="w-5 h-5 mr-2 text-indigo-600" />
-                    🤝 Indastreet Partners Directory (Optional)
-                </h3>
-                <p className="text-sm text-gray-600 mb-4">
-                    Add your website to be featured in our <strong>Indastreet Partners</strong> directory for better SEO ranking and exposure.
-                    Being part of the Indastreet Partnership will drive additional traffic to your website.
-                </p>
-                
-                <div className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Website URL</label>
-                        <div className="relative mt-1">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <GlobeAltIcon className="h-5 w-5 text-gray-400" />
-                            </div>
-                            <input 
-                                type="url" 
-                                value={websiteUrl || ''} 
-                                onChange={e => setWebsiteUrl?.(e.target.value)} 
-                                placeholder="https://yourwebsite.com" 
-                                className="block w-full pl-10 pr-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900" 
-                            />
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1">Your professional website or business URL</p>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Website Title</label>
-                        <input 
-                            type="text" 
-                            value={websiteTitle || ''} 
-                            onChange={e => setWebsiteTitle?.(e.target.value)} 
-                            placeholder="Professional Massage & Wellness Services" 
-                            className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 mt-1" 
-                        />
-                        <p className="text-xs text-gray-500 mt-1">Display name for your website link</p>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Website Description</label>
-                        <textarea 
-                            value={websiteDescription || ''} 
-                            onChange={e => setWebsiteDescription?.(e.target.value)} 
-                            placeholder="Brief description of your website and services for the partners directory..." 
-                            rows={3}
-                            className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 mt-1" 
-                        />
-                        <p className="text-xs text-gray-500 mt-1">Short description for the partners directory (optional)</p>
-                    </div>
-                </div>
-
-                <div className="mt-3 p-3 bg-blue-50 rounded-md border border-blue-200">
-                    <p className="text-xs text-blue-700 flex items-center">
-                        <StarIcon className="w-4 h-4 mr-1" />
-                        <strong>SEO Benefit:</strong> Your website will be featured in our partners directory with proper SEO optimization to boost your Google ranking.
-                    </p>
-                </div>
             </div>
 
             <div>

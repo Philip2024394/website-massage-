@@ -3,6 +3,7 @@ import { ShopItem, UserCoins } from '../types';
 import { shopItemService, coinService, shopOrderService } from '../lib/appwriteService';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import LocationModal from '../components/LocationModal';
+import { AppDrawer } from '../components/AppDrawer';
 
 interface CoinShopPageProps {
     onNavigate: (page: string) => void;
@@ -30,7 +31,6 @@ interface CoinShopPageProps {
 const CoinShopPage: React.FC<CoinShopPageProps> = ({ 
     currentUser,
     onSetUserLocation,
-    onOpenMenu,
     t
 }) => {
     const [shopItems, setShopItems] = useState<ShopItem[]>([]);
@@ -50,6 +50,7 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
     const [showLoginNotice, setShowLoginNotice] = useState(false);
     const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [showFinalConfirmation, setShowFinalConfirmation] = useState(false);
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     
     // Location modal state
     const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
@@ -259,12 +260,22 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
                         </span>
                     </h1>
                     <div className="flex items-center gap-3 text-gray-600">
-                        <button onClick={onOpenMenu} title="Menu">
+                        <button onClick={() => setIsDrawerOpen(true)} title="Menu">
                             <BurgerMenuIcon className="w-6 h-6" />
                         </button>
                     </div>
                 </div>
             </header>
+
+            <AppDrawer 
+                isOpen={isDrawerOpen} 
+                onClose={() => setIsDrawerOpen(false)} 
+                onNavigate={() => {
+                    setIsDrawerOpen(false);
+                    // Handle navigation here
+                }}
+                t={t}
+            />
 
             {/* Coin Balance Display */}
             <div id="coin-balance-bar" className="bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-3 text-white sticky top-16 z-10">

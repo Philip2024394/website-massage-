@@ -19,7 +19,6 @@ const HomeIcon: React.FC<{className?: string}> = ({ className }) => (
 
 const AgentAuthPage: React.FC<AgentAuthPageProps> = ({ onRegister, onLogin, onBack }) => {
     const [isSignUp, setIsSignUp] = useState(false);
-    const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -43,12 +42,6 @@ const AgentAuthPage: React.FC<AgentAuthPageProps> = ({ onRegister, onLogin, onBa
             // Validate inputs
             if (!email || !password) {
                 setError('Please enter both email and password');
-                setLoading(false);
-                return;
-            }
-
-            if (isSignUp && !name.trim()) {
-                setError('Agent name is required');
                 setLoading(false);
                 return;
             }
@@ -83,11 +76,12 @@ const AgentAuthPage: React.FC<AgentAuthPageProps> = ({ onRegister, onLogin, onBa
             if (isSignUp) {
                 // Create account
                 console.log('📝 Creating agent account for:', email);
+                const defaultName = email.split('@')[0]; // Generate name from email
                 const newUser = await account.create(
                     'unique()',
                     email,
                     password,
-                    name
+                    defaultName
                 );
 
                 console.log('✅ Account created successfully!', { userId: newUser.$id });
@@ -99,20 +93,32 @@ const AgentAuthPage: React.FC<AgentAuthPageProps> = ({ onRegister, onLogin, onBa
                 // Get user details
                 const user = await account.get();
                 
-                // Create agent record in database
+                // Create agent record in database matching your exact schema
                 const agentData = {
-                    userId: user.$id,
-                    name: name,
-                    email: email,
-                    phoneNumber: 'To be updated',
-                    address: 'To be updated',
-                    profilePicture: null,
-                    isActive: true,
-                    joinDate: new Date().toISOString(),
-                    totalEarnings: 0,
-                    completedBookings: 0,
-                    rating: 5.0,
-                    bankDetails: null
+                    // Required fields per your schema
+                    agentId: user.$id,                              // Required: Agent identifier
+                    name: defaultName,                              // Required: Agent name from email
+                    email: email,                                   // Required: Email address
+                    contactNumber: 'To be updated',                 // Required: Contact number
+                    agentCode: `AGT${Date.now().toString().slice(-6)}`, // Required: Unique agent code
+                    hasAcceptedTerms: true,                         // Required: Terms acceptance
+                    isActive: true,                                 // Required: Account status
+                    
+                    // Optional fields with defaults
+                    assignedDate: new Date().toISOString(),         // Assignment date
+                    region: null,                                   // Region assignment
+                    successRate: null,                              // Success rate (0-1)
+                    tier: 'Standard',                               // Agent tier
+                    lastLogin: null,                                // Last login timestamp
+                    isLive: false,                                  // Live status
+                    activeTherapists: 0,                            // Active therapist count
+                    password: '',                                   // Password (managed by Auth)
+                    whatsappNumber: null,                           // WhatsApp number
+                    commissionRate: 20,                             // Commission rate (max 23)
+                    createdAt: new Date().toISOString(),            // Creation timestamp
+                    totalEarnings: 0.0,                             // Total earnings
+                    clients: '[]',                                  // Client list JSON
+                    idCardImage: null                               // ID card image URL
                 };
                 
                 console.log('📝 Creating agent database record...');
@@ -135,7 +141,7 @@ const AgentAuthPage: React.FC<AgentAuthPageProps> = ({ onRegister, onLogin, onBa
                 console.log('✅ Agent account created and logged in successfully!');
                 
                 // Call the onRegister prop for any additional logic
-                const result = await onRegister(name, email);
+                const result = await onRegister(defaultName, email);
                 if (result.success) {
                     setError('✅ Account created successfully! Redirecting to dashboard...');
                 } else {
@@ -150,7 +156,7 @@ const AgentAuthPage: React.FC<AgentAuthPageProps> = ({ onRegister, onLogin, onBa
                 // Get user details
                 const user = await account.get();
                 
-                // Find agent record
+                // Find agent record using agentId field
                 console.log('🔍 Finding agent record...');
                 const response = await databases.listDocuments(
                     DATABASE_ID,
@@ -158,7 +164,7 @@ const AgentAuthPage: React.FC<AgentAuthPageProps> = ({ onRegister, onLogin, onBa
                     []
                 );
                 
-                const agent = response.documents.find((a: any) => a.userId === user.$id);
+                const agent = response.documents.find((a: any) => a.agentId === user.$id);
                 
                 if (!agent) {
                     setError('Agent account not found. Please create an account first.');
@@ -271,23 +277,6 @@ const AgentAuthPage: React.FC<AgentAuthPageProps> = ({ onRegister, onLogin, onBa
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    {isSignUp && (
-                        <div>
-                            <label className="block text-sm font-medium text-white/90 mb-2">
-                                Agent Name
-                            </label>
-                            <input
-                                type="text"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
-                                placeholder="Enter your name"
-                                required={isSignUp}
-                                onKeyDown={(e) => e.key === 'Enter' && handleSubmit}
-                            />
-                        </div>
-                    )}
-                    
                     <div>
                         <label className="block text-sm font-medium text-white/90 mb-2">
                             Email

@@ -15,7 +15,7 @@ const imageSrc = 'https://ik.imagekit.io/7grri5v7d/indastreet%20massage.png?upda
 // Language options with flags - Indonesian first, then English, then others
 const languages = [
     { code: 'id', name: 'Bahasa Indonesia', flag: '🇮🇩' },
-    { code: 'en', name: 'English', flag: '🇬�' },
+    { code: 'en', name: 'English', flag: '🇬🇧' },
 ];
 
 const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect }) => {

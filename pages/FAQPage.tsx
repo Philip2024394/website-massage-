@@ -229,7 +229,7 @@ const FAQPage: React.FC<FAQPageProps> = ({
             <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">
-                        <span className="text-orange-500">IndaStreet</span>
+                        <span className="text-black">Inda</span><span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
                     </h1>
                     <div className="flex items-center gap-4 text-gray-600">
                         <button onClick={() => setIsMenuOpen(true)} title="Menu">
@@ -441,7 +441,7 @@ const FAQPage: React.FC<FAQPageProps> = ({
                         </button>
                     </div>
                     <p className="mt-6 text-orange-100">
-                        📧 support@indastreet.com | 📱 WhatsApp: +62 812 3456 7890
+                        📧 indastreet.id@gmail.com | 📱 WhatsApp: +6281392000050
                     </p>
                 </div>
 
@@ -474,6 +474,16 @@ const FAQPage: React.FC<FAQPageProps> = ({
                 </div>
             </div>
         </div>
+        
+        <style>{`
+            @keyframes float {
+                0%, 100% { transform: translateY(0px); }
+                50% { transform: translateY(-10px); }
+            }
+            .animate-float {
+                animation: float 3s ease-in-out infinite;
+            }
+        `}</style>
         </div>
     );
 };

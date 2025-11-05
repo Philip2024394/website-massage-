@@ -15,13 +15,14 @@ import AdminLoginPage from './pages/AdminLoginPage';
 import RegistrationChoicePage from './pages/RegistrationChoicePage';
 import TherapistDashboardPage from './pages/TherapistDashboardPage';
 import TherapistStatusPage from './pages/TherapistStatusPage';
-// import PlaceDashboardPage from './pages/PlaceDashboardPage'; // Unused import
-import MassagePlaceAdminDashboard from './pages/MassagePlaceAdminDashboard';
+import PlaceDashboardPage from './pages/PlaceDashboardPage';
 import AgentPage from './pages/AgentPage';
 import AgentAuthPage from './pages/AgentAuthPage';
 import AgentDashboardPage from './pages/AgentDashboardPage';
 import AgentTermsPage from './pages/AgentTermsPage';
 import ServiceTermsPage from './pages/ServiceTermsPage';
+import PlaceTermsPage from './pages/PlaceTermsPage';
+import PlaceDiscountBadgePage from './pages/PlaceDiscountBadgePage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import CookiesPolicyPage from './pages/CookiesPolicyPage';
 import MembershipPage from './pages/MembershipPage';
@@ -37,6 +38,7 @@ import EmployerJobPostingPage from './pages/EmployerJobPostingPage';
 import JobPostingPaymentPage from './pages/JobPostingPaymentPage';
 import BrowseJobsPage from './pages/BrowseJobsPage';
 import MassageJobsPage from './pages/MassageJobsPage';
+import IndastreetPartnersPage from './pages/IndastreetPartnersPage';
 import TherapistJobRegistrationPage from './pages/TherapistJobRegistrationPage';
 import JobUnlockPaymentPage from './pages/JobUnlockPaymentPage';
 import AdminBankSettingsPage from './pages/AdminBankSettingsPage';
@@ -85,6 +87,7 @@ import RewardBannersTestPage from './pages/RewardBannersTestPage';
 import ReferralPage from './pages/ReferralPage';
 import CoinHistoryPage from './pages/CoinHistoryPage';
 import CoinSystemTestPage from './pages/CoinSystemTestPage';
+import WebsiteManagementPage from './pages/WebsiteManagementPage';
 import TodaysDiscountsPage from './pages/TodaysDiscountsPage';
 import { APP_CONFIG } from './config/appConfig';
 
@@ -223,7 +226,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         handleSelectRegistration,
         handleTherapistStatusChange,
         handleSaveTherapist,
-        // handleSavePlace, // Unused function
+        handleSavePlace,
         handleAgentRegister,
         handleAgentLogin,
         handleAgentAcceptTerms,
@@ -257,7 +260,13 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
 
     switch (page) {
         case 'landing': 
-            return <LandingPage onLanguageSelect={handleLanguageSelect} onEnterApp={handleEnterApp} />;
+            return <LandingPage 
+                onLanguageSelect={handleLanguageSelect} 
+                onEnterApp={(lang: Language, location: UserLocation) => {
+                    // Use setTimeout to ensure navigation happens after current render cycle
+                    setTimeout(() => handleEnterApp(lang, location), 0);
+                }} 
+            />;
             
         case 'unifiedLogin': 
             return <UnifiedLoginPage />;
@@ -395,15 +404,64 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 therapistId={typeof loggedInProvider.id === 'string' ? parseInt(loggedInProvider.id) : loggedInProvider.id}
                 bookings={bookings.filter(b => b.providerId === loggedInProvider.id && b.providerType === 'therapist')}
                 notifications={notifications.filter(n => n.providerId === loggedInProvider.id)}
-            /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice} />;
+            /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t?.registrationChoice || {}} />;
             
         case 'placeDashboard': {
-            const currentPlace = places.find(p => p.id === loggedInProvider?.id);
-            return loggedInProvider && loggedInProvider.type === 'place' && currentPlace ? <MassagePlaceAdminDashboard 
+            console.log('🏢 PlaceDashboard Case - loggedInProvider:', loggedInProvider);
+            console.log('🏢 PlaceDashboard Case - loggedInProvider.id type:', typeof loggedInProvider?.id);
+            console.log('🏢 PlaceDashboard Case - places array:', places);
+            console.log('🏢 PlaceDashboard Case - places array length:', places.length);
+            
+            // Try both string and number comparison
+            let currentPlace = places.find(p => {
+                console.log('🔍 Comparing place.id:', p.id, '(type:', typeof p.id, ') with loggedInProvider.id:', loggedInProvider?.id, '(type:', typeof loggedInProvider?.id, ')');
+                return p.id == loggedInProvider?.id || p.id === loggedInProvider?.id || String(p.id) === String(loggedInProvider?.id);
+            });
+            
+            // If place not found in array, try to load from database
+            if (!currentPlace && loggedInProvider?.id) {
+                console.log('⚠️ Place not found in array, attempting to load from database...');
+                // For now, create a basic place object - the PlaceDashboardPage will handle loading saved data
+                currentPlace = {
+                    id: loggedInProvider.id,
+                    name: '',
+                    description: '',
+                    rating: 0,
+                    isLive: false,
+                    openingTime: '09:00',
+                    closingTime: '21:00',
+                    location: '',
+                    phoneNumber: '',
+                    whatsappNumber: '',
+                    images: [],
+                    services: [],
+                    therapists: [],
+                    lat: 0,
+                    lng: 0,
+                    $id: String(loggedInProvider.id),
+                    mainImage: '',
+                    pricing: '{}',
+                    coordinates: '{"lat":0,"lng":0}',
+                    massageTypes: '[]',
+                    languages: [],
+                    additionalServices: []
+                } as any;
+            }
+            
+            console.log('🏢 PlaceDashboard Case - currentPlace found:', currentPlace);
+            
+            return loggedInProvider && loggedInProvider.type === 'place' && currentPlace ? <PlaceDashboardPage 
+                placeId={typeof loggedInProvider.id === 'string' ? parseInt(loggedInProvider.id) : loggedInProvider.id}
                 place={currentPlace}
+                onSave={handleSavePlace}
                 onLogout={handleProviderLogout}
                 onNavigate={(page) => setPage(page as Page)}
-            /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t.registrationChoice} />;
+                onNavigateToNotifications={() => console.log('Navigate to notifications')}
+                onUpdateBookingStatus={(bookingId, status) => console.log('Update booking status:', bookingId, status)}
+                bookings={bookings?.filter(b => b.providerId === loggedInProvider.id && b.providerType === 'place') || []}
+                notifications={notifications || []}
+                t={t || {}}
+            /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t?.registrationChoice || {}} />;
         }
             
         case 'agent': 
@@ -444,6 +502,17 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             
         case 'serviceTerms': 
             return <ServiceTermsPage onBack={handleBackToHome} t={t.serviceTerms} contactNumber={APP_CONFIG.CONTACT_NUMBER} />;
+            
+        case 'placeTerms': 
+            return <PlaceTermsPage onBack={handleBackToHome} t={t.placeTerms} />;
+            
+        case 'placeDiscountBadge': 
+            return <PlaceDiscountBadgePage 
+                onBack={handleBackToHome} 
+                placeId={loggedInProvider?.id as number || 0}
+                placeName={loggedInProvider?.type === 'place' ? 'Massage Place' : 'Place'}
+                t={t.discountBadge} 
+            />;
             
         case 'privacy': 
             return <PrivacyPolicyPage onBack={handleBackToHome} t={t.privacyPolicy} />;
@@ -520,7 +589,10 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'massagePlaceLogin': 
             return <MassagePlaceLoginPage 
                 onSuccess={(placeId) => {
+                    console.log('🔑 Massage Place Login Success - placeId:', placeId, '(type:', typeof placeId, ')');
+                    console.log('🔑 Available places in array:', places.map(p => ({ id: p.id, name: p.name, type: typeof p.id })));
                     setLoggedInProvider({ id: placeId, type: 'place' });
+                    console.log('🔑 Setting page to placeDashboard');
                     setPage('placeDashboard');
                 }} 
                 onBack={handleBackToHome}
@@ -622,6 +694,9 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'about-us' as any: 
             // @ts-ignore - Prop interface mismatch 
             return <AboutUsPage onBack={handleBackToHome} onNavigate={(page: Page) => setPage(page as Page)} t={t} />;
+            
+        case 'indastreet-partners': 
+            return <IndastreetPartnersPage onBack={handleBackToHome} onNavigate={(page: Page) => setPage(page as Page)} t={t} />;
             
         case 'how-it-works': 
             // @ts-ignore - Prop interface mismatch 
@@ -776,6 +851,31 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             
         case 'todaysDiscounts': 
             return <TodaysDiscountsPage onBack={handleBackToHome} onNavigate={(page: Page) => setPage(page as Page)} t={t} />;
+            
+        case 'website-management':
+            return <WebsiteManagementPage 
+                onBack={handleBackToHome}
+                currentUser={{
+                    id: loggedInProvider?.id?.toString() || '',
+                    name: 'User',
+                    type: loggedInProvider?.type || 'therapist'
+                }}
+                initialData={{
+                    websiteUrl: '',
+                    websiteTitle: '',
+                    websiteDescription: ''
+                }}
+                onSave={async (websiteData) => {
+                    try {
+                        console.log('Saving website data:', websiteData);
+                        // TODO: Implement actual save functionality
+                    } catch (error) {
+                        console.error('Failed to save website data:', error);
+                        throw error;
+                    }
+                }}
+                t={t}
+            />;
             
         default: 
             return null;

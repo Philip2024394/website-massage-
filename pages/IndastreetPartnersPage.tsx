@@ -11,7 +11,8 @@ import {
     Users as UsersIcon,
     Building as BuildingIcon,
     Home as HomeIcon,
-    Heart as HeartIcon
+    Heart as HeartIcon,
+    ArrowLeft
 } from 'lucide-react';
 
 interface PartnerWebsite {
@@ -31,7 +32,13 @@ interface PartnerWebsite {
     websitePreview?: string; // URL for website screenshot/preview
 }
 
-const IndastreetPartnersPage: React.FC = () => {
+interface IndastreetPartnersPageProps {
+    onBack: () => void;
+    onNavigate?: (page: any) => void;
+    t: any;
+}
+
+const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({ onBack, onNavigate: _onNavigate, t: _t }) => {
     const [partners, setPartners] = useState<PartnerWebsite[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -252,6 +259,25 @@ const IndastreetPartnersPage: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+            {/* Navigation Header */}
+            <div className="bg-white shadow-sm">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                    <div className="flex items-center">
+                        <button 
+                            onClick={onBack}
+                            className="flex items-center text-gray-600 hover:text-gray-800 transition-colors mr-4"
+                        >
+                            <ArrowLeft className="w-5 h-5 mr-2" />
+                            Back to Home
+                        </button>
+                        <h1 className="text-xl font-bold">
+                            <span className="text-gray-900">Inda</span>
+                            <span className="text-orange-500">Street</span>
+                        </h1>
+                    </div>
+                </div>
+            </div>
+            
             {/* SEO-Optimized Header */}
             <div className="bg-white shadow-lg">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

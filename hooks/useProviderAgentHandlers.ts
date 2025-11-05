@@ -329,7 +329,7 @@ export const useProviderAgentHandlers = ({
         if (!loggedInAgent) return;
 
         try {
-            const agentId = loggedInAgent.$id || loggedInAgent.id.toString();
+            const agentId = loggedInAgent.$id || loggedInAgent.id?.toString() || loggedInAgent.agentId;
             await agentService.update(agentId, { hasAcceptedTerms: true });
             
             const updatedAgent = { ...loggedInAgent, hasAcceptedTerms: true };
@@ -346,7 +346,7 @@ export const useProviderAgentHandlers = ({
         if (!loggedInAgent) return;
     
         try {
-            const agentId = loggedInAgent.$id || loggedInAgent.id.toString();
+            const agentId = loggedInAgent.$id || loggedInAgent.id?.toString() || loggedInAgent.agentId;
             await agentService.update(agentId, agentData);
             
             const updatedAgent = { ...loggedInAgent, ...agentData };
