@@ -317,6 +317,7 @@ export const hotelAuth = {
                         location: 'Location pending',    // Required - default location
                         contactPerson: email.split('@')[0], // Required - default contact
                         whatsappNumber: '',              // Required - empty default
+                        hotelId: '',                     // Required by Appwrite schema - empty for hotels (self-reference)
                         qrCodeEnabled: false,            // Required - default false
                         isActive: true,                  // Required - auto-activate for simplicity
                         createdAt: new Date().toISOString(), // Add creation timestamp
@@ -408,6 +409,7 @@ export const villaAuth = {
                     email, // Required
                     password: '', // Required - handled by Appwrite auth
                     whatsappNumber: '', // Required
+                    hotelId: '', // Required by Appwrite schema - empty for villas (self-reference)
                     qrCodeEnabled: false, // Required
                     isActive: false, // Required - admin approval needed
                     createdAt: new Date().toISOString(), // Required
