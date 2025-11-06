@@ -205,7 +205,7 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
                         </div>
                     </div>
 
-                    <div className="p-4">
+                    <div className="p-4 pb-20">
                         {activeTab === 'therapists' ? (
                             liveTherapists.length > 0 ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

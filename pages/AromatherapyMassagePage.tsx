@@ -1,18 +1,19 @@
 import React, { useState } from 'react';
 import { AppDrawer } from '../components/AppDrawer';
+import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
+import FlyingButterfly from '../components/FlyingButterfly';
 
 interface AromatherapyMassagePageProps {
     onBack?: () => void;
     onNavigate?: (page: string) => void;
     onMassageJobsClick?: () => void;
-
+    onHotelPortalClick?: () => void;
     onVillaPortalClick?: () => void;
     onTherapistPortalClick?: () => void;
     onMassagePlacePortalClick?: () => void;
     onAgentPortalClick?: () => void;
     onCustomerPortalClick?: () => void;
     onAdminPortalClick?: () => void;
-    onHotelPortalClick?: () => void;
     onTermsClick?: () => void;
     onPrivacyClick?: () => void;
     therapists?: any[];
@@ -20,24 +21,17 @@ interface AromatherapyMassagePageProps {
     t?: any;
 }
 
-const BurgerMenuIcon = ({ className = 'w-6 h-6' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-    </svg>
-);
-
 const AromatherapyMassagePage: React.FC<AromatherapyMassagePageProps> = ({ 
     onBack, 
     onNavigate,
     onMassageJobsClick,
-
+    onHotelPortalClick,
     onVillaPortalClick,
     onTherapistPortalClick,
     onMassagePlacePortalClick,
     onAgentPortalClick,
     onCustomerPortalClick,
     onAdminPortalClick,
-    onHotelPortalClick,
     onTermsClick,
     onPrivacyClick,
     therapists = [],
@@ -48,32 +42,65 @@ const AromatherapyMassagePage: React.FC<AromatherapyMassagePageProps> = ({
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
+            {/* Flying Butterfly Animation */}
+            <FlyingButterfly />
+            
+            <header className="bg-white p-4 shadow-md sticky top-0 z-20">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">
                         <span className="text-black">Inda</span>
-                        <span className="text-orange-500">Street</span>
+                        <span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
                     </h1>
-                    <div className="flex items-center gap-4 text-gray-600">
-                        <button onClick={() => setIsMenuOpen(true)} title="Menu">
+                    <div className="flex items-center gap-3 text-gray-600">
+                        {/* Quick Access Buttons */}
+                        <button 
+                            onClick={() => {
+                                if (onNavigate) {
+                                    onNavigate('notifications');
+                                }
+                            }} 
+                            className="p-2 hover:bg-gray-100 rounded-full transition-colors" 
+                            title="Notifications"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            </svg>
+                        </button>
+                        
+                        <button 
+                            onClick={() => {
+                                if (onNavigate) {
+                                    onNavigate('referral');
+                                }
+                            }} 
+                            className="p-2 hover:bg-gray-100 rounded-full transition-colors" 
+                            title="Invite Friends"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                        </button>
+
+                        <button onClick={() => setIsMenuOpen(true)} title="Menu" style={{ zIndex: 9999, position: 'relative' }}>
                            <BurgerMenuIcon className="w-6 h-6" />
                         </button>
                     </div>
                 </div>
             </header>
             
-            {/* App Drawer */}
+            {/* Global App Drawer */}
             <AppDrawer
                 isOpen={isMenuOpen}
                 onClose={() => setIsMenuOpen(false)}
+                t={_t}
                 onMassageJobsClick={onMassageJobsClick}
-                onHotelPortalClick={onHotelPortalClick || (() => {})}
-                onVillaPortalClick={onVillaPortalClick || (() => {})}
-                onTherapistPortalClick={onTherapistPortalClick || (() => {})}
-                onMassagePlacePortalClick={onMassagePlacePortalClick || (() => {})}
-                onAgentPortalClick={onAgentPortalClick || (() => {})}
+                onHotelPortalClick={onHotelPortalClick}
+                onVillaPortalClick={onVillaPortalClick}
+                onTherapistPortalClick={onTherapistPortalClick}
+                onMassagePlacePortalClick={onMassagePlacePortalClick}
+                onAgentPortalClick={onAgentPortalClick}
                 onCustomerPortalClick={onCustomerPortalClick}
-                onAdminPortalClick={onAdminPortalClick || (() => {})}
+                onAdminPortalClick={onAdminPortalClick}
                 onNavigate={onNavigate}
                 onTermsClick={onTermsClick}
                 onPrivacyClick={onPrivacyClick}

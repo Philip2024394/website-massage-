@@ -11,8 +11,7 @@ import {
     Users as UsersIcon,
     Building as BuildingIcon,
     Home as HomeIcon,
-    Heart as HeartIcon,
-    ArrowLeft
+    Heart as HeartIcon
 } from 'lucide-react';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { AppDrawer } from '../components/AppDrawer';
@@ -36,7 +35,6 @@ interface PartnerWebsite {
 }
 
 interface IndastreetPartnersPageProps {
-    onBack: () => void;
     onNavigate?: (page: any) => void;
     onMassageJobsClick?: () => void;
     onHotelPortalClick?: () => void;
@@ -54,7 +52,6 @@ interface IndastreetPartnersPageProps {
 }
 
 const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({ 
-    onBack, 
     onNavigate, 
     onMassageJobsClick,
     onHotelPortalClick,
@@ -374,8 +371,9 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                 }}
             >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-                    <h1 className="text-4xl font-bold text-white sm:text-5xl lg:text-6xl drop-shadow-lg">
-                        🤝 Indastreet Partners
+                    <h1 className="text-4xl font-bold sm:text-5xl lg:text-6xl drop-shadow-lg">
+                        <span className="text-black">Inda</span><span className="text-orange-500">street</span>
+                        <span className="text-black text-3xl sm:text-4xl lg:text-5xl ml-2">Partners</span>
                     </h1>
                     <p className="mt-4 text-xl text-white max-w-3xl mx-auto drop-shadow-md">
                         Discover our trusted network of verified wellness professionals, luxury accommodations, 

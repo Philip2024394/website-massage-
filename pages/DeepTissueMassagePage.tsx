@@ -1,76 +1,110 @@
 import React, { useState } from 'react';
+import { AppDrawer } from '../components/AppDrawer';
+import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
+import FlyingButterfly from '../components/FlyingButterfly';
 
-const BurgerMenuIcon = ({ className = 'w-6 h-6' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-    </svg>
-);
+interface DeepTissueMassagePageProps {
+    onNavigate?: (page: string) => void;
+    onMassageJobsClick?: () => void;
+    onHotelPortalClick?: () => void;
+    onVillaPortalClick?: () => void;
+    onTherapistPortalClick?: () => void;
+    onMassagePlacePortalClick?: () => void;
+    onAgentPortalClick?: () => void;
+    onCustomerPortalClick?: () => void;
+    onAdminPortalClick?: () => void;
+    onTermsClick?: () => void;
+    onPrivacyClick?: () => void;
+    therapists?: any[];
+    places?: any[];
+    t: any;
+}
 
-const CloseIcon = ({ className = 'w-6 h-6' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-    </svg>
-);
-
-const DeepTissueMassagePage: React.FC = () => {
+const DeepTissueMassagePage: React.FC<DeepTissueMassagePageProps> = ({
+    onNavigate,
+    onMassageJobsClick,
+    onHotelPortalClick,
+    onVillaPortalClick,
+    onTherapistPortalClick,
+    onMassagePlacePortalClick,
+    onAgentPortalClick,
+    onCustomerPortalClick,
+    onAdminPortalClick,
+    onTermsClick,
+    onPrivacyClick,
+    therapists = [],
+    places = [],
+    t
+}) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
+            {/* Flying Butterfly Animation */}
+            <FlyingButterfly />
+            
+            <header className="bg-white p-4 shadow-md sticky top-0 z-20">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">
-                        <span className="text-orange-500">IndaStreet</span>
+                        <span className="text-black">Inda</span>
+                        <span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
                     </h1>
-                    <div className="flex items-center gap-4 text-gray-600">
-                        <button onClick={() => setIsMenuOpen(true)} title="Menu">
+                    <div className="flex items-center gap-3 text-gray-600">
+                        {/* Quick Access Buttons */}
+                        <button 
+                            onClick={() => {
+                                if (onNavigate) {
+                                    onNavigate('notifications');
+                                }
+                            }} 
+                            className="p-2 hover:bg-gray-100 rounded-full transition-colors" 
+                            title="Notifications"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            </svg>
+                        </button>
+                        
+                        <button 
+                            onClick={() => {
+                                if (onNavigate) {
+                                    onNavigate('referral');
+                                }
+                            }} 
+                            className="p-2 hover:bg-gray-100 rounded-full transition-colors" 
+                            title="Invite Friends"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                        </button>
+
+                        <button onClick={() => setIsMenuOpen(true)} title="Menu" style={{ zIndex: 9999, position: 'relative' }}>
                            <BurgerMenuIcon className="w-6 h-6" />
                         </button>
                     </div>
                 </div>
             </header>
             
-            {/* Side Drawer */}
-            {isMenuOpen && (
-                <div className="fixed inset-0 z-50" role="dialog" aria-modal="true">
-                    <div 
-                        className="absolute inset-0 bg-black bg-opacity-50 transition-opacity" 
-                        onClick={() => setIsMenuOpen(false)}
-                        aria-hidden="true"
-                    ></div>
-    
-                    <div className={`absolute right-0 top-0 bottom-0 w-[70%] sm:w-80 bg-gradient-to-br from-white via-gray-50 to-gray-100 shadow-2xl flex flex-col transform transition-transform ease-in-out duration-300 ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-                        <div className="p-6 flex justify-between items-center">
-                            <h2 className="font-bold text-2xl">
-                                <span className="text-black">inda</span>
-                                <span className="text-orange-500">Street</span>
-                            </h2>
-                            <button 
-                                onClick={() => setIsMenuOpen(false)} 
-                                className="text-gray-600 hover:bg-gray-200 p-2 rounded-full transition-all" 
-                                aria-label="Close menu"
-                            >
-                                <CloseIcon />
-                            </button>
-                        </div>
-
-                        <nav className="flex-grow overflow-y-auto p-4">
-                            <div className="space-y-2">
-                                <button 
-                                    onClick={() => window.location.href = '/'} 
-                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-orange-500 group"
-                                >
-                                    <span className="text-2xl">🏠</span>
-                                    <div className="flex-grow">
-                                        <h3 className="font-semibold text-gray-800 group-hover:text-orange-600 transition-colors">Back to Home</h3>
-                                        <p className="text-xs text-gray-500">Return to main page</p>
-                                    </div>
-                                </button>
-                            </div>
-                        </nav>
-                    </div>
-                </div>
-            )}
+            {/* Global App Drawer */}
+            <AppDrawer
+                isOpen={isMenuOpen}
+                onClose={() => setIsMenuOpen(false)}
+                t={t}
+                onMassageJobsClick={onMassageJobsClick}
+                onHotelPortalClick={onHotelPortalClick}
+                onVillaPortalClick={onVillaPortalClick}
+                onTherapistPortalClick={onTherapistPortalClick}
+                onMassagePlacePortalClick={onMassagePlacePortalClick}
+                onAgentPortalClick={onAgentPortalClick}
+                onCustomerPortalClick={onCustomerPortalClick}
+                onAdminPortalClick={onAdminPortalClick}
+                onNavigate={onNavigate}
+                onTermsClick={onTermsClick}
+                onPrivacyClick={onPrivacyClick}
+                therapists={therapists}
+                places={places}
+            />
             {/* Hero Section */}
             <div className="bg-gradient-to-r from-red-600 to-purple-600 text-white py-24">
                 <div className="max-w-6xl mx-auto px-4 text-center">
@@ -90,7 +124,7 @@ const DeepTissueMassagePage: React.FC = () => {
                 </div>
             </div>
 
-            <div className="max-w-6xl mx-auto px-4 py-16">
+            <div className="max-w-6xl mx-auto px-4 py-16 pb-24">
                 {/* What Is Deep Tissue */}
                 <div className="mb-16">
                     <h2 className="text-4xl font-bold text-gray-900 mb-8 text-center">What is Deep Tissue Massage?</h2>
