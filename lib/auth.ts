@@ -413,6 +413,7 @@ export const villaAuth = {
                     qrCodeEnabled: false, // Required
                     isActive: false, // Required - admin approval needed
                     createdAt: new Date().toISOString(), // Required
+                    userId: user.$id, // Link to Appwrite user - MISSING FIELD ADDED
                     
                     // Optional fields
                     partnerTherapists: JSON.stringify([]),
