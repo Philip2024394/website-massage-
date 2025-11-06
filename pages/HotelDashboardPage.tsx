@@ -213,6 +213,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, onNav
         const baseUrl = window.location.origin;
         const uniqueLink = `${baseUrl}/hotel/${hotelId}/menu`;
         setQrLink(uniqueLink);
+        console.log('🏨 Hotel QR Link generated:', uniqueLink, 'for hotelId:', hotelId);
     }, [hotelId]);
 
     // Generate QR code when qrLink changes with orange branding

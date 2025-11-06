@@ -43,7 +43,7 @@ interface VillaDashboardPageProps {
     initialTab?: 'analytics' | 'discounts' | 'profile' | 'menu' | 'feedback' | 'concierge' | 'commissions' | 'notifications' | 'membership';
 }
 
-const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({ onLogout, onNavigate, therapists = [], places = [], initialTab = 'analytics' }) => {
+const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({ onLogout, onNavigate, therapists = [], places = [], villaId = '1', initialTab = 'analytics' }) => {
     const { t } = useTranslations();
     
     // Therapist banner images pool for randomization - Using Appwrite curated collection
@@ -208,15 +208,16 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({ onLogout, onNav
     const [previewOpen, setPreviewOpen] = useState(false);
     const [showLandingPage, setShowLandingPage] = useState(true);
     
-    // Villa ID for generating unique links
-    const currentVillaId = '1'; // TODO: Get from props/auth
+    // Villa ID for generating unique links - now from props
+    // const currentVillaId = '1'; // TODO: Get from props/auth - REMOVED, using villaId prop
 
     // Generate unique QR link for this villa
     useEffect(() => {
         const baseUrl = window.location.origin;
-        const uniqueLink = `${baseUrl}/hotel/${currentVillaId}/menu`;
+        const uniqueLink = `${baseUrl}/villa/${villaId}/menu`;
         setQrLink(uniqueLink);
-    }, [currentVillaId]);
+        console.log('🏖️ Villa QR Link generated:', uniqueLink, 'for villaId:', villaId);
+    }, [villaId]);
 
     // Generate QR code when qrLink changes with orange branding
     useEffect(() => {
@@ -277,7 +278,7 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({ onLogout, onNav
         };
         
         loadHotelProfile();
-    }, [currentVillaId]);
+    }, [villaId]);
     
     // Booking modal state
     const [bookingOpen, setBookingOpen] = useState(false);
@@ -323,7 +324,7 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({ onLogout, onNav
                     ID.unique(),
                     {
                         ...hotelData,
-                        hotelId: currentVillaId,
+                        hotelId: villaId,
                         createdAt: new Date().toISOString()
                     }
                 );
@@ -1297,7 +1298,7 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({ onLogout, onNav
                             </div>
                         </div>
                         <PushNotificationSettings 
-                            providerId={parseInt(currentVillaId)} 
+                            providerId={parseInt(villaId)} 
                             providerType="place" 
                         />
                     </div>
