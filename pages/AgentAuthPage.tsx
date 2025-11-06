@@ -69,7 +69,7 @@ const AgentAuthPage: React.FC<AgentAuthPageProps> = ({ onRegister, onLogin, onBa
             try {
                 await account.deleteSession('current');
                 console.log('🗑️ Existing session cleared');
-            } catch (err) {
+            } catch {
                 console.log('ℹ️ No existing session to clear');
             }
 

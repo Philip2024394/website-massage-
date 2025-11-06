@@ -287,7 +287,7 @@ async function addJobPostings() {
 
     for (const job of jobPostings) {
         try {
-            const result = await databases.createDocument(
+            await databases.createDocument(
                 DATABASE_ID,
                 COLLECTION_ID,
                 ID.unique(),

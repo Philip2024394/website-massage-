@@ -116,7 +116,7 @@ const ConfirmAccountsPage: React.FC = () => {
         minute: '2-digit',
         hour12: true
       });
-    } catch (error) {
+    } catch {
       return 'Invalid Date';
     }
   };

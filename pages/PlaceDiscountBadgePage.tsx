@@ -105,8 +105,12 @@ const PlaceDiscountBadgePage: React.FC<PlaceDiscountBadgePageProps> = ({
         `;
         document.body.appendChild(notification);
         setTimeout(() => {
-            if (notification.parentNode) {
-                notification.parentNode.removeChild(notification);
+            try {
+                if (notification && notification.parentNode && notification.parentNode.contains(notification)) {
+                    notification.parentNode.removeChild(notification);
+                }
+            } catch (error) {
+                console.warn('Failed to remove notification element:', error);
             }
         }, 4000);
     };

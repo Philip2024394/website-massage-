@@ -83,7 +83,7 @@ async function determineUserType(userId: string, email: string): Promise<Session
                     data: admin
                 };
             }
-        } catch (adminError: any) {
+        } catch {
             console.warn('⚠️ Admin check failed or timeout, skipping');
         }
 
@@ -109,7 +109,7 @@ async function determineUserType(userId: string, email: string): Promise<Session
                     data: hotel
                 };
             }
-        } catch (hotelError: any) {
+        } catch {
             console.warn('⚠️ Hotel check failed or timeout, skipping');
         }
 
@@ -135,7 +135,7 @@ async function determineUserType(userId: string, email: string): Promise<Session
                     data: villa
                 };
             }
-        } catch (villaError: any) {
+        } catch {
             console.warn('⚠️ Villa check failed or timeout, skipping');
         }
 
@@ -161,7 +161,7 @@ async function determineUserType(userId: string, email: string): Promise<Session
                     data: agent
                 };
             }
-        } catch (agentError: any) {
+        } catch {
             console.warn('⚠️ Agent check failed or timeout, skipping');
         }
 
@@ -187,7 +187,7 @@ async function determineUserType(userId: string, email: string): Promise<Session
                     data: therapist
                 };
             }
-        } catch (therapistError: any) {
+        } catch {
             console.warn('⚠️ Therapist check failed or timeout, skipping');
         }
 
@@ -213,7 +213,7 @@ async function determineUserType(userId: string, email: string): Promise<Session
                     data: place
                 };
             }
-        } catch (placeError: any) {
+        } catch {
             console.warn('⚠️ Place check failed or timeout, skipping');
         }
 
@@ -239,7 +239,7 @@ async function determineUserType(userId: string, email: string): Promise<Session
                     data: regularUser
                 };
             }
-        } catch (userError: any) {
+        } catch {
             console.warn('⚠️ User check failed or timeout, skipping');
         }
 

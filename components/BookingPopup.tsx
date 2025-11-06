@@ -78,7 +78,7 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
         bookingId = (typeof crypto !== 'undefined' && (crypto as any).randomUUID)
           ? (crypto as any).randomUUID()
           : `booking_${Date.now()}`;
-      } catch (e) {
+      } catch {
         bookingId = `booking_${Date.now()}`;
       }
 

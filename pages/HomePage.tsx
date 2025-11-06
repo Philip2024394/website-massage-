@@ -201,9 +201,9 @@ const HomePage: React.FC<HomePageProps> = ({
     const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [selectedMassageType, setSelectedMassageType] = useState(propSelectedMassageType || 'all');
-    const [_customLinks, setCustomLinks] = useState<any[]>([]);
+    const [, setCustomLinks] = useState<any[]>([]);
     const [showRatingModal, setShowRatingModal] = useState(false);
-    const [_selectedTherapist, setSelectedTherapist] = useState<Therapist | null>(null);
+    const [, setSelectedTherapist] = useState<Therapist | null>(null);
     const [selectedRatingItem, setSelectedRatingItem] = useState<{item: any, type: 'therapist' | 'place'} | null>(null);
     
     // Location-based filtering state (automatic, no UI)
@@ -779,6 +779,15 @@ const HomePage: React.FC<HomePageProps> = ({
                 />
             )}
             {/* Rating modal removed for design mock */}
+
+            {/* Footer */}
+            <footer className="bg-white border-t border-gray-200 mt-8 py-4">
+                <div className="px-4 py-3 max-w-[430px] sm:max-w-5xl mx-auto">
+                    <p className="text-xs text-gray-500 text-center">
+                        &copy; 2025 <span className="text-black font-semibold">Inda</span><span className="text-orange-500 font-semibold">Street</span> Massage Platform
+                    </p>
+                </div>
+            </footer>
             
             <style>{`
                 @keyframes float {

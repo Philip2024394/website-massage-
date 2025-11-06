@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle, XCircle, Eye, Clock, Search, Filter } from 'lucide-react';
+import { CheckCircle, XCircle, Eye, Clock, Search } from 'lucide-react';
 import { Query } from 'appwrite';
 import { databases } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';

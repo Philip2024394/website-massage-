@@ -10,7 +10,7 @@ export const APPWRITE_CONFIG = {
     collections: {
         admins: 'admins_collection_id',
         therapists: 'therapists_collection_id',
-        places: 'places_collection_id',
+        places: 'places_collection_id', // ✅ Confirmed - this is the correct collection ID
         agents: 'agents_collection_id',
         agentVisits: 'agent_visits_collection_id', // NEW: Agent visit tracking
         bookings: 'bookings_collection_id',

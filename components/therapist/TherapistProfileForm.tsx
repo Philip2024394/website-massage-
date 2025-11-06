@@ -92,7 +92,7 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
         }
     };
 
-    const renderInput = (value: string, onChange: (value: string) => void, Icon: any) => (
+    const renderInput = (value: string, onChange: (value: string) => void, Icon: any, placeholder?: string) => (
         <div className="relative mt-1">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Icon className="h-5 w-5 text-gray-400" />
@@ -101,6 +101,8 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                 type="text" 
                 value={value} 
                 onChange={e => onChange(e.target.value)} 
+                placeholder={placeholder || "Enter value"}
+                aria-label={placeholder || "Input field"}
                 className="block w-full pl-10 pr-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-orange focus:border-brand-orange text-gray-900" 
             />
         </div>
@@ -348,7 +350,7 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
             
             <div>
                 <label className="block text-sm font-medium text-gray-700">{t.nameLabel}</label>
-                {renderInput(name, setName, UserSolidIcon)}
+                {renderInput(name, setName, UserSolidIcon, "Enter your full name")}
             </div>
 
             <div>
@@ -358,6 +360,7 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                         type="button"
                         onClick={() => setYearsOfExperience(Math.max(0, yearsOfExperience - 1))}
                         className="w-10 h-10 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors"
+                        title="Decrease years of experience"
                     >
                         <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -371,6 +374,8 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                         type="button"
                         onClick={() => setYearsOfExperience(Math.min(50, yearsOfExperience + 1))}
                         className="w-10 h-10 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors"
+                        aria-label="Increase years of experience"
+                        title="Increase years of experience"
                     >
                         <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -431,6 +436,8 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                         }} 
                         rows={3} 
                         maxLength={250}
+                        placeholder="Describe your massage expertise and specialties"
+                        aria-label="Therapist description"
                         className="mt-1 block w-full pl-10 pr-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-orange focus:border-brand-orange text-gray-900" 
                     />
                     <p className="text-xs text-gray-500 mt-1">

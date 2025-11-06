@@ -5,7 +5,6 @@
  */
 
 import { autoTranslationService } from '../services/autoTranslationService';
-import { translations } from '../translations/index';
 
 // All text that needs translation for the booking system
 const BOOKING_TRANSLATIONS = {

@@ -1,7 +1,7 @@
 
 
 import React, { useState, useEffect } from 'react';
-import { BarChart, Users, Building, Settings, Percent, LogOut, CreditCard, DollarSign, ShoppingBag, UserCheck, Menu, X, Package, Briefcase, Globe } from 'lucide-react';
+import { BarChart, Users, Building, Settings, Percent, LogOut, CreditCard, DollarSign, ShoppingBag, UserCheck, Menu, X, Package, Briefcase, Globe, Bell } from 'lucide-react';
 import ConfirmTherapistsPage from './ConfirmTherapistsPage';
 import ConfirmPlacesPage from './ConfirmPlacesPage';
 import ConfirmAccountsPage from './ConfirmAccountsPage';
@@ -17,6 +17,7 @@ import MembershipPricingPage from './MembershipPricingPage';
 import AdminJobPostingsPage from './AdminJobPostingsPage';
 import TranslationManager from '../components/TranslationManager';
 import AdminTranslationPanel from '../components/AdminTranslationPanel';
+import PlaceActivationRequests from '../components/PlaceActivationRequests';
 import { authService } from '../lib/appwriteService';
 import '../utils/pricingHelper'; // Load pricing helper for console access
 
@@ -24,7 +25,7 @@ interface AdminDashboardPageProps {
     onLogout: () => void;
     initialTab?: DashboardPage;
 }
-type DashboardPage = 'platform-analytics' | 'confirm-therapists' | 'confirm-places' | 'confirm-accounts' | 'drawer-buttons' | 'agent-commission' | 'bank-details' | 'payment-transactions' | 'shop-management' | 'membership-pricing' | 'job-postings' | 'translations' | 'therapist-translations';
+type DashboardPage = 'platform-analytics' | 'confirm-therapists' | 'confirm-places' | 'confirm-accounts' | 'drawer-buttons' | 'agent-commission' | 'bank-details' | 'payment-transactions' | 'shop-management' | 'membership-pricing' | 'job-postings' | 'translations' | 'therapist-translations' | 'place-activation-requests';
 const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'initialTab'>> = ({ onLogout, initialTab }) => {
   const [activePage, setActivePage] = useState<DashboardPage>(initialTab || 'platform-analytics');
   const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
@@ -113,6 +114,21 @@ const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'i
           >
             <Building className="w-5 h-5" />
             <span className="font-medium">Places</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActivePage('place-activation-requests');
+              setIsSideDrawerOpen(false);
+            }}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+              activePage === 'place-activation-requests'
+                ? 'bg-orange-500 text-white shadow-md'
+                : 'text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            <Bell className="w-5 h-5" />
+            <span className="font-medium">Place Activations</span>
           </button>
 
           <button
@@ -313,6 +329,7 @@ const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'i
         {activePage === 'platform-analytics' && <PlatformAnalyticsPage />}
         {activePage === 'confirm-therapists' && <ConfirmTherapistsPage />}
         {activePage === 'confirm-places' && <ConfirmPlacesPage />}
+        {activePage === 'place-activation-requests' && <PlaceActivationRequests />}
         {activePage === 'confirm-accounts' && <ConfirmAccountsPage />}
         {activePage === 'job-postings' && <AdminJobPostingsPage />}
         {/* Chat system removed - using WhatsApp booking */}

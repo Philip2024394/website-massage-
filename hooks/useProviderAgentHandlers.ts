@@ -101,13 +101,13 @@ export const useProviderAgentHandlers = ({
             try {
                 existingTherapist = await therapistService.getById(therapistId);
                 console.log('📖 Found existing therapist profile:', existingTherapist);
-            } catch (error) {
+            } catch {
                 console.log('📝 No existing profile found, will create new one');
             }
 
             // Helper function to ensure JSON strings are compact and under 255 chars
             const compactJsonString = (value: any, fieldName: string, fallback: string = '[]'): string => {
-                let jsonString = typeof value === 'string' ? value : JSON.stringify(value);
+                const jsonString = typeof value === 'string' ? value : JSON.stringify(value);
                 if (jsonString.length > 255) {
                     console.warn(`⚠️ ${fieldName} string too long (${jsonString.length} chars), using fallback`);
                     return fallback;
@@ -129,7 +129,7 @@ export const useProviderAgentHandlers = ({
                     };
                     pricingString = JSON.stringify(compactPricing);
                     console.log('✅ Created compact therapist pricing:', pricingString);
-                } catch (error) {
+                } catch {
                     console.error('❌ Failed to create compact pricing, using default');
                     pricingString = '{"60":0,"90":0,"120":0}';
                 }
@@ -233,6 +233,10 @@ export const useProviderAgentHandlers = ({
         if (!loggedInProvider) return;
         
         try {
+            console.log('🔧 DEBUG: Starting place profile save...');
+            console.log('🔧 DEBUG: loggedInProvider:', loggedInProvider);
+            console.log('🔧 DEBUG: places array length:', places.length);
+            
             const updateData: any = {
                 ...placeData,
                 pricing: typeof placeData.pricing === 'string' ? placeData.pricing : JSON.stringify(placeData.pricing),
@@ -245,20 +249,50 @@ export const useProviderAgentHandlers = ({
                 updateData.thumbnailImages = Array.isArray(thumbs) ? JSON.stringify(thumbs) : thumbs;
             }
             
-            // Use string ID for Appwrite
-            const placeId = typeof loggedInProvider.id === 'string' ? loggedInProvider.id : loggedInProvider.id.toString();
-            await placeService.update(placeId, updateData);
+            // Find the correct place document ID by looking up the place in the places array
+            let placeDocumentId = null;
+            
+            // First try to find the place in the current places array
+            const currentPlace = places.find(place => {
+                const placeAny = place as any;
+                return place.id === loggedInProvider.id || 
+                       placeAny.$id === loggedInProvider.id ||
+                       place.id?.toString() === loggedInProvider.id?.toString();
+            });
+            
+            if (currentPlace) {
+                placeDocumentId = (currentPlace as any).$id || currentPlace.id;
+                console.log('🔍 Found place in current data:', placeDocumentId);
+            } else {
+                // If not found in current data, try to find by email from session cache
+                const sessionData = JSON.parse(localStorage.getItem('app_session') || '{}');
+                console.log('🔧 DEBUG: session data:', sessionData);
+                if (sessionData.documentId) {
+                    placeDocumentId = sessionData.documentId;
+                    console.log('🔍 Using document ID from session cache:', placeDocumentId);
+                } else {
+                    // Last resort: use the provider ID as document ID
+                    placeDocumentId = typeof loggedInProvider.id === 'string' ? loggedInProvider.id : loggedInProvider.id.toString();
+                    console.log('🔍 Using provider ID as document ID:', placeDocumentId);
+                }
+            }
+            
+            console.log('💾 Updating place document with ID:', placeDocumentId);
+            console.log('💾 Update data:', updateData);
+            await placeService.update(placeDocumentId, updateData);
             console.log('✅ Place profile saved successfully');
             
             // Update the places state to reflect the changes immediately
             const updatedPlaces = places.map(place => {
                 const placeAny = place as any;
-                if (place.id === loggedInProvider.id || placeAny.$id === placeId) {
+                if (place.id === loggedInProvider.id || 
+                    placeAny.$id === placeDocumentId ||
+                    place.id?.toString() === loggedInProvider.id?.toString()) {
                     return {
                         ...place,
                         ...updateData,
-                        id: place.id || placeId, // Preserve the existing ID structure
-                        $id: placeAny.$id || placeId // Preserve Appwrite ID if exists
+                        id: place.id || placeDocumentId, // Preserve the existing ID structure
+                        $id: placeAny.$id || placeDocumentId // Preserve Appwrite ID if exists
                     };
                 }
                 return place;

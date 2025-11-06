@@ -9,7 +9,7 @@
  * 5. Notifications to guest, hotel, and providers
  */
 
-import { Booking, BookingStatus, ProviderResponseStatus, AvailabilityStatus, Therapist, Place } from '../types';
+import { Booking, AvailabilityStatus, Therapist, Place } from '../types';
 import { hotelVillaBookingService as appwriteBookingService } from '../lib/appwriteService';
 
 export class HotelVillaBookingService {

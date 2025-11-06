@@ -4,14 +4,7 @@ import SoundButton from './SoundButton';
 
 const ButtonSoundTester: React.FC = () => {
     const {
-        playClick,
-        playHover,
-        playSuccess,
-        playError,
-        playNavigation,
         playToggle,
-        playDelete,
-        playSubmit,
         testSound,
         setEnabled,
         isEnabled

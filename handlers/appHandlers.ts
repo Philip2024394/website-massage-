@@ -87,9 +87,9 @@ export const createDataHandlers = (
         }
         return [...prev, savedPlace];
       });
-    } catch (error) {
-      console.error('Error saving place:', error);
-      throw error;
+    } catch (_error) {
+      console.error('Error saving place:', _error);
+      throw _error;
     }
   },
 
@@ -120,9 +120,9 @@ export const createDataHandlers = (
         }
         return [...prev, savedTherapist];
       });
-    } catch (error) {
-      console.error('Error saving therapist:', error);
-      throw error;
+    } catch (_error) {
+      console.error('Error saving therapist:', _error);
+      throw _error;
     }
   },
 
@@ -136,9 +136,9 @@ export const createDataHandlers = (
       setAllAdminTherapists(prev => 
         prev.map(t => t.id?.toString() === therapistId ? { ...t, isActive } : t)
       );
-    } catch (error) {
-      console.error('Error toggling therapist:', error);
-      throw error;
+    } catch (_error) {
+      console.error('Error toggling therapist:', _error);
+      throw _error;
     }
   },
 
@@ -148,9 +148,9 @@ export const createDataHandlers = (
       // In a real app, you'd implement the delete method in dataService
       setPlaces(prev => prev.filter(p => p.id?.toString() !== placeId));
       setAllAdminPlaces(prev => prev.filter(p => p.id?.toString() !== placeId));
-    } catch (error) {
-      console.error('Error deleting place:', error);
-      throw error;
+    } catch (_error) {
+      console.error('Error deleting place:', _error);
+      throw _error;
     }
   },
 
@@ -160,9 +160,9 @@ export const createDataHandlers = (
       // In a real app, you'd implement the delete method in dataService
       setTherapists(prev => prev.filter(t => t.id?.toString() !== therapistId));
       setAllAdminTherapists(prev => prev.filter(t => t.id?.toString() !== therapistId));
-    } catch (error) {
-      console.error('Error deleting therapist:', error);
-      throw error;
+    } catch (_error) {
+      console.error('Error deleting therapist:', _error);
+      throw _error;
     }
   },
 

@@ -55,7 +55,7 @@ class VSCodeTranslateService {
                 this.currentGlobalLanguage = stored;
                 this.activateOnLanguageChange(stored);
             }
-        } catch (error) {
+        } catch {
             console.log('No stored language preference found');
         }
     }
@@ -80,7 +80,7 @@ class VSCodeTranslateService {
         this.currentGlobalLanguage = selectedLanguage;
         try {
             localStorage.setItem('vscode_current_language', selectedLanguage);
-        } catch (error) {
+        } catch {
             console.log('Could not store language preference');
         }
         

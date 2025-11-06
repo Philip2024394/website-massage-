@@ -276,7 +276,7 @@ async function checkUnusedDependencies(): Promise<string[]> {
             warnings.forEach(w => console.log(`      ${w}`));
             console.log('');
         }
-    } catch (error) {
+    } catch (_error) {
         console.log('   ⚠️  Could not read package.json\n');
     }
     

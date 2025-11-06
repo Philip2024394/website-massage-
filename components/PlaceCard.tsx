@@ -230,7 +230,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate, activeDis
                                 {place.pricing && (
                                     (() => {
                                         let pricing = {"60":0,"90":0,"120":0};
-                                        try { pricing = JSON.parse(place.pricing); } catch {}
+                                        try { pricing = JSON.parse(place.pricing); } catch { /* ignore parsing errors */ }
                                         return (
                                             <div className="grid grid-cols-3 gap-2 text-center text-sm mt-3">
                                                 <div className="bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md">

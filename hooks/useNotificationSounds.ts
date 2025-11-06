@@ -34,8 +34,7 @@ export interface NotificationHookReturn {
 export function useNotificationSounds(options: UseNotificationSoundsOptions = {}): NotificationHookReturn {
     const {
         preloadSounds = true,
-        enabledByDefault = true,
-        autoRequestPermission = true
+        enabledByDefault = true
     } = options;
 
     const isInitialized = useRef(false);

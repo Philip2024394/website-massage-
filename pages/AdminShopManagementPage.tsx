@@ -411,7 +411,7 @@ const AdminShopManagementPage: React.FC<AdminShopManagementPageProps> = ({ onNav
                                                             </div>
                                                         </div>
                                                     ));
-                                                } catch (e) {
+                                                } catch {
                                                     return <p className="text-red-500 text-xs">Error loading items</p>;
                                                 }
                                             })()}
@@ -439,7 +439,7 @@ const AdminShopManagementPage: React.FC<AdminShopManagementPageProps> = ({ onNav
                                                             <p className="text-xs sm:text-sm">{address.country}</p>
                                                         </>
                                                     );
-                                                } catch (e) {
+                                                } catch {
                                                     return <p className="text-red-500 text-xs">Error loading address</p>;
                                                 }
                                             })()}

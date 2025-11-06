@@ -42,7 +42,7 @@ const BalineseMassagePage: React.FC<BalineseMassagePageProps> = ({
     
     // Appwrite live data states
     const [heroImage, setHeroImage] = useState<string>('');
-    const [_sectionImages, setSectionImages] = useState<any>({});
+    const [, setSectionImages] = useState<any>({});
     const [isLoadingImages, setIsLoadingImages] = useState(true);
 
     // Fetch images from Appwrite image_assets collection

@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { 
     BarChart, Users, MessageSquare, Settings, Menu, X,
-    DollarSign, Calendar, Activity, Search, Bell, Home,
+    DollarSign, Calendar, Activity, Bell, Home,
     LogOut, RefreshCw, AlertCircle, UserCheck, CheckCircle,
-    FileText, Package, CreditCard, TrendingUp, Eye,
-    Edit3, MapPin, Star, Filter
+    Edit3, MapPin
 } from 'lucide-react';
 import { 
     therapistService, 
     placeService, 
     bookingService
 } from '../lib/appwriteService';
-import { analyticsService } from '../services/analyticsService';
 // import AdminChatListPage from './AdminChatListPage'; // Chat system removed
 
 interface LiveStats {

@@ -4,9 +4,6 @@
  * requires admin privileges that can't be done via client SDK.
  */
 
-const DATABASE_ID = '68f76ee1000e64ca8d05';
-const COLLECTION_ID = 'translations_collection_id';
-
 function showSetupInstructions() {
     console.log('🔧 TRANSLATIONS COLLECTION SETUP INSTRUCTIONS');
     console.log('='.repeat(50));

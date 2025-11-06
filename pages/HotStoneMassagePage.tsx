@@ -5,7 +5,7 @@ interface HotStoneMassagePageProps {
     onBack?: () => void;
     onNavigate?: (page: string) => void;
     onMassageJobsClick?: () => void;
-
+    onHotelPortalClick?: () => void;
     onVillaPortalClick?: () => void;
     onTherapistPortalClick?: () => void;
     onMassagePlacePortalClick?: () => void;
@@ -25,11 +25,11 @@ const BurgerMenuIcon = ({ className = 'w-6 h-6' }) => (
     </svg>
 );
 
-const HotStoneMassagePage: React.FC<HotStoneMassagePageProps> = ({ 
-    onBack, 
+const HotStoneMassagePage: React.FC<HotStoneMassagePageProps> = ({
+    onBack,
     onNavigate,
     onMassageJobsClick,
-
+    onHotelPortalClick,
     onVillaPortalClick,
     onTherapistPortalClick,
     onMassagePlacePortalClick,
@@ -40,7 +40,7 @@ const HotStoneMassagePage: React.FC<HotStoneMassagePageProps> = ({
     onPrivacyClick,
     therapists = [],
     places = [],
-    t: _t 
+    t: _t = {}
 }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Booking, BookingStatus, ProviderResponseStatus } from '../types';
+import { Booking, ProviderResponseStatus } from '../types';
 
 interface ProviderBookingCardProps {
     booking: Booking;

@@ -33,7 +33,7 @@ export const containsNumberWords = (message: string): boolean => {
         // Remove punctuation
         const cleanWord = word.replace(/[^\w]/g, '');
         
-        if (numberWords.hasOwnProperty(cleanWord)) {
+        if (Object.prototype.hasOwnProperty.call(numberWords, cleanWord)) {
             consecutiveNumberWords++;
             totalNumberWords++;
             
@@ -73,7 +73,7 @@ export const containsPhonePattern = (message: string): boolean => {
         
         for (const word of words) {
             const cleanWord = word.replace(/[^\w]/g, '');
-            if (numberWords.hasOwnProperty(cleanWord)) {
+            if (Object.prototype.hasOwnProperty.call(numberWords, cleanWord)) {
                 numberWordCount++;
             }
         }

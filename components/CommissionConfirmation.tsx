@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { providerRewardsService } from '../lib/providerRewardsService';
 
 interface CommissionConfirmationProps {
@@ -51,7 +51,7 @@ const CommissionConfirmation: React.FC<CommissionConfirmationProps> = ({
                 setError(result.message);
                 onConfirmationComplete?.(false, result.message);
             }
-        } catch (error) {
+        } catch {
             const errorMessage = 'Failed to confirm commission payment';
             setError(errorMessage);
             onConfirmationComplete?.(false, errorMessage);

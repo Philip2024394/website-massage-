@@ -454,7 +454,7 @@ export const providerRewardsService = {
         monthlyBonusesEarned: number;
     }> {
         try {
-            let queries = [Query.equal('providerId', providerId)];
+            const queries = [Query.equal('providerId', providerId)];
             
             if (period !== 'all') {
                 const date = new Date();

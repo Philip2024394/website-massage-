@@ -144,7 +144,7 @@ const ConfirmTherapistsPage: React.FC = () => {
       try {
         existingTherapist = await therapistService.getById(therapistId);
         console.log('📖 Found existing therapist for activation');
-      } catch (error) {
+      } catch {
         console.log('⚠️ Could not fetch existing data for activation');
       }
 
@@ -207,7 +207,7 @@ const ConfirmTherapistsPage: React.FC = () => {
       try {
         existingTherapist = await therapistService.getById(therapistId);
         console.log('📖 Found existing therapist for deactivation');
-      } catch (error) {
+      } catch {
         console.log('⚠️ Could not fetch existing data for deactivation');
       }
 
@@ -340,7 +340,7 @@ const ConfirmTherapistsPage: React.FC = () => {
       try {
         existingTherapist = await therapistService.getById(editingTherapist.$id);
         console.log('📖 Found existing therapist data for preservation:', existingTherapist);
-      } catch (error) {
+      } catch {
         console.log('⚠️ Could not fetch existing data, proceeding with admin updates only');
       }
       
@@ -496,7 +496,7 @@ const ConfirmTherapistsPage: React.FC = () => {
       try {
         existingTherapist = await therapistService.getById(therapistId);
         console.log('📖 Found existing therapist for discount update');
-      } catch (error) {
+      } catch {
         console.log('⚠️ Could not fetch existing data for discount update');
       }
       

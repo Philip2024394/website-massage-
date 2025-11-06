@@ -225,7 +225,7 @@ class ReviewService {
                 rating: updatedData.rating,
                 reviewCount: updatedData.reviewCount
             };
-        } catch (error) {
+        } catch {
             // If removal would result in no reviews, reinitialize
             const initialData = generateInitialReviewData();
             return {

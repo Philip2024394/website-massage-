@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import Button from '../components/Button';
 import PasswordInput from '../components/PasswordInput';
 import { agentAuth } from '../lib/auth';
-import { trackDailySignIn } from '../lib/coinHooks';
 import { LogIn, UserPlus } from 'lucide-react';
 
 interface AgentLoginPageProps {
@@ -17,7 +16,7 @@ const HomeIcon: React.FC<{className?: string}> = ({ className }) => (
     </svg>
 );
 
-const AgentLoginPage: React.FC<AgentLoginPageProps> = ({ onSuccess, onBack, t }) => {
+const AgentLoginPage: React.FC<AgentLoginPageProps> = ({ onSuccess, onBack, t: _t }) => {
     const [isSignUp, setIsSignUp] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');

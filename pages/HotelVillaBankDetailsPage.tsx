@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import type { Hotel, Villa } from '../types';
-import Button from '../components/Button';
 
 interface HotelVillaBankDetailsPageProps {
     hotelVilla: Hotel | Villa;

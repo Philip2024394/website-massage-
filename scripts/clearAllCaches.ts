@@ -86,7 +86,7 @@ function killNodeProcesses(): void {
             execSync('pkill -9 node 2>/dev/null || true', { stdio: 'ignore' });
         }
         console.log('✓ Stopped development servers');
-    } catch (error) {
+    } catch (_error) {
         // Ignore errors - no Node processes running
         console.log('✓ No development servers to stop');
     }
@@ -125,13 +125,13 @@ function removeMatchingFiles(dir: string, depth: number = 0): number {
                         fs.unlinkSync(fullPath);
                         console.log(`✓ Removed: ${relativePath}`);
                         removed++;
-                    } catch (error) {
+                    } catch (_error) {
                         console.error(`✗ Failed to remove ${relativePath}`);
                     }
                 }
             }
         }
-    } catch (error) {
+    } catch (_error) {
         // Ignore errors for directories we can't read
     }
     

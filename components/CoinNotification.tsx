@@ -8,7 +8,7 @@ interface CoinNotificationProps {
     reason: string;
     onClose: () => void;
     autoCloseDelay?: number;
-    userType?: 'customer' | 'therapist' | 'hotel' | 'villa';
+    _userType?: 'customer' | 'therapist' | 'hotel' | 'villa';
 }
 
 const CoinNotification: React.FC<CoinNotificationProps> = ({
@@ -17,7 +17,7 @@ const CoinNotification: React.FC<CoinNotificationProps> = ({
     reason,
     onClose,
     autoCloseDelay = 4000,
-    userType = 'customer'
+    _userType = 'customer'
 }) => {
     const [showConfetti, setShowConfetti] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);

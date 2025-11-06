@@ -95,6 +95,11 @@ const TherapistJobRegistrationPage: React.FC<TherapistJobRegistrationPageProps> 
                 throw new Error('Please fill in all required fields');
             }
 
+            // Validate profile image requirement
+            if (!formData.profileImageUrl || formData.profileImageUrl.trim() === '') {
+                throw new Error('Profile Image Required!\n\nYou must provide a profile image URL before submitting your registration.\n\nPlease add:\n• A clear front or side view of your face\n• Well-lit, professional appearance\n• Recent photo (within 6 months)\n\nThis helps employers identify you and builds trust.');
+            }
+
             // Create job listing
             await databases.createDocument(
                 DATABASE_ID,
@@ -142,65 +147,33 @@ const TherapistJobRegistrationPage: React.FC<TherapistJobRegistrationPageProps> 
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
-            {/* Header */}
-            <header className="bg-white shadow-md sticky top-0 z-20">
-                <div className="w-full px-4 py-4">
-                    <div className="flex items-center gap-4 pb-20">
+        <div className="min-h-screen bg-gray-50">
+            {/* Header - Same as HomePage */}
+            <header className="bg-white p-4 shadow-md sticky top-0 z-20">
+                <div className="flex justify-between items-center">
+                    <h1 className="text-2xl font-bold text-gray-800">
+                        <span className="text-black">Inda</span>
+                        <span className="text-orange-500"><span className="inline-block animate-bounce">S</span>treet</span>
+                    </h1>
+                    <div className="flex items-center gap-3 text-gray-600">
                         <button
                             onClick={onBack}
-                            className="p-2 hover:bg-orange-100 rounded-lg transition-colors"
+                            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                            aria-label="Go back"
                         >
-                            <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                             </svg>
                         </button>
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-900">Register Your Profile</h1>
-                            <p className="text-sm text-gray-600">Post your profile and find work opportunities</p>
-                        </div>
                     </div>
                 </div>
             </header>
 
-            {/* Promotional Banner */}
-            <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white py-6 px-4">
-                <div className="max-w-4xl mx-auto text-center">
-                    <div className="flex items-center justify-center gap-2 mb-3">
-                        <span className="bg-white text-green-600 px-3 py-1 rounded-full text-sm font-bold">🎉 LIMITED TIME</span>
-                        <span className="bg-yellow-400 text-green-800 px-3 py-1 rounded-full text-sm font-bold animate-pulse">FIRST 100 ONLY</span>
-                    </div>
-                    <h2 className="text-2xl md:text-3xl font-bold mb-2">
-                        Start Your Professional Journey Today!
-                    </h2>
-                    <div className="flex flex-col md:flex-row items-center justify-center gap-4 pb-20 mb-4">
-                        <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg px-6 py-3">
-                            <div className="text-3xl font-bold">Only IDR 5,000/day</div>
-                            <div className="text-sm opacity-90">= IDR 150,000/month</div>
-                        </div>
-                        <div className="text-2xl font-bold">+</div>
-                        <div className="bg-yellow-400 text-green-800 rounded-lg px-6 py-3">
-                            <div className="text-2xl font-bold">FREE 1-Month Trial</div>
-                            <div className="text-sm">For first 100 therapists</div>
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-20 text-sm">
-                        <div className="flex items-center justify-center gap-2">
-                            <span className="text-xl">✅</span>
-                            <span>Unlimited bookings</span>
-                        </div>
-                        <div className="flex items-center justify-center gap-2">
-                            <span className="text-xl">💰</span>
-                            <span>Keep 100% of earnings</span>
-                        </div>
-                        <div className="flex items-center justify-center gap-2">
-                            <span className="text-xl">🚀</span>
-                            <span>Professional platform</span>
-                        </div>
-                    </div>
-                    <div className="mt-4 text-sm opacity-90">
-                        <strong>Break-even with just 1 session per month!</strong> • Much cheaper than commission-based platforms
-                    </div>
+            {/* Page Title Section */}
+            <div className="bg-gray-50 py-6 px-4">
+                <div className="max-w-4xl mx-auto">
+                    <h2 className="text-3xl font-bold text-gray-900 mb-2">Register Your Profile</h2>
+                    <p className="text-gray-600">Post your profile and find work opportunities</p>
                 </div>
             </div>
 
@@ -240,6 +213,7 @@ const TherapistJobRegistrationPage: React.FC<TherapistJobRegistrationPageProps> 
                                     value={formData.gender}
                                     onChange={(e) => handleInputChange('gender', e.target.value)}
                                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                    aria-label="Select gender"
                                 >
                                     <option value="">Select gender</option>
                                     <option value="Male">Male</option>
@@ -270,6 +244,7 @@ const TherapistJobRegistrationPage: React.FC<TherapistJobRegistrationPageProps> 
                                     value={formData.religion}
                                     onChange={(e) => handleInputChange('religion', e.target.value)}
                                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                    aria-label="Select religion"
                                 >
                                     <option value="">Select religion</option>
                                     <option value="Islam">Islam</option>
@@ -353,6 +328,7 @@ const TherapistJobRegistrationPage: React.FC<TherapistJobRegistrationPageProps> 
                                     value={formData.experienceLevel}
                                     onChange={(e) => handleInputChange('experienceLevel', e.target.value)}
                                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                    aria-label="Select experience level"
                                 >
                                     <option value="Experienced">Experienced</option>
                                     <option value="Basic Skill">Basic Skill</option>
@@ -382,6 +358,7 @@ const TherapistJobRegistrationPage: React.FC<TherapistJobRegistrationPageProps> 
                                 value={formData.availability}
                                 onChange={(e) => handleInputChange('availability', e.target.value)}
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                aria-label="Select availability"
                             >
                                 <option value="full-time">Full-time</option>
                                 <option value="part-time">Part-time</option>
@@ -497,6 +474,7 @@ const TherapistJobRegistrationPage: React.FC<TherapistJobRegistrationPageProps> 
                                 value={formData.accommodation}
                                 onChange={(e) => handleInputChange('accommodation', e.target.value)}
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                aria-label="Select accommodation requirement"
                             >
                                 <option value="required">Required</option>
                                 <option value="preferred">Preferred</option>

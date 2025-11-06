@@ -80,7 +80,7 @@ const collections: DatabaseCollection[] = [
 
 export const AppwriteSetupPage: React.FC = () => {
     const [setupStatus, setSetupStatus] = useState<'checking' | 'ready' | 'needs-setup' | 'error'>('checking');
-    const [currentStep, setCurrentStep] = useState(0);
+    const [currentStep] = useState(0);
     const [logs, setLogs] = useState<string[]>([]);
 
     const addLog = (message: string) => {
@@ -98,12 +98,6 @@ export const AppwriteSetupPage: React.FC = () => {
             addLog(`✗ Connection failed: ${error.message}`);
             setSetupStatus('error');
         }
-    };
-
-    const testConnection = async () => {
-        setLogs([]);
-        setSetupStatus('checking');
-        await checkDatabaseStatus();
     };
 
     useEffect(() => {

@@ -73,7 +73,6 @@ export const badgeService = {
         try {
             // Check if user is logged in as provider
             const providerId = localStorage.getItem('providerId');
-            const providerType = localStorage.getItem('providerType') as 'therapist' | 'place';
 
             if (!providerId) {
                 console.log('⚠️ No provider logged in, badge count = 0');

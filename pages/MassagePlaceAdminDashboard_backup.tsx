@@ -20,8 +20,6 @@ import {
 } from 'lucide-react';
 import { authService } from '../lib/appwriteService';
 import { Place } from '../types';
-import CoinHistoryPage from './CoinHistoryPage';
-import CoinShopPage from './CoinShopPage';
 import RewardBannerDisplay from '../components/RewardBannerDisplay';
 import { soundNotificationService } from '../utils/soundNotificationService';
 
@@ -521,7 +519,7 @@ const MassagePlaceAdminDashboard: React.FC<MassagePlaceAdminDashboardProps> = ({
 };
 
 // Business-focused components for massage place dashboard
-const PlaceAnalyticsPage: React.FC<{ place: Place; onNavigate?: (page: string) => void }> = ({ place, onNavigate }) => (
+const PlaceAnalyticsPage: React.FC<{ place: Place; onNavigate?: (page: string) => void }> = ({ place, onNavigate: _onNavigate }) => (
     <div className="space-y-6">
         <div className="flex justify-between items-center">
             <h2 className="text-3xl font-bold text-gray-900">Business Analytics</h2>
@@ -610,8 +608,8 @@ const PlaceProfilePage: React.FC<{ place: Place }> = ({ place }) => {
     // State for profile form fields
     const [placeName, setPlaceName] = useState(place?.name || '');
     const [description, setDescription] = useState('');
-    const [profilePicture, setProfilePicture] = useState('');
-    const [mainImage, setMainImage] = useState('');
+    const [profilePicture, _setProfilePicture] = useState('');
+    const [mainImage, _setMainImage] = useState('');
     const [whatsappNumber, setWhatsappNumber] = useState('');
     const [location, setLocation] = useState(place?.location || '');
     const [phoneNumber, setPhoneNumber] = useState('');
@@ -630,8 +628,8 @@ const PlaceProfilePage: React.FC<{ place: Place }> = ({ place }) => {
     const [parkingAvailable, setParkingAvailable] = useState(false);
     const [wifiAvailable, setWifiAvailable] = useState(false);
     const [acAvailable, setAcAvailable] = useState(false);
-    const [showImageRequirementModal, setShowImageRequirementModal] = useState(false);
-    const [pendingImageUrl, setPendingImageUrl] = useState('');
+    const [_showImageRequirementModal, _setShowImageRequirementModal] = useState(false);
+    const [_pendingImageUrl, _setPendingImageUrl] = useState('');
 
     const availableMassageTypes = [
         'Traditional Thai Massage', 'Swedish Massage', 'Deep Tissue Massage', 'Hot Stone Massage',
@@ -1055,7 +1053,7 @@ const PlaceProfilePage: React.FC<{ place: Place }> = ({ place }) => {
     );
 };
 
-const PlaceRoomsPage: React.FC<{ place: Place }> = ({ place }) => (
+const PlaceRoomsPage: React.FC<{ place: Place }> = ({ place: _place }) => (
     <div className="space-y-6">
         <h2 className="text-3xl font-bold text-gray-900">Treatment Rooms</h2>
         <div className="bg-white p-6 rounded-lg shadow-sm border">
@@ -1223,56 +1221,6 @@ const PlaceServicesPage: React.FC<{ place: Place }> = ({ place }) => {
         </div>
     );
 };
-
-const HotelVillaServicesPage: React.FC<{ place: Place }> = ({ place }) => (
-    <div className="space-y-6">
-        <h2 className="text-3xl font-bold text-gray-900">Hotel & Villa Services</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white p-6 rounded-lg shadow-sm border">
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">Service Status</h3>
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                        <span className="text-gray-700">Hotel Services</span>
-                        <span className={`px-3 py-1 rounded-full text-sm ${
-                            place.hotelVillaServiceStatus === 'active' 
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-gray-100 text-gray-600'
-                        }`}>
-                            {place.hotelVillaServiceStatus || 'Not Opted In'}
-                        </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                        <span className="text-gray-700">Villa Services</span>
-                        <span className={`px-3 py-1 rounded-full text-sm ${
-                            place.hotelVillaServiceStatus === 'active' 
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-gray-100 text-gray-600'
-                        }`}>
-                            {place.hotelVillaServiceStatus || 'Not Opted In'}
-                        </span>
-                    </div>
-                </div>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-sm border">
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">Special Pricing</h3>
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                        <span className="text-gray-700">Hotel Discount</span>
-                        <span className="text-gray-900 font-semibold">{place.hotelDiscount || 0}%</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                        <span className="text-gray-700">Villa Discount</span>
-                        <span className="text-gray-900 font-semibold">{place.villaDiscount || 0}%</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                        <span className="text-gray-700">Service Radius</span>
-                        <span className="text-gray-900 font-semibold">{place.serviceRadius || 7} km</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-);
 
 const PlaceSchedulePage: React.FC<{ place: Place }> = ({ place }) => (
     <div className="space-y-6">
@@ -1488,7 +1436,7 @@ const PlacePaymentsPage: React.FC<{ place: Place }> = ({ place: _ }) => (
     </div>
 );
 
-const PlaceStaffPage: React.FC<{ place: Place }> = ({ place }) => (
+const PlaceStaffPage: React.FC<{ place: Place }> = ({ place: _place }) => (
     <div className="space-y-6">
         <h2 className="text-3xl font-bold text-gray-900">Staff Management</h2>
         <div className="bg-white p-6 rounded-lg shadow-sm border">
@@ -1513,7 +1461,7 @@ const PlaceStaffPage: React.FC<{ place: Place }> = ({ place }) => (
     </div>
 );
 
-const PlaceBookingsPage: React.FC<{ place: Place }> = ({ place }) => (
+const PlaceBookingsPage: React.FC<{ place: Place }> = ({ place: _place }) => (
     <div className="space-y-6">
         <h2 className="text-3xl font-bold text-gray-900">Reservations & Bookings</h2>
         <div className="bg-white p-6 rounded-lg shadow-sm border">
@@ -1534,7 +1482,7 @@ const PlaceBookingsPage: React.FC<{ place: Place }> = ({ place }) => (
     </div>
 );
 
-const PlacePricingPage: React.FC<{ place: Place }> = ({ place }) => (
+const PlacePricingPage: React.FC<{ place: Place }> = ({ place: _place }) => (
     <div className="space-y-6">
         <h2 className="text-3xl font-bold text-gray-900">Pricing & Packages</h2>
         <div className="bg-white p-6 rounded-lg shadow-sm border">
@@ -1562,7 +1510,7 @@ const PlacePricingPage: React.FC<{ place: Place }> = ({ place }) => (
     </div>
 );
 
-const PlaceMarketingPage: React.FC<{ place: Place }> = ({ place }) => (
+const PlaceMarketingPage: React.FC<{ place: Place }> = ({ place: _place }) => (
     <div className="space-y-6">
         <h2 className="text-3xl font-bold text-gray-900">Marketing & Promotions</h2>
         <div className="bg-white p-6 rounded-lg shadow-sm border">
@@ -1578,7 +1526,7 @@ const PlaceMarketingPage: React.FC<{ place: Place }> = ({ place }) => (
     </div>
 );
 
-const PlaceReportsPage: React.FC<{ place: Place }> = ({ place }) => (
+const PlaceReportsPage: React.FC<{ place: Place }> = ({ place: _place }) => (
     <div className="space-y-6">
         <h2 className="text-3xl font-bold text-gray-900">Business Reports</h2>
         <div className="bg-white p-6 rounded-lg shadow-sm border">
@@ -1597,7 +1545,7 @@ const PlaceReportsPage: React.FC<{ place: Place }> = ({ place }) => (
     </div>
 );
 
-const PlaceSettingsPage: React.FC<{ place: Place }> = ({ place }) => (
+const PlaceSettingsPage: React.FC<{ place: Place }> = ({ place: _place }) => (
     <div className="space-y-6">
         <h2 className="text-3xl font-bold text-gray-900">Business Settings</h2>
         <div className="bg-white p-6 rounded-lg shadow-sm border">

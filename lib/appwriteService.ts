@@ -585,7 +585,7 @@ export const authService = {
             try {
                 await account.deleteSession('current');
                 console.log('🗑️ Existing session cleared before login');
-            } catch (err) {
+            } catch {
                 // No session to delete, continue
                 console.log('ℹ️ No existing session to clear');
             }
@@ -603,7 +603,7 @@ export const authService = {
             try {
                 await account.deleteSession('current');
                 console.log('🗑️ Existing session cleared before registration');
-            } catch (err) {
+            } catch {
                 // No session to delete, continue
                 console.log('ℹ️ No existing session to clear');
             }
@@ -672,7 +672,7 @@ export const translationsService = {
                         ? JSON.parse(value) 
                         : value;
                     translations[language][Key] = parsedValue;
-                } catch (e) {
+                } catch {
                     // Initialize language object if it doesn't exist
                     if (!translations[language]) {
                         translations[language] = {};
@@ -1182,10 +1182,17 @@ export const bookingService = {
 // ============================================================================
 export const notificationService = {
     async create(notification: {
-        providerId: number;
+        providerId?: number;
         message: string;
-        type: 'booking_request' | 'booking_confirmed' | 'booking_cancelled' | 'payment_received' | 'review_received' | 'promotion' | 'system' | 'whatsapp_contact';
+        type?: 'booking_request' | 'booking_confirmed' | 'booking_cancelled' | 'payment_received' | 'review_received' | 'promotion' | 'system' | 'whatsapp_contact' | 'place_profile_pending' | 'place_profile_approved' | 'place_profile_rejected';
         bookingId?: string;
+        // New admin notification fields
+        title?: string;
+        recipientType?: 'admin' | 'place' | 'therapist' | 'user';
+        recipientId?: string;
+        data?: any;
+        priority?: 'low' | 'medium' | 'high';
+        isRead?: boolean;
     }): Promise<any> {
         try {
             const response = await databases.createDocument(
@@ -1194,7 +1201,7 @@ export const notificationService = {
                 ID.unique(),
                 {
                     ...notification,
-                    isRead: false,
+                    isRead: notification.isRead || false,
                     createdAt: new Date().toISOString()
                 }
             );
@@ -1206,6 +1213,39 @@ export const notificationService = {
             return response;
         } catch (error) {
             console.error('❌ Error creating notification:', error);
+            throw error;
+        }
+    },
+
+    async getAll(): Promise<any[]> {
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.notifications,
+                [
+                    Query.orderDesc('createdAt'),
+                    Query.limit(100)
+                ]
+            );
+            return response.documents;
+        } catch (error) {
+            console.error('Error fetching all notifications:', error);
+            return [];
+        }
+    },
+
+    async update(notificationId: string, updateData: any): Promise<any> {
+        try {
+            const response = await databases.updateDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.notifications,
+                notificationId,
+                updateData
+            );
+            console.log('✅ Notification updated:', notificationId);
+            return response;
+        } catch (error) {
+            console.error('Error updating notification:', error);
             throw error;
         }
     },
@@ -1449,7 +1489,7 @@ export const pricingService = {
                 '120': 400000
             };
             
-            let basePrice = basePrices[serviceType];
+            const basePrice = basePrices[serviceType];
             const discounts: Array<{ type: string; amount: number; reason: string }> = [];
             const surcharges: Array<{ type: string; amount: number; reason: string }> = [];
             

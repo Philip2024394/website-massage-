@@ -41,7 +41,7 @@ const MenuPage: React.FC = () => {
         setHotel(hotelData);
   // setTherapists(await getAvailableTherapists(id!)); // Removed undefined function
         setPlaces(await getAvailablePlaces(id!));
-      } catch (e) {
+      } catch {
         setHotel(null);
         setTherapists([]);
         setPlaces([]);

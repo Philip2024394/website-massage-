@@ -55,8 +55,8 @@ interface NotificationProviderProps {
 
 export const NotificationProvider: React.FC<NotificationProviderProps> = ({
     children,
-    userType = 'customer',
-    userId
+    userType: _userType = 'customer',
+    userId: _userId
 }) => {
     const sounds = useNotificationSounds({
         preloadSounds: true,
@@ -64,7 +64,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
         autoRequestPermission: true
     });
     
-    const [permissionGranted, setPermissionGranted] = useState(false);
+    const [_permissionGranted, setPermissionGranted] = useState(false);
 
     useEffect(() => {
         // Check and request notification permission on mount

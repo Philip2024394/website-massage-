@@ -32,7 +32,6 @@ export const SoundButton: React.FC<SoundButtonProps> = ({
         playClick, 
         playHover, 
         playSuccess, 
-        playError, 
         playNavigation, 
         playToggle, 
         playDelete, 

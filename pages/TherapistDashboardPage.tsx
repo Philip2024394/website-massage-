@@ -460,6 +460,12 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
             return;
         }
         
+        // Validate profile image requirement
+        if (!profilePicture || profilePicture.trim() === '') {
+            alert('Profile Image Required!\n\nYou must upload a profile image before saving your profile.\n\nPlease add:\n• A clear front or side view of your face\n• Well-lit, professional appearance\n• Recent photo (within 6 months)\n\nThis helps customers identify you and builds trust.');
+            return;
+        }
+        
         try {
             const saveData = {
                 name,
@@ -541,7 +547,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
     // Discount management functions
     const renderContent = () => {
         switch (activeTab) {
-            case 'status':
+            case 'status': {
                 const handleStatusChange = async (newStatus: AvailabilityStatus) => {
                     setStatus(newStatus);
                     
@@ -877,6 +883,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                         </div>
                     </div>
                 );
+            }
             case 'bookings':
                 return (
                     <div className="space-y-6">
@@ -995,7 +1002,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                         )}
                     </div>
                 );
-            case 'hotelVilla':
+            case 'hotelVilla': {
                 const handleHotelVillaUpdate = (status: HotelVillaServiceStatus, hotelDiscount: number, villaDiscount: number, serviceRadius: number) => {
                     // Update therapist data with hotel-villa preferences
                     console.log('Hotel-Villa preferences updated:', { status, hotelDiscount, villaDiscount, serviceRadius });
@@ -1011,6 +1018,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                         onUpdate={handleHotelVillaUpdate}
                     />
                 );
+            }
             case 'notifications':
                 return (
                     <div className="space-y-6">

@@ -41,7 +41,7 @@ export const useDerivedState = ({
         b => b.providerId === loggedInProvider?.id
     );
 
-    // @ts-ignore - Page type needs updating
+    // @ts-expect-error - Page type needs updating
     const pagesWithoutFooter: Page[] = ['landing', 'language', 'login', 'register', 'adminLogin', 'adminDashboard'];
     const showFooter = !pagesWithoutFooter.includes(page) && !(page === 'chatList' && activeChatRoom);
 

@@ -256,9 +256,9 @@ class PushNotificationService {
             // Determine notification details based on type
             let title = '📱 IndaStreet';
             let body = notification.message;
-            let icon = '/icon-192.png';
-            let badge = '/icon-192.png';
-            let tag = notification.type;
+            const icon = '/icon-192.png';
+            const badge = '/icon-192.png';
+            const tag = notification.type;
             let vibrate = [200, 100, 200]; // Vibration pattern
             let sound = '/sounds/message-notification.mp3';
 
@@ -398,7 +398,7 @@ class PushNotificationService {
     private urlBase64ToUint8Array(base64String: string): Uint8Array {
         const padding = '='.repeat((4 - base64String.length % 4) % 4);
         const base64 = (base64String + padding)
-            .replace(/\-/g, '+')
+            .replace(/-/g, '+')
             .replace(/_/g, '/');
 
         const rawData = window.atob(base64);

@@ -357,7 +357,6 @@ class CoinService {
             const thirtyDaysFromNow = new Date(now);
             thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
 
-            let total = 0;
             let active = 0;
             let expired = 0;
             let spent = 0;
@@ -366,7 +365,6 @@ class CoinService {
             transactions.documents.forEach((doc) => {
                 if (doc.type === 'earn' && doc.status === 'active') {
                     active += doc.amount;
-                    total += doc.amount;
 
                     // Check if expiring soon
                     if (doc.expiryAt) {

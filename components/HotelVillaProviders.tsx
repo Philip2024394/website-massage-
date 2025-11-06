@@ -90,10 +90,11 @@ const HotelVillaProviders: React.FC<HotelVillaProvidersProps> = ({
         .filter(provider => selectedFilter === 'all' || provider.type === selectedFilter)
         .sort((a, b) => {
             switch (sortBy) {
-                case 'discount':
+                case 'discount': {
                     const aDiscount = viewerType === 'hotel' ? a.hotelDiscount : a.villaDiscount;
                     const bDiscount = viewerType === 'hotel' ? b.hotelDiscount : b.villaDiscount;
                     return bDiscount - aDiscount;
+                }
                 case 'rating':
                     return b.rating - a.rating;
                 case 'name':
@@ -106,8 +107,6 @@ const HotelVillaProviders: React.FC<HotelVillaProvidersProps> = ({
     const calculateDiscountedPrice = (originalPrice: number, discount: number) => {
         return Math.round(originalPrice * (1 - discount / 100));
     };
-
-    const currentDiscount = viewerType === 'hotel' ? 'hotelDiscount' : 'villaDiscount';
 
     return (
         <div className="space-y-6">

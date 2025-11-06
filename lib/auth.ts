@@ -37,7 +37,7 @@ export const adminAuth = {
                 );
                 return { success: true, userId: user.$id, documentId: admin.$id };
             } catch (dbError: any) {
-                console.warn('⚠️ Admins collection not found, user created but no admin document');
+                console.warn('⚠️ Admins collection not found, user created but no admin document:', dbError?.message);
                 return { success: true, userId: user.$id, error: 'Admin collection not configured' };
             }
         } catch (error: any) {
@@ -52,9 +52,9 @@ export const adminAuth = {
             try {
                 await account.deleteSession('current');
                 console.log('🗑️ Existing session cleared before admin login');
-            } catch (err) {
+            } catch (err: any) {
                 // No session to delete, continue
-                console.log('ℹ️ No existing session to clear');
+                console.log('ℹ️ No existing session to clear:', err?.message || 'unknown reason');
             }
 
             // Create session
@@ -268,9 +268,9 @@ export const placeAuth = {
             try {
                 await account.deleteSession('current');
                 console.log('🗑️ Existing session cleared before place login');
-            } catch (err) {
+            } catch (err: any) {
                 // No session to delete, continue
-                console.log('ℹ️ No existing session to clear');
+                console.log('ℹ️ No existing session to clear:', err?.message || 'unknown reason');
             }
 
             await account.createEmailPasswordSession(email, password);
@@ -310,7 +310,8 @@ export const hotelAuth = {
                     ID.unique(),
                     {
                         // Simplified hotel data - only email and password required
-                        name: email.split('@')[0],        // Hotel name from email
+                        name: `Hotel ${email.split('@')[0]}`,  // Hotel name from email
+                        hotelName: `Hotel ${email.split('@')[0]}`, // Required hotelName field
                         type: 'hotel',                    // Required - hotel type
                         email,                            // Required - email address
                         password: '',                     // Required - handled by Appwrite auth
@@ -349,9 +350,9 @@ export const hotelAuth = {
             try {
                 await account.deleteSession('current');
                 console.log('🗑️ Existing session cleared before hotel login');
-            } catch (err) {
+            } catch (err: any) {
                 // No session to delete, continue
-                console.log('ℹ️ No existing session to clear');
+                console.log('ℹ️ No existing session to clear:', err?.message || 'unknown reason');
             }
 
             // Create new session
@@ -402,7 +403,8 @@ export const villaAuth = {
                 ID.unique(),
                 {
                     // Required fields per schema
-                    name: email.split('@')[0],
+                    name: `Villa ${email.split('@')[0]}`, // Hotel/Villa name
+                    hotelName: `Villa ${email.split('@')[0]}`, // Required hotelName field
                     type: 'villa', // Required - hotel or villa
                     location: '', // Required
                     contactPerson: email.split('@')[0], // Required
@@ -434,9 +436,9 @@ export const villaAuth = {
             try {
                 await account.deleteSession('current');
                 console.log('🗑️ Existing session cleared before villa login');
-            } catch (err) {
+            } catch (err: any) {
                 // No session to delete, continue
-                console.log('ℹ️ No existing session to clear');
+                console.log('ℹ️ No existing session to clear:', err?.message || 'unknown reason');
             }
 
             await account.createEmailPasswordSession(email, password);
@@ -483,7 +485,7 @@ export const agentAuth = {
                     createdAt: new Date().toISOString(), // Required field
                     
                     // Optional fields with defaults
-                    totalEarnings: 0.0,
+                    totalEarnings: 0,
                     clients: JSON.stringify([]),
                 }
             );
@@ -501,9 +503,9 @@ export const agentAuth = {
             try {
                 await account.deleteSession('current');
                 console.log('🗑️ Existing session cleared before agent login');
-            } catch (err) {
+            } catch (err: any) {
                 // No session to delete, continue
-                console.log('ℹ️ No existing session to clear');
+                console.log('ℹ️ No existing session to clear:', err?.message || 'unknown reason');
             }
 
             await account.createEmailPasswordSession(email, password);
@@ -533,8 +535,8 @@ export const signOut = async (): Promise<boolean> => {
     try {
         await account.deleteSession('current');
         return true;
-    } catch (error) {
-        console.error('Sign out error:', error);
+    } catch (_error) {
+        console.error('Sign out error:', _error);
         return false;
     }
 };
@@ -543,7 +545,7 @@ export const signOut = async (): Promise<boolean> => {
 export const getCurrentUser = async () => {
     try {
         return await account.get();
-    } catch (error) {
+    } catch {
         return null;
     }
 };

@@ -7,7 +7,7 @@ interface AdminAuthPageProps {
     t: any;
 }
 
-const AdminAuthPage: React.FC<AdminAuthPageProps> = ({ onSuccess, onBack, t }) => {
+const AdminAuthPage: React.FC<AdminAuthPageProps> = ({ onSuccess, onBack, t: _t }) => {
     const [isSignUp, setIsSignUp] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');

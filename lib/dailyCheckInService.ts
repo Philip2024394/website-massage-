@@ -165,7 +165,7 @@ export const dailyCheckInService = {
             const checkIns = response.documents as unknown as DailyCheckIn[];
             const today = new Date();
             let streak = 0;
-            let currentDate = new Date(today);
+            const currentDate = new Date(today);
             currentDate.setDate(currentDate.getDate() - 1); // Start from yesterday
 
             // Count consecutive days backwards from yesterday

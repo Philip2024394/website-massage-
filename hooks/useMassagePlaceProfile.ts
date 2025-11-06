@@ -97,8 +97,8 @@ export const useMassagePlaceProfile = (place: Place | null): UseMassagePlaceProf
                     if (Array.isArray(parsed) && parsed.length > 0) {
                         return parsed;
                     }
-                } catch (e) {
-                    console.error('Error parsing additionalServices:', e);
+                } catch (_e) {
+                    console.error('Error parsing additionalServices:', _e);
                 }
             }
             // If it's already an array, use it

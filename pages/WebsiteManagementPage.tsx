@@ -51,7 +51,13 @@ const WebsiteManagementPage: React.FC<WebsiteManagementPageProps> = ({
             document.body.appendChild(successMessage);
             
             setTimeout(() => {
-                document.body.removeChild(successMessage);
+                try {
+                    if (successMessage && successMessage.parentNode && document.body.contains(successMessage)) {
+                        document.body.removeChild(successMessage);
+                    }
+                } catch (error) {
+                    console.warn('Failed to remove success message element:', error);
+                }
             }, 3000);
         } catch (error) {
             console.error('Error saving website data:', error);

@@ -217,8 +217,8 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             
             setCoordinates(typeof placeData.coordinates === 'string' ? JSON.parse(placeData.coordinates) : placeData.coordinates || { lat: 0, lng: 0 });
             setMassageTypes(typeof placeData.massageTypes === 'string' ? JSON.parse(placeData.massageTypes) : placeData.massageTypes || []);
-        } catch (e) {
-            console.error('Error parsing place data:', e);
+        } catch (_e) {
+            console.error('Error parsing place data:', _e);
         }
         
         setLanguages(placeData.languages || []);
@@ -405,8 +405,12 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         }
         
         setTimeout(() => {
-            if (notification.parentNode) {
-                notification.parentNode.removeChild(notification);
+            try {
+                if (notification && notification.parentNode && notification.parentNode.contains(notification)) {
+                    notification.parentNode.removeChild(notification);
+                }
+            } catch (error) {
+                console.warn('Failed to remove notification element:', error);
             }
         }, 6000);
     };
@@ -556,8 +560,12 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                         `;
                         document.body.appendChild(notification);
                         setTimeout(() => {
-                            if (notification.parentNode) {
-                                notification.parentNode.removeChild(notification);
+                            try {
+                                if (notification && notification.parentNode && notification.parentNode.contains(notification)) {
+                                    notification.parentNode.removeChild(notification);
+                                }
+                            } catch (error) {
+                                console.warn('Failed to remove notification element:', error);
                             }
                         }, 3000);
                     } else {
@@ -830,7 +838,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                         )}
                     </div>
                 );
-            case 'analytics':
+            case 'analytics': {
                 const analytics = (() => {
                     try {
                         return typeof place?.analytics === 'string' 
@@ -858,7 +866,8 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                         </div>
                     </div>
                 );
-            case 'hotelVilla':
+            }
+            case 'hotelVilla': {
                 const handleHotelVillaUpdate = (status: HotelVillaServiceStatus, hotelDiscount: number, villaDiscount: number, serviceRadius: number) => {
                     // Update place data with hotel-villa preferences
                     console.log('Hotel-Villa preferences updated:', { status, hotelDiscount, villaDiscount, serviceRadius });
@@ -874,6 +883,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                         onUpdate={handleHotelVillaUpdate}
                     />
                 );
+            }
             case 'notifications':
                 return (
                     <div className="space-y-6">

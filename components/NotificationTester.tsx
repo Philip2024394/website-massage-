@@ -8,7 +8,6 @@ const NotificationTester: React.FC = () => {
         notifyChatMessage,
         notifyCoinsEarned,
         notifyCommissionRequest,
-        notifyGeneral,
         testNotificationSound,
         areNotificationsEnabled,
         setNotificationsEnabled

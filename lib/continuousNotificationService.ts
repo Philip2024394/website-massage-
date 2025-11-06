@@ -3,7 +3,7 @@
  * Plays MP3 notification sounds until therapist responds to booking
  */
 
-let notificationIntervals: Map<string, NodeJS.Timeout> = new Map();
+const notificationIntervals: Map<string, NodeJS.Timeout> = new Map();
 let notificationAudio: HTMLAudioElement | null = null;
 
 /**

@@ -4,7 +4,7 @@ import {
     DollarSign, Calendar, Activity,
     LogOut, RefreshCw, AlertCircle, 
     UserCheck, CheckCircle, Menu, X,
-    Home, Settings, TrendingUp, Building
+    Home, Settings
 } from 'lucide-react';
 import { 
     therapistService, 

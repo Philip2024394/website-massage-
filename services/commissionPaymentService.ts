@@ -1,6 +1,6 @@
-import type { CommissionRecord, Hotel, Villa, Therapist, Place } from '../types';
-import { CommissionPaymentStatus, CommissionPaymentMethod, AvailabilityStatus } from '../types';
-import { databases, DATABASE_ID, COLLECTIONS, storage } from '../lib/appwrite';
+import type { CommissionRecord } from '../types';
+import { CommissionPaymentStatus, CommissionPaymentMethod } from '../types';
+import { databases, DATABASE_ID, COLLECTIONS } from '../lib/appwrite';
 import { ID, Query } from 'appwrite';
 
 /**
@@ -560,7 +560,7 @@ class CommissionPaymentService {
     private async notifyProviderPendingPayment(
         providerId: number,
         providerType: 'therapist' | 'place',
-        record: CommissionRecord
+        _record: CommissionRecord
     ): Promise<void> {
         // TODO: Send notification to provider
         console.log(`🔔 Notifying ${providerType} ${providerId} about pending commission payment`);
@@ -575,7 +575,7 @@ class CommissionPaymentService {
      */
     private async notifyHotelVillaNewPaymentProof(
         hotelVillaId: number,
-        record: CommissionRecord
+        _record: CommissionRecord
     ): Promise<void> {
         // TODO: Send notification to hotel/villa
         console.log(`🔔 Notifying hotel/villa ${hotelVillaId} about new payment proof to verify`);
@@ -591,7 +591,7 @@ class CommissionPaymentService {
     private async notifyProviderPaymentVerified(
         providerId: number,
         providerType: 'therapist' | 'place',
-        record: CommissionRecord
+        _record: CommissionRecord
     ): Promise<void> {
         // TODO: Send notification to provider
         console.log(`🔔 Notifying ${providerType} ${providerId} that payment was verified`);
@@ -607,8 +607,8 @@ class CommissionPaymentService {
     private async notifyProviderPaymentRejected(
         providerId: number,
         providerType: 'therapist' | 'place',
-        record: CommissionRecord,
-        reason: string
+        _record: CommissionRecord,
+        _reason: string
     ): Promise<void> {
         // TODO: Send notification to provider
         console.log(`🔔 Notifying ${providerType} ${providerId} that payment was rejected`);

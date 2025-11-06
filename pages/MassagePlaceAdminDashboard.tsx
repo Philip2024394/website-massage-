@@ -1,11 +1,9 @@
-// @ts-nocheck - Global TypeScript error suppression for rapid deployment
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { Place, Pricing, Booking, Notification } from '../types';
 import type { Page } from '../types/pageTypes';
 import { BookingStatus, HotelVillaServiceStatus } from '../types';
-import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages, stringifyPricing, stringifyCoordinates, stringifyMassageTypes, stringifyAnalytics } from '../utils/appwriteHelpers';
-import { placeService, notificationService } from '../lib/appwriteService';
-import { soundNotificationService } from '../utils/soundNotificationService';
+import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages } from '../utils/appwriteHelpers';
+import '../lib/appwriteService';
 import { User, Calendar, TrendingUp, Hotel, FileCheck, LogOut, Bell, Tag, Menu, Crown, Coins, History } from 'lucide-react';
 import { useTranslations } from '../lib/useTranslations';
 import DiscountSharePage from './DiscountSharePage';
@@ -29,6 +27,7 @@ interface MassagePlaceAdminDashboardProps {
     onNavigateToNotifications: () => void;
     onNavigate?: (page: Page) => void;
     onUpdateBookingStatus: (bookingId: number, status: BookingStatus) => void;
+    onSave?: (data: any) => void; // Add onSave prop
     handleNavigateToAdminLogin?: () => void;
     bookings?: Booking[]; // Make optional to handle undefined cases
     notifications: Notification[];
@@ -87,7 +86,7 @@ const MassagePlaceAdminDashboard: React.FC<MassagePlaceAdminDashboardProps> = ({
     onNavigateToNotifications: _onNavigateToNotifications, 
     onNavigate, 
     onUpdateBookingStatus, 
-    onStatusChange, 
+    onSave: _onSave,
     handleNavigateToAdminLogin, 
     bookings, 
     notifications, 
@@ -108,18 +107,12 @@ const MassagePlaceAdminDashboard: React.FC<MassagePlaceAdminDashboardProps> = ({
     const [hotelVillaPricing, setHotelVillaPricing] = useState<Pricing>({ 60: 0, 90: 0, 120: 0 });
     const [useSamePricing, setUseSamePricing] = useState(true);
     const [discountPercentage, setDiscountPercentage] = useState<number>(0);
-    const [discountDuration, setDiscountDuration] = useState<number>(0); // Hours for discount duration
-    const [discountEndTime, setDiscountEndTime] = useState<Date | null>(null); // When discount expires
-    const [isDiscountActive, setIsDiscountActive] = useState(false);
     const [location, setLocation] = useState('');
     const [coordinates, setCoordinates] = useState({ lat: 0, lng: 0 });
     const [isLicensed, setIsLicensed] = useState(false);
-    const [licenseNumber, setLicenseNumber] = useState('');
     const [mapsApiLoaded, setMapsApiLoaded] = useState(false);
     const [activeTab, setActiveTab] = useState('profile'); // Start with Profile tab since places use "open now" status
     const [showConfirmation, setShowConfirmation] = useState(false);
-    const [showImageRequirementModal, setShowImageRequirementModal] = useState(false);
-    const [pendingImageUrl, setPendingImageUrl] = useState('');
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
@@ -133,6 +126,39 @@ const MassagePlaceAdminDashboard: React.FC<MassagePlaceAdminDashboardProps> = ({
         setIsLoading(true);
         
         console.log('📖 Loading place data:', place);
+        
+        // First, try to restore from localStorage
+        const profileKey = `massage_place_profile_${place?.id || 'temp'}`;
+        const savedProfileData = localStorage.getItem(profileKey);
+        
+        if (savedProfileData) {
+            try {
+                const parsedData = JSON.parse(savedProfileData);
+                console.log('🔄 Restored profile data from localStorage:', parsedData);
+                
+                // Restore all form fields from saved data
+                setName(parsedData.name || '');
+                setDescription(parsedData.description || '');
+                setProfilePicture(parsedData.profilePicture || '');
+                setWhatsappNumber(parsedData.whatsappNumber || '');
+                setYearsOfExperience(parsedData.yearsOfExperience || 0);
+                setMassageTypes(parsedData.massageTypes ? parseMassageTypes(parsedData.massageTypes) : []);
+                setLanguages(parsedData.languages || []);
+                setPricing(parsedData.pricing ? parsePricing(parsedData.pricing) : { 60: 0, 90: 0, 120: 0 });
+                setDiscountPercentage(parsedData.discountPercentage || 0);
+                setHotelVillaPricing(parsedData.hotelVillaPricing ? parsePricing(parsedData.hotelVillaPricing) : { 60: 0, 90: 0, 120: 0 });
+                setUseSamePricing(!parsedData.hotelVillaPricing); // If no hotel pricing, use same pricing
+                setLocation(parsedData.location || '');
+                setCoordinates(parsedData.coordinates ? parseCoordinates(parsedData.coordinates) : { lat: 0, lng: 0 });
+                setIsLicensed(parsedData.isLicensed || false);
+                
+                setIsLoading(false);
+                return; // Exit early since we have saved data
+            } catch (error) {
+                console.warn('⚠️ Failed to restore saved profile data:', error);
+                // Continue with normal flow if restoration fails
+            }
+        }
         
         if (place) {
             console.log('✅ Found existing place profile:', place);
@@ -157,7 +183,6 @@ const MassagePlaceAdminDashboard: React.FC<MassagePlaceAdminDashboardProps> = ({
             setLocation(place.location || '');
             setCoordinates(place.coordinates ? parseCoordinates(place.coordinates) : { lat: 0, lng: 0 });
             setIsLicensed(false); // Places don't have individual licenses
-            setLicenseNumber('');
         } else {
             console.log('📝 No place data provided, starting with empty form');
             // No place data - start with empty data
@@ -175,7 +200,6 @@ const MassagePlaceAdminDashboard: React.FC<MassagePlaceAdminDashboardProps> = ({
             setLocation('');
             setCoordinates({ lat: 0, lng: 0 });
             setIsLicensed(false);
-            setLicenseNumber('');
         }
         
         setIsLoading(false);
@@ -297,90 +321,6 @@ const MassagePlaceAdminDashboard: React.FC<MassagePlaceAdminDashboardProps> = ({
     if (!place) {
         return <div className="p-4 text-center text-red-500">Could not load place data. Please try logging in again.</div>
     }
-
-    const handleSave = () => {
-        console.log('💾 SAVE BUTTON CLICKED - Starting save process...');
-        console.log('📋 Profile data being saved:', {
-            name,
-            whatsappNumber,
-            yearsOfExperience,
-            location,
-            status,
-            pricing: pricing,
-            hotelVillaPricing: useSamePricing ? 'Same as home pricing' : hotelVillaPricing,
-            useSamePricing
-        });
-        
-        // Validate required fields
-        if (!name || !whatsappNumber) {
-            alert('Name and WhatsApp number are required!');
-            return;
-        }
-        
-        try {
-            const saveData = {
-                name,
-                description,
-                profilePicture,
-                whatsappNumber,
-                yearsOfExperience,
-                isLicensed,
-                pricing: stringifyPricing(pricing),
-                hotelVillaPricing: useSamePricing ? undefined : stringifyPricing(hotelVillaPricing),
-                discountPercentage,
-                location,
-                coordinates: stringifyCoordinates(coordinates),
-                status,
-                analytics: place?.analytics || stringifyAnalytics({ 
-                  impressions: 0, 
-                  views: 0, 
-                  profileViews: 0,
-                  whatsapp_clicks: 0, 
-                  whatsappClicks: 0,
-                  phone_clicks: 0, 
-                  directions_clicks: 0, 
-                  bookings: 0 
-                }),
-                massageTypes: stringifyMassageTypes(massageTypes),
-                languages,
-            };
-            
-            console.log('💾 Calling onSave with data:', saveData);
-            onSave(saveData as any);
-            console.log('✅ Save function called successfully');
-            setShowConfirmation(true);
-        } catch (error) {
-            console.error('❌ Error in handleSave:', error);
-            // Use alert as fallback since toast causes DOM errors
-            alert('Error saving profile. Please try again.');
-        }
-    };
-    
-    const handleSetLocation = () => {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(position => {
-                const geocoder = new (window as any).google.maps.Geocoder();
-                const latlng = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude
-                };
-                setCoordinates(latlng);
-                geocoder.geocode({ location: latlng }, (results: any, status: string) => {
-                    if (status === 'OK' && results[0]) {
-                        setLocation(results[0].formatted_address);
-                        alert(t.locationSetConfirmation);
-                    } else {
-                        console.error('Geocoder failed due to: ' + status);
-                        alert('Could not find address for your location.');
-                    }
-                });
-            }, () => {
-                alert('Could not get your location.');
-            });
-        } else {
-            alert('Geolocation is not supported by this browser.');
-        }
-    };
 
     // Handle notifications from footer
     const handleShowNotifications = () => {
@@ -516,7 +456,7 @@ const MassagePlaceAdminDashboard: React.FC<MassagePlaceAdminDashboardProps> = ({
                         )}
                     </div>
                 );
-            case 'hotelVilla':
+            case 'hotelVilla': {
                 const handleHotelVillaUpdate = (status: HotelVillaServiceStatus, hotelDiscount: number, villaDiscount: number, serviceRadius: number) => {
                     // Update place data with hotel-villa preferences
                     console.log('Hotel-Villa preferences updated:', { status, hotelDiscount, villaDiscount, serviceRadius });
@@ -532,6 +472,7 @@ const MassagePlaceAdminDashboard: React.FC<MassagePlaceAdminDashboardProps> = ({
                         onUpdate={handleHotelVillaUpdate}
                     />
                 );
+            }
             case 'notifications':
                 return (
                     <div className="space-y-6">
@@ -690,7 +631,7 @@ const MassagePlaceAdminDashboard: React.FC<MassagePlaceAdminDashboardProps> = ({
                             <div className="flex justify-between items-center">
                                 <div>
                                     <h2 className="text-xl font-bold">Menu</h2>
-                                    <p className="text-sm text-orange-100">{therapist?.name || 'Therapist'}</p>
+                                    <p className="text-sm text-orange-100">{place?.name || 'Massage Place'}</p>
                                 </div>
                                 <button 
                                     onClick={() => setIsSideDrawerOpen(false)}
@@ -923,10 +864,11 @@ const MassagePlaceAdminDashboard: React.FC<MassagePlaceAdminDashboardProps> = ({
 
             {/* Notifications Modal */}
             {showNotifications && (
-                // @ts-ignore - TherapistNotifications props mismatch
                 <TherapistNotifications
-                    isOpen={showNotifications}
-                    onClose={handleCloseNotifications}
+                    notifications={notifications}
+                    onMarkAsRead={() => {}} // Placeholder function
+                    onBack={handleCloseNotifications}
+                    t={t}
                 />
             )}
         </div>

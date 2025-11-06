@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { CommissionRecord } from '../types';
 import { CommissionPaymentStatus } from '../types';
-import Button from '../components/Button';
 import { commissionPaymentService } from '../services/commissionPaymentService';
 
 interface HotelVillaCommissionVerificationPageProps {

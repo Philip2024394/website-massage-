@@ -8,8 +8,8 @@ const getFromLocalStorage = (key: string, defaultValue: any = null) => {
   try {
     const item = localStorage.getItem(key);
     return item ? JSON.parse(item) : defaultValue;
-  } catch (error) {
-    console.error(`Error reading ${key} from localStorage:`, error);
+  } catch (_error) {
+    console.error(`Error reading ${key} from localStorage:`, _error);
     return defaultValue;
   }
 };
@@ -21,8 +21,8 @@ const setToLocalStorage = (key: string, value: any) => {
     } else {
       localStorage.setItem(key, JSON.stringify(value));
     }
-  } catch (error) {
-    console.error(`Error saving ${key} to localStorage:`, error);
+  } catch (_error) {
+    console.error(`Error saving ${key} to localStorage:`, _error);
   }
 };
 
@@ -35,8 +35,8 @@ export const useAppState = () => {
       
       // Check for hotel/villa menu URL pattern: /hotel/:id/menu or /villa/:id/menu
       const pathname = window.location.pathname;
-      const hotelMenuMatch = pathname.match(/\/hotel\/([^\/]+)\/menu/);
-      const villaMenuMatch = pathname.match(/\/villa\/([^\/]+)\/menu/);
+      const hotelMenuMatch = pathname.match(/\/hotel\/([^/]+)\/menu/);
+      const villaMenuMatch = pathname.match(/\/villa\/([^/]+)\/menu/);
       
       if (hotelMenuMatch || villaMenuMatch) {
         console.log('🏨 Hotel/Villa menu URL detected:', pathname);
@@ -51,7 +51,7 @@ export const useAppState = () => {
       
       // Default to landing page
       return 'landing';
-    } catch (error) {
+    } catch {
       console.log('⚠️ URL parameter parsing failed, defaulting to landing page');
       return 'landing';
     }
@@ -175,8 +175,8 @@ export const useAppState = () => {
   const getInitialVenueId = (): string => {
     try {
       const pathname = window.location.pathname;
-      const hotelMenuMatch = pathname.match(/\/hotel\/([^\/]+)\/menu/);
-      const villaMenuMatch = pathname.match(/\/villa\/([^\/]+)\/menu/);
+      const hotelMenuMatch = pathname.match(/\/hotel\/([^/]+)\/menu/);
+      const villaMenuMatch = pathname.match(/\/villa\/([^/]+)\/menu/);
       
       if (hotelMenuMatch) {
         console.log('🏨 Hotel ID extracted from URL:', hotelMenuMatch[1]);
@@ -189,7 +189,7 @@ export const useAppState = () => {
       }
       
       return '';
-    } catch (error) {
+    } catch {
       console.log('⚠️ Venue ID extraction failed');
       return '';
     }

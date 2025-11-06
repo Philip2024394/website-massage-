@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Query } from 'appwrite';
 import { databases } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
@@ -100,33 +100,12 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
     const [jobPostings, setJobPostings] = useState<EmployerJobPosting[]>([]);
     const [therapistListings, setTherapistListings] = useState<TherapistJobListing[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [_isMenuOpen, setIsMenuOpen] = useState(false);
-    const [searchQuery, _setSearchQuery] = useState('');
-    const [selectedType, _setSelectedType] = useState<string>('all');
-    const [selectedLocation, _setSelectedLocation] = useState<string>('all');
+    const [, setIsMenuOpen] = useState(false);
+    const [searchQuery] = useState('');
+    const [selectedType] = useState<string>('all');
+    const [selectedLocation] = useState<string>('all');
     // const [selectedMassageSkill, setSelectedMassageSkill] = useState<string>('all'); // Reserved for future filtering
     
-    const [_showTypeDropdown, setShowTypeDropdown] = useState(false);
-    const [_showLocationDropdown, setShowLocationDropdown] = useState(false);    const typeDropdownRef = useRef<HTMLDivElement>(null);
-    const locationDropdownRef = useRef<HTMLDivElement>(null);
-
-    // Close dropdowns when clicking outside
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (typeDropdownRef.current && !typeDropdownRef.current.contains(event.target as Node)) {
-                setShowTypeDropdown(false);
-            }
-            if (locationDropdownRef.current && !locationDropdownRef.current.contains(event.target as Node)) {
-                setShowLocationDropdown(false);
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, []);
-
     useEffect(() => {
         fetchJobPostings();
         fetchTherapistListings();

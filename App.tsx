@@ -177,10 +177,9 @@ const App = () => {
             <div className={state.isFullScreen ? "flex-grow" : "flex-grow pb-16"}>
                 <AppRouter
                     page={state.page}
-                    language={language}
                     t={t}
                     isLoading={state.isLoading}
-                    loggedInUser={state.loggedInUser}
+
                     loggedInProvider={state.loggedInProvider}
                     loggedInCustomer={state.loggedInCustomer}
                     loggedInAgent={state.loggedInAgent}
@@ -198,7 +197,7 @@ const App = () => {
                     providerForBooking={state.providerForBooking}
                     adminMessages={state.adminMessages}
                     providerAuthInfo={state.providerAuthInfo}
-                    selectedTherapist={null}
+
                     selectedJobId={null}
                     venueMenuId={state.venueMenuId}
                     hotelVillaLogo={null}
@@ -242,7 +241,7 @@ const App = () => {
                     handleSendAdminMessage={() => Promise.resolve()}
                     handleMarkMessagesAsRead={() => Promise.resolve()}
                     handleSelectMembershipPackage={() => {}}
-                    handleProviderLogin={() => {}}
+
                     handleProviderLogout={() => Promise.resolve()}
                     handleCustomerAuthSuccess={() => Promise.resolve()}
                     handleCustomerLogout={() => Promise.resolve()}
@@ -252,19 +251,19 @@ const App = () => {
                     handleAdminLogout={authHandlers?.handleAdminLogout || (() => Promise.resolve())}
                     handleHotelLogin={authHandlers?.handleHotelLogin || (() => {})}
                     handleCreateBooking={() => Promise.resolve()}
-                    handleNavigateToBookingPage={navigation?.handleNavigateToBookingPage || (() => {})}
+
                     handleUpdateBookingStatus={() => Promise.resolve()}
                     handleMarkNotificationAsRead={() => {}}
                     handleAdminLogin={authHandlers?.handleAdminLogin || (() => {})}
                     handleNavigateToNotifications={navigation?.handleNavigateToNotifications || (() => {})}
                     handleNavigateToAgentAuth={navigation?.handleNavigateToAgentAuth || (() => {})}
-                    handleNavigateToTherapistDashboard={navigation?.handleNavigateToTherapistDashboard || (() => {})}
-                    handleNavigateToTherapistProfileCreation={() => {}}
+
+
                     setPage={state.setPage}
                     setLoggedInProvider={state.setLoggedInProvider}
-                    setProviderAuthInfo={state.setProviderAuthInfo}
-                    setProviderForBooking={state.setProviderForBooking}
-                    setSelectedTherapist={() => {}}
+
+
+
                     setSelectedJobId={() => {}}
                 />
             </div>
