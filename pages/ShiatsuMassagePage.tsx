@@ -8,10 +8,10 @@ interface ShiatsuMassagePageProps {
 
 const ShiatsuMassagePage: React.FC<ShiatsuMassagePageProps> = ({ onBack, onNavigate, t: _t }) => {
     return (
-        <div className="min-h-screen bg-gray-50 p-4">
+        <div className="min-h-screen bg-gray-50 p-4 pb-20">
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
-                <div className="flex items-center gap-4 mb-6">
+                <div className="flex items-center gap-4 pb-20 mb-6">
                     <button 
                         onClick={onBack}
                         className="p-2 hover:bg-gray-200 rounded-full transition-colors"
@@ -74,7 +74,7 @@ const ShiatsuMassagePage: React.FC<ShiatsuMassagePageProps> = ({ onBack, onNavig
                 </div>
 
                 {/* Navigation Buttons */}
-                <div className="flex gap-4">
+                <div className="flex gap-4 pb-20">
                     <button 
                         onClick={() => onNavigate('home')}
                         className="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
@@ -94,3 +94,4 @@ const ShiatsuMassagePage: React.FC<ShiatsuMassagePageProps> = ({ onBack, onNavig
 };
 
 export default ShiatsuMassagePage;
+

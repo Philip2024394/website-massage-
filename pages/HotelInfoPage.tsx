@@ -26,7 +26,7 @@ const HotelInfoPage: React.FC<HotelInfoPageProps> = ({ onNavigate }) => {
                     <h1 className="text-2xl font-bold">
                         <span className="text-black">Inda</span><span className="text-orange-500">Street</span>
                     </h1>
-                    <div className="flex items-center gap-4 text-gray-600">
+                    <div className="flex items-center gap-4 pb-20 text-gray-600">
                         <button onClick={() => setIsMenuOpen(true)} title="Menu">
                            <BurgerMenuIcon className="w-6 h-6" />
                         </button>
@@ -99,7 +99,7 @@ const HotelInfoPage: React.FC<HotelInfoPageProps> = ({ onNavigate }) => {
                         <h2 className="text-3xl font-bold text-gray-900 mb-2 text-center">Why Hotels & Villas Choose IndaStreet</h2>
                         
                         {/* Free Membership Banner */}
-                        <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-4 mb-8 mx-auto max-w-md">
+                        <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-4 pb-20 mb-8 mx-auto max-w-md">
                             <div className="text-center">
                                 <div className="flex items-center justify-center gap-2 mb-1">
                                     <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -332,3 +332,4 @@ const HotelInfoPage: React.FC<HotelInfoPageProps> = ({ onNavigate }) => {
 };
 
 export default HotelInfoPage;
+

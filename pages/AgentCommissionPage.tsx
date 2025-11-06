@@ -234,9 +234,9 @@ const AgentCommissionPage: React.FC = () => {
       </div>
 
       {/* Commission Structure Info */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 pb-20">
         <h3 className="font-bold text-blue-900 mb-2">📊 Commission Structure</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-20 text-sm">
           <div>
             <p className="font-semibold text-blue-800">New Member Commission:</p>
             <p className="text-blue-700">20% of membership price</p>
@@ -364,7 +364,7 @@ const AgentCommissionPage: React.FC = () => {
 
         {/* Warning Footer */}
         <div className="mt-6 pt-4 border-t border-gray-200">
-          <div className="bg-red-50 rounded-lg p-4 border-l-4 border-red-500">
+          <div className="bg-red-50 rounded-lg p-4 pb-20 border-l-4 border-red-500">
             <div className="flex items-start gap-3">
               <span className="text-red-600 text-xl flex-shrink-0">⚠️</span>
               <p className="text-sm text-red-800 font-medium">
@@ -386,24 +386,24 @@ const AgentCommissionPage: React.FC = () => {
       ) : (
         <div className="space-y-4">
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pb-20">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 pb-20">
               <p className="text-sm text-blue-600 font-medium">Total Agents</p>
               <p className="text-3xl font-bold text-blue-900 mt-1">{agentStats.length}</p>
             </div>
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 pb-20">
               <p className="text-sm text-green-600 font-medium">New Signups</p>
               <p className="text-3xl font-bold text-green-900 mt-1">
                 {agentStats.reduce((sum, a) => sum + a.newSignups, 0)}
               </p>
             </div>
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 pb-20">
               <p className="text-sm text-orange-600 font-medium">Renewals</p>
               <p className="text-3xl font-bold text-orange-900 mt-1">
                 {agentStats.reduce((sum, a) => sum + a.renewalSignups, 0)}
               </p>
             </div>
-            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 pb-20">
               <p className="text-sm text-purple-600 font-medium">Total Commission</p>
               <p className="text-2xl font-bold text-purple-900 mt-1">
                 {formatCurrency(agentStats.reduce((sum, a) => sum + a.totalCommissionDue, 0))}
@@ -436,7 +436,7 @@ const AgentCommissionPage: React.FC = () => {
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
+                    <div className="flex items-center gap-4 pb-20 mt-2 text-sm text-gray-600">
                       <span>📱 {agent.agentWhatsApp}</span>
                       <span>🆔 {agent.agentIdCard}</span>
                     </div>
@@ -453,7 +453,7 @@ const AgentCommissionPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex gap-4 mt-3 text-sm flex-wrap">
+                <div className="flex gap-4 pb-20 mt-3 text-sm flex-wrap">
                   <div className="bg-blue-50 px-3 py-1 rounded">
                     <span className="font-medium text-blue-700">New: {agent.newSignups}</span>
                   </div>
@@ -478,7 +478,7 @@ const AgentCommissionPage: React.FC = () => {
 
               {/* Expanded Details */}
               {expandedAgent === agent.agentId && (
-                <div className="border-t border-gray-200 bg-gray-50 p-4">
+                <div className="border-t border-gray-200 bg-gray-50 p-4 pb-20">
                   <h4 className="font-semibold text-gray-900 mb-3">Signup Details</h4>
                   <div className="space-y-2">
                     {agent.signups.map((signup) => (
@@ -554,3 +554,4 @@ const AgentCommissionPage: React.FC = () => {
 };
 
 export default AgentCommissionPage;
+

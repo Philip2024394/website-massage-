@@ -45,7 +45,7 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
                     <h1 className="text-2xl font-bold">
                         <span className="text-black">Inda</span><span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
                     </h1>
-                    <div className="flex items-center gap-4 text-gray-600">
+                    <div className="flex items-center gap-4 pb-20 text-gray-600">
                         <button onClick={() => setIsMenuOpen(true)} title="Menu">
                            <BurgerMenuIcon className="w-6 h-6" />
                         </button>
@@ -106,7 +106,7 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
                     </div>
                     <div className="bg-gradient-to-br from-orange-100 to-orange-50 rounded-2xl p-8 border-2 border-orange-200">
                         <div className="space-y-6">
-                            <div className="flex items-start gap-4">
+                            <div className="flex items-start gap-4 pb-20">
                                 <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
                                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -117,7 +117,7 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
                                     <p className="text-gray-600">Every therapist, driver, food vendor, and hotel host is thoroughly vetted. We ensure background checks, certifications, and real-world reviews across all IndaStreet services—so you always feel safe and confident, whether booking a ride, ordering dinner, or booking a wellness session.</p>
                                 </div>
                             </div>
-                            <div className="flex items-start gap-4">
+                            <div className="flex items-start gap-4 pb-20">
                                 <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
                                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -128,7 +128,7 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
                                     <p className="text-gray-600">Your data belongs to you—period. From your wellness bookings to your ride history, we use military-grade privacy controls. Personal info stays hidden until you decide to share it. We don't sell your data, we don't share it with third parties, and we sure as hell don't use it to bombard you with ads. Your trust is everything.</p>
                                 </div>
                             </div>
-                            <div className="flex items-start gap-4">
+                            <div className="flex items-start gap-4 pb-20">
                                 <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
                                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -275,7 +275,7 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
                         Whether you're a therapist seeking opportunities, a hotel looking for talent, or an employer 
                         searching for professionals, IndaStreet is your trusted partner.
                     </p>
-                    <div className="flex flex-wrap gap-4 justify-center">
+                    <div className="flex flex-wrap gap-4 pb-20 justify-center">
                         <button 
                             onClick={() => {
                                 const event = new CustomEvent('toggleDrawer');
@@ -330,3 +330,4 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
 };
 
 export default AboutUsPage;
+

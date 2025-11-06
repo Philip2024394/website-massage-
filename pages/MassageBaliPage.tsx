@@ -167,7 +167,7 @@ const MassageBaliPage: React.FC<MassageBaliPageProps> = ({
                             <span className="inline-block animate-float">S</span>treet
                         </span>
                     </h1>
-                    <div className="flex items-center gap-4 text-gray-600">
+                    <div className="flex items-center gap-4 pb-20 text-gray-600">
                         <button onClick={() => setIsMenuOpen(true)} title="Menu">
                            <BurgerMenuIcon className="w-6 h-6" />
                         </button>
@@ -212,7 +212,7 @@ const MassageBaliPage: React.FC<MassageBaliPageProps> = ({
                     <p className="text-sm md:text-lg text-white mb-6 md:mb-8 drop-shadow-md">
                         {isLoading ? 'Loading...' : `${totalTherapists + totalPlaces}+ verified massage therapists | ${totalPlaces}+ spa partners | Instant booking`}
                     </p>
-                    <div className="flex flex-wrap gap-3 md:gap-4 justify-center">
+                    <div className="flex flex-wrap gap-3 md:gap-4 pb-20 justify-center">
                         <button 
                             onClick={() => onNavigate?.('home')}
                             className="px-6 md:px-8 py-3 md:py-4 bg-orange-500 text-white font-bold rounded-lg hover:bg-orange-600 transition-colors shadow-lg text-base md:text-lg"
@@ -231,7 +231,7 @@ const MassageBaliPage: React.FC<MassageBaliPageProps> = ({
 
             {/* Quick Stats */}
             <div className="max-w-6xl mx-auto px-4 -mt-8 md:-mt-12 relative z-20">
-                <div className="bg-white rounded-xl md:rounded-2xl shadow-2xl p-4 md:p-8">
+                <div className="bg-white rounded-xl md:rounded-2xl shadow-2xl p-4 pb-20 md:p-8">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
                         <div className="text-center">
                             <div className="text-2xl md:text-3xl font-bold text-green-600 mb-1 md:mb-2">
@@ -263,7 +263,7 @@ const MassageBaliPage: React.FC<MassageBaliPageProps> = ({
                 {/* Popular Areas */}
                 <div className="mb-12 md:mb-16">
                     <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 md:mb-8 text-center">Popular Areas in Bali</h2>
-                    <div className="grid md:grid-cols-3 gap-4 md:gap-6">
+                    <div className="grid md:grid-cols-3 gap-4 pb-20 md:gap-6">
                         {areas.map((area) => (
                             <div 
                                 key={area.id}
@@ -360,10 +360,10 @@ const MassageBaliPage: React.FC<MassageBaliPageProps> = ({
                     <p className="text-center text-sm md:text-base text-gray-600 mb-6 md:mb-8 max-w-2xl mx-auto px-4">
                         Discover traditional Balinese healing techniques and modern wellness therapies
                     </p>
-                    <div className="grid md:grid-cols-2 gap-4 md:gap-6">
+                    <div className="grid md:grid-cols-2 gap-4 pb-20 md:gap-6">
                         {massageTypes.map((type, index) => (
                             <div key={index} className="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg hover:shadow-xl transition-shadow">
-                                <div className="flex items-start gap-3 md:gap-4">
+                                <div className="flex items-start gap-3 md:gap-4 pb-20">
                                     <div className="w-16 h-16 md:w-20 md:h-20 flex-shrink-0">
                                         <img 
                                             src={type.icon} 
@@ -401,7 +401,7 @@ const MassageBaliPage: React.FC<MassageBaliPageProps> = ({
                     <p className="text-center text-sm md:text-base text-gray-600 mb-6 md:mb-8 max-w-2xl mx-auto px-4">
                         Discover top-rated massage spas offering authentic Balinese wellness experiences
                     </p>
-                    <div className="grid md:grid-cols-3 gap-4 md:gap-6">
+                    <div className="grid md:grid-cols-3 gap-4 pb-20 md:gap-6">
                         {/* Example Place 1 - Luxury Spa */}
                         <div className="bg-white rounded-xl md:rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
                             <div className="relative h-48 md:h-56 overflow-hidden">
@@ -414,7 +414,7 @@ const MassageBaliPage: React.FC<MassageBaliPageProps> = ({
                                     ⭐ 4.9
                                 </div>
                             </div>
-                            <div className="p-4 md:p-6">
+                            <div className="p-4 pb-20 md:p-6">
                                 <h3 className="text-xl font-bold text-gray-900 mb-2">Serene Bali Spa & Wellness</h3>
                                 <div className="flex items-center gap-2 text-gray-600 mb-3">
                                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -456,7 +456,7 @@ const MassageBaliPage: React.FC<MassageBaliPageProps> = ({
                                     ⭐ 4.8
                                 </div>
                             </div>
-                            <div className="p-4 md:p-6">
+                            <div className="p-4 pb-20 md:p-6">
                                 <h3 className="text-xl font-bold text-gray-900 mb-2">Ubud Healing Center</h3>
                                 <div className="flex items-center gap-2 text-gray-600 mb-3">
                                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -498,7 +498,7 @@ const MassageBaliPage: React.FC<MassageBaliPageProps> = ({
                                     ⭐ 5.0
                                 </div>
                             </div>
-                            <div className="p-4 md:p-6">
+                            <div className="p-4 pb-20 md:p-6">
                                 <h3 className="text-xl font-bold text-gray-900 mb-2">Ocean Breeze Spa</h3>
                                 <div className="flex items-center gap-2 text-gray-600 mb-3">
                                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -542,7 +542,7 @@ const MassageBaliPage: React.FC<MassageBaliPageProps> = ({
                             <p className="text-gray-500">No featured therapists available</p>
                         </div>
                     ) : (
-                        <div className="grid md:grid-cols-3 gap-4 md:gap-8">
+                        <div className="grid md:grid-cols-3 gap-4 pb-20 md:gap-8">
                             {featuredTherapists.map((therapist, index) => (
                                 <div key={therapist.id || index} className="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg hover:shadow-xl transition-shadow">
                                     {/* Profile Image Circle */}
@@ -638,8 +638,8 @@ const MassageBaliPage: React.FC<MassageBaliPageProps> = ({
                     {/* Content */}
                     <div className="relative z-10 p-6 md:p-12 text-white">
                         <h2 className="text-2xl md:text-4xl font-bold mb-6 md:mb-8 text-center drop-shadow-lg">Why Bali is the Massage Capital of Asia</h2>
-                        <div className="grid md:grid-cols-2 gap-4 md:gap-8">
-                        <div className="flex items-start gap-3 md:gap-4">
+                        <div className="grid md:grid-cols-2 gap-4 pb-20 md:gap-8">
+                        <div className="flex items-start gap-3 md:gap-4 pb-20">
                             <div className="w-10 h-10 md:w-12 md:h-12 bg-white bg-opacity-50 rounded-lg flex items-center justify-center flex-shrink-0 shadow-lg">
                                 <span className="text-xl md:text-2xl">🌺</span>
                             </div>
@@ -651,7 +651,7 @@ const MassageBaliPage: React.FC<MassageBaliPageProps> = ({
                                 </p>
                             </div>
                         </div>
-                        <div className="flex items-start gap-3 md:gap-4">
+                        <div className="flex items-start gap-3 md:gap-4 pb-20">
                             <div className="w-10 h-10 md:w-12 md:h-12 bg-white bg-opacity-50 rounded-lg flex items-center justify-center flex-shrink-0 shadow-lg">
                                 <span className="text-xl md:text-2xl">👨‍⚕️</span>
                             </div>
@@ -663,7 +663,7 @@ const MassageBaliPage: React.FC<MassageBaliPageProps> = ({
                                 </p>
                             </div>
                         </div>
-                        <div className="flex items-start gap-3 md:gap-4">
+                        <div className="flex items-start gap-3 md:gap-4 pb-20">
                             <div className="w-10 h-10 md:w-12 md:h-12 bg-white bg-opacity-50 rounded-lg flex items-center justify-center flex-shrink-0 shadow-lg">
                                 <span className="text-xl md:text-2xl">💰</span>
                             </div>
@@ -675,7 +675,7 @@ const MassageBaliPage: React.FC<MassageBaliPageProps> = ({
                                 </p>
                             </div>
                         </div>
-                        <div className="flex items-start gap-3 md:gap-4">
+                        <div className="flex items-start gap-3 md:gap-4 pb-20">
                             <div className="w-10 h-10 md:w-12 md:h-12 bg-white bg-opacity-50 rounded-lg flex items-center justify-center flex-shrink-0 shadow-lg">
                                 <span className="text-xl md:text-2xl">🏝️</span>
                             </div>
@@ -694,7 +694,7 @@ const MassageBaliPage: React.FC<MassageBaliPageProps> = ({
                 {/* How to Book */}
                 <div className="mb-12 md:mb-16">
                     <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 md:mb-8 text-center">How to Book a Massage in Bali</h2>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-20 md:gap-6">
                         <div className="text-center">
                             <div className="w-12 h-12 md:w-16 md:h-16 bg-orange-100 rounded-full flex items-center justify-center mb-3 md:mb-4 mx-auto">
                                 <span className="text-2xl md:text-3xl font-bold text-orange-600">1</span>
@@ -727,7 +727,7 @@ const MassageBaliPage: React.FC<MassageBaliPageProps> = ({
                 </div>
 
                 {/* SEO FAQ Section */}
-                <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-8 shadow-lg">
+                <div className="bg-white rounded-xl md:rounded-2xl p-4 pb-20 md:p-8 shadow-lg">
                     <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4 md:mb-6">Frequently Asked Questions</h2>
                     <div className="space-y-3 md:space-y-4">
                         <div>
@@ -819,3 +819,4 @@ const MassageBaliPage: React.FC<MassageBaliPageProps> = ({
 };
 
 export default MassageBaliPage;
+

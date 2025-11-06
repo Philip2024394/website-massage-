@@ -126,7 +126,7 @@ const JobUnlockPaymentPage: React.FC = () => {
                                 <span className="inline-block animate-float">S</span>treet
                             </span>
                         </h1>
-                        <div className="flex items-center gap-4 text-gray-600">
+                        <div className="flex items-center gap-4 pb-20 text-gray-600">
                             <button onClick={() => setIsMenuOpen(true)} title="Menu">
                                <BurgerMenuIcon className="w-6 h-6" />
                             </button>
@@ -199,7 +199,7 @@ const JobUnlockPaymentPage: React.FC = () => {
                             <span className="inline-block animate-float">S</span>treet
                         </span>
                     </h1>
-                    <div className="flex items-center gap-4 text-gray-600">
+                    <div className="flex items-center gap-4 pb-20 text-gray-600">
                         <button onClick={() => setIsMenuOpen(true)} title="Menu">
                            <BurgerMenuIcon className="w-6 h-6" />
                         </button>
@@ -253,7 +253,7 @@ const JobUnlockPaymentPage: React.FC = () => {
                         </nav>
 
                         {/* Footer with Links */}
-                        <div className="p-4 bg-gray-50 border-t border-gray-200 space-y-3">
+                        <div className="p-4 pb-20 bg-gray-50 border-t border-gray-200 space-y-3">
                             <div className="flex justify-center gap-2">
                                 <button className="text-xs text-orange-500 font-medium hover:underline">
                                     Become Agent
@@ -312,7 +312,7 @@ const JobUnlockPaymentPage: React.FC = () => {
                 <div className="max-w-4xl mx-auto">
                     {/* Personal Touch Message */}
                     <div className="bg-white rounded-2xl shadow-lg p-8 mb-6 border border-gray-200">
-                        <div className="flex items-start gap-4">
+                        <div className="flex items-start gap-4 pb-20">
                             <div className="w-14 h-14 bg-orange-100 rounded-xl flex items-center justify-center flex-shrink-0">
                                 <svg className="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -332,7 +332,7 @@ const JobUnlockPaymentPage: React.FC = () => {
                                     your account needs. This personal approach is what makes indaStreet different – we keep our commitment to process 
                                     all payments as quickly as possible while maintaining that <strong>human touch</strong> you deserve.
                                 </p>
-                                <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
+                                <div className="bg-orange-50 rounded-lg p-4 pb-20 border border-orange-200">
                                     <p className="text-orange-600 font-semibold flex items-center gap-2">
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -371,7 +371,7 @@ const JobUnlockPaymentPage: React.FC = () => {
                             {banks.length > 1 && (
                                 <div className="mb-6">
                                     <label className="block text-gray-700 font-semibold mb-3">Select Bank for Transfer:</label>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-20">
                                         {banks.map((bank) => (
                                             <button
                                                 key={bank.$id}
@@ -629,7 +629,7 @@ const JobUnlockPaymentPage: React.FC = () => {
                         <span className="text-xl">Send Payment Details via WhatsApp</span>
                     </button>
 
-                    <div className="mt-6 bg-green-50 border-2 border-green-200 rounded-lg p-4">
+                    <div className="mt-6 bg-green-50 border-2 border-green-200 rounded-lg p-4 pb-20">
                         <p className="text-center text-green-800 font-semibold flex items-center justify-center gap-2">
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
@@ -688,3 +688,4 @@ const JobUnlockPaymentPage: React.FC = () => {
 };
 
 export default JobUnlockPaymentPage;
+

@@ -135,7 +135,7 @@ export const AppwriteSetupPage: React.FC = () => {
                     
                     <div className="mb-8">
                         <h2 className="text-xl font-semibold mb-4">Database Configuration</h2>
-                        <div className="bg-gray-100 p-4 rounded-lg">
+                        <div className="bg-gray-100 p-4 pb-20 rounded-lg">
                             <p><strong>Database ID:</strong> {DATABASE_ID}</p>
                             <p><strong>Endpoint:</strong> https://syd.cloud.appwrite.io/v1</p>
                         </div>
@@ -195,7 +195,7 @@ export const AppwriteSetupPage: React.FC = () => {
 
                     {setupStatus === 'ready' && (
                         <div className="mb-8">
-                            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <div className="bg-green-50 border border-green-200 rounded-lg p-4 pb-20">
                                 <h3 className="text-green-800 font-semibold">✓ Database Ready</h3>
                                 <p className="text-green-700">Your Appwrite database is configured and ready to use!</p>
                             </div>
@@ -204,7 +204,7 @@ export const AppwriteSetupPage: React.FC = () => {
 
                     <div className="mb-8">
                         <h2 className="text-xl font-semibold mb-4">Setup Logs</h2>
-                        <div className="bg-gray-900 text-green-400 p-4 rounded-lg h-64 overflow-y-auto font-mono text-sm">
+                        <div className="bg-gray-900 text-green-400 p-4 pb-20 rounded-lg h-64 overflow-y-auto font-mono text-sm">
                             {logs.map((log, index) => (
                                 <div key={index}>{log}</div>
                             ))}
@@ -231,3 +231,4 @@ export const AppwriteSetupPage: React.FC = () => {
         </div>
     );
 };
+

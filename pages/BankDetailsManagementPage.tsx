@@ -187,7 +187,7 @@ const BankDetailsManagementPage: React.FC = () => {
                         {editingId ? 'Edit Bank Account' : 'Add New Bank Account'}
                     </h3>
                     <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-20">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Bank Name *
@@ -459,3 +459,4 @@ const BankDetailsManagementPage: React.FC = () => {
 };
 
 export default BankDetailsManagementPage;
+

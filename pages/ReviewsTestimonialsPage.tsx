@@ -8,10 +8,10 @@ interface ReviewsTestimonialsPageProps {
 
 const ReviewsTestimonialsPage: React.FC<ReviewsTestimonialsPageProps> = ({ onBack, onNavigate, t: _t }) => {
     return (
-        <div className="min-h-screen bg-gray-50 p-4">
+        <div className="min-h-screen bg-gray-50 p-4 pb-20">
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
-                <div className="flex items-center gap-4 mb-6">
+                <div className="flex items-center gap-4 pb-20 mb-6">
                     <button 
                         onClick={onBack}
                         className="p-2 hover:bg-gray-200 rounded-full transition-colors"
@@ -141,7 +141,7 @@ const ReviewsTestimonialsPage: React.FC<ReviewsTestimonialsPageProps> = ({ onBac
                 {/* Rating Summary */}
                 <div className="bg-white rounded-lg shadow-md p-6 mb-6">
                     <h2 className="text-2xl font-semibold text-gray-800 mb-4">Overall Rating</h2>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4 pb-20">
                         <div className="flex text-yellow-400 text-2xl">
                             {[...Array(5)].map((_, i) => (
                                 <svg key={i} className="w-8 h-8 fill-current" viewBox="0 0 20 20">
@@ -157,7 +157,7 @@ const ReviewsTestimonialsPage: React.FC<ReviewsTestimonialsPageProps> = ({ onBac
                 </div>
 
                 {/* Navigation Buttons */}
-                <div className="flex gap-4">
+                <div className="flex gap-4 pb-20">
                     <button 
                         onClick={() => onNavigate('home')}
                         className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
@@ -177,3 +177,4 @@ const ReviewsTestimonialsPage: React.FC<ReviewsTestimonialsPageProps> = ({ onBac
 };
 
 export default ReviewsTestimonialsPage;
+

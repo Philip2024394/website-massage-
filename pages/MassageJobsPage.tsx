@@ -405,7 +405,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                     </div>
 
                                     {/* Employment Type Badge - Top Right */}
-                                    <div className="absolute top-4 right-4">
+                                    <div className="absolute top-4 pb-20 right-4">
                                         <span className="px-4 py-2 bg-black/70 backdrop-blur-md text-yellow-400 text-sm font-bold rounded-lg shadow-2xl border border-white/20">
                                             {posting.employmentType.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
                                         </span>
@@ -832,3 +832,4 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
 };
 
 export default MassageJobsPage;
+

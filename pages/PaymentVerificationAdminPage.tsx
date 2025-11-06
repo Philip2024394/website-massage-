@@ -211,7 +211,7 @@ const PaymentVerificationAdminPage: React.FC = () => {
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4 pb-20 mb-8">
                     <div className="bg-white rounded-xl shadow-md p-6">
                         <p className="text-sm text-gray-600 mb-1">Total Payments</p>
                         <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
@@ -236,7 +236,7 @@ const PaymentVerificationAdminPage: React.FC = () => {
 
                 {/* Filters */}
                 <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-                    <div className="flex flex-col md:flex-row gap-4">
+                    <div className="flex flex-col md:flex-row gap-4 pb-20">
                         {/* Search */}
                         <div className="flex-1 relative">
                             <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
@@ -366,7 +366,7 @@ const PaymentVerificationAdminPage: React.FC = () => {
 
                 {/* Detail Modal */}
                 {selectedPayment && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 pb-20 z-50">
                         <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
                             <div className="sticky top-0 bg-white border-b-2 border-gray-200 p-6 flex justify-between items-center">
                                 <h2 className="text-2xl font-bold text-gray-900">Payment Details</h2>
@@ -394,7 +394,7 @@ const PaymentVerificationAdminPage: React.FC = () => {
                                 </div>
 
                                 {/* User Info */}
-                                <div className="bg-gray-50 rounded-xl p-6 grid md:grid-cols-2 gap-4">
+                                <div className="bg-gray-50 rounded-xl p-6 grid md:grid-cols-2 gap-4 pb-20">
                                     <div>
                                         <p className="text-sm text-gray-600 mb-1">Full Name</p>
                                         <p className="font-semibold text-gray-900">{selectedPayment.fullName}</p>
@@ -414,7 +414,7 @@ const PaymentVerificationAdminPage: React.FC = () => {
                                 </div>
 
                                 {/* Payment Info */}
-                                <div className="bg-orange-50 rounded-xl p-6 grid md:grid-cols-2 gap-4">
+                                <div className="bg-orange-50 rounded-xl p-6 grid md:grid-cols-2 gap-4 pb-20">
                                     <div>
                                         <p className="text-sm text-orange-700 mb-1">Amount</p>
                                         <p className="text-2xl font-bold text-orange-600">{formatCurrency(selectedPayment.amount)}</p>
@@ -455,7 +455,7 @@ const PaymentVerificationAdminPage: React.FC = () => {
 
                                 {/* Rejection Reason */}
                                 {selectedPayment.status === 'rejected' && selectedPayment.rejectionReason && (
-                                    <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4">
+                                    <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4 pb-20">
                                         <p className="text-sm font-semibold text-red-700 mb-1">Rejection Reason</p>
                                         <p className="text-red-900">{selectedPayment.rejectionReason}</p>
                                     </div>
@@ -477,7 +477,7 @@ const PaymentVerificationAdminPage: React.FC = () => {
                                             />
                                         </div>
 
-                                        <div className="flex gap-4">
+                                        <div className="flex gap-4 pb-20">
                                             <button
                                                 onClick={() => handleApprove(selectedPayment)}
                                                 disabled={isProcessing}
@@ -521,3 +521,4 @@ const PaymentVerificationAdminPage: React.FC = () => {
 };
 
 export default PaymentVerificationAdminPage;
+

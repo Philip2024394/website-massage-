@@ -8,10 +8,10 @@ interface PregnancyMassagePageProps {
 
 const PregnancyMassagePage: React.FC<PregnancyMassagePageProps> = ({ onBack, onNavigate, t: _t }) => {
     return (
-        <div className="min-h-screen bg-gray-50 p-4">
+        <div className="min-h-screen bg-gray-50 p-4 pb-20">
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
-                <div className="flex items-center gap-4 mb-6">
+                <div className="flex items-center gap-4 pb-20 mb-6">
                     <button 
                         onClick={onBack}
                         className="p-2 hover:bg-gray-200 rounded-full transition-colors"
@@ -66,7 +66,7 @@ const PregnancyMassagePage: React.FC<PregnancyMassagePageProps> = ({ onBack, onN
 
                         <div>
                             <h3 className="text-xl font-semibold text-gray-800 mb-3">Safety Considerations</h3>
-                            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
+                            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 pb-20 rounded">
                                 <ul className="list-disc list-inside text-gray-700 space-y-2">
                                     <li>Generally safe after first trimester (12+ weeks)</li>
                                     <li>Performed by certified prenatal massage therapists</li>
@@ -90,7 +90,7 @@ const PregnancyMassagePage: React.FC<PregnancyMassagePageProps> = ({ onBack, onN
                 </div>
 
                 {/* Navigation Buttons */}
-                <div className="flex gap-4">
+                <div className="flex gap-4 pb-20">
                     <button 
                         onClick={() => onNavigate('home')}
                         className="px-6 py-3 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors"
@@ -110,3 +110,4 @@ const PregnancyMassagePage: React.FC<PregnancyMassagePageProps> = ({ onBack, onN
 };
 
 export default PregnancyMassagePage;
+

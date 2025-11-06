@@ -216,19 +216,19 @@ const AgentPage: React.FC<AgentPageProps> = ({ onBack, onNavigateToAgentAuth, t:
                 <div className="bg-gradient-to-br from-gray-50 to-orange-50 p-8 rounded-2xl border-2 border-orange-200">
                     <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 text-center">Why Join Now?</h3>
                     <div className="space-y-4 max-w-3xl mx-auto">
-                        <div className="flex items-start gap-4">
+                        <div className="flex items-start gap-4 pb-20">
                             <div className="bg-orange-500 text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 font-bold">✓</div>
                             <p className="text-gray-700 text-lg">Indonesia's wellness industry is booming - be part of the growth from the ground floor</p>
                         </div>
-                        <div className="flex items-start gap-4">
+                        <div className="flex items-start gap-4 pb-20">
                             <div className="bg-orange-500 text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 font-bold">✓</div>
                             <p className="text-gray-700 text-lg">First agents in each territory get the best opportunities and largest potential networks</p>
                         </div>
-                        <div className="flex items-start gap-4">
+                        <div className="flex items-start gap-4 pb-20">
                             <div className="bg-orange-500 text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 font-bold">✓</div>
                             <p className="text-gray-700 text-lg">Build recurring income streams that grow automatically as your network expands</p>
                         </div>
-                        <div className="flex items-start gap-4">
+                        <div className="flex items-start gap-4 pb-20">
                             <div className="bg-orange-500 text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 font-bold">✓</div>
                             <p className="text-gray-700 text-lg">Positions are limited - once your area is filled, the opportunity is gone</p>
                         </div>
@@ -263,7 +263,7 @@ const AgentPage: React.FC<AgentPageProps> = ({ onBack, onNavigateToAgentAuth, t:
                 </div>
 
                 {/* WhatsApp CTA remains as a smaller inline button above footer */}
-                <div className="p-4 max-w-md mx-auto mt-6">
+                <div className="p-4 pb-20 max-w-md mx-auto mt-6">
                     <Button
                         onClick={handleWhatsAppClick}
                         className="w-full flex items-center justify-center gap-3 text-lg py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 rounded-lg"
@@ -281,3 +281,4 @@ const AgentPage: React.FC<AgentPageProps> = ({ onBack, onNavigateToAgentAuth, t:
 };
 
 export default AgentPage;
+

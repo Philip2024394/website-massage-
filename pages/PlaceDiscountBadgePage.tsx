@@ -217,7 +217,7 @@ const PlaceDiscountBadgePage: React.FC<PlaceDiscountBadgePageProps> = ({
                             <Zap className="w-5 h-5 text-green-500" />
                             Active Discount Badges
                         </h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-20">
                             {activeBadges.map((badge) => {
                                 const discountOption = discountOptions.find(opt => opt.percentage === badge.percentage);
                                 return (
@@ -253,7 +253,7 @@ const PlaceDiscountBadgePage: React.FC<PlaceDiscountBadgePageProps> = ({
                         Choose a discount percentage and duration. The badge will appear on your massage place card and attract more customers.
                     </p>
                     
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-20 mb-6">
                         {discountOptions.map((option) => (
                             <div key={option.percentage} className="space-y-3">
                                 <div className={`bg-gradient-to-r ${option.color} rounded-lg p-4 text-white text-center cursor-pointer transition-transform hover:scale-105`}>
@@ -280,7 +280,7 @@ const PlaceDiscountBadgePage: React.FC<PlaceDiscountBadgePageProps> = ({
                         ))}
                     </div>
 
-                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 pb-20">
                         <h3 className="font-semibold text-orange-900 mb-2">💡 Tips for Maximum Impact:</h3>
                         <ul className="text-sm text-orange-800 space-y-1">
                             <li>• Activate badges during peak hours (evening/weekend) for better visibility</li>
@@ -322,7 +322,7 @@ const PlaceDiscountBadgePage: React.FC<PlaceDiscountBadgePageProps> = ({
 
             {/* Confirmation Modal */}
             {showConfirmModal && selectedBadge && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 pb-20">
                     <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
                         <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4">
                             <h3 className="text-xl font-bold text-white">Confirm Discount Badge Activation</h3>
@@ -338,7 +338,7 @@ const PlaceDiscountBadgePage: React.FC<PlaceDiscountBadgePageProps> = ({
                                 </p>
                             </div>
                             
-                            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 pb-20 mb-6">
                                 <p className="text-sm text-yellow-800">
                                     <strong>Note:</strong> Once activated, the badge cannot be modified. You can deactivate it early if needed.
                                 </p>
@@ -367,3 +367,4 @@ const PlaceDiscountBadgePage: React.FC<PlaceDiscountBadgePageProps> = ({
 };
 
 export default PlaceDiscountBadgePage;
+

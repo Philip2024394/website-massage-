@@ -244,7 +244,7 @@ const MembershipPaymentPage: React.FC<MembershipPaymentPageProps> = ({
     // Step 1: Package Selection
     if (step === 'select') {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50 p-4">
+            <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50 p-4 pb-20">
                 <div className="max-w-6xl mx-auto">
                     {/* Header */}
                     <div className="mb-8">
@@ -271,7 +271,7 @@ const MembershipPaymentPage: React.FC<MembershipPaymentPageProps> = ({
                                 }`}
                             >
                                 {pkg.popular && (
-                                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                                    <div className="absolute -top-4 pb-20 left-1/2 transform -translate-x-1/2">
                                         <span className="bg-orange-500 text-white px-4 py-1 rounded-full text-xs font-bold shadow-lg">
                                             🌟 POPULAR
                                         </span>
@@ -321,7 +321,7 @@ const MembershipPaymentPage: React.FC<MembershipPaymentPageProps> = ({
     // Step 2: Payment Instructions
     if (step === 'payment') {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50 p-4">
+            <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50 p-4 pb-20">
                 <div className="max-w-2xl mx-auto">
                     <div className="bg-white rounded-2xl shadow-xl p-8">
                         {/* Header */}
@@ -392,21 +392,21 @@ const MembershipPaymentPage: React.FC<MembershipPaymentPageProps> = ({
                                     Transfer to this account:
                                 </h3>
                                 <div className="space-y-3">
-                                    <div className="bg-white rounded-lg p-4">
+                                    <div className="bg-white rounded-lg p-4 pb-20">
                                         <p className="text-xs text-gray-500 mb-1">Bank Name</p>
                                         <p className="text-lg font-bold text-gray-900">{selectedBank.bankName}</p>
                                     </div>
-                                    <div className="bg-white rounded-lg p-4">
+                                    <div className="bg-white rounded-lg p-4 pb-20">
                                         <p className="text-xs text-gray-500 mb-1">Currency</p>
                                         <p className="text-lg font-bold text-gray-900">{selectedBank.currency}</p>
                                     </div>
                                     {selectedBank.accountType && (
-                                        <div className="bg-white rounded-lg p-4">
+                                        <div className="bg-white rounded-lg p-4 pb-20">
                                             <p className="text-xs text-gray-500 mb-1">Account Type</p>
                                             <p className="text-lg font-bold text-gray-900">{selectedBank.accountType}</p>
                                         </div>
                                     )}
-                                    <div className="bg-white rounded-lg p-4">
+                                    <div className="bg-white rounded-lg p-4 pb-20">
                                         <div className="flex items-center justify-between">
                                             <div>
                                                 <p className="text-xs text-gray-500 mb-1">Account Number</p>
@@ -428,7 +428,7 @@ const MembershipPaymentPage: React.FC<MembershipPaymentPageProps> = ({
                                         </div>
                                     </div>
                                     {selectedBank.branchName && (
-                                        <div className="bg-white rounded-lg p-4">
+                                        <div className="bg-white rounded-lg p-4 pb-20">
                                             <p className="text-xs text-gray-500 mb-1">Branch</p>
                                             <p className="text-lg font-bold text-gray-900">{selectedBank.branchName}</p>
                                         </div>
@@ -438,7 +438,7 @@ const MembershipPaymentPage: React.FC<MembershipPaymentPageProps> = ({
                         )}
 
                         {/* Instructions */}
-                        <div className="bg-blue-50 border-l-4 border-blue-500 rounded-lg p-4 mb-6">
+                        <div className="bg-blue-50 border-l-4 border-blue-500 rounded-lg p-4 pb-20 mb-6">
                             <h4 className="font-bold text-blue-900 mb-2">Payment Instructions:</h4>
                             <ol className="list-decimal list-inside space-y-1 text-sm text-blue-800">
                                 <li>Transfer exactly <strong>IDR {selectedPackage?.price.toLocaleString()}</strong></li>
@@ -478,7 +478,7 @@ const MembershipPaymentPage: React.FC<MembershipPaymentPageProps> = ({
     // Step 3: Upload Proof
     if (step === 'upload') {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50 p-4">
+            <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50 p-4 pb-20">
                 <div className="max-w-2xl mx-auto">
                     <div className="bg-white rounded-2xl shadow-xl p-8">
                         <div className="text-center mb-8">
@@ -499,7 +499,7 @@ const MembershipPaymentPage: React.FC<MembershipPaymentPageProps> = ({
                         </div>
 
                         {/* Summary */}
-                        <div className="bg-gray-50 rounded-xl p-4 mb-6">
+                        <div className="bg-gray-50 rounded-xl p-4 pb-20 mb-6">
                             <h4 className="font-semibold text-gray-900 mb-3">Payment Summary:</h4>
                             <div className="space-y-2 text-sm">
                                 <div className="flex justify-between">
@@ -518,7 +518,7 @@ const MembershipPaymentPage: React.FC<MembershipPaymentPageProps> = ({
                         </div>
 
                         {/* Warning */}
-                        <div className="bg-yellow-50 border-l-4 border-yellow-500 rounded-lg p-4 mb-6">
+                        <div className="bg-yellow-50 border-l-4 border-yellow-500 rounded-lg p-4 pb-20 mb-6">
                             <p className="text-sm text-yellow-800">
                                 ⚠️ <strong>Important:</strong> After submitting, admin will review your payment proof. 
                                 You'll receive a WhatsApp notification once your membership is activated.
@@ -566,7 +566,7 @@ const MembershipPaymentPage: React.FC<MembershipPaymentPageProps> = ({
 
     // Step 4: Success
     return (
-        <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50 p-4 flex items-center justify-center">
+        <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50 p-4 pb-20 flex items-center justify-center">
             <div className="max-w-md mx-auto">
                 <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
                     <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -580,7 +580,7 @@ const MembershipPaymentPage: React.FC<MembershipPaymentPageProps> = ({
                         Thank you for your payment. Our admin team will review your submission and activate your membership shortly.
                     </p>
 
-                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 pb-20 mb-6">
                         <p className="text-sm text-blue-800">
                             📱 A WhatsApp notification has been sent to our admin. 
                             You'll receive confirmation within 24 hours.
@@ -608,3 +608,4 @@ const MembershipPaymentPage: React.FC<MembershipPaymentPageProps> = ({
 };
 
 export default MembershipPaymentPage;
+

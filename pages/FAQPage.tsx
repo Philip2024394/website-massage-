@@ -231,7 +231,7 @@ const FAQPage: React.FC<FAQPageProps> = ({
                     <h1 className="text-2xl font-bold text-gray-800">
                         <span className="text-black">Inda</span><span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
                     </h1>
-                    <div className="flex items-center gap-4 text-gray-600">
+                    <div className="flex items-center gap-4 pb-20 text-gray-600">
                         <button onClick={() => setIsMenuOpen(true)} title="Menu">
                            <BurgerMenuIcon className="w-6 h-6" />
                         </button>
@@ -432,7 +432,7 @@ const FAQPage: React.FC<FAQPageProps> = ({
                     <p className="text-xl text-orange-100 mb-8 max-w-2xl mx-auto">
                         Our support team is here to help you succeed on IndaStreet
                     </p>
-                    <div className="flex flex-wrap gap-4 justify-center">
+                    <div className="flex flex-wrap gap-4 pb-20 justify-center">
                         <button className="px-8 py-4 bg-white text-orange-600 font-bold rounded-lg hover:bg-orange-50 transition-colors shadow-lg">
                             Contact Support
                         </button>
@@ -489,3 +489,4 @@ const FAQPage: React.FC<FAQPageProps> = ({
 };
 
 export default FAQPage;
+

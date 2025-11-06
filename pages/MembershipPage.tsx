@@ -30,7 +30,7 @@ const MembershipPage: React.FC<MembershipPageProps> = ({ onPackageSelect, onBack
     ];
 
     return (
-        <div className="min-h-screen bg-gray-50 p-4 flex flex-col justify-center">
+        <div className="min-h-screen bg-gray-50 p-4 pb-20 flex flex-col justify-center">
             <div className="text-center mb-8">
                 <CheckCircleIcon className="w-16 h-16 text-brand-green mx-auto mb-2" />
                 <h1 className="text-3xl font-bold text-gray-800">{t.title}</h1>
@@ -73,3 +73,4 @@ const MembershipPage: React.FC<MembershipPageProps> = ({ onPackageSelect, onBack
 };
 
 export default MembershipPage;
+

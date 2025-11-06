@@ -364,7 +364,7 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
                     </div>
                 ) : (
                     <>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-4 pb-20">
                         {paginatedItems.map((item) => (
                             <div
                                 key={item.$id}
@@ -437,7 +437,7 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
 
                     {/* Pagination Controls */}
                     {totalPages > 1 && (
-                        <div className="flex items-center justify-center gap-4 mt-8 mb-6">
+                        <div className="flex items-center justify-center gap-4 pb-20 mt-8 mb-6">
                             <button
                                 onClick={handlePrevPage}
                                 disabled={currentPage === 1}
@@ -479,7 +479,7 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
 
             {/* Delivery Info Modal with Confetti */}
             {showDeliveryForm && selectedItem && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 pb-20 overflow-y-auto">
                     {/* Confetti Animation */}
                     <div className="fixed inset-0 pointer-events-none overflow-hidden">
                         {[...Array(50)].map((_, i) => (
@@ -613,7 +613,7 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
 
             {/* Login Notice Modal */}
             {showLoginNotice && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 pb-20">
                     <div className="bg-white rounded-2xl max-w-md w-full p-8 text-center animate-fadeIn">
                         <div className="text-6xl mb-4">🔐</div>
                         <h2 className="text-2xl font-bold text-orange-600 mb-4">Login Required</h2>
@@ -632,7 +632,7 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
 
             {/* Final Confirmation Modal */}
             {showFinalConfirmation && selectedItem && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 pb-20">
                     <div className="bg-white rounded-2xl max-w-md w-full p-8 text-center animate-fadeIn">
                         <div className="text-6xl mb-4">✅</div>
                         <h2 className="text-2xl font-bold text-green-600 mb-4">Order Confirmed!</h2>
@@ -657,7 +657,7 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
 
             {/* Insufficient Coins Modal */}
             {showInsufficientModal && selectedItem && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 pb-20">
                     <div className="bg-white rounded-2xl max-w-md w-full p-8 text-center animate-fadeIn">
                         <div className="text-6xl mb-4">😔</div>
                         <h2 className="text-2xl font-bold text-red-600 mb-4">Insufficient Coins</h2>
@@ -742,3 +742,4 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
 };
 
 export default CoinShopPage;
+

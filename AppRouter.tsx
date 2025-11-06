@@ -718,7 +718,22 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return <AboutUsPage onBack={handleBackToHome} onNavigate={(page: Page) => setPage(page as Page)} t={t} />;
             
         case 'indastreet-partners': 
-            return <IndastreetPartnersPage onBack={handleBackToHome} onNavigate={(page: Page) => setPage(page as Page)} t={t} />;
+            return <IndastreetPartnersPage 
+                onNavigate={(page: Page) => setPage(page as Page)} 
+                onMassageJobsClick={() => setPage('massage-jobs' as Page)}
+                onHotelPortalClick={() => setPage('hotel-login' as Page)}
+                onVillaPortalClick={() => setPage('villa-login' as Page)}
+                onTherapistPortalClick={() => setPage('therapist-login' as Page)}
+                onMassagePlacePortalClick={() => setPage('place-login' as Page)}
+                onAgentPortalClick={() => setPage('agent-auth' as Page)}
+                onCustomerPortalClick={() => setPage('customer-auth' as Page)}
+                onAdminPortalClick={() => setPage('admin-auth' as Page)}
+                onTermsClick={() => setPage('terms' as Page)}
+                onPrivacyClick={() => setPage('privacy' as Page)}
+                therapists={therapists}
+                places={places}
+                t={t} 
+            />;
             
         case 'how-it-works': 
             // @ts-ignore - Prop interface mismatch 

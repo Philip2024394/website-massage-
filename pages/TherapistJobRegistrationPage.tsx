@@ -146,7 +146,7 @@ const TherapistJobRegistrationPage: React.FC<TherapistJobRegistrationPageProps> 
             {/* Header */}
             <header className="bg-white shadow-md sticky top-0 z-20">
                 <div className="w-full px-4 py-4">
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4 pb-20">
                         <button
                             onClick={onBack}
                             className="p-2 hover:bg-orange-100 rounded-lg transition-colors"
@@ -173,7 +173,7 @@ const TherapistJobRegistrationPage: React.FC<TherapistJobRegistrationPageProps> 
                     <h2 className="text-2xl md:text-3xl font-bold mb-2">
                         Start Your Professional Journey Today!
                     </h2>
-                    <div className="flex flex-col md:flex-row items-center justify-center gap-4 mb-4">
+                    <div className="flex flex-col md:flex-row items-center justify-center gap-4 pb-20 mb-4">
                         <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg px-6 py-3">
                             <div className="text-3xl font-bold">Only IDR 5,000/day</div>
                             <div className="text-sm opacity-90">= IDR 150,000/month</div>
@@ -184,7 +184,7 @@ const TherapistJobRegistrationPage: React.FC<TherapistJobRegistrationPageProps> 
                             <div className="text-sm">For first 100 therapists</div>
                         </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-20 text-sm">
                         <div className="flex items-center justify-center gap-2">
                             <span className="text-xl">✅</span>
                             <span>Unlimited bookings</span>
@@ -231,7 +231,7 @@ const TherapistJobRegistrationPage: React.FC<TherapistJobRegistrationPageProps> 
                             />
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-20">
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                                     Gender
@@ -330,7 +330,7 @@ const TherapistJobRegistrationPage: React.FC<TherapistJobRegistrationPageProps> 
                             />
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-20">
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                                     Years of Experience
@@ -536,7 +536,7 @@ const TherapistJobRegistrationPage: React.FC<TherapistJobRegistrationPageProps> 
                         </div>
 
                         {/* Note about main images */}
-                        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="p-4 pb-20 bg-blue-50 border border-blue-200 rounded-lg">
                             <p className="text-sm text-blue-700">
                                 <span className="font-medium">Note:</span> Main card images are automatically assigned from our curated collection to ensure consistent quality and design.
                             </p>
@@ -564,3 +564,4 @@ const TherapistJobRegistrationPage: React.FC<TherapistJobRegistrationPageProps> 
 };
 
 export default TherapistJobRegistrationPage;
+

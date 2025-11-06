@@ -2,7 +2,7 @@ import React from 'react';
 
 const TherapistTermsPage: React.FC = () => {
     return (
-        <div className="max-w-4xl mx-auto p-4 sm:p-6 bg-white rounded-lg shadow-lg">
+        <div className="max-w-4xl mx-auto p-4 pb-20 sm:p-6 bg-white rounded-lg shadow-lg">
             <div className="mb-6">
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2"><span className="text-black">Inda</span>Street Therapist Terms of Service</h1>
                 <p className="text-xs sm:text-sm text-gray-500">Last Updated: October 2025</p>
@@ -14,7 +14,7 @@ const TherapistTermsPage: React.FC = () => {
                     <span>✨</span> <span className="break-words">Professional Standards</span>
                 </h2>
                 <div className="space-y-3 text-gray-700 text-sm sm:text-base">
-                    <div className="bg-blue-50 border-l-4 border-blue-500 p-3 sm:p-4">
+                    <div className="bg-blue-50 border-l-4 border-blue-500 p-3 sm:p-4 pb-20">
                         <p className="font-semibold mb-2">Appearance & Hygiene</p>
                         <ul className="list-disc list-inside space-y-1 text-xs sm:text-sm break-words">
                             <li>Clean, trimmed nails are mandatory at all times</li>
@@ -23,7 +23,7 @@ const TherapistTermsPage: React.FC = () => {
                             <li>Arrive at appointments well-presented and prepared</li>
                         </ul>
                     </div>
-                    <div className="bg-green-50 border-l-4 border-green-500 p-3 sm:p-4">
+                    <div className="bg-green-50 border-l-4 border-green-500 p-3 sm:p-4 pb-20">
                         <p className="font-semibold mb-2">Service Quality</p>
                         <ul className="list-disc list-inside space-y-1 text-xs sm:text-sm break-words">
                             <li>Clean, trimmed nails are mandatory at all times</li>
@@ -32,7 +32,7 @@ const TherapistTermsPage: React.FC = () => {
                             <li>Arrive at appointments well-presented and prepared</li>
                         </ul>
                     </div>
-                    <div className="bg-green-50 border-l-4 border-green-500 p-4">
+                    <div className="bg-green-50 border-l-4 border-green-500 p-4 pb-20">
                         <p className="font-semibold mb-2">Service Quality</p>
                         <ul className="list-disc list-inside space-y-1 text-xs sm:text-sm break-words">
                             <li>Provide professional massage services as advertised</li>
@@ -49,7 +49,7 @@ const TherapistTermsPage: React.FC = () => {
                 <h2 className="text-xl sm:text-2xl font-semibold text-orange-600 mb-3 sm:mb-4 flex items-center gap-2">
                     <span>📸</span> <span className="break-words">Profile Image Requirements</span>
                 </h2>
-                <div className="bg-red-50 border-2 border-red-500 rounded-lg p-3 sm:p-4">
+                <div className="bg-red-50 border-2 border-red-500 rounded-lg p-3 sm:p-4 pb-20">
                     <ul className="space-y-2 text-gray-700 text-xs sm:text-sm break-words">
                         <li className="flex items-start gap-2">
                             <span className="font-bold text-green-600">✓</span>
@@ -76,7 +76,7 @@ const TherapistTermsPage: React.FC = () => {
                 <h2 className="text-xl sm:text-2xl font-semibold text-orange-600 mb-3 sm:mb-4 flex items-center gap-2">
                     <span>💼</span> <span className="break-words">Employment & Tax</span>
                 </h2>
-                <div className="bg-yellow-50 border-l-4 border-yellow-500 p-3 sm:p-4">
+                <div className="bg-yellow-50 border-l-4 border-yellow-500 p-3 sm:p-4 pb-20">
                     <p className="font-semibold mb-3 text-gray-900 text-sm sm:text-base">Self-Employed Status</p>
                     <ul className="list-disc list-inside space-y-2 text-gray-700 text-xs sm:text-sm break-words">
                         <li><strong>Independent Contractor:</strong> You work as a self-employed, independent contractor, NOT as an employee of <span className="text-black">Inda</span>Street</li>
@@ -94,7 +94,7 @@ const TherapistTermsPage: React.FC = () => {
                 <h2 className="text-xl sm:text-2xl font-semibold text-orange-600 mb-3 sm:mb-4 flex items-center gap-2">
                     <span>🛡️</span> <span className="break-words">Your Rights & Safety</span>
                 </h2>
-                <div className="bg-green-50 border-l-4 border-green-500 p-3 sm:p-4">
+                <div className="bg-green-50 border-l-4 border-green-500 p-3 sm:p-4 pb-20">
                     <p className="font-semibold mb-3 text-gray-900 text-sm sm:text-base">Right to Refuse Service</p>
                     <ul className="list-disc list-inside space-y-2 text-gray-700 text-xs sm:text-sm break-words">
                         <li><strong>Safety First:</strong> You have the absolute right to cancel ANY booking if you feel uncomfortable or unsafe</li>
@@ -111,7 +111,7 @@ const TherapistTermsPage: React.FC = () => {
                 <h2 className="text-xl sm:text-2xl font-semibold text-orange-600 mb-3 sm:mb-4 flex items-center gap-2">
                     <span>⚠️</span> <span className="break-words">Account Deactivation</span>
                 </h2>
-                <div className="bg-red-50 border-l-4 border-red-500 p-3 sm:p-4">
+                <div className="bg-red-50 border-l-4 border-red-500 p-3 sm:p-4 pb-20">
                     <p className="font-semibold mb-3 text-gray-900 text-sm sm:text-base break-words">Grounds for Immediate Deactivation (Without Notice)</p>
                     <ul className="list-disc list-inside space-y-2 text-gray-700 text-xs sm:text-sm break-words">
                         <li><strong>Unprofessional Service:</strong> Failure to provide professional massage services as advertised</li>
@@ -130,7 +130,7 @@ const TherapistTermsPage: React.FC = () => {
                 <h2 className="text-xl sm:text-2xl font-semibold text-orange-600 mb-3 sm:mb-4 flex items-center gap-2">
                     <span>💰</span> <span className="break-words">Payment & Fees</span>
                 </h2>
-                <div className="bg-blue-50 border-l-4 border-blue-500 p-3 sm:p-4">
+                <div className="bg-blue-50 border-l-4 border-blue-500 p-3 sm:p-4 pb-20">
                     <ul className="list-disc list-inside space-y-2 text-gray-700 text-xs sm:text-sm break-words">
                         <li>You receive payments directly from clients via WhatsApp/cash arrangements</li>
                         <li>IndoStreet membership fees are separate from client payments</li>
@@ -145,7 +145,7 @@ const TherapistTermsPage: React.FC = () => {
                 <h2 className="text-xl sm:text-2xl font-semibold text-orange-600 mb-3 sm:mb-4 flex items-center gap-2">
                     <span>🔒</span> <span className="break-words">Privacy & Client Data</span>
                 </h2>
-                <div className="bg-purple-50 border-l-4 border-purple-500 p-3 sm:p-4">
+                <div className="bg-purple-50 border-l-4 border-purple-500 p-3 sm:p-4 pb-20">
                     <ul className="list-disc list-inside space-y-2 text-gray-700 text-xs sm:text-sm break-words">
                         <li>Respect client privacy and confidentiality at all times</li>
                         <li>Do not share client contact information or booking details with third parties</li>
@@ -161,19 +161,19 @@ const TherapistTermsPage: React.FC = () => {
                     <span>📋</span> <span className="break-words">Additional Requirements</span>
                 </h2>
                 <div className="space-y-3 text-gray-700 text-xs sm:text-sm">
-                    <div className="bg-gray-50 p-3 sm:p-4 rounded">
+                    <div className="bg-gray-50 p-3 sm:p-4 pb-20 rounded">
                         <p className="font-semibold mb-2 break-words">Equipment & Supplies</p>
                         <p className="break-words">You are responsible for bringing your own massage table, oils, linens, and all necessary equipment</p>
                     </div>
-                    <div className="bg-gray-50 p-3 sm:p-4 rounded">
+                    <div className="bg-gray-50 p-3 sm:p-4 pb-20 rounded">
                         <p className="font-semibold mb-2 break-words">Location Services</p>
                         <p className="break-words">Your location must be accurate and updated. False location information may result in account suspension</p>
                     </div>
-                    <div className="bg-gray-50 p-3 sm:p-4 rounded">
+                    <div className="bg-gray-50 p-3 sm:p-4 pb-20 rounded">
                         <p className="font-semibold mb-2 break-words">Response Time</p>
                         <p className="break-words">Maintain reasonable response times to client inquiries via WhatsApp</p>
                     </div>
-                    <div className="bg-gray-50 p-3 sm:p-4 rounded">
+                    <div className="bg-gray-50 p-3 sm:p-4 pb-20 rounded">
                         <p className="font-semibold mb-2 break-words">Certification</p>
                         <p className="break-words">While not mandatory, professional massage certification is highly recommended and may be required in certain jurisdictions</p>
                     </div>
@@ -182,7 +182,7 @@ const TherapistTermsPage: React.FC = () => {
 
             {/* Agreement */}
             <section className="mb-6 sm:mb-8">
-                <div className="bg-orange-50 border-2 border-orange-500 rounded-lg p-4 sm:p-6">
+                <div className="bg-orange-50 border-2 border-orange-500 rounded-lg p-4 pb-20 sm:p-6">
                     <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 break-words">Agreement</h3>
                     <p className="text-gray-700 mb-4 text-xs sm:text-sm break-words">
                         By maintaining an active account on the IndoStreet platform, you acknowledge that you have read, understood, and agree to comply with all terms outlined in this Terms of Service agreement.
@@ -203,3 +203,4 @@ const TherapistTermsPage: React.FC = () => {
 };
 
 export default TherapistTermsPage;
+

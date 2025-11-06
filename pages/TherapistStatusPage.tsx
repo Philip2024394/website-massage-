@@ -111,7 +111,7 @@ const TherapistStatusPage: React.FC<TherapistStatusPageProps> = ({ therapist, on
                                 }`}
                             >
                                 <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-4 pb-20">
                                         <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
                                             isActive ? 'bg-white/20' : 'bg-white/30'
                                         }`}>
@@ -137,3 +137,4 @@ const TherapistStatusPage: React.FC<TherapistStatusPageProps> = ({ therapist, on
 };
 
 export default TherapistStatusPage;
+

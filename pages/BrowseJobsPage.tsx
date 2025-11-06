@@ -140,7 +140,7 @@ const BrowseJobsPage: React.FC<BrowseJobsPageProps> = ({ onBack, onPostJob }) =>
             {/* Header */}
             <header className="bg-white shadow-sm sticky top-0 z-10">
                 <div className="max-w-7xl mx-auto px-4 py-4">
-                    <div className="flex items-center gap-4 mb-4">
+                    <div className="flex items-center gap-4 pb-20 mb-4">
                         <button
                             onClick={onBack}
                             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -395,3 +395,4 @@ const BrowseJobsPage: React.FC<BrowseJobsPageProps> = ({ onBack, onPostJob }) =>
 };
 
 export default BrowseJobsPage;
+

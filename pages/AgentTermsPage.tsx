@@ -49,7 +49,7 @@ const AgentTermsPage: React.FC<AgentTermsPageProps> = ({ onAccept, onLogout, t }
             </div>
 
             <footer className="p-4 bg-white border-t sticky bottom-0 z-10">
-                <div className="flex gap-4">
+                <div className="flex gap-4 pb-20">
                      <Button onClick={onLogout} variant="secondary" disabled={isLoading}>
                         {t.declineButton}
                     </Button>
@@ -63,3 +63,4 @@ const AgentTermsPage: React.FC<AgentTermsPageProps> = ({ onAccept, onLogout, t }
 };
 
 export default AgentTermsPage;
+

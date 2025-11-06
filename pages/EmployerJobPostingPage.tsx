@@ -481,7 +481,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                             <h3 className="text-lg font-bold text-gray-900 mb-4">
                                 Salary Range (Monthly in Indonesian Rupiah)
                             </h3>
-                            <div className="grid sm:grid-cols-2 gap-4">
+                            <div className="grid sm:grid-cols-2 gap-4 pb-20">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-900 mb-2">
                                         Minimum Salary
@@ -547,7 +547,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                             <label className="block text-sm font-medium text-gray-900 mb-2">
                                 CV Required? *
                             </label>
-                            <div className="flex gap-4">
+                            <div className="flex gap-4 pb-20">
                                 <label className="flex items-center gap-2 cursor-pointer">
                                     <input
                                         type="radio"
@@ -880,7 +880,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                             Position Details
                         </h2>
 
-                        <div className="grid sm:grid-cols-2 gap-4">
+                        <div className="grid sm:grid-cols-2 gap-4 pb-20">
                             <div>
                                 <label className="block text-sm font-medium text-gray-900 mb-2">
                                     Position Title
@@ -953,7 +953,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                     ⚠️ Please convert your currency to Indonesian Rupiah using Google Currency Converter
                                 </p>
                             )}
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-4 pb-20">
                                 <div className="relative">
                                     <span className="absolute left-3 top-3 text-gray-500">Rp</span>
                                     <input
@@ -1439,3 +1439,4 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
 };
 
 export default EmployerJobPostingPage;
+

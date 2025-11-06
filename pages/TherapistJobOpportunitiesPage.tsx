@@ -225,7 +225,7 @@ const TherapistJobOpportunitiesPage: React.FC<TherapistJobOpportunitiesPageProps
             <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
                 {/* Membership Check */}
                 {!isActiveMember && (
-                    <div className="bg-red-50 border-2 border-red-300 rounded-xl p-4">
+                    <div className="bg-red-50 border-2 border-red-300 rounded-xl p-4 pb-20">
                         <div className="flex items-start gap-3">
                             <Info className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
                             <div>
@@ -241,7 +241,7 @@ const TherapistJobOpportunitiesPage: React.FC<TherapistJobOpportunitiesPageProps
 
                 {/* Status Banner */}
                 {isOptedIn && (
-                    <div className="bg-green-50 border-2 border-green-300 rounded-xl p-4">
+                    <div className="bg-green-50 border-2 border-green-300 rounded-xl p-4 pb-20">
                         <div className="flex items-start gap-3">
                             <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
                             <div>
@@ -255,7 +255,7 @@ const TherapistJobOpportunitiesPage: React.FC<TherapistJobOpportunitiesPageProps
                 )}
 
                 {/* Pricing Info */}
-                <div className="bg-orange-50 border-2 border-orange-200 rounded-xl p-4">
+                <div className="bg-orange-50 border-2 border-orange-200 rounded-xl p-4 pb-20">
                     <div className="flex items-start gap-3">
                         <DollarSign className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
                         <div className="flex-1">
@@ -504,10 +504,10 @@ const TherapistJobOpportunitiesPage: React.FC<TherapistJobOpportunitiesPageProps
 
             {/* Payment Modal */}
             {showPaymentModal && (
-                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 pb-20">
                     <div className="bg-white rounded-2xl max-w-md w-full p-6">
                         <h3 className="text-xl font-bold text-gray-900 mb-4">Complete Payment</h3>
-                        <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-4 mb-4">
+                        <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-4 pb-20 mb-4">
                             <p className="text-sm text-gray-700">Registration Fee:</p>
                             <p className="text-3xl font-bold text-orange-600">Rp 200,000</p>
                             <p className="text-xs text-gray-600 mt-1">Valid for 12 months</p>
@@ -534,3 +534,4 @@ const TherapistJobOpportunitiesPage: React.FC<TherapistJobOpportunitiesPageProps
 };
 
 export default TherapistJobOpportunitiesPage;
+

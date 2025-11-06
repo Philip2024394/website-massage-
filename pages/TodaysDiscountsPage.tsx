@@ -118,7 +118,7 @@ const TodaysDiscountsPage: React.FC<TodaysDiscountsPageProps> = ({ onBack }) => 
             {/* Content */}
             <div className="max-w-7xl mx-auto px-4 py-6">
                 {/* Info Banner */}
-                <div className="bg-gradient-to-r from-yellow-400 to-orange-400 rounded-2xl p-4 mb-6 shadow-lg animate-pulse">
+                <div className="bg-gradient-to-r from-yellow-400 to-orange-400 rounded-2xl p-4 pb-20 mb-6 shadow-lg animate-pulse">
                     <div className="flex items-center gap-3">
                         <span className="text-3xl">⚡</span>
                         <div>
@@ -241,3 +241,4 @@ const TodaysDiscountsPage: React.FC<TodaysDiscountsPageProps> = ({ onBack }) => 
 };
 
 export default TodaysDiscountsPage;
+

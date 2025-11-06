@@ -312,7 +312,7 @@ The IndaStreet Team 🙏`;
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 text-sm">
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-20 mb-4 text-sm">
                                     {transaction.packageType && (
                                         <div>
                                             <span className="text-gray-500">Package:</span>
@@ -391,7 +391,7 @@ The IndaStreet Team 🙏`;
 
             {/* Payment Proof Modal */}
             {selectedTransaction && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 pb-20 z-50">
                     <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
                         <div className="p-6">
                             <div className="flex items-start justify-between mb-6">
@@ -410,8 +410,8 @@ The IndaStreet Team 🙏`;
                             </div>
 
                             {/* Transaction Details */}
-                            <div className="bg-gray-50 rounded-xl p-4 mb-6">
-                                <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div className="bg-gray-50 rounded-xl p-4 pb-20 mb-6">
+                                <div className="grid grid-cols-2 gap-4 pb-20 text-sm">
                                     <div>
                                         <span className="text-gray-500">Amount:</span>
                                         <p className="font-bold text-orange-600 text-xl">{selectedTransaction.currency || 'IDR'} {selectedTransaction.amount.toLocaleString()}</p>
@@ -649,3 +649,4 @@ The IndaStreet Team 🙏`;
 };
 
 export default PaymentTransactionsPage;
+

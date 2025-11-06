@@ -93,20 +93,20 @@ const HotelVillaBankDetailsPage: React.FC<HotelVillaBankDetailsPageProps> = ({
             <main className="max-w-3xl mx-auto px-4 py-8">
                 {/* Success Message */}
                 {success && (
-                    <div className="bg-green-50 border-l-4 border-green-500 p-4 mb-6 rounded-lg">
+                    <div className="bg-green-50 border-l-4 border-green-500 p-4 pb-20 mb-6 rounded-lg">
                         <p className="text-green-700 font-medium">{success}</p>
                     </div>
                 )}
 
                 {/* Error Message */}
                 {error && (
-                    <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-lg">
+                    <div className="bg-red-50 border-l-4 border-red-500 p-4 pb-20 mb-6 rounded-lg">
                         <p className="text-red-700 font-medium">{error}</p>
                     </div>
                 )}
 
                 {/* Info Banner */}
-                <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded-lg">
+                <div className="bg-blue-50 border-l-4 border-blue-500 p-4 pb-20 mb-6 rounded-lg">
                     <h3 className="text-blue-800 font-bold mb-2">ℹ️ About Commission Payments</h3>
                     <p className="text-blue-700 text-sm">
                         Providers must pay commission fees after completing services at your {hotelVillaType}.
@@ -269,7 +269,7 @@ const HotelVillaBankDetailsPage: React.FC<HotelVillaBankDetailsPageProps> = ({
                             Providers will pay cash commission directly to your front desk or designated staff.
                             They must provide a receipt or screenshot of your staff's confirmation.
                         </p>
-                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 pb-20">
                             <p className="text-yellow-800 text-sm font-semibold">
                                 💡 Tip: Ensure your front desk staff issues receipts for all commission payments received.
                             </p>
@@ -320,3 +320,4 @@ const HotelVillaBankDetailsPage: React.FC<HotelVillaBankDetailsPageProps> = ({
 };
 
 export default HotelVillaBankDetailsPage;
+

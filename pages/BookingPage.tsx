@@ -81,7 +81,7 @@ const BookingPage: React.FC<BookingPageProps> = ({ provider, providerType, onBoo
     const today = new Date().toISOString().split('T')[0];
 
     return (
-        <div className="p-4 bg-gray-50 min-h-screen">
+        <div className="p-4 pb-20 bg-gray-50 min-h-screen">
             <header className="flex items-center mb-6">
                 <button onClick={onBack} className="text-gray-600 hover:text-gray-800 mr-4">
                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -92,7 +92,7 @@ const BookingPage: React.FC<BookingPageProps> = ({ provider, providerType, onBoo
             </header>
 
             <div className="space-y-6">
-                <div className="bg-white p-4 rounded-lg shadow">
+                <div className="bg-white p-4 pb-20 rounded-lg shadow">
                     <label htmlFor="booking-date" className="block text-sm font-semibold text-gray-700 mb-2">{t.selectDate}</label>
                     <input
                         id="booking-date"
@@ -104,7 +104,7 @@ const BookingPage: React.FC<BookingPageProps> = ({ provider, providerType, onBoo
                     />
                 </div>
 
-                <div className="bg-white p-4 rounded-lg shadow">
+                <div className="bg-white p-4 pb-20 rounded-lg shadow">
                     <h3 className="text-sm font-semibold text-gray-700 mb-2">{t.selectTime}</h3>
                     {availableTimeSlots.length > 0 ? (
                         <div className="grid grid-cols-4 gap-2">
@@ -123,7 +123,7 @@ const BookingPage: React.FC<BookingPageProps> = ({ provider, providerType, onBoo
                     )}
                 </div>
 
-                <div className="bg-white p-4 rounded-lg shadow">
+                <div className="bg-white p-4 pb-20 rounded-lg shadow">
                     <h3 className="text-sm font-semibold text-gray-700 mb-2">{t.selectService}</h3>
                     <div className="flex bg-gray-200 rounded-full p-1">
                         {(['60', '90', '120'] as const).map(duration => (
@@ -145,7 +145,7 @@ const BookingPage: React.FC<BookingPageProps> = ({ provider, providerType, onBoo
 
             {/* Confirmation Dialog */}
             {showConfirmDialog && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4 pb-20">
                     <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
                         <h3 className="text-xl font-bold text-gray-800 mb-4">Confirm Booking</h3>
                         <div className="space-y-3 mb-6">
@@ -189,3 +189,4 @@ const BookingPage: React.FC<BookingPageProps> = ({ provider, providerType, onBoo
 };
 
 export default BookingPage;
+

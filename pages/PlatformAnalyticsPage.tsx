@@ -170,15 +170,15 @@ const PlatformAnalyticsPage: React.FC = () => {
                             Therapist Network
                         </h3>
                         <div className="space-y-4">
-                            <div className="flex justify-between items-center p-4 bg-gray-50 rounded-xl">
+                            <div className="flex justify-between items-center p-4 pb-20 bg-gray-50 rounded-xl">
                                 <span className="text-gray-700 font-medium">Total Therapists</span>
                                 <span className="text-2xl font-bold text-gray-900">{analytics.totalTherapists}</span>
                             </div>
-                            <div className="flex justify-between items-center p-4 bg-green-50 rounded-xl">
+                            <div className="flex justify-between items-center p-4 pb-20 bg-green-50 rounded-xl">
                                 <span className="text-gray-700 font-medium">Live & Available</span>
                                 <span className="text-2xl font-bold text-green-600">{analytics.liveTherapists}</span>
                             </div>
-                            <div className="flex justify-between items-center p-4 bg-blue-50 rounded-xl">
+                            <div className="flex justify-between items-center p-4 pb-20 bg-blue-50 rounded-xl">
                                 <span className="text-gray-700 font-medium">Avg Bookings/Therapist</span>
                                 <span className="text-2xl font-bold text-blue-600">
                                     {analytics.averageBookingsPerProvider.toFixed(1)}
@@ -194,15 +194,15 @@ const PlatformAnalyticsPage: React.FC = () => {
                             Massage Places
                         </h3>
                         <div className="space-y-4">
-                            <div className="flex justify-between items-center p-4 bg-gray-50 rounded-xl">
+                            <div className="flex justify-between items-center p-4 pb-20 bg-gray-50 rounded-xl">
                                 <span className="text-gray-700 font-medium">Total Places</span>
                                 <span className="text-2xl font-bold text-gray-900">{analytics.totalPlaces}</span>
                             </div>
-                            <div className="flex justify-between items-center p-4 bg-green-50 rounded-xl">
+                            <div className="flex justify-between items-center p-4 pb-20 bg-green-50 rounded-xl">
                                 <span className="text-gray-700 font-medium">Live & Available</span>
                                 <span className="text-2xl font-bold text-green-600">{analytics.livePlaces}</span>
                             </div>
-                            <div className="flex justify-between items-center p-4 bg-purple-50 rounded-xl">
+                            <div className="flex justify-between items-center p-4 pb-20 bg-purple-50 rounded-xl">
                                 <span className="text-gray-700 font-medium">Avg Bookings/Place</span>
                                 <span className="text-2xl font-bold text-purple-600">
                                     {analytics.averageBookingsPerProvider.toFixed(1)}
@@ -218,16 +218,16 @@ const PlatformAnalyticsPage: React.FC = () => {
                         <Award className="w-6 h-6 text-brand-500" />
                         Hotel & Villa Network
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="p-4 bg-gradient-to-br from-brand-50 to-brand-100 rounded-xl">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-20">
+                        <div className="p-4 pb-20 bg-gradient-to-br from-brand-50 to-brand-100 rounded-xl">
                             <div className="text-sm text-gray-600 mb-1">Total Hotels</div>
                             <div className="text-3xl font-bold text-brand-600">{analytics.totalHotels}</div>
                         </div>
-                        <div className="p-4 bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl">
+                        <div className="p-4 pb-20 bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl">
                             <div className="text-sm text-gray-600 mb-1">Total Villas</div>
                             <div className="text-3xl font-bold text-orange-600">{analytics.totalVillas}</div>
                         </div>
-                        <div className="p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-xl">
+                        <div className="p-4 pb-20 bg-gradient-to-br from-green-50 to-green-100 rounded-xl">
                             <div className="text-sm text-gray-600 mb-1">Total Commissions</div>
                             <div className="text-2xl font-bold text-green-600">{formatCurrency(analytics.totalCommissions)}</div>
                         </div>
@@ -240,20 +240,20 @@ const PlatformAnalyticsPage: React.FC = () => {
                         <TrendingUp className="w-6 h-6 text-green-500" />
                         Booking Performance
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div className="p-4 bg-blue-50 rounded-xl">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pb-20">
+                        <div className="p-4 pb-20 bg-blue-50 rounded-xl">
                             <div className="text-sm text-gray-600 mb-1">Total Bookings</div>
                             <div className="text-3xl font-bold text-blue-600">{analytics.totalBookings}</div>
                         </div>
-                        <div className="p-4 bg-green-50 rounded-xl">
+                        <div className="p-4 pb-20 bg-green-50 rounded-xl">
                             <div className="text-sm text-gray-600 mb-1">Completed</div>
                             <div className="text-3xl font-bold text-green-600">{analytics.completedBookings}</div>
                         </div>
-                        <div className="p-4 bg-red-50 rounded-xl">
+                        <div className="p-4 pb-20 bg-red-50 rounded-xl">
                             <div className="text-sm text-gray-600 mb-1">Cancelled</div>
                             <div className="text-3xl font-bold text-red-600">{analytics.cancelledBookings}</div>
                         </div>
-                        <div className="p-4 bg-purple-50 rounded-xl">
+                        <div className="p-4 pb-20 bg-purple-50 rounded-xl">
                             <div className="text-sm text-gray-600 mb-1">Success Rate</div>
                             <div className="text-3xl font-bold text-purple-600">{analytics.bookingCompletionRate.toFixed(1)}%</div>
                         </div>
@@ -272,7 +272,7 @@ const PlatformAnalyticsPage: React.FC = () => {
                             {analytics.topTherapists.length > 0 ? (
                                 analytics.topTherapists.map((therapist, idx) => (
                                     <div key={therapist.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-                                        <div className="flex items-center gap-4">
+                                        <div className="flex items-center gap-4 pb-20">
                                             <div className="w-10 h-10 bg-gradient-to-br from-brand-400 to-brand-600 rounded-full flex items-center justify-center text-white font-bold">
                                                 {idx + 1}
                                             </div>
@@ -302,7 +302,7 @@ const PlatformAnalyticsPage: React.FC = () => {
                             {analytics.topPlaces.length > 0 ? (
                                 analytics.topPlaces.map((place, idx) => (
                                     <div key={place.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-                                        <div className="flex items-center gap-4">
+                                        <div className="flex items-center gap-4 pb-20">
                                             <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
                                                 {idx + 1}
                                             </div>
@@ -336,3 +336,4 @@ const PlatformAnalyticsPage: React.FC = () => {
 };
 
 export default PlatformAnalyticsPage;
+

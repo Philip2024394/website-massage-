@@ -142,7 +142,7 @@ const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({
                 </span>
             </div>
             
-            <div className="p-4">
+            <div className="p-4 pb-20">
                 <div className="grid grid-cols-3 gap-2 mb-4">
                     {place.thumbnailImages.map((img, index) => (
                         <img 
@@ -248,7 +248,7 @@ const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({
             </div>
 
             {/* Review System */}
-            <div className="p-4">
+            <div className="p-4 pb-20">
                 <ReviewSystem
                     provider={place}
                     providerType="place"
@@ -258,7 +258,7 @@ const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({
                 />
             </div>
 
-            <div className="p-4 mt-4 sticky bottom-0 bg-white border-t flex gap-2">
+            <div className="p-4 pb-20 mt-4 sticky bottom-0 bg-white border-t flex gap-2">
                  <button
                     onClick={() => {
                         console.log('🟢 WhatsApp button clicked - will play sound');
@@ -301,3 +301,4 @@ const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({
 };
 
 export default PlaceDetailPage;
+

@@ -13,7 +13,7 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
             // USER DAILY SIGN-IN
             case 'daily-signin-user-day1':
                 return (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 pb-20">
                         <div className="bg-white rounded-3xl max-w-sm w-full overflow-hidden animate-fadeIn shadow-2xl relative">
                             {/* Banner Number */}
                             <div className="absolute top-3 left-3 bg-orange-500 bg-opacity-90 text-white font-bold text-lg px-3 py-1.5 rounded-lg shadow-lg z-10">
@@ -74,7 +74,7 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
                             </div>
 
                             {/* Close Button */}
-                            <div className="p-4">
+                            <div className="p-4 pb-20">
                                 <button
                                     onClick={() => setActiveModal(null)}
                                     className="w-full px-5 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-bold text-base hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg"
@@ -88,10 +88,10 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
 
             case 'daily-signin-user-day7':
                 return (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 pb-20">
                         <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden animate-fadeIn shadow-2xl relative">
                             {/* Banner Number */}
-                            <div className="absolute top-4 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
+                            <div className="absolute top-4 pb-20 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
                                 #2
                             </div>
                             
@@ -161,10 +161,10 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
 
             case 'daily-signin-user-day30':
                 return (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 pb-20">
                         <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden animate-fadeIn shadow-2xl relative">
                             {/* Banner Number */}
-                            <div className="absolute top-4 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
+                            <div className="absolute top-4 pb-20 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
                                 #3
                             </div>
                             
@@ -230,10 +230,10 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
             // THERAPIST DAILY SIGN-IN
             case 'daily-signin-therapist-day1':
                 return (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 pb-20">
                         <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden animate-fadeIn shadow-2xl relative">
                             {/* Banner Number */}
-                            <div className="absolute top-4 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
+                            <div className="absolute top-4 pb-20 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
                                 #4
                             </div>
                             
@@ -304,10 +304,10 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
 
             case 'daily-signin-therapist-day7':
                 return (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 pb-20">
                         <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden animate-fadeIn shadow-2xl relative">
                             {/* Banner Number */}
-                            <div className="absolute top-4 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
+                            <div className="absolute top-4 pb-20 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
                                 #5
                             </div>
                             
@@ -377,10 +377,10 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
 
             case 'daily-signin-therapist-day30':
                 return (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 pb-20">
                         <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden animate-fadeIn shadow-2xl relative">
                             {/* Banner Number */}
-                            <div className="absolute top-4 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
+                            <div className="absolute top-4 pb-20 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
                                 #6
                             </div>
                             
@@ -451,10 +451,10 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
             // MASSAGE PLACE DAILY SIGN-IN
             case 'daily-signin-place-day1':
                 return (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 pb-20">
                         <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden animate-fadeIn shadow-2xl relative">
                             {/* Banner Number */}
-                            <div className="absolute top-4 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
+                            <div className="absolute top-4 pb-20 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
                                 #7
                             </div>
                             
@@ -525,10 +525,10 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
 
             case 'daily-signin-place-day7':
                 return (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 pb-20">
                         <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden animate-fadeIn shadow-2xl relative">
                             {/* Banner Number */}
-                            <div className="absolute top-4 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
+                            <div className="absolute top-4 pb-20 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
                                 #8
                             </div>
                             
@@ -601,10 +601,10 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
 
             case 'daily-signin-place-day30':
                 return (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 pb-20">
                         <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden animate-fadeIn shadow-2xl relative">
                             {/* Banner Number */}
-                            <div className="absolute top-4 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
+                            <div className="absolute top-4 pb-20 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
                                 #9
                             </div>
                             
@@ -677,10 +677,10 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
             // USER BOOKING REWARDS
             case 'booking-user-first':
                 return (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 pb-20">
                         <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden animate-fadeIn shadow-2xl relative">
                             {/* Banner Number */}
-                            <div className="absolute top-4 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
+                            <div className="absolute top-4 pb-20 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
                                 #10
                             </div>
                             
@@ -749,10 +749,10 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
 
             case 'booking-user-completed':
                 return (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 pb-20">
                         <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden animate-fadeIn shadow-2xl relative">
                             {/* Banner Number */}
-                            <div className="absolute top-4 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
+                            <div className="absolute top-4 pb-20 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
                                 #11
                             </div>
                             
@@ -816,10 +816,10 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
 
             case 'booking-user-milestone-5':
                 return (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 pb-20">
                         <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden animate-fadeIn shadow-2xl relative">
                             {/* Banner Number */}
-                            <div className="absolute top-4 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
+                            <div className="absolute top-4 pb-20 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
                                 #13
                             </div>
                             
@@ -888,10 +888,10 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
 
             case 'booking-user-milestone-10':
                 return (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 pb-20">
                         <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden animate-fadeIn shadow-2xl relative">
                             {/* Banner Number */}
-                            <div className="absolute top-4 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
+                            <div className="absolute top-4 pb-20 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
                                 #13A
                             </div>
                             
@@ -963,10 +963,10 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
             // THERAPIST BOOKING REWARDS
             case 'booking-therapist-fast':
                 return (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 pb-20">
                         <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden animate-fadeIn shadow-2xl relative">
                             {/* Banner Number */}
-                            <div className="absolute top-4 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
+                            <div className="absolute top-4 pb-20 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
                                 #14
                             </div>
                             
@@ -1028,10 +1028,10 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
 
             case 'booking-therapist-completed':
                 return (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 pb-20">
                         <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden animate-fadeIn shadow-2xl relative">
                             {/* Banner Number */}
-                            <div className="absolute top-4 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
+                            <div className="absolute top-4 pb-20 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
                                 #15
                             </div>
                             
@@ -1093,10 +1093,10 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
 
             case 'booking-therapist-5star':
                 return (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 pb-20">
                         <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden animate-fadeIn shadow-2xl relative">
                             {/* Banner Number */}
-                            <div className="absolute top-4 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
+                            <div className="absolute top-4 pb-20 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
                                 #16
                             </div>
                             
@@ -1160,10 +1160,10 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
 
             case 'booking-therapist-milestone-10':
                 return (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 pb-20">
                         <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden animate-fadeIn shadow-2xl relative">
                             {/* Banner Number */}
-                            <div className="absolute top-4 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
+                            <div className="absolute top-4 pb-20 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
                                 #17
                             </div>
                             
@@ -1236,10 +1236,10 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
             // MASSAGE PLACE BOOKING REWARDS
             case 'booking-place-fast':
                 return (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 pb-20">
                         <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden animate-fadeIn shadow-2xl relative">
                             {/* Banner Number */}
-                            <div className="absolute top-4 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
+                            <div className="absolute top-4 pb-20 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
                                 #18
                             </div>
                             
@@ -1311,10 +1311,10 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
 
             case 'booking-place-completed':
                 return (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 pb-20">
                         <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden animate-fadeIn shadow-2xl relative">
                             {/* Banner Number */}
-                            <div className="absolute top-4 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
+                            <div className="absolute top-4 pb-20 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
                                 #19
                             </div>
                             
@@ -1383,10 +1383,10 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
 
             case 'booking-place-5star':
                 return (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 pb-20">
                         <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden animate-fadeIn shadow-2xl relative">
                             {/* Banner Number */}
-                            <div className="absolute top-4 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
+                            <div className="absolute top-4 pb-20 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
                                 #20
                             </div>
                             
@@ -1448,10 +1448,10 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
 
             case 'booking-place-milestone-10':
                 return (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 pb-20">
                         <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden animate-fadeIn shadow-2xl relative">
                             {/* Banner Number */}
-                            <div className="absolute top-4 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
+                            <div className="absolute top-4 pb-20 left-4 bg-orange-500 bg-opacity-90 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-lg z-10">
                                 #21
                             </div>
                             
@@ -1529,7 +1529,7 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
                 <div className="bg-white rounded-2xl shadow-lg p-8 mb-6">
                     <h1 className="text-4xl font-bold text-gray-800 mb-2">🎨 Reward Banners Test Page</h1>
                     <p className="text-gray-600 mb-6">Click any button below to preview the reward pop-up banners</p>
-                    <div className="bg-orange-100 border-l-4 border-orange-500 p-4 rounded">
+                    <div className="bg-orange-100 border-l-4 border-orange-500 p-4 pb-20 rounded">
                         <p className="text-orange-800 font-semibold">
                             💡 Review each banner design and let me know if you want any adjustments before going live!
                         </p>
@@ -1718,7 +1718,7 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
                         <li>✓ Test animations feel smooth</li>
                         <li>✓ Ensure emoji icons display properly</li>
                     </ul>
-                    <div className="mt-6 p-4 bg-green-100 border-l-4 border-green-500 rounded">
+                    <div className="mt-6 p-4 pb-20 bg-green-100 border-l-4 border-green-500 rounded">
                         <p className="text-green-800 font-semibold">
                             ✅ Once you approve all designs, I'll integrate them into the live system!
                         </p>
@@ -1750,3 +1750,4 @@ const RewardBannersTestPage: React.FC<RewardBannersTestPageProps> = ({ onBack: _
 };
 
 export default RewardBannersTestPage;
+

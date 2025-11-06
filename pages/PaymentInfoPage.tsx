@@ -108,7 +108,7 @@ const PaymentInfoPage: React.FC<PaymentInfoPageProps> = ({ onNavigate }) => {
                                 <p className="text-gray-600 mb-4">
                                     Transfer to our Indonesian bank account. All therapist membership packages are paid via bank transfer.
                                 </p>
-                                <div className="bg-gray-50 p-4 rounded-lg">
+                                <div className="bg-gray-50 p-4 pb-20 rounded-lg">
                                     <p className="font-bold text-gray-900 mb-2">Bank Account Details:</p>
                                     <p className="text-sm text-gray-600">Bank: <strong>Bank Central Asia (BCA)</strong></p>
                                     <p className="text-sm text-gray-600">Account Name: <strong>PT IndaStreet Indonesia</strong></p>
@@ -324,7 +324,7 @@ const PaymentInfoPage: React.FC<PaymentInfoPageProps> = ({ onNavigate }) => {
                         <p className="text-xl mb-8 max-w-2xl mx-auto">
                             Our support team is here to help with billing, invoices, and refunds
                         </p>
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                        <div className="flex flex-col sm:flex-row gap-4 pb-20 justify-center">
                             <button 
                                 onClick={() => onNavigate('contact')}
                                 className="px-8 py-4 bg-white text-green-600 font-bold rounded-lg hover:bg-gray-100 transition-colors shadow-lg text-lg"
@@ -346,3 +346,4 @@ const PaymentInfoPage: React.FC<PaymentInfoPageProps> = ({ onNavigate }) => {
 };
 
 export default PaymentInfoPage;
+

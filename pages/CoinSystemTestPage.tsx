@@ -190,7 +190,7 @@ const CoinSystemTestPage: React.FC<CoinSystemTestPageProps> = ({ onBack: _onBack
                                 ))}
                             </div>
 
-                            <div className="mt-4 bg-gray-50 rounded-lg p-4">
+                            <div className="mt-4 bg-gray-50 rounded-lg p-4 pb-20">
                                 <p className="text-sm text-gray-700">
                                     💡 <strong>Tip:</strong> Open browser console (F12) to see detailed test output and any error messages.
                                 </p>
@@ -229,7 +229,7 @@ const CoinSystemTestPage: React.FC<CoinSystemTestPageProps> = ({ onBack: _onBack
                 </div>
 
                 {/* Console Tip */}
-                <div className="mt-6 bg-gray-100 rounded-xl p-4">
+                <div className="mt-6 bg-gray-100 rounded-xl p-4 pb-20">
                     <p className="text-sm text-gray-700">
                         <strong>💻 Developer Tip:</strong> You can also run tests from browser console:
                     </p>
@@ -245,3 +245,4 @@ const CoinSystemTestPage: React.FC<CoinSystemTestPageProps> = ({ onBack: _onBack
 };
 
 export default CoinSystemTestPage;
+

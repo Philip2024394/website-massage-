@@ -334,7 +334,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                 {/* Gallery Section - 6 Images with Captions */}
                 <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
                     <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Establishment</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pb-20">
                         {galleryImages.slice(0, 6).map((image, index) => (
                             <GalleryImageCard
                                 key={index}
@@ -374,7 +374,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                 {/* Amenities Section */}
                 <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
                     <h3 className="text-2xl font-bold text-gray-900 mb-4">Amenities</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pb-20">
                         {Array.isArray(amenities) && amenities.map((amenity, index) => (
                             <div key={index} className="flex items-center gap-3 text-gray-700 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-orange-300 hover:bg-orange-50 transition-colors shadow-sm">
                                 {getAmenityIcon(amenity)}
@@ -440,3 +440,4 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
 };
 
 export default MassagePlaceProfilePage;
+

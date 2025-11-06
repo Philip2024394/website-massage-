@@ -186,7 +186,7 @@ const AdminJobPostingsPage: React.FC = () => {
     return (
         <div className="space-y-6">
             {/* Header Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-20">
                 <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl p-6 border-2 border-yellow-200">
                     <div className="flex items-center justify-between">
                         <div>
@@ -219,8 +219,8 @@ const AdminJobPostingsPage: React.FC = () => {
             </div>
 
             {/* Filters */}
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-white rounded-xl p-4 pb-20 shadow-sm border border-gray-200">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-20">
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                         <input
@@ -260,7 +260,7 @@ const AdminJobPostingsPage: React.FC = () => {
                     <p className="text-gray-500 text-lg">No job postings found</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-1 gap-4 pb-20">
                     {filteredJobs.map((job) => (
                         <div 
                             key={job.$id} 
@@ -273,7 +273,7 @@ const AdminJobPostingsPage: React.FC = () => {
                                         {getStatusBadge(job.status)}
                                     </div>
                                     <p className="text-gray-600 font-medium">{job.businessName}</p>
-                                    <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                                    <div className="flex items-center gap-4 pb-20 mt-2 text-sm text-gray-500">
                                         <span className="flex items-center gap-1">
                                             <MapPin className="w-4 h-4" />
                                             {job.city}, {job.country}
@@ -294,7 +294,7 @@ const AdminJobPostingsPage: React.FC = () => {
                                 )}
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 text-sm">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-20 mb-4 text-sm">
                                 <div className="flex items-center gap-2">
                                     <User className="w-4 h-4 text-gray-400" />
                                     <span className="text-gray-600">{job.contactPerson}</span>
@@ -371,7 +371,7 @@ const AdminJobPostingsPage: React.FC = () => {
 
             {/* Details Modal */}
             {selectedJob && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 pb-20">
                     <div className="bg-white rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
                         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
                             <h2 className="text-2xl font-bold text-gray-900">
@@ -486,7 +486,7 @@ const AdminJobPostingsPage: React.FC = () => {
 
                             {/* Work Details */}
                             {isEditing && editedJob ? (
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-2 gap-4 pb-20">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Work Type</label>
                                         <input
@@ -534,7 +534,7 @@ const AdminJobPostingsPage: React.FC = () => {
                                     </div>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div className="grid grid-cols-2 gap-4 pb-20 text-sm">
                                     <div>
                                         <p className="text-gray-500">Work Type</p>
                                         <p className="font-medium">{selectedJob.workType}</p>
@@ -556,7 +556,7 @@ const AdminJobPostingsPage: React.FC = () => {
 
                             {/* Salary */}
                             {isEditing && editedJob ? (
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-2 gap-4 pb-20">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Min Salary</label>
                                         <input
@@ -729,3 +729,4 @@ const AdminJobPostingsPage: React.FC = () => {
 };
 
 export default AdminJobPostingsPage;
+

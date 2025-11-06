@@ -218,7 +218,7 @@ const BlogIndexPage: React.FC<BlogIndexPageProps> = ({
                     <h1 className="text-2xl font-bold text-gray-800">
                         <span className="text-orange-500">IndaStreet</span>
                     </h1>
-                    <div className="flex items-center gap-4 text-gray-600">
+                    <div className="flex items-center gap-4 pb-20 text-gray-600">
                         <button onClick={() => setIsMenuOpen(true)} title="Menu">
                            <BurgerMenuIcon className="w-6 h-6" />
                         </button>
@@ -399,7 +399,7 @@ const BlogIndexPage: React.FC<BlogIndexPageProps> = ({
                 {/* Popular Topics */}
                 <div className="mt-16">
                     <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Popular Topics</h2>
-                    <div className="grid md:grid-cols-4 gap-4">
+                    <div className="grid md:grid-cols-4 gap-4 pb-20">
                         {['Balinese Massage', 'Hotel Spa Management', 'Therapist Certification', 'Wellness Tourism', 'Deep Tissue Techniques', 'Career Growth', 'Client Retention', 'Aromatherapy'].map((topic, i) => (
                             <div key={i} className="bg-white rounded-lg p-4 shadow hover:shadow-lg transition-shadow text-center cursor-pointer">
                                 <span className="text-gray-700 font-semibold">{topic}</span>
@@ -414,3 +414,4 @@ const BlogIndexPage: React.FC<BlogIndexPageProps> = ({
 };
 
 export default BlogIndexPage;
+

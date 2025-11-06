@@ -150,7 +150,7 @@ const AgentDashboardPage: React.FC<AgentDashboardPageProps> = ({ agent, onLogout
             <div className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-6">
                 {/* Admin Impersonation Banner */}
                 {isAdminView && (
-                    <div className="bg-yellow-100 border-2 border-yellow-400 rounded-xl p-4 mb-6">
+                    <div className="bg-yellow-100 border-2 border-yellow-400 rounded-xl p-4 pb-20 mb-6">
                         <p className="font-bold text-sm text-yellow-900">{t.messages.impersonationBanner.replace('{agentName}', agent.name)}</p>
                         <button onClick={onStopImpersonating} className="text-sm font-semibold underline hover:text-yellow-800 mt-1">{t.messages.returnToAdmin}</button>
                     </div>
@@ -179,7 +179,7 @@ const AgentDashboardPage: React.FC<AgentDashboardPageProps> = ({ agent, onLogout
                             <Code className="w-5 h-5 text-orange-600" />
                             <h3 className="text-lg font-bold text-gray-900">Your Agent Code</h3>
                         </div>
-                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 inline-block">
+                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 pb-20 inline-block">
                             <span className="font-mono text-xl font-bold text-orange-600">{agent.agentCode}</span>
                         </div>
                     </div>
@@ -243,7 +243,7 @@ const AgentDashboardPage: React.FC<AgentDashboardPageProps> = ({ agent, onLogout
                                     </div>
                                 </div>
                                 {clients.filter(c => 'status' in c).length > 0 ? (
-                                    <div className="grid gap-4">
+                                    <div className="grid gap-4 pb-20">
                                         {clients.filter(c => 'status' in c).map(c => <ClientCard key={c.id} client={c} />)}
                                     </div>
                                 ) : (
@@ -262,7 +262,7 @@ const AgentDashboardPage: React.FC<AgentDashboardPageProps> = ({ agent, onLogout
                                     </div>
                                 </div>
                                 {clients.filter(c => 'openingTime' in c).length > 0 ? (
-                                    <div className="grid gap-4">
+                                    <div className="grid gap-4 pb-20">
                                         {clients.filter(c => 'openingTime' in c).map(c => <ClientCard key={c.id} client={c} />)}
                                     </div>
                                 ) : (
@@ -286,7 +286,7 @@ const AgentDashboardPage: React.FC<AgentDashboardPageProps> = ({ agent, onLogout
                                     </div>
                                 </div>
                                 {renewalsDue.length > 0 ? (
-                                    <div className="grid gap-4">
+                                    <div className="grid gap-4 pb-20">
                                         {renewalsDue.map(c => <RenewalCard key={c.id} client={c} />)}
                                     </div>
                                 ) : (
@@ -337,7 +337,7 @@ const AgentDashboardPage: React.FC<AgentDashboardPageProps> = ({ agent, onLogout
                                     </div>
                                     
                                     {/* Toptier Info */}
-                                    <div className="bg-green-50 border-2 border-green-300 rounded-xl p-4">
+                                    <div className="bg-green-50 border-2 border-green-300 rounded-xl p-4 pb-20">
                                         <h4 className="font-bold text-green-800 flex items-center gap-2">
                                             <span className="text-xl">🏆</span>
                                             {t.earnings.toptierInfoTitle}
@@ -370,7 +370,7 @@ const AgentDashboardPage: React.FC<AgentDashboardPageProps> = ({ agent, onLogout
                                         </div>
                                     )}
                                     
-                                    <div className="space-y-3 h-96 overflow-y-auto mb-4 border-2 border-gray-200 rounded-lg p-4 bg-gray-50">
+                                    <div className="space-y-3 h-96 overflow-y-auto mb-4 border-2 border-gray-200 rounded-lg p-4 pb-20 bg-gray-50">
                                         {messages.length > 0 ? messages.map(msg => (
                                             <div key={msg.id} className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                                                 <p className="text-sm text-gray-800">{msg.message}</p>
@@ -487,3 +487,4 @@ const AgentDashboardPage: React.FC<AgentDashboardPageProps> = ({ agent, onLogout
 };
 
 export default AgentDashboardPage;
+

@@ -320,7 +320,7 @@ const JobPostingPaymentPage: React.FC<JobPostingPaymentPageProps> = ({
                         Bank Transfer Details
                     </h3>
                     
-                    <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-4 mb-4">
+                    <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-4 pb-20 mb-4">
                         <div className="text-center mb-4">
                             <div className="text-sm text-gray-600 mb-1">Amount to Transfer</div>
                             <div className="text-3xl font-bold text-orange-600">
@@ -409,7 +409,7 @@ const JobPostingPaymentPage: React.FC<JobPostingPaymentPageProps> = ({
                 </button>
 
                 {whatsappSent && (
-                    <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4 text-center">
+                    <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4 pb-20 text-center">
                         <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-2" />
                         <p className="text-sm text-green-800 font-medium">
                             WhatsApp opened! Please attach your payment screenshot and send the message.
@@ -434,3 +434,4 @@ const JobPostingPaymentPage: React.FC<JobPostingPaymentPageProps> = ({
 };
 
 export default JobPostingPaymentPage;
+

@@ -52,7 +52,7 @@ const HotStoneMassagePage: React.FC<HotStoneMassagePageProps> = ({
                         <span className="text-black">Inda</span>
                         <span className="text-orange-500">Street</span>
                     </h1>
-                    <div className="flex items-center gap-4 text-gray-600">
+                    <div className="flex items-center gap-4 pb-20 text-gray-600">
                         <button onClick={() => setIsMenuOpen(true)} title="Menu">
                            <BurgerMenuIcon className="w-6 h-6" />
                         </button>
@@ -79,11 +79,11 @@ const HotStoneMassagePage: React.FC<HotStoneMassagePageProps> = ({
                 places={places}
             />
 
-            <div className="p-4">
+            <div className="p-4 pb-20">
             <div className="max-w-4xl mx-auto">
                 {/* Back Button */}
                 {onBack && (
-                <div className="flex items-center gap-4 mb-6">
+                <div className="flex items-center gap-4 pb-20 mb-6">
                     <button 
                         onClick={onBack}
                         className="p-2 hover:bg-gray-200 rounded-full transition-colors"
@@ -133,7 +133,7 @@ const HotStoneMassagePage: React.FC<HotStoneMassagePageProps> = ({
                 </div>
 
                 {/* Navigation Buttons */}
-                <div className="flex gap-4">
+                <div className="flex gap-4 pb-20">
                     <button 
                         onClick={() => onNavigate && onNavigate('home')}
                         className="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
@@ -154,3 +154,4 @@ const HotStoneMassagePage: React.FC<HotStoneMassagePageProps> = ({
 };
 
 export default HotStoneMassagePage;
+

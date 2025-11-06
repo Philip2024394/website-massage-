@@ -148,14 +148,14 @@ const HotelVillaCommissionVerificationPage: React.FC<HotelVillaCommissionVerific
             <main className="max-w-6xl mx-auto px-4 py-8">
                 {/* Success Message */}
                 {success && (
-                    <div className="bg-green-50 border-l-4 border-green-500 p-4 mb-6 rounded-lg">
+                    <div className="bg-green-50 border-l-4 border-green-500 p-4 pb-20 mb-6 rounded-lg">
                         <p className="text-green-700 font-medium">{success}</p>
                     </div>
                 )}
 
                 {/* Error Message */}
                 {error && (
-                    <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-lg">
+                    <div className="bg-red-50 border-l-4 border-red-500 p-4 pb-20 mb-6 rounded-lg">
                         <p className="text-red-700 font-medium">{error}</p>
                     </div>
                 )}
@@ -207,7 +207,7 @@ const HotelVillaCommissionVerificationPage: React.FC<HotelVillaCommissionVerific
                                 <p className="text-gray-500 mt-2">No pending payment verifications</p>
                             </div>
                         ) : (
-                            <div className="grid gap-4">
+                            <div className="grid gap-4 pb-20">
                                 {pendingVerifications.map(payment => (
                                     <div
                                         key={payment.id}
@@ -223,7 +223,7 @@ const HotelVillaCommissionVerificationPage: React.FC<HotelVillaCommissionVerific
                                             </div>
                                         </div>
 
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-20 mb-4">
                                             <div>
                                                 <span className="text-xs text-gray-500">Service Amount</span>
                                                 <p className="font-semibold text-gray-800">Rp {payment.serviceAmount.toLocaleString()}</p>
@@ -289,7 +289,7 @@ const HotelVillaCommissionVerificationPage: React.FC<HotelVillaCommissionVerific
 
                                         {/* Rejection Reason Input (shown when reject is clicked) */}
                                         {selectedPayment?.id === payment.id && !isSubmitting && (
-                                            <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                                            <div className="mt-4 p-4 pb-20 bg-red-50 border border-red-200 rounded-lg">
                                                 <label className="block text-sm font-semibold text-red-800 mb-2">
                                                     Rejection Reason:
                                                 </label>
@@ -409,3 +409,4 @@ const HotelVillaCommissionVerificationPage: React.FC<HotelVillaCommissionVerific
 };
 
 export default HotelVillaCommissionVerificationPage;
+

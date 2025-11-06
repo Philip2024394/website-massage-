@@ -110,7 +110,7 @@ const HotelVillaServicesSettingsPage: React.FC<HotelVillaServicesSettingsPagePro
             <main className="max-w-4xl mx-auto px-4 py-8">
                 {/* Success Message */}
                 {success && (
-                    <div className="bg-green-50 border-l-4 border-green-500 p-4 mb-6 rounded-lg animate-fade-in">
+                    <div className="bg-green-50 border-l-4 border-green-500 p-4 pb-20 mb-6 rounded-lg animate-fade-in">
                         <div className="flex items-center gap-2">
                             <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -122,7 +122,7 @@ const HotelVillaServicesSettingsPage: React.FC<HotelVillaServicesSettingsPagePro
 
                 {/* Error Message */}
                 {error && (
-                    <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-lg animate-fade-in">
+                    <div className="bg-red-50 border-l-4 border-red-500 p-4 pb-20 mb-6 rounded-lg animate-fade-in">
                         <div className="flex items-center gap-2">
                             <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -219,7 +219,7 @@ const HotelVillaServicesSettingsPage: React.FC<HotelVillaServicesSettingsPagePro
                                         </div>
                                     </div>
 
-                                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg mb-4">
+                                    <div className="p-4 pb-20 bg-blue-50 border border-blue-200 rounded-lg mb-4">
                                         <div className="flex items-start gap-3">
                                             <svg className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -235,7 +235,7 @@ const HotelVillaServicesSettingsPage: React.FC<HotelVillaServicesSettingsPagePro
                                         </div>
                                     </div>
 
-                                    <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                                    <div className="p-4 pb-20 bg-green-50 border border-green-200 rounded-lg">
                                         <div className="flex items-start gap-3">
                                             <svg className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
@@ -292,7 +292,7 @@ const HotelVillaServicesSettingsPage: React.FC<HotelVillaServicesSettingsPagePro
                                         </div>
                                     </div>
 
-                                    <div className="p-4 bg-green-50 border border-green-200 rounded-lg mb-4">
+                                    <div className="p-4 pb-20 bg-green-50 border border-green-200 rounded-lg mb-4">
                                         <p className="text-sm text-green-700">
                                             <strong>Premium Rate:</strong> Therapists will pay {commissionPercentage}% commission. Menu prices adjust automatically to maintain therapist profit.
                                         </p>
@@ -311,7 +311,7 @@ const HotelVillaServicesSettingsPage: React.FC<HotelVillaServicesSettingsPagePro
                             )}
 
                             {/* Pricing Impact Explanation */}
-                            <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                            <div className="mt-6 p-4 pb-20 bg-yellow-50 border border-yellow-200 rounded-lg">
                                 <div className="flex items-start gap-3">
                                     <svg className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
@@ -383,8 +383,8 @@ const HotelVillaServicesSettingsPage: React.FC<HotelVillaServicesSettingsPagePro
                         {/* Preview Section */}
                         <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-xl border-2 border-green-200">
                             <h4 className="text-lg font-bold text-green-800 mb-3">Settings Preview</h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="bg-white p-4 rounded-lg">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-20">
+                                <div className="bg-white p-4 pb-20 rounded-lg">
                                     <div className="flex items-center gap-2 mb-2">
                                         <Percent className="w-5 h-5 text-orange-600" />
                                         <span className="font-semibold text-gray-800">Commission</span>
@@ -392,7 +392,7 @@ const HotelVillaServicesSettingsPage: React.FC<HotelVillaServicesSettingsPagePro
                                     <p className="text-2xl font-bold text-orange-600">{commissionPercentage}%</p>
                                     <p className="text-sm text-gray-600">Per service fee</p>
                                 </div>
-                                <div className="bg-white p-4 rounded-lg">
+                                <div className="bg-white p-4 pb-20 rounded-lg">
                                     <div className="flex items-center gap-2 mb-2">
                                         <MapPin className="w-5 h-5 text-blue-600" />
                                         <span className="font-semibold text-gray-800">Service Area</span>
@@ -412,7 +412,7 @@ const HotelVillaServicesSettingsPage: React.FC<HotelVillaServicesSettingsPagePro
                                 <div className="flex-1">
                                     <h4 className="text-lg font-bold text-red-800 mb-3">⚠️ Important: Therapist Commission & Status System</h4>
                                     <div className="space-y-3 text-sm text-red-700">
-                                        <div className="bg-white p-4 rounded-lg border border-red-200">
+                                        <div className="bg-white p-4 pb-20 rounded-lg border border-red-200">
                                             <h5 className="font-semibold mb-2">📱 How Therapists Get Notified:</h5>
                                             <ul className="list-disc list-inside space-y-1">
                                                 <li>When commission rates change, therapists receive instant notifications</li>
@@ -422,7 +422,7 @@ const HotelVillaServicesSettingsPage: React.FC<HotelVillaServicesSettingsPagePro
                                             </ul>
                                         </div>
                                         
-                                        <div className="bg-white p-4 rounded-lg border border-red-200">
+                                        <div className="bg-white p-4 pb-20 rounded-lg border border-red-200">
                                             <h5 className="font-semibold mb-2">💰 Commission Payment & Status System:</h5>
                                             <ul className="list-disc list-inside space-y-1">
                                                 <li><strong>Guest pays:</strong> Service cost + {commissionPercentage}% markup</li>
@@ -432,7 +432,7 @@ const HotelVillaServicesSettingsPage: React.FC<HotelVillaServicesSettingsPagePro
                                             </ul>
                                         </div>
 
-                                        <div className="bg-yellow-50 border border-yellow-300 p-4 rounded-lg">
+                                        <div className="bg-yellow-50 border border-yellow-300 p-4 pb-20 rounded-lg">
                                             <h5 className="font-semibold text-yellow-800 mb-2">🔄 Example Commission Flow:</h5>
                                             <div className="text-yellow-700">
                                                 <p>1. Guest books 90-minute massage (Base: Rp 300,000)</p>
@@ -504,3 +504,4 @@ const HotelVillaServicesSettingsPage: React.FC<HotelVillaServicesSettingsPagePro
 };
 
 export default HotelVillaServicesSettingsPage;
+

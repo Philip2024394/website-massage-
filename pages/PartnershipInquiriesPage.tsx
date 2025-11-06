@@ -26,7 +26,7 @@ const PartnershipInquiriesPage: React.FC<PartnershipInquiriesPageProps> = ({ onN
                     <h1 className="text-2xl font-bold">
                         <span className="text-black">Inda</span><span className="text-orange-500">Street</span>
                     </h1>
-                    <div className="flex items-center gap-4 text-gray-600">
+                    <div className="flex items-center gap-4 pb-20 text-gray-600">
                         <button onClick={() => setIsMenuOpen(true)} title="Menu">
                            <BurgerMenuIcon className="w-6 h-6" />
                         </button>
@@ -241,7 +241,7 @@ const PartnershipInquiriesPage: React.FC<PartnershipInquiriesPageProps> = ({ onN
                         
                         <div className="max-w-2xl mx-auto">
                             <form className="space-y-4">
-                                <div className="grid md:grid-cols-2 gap-4">
+                                <div className="grid md:grid-cols-2 gap-4 pb-20">
                                     <div>
                                         <label className="block text-gray-700 font-bold mb-2">Full Name *</label>
                                         <input
@@ -262,7 +262,7 @@ const PartnershipInquiriesPage: React.FC<PartnershipInquiriesPageProps> = ({ onN
                                     </div>
                                 </div>
 
-                                <div className="grid md:grid-cols-2 gap-4">
+                                <div className="grid md:grid-cols-2 gap-4 pb-20">
                                     <div>
                                         <label className="block text-gray-700 font-bold mb-2">Email *</label>
                                         <input
@@ -320,3 +320,4 @@ const PartnershipInquiriesPage: React.FC<PartnershipInquiriesPageProps> = ({ onN
 };
 
 export default PartnershipInquiriesPage;
+

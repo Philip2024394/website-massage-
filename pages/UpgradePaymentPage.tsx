@@ -141,7 +141,7 @@ const UpgradePaymentPage: React.FC<UpgradePaymentPageProps> = ({ onBack }) => {
 
     if (submitSuccess) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center p-4">
+            <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center p-4 pb-20">
                 <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center">
                     <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                         <CheckCircle className="w-12 h-12 text-green-500" />
@@ -150,7 +150,7 @@ const UpgradePaymentPage: React.FC<UpgradePaymentPageProps> = ({ onBack }) => {
                     <p className="text-gray-600 mb-6">
                         Your payment proof has been submitted successfully. We'll verify it within 24 hours and you'll receive a notification once approved.
                     </p>
-                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
+                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 pb-20 mb-6">
                         <p className="text-sm text-orange-700">
                             <strong>Payment Code:</strong> {paymentCode}
                         </p>
@@ -267,13 +267,13 @@ const UpgradePaymentPage: React.FC<UpgradePaymentPageProps> = ({ onBack }) => {
                                 </div>
                             ) : (
                                 <div className="space-y-3 mb-4">
-                                    <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
+                                    <div className="bg-yellow-50 border border-yellow-200 p-4 pb-20 rounded-lg">
                                         <p className="text-sm text-yellow-800">Please select a payment method below to see bank details.</p>
                                     </div>
                                 </div>
                             )}
 
-                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 pb-20">
                                 <p className="text-sm text-blue-700">
                                     <strong>💡 Tip:</strong> Use mobile banking or ATM to transfer. After transferring, upload your proof of payment below.
                                 </p>
@@ -287,7 +287,7 @@ const UpgradePaymentPage: React.FC<UpgradePaymentPageProps> = ({ onBack }) => {
                             <h3 className="text-xl font-bold text-gray-900 mb-4">Upload Payment Proof</h3>
 
                             {error && (
-                                <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+                                <div className="bg-red-50 border border-red-200 rounded-lg p-4 pb-20 flex items-start gap-3">
                                     <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
                                     <p className="text-sm text-red-700">{error}</p>
                                 </div>
@@ -432,3 +432,4 @@ const UpgradePaymentPage: React.FC<UpgradePaymentPageProps> = ({ onBack }) => {
 };
 
 export default UpgradePaymentPage;
+

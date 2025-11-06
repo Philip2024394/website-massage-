@@ -85,7 +85,7 @@ const WebsiteManagementPage: React.FC<WebsiteManagementPageProps> = ({
             <div className="bg-white shadow-sm border-b">
                 <div className="max-w-4xl mx-auto px-4 py-4">
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-4 pb-20">
                             <button
                                 onClick={onBack}
                                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -134,7 +134,7 @@ const WebsiteManagementPage: React.FC<WebsiteManagementPageProps> = ({
                             
                             {websiteUrl && websiteTitle ? (
                                 <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-lg p-6">
-                                    <div className="flex items-start gap-4">
+                                    <div className="flex items-start gap-4 pb-20">
                                         <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
                                             <Globe className="w-8 h-8 text-white" />
                                         </div>
@@ -193,13 +193,13 @@ const WebsiteManagementPage: React.FC<WebsiteManagementPageProps> = ({
                                 </div>
                             </div>
                             
-                            <div className="bg-white/50 rounded-lg p-4 space-y-3">
+                            <div className="bg-white/50 rounded-lg p-4 pb-20 space-y-3">
                                 <p className="text-sm text-gray-700">
                                     Add your website to be featured in our <strong>Indastreet Partners</strong> directory for better SEO ranking and exposure.
                                     Being part of the Indastreet Partnership will drive additional traffic to your website.
                                 </p>
                                 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-20 mt-4">
                                     <div className="flex items-center gap-2 text-sm text-green-700">
                                         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                                         <span>Increased Web Traffic</span>
@@ -306,7 +306,7 @@ const WebsiteManagementPage: React.FC<WebsiteManagementPageProps> = ({
                                 <Star className="w-6 h-6 text-blue-600" />
                                 <h3 className="text-lg font-semibold text-blue-900">SEO Benefits</h3>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-20">
                                 <div className="flex items-start gap-3">
                                     <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
                                     <div>
@@ -353,3 +353,4 @@ const WebsiteManagementPage: React.FC<WebsiteManagementPageProps> = ({
 };
 
 export default WebsiteManagementPage;
+

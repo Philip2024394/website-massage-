@@ -26,7 +26,7 @@ const EmployerInfoPage: React.FC<EmployerInfoPageProps> = ({ onNavigate }) => {
                     <h1 className="text-2xl font-bold">
                         <span className="text-black">Inda</span><span className="text-orange-500">Street</span>
                     </h1>
-                    <div className="flex items-center gap-4 text-gray-600">
+                    <div className="flex items-center gap-4 pb-20 text-gray-600">
                         <button onClick={() => setIsMenuOpen(true)} title="Menu">
                            <BurgerMenuIcon className="w-6 h-6" />
                         </button>
@@ -335,3 +335,4 @@ const EmployerInfoPage: React.FC<EmployerInfoPageProps> = ({ onNavigate }) => {
 };
 
 export default EmployerInfoPage;
+

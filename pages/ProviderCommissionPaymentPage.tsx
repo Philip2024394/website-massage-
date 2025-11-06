@@ -143,7 +143,7 @@ const ProviderCommissionPaymentPage: React.FC<ProviderCommissionPaymentPageProps
             <main className="max-w-4xl mx-auto px-4 py-8">
                 {/* Warning Banner */}
                 {pendingPayments.length > 0 && (
-                    <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 rounded-lg backdrop-blur-sm">
+                    <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 pb-20 mb-6 rounded-lg backdrop-blur-sm">
                         <div className="flex items-start">
                             <svg className="w-6 h-6 text-yellow-600 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -163,14 +163,14 @@ const ProviderCommissionPaymentPage: React.FC<ProviderCommissionPaymentPageProps
 
                 {/* Success Message */}
                 {success && (
-                    <div className="bg-green-50 border-l-4 border-green-500 p-4 mb-6 rounded-lg">
+                    <div className="bg-green-50 border-l-4 border-green-500 p-4 pb-20 mb-6 rounded-lg">
                         <p className="text-green-700 font-medium">{success}</p>
                     </div>
                 )}
 
                 {/* Error Message */}
                 {error && (
-                    <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-lg">
+                    <div className="bg-red-50 border-l-4 border-red-500 p-4 pb-20 mb-6 rounded-lg">
                         <p className="text-red-700 font-medium">{error}</p>
                     </div>
                 )}
@@ -268,7 +268,7 @@ const ProviderCommissionPaymentPage: React.FC<ProviderCommissionPaymentPageProps
 
                         {/* Bank Details */}
                         {bankDetails && (
-                            <div className="bg-gray-50 rounded-xl p-4 mb-6">
+                            <div className="bg-gray-50 rounded-xl p-4 pb-20 mb-6">
                                 <h3 className="font-bold text-gray-700 mb-3">Payment Details</h3>
                                 
                                 {bankDetails.preferredPaymentMethod === 'bank_transfer' && (
@@ -353,7 +353,7 @@ const ProviderCommissionPaymentPage: React.FC<ProviderCommissionPaymentPageProps
                         </div>
 
                         {/* Instructions */}
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 pb-20 mb-6">
                             <h4 className="font-bold text-blue-800 mb-2">📸 Screenshot Guidelines</h4>
                             <ul className="text-sm text-blue-700 space-y-1 list-disc list-inside">
                                 <li>Ensure payment amount matches: <strong>Rp {selectedPayment.commissionAmount.toLocaleString()}</strong></li>
@@ -393,3 +393,4 @@ const ProviderCommissionPaymentPage: React.FC<ProviderCommissionPaymentPageProps
 };
 
 export default ProviderCommissionPaymentPage;
+

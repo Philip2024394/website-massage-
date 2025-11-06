@@ -54,7 +54,7 @@ const AcceptBookingPage: React.FC = () => {
 
   if (error || !booking) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 pb-20">
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
           <div className="text-red-500 text-6xl mb-4"></div>
           <h1 className="text-2xl font-bold text-gray-800 mb-2">Booking Not Available</h1>
@@ -88,3 +88,4 @@ const AcceptBookingPage: React.FC = () => {
 };
 
 export default AcceptBookingPage;
+

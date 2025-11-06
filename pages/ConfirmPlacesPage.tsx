@@ -574,7 +574,7 @@ const ConfirmPlacesPage: React.FC = () => {
 
       {/* Edit Place Modal */}
       {showEditModal && editingPlace && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 pb-20">
           <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
@@ -589,7 +589,7 @@ const ConfirmPlacesPage: React.FC = () => {
 
               <div className="space-y-6">
                 {/* Basic Information */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-20">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Business Name *
@@ -681,7 +681,7 @@ const ConfirmPlacesPage: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Main Business Image
                   </label>
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-4 pb-20">
                     {editingPlace.mainImage && (
                       <img 
                         src={editingPlace.mainImage} 
@@ -704,8 +704,8 @@ const ConfirmPlacesPage: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Service Pricing (IDR)
                   </label>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="border border-gray-300 rounded-lg p-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-20">
+                    <div className="border border-gray-300 rounded-lg p-4 pb-20">
                       <h4 className="font-medium text-gray-800 mb-2">Standard Package</h4>
                       <input
                         type="text"
@@ -721,7 +721,7 @@ const ConfirmPlacesPage: React.FC = () => {
                         placeholder="150000"
                       />
                     </div>
-                    <div className="border border-gray-300 rounded-lg p-4">
+                    <div className="border border-gray-300 rounded-lg p-4 pb-20">
                       <h4 className="font-medium text-gray-800 mb-2">Premium Package</h4>
                       <input
                         type="text"
@@ -737,7 +737,7 @@ const ConfirmPlacesPage: React.FC = () => {
                         placeholder="250000"
                       />
                     </div>
-                    <div className="border border-gray-300 rounded-lg p-4">
+                    <div className="border border-gray-300 rounded-lg p-4 pb-20">
                       <h4 className="font-medium text-gray-800 mb-2">Luxury Package</h4>
                       <input
                         type="text"
@@ -820,3 +820,4 @@ const ConfirmPlacesPage: React.FC = () => {
 };
 
 export default ConfirmPlacesPage;
+

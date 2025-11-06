@@ -8,10 +8,10 @@ interface SportsMassagePageProps {
 
 const SportsMassagePage: React.FC<SportsMassagePageProps> = ({ onBack, onNavigate, t: _t }) => {
     return (
-        <div className="min-h-screen bg-gray-50 p-4">
+        <div className="min-h-screen bg-gray-50 p-4 pb-20">
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
-                <div className="flex items-center gap-4 mb-6">
+                <div className="flex items-center gap-4 pb-20 mb-6">
                     <button 
                         onClick={onBack}
                         className="p-2 hover:bg-gray-200 rounded-full transition-colors"
@@ -50,7 +50,7 @@ const SportsMassagePage: React.FC<SportsMassagePageProps> = ({ onBack, onNavigat
 
                         <div>
                             <h3 className="text-xl font-semibold text-gray-800 mb-3">Types of Sports Massage</h3>
-                            <div className="grid md:grid-cols-2 gap-4 text-gray-600">
+                            <div className="grid md:grid-cols-2 gap-4 pb-20 text-gray-600">
                                 <div>
                                     <strong>Pre-Event:</strong> Light, stimulating massage before competition
                                 </div>
@@ -79,7 +79,7 @@ const SportsMassagePage: React.FC<SportsMassagePageProps> = ({ onBack, onNavigat
                 </div>
 
                 {/* Navigation Buttons */}
-                <div className="flex gap-4">
+                <div className="flex gap-4 pb-20">
                     <button 
                         onClick={() => onNavigate('home')}
                         className="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
@@ -99,3 +99,4 @@ const SportsMassagePage: React.FC<SportsMassagePageProps> = ({ onBack, onNavigat
 };
 
 export default SportsMassagePage;
+

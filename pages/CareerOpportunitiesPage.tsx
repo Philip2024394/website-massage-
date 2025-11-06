@@ -26,7 +26,7 @@ const CareerOpportunitiesPage: React.FC<CareerOpportunitiesPageProps> = ({ onNav
                     <h1 className="text-2xl font-bold text-gray-800">
                         <span className="text-orange-500">IndaStreet</span>
                     </h1>
-                    <div className="flex items-center gap-4 text-gray-600">
+                    <div className="flex items-center gap-4 pb-20 text-gray-600">
                         <button onClick={() => setIsMenuOpen(true)} title="Menu">
                            <BurgerMenuIcon className="w-6 h-6" />
                         </button>
@@ -135,7 +135,7 @@ const CareerOpportunitiesPage: React.FC<CareerOpportunitiesPageProps> = ({ onNav
                         <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Open Positions</h2>
                         <div className="space-y-6">
                             <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
-                                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 pb-20">
                                     <div className="flex-grow">
                                         <div className="flex items-center gap-3 mb-2">
                                             <span className="text-2xl">💻</span>
@@ -161,7 +161,7 @@ const CareerOpportunitiesPage: React.FC<CareerOpportunitiesPageProps> = ({ onNav
                             </div>
 
                             <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
-                                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 pb-20">
                                     <div className="flex-grow">
                                         <div className="flex items-center gap-3 mb-2">
                                             <span className="text-2xl">📱</span>
@@ -187,7 +187,7 @@ const CareerOpportunitiesPage: React.FC<CareerOpportunitiesPageProps> = ({ onNav
                             </div>
 
                             <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
-                                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 pb-20">
                                     <div className="flex-grow">
                                         <div className="flex items-center gap-3 mb-2">
                                             <span className="text-2xl">📊</span>
@@ -213,7 +213,7 @@ const CareerOpportunitiesPage: React.FC<CareerOpportunitiesPageProps> = ({ onNav
                             </div>
 
                             <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
-                                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 pb-20">
                                     <div className="flex-grow">
                                         <div className="flex items-center gap-3 mb-2">
                                             <span className="text-2xl">🤝</span>
@@ -276,7 +276,7 @@ const CareerOpportunitiesPage: React.FC<CareerOpportunitiesPageProps> = ({ onNav
                         
                         <div className="max-w-2xl mx-auto">
                             <form className="space-y-4">
-                                <div className="grid md:grid-cols-2 gap-4">
+                                <div className="grid md:grid-cols-2 gap-4 pb-20">
                                     <div>
                                         <label className="block text-gray-700 font-bold mb-2">Full Name *</label>
                                         <input
@@ -365,3 +365,4 @@ const CareerOpportunitiesPage: React.FC<CareerOpportunitiesPageProps> = ({ onNav
 };
 
 export default CareerOpportunitiesPage;
+

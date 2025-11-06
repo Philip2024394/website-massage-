@@ -236,7 +236,7 @@ const DrawerButtonsPage: React.FC = () => {
                         </div>
                     </div>
                 ) : (
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 pb-20">
                         <p className="text-sm text-blue-800">
                             <strong>Current API Key:</strong> {googleMapsApiKey || 'Not configured'}
                         </p>
@@ -246,7 +246,7 @@ const DrawerButtonsPage: React.FC = () => {
                     </div>
                 )}
 
-                <div className="mt-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                <div className="mt-4 p-4 pb-20 bg-yellow-50 rounded-lg border border-yellow-200">
                     <h4 className="font-semibold text-yellow-900 mb-2">📍 How to get Google Maps API Key</h4>
                     <ol className="text-sm text-yellow-800 space-y-1 list-decimal list-inside">
                         <li>Go to <a href="https://console.cloud.google.com/" target="_blank" rel="noopener noreferrer" className="underline">Google Cloud Console</a></li>
@@ -330,7 +330,7 @@ const DrawerButtonsPage: React.FC = () => {
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Preview
                                 </label>
-                                <div className="bg-white rounded-lg p-4 border border-gray-300">
+                                <div className="bg-white rounded-lg p-4 pb-20 border border-gray-300">
                                     <div className="flex items-center space-x-3">
                                         {formData.icon && (
                                             <img 
@@ -423,7 +423,7 @@ const DrawerButtonsPage: React.FC = () => {
             </div>
 
             {links.length > 0 && (
-                <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="mt-6 p-4 pb-20 bg-blue-50 rounded-lg border border-blue-200">
                     <h4 className="font-semibold text-blue-900 mb-2">💡 How it works</h4>
                     <ul className="text-sm text-blue-800 space-y-1">
                         <li>• These custom buttons will appear in the side drawer menu of your app</li>
@@ -439,3 +439,4 @@ const DrawerButtonsPage: React.FC = () => {
 };
 
 export default DrawerButtonsPage;
+

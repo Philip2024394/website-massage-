@@ -26,7 +26,7 @@ const PressMediaPage: React.FC<PressMediaPageProps> = ({ onNavigate }) => {
                     <h1 className="text-2xl font-bold text-gray-800">
                         <span className="text-orange-500">IndaStreet</span>
                     </h1>
-                    <div className="flex items-center gap-4 text-gray-600">
+                    <div className="flex items-center gap-4 pb-20 text-gray-600">
                         <button onClick={() => setIsMenuOpen(true)} title="Menu">
                            <BurgerMenuIcon className="w-6 h-6" />
                         </button>
@@ -100,7 +100,7 @@ const PressMediaPage: React.FC<PressMediaPageProps> = ({ onNavigate }) => {
                         <p className="text-gray-600 mb-6">
                             For press inquiries, interviews, and media partnerships, please reach out to our communications team.
                         </p>
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                        <div className="flex flex-col sm:flex-row gap-4 pb-20 justify-center items-center">
                             <a href="mailto:press@indastreet.com" className="px-8 py-3 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 transition-colors">
                                 Email: press@indastreet.com
                             </a>
@@ -113,7 +113,7 @@ const PressMediaPage: React.FC<PressMediaPageProps> = ({ onNavigate }) => {
                         <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Latest Press Releases</h2>
                         <div className="space-y-6">
                             <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
-                                <div className="flex items-start gap-4">
+                                <div className="flex items-start gap-4 pb-20">
                                     <div className="w-16 h-16 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
                                         <span className="text-2xl">📢</span>
                                     </div>
@@ -129,7 +129,7 @@ const PressMediaPage: React.FC<PressMediaPageProps> = ({ onNavigate }) => {
                             </div>
 
                             <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
-                                <div className="flex items-start gap-4">
+                                <div className="flex items-start gap-4 pb-20">
                                     <div className="w-16 h-16 bg-teal-100 rounded-lg flex items-center justify-center flex-shrink-0">
                                         <span className="text-2xl">🏆</span>
                                     </div>
@@ -145,7 +145,7 @@ const PressMediaPage: React.FC<PressMediaPageProps> = ({ onNavigate }) => {
                             </div>
 
                             <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
-                                <div className="flex items-start gap-4">
+                                <div className="flex items-start gap-4 pb-20">
                                     <div className="w-16 h-16 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
                                         <span className="text-2xl">💰</span>
                                     </div>
@@ -226,7 +226,7 @@ const PressMediaPage: React.FC<PressMediaPageProps> = ({ onNavigate }) => {
                         <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">Submit Media Inquiry</h2>
                         <div className="max-w-2xl mx-auto">
                             <form className="space-y-4">
-                                <div className="grid md:grid-cols-2 gap-4">
+                                <div className="grid md:grid-cols-2 gap-4 pb-20">
                                     <div>
                                         <label className="block text-gray-700 font-bold mb-2">Name *</label>
                                         <input
@@ -294,3 +294,4 @@ const PressMediaPage: React.FC<PressMediaPageProps> = ({ onNavigate }) => {
 };
 
 export default PressMediaPage;
+
