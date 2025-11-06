@@ -7,6 +7,7 @@ import { analyticsService } from '../services/analyticsService';
 import { databases, ID } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import { useTranslations } from '../lib/useTranslations';
+import { vscodeTranslateService } from '../lib/vscodeTranslateService';
 import QRCodeGenerator from 'qrcode';
 // import Header from '../components/dashboard/Header';
 import PushNotificationSettings from '../components/PushNotificationSettings';
@@ -1990,6 +1991,10 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({ onLogout, thera
                                                     key={lang.code}
                                                     onClick={() => {
                                                         setSelectedLanguage(lang.code);
+                                                        // Activate VS Code Google Translate for English/Indonesian only
+                                                        if (lang.code === 'en' || lang.code === 'id') {
+                                                            vscodeTranslateService.activateOnLanguageChange(lang.code as 'en' | 'id');
+                                                        }
                                                         setShowLandingPage(false);
                                                     }}
                                                     className="flex flex-col items-center gap-1 sm:gap-2 p-2 sm:p-3 bg-transparent hover:bg-yellow-50/30 rounded-xl transition-all transform hover:scale-105"

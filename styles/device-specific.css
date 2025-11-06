@@ -1,0 +1,361 @@
+/**
+ * Device-Specific CSS Classes and Styles
+ * Automatically applied based on device detection
+ */
+
+/* Base Device Types */
+.device-mobile {
+  --touch-target-size: 44px;
+  --content-padding: 1rem;
+  --text-scale: 1;
+}
+
+.device-tablet {
+  --touch-target-size: 40px;
+  --content-padding: 1.5rem;
+  --text-scale: 1.1;
+}
+
+.device-desktop {
+  --touch-target-size: 36px;
+  --content-padding: 2rem;
+  --text-scale: 1;
+}
+
+/* Platform-Specific Optimizations */
+.platform-android {
+  /* Android-specific optimizations */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.platform-android .location-button {
+  /* Enhanced GPS button for Android */
+  min-height: 48px;
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  border-radius: 12px;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+}
+
+.platform-ios {
+  /* iOS-specific optimizations */
+  -webkit-overflow-scrolling: touch;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.platform-ios .button {
+  /* iOS-style buttons */
+  border-radius: 10px;
+  font-weight: 500;
+}
+
+/* Browser-Specific Optimizations */
+.browser-chrome {
+  /* Chrome optimizations */
+  scrollbar-width: thin;
+}
+
+.browser-safari {
+  /* Safari optimizations */
+  -webkit-font-smoothing: antialiased;
+}
+
+.browser-samsung {
+  /* Samsung Internet optimizations */
+  touch-action: pan-y;
+}
+
+/* Screen Size Adaptations */
+.screen-small {
+  /* Small screens < 640px */
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.screen-medium {
+  /* Medium screens 640px - 1024px */
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.screen-large,
+.screen-xlarge {
+  /* Large screens > 1024px */
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* Orientation-Specific Styles */
+.orientation-portrait {
+  /* Portrait mode optimizations */
+  --nav-height: 60px;
+  --footer-height: 64px;
+}
+
+.orientation-landscape.device-mobile {
+  /* Landscape mobile optimizations */
+  --nav-height: 48px;
+  --footer-height: 56px;
+}
+
+/* Touch Capabilities */
+.has-touch {
+  /* Touch-enabled devices */
+  --min-touch-target: 44px;
+  cursor: default;
+}
+
+.has-touch .button,
+.has-touch .card {
+  min-height: var(--min-touch-target);
+  min-width: var(--min-touch-target);
+}
+
+.has-touch .clickable {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* High DPI Displays */
+.high-dpi {
+  /* Retina/High DPI optimizations */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+.high-dpi .icon {
+  /* Crisp icons on high DPI */
+  transform: translateZ(0);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* GPS and Location Features */
+.has-gps .location-features {
+  display: block;
+}
+
+.has-gps .location-button {
+  background: linear-gradient(135deg, #2196F3, #1976D2);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.has-gps .location-button:hover {
+  background: linear-gradient(135deg, #1976D2, #1565C0);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+}
+
+.has-gps .location-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.2);
+}
+
+/* Performance Optimizations */
+.quality-low img {
+  image-rendering: pixelated;
+}
+
+.quality-medium img {
+  image-rendering: auto;
+}
+
+.quality-high img {
+  image-rendering: high-quality;
+}
+
+.animations-none * {
+  animation: none !important;
+  transition: none !important;
+}
+
+.animations-reduced * {
+  animation-duration: 0.2s !important;
+  transition-duration: 0.2s !important;
+}
+
+.animations-full {
+  /* Full animations enabled */
+  animation-duration: initial;
+  transition-duration: initial;
+}
+
+.rendering-simple {
+  /* Simplified rendering for low-end devices */
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+.rendering-enhanced {
+  /* Enhanced rendering for capable devices */
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* PWA Capabilities */
+.pwa-capable .install-prompt {
+  display: block;
+}
+
+.pwa-capable .offline-features {
+  display: block;
+}
+
+/* Offline States */
+.offline {
+  /* Offline mode styles */
+  filter: grayscale(0.3);
+}
+
+.offline .online-only {
+  display: none;
+}
+
+.offline .offline-indicator {
+  display: block;
+  background: #f44336;
+  color: white;
+  padding: 8px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Camera Capabilities */
+.has-camera .camera-features {
+  display: block;
+}
+
+.has-camera .upload-button {
+  background: linear-gradient(135deg, #FF9800, #F57C00);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+/* Device-Specific Component Overrides */
+.device-mobile .card {
+  padding: 1rem;
+  margin: 0.5rem;
+  border-radius: 12px;
+}
+
+.device-tablet .card {
+  padding: 1.5rem;
+  margin: 1rem;
+  border-radius: 16px;
+}
+
+.device-desktop .card {
+  padding: 2rem;
+  margin: 1.5rem;
+  border-radius: 20px;
+}
+
+/* Platform-Specific Animations */
+.platform-android .slide-in {
+  animation: android-slide-in 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.platform-ios .slide-in {
+  animation: ios-slide-in 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+@keyframes android-slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes ios-slide-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Connection-Aware Loading */
+.connection-slow .loading-skeleton {
+  animation: none;
+  background: #f0f0f0;
+}
+
+.connection-fast .loading-skeleton {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Responsive Typography */
+.device-mobile .text-responsive {
+  font-size: calc(14px + 0.25vw);
+}
+
+.device-tablet .text-responsive {
+  font-size: calc(15px + 0.3vw);
+}
+
+.device-desktop .text-responsive {
+  font-size: calc(16px + 0.2vw);
+}
+
+/* Device-Optimized Shadows */
+.device-mobile .shadow-device {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.device-tablet .shadow-device {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.device-desktop .shadow-device {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* Accessibility Improvements */
+.has-touch .focus-visible {
+  outline: 3px solid #2196F3;
+  outline-offset: 2px;
+}
+
+.device-mobile .focus-visible {
+  outline-width: 4px;
+  outline-offset: 3px;
+}
+
+/* Print Styles for All Devices */
+@media print {
+  .device-mobile,
+  .device-tablet,
+  .device-desktop {
+    font-size: 12pt;
+    line-height: 1.4;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+}

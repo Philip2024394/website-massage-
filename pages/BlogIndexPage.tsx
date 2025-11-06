@@ -19,7 +19,7 @@ interface BlogIndexPageProps {
     onNavigate?: (page: string) => void;
     // Add navigation props for the drawer
     onMassageJobsClick?: () => void;
-    onHotelPortalClick?: () => void;
+
     onVillaPortalClick?: () => void;
     onTherapistPortalClick?: () => void;
     onMassagePlacePortalClick?: () => void;
@@ -35,7 +35,7 @@ interface BlogIndexPageProps {
 const BlogIndexPage: React.FC<BlogIndexPageProps> = ({ 
     onNavigate,
     onMassageJobsClick,
-    onHotelPortalClick,
+
     onVillaPortalClick,
     onTherapistPortalClick,
     onMassagePlacePortalClick,
@@ -231,7 +231,7 @@ const BlogIndexPage: React.FC<BlogIndexPageProps> = ({
                 isOpen={isMenuOpen}
                 onClose={() => setIsMenuOpen(false)}
                 onMassageJobsClick={onMassageJobsClick}
-                onHotelPortalClick={onHotelPortalClick}
+
                 onVillaPortalClick={onVillaPortalClick}
                 onTherapistPortalClick={onTherapistPortalClick}
                 onMassagePlacePortalClick={onMassagePlacePortalClick}

@@ -5,7 +5,7 @@ interface HotStoneMassagePageProps {
     onBack?: () => void;
     onNavigate?: (page: string) => void;
     onMassageJobsClick?: () => void;
-    onHotelPortalClick?: () => void;
+
     onVillaPortalClick?: () => void;
     onTherapistPortalClick?: () => void;
     onMassagePlacePortalClick?: () => void;
@@ -29,7 +29,7 @@ const HotStoneMassagePage: React.FC<HotStoneMassagePageProps> = ({
     onBack, 
     onNavigate,
     onMassageJobsClick,
-    onHotelPortalClick,
+
     onVillaPortalClick,
     onTherapistPortalClick,
     onMassagePlacePortalClick,

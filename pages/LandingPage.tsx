@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import Button from '../components/Button';
 import { useTranslations } from '../lib/useTranslations';
 import { locationService } from '../services/locationService';
+import { deviceService } from '../services/deviceService';
+import { vscodeTranslateService } from '../lib/vscodeTranslateService';
 import type { UserLocation } from '../types';
 import type { Language } from '../types/pageTypes';
 
@@ -59,9 +61,17 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
     // Auto-detect location on component mount for mobile devices
     useEffect(() => {
         const autoDetectLocation = async () => {
-            // Only auto-detect for mobile devices (especially Android)
-            if (locationService.isMobileDevice() && locationService.isGeolocationSupported()) {
-                console.log('📱 Mobile device detected, pre-loading location...');
+            // Pre-load location for mobile devices with device optimization
+            const deviceInfo = deviceService.getDeviceInfo();
+            
+            if (deviceInfo.type === 'mobile' && deviceInfo.supportsGPS) {
+                console.log('📱 Mobile device detected with GPS, pre-loading location...');
+                console.log('📊 Device details:', {
+                    platform: deviceInfo.platform,
+                    browser: deviceInfo.browser,
+                    connectionType: deviceInfo.connectionType,
+                    hasTouch: deviceInfo.hasTouch
+                });
                 
                 try {
                     // Pre-load location silently in the background
@@ -96,10 +106,23 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
     const handleEnterApp = async () => {
         console.log('🔘 Enter button clicked!');
         console.log('Selected language:', selectedLanguage);
-        console.log('🔧 Device info:', {
-            isAndroid: locationService.isAndroidDevice(),
-            isMobile: locationService.isMobileDevice(),
-            supportsGPS: locationService.isGeolocationSupported()
+        
+        // Get comprehensive device information
+        const deviceInfo = deviceService.getDeviceInfo();
+        const optimizations = deviceService.getOptimizations();
+        
+        console.log('🔧 Enhanced device detection:', {
+            type: deviceInfo.type,
+            platform: deviceInfo.platform,
+            browser: deviceInfo.browser,
+            screenSize: deviceInfo.screenSize,
+            orientation: deviceInfo.orientation,
+            hasTouch: deviceInfo.hasTouch,
+            supportsGPS: deviceInfo.supportsGPS,
+            isHighDPI: deviceInfo.isHighDPI,
+            connectionType: deviceInfo.connectionType,
+            locationAccuracy: optimizations.locationAccuracy,
+            preloadStrategy: optimizations.preloadStrategy
         });
         
         setIsDetectingLocation(true);
@@ -107,7 +130,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
         try {
             console.log('📍 Detecting user location automatically...');
             
-            // Automatically get user's GPS location
+            // Automatically get user's GPS location with device optimization
             const userLocation = await locationService.requestLocationWithFallback();
             
             console.log('✅ Location detected:', userLocation);
@@ -199,6 +222,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
                                                 console.log('Language selected:', lang.name);
                                                 const newLanguage = lang.code as Language;
                                                 setSelectedLanguage(newLanguage);
+                                                
+                                                // Activate VS Code Google Translate for selected language
+                                                vscodeTranslateService.activateOnLanguageChange(newLanguage as 'en' | 'id');
                                                 
                                                 // Also call the parent's language select handler
                                                 if (onLanguageSelect) {

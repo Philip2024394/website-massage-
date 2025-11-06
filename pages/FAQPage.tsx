@@ -12,7 +12,7 @@ interface FAQPageProps {
     onNavigate?: (page: string) => void;
     // Add navigation props for the drawer
     onMassageJobsClick?: () => void;
-    onHotelPortalClick?: () => void;
+
     onVillaPortalClick?: () => void;
     onTherapistPortalClick?: () => void;
     onMassagePlacePortalClick?: () => void;
@@ -28,7 +28,7 @@ interface FAQPageProps {
 const FAQPage: React.FC<FAQPageProps> = ({ 
     onNavigate,
     onMassageJobsClick,
-    onHotelPortalClick,
+
     onVillaPortalClick,
     onTherapistPortalClick,
     onMassagePlacePortalClick,
@@ -244,7 +244,7 @@ const FAQPage: React.FC<FAQPageProps> = ({
                 isOpen={isMenuOpen}
                 onClose={() => setIsMenuOpen(false)}
                 onMassageJobsClick={onMassageJobsClick}
-                onHotelPortalClick={onHotelPortalClick}
+
                 onVillaPortalClick={onVillaPortalClick}
                 onTherapistPortalClick={onTherapistPortalClick}
                 onMassagePlacePortalClick={onMassagePlacePortalClick}

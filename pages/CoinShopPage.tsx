@@ -17,7 +17,7 @@ interface CoinShopPageProps {
     onAgentPortalClick?: () => void;
     onTermsClick?: () => void;
     onPrivacyClick?: () => void;
-    onHotelPortalClick?: () => void;
+
     onVillaPortalClick?: () => void;
     onTherapistPortalClick?: () => void;
     onMassagePlacePortalClick?: () => void;

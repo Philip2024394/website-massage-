@@ -3,6 +3,8 @@ import { AppFooterLayout } from './components/layout/AppFooterLayout';
 import { AppRouter } from './AppRouter';
 import { useAllHooks } from './hooks/useAllHooks';
 import { useTranslations } from './lib/useTranslations';
+import { vscodeTranslateService } from './lib/vscodeTranslateService';
+import { DeviceStylesProvider } from './components/DeviceAware';
 import BookingPopup from './components/BookingPopup';
 import BookingStatusTracker from './components/BookingStatusTracker';
 import ScheduleBookingPopup from './components/ScheduleBookingPopup';
@@ -54,6 +56,10 @@ const App = () => {
     // Start booking expiration service on mount
     useEffect(() => {
         bookingExpirationService.start();
+        
+        // Initialize VS Code translation service
+        vscodeTranslateService.init();
+        
         return () => {
             bookingExpirationService.stop();
         };
@@ -65,6 +71,13 @@ const App = () => {
     
     // Use the actual language from hooks, not hardcoded
     const { language, setLanguage } = state;
+    
+    // Global VS Code translation activation on language change
+    useEffect(() => {
+        if (language) {
+            vscodeTranslateService.activateOnLanguageChange(language);
+        }
+    }, [language]);
     
     // Get translations using the actual language state - ALWAYS call this hook
     const { t } = useTranslations(language);
@@ -157,9 +170,10 @@ const App = () => {
     };
 
     return (
-        <AppLayout
-            isFullScreen={state.isFullScreen}
-        >
+        <DeviceStylesProvider>
+            <AppLayout
+                isFullScreen={state.isFullScreen}
+            >
             <div className={state.isFullScreen ? "flex-grow" : "flex-grow pb-16"}>
                 <AppRouter
                     page={state.page}
@@ -315,7 +329,8 @@ const App = () => {
                 hotelVillaName={scheduleBookingInfo?.hotelVillaName}
                 hotelVillaType={scheduleBookingInfo?.hotelVillaType}
             />
-        </AppLayout>
+            </AppLayout>
+        </DeviceStylesProvider>
     );
 };
 

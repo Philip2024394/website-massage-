@@ -9,7 +9,7 @@ interface MassageBaliPageProps {
     onSelectTherapist?: (therapistId: number) => void;
     // Navigation props for the drawer
     onMassageJobsClick?: () => void;
-    onHotelPortalClick?: () => void;
+
     onVillaPortalClick?: () => void;
     onTherapistPortalClick?: () => void;
     onMassagePlacePortalClick?: () => void;
@@ -25,7 +25,7 @@ interface MassageBaliPageProps {
 const MassageBaliPage: React.FC<MassageBaliPageProps> = ({ 
     onNavigate, 
     onMassageJobsClick,
-    onHotelPortalClick,
+
     onVillaPortalClick,
     onTherapistPortalClick,
     onMassagePlacePortalClick,
@@ -178,7 +178,7 @@ const MassageBaliPage: React.FC<MassageBaliPageProps> = ({
                 isOpen={isMenuOpen}
                 onClose={() => setIsMenuOpen(false)}
                 onMassageJobsClick={onMassageJobsClick}
-                onHotelPortalClick={onHotelPortalClick}
+
                 onVillaPortalClick={onVillaPortalClick}
                 onTherapistPortalClick={onTherapistPortalClick}
                 onMassagePlacePortalClick={onMassagePlacePortalClick}

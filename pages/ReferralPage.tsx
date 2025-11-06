@@ -19,7 +19,7 @@ interface ReferralPageProps {
     // HomePage header functionality props
     onAgentPortalClick?: () => void;
     onCustomerPortalClick?: () => void;
-    onHotelPortalClick?: () => void;
+
     onVillaPortalClick?: () => void;
     onTherapistPortalClick?: () => void;
     onMassagePlacePortalClick?: () => void;
@@ -39,7 +39,7 @@ const ReferralPage: React.FC<ReferralPageProps> = ({
     onNavigate: _onNavigate,
     onAgentPortalClick,
     onCustomerPortalClick,
-    onHotelPortalClick,
+
     onVillaPortalClick,
     onTherapistPortalClick,
     onMassagePlacePortalClick,
@@ -240,7 +240,7 @@ const ReferralPage: React.FC<ReferralPageProps> = ({
                 isOpen={isMenuOpen}
                 onClose={() => setIsMenuOpen(false)}
                 onMassageJobsClick={onMassageJobsClick}
-                onHotelPortalClick={onHotelPortalClick}
+
                 onVillaPortalClick={onVillaPortalClick}
                 onTherapistPortalClick={onTherapistPortalClick}
                 onMassagePlacePortalClick={onMassagePlacePortalClick}

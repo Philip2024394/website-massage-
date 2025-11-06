@@ -5,7 +5,7 @@ interface SwedishMassagePageProps {
     onBack?: () => void;
     onNavigate?: (page: string) => void;
     onMassageJobsClick?: () => void;
-    onHotelPortalClick?: () => void;
+
     onVillaPortalClick?: () => void;
     onTherapistPortalClick?: () => void;
     onMassagePlacePortalClick?: () => void;
@@ -29,7 +29,7 @@ const SwedishMassagePage: React.FC<SwedishMassagePageProps> = ({
     onBack, 
     onNavigate,
     onMassageJobsClick,
-    onHotelPortalClick,
+
     onVillaPortalClick,
     onTherapistPortalClick,
     onMassagePlacePortalClick,

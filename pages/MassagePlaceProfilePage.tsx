@@ -47,7 +47,7 @@ interface MassagePlaceProfilePageProps {
     // Navigation callbacks for AppDrawer
     onMassageJobsClick?: () => void;
     onTherapistJobsClick?: () => void;
-    onHotelPortalClick?: () => void;
+
     onVillaPortalClick?: () => void;
     onTherapistPortalClick?: () => void;
     onMassagePlacePortalClick?: () => void;
@@ -74,7 +74,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
     loggedInCustomer,
     onMassageJobsClick,
     onTherapistJobsClick,
-    onHotelPortalClick,
+
     onVillaPortalClick,
     onTherapistPortalClick: _onTherapistPortalClick,
     onMassagePlacePortalClick,
@@ -301,7 +301,6 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                 onClose={() => setIsMenuOpen(false)}
                 onMassageJobsClick={onMassageJobsClick}
                 onTherapistPortalClick={onTherapistJobsClick || (() => {})}
-                onHotelPortalClick={onHotelPortalClick || (() => {})}
                 onVillaPortalClick={onVillaPortalClick || (() => {})}
                 onMassagePlacePortalClick={onMassagePlacePortalClick || (() => {})}
                 onAgentPortalClick={onAgentPortalClick || (() => {})}

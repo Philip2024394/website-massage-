@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { translationsService } from './appwriteService';
 import { translations as fallbackTranslations } from '../translations/index';
+import { vscodeTranslateService } from './vscodeTranslateService';
 
 const CACHE_KEY = 'indostreet_translations';
 const CACHE_EXPIRY_MS = 1000 * 60 * 60; // 1 hour
@@ -51,6 +52,9 @@ export function useTranslations(language?: 'en' | 'id') {
 
     const loadTranslations = useCallback(async () => {
         try {
+            // Activate VS Code Google Translate for current language
+            vscodeTranslateService.activateOnLanguageChange(currentLanguage);
+            
             // Check cache first
             const cached = getCachedTranslations();
             if (cached && cached[currentLanguage]) {

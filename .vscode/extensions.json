@@ -1,5 +1,10 @@
 {
     "recommendations": [
-        "github.copilot"
-    ]
+        "github.copilot",
+        "funkyremi.vscode-google-translate",
+        "ms-vscode.vscode-typescript-next",
+        "bradlc.vscode-tailwindcss",
+        "esbenp.prettier-vscode"
+    ],
+    "unwantedRecommendations": []
 }

@@ -6,7 +6,7 @@ import { AppDrawer } from '../components/AppDrawer';
 interface BalineseMassagePageProps {
     onNavigate?: (page: string) => void;
     onMassageJobsClick?: () => void;
-    onHotelPortalClick?: () => void;
+
     onVillaPortalClick?: () => void;
     onTherapistPortalClick?: () => void;
     onMassagePlacePortalClick?: () => void;
@@ -28,7 +28,7 @@ const BurgerMenuIcon = ({ className = 'w-6 h-6' }) => (
 const BalineseMassagePage: React.FC<BalineseMassagePageProps> = ({ 
     onNavigate,
     onMassageJobsClick,
-    onHotelPortalClick,
+
     onVillaPortalClick,
     onTherapistPortalClick,
     onMassagePlacePortalClick,
@@ -117,7 +117,6 @@ const BalineseMassagePage: React.FC<BalineseMassagePageProps> = ({
                 isOpen={isMenuOpen}
                 onClose={() => setIsMenuOpen(false)}
                 onMassageJobsClick={onMassageJobsClick}
-                onHotelPortalClick={onHotelPortalClick || (() => {})}
                 onVillaPortalClick={onVillaPortalClick || (() => {})}
                 onTherapistPortalClick={onTherapistPortalClick || (() => {})}
                 onMassagePlacePortalClick={onMassagePlacePortalClick || (() => {})}

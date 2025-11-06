@@ -7,6 +7,7 @@ import { analyticsService } from '../services/analyticsService';
 import { databases, ID } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import QRCodeGenerator from 'qrcode';
+import { vscodeTranslateService } from '../lib/vscodeTranslateService';
 // import Header from '../components/dashboard/Header';
 import PushNotificationSettings from '../components/PushNotificationSettings';
 // Removed chat import - chat system removed
@@ -2012,6 +2013,8 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                                                 <button
                                                     key={lang.code}
                                                     onClick={() => {
+                                                        // Activate VS Code Google Translate for selected language
+                                                        vscodeTranslateService.activateOnLanguageChange(lang.code as 'en' | 'id');
                                                         setShowLandingPage(false);
                                                     }}
                                                     className="flex flex-col items-center gap-1 sm:gap-2 p-2 sm:p-3 bg-transparent hover:bg-yellow-50/30 rounded-xl transition-all transform hover:scale-105"

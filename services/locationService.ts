@@ -1,5 +1,6 @@
 // Location service for automatic GPS detection and management
 import type { UserLocation } from '../types';
+import { deviceService } from './deviceService';
 
 export interface LocationOptions {
     enableHighAccuracy?: boolean;
@@ -56,10 +57,18 @@ class LocationService {
      */
     public async getCurrentLocation(options?: LocationOptions): Promise<UserLocation> {
         console.log('📍 LocationService: Getting current location...');
+        
+        // Get device-specific optimizations
+        const deviceInfo = deviceService.getDeviceInfo();
+        const deviceOptimizations = deviceService.getOptimizations();
+        
         console.log('🔧 Device info:', {
-            isGeolocationSupported: this.isGeolocationSupported(),
-            isAndroidDevice: this.isAndroidDevice(),
-            isMobileDevice: this.isMobileDevice(),
+            type: deviceInfo.type,
+            platform: deviceInfo.platform,
+            browser: deviceInfo.browser,
+            supportsGPS: deviceInfo.supportsGPS,
+            hasTouch: deviceInfo.hasTouch,
+            locationAccuracy: deviceOptimizations.locationAccuracy,
             userAgent: navigator.userAgent
         });
         
@@ -67,26 +76,36 @@ class LocationService {
         if (!this.isGeolocationSupported()) {
             throw this.createLocationError(0, 'Geolocation is not supported on this device');
         }
-        
+
         // Check cache first (for recent locations)
         if (this.currentLocation && this.isLocationCacheValid()) {
             console.log('📍 Using cached location:', this.currentLocation);
             return this.currentLocation;
         }
-        
+
+        // Device-optimized GPS options
         const defaultOptions: LocationOptions = {
-            enableHighAccuracy: true, // Use GPS for high accuracy
-            timeout: 15000, // 15 seconds timeout
-            maximumAge: 60000, // Accept 1-minute old position
+            enableHighAccuracy: deviceOptimizations.locationAccuracy === 'high', // Use device-optimized accuracy
+            timeout: deviceInfo.platform === 'android' ? 15000 : 10000, // Android gets longer timeout
+            maximumAge: deviceInfo.type === 'mobile' ? 60000 : 300000, // Mobile gets fresher location
             ...options
         };
         
         return new Promise((resolve, reject) => {
-            console.log('📍 Requesting GPS location with options:', defaultOptions);
+            console.log('📍 Requesting GPS location with device-optimized options:', defaultOptions);
             
             navigator.geolocation.getCurrentPosition(
                 async (position) => {
                     console.log('✅ GPS location obtained:', position);
+                    console.log('📊 GPS accuracy:', position.coords.accuracy, 'meters');
+                    console.log('🎯 GPS coordinates:', {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude,
+                        altitude: position.coords.altitude,
+                        heading: position.coords.heading,
+                        speed: position.coords.speed
+                    });
+                    
                     try {
                         const location = await this.processGPSPosition(position);
                         this.cacheLocation(location);
@@ -103,9 +122,7 @@ class LocationService {
                 defaultOptions
             );
         });
-    }
-    
-    /**
+    }    /**
      * Convert GPS coordinates to address using reverse geocoding
      */
     private async processGPSPosition(position: GeolocationPosition): Promise<UserLocation> {
