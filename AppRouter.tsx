@@ -611,11 +611,11 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             
         case 'hotelDashboard': 
             // @ts-ignore - Prop interface mismatch 
-            return isHotelLoggedIn && <HotelDashboardPage onLogout={handleHotelLogout} t={t.hotelDashboard} /> || null;
+            return isHotelLoggedIn && <HotelDashboardPage onLogout={handleHotelLogout} onNavigate={(page: string) => setPage(page as Page)} t={t.hotelDashboard} /> || null;
             
         case 'villaDashboard': 
             // @ts-ignore - Prop interface mismatch 
-            return isVillaLoggedIn && <VillaDashboardPage onLogout={handleVillaLogout} t={t.villaDashboard} /> || null;
+            return isVillaLoggedIn && <VillaDashboardPage onLogout={handleVillaLogout} onNavigate={(page: string) => setPage(page as Page)} t={t.villaDashboard} /> || null;
             
         case 'employerJobPosting': 
             // @ts-ignore - Prop interface mismatch 
@@ -839,6 +839,15 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onBook={handleNavigateToBooking}
                 onBack={handleBackToHome}
                 onNavigate={(page: Page) => setPage(page as Page)}
+                venueName={isHotelLoggedIn ? 'Hotel' : isVillaLoggedIn ? 'Villa' : 'Venue'}
+                onBookingSubmit={async (bookingData: any) => {
+                    try {
+                        await handleCreateBooking(bookingData);
+                    } catch (error) {
+                        console.error('Booking submission failed:', error);
+                        throw error;
+                    }
+                }}
                 t={t}
             />;
             

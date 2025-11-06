@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import type { Therapist, Place, Booking } from '../types';
 import { BookingStatus, ProviderResponseStatus } from '../types';
-import Button from '../components/Button';
 import { useAutoTranslation } from '../hooks/useAutoTranslation';
 import type { LanguageCode } from '../services/autoTranslationService';
 
@@ -51,8 +50,6 @@ const HotelVillaGuestBookingPage: React.FC<HotelVillaGuestBookingPageProps> = ({
         
         const todayMidnight = new Date();
         todayMidnight.setHours(0, 0, 0, 0);
-        
-        const isToday = selectedDateMidnight.getTime() === todayMidnight.getTime();
         
         for (let hour = 8; hour <= 22; hour++) {
             const slotTime = new Date(selectedDate);

@@ -204,6 +204,12 @@ const LiveMenuDemo: React.FC = () => {
                         onBook={handleBooking}
                         onBack={() => console.log('Back clicked')}
                         onNavigate={(page) => console.log('Navigate to:', page)}
+                        venueName="Demo Hotel & Villa"
+                        onBookingSubmit={async (bookingData: any) => {
+                            console.log('Demo booking submitted:', bookingData);
+                            // In demo mode, just log the booking data
+                            return Promise.resolve();
+                        }}
                         t={mockTranslations}
                     />
                 </div>

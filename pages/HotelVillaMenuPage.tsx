@@ -1,38 +1,87 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import type { Therapist, Place } from '../types';
+import type { Therapist, Place, Booking } from '../types';
 import { HotelVillaServiceStatus } from '../types';
 import type { Page } from '../types/pageTypes';
 import PlaceCard from '../components/PlaceCard';
 import TherapistCard from '../components/TherapistCard';
+import HotelVillaGuestBookingPage from './HotelVillaGuestBookingPage';
 import { getRandomTherapistImageRandom } from '../utils/therapistImageUtils';
 import { useTranslations } from '../lib/useTranslations';
+import type { LanguageCode } from '../services/autoTranslationService';
 
 interface HotelVillaMenuPageProps {
     venueId: string;
+    venueName: string;
     logo?: string;
     therapists: Therapist[];
     places: Place[];
     language?: string;
-    onBook: (provider: Therapist | Place, type: 'therapist' | 'place') => void;
+    onBook?: (provider: Therapist | Place, type: 'therapist' | 'place') => void;
+    onBookingSubmit?: (bookingData: Partial<Booking>) => Promise<void>;
     onBack?: () => void;
     onNavigate?: (page: Page) => void;
     t?: any;
 }
 
 const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({ 
-    venueId, 
+    venueId,
+    venueName,
     therapists, 
     places,
     language: propLanguage = 'en',
-    onBook 
+    onBook,
+    onBookingSubmit
 }) => {
     const [activeTab, setActiveTab] = useState<'therapists' | 'places'>('therapists');
     const [loading, setLoading] = useState(true);
     const [showLandingPage, setShowLandingPage] = useState(true);
+    const [showBookingModal, setShowBookingModal] = useState(false);
+    const [selectedProvider, setSelectedProvider] = useState<Therapist | Place | null>(null);
+    const [selectedProviderType, setSelectedProviderType] = useState<'therapist' | 'place'>('therapist');
     const [currentLanguage] = useState<'en' | 'id'>(propLanguage as 'en' | 'id');
     
     // Use translations with current language
     const { t } = useTranslations(currentLanguage);
+
+    // Handle booking modal opening
+    const handleBookProvider = (provider: Therapist | Place, type: 'therapist' | 'place') => {
+        setSelectedProvider(provider);
+        setSelectedProviderType(type);
+        setShowBookingModal(true);
+    };
+
+    // Handle booking submission with notification
+    const handleBookingSubmit = async (bookingData: Partial<Booking>) => {
+        try {
+            // Play notification sound for booking submission
+            const audio = new Audio('/booking-notification.mp3');
+            audio.volume = 0.7;
+            audio.play().catch(e => console.log('Audio play failed:', e));
+
+            // Include hotel/villa information in booking data
+            const completeBookingData = {
+                ...bookingData,
+                hotelVillaId: parseInt(venueId),
+                hotelVillaName: venueName,
+                providerId: typeof selectedProvider?.id === 'string' ? parseInt(selectedProvider.id) : selectedProvider?.id,
+                providerType: selectedProviderType,
+            };
+
+            // Call the booking submission handler
+            if (onBookingSubmit) {
+                await onBookingSubmit(completeBookingData);
+            } else if (onBook && selectedProvider) {
+                // Fallback to legacy onBook handler
+                onBook(selectedProvider, selectedProviderType);
+            }
+
+            // Close the booking modal
+            setShowBookingModal(false);
+            setSelectedProvider(null);
+        } catch (error) {
+            console.error('Booking submission error:', error);
+        }
+    };
 
     useEffect(() => {
         // Minimal loading simulation
@@ -127,23 +176,32 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
                     </div>
 
                     <div className="bg-white border-b">
-                        <div className="flex">
+                        <div className="flex bg-gray-200 rounded-full p-1 mx-4 my-4">
                             <button
                                 onClick={() => setActiveTab('therapists')}
-                                className="flex-1 py-3 px-4 text-center font-medium transition-all bg-orange-500 text-white border-b-2 border-orange-600"
+                                className={`w-1/2 py-2 px-4 rounded-full flex items-center justify-center gap-2 text-sm font-semibold transition-colors duration-300 ${
+                                    activeTab === 'therapists'
+                                        ? 'bg-orange-500 text-white shadow'
+                                        : 'text-gray-600'
+                                }`}
                             >
                                 Room Service ({liveTherapists.length})
                             </button>
                             <button
                                 onClick={() => setActiveTab('places')}
-                                className={`flex-1 py-3 px-4 text-center font-medium transition-all ${
+                                className={`w-1/2 py-2 px-4 rounded-full flex items-center justify-center gap-2 text-sm font-semibold transition-colors duration-300 ${
                                     activeTab === 'places'
-                                        ? 'text-orange-600 border-b-2 border-orange-500 bg-orange-50'
-                                        : 'text-gray-600 hover:text-orange-500'
+                                        ? 'bg-orange-500 text-white shadow'
+                                        : 'text-gray-600'
                                 }`}
                             >
                                 Massage Places ({livePlaces.length})
                             </button>
+                        </div>
+                        <div className="text-center pb-4">
+                            <p className="text-sm text-gray-600 font-medium">
+                                Allow 1 Hour For Therapist To Arrive
+                            </p>
                         </div>
                     </div>
 
@@ -158,7 +216,7 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
                                             </div>
                                             <TherapistCard
                                                 therapist={therapist}
-                                                onBook={(provider) => onBook(provider, 'therapist')}
+                                                onBook={(provider) => handleBookProvider(provider, 'therapist')}
                                                 onRate={() => {}}
                                                 onIncrementAnalytics={() => {}}
                                                 t={t}
@@ -187,7 +245,7 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
                                             </div>
                                             <PlaceCard
                                                 place={place}
-                                                onClick={() => onBook(place, 'place')}
+                                                onClick={() => handleBookProvider(place, 'place')}
                                                 onRate={() => {}}
                                             />
                                         </div>
@@ -205,6 +263,26 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
                                 </div>
                             )
                         )}
+                    </div>
+                </div>
+            )}
+
+            {/* Booking Modal */}
+            {showBookingModal && selectedProvider && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden m-4">
+                        <HotelVillaGuestBookingPage
+                            provider={selectedProvider}
+                            providerType={selectedProviderType}
+                            hotelVillaId={parseInt(venueId)}
+                            hotelVillaName={venueName}
+                            selectedLanguage={currentLanguage as LanguageCode}
+                            onBookingSubmit={handleBookingSubmit}
+                            onBack={() => {
+                                setShowBookingModal(false);
+                                setSelectedProvider(null);
+                            }}
+                        />
                     </div>
                 </div>
             )}

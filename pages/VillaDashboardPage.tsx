@@ -36,13 +36,14 @@ interface ProviderCard {
 
 interface VillaDashboardPageProps {
     onLogout: () => void;
+    onNavigate?: (page: string) => void;
     therapists?: Therapist[];
     places?: Place[];
     villaId?: string;
     initialTab?: 'analytics' | 'discounts' | 'profile' | 'menu' | 'feedback' | 'concierge' | 'commissions' | 'notifications' | 'membership';
 }
 
-const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({ onLogout, therapists = [], places = [], initialTab = 'analytics' }) => {
+const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({ onLogout, onNavigate, therapists = [], places = [], initialTab = 'analytics' }) => {
     const { t } = useTranslations();
     
     // Therapist banner images pool for randomization - Using Appwrite curated collection
@@ -1797,7 +1798,11 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({ onLogout, thera
                             <button
                                 onClick={() => {
                                     // Navigate to coin rewards page
-                                    window.open('/coin-shop', '_blank');
+                                    if (onNavigate) {
+                                        onNavigate('coin-shop');
+                                    } else {
+                                        window.open('/coin-shop', '_blank');
+                                    }
                                 }}
                                 className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors text-gray-700 hover:bg-gray-100"
                             >

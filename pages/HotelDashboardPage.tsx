@@ -38,18 +38,19 @@ interface ProviderCard {
 
 interface HotelDashboardPageProps {
     onLogout: () => void;
+    onNavigate?: (page: string) => void;
     therapists?: Therapist[];
     places?: Place[];
     hotelId?: string;
     initialTab?: 'analytics' | 'discounts' | 'profile' | 'menu' | 'feedback' | 'concierge' | 'commissions' | 'notifications' | 'membership' | 'services-settings';
 }
 
-const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, therapists = [], places = [], hotelId = '1', initialTab = 'analytics' }) => {
+const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, onNavigate, therapists = [], places = [], hotelId = '1', initialTab = 'analytics' }) => {
     
     // Therapist banner images pool for randomization - Using Appwrite curated collection
     const therapistBannerImages = getAllTherapistImages();
 
-    const [activeTab, setActiveTab] = useState<'analytics' | 'discounts' | 'profile' | 'menu' | 'feedback' | 'concierge' | 'commissions' | 'notifications' | 'membership' | 'chat' | 'services-settings'>(initialTab);
+    const [activeTab, setActiveTab] = useState<'analytics' | 'discounts' | 'profile' | 'menu' | 'feedback' | 'concierge' | 'commissions' | 'notifications' | 'membership' | 'services-settings'>(initialTab);
     const [customWelcomeMessage, setCustomWelcomeMessage] = useState('Welcome to our exclusive wellness experience');
     const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
     
@@ -497,30 +498,6 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
 
     const renderTabContent = () => {
         switch (activeTab) {
-            case 'chat':
-                return (
-                    <div className="space-y-6">
-                        <div className="bg-white rounded-xl shadow-sm p-6">
-                            <h2 className="text-2xl font-bold text-gray-900 mb-2">Chat with Support</h2>
-                            <p className="text-sm text-gray-600 mb-4">
-                                Need help? Chat with our IndaStreet support team for assistance with your hotel account, 
-                                QR codes, provider management, commissions, or any questions you may have.
-                            </p>
-                        </div>
-                        {/* Chat system removed - using WhatsApp booking */}
-                        {/* <MemberChatWindow
-                            userId={hotelId || '1'}
-                            userName="Hotel Manager"
-                            userType="hotel"
-                            onClose={() => setActiveTab('analytics')}
-                        /> */}
-                        <div className="bg-white rounded-xl shadow-sm p-6">
-                            <p className="text-sm text-gray-600">
-                                For support, please use the chat icon in the footer to connect with our team via WhatsApp.
-                            </p>
-                        </div>
-                    </div>
-                );
             case 'analytics':
                 return (
                     <HotelAnalyticsSection 
@@ -1753,21 +1730,6 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
 
                     <button
                         onClick={() => {
-                            setActiveTab('chat');
-                            setIsSideDrawerOpen(false);
-                        }}
-                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                            activeTab === 'chat'
-                                ? 'bg-orange-500 text-white shadow-md'
-                                : 'text-gray-700 hover:bg-gray-100'
-                        }`}
-                    >
-                        <MessageSquare className="w-5 h-5" />
-                        <span className="font-medium">Chat Support</span>
-                    </button>
-
-                    <button
-                        onClick={() => {
                             setActiveTab('services-settings');
                             setIsSideDrawerOpen(false);
                         }}
@@ -1799,7 +1761,12 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                     <button
                         onClick={() => {
                             // Navigate to coin rewards page
-                            window.open('/coin-shop', '_blank');
+                            if (onNavigate) {
+                                onNavigate('coin-shop');
+                                setIsSideDrawerOpen(false);
+                            } else {
+                                window.open('/coin-shop', '_blank');
+                            }
                         }}
                         className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-gray-700 hover:bg-gray-100"
                     >
