@@ -170,22 +170,6 @@ const Footer: React.FC<FooterProps> = ({
                         <span className="text-xs mt-1 text-black">Dashboard</span>
                     </button>
 
-                    {/* Chat */}
-                    <button 
-                        onClick={onChatClick}
-                        className="flex flex-col items-center justify-center flex-1 h-full relative"
-                    >
-                        <div className="relative">
-                            <ChatIcon className="w-6 h-6 text-orange-500" />
-                            {unreadChats > 0 && (
-                                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">
-                                    {unreadChats > 9 ? '9+' : unreadChats}
-                                </span>
-                            )}
-                        </div>
-                        <span className="text-xs mt-1 text-black">Chat</span>
-                    </button>
-
                     {/* Notifications */}
                     <button 
                         onClick={onNotificationsClick}
@@ -200,6 +184,15 @@ const Footer: React.FC<FooterProps> = ({
                             )}
                         </div>
                         <span className="text-xs mt-1 text-black">Notifications</span>
+                    </button>
+
+                    {/* Profile */}
+                    <button 
+                        onClick={onProfileClick}
+                        className="flex flex-col items-center justify-center flex-1 h-full"
+                    >
+                        <UserIcon className="w-6 h-6 text-orange-500" />
+                        <span className="text-xs mt-1 text-black">Profile</span>
                     </button>
 
                     {/* Home */}
@@ -229,15 +222,6 @@ const Footer: React.FC<FooterProps> = ({
                         <span className="text-xs mt-1 text-black">Dashboard</span>
                     </button>
 
-                    {/* QR Menu */}
-                    <button 
-                        onClick={onMenuClick}
-                        className="flex flex-col items-center justify-center flex-1 h-full"
-                    >
-                        <MenuIcon className="w-6 h-6 text-orange-500" />
-                        <span className="text-xs mt-1 text-black">QR Menu</span>
-                    </button>
-
                     {/* Notifications */}
                     <button 
                         onClick={onNotificationsClick}
@@ -252,6 +236,15 @@ const Footer: React.FC<FooterProps> = ({
                             )}
                         </div>
                         <span className="text-xs mt-1 text-black">Notifications</span>
+                    </button>
+
+                    {/* QR Menu */}
+                    <button 
+                        onClick={onMenuClick}
+                        className="flex flex-col items-center justify-center flex-1 h-full"
+                    >
+                        <MenuIcon className="w-6 h-6 text-orange-500" />
+                        <span className="text-xs mt-1 text-black">QR Menu</span>
                     </button>
 
                     {/* Profile */}

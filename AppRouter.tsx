@@ -216,6 +216,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         handleChatWithBusyTherapist,
         handleShowRegisterPromptForChat,
         handleIncrementAnalytics,
+        handleNavigateToHotelLogin,
         handleNavigateToVillaLogin,
         handleNavigateToMassagePlaceLogin,
         handleNavigateToAdminLogin,
@@ -308,6 +309,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 // @ts-ignore - Analytics type mismatch
                 onIncrementAnalytics={handleIncrementAnalytics}
                 onMassageTypesClick={() => setPage('massageTypes')}
+                onHotelPortalClick={handleNavigateToHotelLogin}
                 onVillaPortalClick={handleNavigateToVillaLogin}
                 onTherapistPortalClick={handleNavigateToTherapistLogin}
                 onMassagePlacePortalClick={handleNavigateToMassagePlaceLogin}

@@ -1,7 +1,7 @@
 import React from 'react';
 import { 
     Home, Briefcase, Users, Building, MapPin, Heart, 
-    Info, BookOpen, Phone, HelpCircle,
+    Info, BookOpen, Phone, HelpCircle, Hotel,
     X as CloseIcon
 } from 'lucide-react';
 
@@ -14,6 +14,7 @@ interface AppDrawerProps {
     
     // Navigation callbacks
     onMassageJobsClick?: () => void;
+    onHotelPortalClick?: () => void;
     onVillaPortalClick?: () => void;
     onTherapistPortalClick?: () => void;
     onMassagePlacePortalClick?: () => void;
@@ -34,6 +35,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
     onClose,
     t,
     onMassageJobsClick,
+    onHotelPortalClick,
     onVillaPortalClick,
     onTherapistPortalClick,
     onMassagePlacePortalClick,
@@ -69,6 +71,8 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
             'home.menu.sections.company': 'Company',
             'home.menu.massageJobs': 'Massage Jobs',
             'home.menu.massageJobsDesc': 'Find opportunities',
+            'home.menu.hotel': 'Hotel',
+            'home.menu.hotelDesc': 'Hotel partner portal',
             'home.menu.villa': 'Villa',
             'home.menu.villaDesc': 'Villa partner portal',
             'home.menu.therapists': 'Therapists',
@@ -169,6 +173,21 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                 {translate('home.menu.sections.loginCreateAccount')}
                             </h3>
                             <div className="space-y-2">
+                                <button 
+                                    onClick={() => handleItemClick(onHotelPortalClick)}
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-orange-500 group transform hover:scale-105"
+                                >
+                                    <div className="p-2 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg">
+                                        <Hotel className="w-5 h-5 text-white" />
+                                    </div>
+                                    <div className="flex-grow">
+                                        <p className="font-semibold text-gray-800 group-hover:text-orange-600 transition-colors">
+                                            {translate('home.menu.hotel')}
+                                        </p>
+                                        <p className="text-xs text-gray-500">{translate('home.menu.hotelDesc')}</p>
+                                    </div>
+                                </button>
+
                                 <button 
                                     onClick={() => handleItemClick(onVillaPortalClick)}
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-pink-500 group transform hover:scale-105"

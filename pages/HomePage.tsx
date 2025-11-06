@@ -36,6 +36,7 @@ interface HomePageProps {
     onCreateProfileClick: () => void;
     onAgentPortalClick: () => void;
     onCustomerPortalClick?: () => void; // Add customer portal callback
+    onHotelPortalClick: () => void;
     onVillaPortalClick: () => void;
     onTherapistPortalClick: () => void;
     onMassagePlacePortalClick: () => void;
@@ -77,6 +78,7 @@ const HomePage: React.FC<HomePageProps> = ({
     onIncrementAnalytics, 
     onAgentPortalClick,
     onCustomerPortalClick,
+    onHotelPortalClick,
     onVillaPortalClick, 
     onTherapistPortalClick, 
     onMassagePlacePortalClick, 
@@ -496,6 +498,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 }}
                 t={safeT}
                 onMassageJobsClick={onMassageJobsClick}
+                onHotelPortalClick={onHotelPortalClick}
                 onVillaPortalClick={onVillaPortalClick}
                 onTherapistPortalClick={onTherapistPortalClick}
                 onMassagePlacePortalClick={onMassagePlacePortalClick}

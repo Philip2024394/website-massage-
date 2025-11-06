@@ -85,17 +85,6 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate, activeDis
                     </div>
                 )}
                 
-                {/* Circular Profile Image - LEFT side, 20% LARGER, halfway overlapping the main image */}
-                <div className="absolute bottom-0 left-2 transform translate-y-1/2">
-                    <div className="w-14 h-14 rounded-full border-2 border-white shadow-lg overflow-hidden bg-white">
-                        <img
-                            src={(place as any).profilePicture || place.mainImage || 'https://via.placeholder.com/150?text=Logo'}
-                            alt={`${place.name} logo`}
-                            className="w-full h-full object-cover"
-                        />
-                    </div>
-                </div>
-                
                 {/* Share Buttons - Lower Right Corner */}
                 <div className="absolute bottom-2 right-2 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                     {/* Instagram */}

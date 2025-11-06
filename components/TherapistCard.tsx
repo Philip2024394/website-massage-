@@ -403,20 +403,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 </div>
             </div>
             
-            {/* Profile Picture - Positioned below banner, overlapping */}
-            <div className="absolute top-40 left-4 z-10">
-                <img 
-                    className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg bg-gray-100" 
-                    src={(therapist.profilePicture && therapist.profilePicture.startsWith('http')) ? therapist.profilePicture : 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="80" height="80"%3E%3Crect fill="%23e5e7eb" width="80" height="80"/%3E%3Cpath fill="%239ca3af" d="M40 20c5.5 0 10 4.5 10 10s-4.5 10-10 10-10-4.5-10-10 4.5-10 10-10zm0 26c6.7 0 20 3.4 20 10v4H20v-4c0-6.6 13.3-10 20-10z"/%3E%3C/svg%3E'} 
-                    alt={therapist.name}
-                    onError={(e) => {
-                        e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="80" height="80"%3E%3Crect fill="%23e5e7eb" width="80" height="80"/%3E%3Cpath fill="%239ca3af" d="M40 20c5.5 0 10 4.5 10 10s-4.5 10-10 10-10-4.5-10-10 4.5-10 10-10zm0 26c6.7 0 20 3.4 20 10v4H20v-4c0-6.6 13.3-10 20-10z"/%3E%3C/svg%3E';
-                    }}
-                />
-            </div>
-            
-            {/* Therapist Name and Distance - Positioned to the right of profile picture */}
-            <div className="absolute top-52 left-28 right-4 z-10">
+            {/* Therapist Name and Distance - Positioned to the left of the card */}
+            <div className="absolute top-52 left-4 right-4 z-10">
                 <div className="flex justify-between items-center">
                     <h3 className="text-lg font-bold text-gray-900">{therapist.name}</h3>
                     {/* Enhanced Distance Display with Google Maps Integration */}

@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Menu Demo - Massage Therapists & Places</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .demo-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .demo-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .demo-header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 0;
+        }
+        
+        .live-menu-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            min-height: 600px;
+        }
+        
+        .mock-live-menu {
+            padding: 20px;
+        }
+        
+        .tab-navigation {
+            display: flex;
+            border-bottom: 2px solid #f1f5f9;
+            margin-bottom: 30px;
+        }
+        
+        .tab-button {
+            flex: 1;
+            padding: 16px 24px;
+            background: none;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab-button.active {
+            color: #f97316;
+            border-bottom-color: #f97316;
+            background: #fff7ed;
+        }
+        
+        .tab-button:hover:not(.active) {
+            background: #f8fafc;
+            color: #64748b;
+        }
+        
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 24px;
+            margin-top: 24px;
+        }
+        
+        .provider-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .provider-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.15);
+            border-color: #f97316;
+        }
+        
+        .card-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #fbbf24 0%, #f97316 100%);
+        }
+        
+        .card-content {
+            padding: 20px;
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+        
+        .provider-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0;
+        }
+        
+        .rating-badge {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: #fef3c7;
+            color: #d97706;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        
+        .provider-description {
+            color: #64748b;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+        
+        .services-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .service-tag {
+            background: #eff6ff;
+            color: #1d4ed8;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .pricing-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-top: 1px solid #f1f5f9;
+            margin-top: 16px;
+        }
+        
+        .price-display {
+            color: #059669;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        
+        .discount-badge {
+            background: #dc2626;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .book-button {
+            width: 100%;
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 16px;
+        }
+        
+        .book-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px -4px rgba(249, 115, 22, 0.4);
+        }
+        
+        .location-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+        }
+        
+        .experience-badge {
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1>🏨 Hotel Villa Live Menu Demo</h1>
+            <p>Interactive massage menu showing therapist and spa cards</p>
+        </div>
+        
+        <div class="live-menu-container">
+            <div id="live-menu-demo"></div>
+        </div>
+    </div>
+
+    <script type="text/babel">
+        const { useState } = React;
+        
+        // Mock data for demonstration
+        const mockTherapists = [
+            {
+                id: 1,
+                name: "Sarah Johnson",
+                description: "Professional massage therapist with 8 years of experience specializing in Swedish and deep tissue massage.",
+                profilePicture: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&h=200&fit=crop",
+                yearsOfExperience: 8,
+                massageTypes: ["Swedish Massage", "Deep Tissue", "Hot Stone"],
+                pricing: { 60: 150000, 90: 220000, 120: 280000 },
+                languages: ["English", "Indonesian"],
+                location: "Seminyak, Bali",
+                rating: 4.9,
+                reviewCount: 127,
+                hotelDiscount: 25,
+                villaDiscount: 20,
+                whatsappNumber: "+62 812-3456-7890"
+            },
+            {
+                id: 2,
+                name: "Made Wijaya",
+                description: "Traditional Balinese healer with 12 years of experience in authentic Balinese massage techniques.",
+                profilePicture: "https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=400&h=200&fit=crop",
+                yearsOfExperience: 12,
+                massageTypes: ["Balinese Massage", "Traditional Thai", "Reflexology"],
+                pricing: { 60: 180000, 90: 260000, 120: 320000 },
+                languages: ["Indonesian", "English", "Japanese"],
+                location: "Ubud, Bali",
+                rating: 4.8,
+                reviewCount: 89,
+                hotelDiscount: 30,
+                villaDiscount: 25,
+                whatsappNumber: "+62 812-9876-5432"
+            },
+            {
+                id: 3,
+                name: "Lisa Chen",
+                description: "Certified aromatherapy specialist focusing on relaxation and wellness treatments.",
+                profilePicture: "https://images.unsplash.com/photo-1594824375906-da8bb5c3ce47?w=400&h=200&fit=crop",
+                yearsOfExperience: 6,
+                massageTypes: ["Aromatherapy", "Pregnancy Massage", "Sports Massage"],
+                pricing: { 60: 160000, 90: 240000, 120: 300000 },
+                languages: ["English", "Mandarin", "Indonesian"],
+                location: "Canggu, Bali",
+                rating: 4.7,
+                reviewCount: 156,
+                hotelDiscount: 20,
+                villaDiscount: 15,
+                whatsappNumber: "+62 812-1111-2222"
+            }
+        ];
+
+        const mockPlaces = [
+            {
+                id: 1,
+                name: "Bliss Spa Seminyak",
+                description: "Luxury spa offering traditional and modern massage treatments in a serene environment.",
+                profilePicture: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=200&fit=crop",
+                massageTypes: ["Swedish Massage", "Hot Stone", "Balinese", "Deep Tissue", "Aromatherapy"],
+                pricing: { 60: 200000, 90: 290000, 120: 360000 },
+                languages: ["English", "Indonesian", "French"],
+                location: "Jl. Raya Seminyak No. 123, Seminyak",
+                rating: 4.6,
+                reviewCount: 234,
+                hotelDiscount: 15,
+                villaDiscount: 10,
+                whatsappNumber: "+62 361-123-4567",
+                operatingHours: "09:00 - 22:00",
+                amenities: ["Private rooms", "Shower facilities", "Herbal tea", "Free WiFi"]
+            },
+            {
+                id: 2,
+                name: "Zen Garden Massage",
+                description: "Peaceful retreat specializing in traditional Asian massage techniques and wellness treatments.",
+                profilePicture: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=400&h=200&fit=crop",
+                massageTypes: ["Thai Massage", "Shiatsu", "Reflexology", "Traditional Chinese"],
+                pricing: { 60: 175000, 90: 250000, 120: 310000 },
+                languages: ["English", "Indonesian", "Thai"],
+                location: "Jl. Monkey Forest Rd, Ubud",
+                rating: 4.8,
+                reviewCount: 189,
+                hotelDiscount: 20,
+                villaDiscount: 15,
+                whatsappNumber: "+62 361-987-6543",
+                operatingHours: "08:00 - 21:00",
+                amenities: ["Garden setting", "Organic oils", "Meditation space", "Healthy drinks"]
+            },
+            {
+                id: 3,
+                name: "Ocean Breeze Wellness",
+                description: "Beachfront wellness center offering rejuvenating massages with ocean views.",
+                profilePicture: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=400&h=200&fit=crop",
+                massageTypes: ["Swedish Massage", "Sports Massage", "Couples Massage", "Prenatal"],
+                pricing: { 60: 220000, 90: 320000, 120: 400000 },
+                languages: ["English", "Indonesian", "German"],
+                location: "Jl. Pantai Berawa, Canggu",
+                rating: 4.5,
+                reviewCount: 98,
+                hotelDiscount: 25,
+                villaDiscount: 20,
+                whatsappNumber: "+62 361-555-7777",
+                operatingHours: "07:00 - 20:00",
+                amenities: ["Ocean view", "Beach access", "Infinity pool", "Healthy cuisine"]
+            }
+        ];
+
+        function formatPrice(price) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0
+            }).format(price);
+        }
+
+        function TherapistCard({ therapist, onBook }) {
+            return (
+                <div className="provider-card">
+                    <img src={therapist.profilePicture} alt={therapist.name} className="card-image" />
+                    <div className="card-content">
+                        <div className="card-header">
+                            <h3 className="provider-name">{therapist.name}</h3>
+                            <div className="rating-badge">
+                                ⭐ {therapist.rating} ({therapist.reviewCount})
+                            </div>
+                        </div>
+                        
+                        <div className="experience-badge">
+                            {therapist.yearsOfExperience} years experience
+                        </div>
+                        
+                        <div className="location-info">
+                            📍 {therapist.location}
+                        </div>
+                        
+                        <p className="provider-description">{therapist.description}</p>
+                        
+                        <div className="services-list">
+                            {therapist.massageTypes.map((type, index) => (
+                                <span key={index} className="service-tag">{type}</span>
+                            ))}
+                        </div>
+                        
+                        <div className="pricing-info">
+                            <div className="price-display">
+                                From {formatPrice(therapist.pricing[60])}
+                            </div>
+                            <div className="discount-badge">
+                                {therapist.hotelDiscount}% Hotel Discount
+                            </div>
+                        </div>
+                        
+                        <button 
+                            className="book-button"
+                            onClick={() => onBook(therapist, 'therapist')}
+                        >
+                            Book {therapist.name} 📱
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        function PlaceCard({ place, onBook }) {
+            return (
+                <div className="provider-card">
+                    <img src={place.profilePicture} alt={place.name} className="card-image" />
+                    <div className="card-content">
+                        <div className="card-header">
+                            <h3 className="provider-name">{place.name}</h3>
+                            <div className="rating-badge">
+                                ⭐ {place.rating} ({place.reviewCount})
+                            </div>
+                        </div>
+                        
+                        <div className="location-info">
+                            📍 {place.location}
+                        </div>
+                        
+                        <div className="location-info">
+                            🕐 {place.operatingHours}
+                        </div>
+                        
+                        <p className="provider-description">{place.description}</p>
+                        
+                        <div className="services-list">
+                            {place.massageTypes.map((type, index) => (
+                                <span key={index} className="service-tag">{type}</span>
+                            ))}
+                        </div>
+                        
+                        <div className="services-list">
+                            {place.amenities.map((amenity, index) => (
+                                <span key={index} className="service-tag" style={{background: '#f0fdf4', color: '#166534'}}>
+                                    ✨ {amenity}
+                                </span>
+                            ))}
+                        </div>
+                        
+                        <div className="pricing-info">
+                            <div className="price-display">
+                                From {formatPrice(place.pricing[60])}
+                            </div>
+                            <div className="discount-badge">
+                                {place.hotelDiscount}% Hotel Discount
+                            </div>
+                        </div>
+                        
+                        <button 
+                            className="book-button"
+                            onClick={() => onBook(place, 'place')}
+                        >
+                            Book at {place.name} 🏛️
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        function LiveMenuDemo() {
+            const [activeTab, setActiveTab] = useState('therapists');
+
+            const handleBooking = (provider, type) => {
+                alert(`🎯 Booking ${type}: ${provider.name}\n💬 WhatsApp: ${provider.whatsappNumber}\n📍 ${provider.location}`);
+            };
+
+            return (
+                <div className="mock-live-menu">
+                    <div style={{textAlign: 'center', marginBottom: '24px'}}>
+                        <img 
+                            src="https://ik.imagekit.io/7grri5v7d/indostreet%20app%20icon.png" 
+                            alt="Hotel Logo" 
+                            style={{width: '80px', height: '80px', borderRadius: '12px', marginBottom: '12px'}}
+                        />
+                        <h2 style={{color: '#f97316', fontSize: '1.8rem', fontWeight: '700', margin: '0 0 8px 0'}}>
+                            Grand Bali Resort & Spa
+                        </h2>
+                        <p style={{color: '#64748b', margin: '0'}}>
+                            Premium in-room massage services available 24/7
+                        </p>
+                    </div>
+                    
+                    <div className="tab-navigation">
+                        <button 
+                            className={`tab-button ${activeTab === 'therapists' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('therapists')}
+                        >
+                            👨‍⚕️ Room Massage Therapists ({mockTherapists.length})
+                        </button>
+                        <button 
+                            className={`tab-button ${activeTab === 'places' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('places')}
+                        >
+                            🏛️ Partner Massage Spas ({mockPlaces.length})
+                        </button>
+                    </div>
+                    
+                    {activeTab === 'therapists' && (
+                        <div className="cards-grid">
+                            {mockTherapists.map(therapist => (
+                                <TherapistCard 
+                                    key={therapist.id} 
+                                    therapist={therapist} 
+                                    onBook={handleBooking}
+                                />
+                            ))}
+                        </div>
+                    )}
+                    
+                    {activeTab === 'places' && (
+                        <div className="cards-grid">
+                            {mockPlaces.map(place => (
+                                <PlaceCard 
+                                    key={place.id} 
+                                    place={place} 
+                                    onBook={handleBooking}
+                                />
+                            ))}
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        ReactDOM.render(<LiveMenuDemo />, document.getElementById('live-menu-demo'));
+    </script>
+</body>
+</html>
