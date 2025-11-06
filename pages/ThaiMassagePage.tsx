@@ -81,7 +81,7 @@ const ThaiMassagePage: React.FC<ThaiMassagePageProps> = ({
                 places={places}
             />
 
-            <div className="p-4">
+            <div className="p-4 pb-20">
             <div className="max-w-4xl mx-auto">
                 {/* Back Button */}
                 {onBack && (

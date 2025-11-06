@@ -162,7 +162,7 @@ const BalineseMassagePage: React.FC<BalineseMassagePageProps> = ({
                 </div>
             </div>
 
-            <div className="max-w-6xl mx-auto px-4 py-16">
+            <div className="max-w-6xl mx-auto px-4 py-16 pb-24">
                 {/* What Is Balinese Massage */}
                 <div className="mb-16">
                     <h2 className="text-4xl font-bold text-gray-900 mb-8 text-center">What is Balinese Massage?</h2>

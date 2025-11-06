@@ -513,11 +513,10 @@ const HomePage: React.FC<HomePageProps> = ({
             />
 
 
-            <main className="p-4">
+            <main className="p-4 pb-20">
                 <div className="flex items-center justify-center gap-2 text-gray-500 mb-4">
                     <Users className="w-5 h-5"/>
-                    <span className="font-medium">
-                        {(t.home.therapistsOnline || "{count} of {total} therapists online")
+                    <span className="font-medium">{(t.home.therapistsOnline || "{count} of {total} therapists online")
                             .replace('{count}', onlineTherapistsCount.toString())
                             .replace('{total}', therapists.length.toString())}
                     </span>

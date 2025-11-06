@@ -12,6 +12,7 @@ interface AromatherapyMassagePageProps {
     onAgentPortalClick?: () => void;
     onCustomerPortalClick?: () => void;
     onAdminPortalClick?: () => void;
+    onHotelPortalClick?: () => void;
     onTermsClick?: () => void;
     onPrivacyClick?: () => void;
     therapists?: any[];
@@ -36,6 +37,7 @@ const AromatherapyMassagePage: React.FC<AromatherapyMassagePageProps> = ({
     onAgentPortalClick,
     onCustomerPortalClick,
     onAdminPortalClick,
+    onHotelPortalClick,
     onTermsClick,
     onPrivacyClick,
     therapists = [],
@@ -79,7 +81,7 @@ const AromatherapyMassagePage: React.FC<AromatherapyMassagePageProps> = ({
                 places={places}
             />
 
-            <div className="p-4">
+            <div className="p-4 pb-20">
             <div className="max-w-4xl mx-auto">
                 {/* Back Button */}
                 {onBack && (
