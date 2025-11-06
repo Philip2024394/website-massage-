@@ -164,6 +164,7 @@ interface AppRouterProps {
     handleAdminLogout: () => Promise<void>;
     handleCustomerLogout: () => Promise<void>;
     handleAgentLogout: () => Promise<void>;
+    handleHotelLogin: () => void; // Add hotel login handler
     handleNavigateToNotifications: () => void;
     handleNavigateToAgentAuth: () => void;
     handleNavigateToTherapistDashboard: () => void;
@@ -246,6 +247,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         handleAdminLogout,
         handleCustomerLogout,
         handleAgentLogout,
+        handleHotelLogin, // Add hotel login handler
         handleNavigateToNotifications,
         handleNavigateToAgentAuth,
         setPage,
@@ -581,7 +583,16 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return <MassageTypesPage onBack={handleBackToHome} onNavigate={(page: Page) => setPage(page as Page)} t={t.massageTypes} />;
             
         case 'hotelLogin': 
-            return <HotelLoginPage onSuccess={() => {}} onBack={handleBackToHome} t={t} />;
+            return <HotelLoginPage 
+                onSuccess={(hotelId) => {
+                    console.log('🏨 Hotel Login Success - hotelId:', hotelId);
+                    // Set hotel as logged in and navigate to dashboard
+                    handleHotelLogin();
+                    setPage('hotelDashboard');
+                }} 
+                onBack={handleBackToHome} 
+                t={t} 
+            />;
             
         case 'villaLogin': 
             return <VillaLoginPage onSuccess={() => {}} onBack={handleBackToHome} t={t} />;
@@ -824,6 +835,9 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return <HotelVillaMenuPage 
                 venueId={venueMenuId || ''}
                 logo={hotelVillaLogo || ''}
+                therapists={therapists}
+                places={places}
+                onBook={handleNavigateToBooking}
                 onBack={handleBackToHome}
                 onNavigate={(page: Page) => setPage(page as Page)}
                 t={t}

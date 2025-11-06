@@ -233,9 +233,10 @@ const App = () => {
                     handleCustomerAuthSuccess={() => Promise.resolve()}
                     handleCustomerLogout={() => Promise.resolve()}
                     handleAgentLogout={() => Promise.resolve()}
-                    handleHotelLogout={() => Promise.resolve()}
-                    handleVillaLogout={() => Promise.resolve()}
+                    handleHotelLogout={authHandlers?.handleHotelLogout || (() => Promise.resolve())}
+                    handleVillaLogout={authHandlers?.handleVillaLogout || (() => Promise.resolve())}
                     handleAdminLogout={authHandlers?.handleAdminLogout || (() => Promise.resolve())}
+                    handleHotelLogin={authHandlers?.handleHotelLogin || (() => {})}
                     handleCreateBooking={() => Promise.resolve()}
                     handleNavigateToBookingPage={navigation?.handleNavigateToBookingPage || (() => {})}
                     handleUpdateBookingStatus={() => Promise.resolve()}

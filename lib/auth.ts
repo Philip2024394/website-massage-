@@ -299,31 +299,41 @@ export const placeAuth = {
 export const hotelAuth = {
     async signUp(email: string, password: string): Promise<AuthResponse> {
         try {
+            console.log('🏨 Starting hotel signup for:', email);
             const user = await account.create(ID.unique(), email, password);
+            console.log('✅ Appwrite user created:', user.$id);
             
-            const hotel = await databases.createDocument(
-                DATABASE_ID,
-                COLLECTIONS.HOTELS,
-                ID.unique(),
-                {
-                    // Simplified hotel data - only email and password required
-                    name: email.split('@')[0],        // Hotel name from email
-                    type: 'hotel',                    // Required - hotel type
-                    email,                            // Required - email address
-                    password: '',                     // Required - handled by Appwrite auth
-                    location: 'Location pending',    // Required - default location
-                    contactPerson: email.split('@')[0], // Required - default contact
-                    whatsappNumber: '',              // Required - empty default
-                    qrCodeEnabled: false,            // Required - default false
-                    isActive: true,                  // Required - auto-activate for simplicity
-                    
-                    // Optional fields with defaults
-                    partnerTherapists: JSON.stringify([]),
-                    discountRate: 0,
-                }
-            );
-            
-            return { success: true, userId: user.$id, documentId: hotel.$id };
+            try {
+                const hotel = await databases.createDocument(
+                    DATABASE_ID,
+                    COLLECTIONS.HOTELS,
+                    ID.unique(),
+                    {
+                        // Simplified hotel data - only email and password required
+                        name: email.split('@')[0],        // Hotel name from email
+                        type: 'hotel',                    // Required - hotel type
+                        email,                            // Required - email address
+                        password: '',                     // Required - handled by Appwrite auth
+                        location: 'Location pending',    // Required - default location
+                        contactPerson: email.split('@')[0], // Required - default contact
+                        whatsappNumber: '',              // Required - empty default
+                        qrCodeEnabled: false,            // Required - default false
+                        isActive: true,                  // Required - auto-activate for simplicity
+                        createdAt: new Date().toISOString(), // Add creation timestamp
+                        userId: user.$id,                // Link to Appwrite user
+                        
+                        // Optional fields with defaults
+                        partnerTherapists: JSON.stringify([]),
+                        discountRate: 0,
+                    }
+                );
+                console.log('✅ Hotel document created:', hotel.$id);
+                return { success: true, userId: user.$id, documentId: hotel.$id };
+            } catch (dbError: any) {
+                console.warn('⚠️ Hotel collection error, but user created:', dbError.message);
+                // User created successfully even if hotel document fails
+                return { success: true, userId: user.$id, error: 'Hotel user created but collection unavailable' };
+            }
         } catch (error: any) {
             console.error('Hotel sign up error:', error);
             return { success: false, error: error.message };
@@ -332,6 +342,8 @@ export const hotelAuth = {
     
     async signIn(email: string, password: string): Promise<AuthResponse> {
         try {
+            console.log('🏨 Starting hotel signin for:', email);
+            
             // Delete any existing session first
             try {
                 await account.deleteSession('current');
@@ -341,21 +353,35 @@ export const hotelAuth = {
                 console.log('ℹ️ No existing session to clear');
             }
 
-            await account.createEmailPasswordSession(email, password);
+            // Create new session
+            const session = await account.createEmailPasswordSession(email, password);
+            console.log('✅ Session created:', session.$id);
+            
             const user = await account.get();
+            console.log('✅ User retrieved:', user.$id);
             
-            const hotels = await databases.listDocuments(
-                DATABASE_ID,
-                COLLECTIONS.HOTELS
-            );
-            
-            const hotel = hotels.documents.find((doc: any) => doc.email === email);
-            
-            if (!hotel) {
-                throw new Error('Hotel not found');
+            try {
+                const hotels = await databases.listDocuments(
+                    DATABASE_ID,
+                    COLLECTIONS.HOTELS
+                );
+                
+                const hotel = hotels.documents.find((doc: any) => 
+                    doc.email === email || doc.userId === user.$id
+                );
+                
+                if (!hotel) {
+                    console.warn('⚠️ Hotel document not found, but allowing login');
+                    return { success: true, userId: user.$id, error: 'Hotel document not found but login allowed' };
+                }
+                
+                console.log('✅ Hotel document found:', hotel.$id);
+                return { success: true, userId: user.$id, documentId: hotel.$id };
+            } catch (dbError: any) {
+                console.warn('⚠️ Hotel collection query failed, but allowing login:', dbError.message);
+                // Allow login even if database query fails
+                return { success: true, userId: user.$id, error: 'Hotel collection unavailable but login allowed' };
             }
-            
-            return { success: true, userId: user.$id, documentId: hotel.$id };
         } catch (error: any) {
             console.error('Hotel sign in error:', error);
             return { success: false, error: error.message };

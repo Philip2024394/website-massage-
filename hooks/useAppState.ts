@@ -33,6 +33,16 @@ export const useAppState = () => {
       const urlParams = new URLSearchParams(window.location.search);
       const pageParam = urlParams.get('page');
       
+      // Check for hotel/villa menu URL pattern: /hotel/:id/menu or /villa/:id/menu
+      const pathname = window.location.pathname;
+      const hotelMenuMatch = pathname.match(/\/hotel\/([^\/]+)\/menu/);
+      const villaMenuMatch = pathname.match(/\/villa\/([^\/]+)\/menu/);
+      
+      if (hotelMenuMatch || villaMenuMatch) {
+        console.log('🏨 Hotel/Villa menu URL detected:', pathname);
+        return 'hotelVillaMenu';
+      }
+      
       // Allow specific test pages via URL parameter
       if (pageParam === 'rewardBannersTest' || pageParam === 'reward-banners-test') {
         console.log('🎯 URL parameter detected: Opening reward banners test page');
@@ -161,7 +171,31 @@ export const useAppState = () => {
     _setIsVillaLoggedIn(status);
     setToLocalStorage('app_villa_logged_in', status);
   };
-  const [venueMenuId, setVenueMenuId] = useState<string>('');
+  // Extract venue ID from URL for hotel/villa menu
+  const getInitialVenueId = (): string => {
+    try {
+      const pathname = window.location.pathname;
+      const hotelMenuMatch = pathname.match(/\/hotel\/([^\/]+)\/menu/);
+      const villaMenuMatch = pathname.match(/\/villa\/([^\/]+)\/menu/);
+      
+      if (hotelMenuMatch) {
+        console.log('🏨 Hotel ID extracted from URL:', hotelMenuMatch[1]);
+        return hotelMenuMatch[1];
+      }
+      
+      if (villaMenuMatch) {
+        console.log('🏡 Villa ID extracted from URL:', villaMenuMatch[1]);
+        return villaMenuMatch[1];
+      }
+      
+      return '';
+    } catch (error) {
+      console.log('⚠️ Venue ID extraction failed');
+      return '';
+    }
+  };
+
+  const [venueMenuId, setVenueMenuId] = useState<string>(getInitialVenueId());
   const [jobPostingId, setJobPostingId] = useState<string>('');
   
   // UI state

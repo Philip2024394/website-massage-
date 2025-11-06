@@ -103,6 +103,11 @@ export const useAuthHandlers = ({
         setPage('adminDashboard');
     }, [setIsAdminLoggedIn, setPage]);
 
+    const handleHotelLogin = useCallback(() => {
+        console.log('🏨 handleHotelLogin called - setting hotel logged in state');
+        setIsHotelLoggedIn(true);
+    }, [setIsHotelLoggedIn]);
+
     return {
         handleProviderLogout,
         handleHotelLogout,
@@ -111,5 +116,6 @@ export const useAuthHandlers = ({
         handleCustomerLogout,
         handleAgentLogout,
         handleAdminLogin,
+        handleHotelLogin,
     };
 };

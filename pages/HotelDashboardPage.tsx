@@ -579,6 +579,35 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                             </div>
                         ) : (
                             <>
+                        {/* Membership Requirement Notice */}
+                        <div className="bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-200 rounded-lg p-6">
+                            <div className="flex items-start gap-3">
+                                <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center">
+                                    <Package className="w-5 h-5 text-white" />
+                                </div>
+                                <div className="flex-1">
+                                    <h4 className="text-lg font-bold text-purple-800 mb-2">🔒 Premium Feature: Brand Customization</h4>
+                                    <div className="space-y-2 text-sm text-purple-700">
+                                        <p><strong>Membership Required:</strong> Customize your hotel brand profile with paid membership plans.</p>
+                                        <ul className="list-disc list-inside space-y-1 ml-4">
+                                            <li>Upload custom banner and logo images</li>
+                                            <li>Set unique hotel name and branding</li>
+                                            <li>Personalize guest experience</li>
+                                            <li>Adjust commission rates (20-25%)</li>
+                                        </ul>
+                                        <div className="flex items-center gap-2 mt-3">
+                                            <button
+                                                onClick={() => setActiveTab('membership')}
+                                                className="bg-purple-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-600 transition-colors"
+                                            >
+                                                View Membership Plans
+                                            </button>
+                                            <span className="text-xs text-purple-600">Starting from Rp 500,000 / 3 months</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         {/* Banner and Profile Image - Like Therapist Card */}
                         <div className="relative">
                             {/* Banner Image Upload - Full Width */}
@@ -736,6 +765,16 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                                 </div>
                             </div>
                             <div className="flex items-center gap-2 flex-wrap">
+                                <button
+                                    onClick={() => window.open(qrLink, '_blank')}
+                                    className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors text-sm font-semibold flex items-center gap-2"
+                                >
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                    Preview Live
+                                </button>
                                 <button
                                     onClick={() => setQrOpen(true)}
                                     className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors text-sm font-semibold flex items-center gap-2"
@@ -1268,6 +1307,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                                     <p className="text-orange-100 text-sm mb-1">Current Plan</p>
                                     <h3 className="text-2xl font-bold">Free Access</h3>
                                     <p className="text-orange-100 text-sm mt-1">Complimentary partner access</p>
+                                    <p className="text-orange-100 text-xs mt-2">Commission: 20% (Fixed)</p>
                                 </div>
                                 <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
                                     <p className="text-3xl font-bold">Free</p>
@@ -1303,6 +1343,18 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                                             <li className="flex items-start gap-2">
                                                 <span className="text-orange-500">✓</span>
                                                 <span className="text-sm text-gray-600">Analytics dashboard</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <span className="text-orange-500">✓</span>
+                                                <span className="text-sm text-gray-600">Brand profile customization</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <span className="text-orange-500">✓</span>
+                                                <span className="text-sm text-gray-600 font-semibold">Custom live menu branding</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <span className="text-green-600 font-semibold">⚡</span>
+                                                <span className="text-sm text-green-600 font-semibold">Commission: 20-22%</span>
                                             </li>
                                         </ul>
                                         <a
@@ -1348,6 +1400,18 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                                             <li className="flex items-start gap-2">
                                                 <span className="text-orange-500">✓</span>
                                                 <span className="text-sm text-gray-600 font-semibold">Featured placement</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <span className="text-orange-500">✓</span>
+                                                <span className="text-sm text-gray-600">Brand profile customization</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <span className="text-orange-500">✓</span>
+                                                <span className="text-sm text-gray-600 font-semibold">Custom live menu branding</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <span className="text-green-600 font-semibold">⚡</span>
+                                                <span className="text-sm text-green-600 font-semibold">Commission: 20-24%</span>
                                             </li>
                                         </ul>
                                         <a
@@ -1395,6 +1459,18 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                                                 <span className="text-orange-500">✓</span>
                                                 <span className="text-sm text-gray-600 font-semibold">Premium support</span>
                                             </li>
+                                            <li className="flex items-start gap-2">
+                                                <span className="text-orange-500">✓</span>
+                                                <span className="text-sm text-gray-600">Brand profile customization</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <span className="text-orange-500">✓</span>
+                                                <span className="text-sm text-gray-600 font-semibold">Custom live menu branding</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <span className="text-green-600 font-semibold">⚡</span>
+                                                <span className="text-sm text-green-600 font-semibold">Commission: 20-25%</span>
+                                            </li>
                                         </ul>
                                         <a
                                             href="https://wa.me/6281234567890?text=I%20want%20to%20upgrade%20to%201%20year%20hotel%20membership"
@@ -1412,8 +1488,91 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         {/* Info */}
                         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                             <p className="text-sm text-blue-800">
-                                <strong>Note:</strong> All packages include full access to IndaStreet platform features. Contact us via WhatsApp to upgrade your membership.
+                                <strong>Note:</strong> All packages include full access to <span className="text-black">Inda</span><span className="text-orange-500">Street</span> platform features. Contact us via WhatsApp to upgrade your membership.
                             </p>
+                        </div>
+
+                        {/* Commission Adjustment Explanation */}
+                        <div className="bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg p-6">
+                            <div className="flex items-start gap-3">
+                                <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                                    <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <div className="flex-1">
+                                    <h4 className="text-lg font-bold text-green-800 mb-2">Commission Adjustment Feature</h4>
+                                    <div className="space-y-2 text-sm text-green-700">
+                                        <p><strong>How it works:</strong></p>
+                                        <ul className="list-disc list-inside space-y-1 ml-4">
+                                            <li>Free plan: Fixed 20% commission rate</li>
+                                            <li>Paid memberships: Adjust commission from 20% up to 25%</li>
+                                            <li>Higher commission = Higher prices for guests (your earnings increase)</li>
+                                            <li>Therapist/place prices remain unchanged - they receive the same amount</li>
+                                            <li>Commission adjustment applies to your live menu pricing only</li>
+                                        </ul>
+                                        <div className="bg-white p-3 rounded-lg border border-green-200 mt-3">
+                                            <p className="text-xs font-semibold text-green-800">Example:</p>
+                                            <p className="text-xs text-green-700">Therapist price: Rp 300,000 | 20% = Guest pays Rp 360,000 | 25% = Guest pays Rp 375,000</p>
+                                            <p className="text-xs text-green-700">Your earnings increase by Rp 15,000 per booking!</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Custom Live Menu Branding Feature */}
+                        <div className="bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-200 rounded-lg p-6">
+                            <div className="flex items-start gap-3">
+                                <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center">
+                                    <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4h4a2 2 0 002-2V5z" />
+                                    </svg>
+                                </div>
+                                <div className="flex-1">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <h4 className="text-lg font-bold text-purple-800">Custom Live Menu Branding</h4>
+                                        <div className="bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                                            MEMBERSHIP REQUIRED
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2 text-sm text-purple-700 mb-4">
+                                        <p><strong>Unlock your brand identity:</strong></p>
+                                        <ul className="list-disc list-inside space-y-1 ml-4">
+                                            <li>Replace IndaStreet branding with your hotel's brand on live menus</li>
+                                            <li>Display your hotel logo, name, and custom styling</li>
+                                            <li>Professional appearance for guest-facing QR menus</li>
+                                            <li>Enhanced brand recognition and customer trust</li>
+                                            <li>Works with commission adjustment for maximum revenue</li>
+                                        </ul>
+                                    </div>
+                                    
+                                    {/* Toggle Control (Disabled for Free Plan) */}
+                                    <div className="bg-white p-4 rounded-lg border border-purple-200">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="font-semibold text-gray-800">Enable Custom Branding</p>
+                                                <p className="text-xs text-gray-500">Show your hotel brand instead of IndaStreet on live menus</p>
+                                            </div>
+                                            <div className="relative">
+                                                <input
+                                                    type="checkbox"
+                                                    disabled={true}
+                                                    className="sr-only"
+                                                />
+                                                <div className="w-10 h-6 bg-gray-300 rounded-full shadow-inner cursor-not-allowed opacity-50">
+                                                    <div className="w-4 h-4 bg-white rounded-full shadow transform translate-x-1 translate-y-1"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                            <p className="text-xs text-gray-600">
+                                                💡 <strong>Upgrade to any paid membership</strong> to unlock custom live menu branding and start building your brand identity with guests.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 );
@@ -1635,6 +1794,19 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                         <Package className="w-5 h-5" />
                         <span className="font-medium">Membership</span>
                     </button>
+
+                    <button
+                        onClick={() => {
+                            // Navigate to coin rewards page
+                            window.open('/coin-shop', '_blank');
+                        }}
+                        className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-gray-700 hover:bg-gray-100"
+                    >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="font-medium">Coin Rewards</span>
+                    </button>
                 </nav>
 
                 {/* Drawer Footer - Logout Button */}
@@ -1656,7 +1828,8 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
             <header className="bg-white shadow-sm px-2 sm:px-3 py-2 sm:py-3 sticky top-0 z-30">
                 <div className="flex items-center justify-between">
                     <h1 className="text-base sm:text-2xl font-bold text-gray-800">
-                        <span className="text-orange-500">IndaStreet</span>
+                        <span className="text-black">Inda</span>
+                        <span className="text-orange-500">Street</span>
                     </h1>
                     <button
                         onClick={() => setIsSideDrawerOpen(true)}
@@ -1719,7 +1892,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, thera
                                                 <div className="text-center pt-3 border-t-2 border-gray-200">
                                                     <div className="text-xs text-gray-500 mb-1">Scan to view menu for</div>
                                                     <div className="text-lg font-bold">
-                                                        <span className="text-gray-900">Inda</span>
+                                                        <span className="text-black">Inda</span>
                                                         <span className="text-orange-500">Street</span>
                                                     </div>
                                                     <div className="text-base font-semibold text-gray-700 mt-0.5">
