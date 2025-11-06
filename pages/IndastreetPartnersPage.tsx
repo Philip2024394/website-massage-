@@ -14,6 +14,9 @@ import {
     Heart as HeartIcon,
     ArrowLeft
 } from 'lucide-react';
+import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
+import { AppDrawer } from '../components/AppDrawer';
+import FlyingButterfly from '../components/FlyingButterfly';
 
 interface PartnerWebsite {
     id: string;
@@ -35,14 +38,43 @@ interface PartnerWebsite {
 interface IndastreetPartnersPageProps {
     onBack: () => void;
     onNavigate?: (page: any) => void;
+    onMassageJobsClick?: () => void;
+    onHotelPortalClick?: () => void;
+    onVillaPortalClick?: () => void;
+    onTherapistPortalClick?: () => void;
+    onMassagePlacePortalClick?: () => void;
+    onAgentPortalClick?: () => void;
+    onCustomerPortalClick?: () => void;
+    onAdminPortalClick?: () => void;
+    onTermsClick?: () => void;
+    onPrivacyClick?: () => void;
+    therapists?: any[];
+    places?: any[];
     t: any;
 }
 
-const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({ onBack, onNavigate: _onNavigate, t: _t }) => {
+const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({ 
+    onBack, 
+    onNavigate, 
+    onMassageJobsClick,
+    onHotelPortalClick,
+    onVillaPortalClick,
+    onTherapistPortalClick,
+    onMassagePlacePortalClick,
+    onAgentPortalClick,
+    onCustomerPortalClick,
+    onAdminPortalClick,
+    onTermsClick,
+    onPrivacyClick,
+    therapists = [],
+    places = [],
+    t 
+}) => {
     const [partners, setPartners] = useState<PartnerWebsite[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
     const [searchTerm, setSearchTerm] = useState('');
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     // Enhanced mock data with website previews
     const mockPartners: PartnerWebsite[] = [
@@ -259,24 +291,77 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({ onBack,
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-100">
-            {/* Navigation Header */}
-            <div className="bg-white shadow-sm">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                    <div className="flex items-center">
+            {/* Flying Butterfly Animation */}
+            <FlyingButterfly />
+            
+            <header className="bg-white p-4 shadow-md sticky top-0 z-20">
+                <div className="flex justify-between items-center">
+                    <h1 className="text-2xl font-bold text-gray-800">
+                        <span className="text-black">Inda</span>
+                        <span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
+                    </h1>
+                    <div className="flex items-center gap-3 text-gray-600">
+                        {/* Quick Access Buttons */}
                         <button 
-                            onClick={onBack}
-                            className="flex items-center text-gray-600 hover:text-gray-800 transition-colors mr-4"
+                            onClick={() => {
+                                if (onNavigate) {
+                                    onNavigate('notifications');
+                                }
+                            }} 
+                            className="p-2 hover:bg-gray-100 rounded-full transition-colors" 
+                            title="Notifications"
                         >
-                            <ArrowLeft className="w-5 h-5 mr-2" />
-                            Back to Home
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            </svg>
                         </button>
-                        <h1 className="text-xl font-bold">
-                            <span className="text-gray-900">Inda</span>
-                            <span className="text-orange-500">Street</span>
-                        </h1>
+                        
+                        <button 
+                            onClick={() => {
+                                if (onNavigate) {
+                                    onNavigate('referral');
+                                }
+                            }} 
+                            className="p-2 hover:bg-gray-100 rounded-full transition-colors" 
+                            title="Invite Friends"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                        </button>
+
+                        <button onClick={() => {
+                            console.log('🍔 Partners Page - Burger menu clicked! Current isMenuOpen:', isMenuOpen);
+                            setIsMenuOpen(true);
+                        }} title="Menu" style={{ zIndex: 9999, position: 'relative' }}>
+                           <BurgerMenuIcon className="w-6 h-6" />
+                        </button>
                     </div>
                 </div>
-            </div>
+            </header>
+            
+            {/* Global App Drawer */}
+            <AppDrawer
+                isOpen={isMenuOpen}
+                onClose={() => {
+                    console.log('🍔 Partners Page - AppDrawer onClose called');
+                    setIsMenuOpen(false);
+                }}
+                t={t}
+                onMassageJobsClick={onMassageJobsClick}
+                onHotelPortalClick={onHotelPortalClick}
+                onVillaPortalClick={onVillaPortalClick}
+                onTherapistPortalClick={onTherapistPortalClick}
+                onMassagePlacePortalClick={onMassagePlacePortalClick}
+                onAgentPortalClick={onAgentPortalClick}
+                onCustomerPortalClick={onCustomerPortalClick}
+                onAdminPortalClick={onAdminPortalClick}
+                onNavigate={onNavigate}
+                onTermsClick={onTermsClick}
+                onPrivacyClick={onPrivacyClick}
+                therapists={therapists}
+                places={places}
+            />
             
             {/* Hero Section with Background Image */}
             <div 
@@ -543,6 +628,20 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({ onBack,
                     </p>
                 </div>
             </div>
+            
+            <style>{`
+                @keyframes float {
+                    0%, 100% {
+                        transform: translateY(0px);
+                    }
+                    50% {
+                        transform: translateY(-8px);
+                    }
+                }
+                .animate-float {
+                    animation: float 2s ease-in-out infinite;
+                }
+            `}</style>
         </div>
     );
 };
