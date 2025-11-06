@@ -278,30 +278,36 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({ onBack,
                 </div>
             </div>
             
-            {/* SEO-Optimized Header */}
-            <div className="bg-white shadow-lg">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                    <div className="text-center">
-                        <h1 className="text-4xl font-bold text-gray-900 sm:text-5xl lg:text-6xl">
-                            🤝 Indastreet Partners
-                        </h1>
-                        <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">
-                            Discover our trusted network of verified wellness professionals, luxury accommodations, 
-                            and spa destinations. Each partner maintains their own website with detailed services and live previews.
-                        </p>
-                        <div className="mt-6 flex items-center justify-center space-x-6 text-sm text-gray-500">
-                            <div className="flex items-center">
-                                <BadgeCheckIcon className="w-5 h-5 text-green-500 mr-2" />
-                                Verified Partners
-                            </div>
-                            <div className="flex items-center">
-                                <EyeIcon className="w-5 h-5 text-blue-500 mr-2" />
-                                Live Website Previews
-                            </div>
-                            <div className="flex items-center">
-                                <StarIcon className="w-5 h-5 text-yellow-500 mr-2" />
-                                Quality Assured
-                            </div>
+            {/* Hero Section with Background Image */}
+            <div 
+                className="relative text-white py-24 overflow-hidden bg-cover bg-center"
+                style={{
+                    backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/indastreet%20flyers.png?updatedAt=1762422804652)',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat'
+                }}
+            >
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+                    <h1 className="text-4xl font-bold text-white sm:text-5xl lg:text-6xl drop-shadow-lg">
+                        🤝 Indastreet Partners
+                    </h1>
+                    <p className="mt-4 text-xl text-white max-w-3xl mx-auto drop-shadow-md">
+                        Discover our trusted network of verified wellness professionals, luxury accommodations, 
+                        and spa destinations. Each partner maintains their own website with detailed services and live previews.
+                    </p>
+                    <div className="mt-6 flex items-center justify-center space-x-6 text-sm text-white">
+                        <div className="flex items-center">
+                            <BadgeCheckIcon className="w-5 h-5 text-green-400 mr-2" />
+                            Verified Partners
+                        </div>
+                        <div className="flex items-center">
+                            <EyeIcon className="w-5 h-5 text-blue-400 mr-2" />
+                            Live Website Previews
+                        </div>
+                        <div className="flex items-center">
+                            <StarIcon className="w-5 h-5 text-yellow-400 mr-2" />
+                            Quality Assured
                         </div>
                     </div>
                 </div>
