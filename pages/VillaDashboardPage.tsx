@@ -49,7 +49,7 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({ onLogout, onNav
     // Therapist banner images pool for randomization - Using Appwrite curated collection
     const therapistBannerImages = getAllTherapistImages();
 
-    const [activeTab, setActiveTab] = useState<'analytics' | 'discounts' | 'profile' | 'menu' | 'feedback' | 'concierge' | 'commissions' | 'notifications' | 'membership'>(initialTab);
+    const [activeTab, setActiveTab] = useState<'analytics' | 'discounts' | 'profile' | 'menu' | 'feedback' | 'concierge' | 'commissions' | 'notifications' | 'membership' | 'coin-rewards'>(initialTab);
     const [customWelcomeMessage, setCustomWelcomeMessage] = useState('Welcome to our exclusive wellness experience');
     const [selectedLanguage, setSelectedLanguage] = useState('en');
     const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
@@ -1592,6 +1592,186 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({ onLogout, onNav
                         </div>
                     </div>
                 );
+            case 'coin-rewards':
+                return (
+                    <div className="space-y-6">
+                        {/* Page Header */}
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+                                <svg className="w-5 h-5 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h2 className="text-2xl font-bold text-gray-900">Villa Coin Rewards</h2>
+                                <p className="text-xs text-gray-500">Track your earnings and rewards from guest bookings</p>
+                            </div>
+                        </div>
+
+                        {/* Coin Balance Card */}
+                        <div className="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl p-6 text-white shadow-lg">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-yellow-100 text-sm mb-1">Total Coin Balance</p>
+                                    <h3 className="text-4xl font-bold mb-2">12,150 Coins</h3>
+                                    <p className="text-yellow-100 text-sm">≈ Rp 405,000 Value</p>
+                                </div>
+                                <div className="bg-white/20 backdrop-blur-sm rounded-full p-4">
+                                    <svg className="w-12 h-12 text-yellow-200" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Stats Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="bg-white p-6 rounded-xl border-2 border-gray-200">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                                        <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-gray-600">This Month</p>
+                                        <h3 className="text-2xl font-bold text-gray-900">+216</h3>
+                                    </div>
+                                </div>
+                                <p className="text-sm text-green-600">Coins earned</p>
+                            </div>
+
+                            <div className="bg-white p-6 rounded-xl border-2 border-gray-200">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                        <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-gray-600">Total Bookings</p>
+                                        <h3 className="text-2xl font-bold text-gray-900">203</h3>
+                                    </div>
+                                </div>
+                                <p className="text-sm text-blue-600">Completed services</p>
+                            </div>
+
+                            <div className="bg-white p-6 rounded-xl border-2 border-gray-200">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                                        <svg className="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-gray-600">Avg per Booking</p>
+                                        <h3 className="text-2xl font-bold text-gray-900">10.6</h3>
+                                    </div>
+                                </div>
+                                <p className="text-sm text-purple-600">Coins per service</p>
+                            </div>
+                        </div>
+
+                        {/* Recent Transactions */}
+                        <div className="bg-white border-2 border-gray-200 rounded-xl p-6">
+                            <h3 className="text-lg font-bold text-gray-900 mb-4">Recent Coin Earnings</h3>
+                            <div className="space-y-3">
+                                {[
+                                    { date: 'Nov 5, 2025', provider: 'Ketut Sari', service: '120 min villa spa', room: 'Villa 3', coins: 25, status: 'earned' },
+                                    { date: 'Nov 5, 2025', provider: 'Putu Wellness', service: '90 min massage', room: 'Villa 1', coins: 8, status: 'earned' },
+                                    { date: 'Nov 4, 2025', provider: 'Wayan Therapy', service: '60 min massage', room: 'Villa 2', coins: 5, status: 'earned' },
+                                    { date: 'Nov 4, 2025', provider: 'Bali Villa Spa', service: '120 min couples spa', room: 'Villa 5', coins: 23, status: 'earned' },
+                                    { date: 'Nov 3, 2025', provider: 'Tropical Wellness', service: '90 min massage', room: 'Villa 4', coins: 8, status: 'earned' },
+                                ].map((transaction, idx) => (
+                                    <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="font-semibold text-gray-900">{transaction.provider}</span>
+                                                <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full font-semibold">{transaction.room}</span>
+                                            </div>
+                                            <div className="text-sm text-gray-600">
+                                                {transaction.service} • {transaction.date}
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-lg font-bold text-green-600">+{transaction.coins}</div>
+                                            <div className="text-xs text-gray-500">coins</div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* How Coins Work */}
+                        <div className="bg-purple-50 border border-purple-200 rounded-xl p-6">
+                            <div className="flex items-start gap-3">
+                                <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center">
+                                    <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <div className="flex-1">
+                                    <h4 className="text-lg font-bold text-purple-800 mb-2">How Villa Coin Rewards Work</h4>
+                                    <div className="space-y-2 text-sm text-purple-700">
+                                        <p><strong>Earn coins for every completed booking:</strong></p>
+                                        <ul className="list-disc list-inside space-y-1 ml-4">
+                                            <li>60 min massage = 5 coins</li>
+                                            <li>90 min massage = 8 coins</li>
+                                            <li>120 min massage = 10 coins</li>
+                                            <li>Villa spa packages = 15-25 coins</li>
+                                            <li>Couples treatments = +15% bonus coins</li>
+                                        </ul>
+                                        <p className="mt-3"><strong>Redeem coins for:</strong></p>
+                                        <ul className="list-disc list-inside space-y-1 ml-4">
+                                            <li>Cash rewards (3000 coins = Rp 100,000)</li>
+                                            <li>Premium membership (4000-5000 coins = 1 month)</li>
+                                            <li>Villa amenity upgrades</li>
+                                            <li>Premium listing boosts</li>
+                                            <li>Exclusive villa marketing features</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Redeem Options */}
+                        <div className="bg-white border-2 border-gray-200 rounded-xl p-6">
+                            <h3 className="text-lg font-bold text-gray-900 mb-4">Redeem Your Coins</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <button className="p-4 border-2 border-purple-200 rounded-xl hover:border-purple-500 transition-colors text-left group">
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 transition-colors">
+                                            <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h4 className="font-semibold text-gray-900">Cash Reward</h4>
+                                            <p className="text-sm text-gray-600">3000 coins = Rp 100,000</p>
+                                        </div>
+                                    </div>
+                                    <p className="text-xs text-gray-500">Instant bank transfer to your account</p>
+                                </button>
+
+                                <button className="p-4 border-2 border-purple-200 rounded-xl hover:border-purple-500 transition-colors text-left group">
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors">
+                                            <svg className="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h4 className="font-semibold text-gray-900">Villa Premium</h4>
+                                            <p className="text-sm text-gray-600">4000-5000 coins = 1 month premium</p>
+                                        </div>
+                                    </div>
+                                    <p className="text-xs text-gray-500">Unlock premium villa features and priority placement</p>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
         }
     };
 
@@ -1797,14 +1977,14 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({ onLogout, onNav
 
                             <button
                                 onClick={() => {
-                                    // Navigate to coin rewards page
-                                    if (onNavigate) {
-                                        onNavigate('coin-shop');
-                                    } else {
-                                        window.open('/coin-shop', '_blank');
-                                    }
+                                    setActiveTab('coin-rewards');
+                                    setIsSideDrawerOpen(false);
                                 }}
-                                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors text-gray-700 hover:bg-gray-100"
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                                    activeTab === 'coin-rewards'
+                                        ? 'bg-orange-500 text-white shadow-md'
+                                        : 'text-gray-700 hover:bg-gray-100'
+                                }`}
                             >
                                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -1817,7 +1997,7 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({ onLogout, onNav
             )}
 
             {/* Main Content */}
-            <main className="flex-1 w-full max-w-5xl mx-auto px-2 py-3 sm:p-4 md:p-6 lg:p-8 pb-20">{renderTabContent()}
+            <main className="flex-1 w-full max-w-5xl mx-auto px-2 py-3 sm:p-4 md:p-6 lg:p-8 pb-24 overflow-y-auto">{renderTabContent()}
             </main>
 
             {/* QR Modal - Professional Design with Hotel Branding */}

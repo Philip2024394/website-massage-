@@ -131,7 +131,7 @@ class VSCodeTranslateService {
         }
 
         // Show notification in browser console for development
-        this.showTranslationStatus(message);
+        // this.showTranslationStatus(message); // Disabled: User requested to stop language change notifications
     }
 
     /**
@@ -203,55 +203,6 @@ class VSCodeTranslateService {
         }
 
         console.log('🔧 Requested Google Translate extension activation');
-    }
-
-    /**
-     * Show translation status for developers
-     */
-    private showTranslationStatus(message: string) {
-        // Create a subtle notification
-        const notification = document.createElement('div');
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #4CAF50;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            font-size: 14px;
-            z-index: 10000;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            animation: slideIn 0.3s ease-out;
-        `;
-        
-        // Add animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideIn {
-                from { transform: translateX(100%); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-        `;
-        document.head.appendChild(style);
-        
-        notification.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <span>🔤</span>
-                <span>${message}</span>
-            </div>
-        `;
-        
-        document.body.appendChild(notification);
-        
-        // Auto-remove after 3 seconds
-        setTimeout(() => {
-            notification.style.animation = 'slideIn 0.3s ease-out reverse';
-            setTimeout(() => {
-                document.body.removeChild(notification);
-            }, 300);
-        }, 3000);
     }
 
     /**

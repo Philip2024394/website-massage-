@@ -8,12 +8,36 @@ interface EmployerJobPostingPageProps {
     onNavigateToPayment?: (jobId: string) => void;
     onBack?: () => void;
     onNavigate?: (page: any) => void;
+    onMassageJobsClick?: () => void;
+    onHotelPortalClick?: () => void;
+    onVillaPortalClick?: () => void;
+    onTherapistPortalClick?: () => void;
+    onMassagePlacePortalClick?: () => void;
+    onAgentPortalClick?: () => void;
+    onCustomerPortalClick?: () => void;
+    onAdminPortalClick?: () => void;
+    onTermsClick?: () => void;
+    onPrivacyClick?: () => void;
+    therapists?: any[];
+    places?: any[];
     t?: any;
 }
 
 const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({ 
     onNavigateToPayment, 
     onNavigate,
+    onMassageJobsClick,
+    onHotelPortalClick,
+    onVillaPortalClick,
+    onTherapistPortalClick,
+    onMassagePlacePortalClick,
+    onAgentPortalClick,
+    onCustomerPortalClick,
+    onAdminPortalClick,
+    onTermsClick,
+    onPrivacyClick,
+    therapists = [],
+    places = [],
     t 
 }) => {
     // Array of professional massage/spa images - will cycle through all before repeating
@@ -352,6 +376,18 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                 isOpen={isDrawerOpen} 
                 onClose={() => setIsDrawerOpen(false)} 
                 onNavigate={onNavigate}
+                onMassageJobsClick={onMassageJobsClick}
+                onHotelPortalClick={onHotelPortalClick}
+                onVillaPortalClick={onVillaPortalClick}
+                onTherapistPortalClick={onTherapistPortalClick}
+                onMassagePlacePortalClick={onMassagePlacePortalClick}
+                onAgentPortalClick={onAgentPortalClick}
+                onCustomerPortalClick={onCustomerPortalClick}
+                onAdminPortalClick={onAdminPortalClick}
+                onTermsClick={onTermsClick}
+                onPrivacyClick={onPrivacyClick}
+                therapists={therapists}
+                places={places}
                 t={t}
             />
 

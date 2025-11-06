@@ -624,7 +624,19 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     console.log('🎯 AppRouter: EmployerJobPosting onBack - going back to massageJobs');
                     setPage('massageJobs');
                 }} 
-                onNavigate={(page: Page) => setPage(page as Page)} 
+                onNavigate={(page: Page) => setPage(page as Page)}
+                onMassageJobsClick={() => setPage('massageJobs')}
+                onHotelPortalClick={handleHotelLogin}
+                onVillaPortalClick={() => setPage('villaLogin')}
+                onTherapistPortalClick={() => setPage('therapistLogin')}
+                onMassagePlacePortalClick={() => setPage('massagePlaceLogin')}
+                onAgentPortalClick={handleNavigateToAgentAuth}
+                onCustomerPortalClick={() => setPage('customerAuth')}
+                onAdminPortalClick={handleAdminLogin}
+                onTermsClick={() => setPage('serviceTerms')}
+                onPrivacyClick={() => setPage('privacy')}
+                therapists={therapists}
+                places={places}
                 t={t} 
             />;
         
