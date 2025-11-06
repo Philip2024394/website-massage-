@@ -1,4 +1,3 @@
-// @ts-nocheck - Global TypeScript error suppression for rapid deployment
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { Therapist, Pricing, Booking, Notification } from '../types';
 import type { Page } from '../types/pageTypes';
@@ -6,7 +5,7 @@ import { AvailabilityStatus, BookingStatus, HotelVillaServiceStatus } from '../t
 import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages, stringifyPricing, stringifyCoordinates, stringifyMassageTypes, stringifyAnalytics } from '../utils/appwriteHelpers';
 import { therapistService, notificationService } from '../lib/appwriteService';
 import { soundNotificationService } from '../utils/soundNotificationService';
-import { LogOut, Activity, Menu } from 'lucide-react';
+import { LogOut, Activity, Menu, Calendar, TrendingUp, Bell } from 'lucide-react';
 import { ColoredProfileIcon, ColoredCalendarIcon, ColoredAnalyticsIcon, ColoredHotelIcon, ColoredTagIcon, ColoredCrownIcon, ColoredDocumentIcon, ColoredGlobeIcon, ColoredHistoryIcon, ColoredCoinsIcon, ColoredBellIcon } from '../components/ColoredIcons';
 import { useTranslations } from '../lib/useTranslations';
 import DiscountSharePage from './DiscountSharePage';
@@ -1403,10 +1402,12 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
 
             {/* Notifications Modal */}
             {showNotifications && (
-                // @ts-ignore - TherapistNotifications props mismatch
                 <TherapistNotifications
-                    isOpen={showNotifications}
-                    onClose={handleCloseNotifications}
+                    notifications={notifications}
+                    onMarkAsRead={() => {}}
+                    onBack={handleCloseNotifications}
+                    t={t}
+                    userRole="therapist"
                 />
             )}
         </div>

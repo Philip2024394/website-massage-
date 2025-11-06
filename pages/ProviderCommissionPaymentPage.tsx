@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { CommissionRecord } from '../types';
 import { CommissionPaymentStatus, CommissionPaymentMethod } from '../types';
-import Button from '../components/Button';
 import ImageUpload from '../components/ImageUpload';
 import { commissionPaymentService } from '../services/commissionPaymentService';
 

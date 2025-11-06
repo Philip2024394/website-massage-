@@ -1,12 +1,11 @@
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useParams } from 'react-router-dom';
 import Button from '../components/Button';
 import { Client, Databases, Query } from 'appwrite';
 import { DATABASE_ID } from '../lib/appwrite';
 
 const HOTELS_COLLECTION_ID = 'hotels_collection_id';
-const THERAPISTS_COLLECTION_ID = 'therapists_collection_id';
 const PLACES_COLLECTION_ID = 'places_collection_id';
 
 const client = new Client();
@@ -53,8 +52,6 @@ const MenuPage: React.FC = () => {
   }, [id]);
 
   if (loading || !hotel) return <div className="p-8 text-center">Loading menu...</div>;
-
-  const menuUrl = `${window.location.origin}/menu/${hotel.id}`;
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center py-8 px-2">

@@ -39,7 +39,7 @@ const ProviderAuthPage: React.FC<ProviderAuthPageProps> = ({ mode, providerType,
 					} else {
 						setMembershipExpiry(null);
 					}
-				} catch (e) {
+				} catch {
 					setMembershipExpiry(null);
 				}
 			}

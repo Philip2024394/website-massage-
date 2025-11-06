@@ -12,6 +12,7 @@ interface ThaiMassagePageProps {
     onAgentPortalClick?: () => void;
     onCustomerPortalClick?: () => void;
     onAdminPortalClick?: () => void;
+    onHotelPortalClick?: () => void;
     onTermsClick?: () => void;
     onPrivacyClick?: () => void;
     therapists?: any[];
@@ -36,6 +37,7 @@ const ThaiMassagePage: React.FC<ThaiMassagePageProps> = ({
     onAgentPortalClick,
     onCustomerPortalClick,
     onAdminPortalClick,
+    onHotelPortalClick,
     onTermsClick,
     onPrivacyClick,
     therapists = [],

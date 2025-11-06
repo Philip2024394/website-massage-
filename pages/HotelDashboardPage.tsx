@@ -45,7 +45,7 @@ interface HotelDashboardPageProps {
     initialTab?: 'analytics' | 'discounts' | 'profile' | 'menu' | 'feedback' | 'concierge' | 'commissions' | 'notifications' | 'membership' | 'services-settings';
 }
 
-const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, onNavigate, therapists = [], places = [], hotelId = '1', initialTab = 'analytics' }) => {
+const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ onLogout, onNavigate: _onNavigate, therapists = [], places = [], hotelId = '1', initialTab = 'analytics' }) => {
     
     // Therapist banner images pool for randomization - Using Appwrite curated collection
     const therapistBannerImages = getAllTherapistImages();

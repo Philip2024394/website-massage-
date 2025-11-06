@@ -43,7 +43,7 @@ interface VillaDashboardPageProps {
     initialTab?: 'analytics' | 'discounts' | 'profile' | 'menu' | 'feedback' | 'concierge' | 'commissions' | 'notifications' | 'membership';
 }
 
-const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({ onLogout, onNavigate, therapists = [], places = [], villaId = '1', initialTab = 'analytics' }) => {
+const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({ onLogout, onNavigate: _onNavigate, therapists = [], places = [], villaId = '1', initialTab = 'analytics' }) => {
     const { t } = useTranslations();
     
     // Therapist banner images pool for randomization - Using Appwrite curated collection
@@ -100,7 +100,7 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({ onLogout, onNav
                 let massageTypes: string[] = [];
                 try {
                     massageTypes = JSON.parse(item.massageTypes || '[]');
-                } catch (e) {
+                } catch {
                     massageTypes = [];
                 }
                 // Get image - use mainImage for both therapists and places (same as home page)

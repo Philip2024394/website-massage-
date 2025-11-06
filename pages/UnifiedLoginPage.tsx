@@ -21,7 +21,12 @@ const loginOptions = [
 const UnifiedLoginPage: React.FC = () => {
   // If using react-router, otherwise replace with your navigation logic
   let navigate: any = () => window.location.href = '/';
-  try { navigate = require('react-router-dom').useNavigate(); } catch {}
+  try { 
+    const { useNavigate } = require('react-router-dom'); 
+    navigate = useNavigate(); 
+  } catch {
+    // Fallback navigation
+  }
   const [selectedRole, setSelectedRole] = useState('');
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [form, setForm] = useState({ email: '', password: '', extra: '' });
