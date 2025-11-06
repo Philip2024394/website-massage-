@@ -172,28 +172,28 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({ onBack,
             label: 'All Partners', 
             icon: '🌟', 
             count: partners.length,
-            color: 'bg-gradient-to-r from-purple-500 to-pink-500'
+            color: 'bg-gradient-to-r from-orange-500 to-red-500'
         },
         { 
             value: 'therapist', 
             label: 'Indastreet Therapists', 
             icon: '💆‍♀️', 
             count: partners.filter(p => p.category === 'therapist').length,
-            color: 'bg-gradient-to-r from-purple-500 to-indigo-500'
+            color: 'bg-gradient-to-r from-orange-500 to-amber-500'
         },
         { 
             value: 'massage-place', 
             label: 'Indastreet Massage Places', 
             icon: '🏢', 
             count: partners.filter(p => p.category === 'massage-place').length,
-            color: 'bg-gradient-to-r from-blue-500 to-cyan-500'
+            color: 'bg-gradient-to-r from-orange-600 to-orange-400'
         },
         { 
             value: 'hotel', 
             label: 'Indastreet Hotels', 
             icon: '🏨', 
             count: partners.filter(p => p.category === 'hotel').length,
-            color: 'bg-gradient-to-r from-green-500 to-emerald-500'
+            color: 'bg-gradient-to-r from-amber-500 to-yellow-500'
         },
         { 
             value: 'villa', 
@@ -214,12 +214,12 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({ onBack,
 
     const getCategoryColor = (category: string) => {
         const categoryColors = {
-            'therapist': 'bg-purple-100 text-purple-800 border-purple-200',
-            'massage-place': 'bg-blue-100 text-blue-800 border-blue-200',
-            'hotel': 'bg-green-100 text-green-800 border-green-200',
-            'villa': 'bg-orange-100 text-orange-800 border-orange-200'
+            'therapist': 'bg-orange-100 text-orange-800 border-orange-200',
+            'massage-place': 'bg-amber-100 text-amber-800 border-amber-200',
+            'hotel': 'bg-orange-100 text-orange-800 border-orange-200',
+            'villa': 'bg-amber-100 text-amber-800 border-amber-200'
         };
-        return categoryColors[category as keyof typeof categoryColors] || 'bg-gray-100 text-gray-800 border-gray-200';
+        return categoryColors[category as keyof typeof categoryColors] || 'bg-orange-100 text-orange-800 border-orange-200';
     };
 
     const getCategoryIcon = (category: string) => {
@@ -248,9 +248,9 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({ onBack,
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+            <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-100 flex items-center justify-center">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
                     <p className="mt-4 text-gray-600">Loading Indastreet Partners...</p>
                 </div>
             </div>
@@ -258,7 +258,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({ onBack,
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-100">
             {/* Navigation Header */}
             <div className="bg-white shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -302,7 +302,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({ onBack,
                             Verified Partners
                         </div>
                         <div className="flex items-center">
-                            <EyeIcon className="w-5 h-5 text-blue-400 mr-2" />
+                            <EyeIcon className="w-5 h-5 text-orange-400 mr-2" />
                             Live Website Previews
                         </div>
                         <div className="flex items-center">
@@ -373,7 +373,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({ onBack,
                     {filteredPartners.map((partner) => (
                         <div key={partner.id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
                             {/* Website Preview Section */}
-                            <div className="relative h-48 bg-gradient-to-r from-indigo-400 to-purple-500">
+                            <div className="relative h-48 bg-gradient-to-r from-orange-400 to-amber-500">
                                 {partner.websitePreview ? (
                                     <div className="relative h-full">
                                         <img
@@ -387,7 +387,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({ onBack,
                                         />
                                         <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center">
                                             <div className="bg-white bg-opacity-90 rounded-lg px-3 py-2 flex items-center space-x-2">
-                                                <EyeIcon className="w-4 h-4 text-indigo-600" />
+                                                <EyeIcon className="w-4 h-4 text-orange-600" />
                                                 <span className="text-xs font-medium text-gray-700">Live Preview</span>
                                             </div>
                                         </div>
@@ -491,7 +491,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({ onBack,
                                     href={partner.websiteUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-4 rounded-lg font-medium text-center inline-flex items-center justify-center hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 shadow-lg"
+                                    className="w-full bg-gradient-to-r from-orange-600 to-amber-600 text-white py-3 px-4 rounded-lg font-medium text-center inline-flex items-center justify-center hover:from-orange-700 hover:to-amber-700 transition-all duration-200 transform hover:scale-105 shadow-lg"
                                 >
                                     <ExternalLinkIcon className="w-5 h-5 mr-2" />
                                     Visit Website
@@ -522,13 +522,13 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({ onBack,
                 )}
 
                 {/* Join Partner Program CTA */}
-                <div className="mt-12 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl p-8 text-center text-white">
+                <div className="mt-12 bg-gradient-to-r from-orange-600 to-amber-600 rounded-xl p-8 text-center text-white">
                     <h2 className="text-2xl font-bold mb-4">Want to become an Indastreet Partner?</h2>
-                    <p className="text-indigo-100 mb-6 max-w-2xl mx-auto">
+                    <p className="text-orange-100 mb-6 max-w-2xl mx-auto">
                         Join our network of verified wellness professionals and luxury accommodations. 
                         Get featured on our platform and boost your online visibility.
                     </p>
-                    <button className="bg-white text-indigo-600 px-8 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors duration-200">
+                    <button className="bg-white text-orange-600 px-8 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors duration-200">
                         Apply for Partnership
                     </button>
                 </div>
