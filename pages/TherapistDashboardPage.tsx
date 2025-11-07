@@ -124,9 +124,10 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
     const fetchTherapistData = useCallback(async () => {
         setIsLoading(true);
         
-        console.log('📖 Fetching therapist data for ID:', therapistId);
-        // Try to fetch existing therapist data from Appwrite
-        const existingTherapist = await therapistService.getById(therapistId.toString());
+        try {
+            console.log('📖 Fetching therapist data for ID:', therapistId);
+            // Try to fetch existing therapist data from Appwrite
+            const existingTherapist = await therapistService.getById(therapistId.toString());
         
         if (existingTherapist) {
             console.log('✅ Found existing therapist profile:', existingTherapist);
@@ -217,6 +218,56 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
         } else {
             console.log('📝 No existing profile found, starting with empty form');
             // No existing profile - start with empty data
+            const emptyTherapist = {
+                id: therapistId,
+                name: '',
+                description: '',
+                profilePicture: '',
+                whatsappNumber: '',
+                massageTypes: stringifyMassageTypes([]),
+                pricing: stringifyPricing({ "60": 0, "90": 0, "120": 0 }),
+                location: '',
+                coordinates: stringifyCoordinates({ lat: 0, lng: 0 }),
+                status: AvailabilityStatus.Offline,
+                isLive: false,
+                rating: 0,
+                reviewCount: 0,
+                activeMembershipDate: new Date().toISOString().split('T')[0],
+                email: `therapist${therapistId}@indostreet.com`,
+                distance: 0,
+                analytics: stringifyAnalytics({ 
+                  impressions: 0, 
+                  views: 0, 
+                  profileViews: 0,
+                  whatsapp_clicks: 0, 
+                  whatsappClicks: 0,
+                  phone_clicks: 0, 
+                  directions_clicks: 0, 
+                  bookings: 0 
+                }),
+            };
+            
+            setTherapist(emptyTherapist);
+            setName('');
+            setDescription('');
+            setProfilePicture('');
+            setWhatsappNumber('');
+            setYearsOfExperience(0);
+            setMassageTypes([]);
+            setLanguages([]);
+            setPricing({ "60": 0, "90": 0, "120": 0 });
+            setHotelVillaPricing({ "60": 0, "90": 0, "120": 0 });
+            setUseSamePricing(true);
+            setLocation('');
+            setCoordinates({ lat: 0, lng: 0 });
+            setStatus(AvailabilityStatus.Offline);
+            setIsLicensed(false);
+            setLicenseNumber('');
+        }
+        } catch (error) {
+            console.error('❌ Error fetching therapist data:', error);
+            // If there's an error fetching data, treat as no existing profile
+            console.log('📝 Error occurred, starting with empty form');
             const emptyTherapist = {
                 id: therapistId,
                 name: '',
@@ -492,6 +543,9 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                 }),
                 massageTypes: stringifyMassageTypes(massageTypes),
                 languages,
+                // Required Appwrite fields that were missing
+                specialization: massageTypes.length > 0 ? massageTypes[0] : 'General Massage',
+                availability: 'full-time', // Default availability
             };
             
             console.log('💾 Calling onSave with data:', saveData);
@@ -549,9 +603,34 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
         switch (activeTab) {
             case 'status': {
                 const handleStatusChange = async (newStatus: AvailabilityStatus) => {
+                    // Don't change if already the same status
+                    if (status === newStatus) {
+                        console.log('🔄 Status is already', newStatus);
+                        return;
+                    }
+                    
+                    // Add confirmation for status changes
+                    const statusLabels = {
+                        [AvailabilityStatus.Available]: 'Available',
+                        [AvailabilityStatus.Busy]: 'Busy',
+                        [AvailabilityStatus.Offline]: 'Offline'
+                    };
+                    
+                    const currentLabel = statusLabels[status];
+                    const newLabel = statusLabels[newStatus];
+                    
+                    const confirmed = window.confirm(
+                        `Change your status from "${currentLabel}" to "${newLabel}"?\n\nThis will update your availability for customers immediately.`
+                    );
+                    
+                    if (!confirmed) {
+                        console.log('📵 Status change cancelled by user');
+                        return;
+                    }
+                    
                     setStatus(newStatus);
                     
-                    // Auto-save status to database
+                    // Auto-save status to database after confirmation
                     try {
                         console.log('💾 Auto-saving status:', newStatus);
                         const therapistIdString = typeof therapistId === 'string' ? therapistId : therapistId.toString();
@@ -564,6 +643,9 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                         }
                     } catch (error) {
                         console.error('❌ Error saving status:', error);
+                        // Revert status on error
+                        setStatus(status);
+                        alert('Failed to update status. Please try again.');
                     }
                 };
                 

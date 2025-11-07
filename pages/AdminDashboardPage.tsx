@@ -1,6 +1,7 @@
 
 
 import React, { useState, useEffect } from 'react';
+import type { Page } from '../types/pageTypes';
 import { BarChart, Users, Building, Settings, Percent, LogOut, CreditCard, DollarSign, ShoppingBag, UserCheck, Menu, X, Package, Briefcase, Globe, Bell } from 'lucide-react';
 import ConfirmTherapistsPage from './ConfirmTherapistsPage';
 import ConfirmPlacesPage from './ConfirmPlacesPage';
@@ -24,9 +25,10 @@ import '../utils/pricingHelper'; // Load pricing helper for console access
 interface AdminDashboardPageProps {
     onLogout: () => void;
     initialTab?: DashboardPage;
+    onNavigate?: (page: Page) => void;
 }
 type DashboardPage = 'platform-analytics' | 'confirm-therapists' | 'confirm-places' | 'confirm-accounts' | 'drawer-buttons' | 'agent-commission' | 'bank-details' | 'payment-transactions' | 'shop-management' | 'membership-pricing' | 'job-postings' | 'translations' | 'therapist-translations' | 'place-activation-requests';
-const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'initialTab'>> = ({ onLogout, initialTab }) => {
+const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'initialTab' | 'onNavigate'>> = ({ onLogout, initialTab, onNavigate }) => {
   const [activePage, setActivePage] = useState<DashboardPage>(initialTab || 'platform-analytics');
   const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
   const [showTranslationManager, setShowTranslationManager] = useState(false);
@@ -290,18 +292,55 @@ const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'i
           </button>
         </nav>
 
-        {/* Drawer Footer - Logout Button */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gray-50 border-t">
-          <button
-            onClick={() => {
-              setIsSideDrawerOpen(false);
-              onLogout();
-            }}
-            className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors shadow-md"
-          >
-            <LogOut className="w-5 h-5" />
-            <span className="font-medium">Logout</span>
-          </button>
+        {/* Drawer Footer - Footer Links & Logout Button */}
+        <div className="absolute bottom-0 left-0 right-0 bg-gray-50 border-t">
+          {/* Footer Links */}
+          <div className="px-4 py-2 border-b border-gray-200">
+            <div className="flex justify-center gap-4">
+              <button 
+                onClick={() => {
+                  setIsSideDrawerOpen(false);
+                  onNavigate?.('adminLogin');
+                }}
+                className="text-xs text-orange-500 hover:text-orange-600 transition-colors font-bold"
+              >
+                Admin
+              </button>
+              <span className="text-xs text-gray-400">•</span>
+              <button 
+                onClick={() => {
+                  setIsSideDrawerOpen(false);
+                  onNavigate?.('serviceTerms');
+                }}
+                className="text-xs text-orange-500 hover:text-orange-600 transition-colors font-bold"
+              >
+                Terms
+              </button>
+              <span className="text-xs text-gray-400">•</span>
+              <button 
+                onClick={() => {
+                  setIsSideDrawerOpen(false);
+                  onNavigate?.('privacy');
+                }}
+                className="text-xs text-orange-500 hover:text-orange-600 transition-colors font-bold"
+              >
+                Privacy
+              </button>
+            </div>
+          </div>
+          {/* Logout Button */}
+          <div className="p-4">
+            <button
+              onClick={() => {
+                setIsSideDrawerOpen(false);
+                onLogout();
+              }}
+              className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors shadow-md"
+            >
+              <LogOut className="w-5 h-5" />
+              <span className="font-medium">Logout</span>
+            </button>
+          </div>
         </div>
       </div>
 

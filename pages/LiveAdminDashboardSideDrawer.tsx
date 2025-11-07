@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import type { Page } from '../types/pageTypes';
 import { 
     BarChart, Users, MessageSquare, Settings, Menu, X,
     DollarSign, Calendar, Activity, Bell, Home,
@@ -37,9 +38,10 @@ interface RecentActivity {
 
 interface LiveAdminDashboardProps {
     onLogout: () => void;
+    onNavigate?: (page: Page) => void;
 }
 
-const LiveAdminDashboardSideDrawer: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => {
+const LiveAdminDashboardSideDrawer: React.FC<LiveAdminDashboardProps> = ({ onLogout, onNavigate }) => {
     const [stats, setStats] = useState<LiveStats>({
         totalUsers: 0,
         totalTherapists: 0,
@@ -275,14 +277,42 @@ const LiveAdminDashboardSideDrawer: React.FC<LiveAdminDashboardProps> = ({ onLog
                 </div>
             </nav>
 
-            <div className="absolute bottom-0 w-full p-3 border-t border-gray-200">
-                <button
-                    onClick={onLogout}
-                    className="w-full flex items-center px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                >
-                    <LogOut className="w-5 h-5" />
-                    <span className="ml-3">Logout</span>
-                </button>
+            <div className="absolute bottom-0 w-full border-t border-gray-200">
+                {/* Footer Links */}
+                <div className="px-3 py-2 border-b border-gray-100">
+                    <div className="flex justify-center gap-4">
+                        <button 
+                            onClick={() => onNavigate?.('adminLogin')}
+                            className="text-xs text-orange-500 hover:text-orange-600 transition-colors font-bold"
+                        >
+                            Admin
+                        </button>
+                        <span className="text-xs text-gray-400">•</span>
+                        <button 
+                            onClick={() => onNavigate?.('serviceTerms')}
+                            className="text-xs text-orange-500 hover:text-orange-600 transition-colors font-bold"
+                        >
+                            Terms
+                        </button>
+                        <span className="text-xs text-gray-400">•</span>
+                        <button 
+                            onClick={() => onNavigate?.('privacy')}
+                            className="text-xs text-orange-500 hover:text-orange-600 transition-colors font-bold"
+                        >
+                            Privacy
+                        </button>
+                    </div>
+                </div>
+                {/* Logout Button */}
+                <div className="p-3">
+                    <button
+                        onClick={onLogout}
+                        className="w-full flex items-center px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    >
+                        <LogOut className="w-5 h-5" />
+                        <span className="ml-3">Logout</span>
+                    </button>
+                </div>
             </div>
         </div>
     );

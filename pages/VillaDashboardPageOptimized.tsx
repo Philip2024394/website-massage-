@@ -1,15 +1,18 @@
 import React from 'react';
+import type { Page } from '../types/pageTypes';
 import { Therapist, Place } from '../types';
+// Define DurationKey locally since it's not exported from a common module
+type DurationKey = '60' | '90' | '120';
 import { useDashboardLogic } from '../hooks/useDashboardLogic';
 import { DashboardHeader, DashboardFooter, SideDrawer } from '../components/shared/DashboardComponents';
 import HotelBookingModal from '../components/hotel/PropertyBookingModal';
 import { QRModal } from '../components/shared/QRModal';
-import { PreviewModal } from '../components/shared/PreviewModal';
-import { TabContent } from '../components/shared/TabContent';
+// import { PreviewModal } from '../components/shared/PreviewModal'; // Component not found - removed
+// import { TabContent } from '../components/shared/TabContent'; // Component not found - removed
 
 interface VillaDashboardPageProps {
     onLogout: () => void;
-    onNavigate?: (page: string) => void;
+    onNavigate?: (page: Page) => void;
     therapists?: Therapist[];
     places?: Place[];
     villaId?: string;
@@ -38,36 +41,18 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
                 onLogout={onLogout}
                 providersCount={dashboard.providers.length}
                 type="villa"
+                onNavigate={_onNavigate}
             />
 
             <main className="flex-1 w-full max-w-5xl mx-auto px-2 py-3 sm:p-4 md:p-6 lg:p-8 pb-24 overflow-y-auto">
-                <TabContent
-                    activeTab={dashboard.activeTab}
-                    setActiveTab={dashboard.setActiveTab}
-                    type="villa"
-                    entityId={villaId}
-                    analytics={dashboard.analytics}
-                    isLoadingAnalytics={dashboard.isLoadingAnalytics}
-                    providers={dashboard.providers}
-                    displayProviders={dashboard.displayProviders}
-                    placeholderImage={dashboard.placeholderImage}
-                    mainImage={dashboard.mainImage}
-                    setMainImage={dashboard.setMainImage}
-                    profileImage={dashboard.profileImage}
-                    setProfileImage={dashboard.setProfileImage}
-                    entityName={dashboard.entityName}
-                    setEntityName={dashboard.setEntityName}
-                    entityAddress={dashboard.entityAddress}
-                    setEntityAddress={dashboard.setEntityAddress}
-                    entityPhone={dashboard.entityPhone}
-                    setEntityPhone={dashboard.setEntityPhone}
-                    isLoadingProfile={dashboard.isLoadingProfile}
-                    isProcessing={dashboard.isProcessing}
-                    qrLink={dashboard.qrLink}
-                    onSaveAndPreview={dashboard.handleSaveAndPreview}
-                    onQrOpen={dashboard.openQrFor}
-                    onOrderNow={dashboard.handleOrderNow}
-                />
+                {/* TabContent component not found - using simple div structure */}
+                <div className="tab-content">
+                    <p className="text-center p-4 text-gray-600">Villa Dashboard Content</p>
+                    <p className="text-sm text-gray-500 text-center">
+                        TabContent component is missing. Please restore or implement tab functionality.
+                    </p>
+                    {/* TODO: Implement proper tab content or restore TabContent component */}
+                </div>
             </main>
 
             <DashboardFooter type="villa" />
@@ -81,29 +66,31 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
                 type="villa"
             />
 
-            <PreviewModal
-                isOpen={dashboard.previewOpen}
-                onClose={() => {
-                    dashboard.setPreviewOpen(false);
-                    dashboard.setShowLandingPage(true);
-                }}
-                showLandingPage={dashboard.showLandingPage}
-                setShowLandingPage={dashboard.setShowLandingPage}
-                mainImage={dashboard.mainImage}
-                profileImage={dashboard.profileImage}
-                entityName={dashboard.entityName}
-                entityAddress={dashboard.entityAddress}
-                entityPhone={dashboard.entityPhone}
-                displayProviders={dashboard.displayProviders}
-                onOrderNow={dashboard.handleOrderNow}
-                type="villa"
-            />
+            {/* PreviewModal component not found - commented out */}
+            {dashboard.previewOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 max-w-md">
+                        <h3 className="text-lg font-semibold mb-4">Preview Not Available</h3>
+                        <p className="text-gray-600 mb-4">PreviewModal component is missing.</p>
+                        <button 
+                            onClick={() => {
+                                dashboard.setPreviewOpen(false);
+                                dashboard.setShowLandingPage(true);
+                            }}
+                            className="bg-blue-500 text-white px-4 py-2 rounded"
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            )}
+            {/* TODO: Restore PreviewModal component */}
 
             <HotelBookingModal
                 isOpen={dashboard.bookingOpen}
                 onClose={dashboard.closeBookingModal}
                 selectedProvider={dashboard.selectedProvider}
-                selectedDuration={dashboard.selectedDuration}
+                selectedDuration={dashboard.selectedDuration as DurationKey}
                 onDurationChange={dashboard.setSelectedDuration}
                 guestName={dashboard.guestName}
                 onGuestNameChange={dashboard.setGuestName}

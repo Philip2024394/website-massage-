@@ -228,7 +228,7 @@ const App = () => {
                     handleSelectRegistration={navigation?.handleSelectRegistration || (() => {})}
                     handleTherapistStatusChange={(status: string) => 
                         providerAgentHandlers?.handleTherapistStatusChange 
-                            ? providerAgentHandlers.handleTherapistStatusChange(status, providerAgentHandlers.handleSaveTherapist)
+                            ? providerAgentHandlers.handleTherapistStatusChange(status)
                             : Promise.resolve()
                     }
                     handleSaveTherapist={providerAgentHandlers?.handleSaveTherapist || (() => Promise.resolve())}

@@ -12,12 +12,14 @@ import { Users, Building, Sparkles } from 'lucide-react';
 import HomeIcon from '../components/icons/HomeIcon';
 import FlyingButterfly from '../components/FlyingButterfly';
 import { getCustomerLocation, findNearbyTherapists, findNearbyPlaces } from '../lib/nearbyProvidersService';
+import { React19SafeWrapper } from '../components/React19SafeWrapper';
+import PageNumberBadge from '../components/PageNumberBadge';
 
 
 interface HomePageProps {
     user: User | null;
     loggedInAgent: Agent | null;
-    loggedInProvider?: { id: number; type: 'therapist' | 'place' } | null; // Add logged in provider
+    loggedInProvider?: { id: number | string; type: 'therapist' | 'place' } | null; // Add logged in provider
     loggedInCustomer?: any | null; // Add customer login state
     userCoins?: UserCoins | null; // Add user coins
     therapists: any[];
@@ -152,37 +154,37 @@ const HomePage: React.FC<HomePageProps> = ({
             hasHome: t ? !!t.home : false 
         });
         
-        // Import fallback translations if needed
+        // Use proper translation system - no hardcoded fallbacks
         const fallbackHome = {
-            homeServiceTab: t('home.homeServiceTab') || "Layanan Rumah",
-            massagePlacesTab: t('home.massagePlacesTab') || "Tempat Pijat",
-            loading: t('home.loading') || "Memuat...",
-            loginSignup: t('home.loginSignUp') || "Masuk / Daftar",
-            locationLabel: "Lokasi Anda",
-            selectLocation: "Pilih Lokasi",
-            setLocation: t('home.setLocation') || "Atur Lokasi",
-            nearbyTherapists: "Terapis Terdekat",
-            nearbyMassagePlaces: "Tempat Pijat Terdekat",
-            noTherapists: "Tidak ada terapis ditemukan di area Anda",
-            noMassagePlaces: "Tidak ada tempat pijat ditemukan di area Anda",
-            distanceAway: "jauhnya",
-            bookNow: "Pesan Sekarang",
-            viewProfile: "Lihat Profil",
-            whatsapp: "WhatsApp",
-            rating: "Rating",
-            priceFrom: "Mulai dari",
-            priceSession: "per sesi",
-            locationRequired: "Lokasi Diperlukan",
-            locationRequiredDesc: "Silakan atur lokasi Anda untuk melihat layanan terdekat",
-            getAllServices: "Dapatkan Semua Layanan",
-            filterByMassageType: "Filter berdasarkan jenis pijat",
-            allMassageTypes: "Semua Jenis",
-            requestLocation: "Minta Akses Lokasi",
-            therapistsOnline: t('home.therapistsOnline') || "{count} dari {total} terapis online",
+            homeServiceTab: t('home.homeServiceTab'),
+            massagePlacesTab: t('home.massagePlacesTab'),
+            loading: t('home.loading'),
+            loginSignup: t('home.loginSignUp'),
+            locationLabel: t('home.locationLabel'),
+            selectLocation: t('home.selectLocation'),
+            setLocation: t('home.setLocation'),
+            nearbyTherapists: t('home.nearbyTherapists'),
+            nearbyMassagePlaces: t('home.nearbyMassagePlaces'),
+            noTherapists: t('home.noTherapists'),
+            noMassagePlaces: t('home.noMassagePlaces'),
+            distanceAway: t('home.distanceAway'),
+            bookNow: t('home.bookNow'),
+            viewProfile: t('home.viewProfile'),
+            whatsapp: t('home.whatsapp'),
+            rating: t('home.rating'),
+            priceFrom: t('home.priceFrom'),
+            priceSession: t('home.priceSession'),
+            locationRequired: t('home.locationRequired'),
+            locationRequiredDesc: t('home.locationRequiredDesc'),
+            getAllServices: t('home.getAllServices'),
+            filterByMassageType: t('home.filterByMassageType'),
+            allMassageTypes: t('home.allMassageTypes'),
+            requestLocation: t('home.requestLocation'),
+            therapistsOnline: t('home.therapistsOnline'),
             footer: {
-                agentLink: "Become an Agent",
-                termsLink: "Terms of Service", 
-                privacyLink: "Privacy Policy"
+                agentLink: t('home.footer.agentLink'),
+                termsLink: t('home.footer.termsLink'), 
+                privacyLink: t('home.footer.privacyLink')
             }
         };
         
@@ -438,10 +440,11 @@ const HomePage: React.FC<HomePageProps> = ({
 
     return (
         <div className="min-h-screen bg-gray-50">
+            <PageNumberBadge pageNumber={2} pageName="HomePage" isLocked={false} />
             {/* Flying Butterfly Animation */}
             <FlyingButterfly />
             
-            <header className="bg-white p-4 shadow-md sticky top-0 z-20">
+            <header className="bg-white p-4 shadow-md sticky top-0 z-[9997]">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">
                         <span className="text-black">Inda</span>
@@ -489,28 +492,30 @@ const HomePage: React.FC<HomePageProps> = ({
                 </div>
             </header>
             
-            {/* Global App Drawer */}
-            <AppDrawer
-                isOpen={isMenuOpen}
-                onClose={() => {
-                    console.log('🍔 AppDrawer onClose called');
-                    setIsMenuOpen(false);
-                }}
-                t={safeT}
-                onMassageJobsClick={onMassageJobsClick}
-                onHotelPortalClick={onHotelPortalClick}
-                onVillaPortalClick={onVillaPortalClick}
-                onTherapistPortalClick={onTherapistPortalClick}
-                onMassagePlacePortalClick={onMassagePlacePortalClick}
-                onAgentPortalClick={onAgentPortalClick}
-                onCustomerPortalClick={onCustomerPortalClick}
-                onAdminPortalClick={onAdminPortalClick}
-                onNavigate={onNavigate}
-                onTermsClick={onTermsClick}
-                onPrivacyClick={onPrivacyClick}
-                therapists={therapists}
-                places={places}
-            />
+            {/* Global App Drawer - Chrome Safe Rendering */}
+            <React19SafeWrapper condition={isMenuOpen}>
+                <AppDrawer
+                    isOpen={isMenuOpen}
+                    onClose={() => {
+                        console.log('🍔 AppDrawer onClose called');
+                        setIsMenuOpen(false);
+                    }}
+                    t={safeT}
+                    onMassageJobsClick={onMassageJobsClick}
+                    onHotelPortalClick={onHotelPortalClick}
+                    onVillaPortalClick={onVillaPortalClick}
+                    onTherapistPortalClick={onTherapistPortalClick}
+                    onMassagePlacePortalClick={onMassagePlacePortalClick}
+                    onAgentPortalClick={onAgentPortalClick}
+                    onCustomerPortalClick={onCustomerPortalClick}
+                    onAdminPortalClick={onAdminPortalClick}
+                    onNavigate={onNavigate}
+                    onTermsClick={onTermsClick}
+                    onPrivacyClick={onPrivacyClick}
+                    therapists={therapists}
+                    places={places}
+                />
+            </React19SafeWrapper>
 
 
             <main className="p-4 pb-24">

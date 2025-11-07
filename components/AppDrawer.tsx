@@ -436,18 +436,18 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                 {onAdminPortalClick && (
                                     <button 
                                         onClick={() => handleItemClick(onAdminPortalClick)}
-                                        className="text-xs text-gray-600 hover:text-gray-900 transition-colors"
+                                        className="text-xs text-orange-500 hover:text-orange-600 transition-colors font-bold"
                                     >
                                         Admin
                                     </button>
                                 )}
-                                {(onTermsClick || onPrivacyClick) && (
+                                {(onAdminPortalClick && (onTermsClick || onPrivacyClick)) && (
                                     <span className="text-xs text-gray-400">•</span>
                                 )}
                                 {onTermsClick && (
                                     <button 
                                         onClick={() => handleItemClick(onTermsClick)}
-                                        className="text-xs text-gray-600 hover:text-gray-900 transition-colors"
+                                        className="text-xs text-orange-500 hover:text-orange-600 transition-colors font-bold"
                                     >
                                         Terms
                                     </button>
@@ -458,7 +458,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                 {onPrivacyClick && (
                                     <button 
                                         onClick={() => handleItemClick(onPrivacyClick)}
-                                        className="text-xs text-gray-600 hover:text-gray-900 transition-colors"
+                                        className="text-xs text-orange-500 hover:text-orange-600 transition-colors font-bold"
                                     >
                                         Privacy
                                     </button>

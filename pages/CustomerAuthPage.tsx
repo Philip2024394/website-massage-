@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { authService, userService } from '../lib/appwriteService';
 import { LogIn, UserPlus, MapPin } from 'lucide-react';
+import PageNumberBadge from '../components/PageNumberBadge';
 
 interface CustomerAuthPageProps {
   onSuccess: (user: any, isNewUser?: boolean) => void;
@@ -127,6 +128,7 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, 
         backgroundRepeat: 'no-repeat'
       }}
     >
+      <PageNumberBadge pageNumber={61} pageName="CustomerAuth" isLocked={false} />
       {/* Overlay for better readability */}
       <div className="absolute inset-0 bg-black/40"></div>
 

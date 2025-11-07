@@ -1,4 +1,5 @@
 import React from 'react';
+import type { Page } from '../../types/pageTypes';
 import { Star, QrCode, Tag, Building, Menu, Users, Bell, Package, Settings, LogOut, X } from 'lucide-react';
 import { useTranslations } from '../../lib/useTranslations';
 
@@ -86,7 +87,8 @@ export const SideDrawer: React.FC<{
     onLogout: () => void;
     providersCount: number;
     type: 'hotel' | 'villa';
-}> = ({ isOpen, onClose, activeTab, setActiveTab, onLogout, providersCount, type }) => {
+    onNavigate?: (page: Page) => void;
+}> = ({ isOpen, onClose, activeTab, setActiveTab, onLogout, providersCount, type, onNavigate }) => {
     const { t } = useTranslations();
     
     const navigationItems = [
@@ -149,18 +151,55 @@ export const SideDrawer: React.FC<{
                     ))}
                 </nav>
 
-                {/* Drawer Footer - Logout Button */}
-                <div className="absolute bottom-0 left-0 right-0 p-4 bg-gray-50 border-t">
-                    <button
-                        onClick={() => {
-                            onClose();
-                            onLogout();
-                        }}
-                        className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors shadow-md"
-                    >
-                        <LogOut className="w-5 h-5" />
-                        <span className="font-medium">{t('dashboard.logout')}</span>
-                    </button>
+                {/* Drawer Footer - Footer Links & Logout Button */}
+                <div className="absolute bottom-0 left-0 right-0 bg-gray-50 border-t">
+                    {/* Footer Links */}
+                    <div className="px-4 py-2 border-b border-gray-200">
+                        <div className="flex justify-center gap-4">
+                            <button 
+                                onClick={() => {
+                                    onClose();
+                                    onNavigate?.('adminLogin');
+                                }}
+                                className="text-xs text-orange-500 hover:text-orange-600 transition-colors font-bold"
+                            >
+                                Admin
+                            </button>
+                            <span className="text-xs text-gray-400">•</span>
+                            <button 
+                                onClick={() => {
+                                    onClose();
+                                    onNavigate?.('serviceTerms');
+                                }}
+                                className="text-xs text-orange-500 hover:text-orange-600 transition-colors font-bold"
+                            >
+                                Terms
+                            </button>
+                            <span className="text-xs text-gray-400">•</span>
+                            <button 
+                                onClick={() => {
+                                    onClose();
+                                    onNavigate?.('privacy');
+                                }}
+                                className="text-xs text-orange-500 hover:text-orange-600 transition-colors font-bold"
+                            >
+                                Privacy
+                            </button>
+                        </div>
+                    </div>
+                    {/* Logout Button */}
+                    <div className="p-4">
+                        <button
+                            onClick={() => {
+                                onClose();
+                                onLogout();
+                            }}
+                            className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors shadow-md"
+                        >
+                            <LogOut className="w-5 h-5" />
+                            <span className="font-medium">{t('dashboard.logout')}</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </>

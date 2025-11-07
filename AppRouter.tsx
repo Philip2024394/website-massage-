@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Page, Language, LoggedInProvider } from './types/pageTypes';
-import type { User, Place, Therapist, UserLocation, Booking, Notification, Agent, AdminMessage } from './types';
+import type { User, Place, Therapist, UserLocation, Booking, Notification, Agent, AdminMessage, AvailabilityStatus } from './types';
 import { BookingStatus } from './types';
 
 // Page imports
@@ -445,7 +445,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 user={user} 
                 loggedInAgent={loggedInAgent}
                 loggedInProvider={loggedInProvider ? {
-                    id: typeof loggedInProvider.id === 'string' ? Number.parseInt(loggedInProvider.id) : loggedInProvider.id,
+                    id: loggedInProvider.id,
                     type: loggedInProvider.type
                 } : null}
                 loggedInCustomer={loggedInCustomer}
@@ -487,7 +487,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onBack={handleBackToHome} 
                 onBook={(place) => handleNavigateToBooking(place, 'place')} 
                 onIncrementAnalytics={(metric: any) => handleIncrementAnalytics(selectedPlace.id, 'place', metric)} 
-                loggedInProviderId={typeof loggedInProvider?.id === 'string' ? Number.parseInt(loggedInProvider.id) : loggedInProvider?.id} 
+                loggedInProviderId={loggedInProvider?.id} 
                 t={t.detail} 
             />;
             
@@ -521,7 +521,9 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
 
             return loggedInProvider?.type === 'therapist' && <TherapistStatusPage 
                 therapist={therapists.find(t => t.id === loggedInProvider.id) ?? null}
-                onStatusChange={handleTherapistStatusChange}
+                onStatusChange={async (status: AvailabilityStatus) => {
+                    await handleTherapistStatusChange(status as string);
+                }}
                 onLogout={handleProviderLogout}
                 onNavigateToDashboard={() => setPage('therapistDashboard')}
                 t={t.therapistStatus} 
@@ -533,6 +535,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'adminDashboard': 
             return isAdminLoggedIn && <AdminDashboardPage 
                 onLogout={handleAdminLogout}
+                onNavigate={setPage}
             /> || null;
             
         case 'providerAuth': 
@@ -544,7 +547,10 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onLogout={handleProviderLogout}
                 onNavigateToNotifications={handleNavigateToNotifications}
                 onUpdateBookingStatus={handleUpdateBookingStatus}
-                therapistId={typeof loggedInProvider.id === 'string' ? Number.parseInt(loggedInProvider.id) : loggedInProvider.id}
+                onStatusChange={async (status: AvailabilityStatus) => {
+                    await handleTherapistStatusChange(status as string);
+                }}
+                therapistId={loggedInProvider.id}
                 notifications={notifications.filter(n => n.providerId === loggedInProvider.id)}
                 t={t.providerDashboard}
             /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t?.registrationChoice || {}} />;
@@ -594,7 +600,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             console.log('🏢 PlaceDashboard Case - currentPlace found:', currentPlace);
             
             return loggedInProvider?.type === 'place' && currentPlace ? <PlaceDashboardPage 
-                placeId={typeof loggedInProvider.id === 'string' ? Number.parseInt(loggedInProvider.id) : loggedInProvider.id}
+                placeId={loggedInProvider.id}
                 place={currentPlace}
                 onSave={handleSavePlace}
                 onLogout={handleProviderLogout}

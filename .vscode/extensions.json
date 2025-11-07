@@ -2,6 +2,9 @@
     "recommendations": [
         "github.copilot",
         "funkyremi.vscode-google-translate",
+        "intellsmi.comment-translate", 
+        "pmneo.tsimporter",
+        "steoates.autoimport",
         "ms-vscode.vscode-typescript-next",
         "bradlc.vscode-tailwindcss",
         "esbenp.prettier-vscode"

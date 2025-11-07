@@ -188,7 +188,7 @@ const ConfirmTherapistsPage: React.FC = () => {
 
       // Refresh list
       await fetchTherapists();
-      alert(`Therapist activated with ${membershipMonths} month(s) membership! All therapist data preserved.`);
+      alert(`Therapist membership set to ${membershipMonths} month(s)! All therapist data preserved.`);
     } catch (error: any) {
       console.error('❌ Error activating therapist:', error);
       alert('Error activating therapist: ' + (error.message || 'Unknown error. Please try again.'));
@@ -595,7 +595,7 @@ const ConfirmTherapistsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-gray-800">Confirm Therapist Accounts</h2>
+        <h2 className="text-xl font-bold text-gray-800">Manage Live Therapist Profiles</h2>
         <div className="flex gap-2">
           <button
             onClick={async () => {
@@ -893,7 +893,7 @@ const ConfirmTherapistsPage: React.FC = () => {
                               handleActivate(therapist.$id, parseInt(select.value));
                             }}
                           >
-                            {updatingId === therapist.$id ? 'Activating...' : '✅ Activate Account'}
+                            {updatingId === therapist.$id ? 'Setting Membership...' : '💳 Set Membership Status'}
                           </Button>
                         </div>
                       ) : (

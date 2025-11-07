@@ -19,7 +19,7 @@ interface TherapistCardProps {
     isCustomerLoggedIn?: boolean; // Check if customer is logged in
     activeDiscount?: { percentage: number; expiresAt: Date } | null; // Active discount
     t: any;
-    loggedInProviderId?: number; // To prevent self-notification
+    loggedInProviderId?: number | string; // To prevent self-notification
 }
 
 // Utility function to determine display status
@@ -285,7 +285,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     return (
         <div className="bg-white rounded-xl shadow-md overflow-visible relative">
             {/* Main Image Banner */}
-            <div className="h-48 w-full bg-gradient-to-r from-orange-400 to-orange-600 overflow-hidden relative rounded-t-xl">
+            <div className="h-48 w-full bg-gradient-to-r from-orange-400 to-orange-600 overflow-visible relative rounded-t-xl">
                 <img 
                     src={displayImage} 
                     alt={`${therapist.name} cover`} 
@@ -300,35 +300,23 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     }}
                 />
                 
-                {/* Profile Image - Overlapping the banner bottom */}
-                <div className="absolute top-32 left-4 z-50">
-                    <img 
-                        className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg bg-gray-100" 
-                        src={(therapist as any).profilePicture || getRandomTherapistImage(therapist.id.toString())} 
-                        alt={`${therapist.name} profile`} 
-                        onError={(e) => {
-                            const profileImageUrl = (therapist as any).profilePicture || getRandomTherapistImage(therapist.id.toString());
-                            console.error('👤 Profile image failed to load:', profileImageUrl);
-                            // Fallback to a working profile placeholder
-                            (e.target as HTMLImageElement).src = 'https://via.placeholder.com/150/FFB366/FFFFFF?text=' + encodeURIComponent(therapist.name.charAt(0));
-                        }}
-                        onLoad={() => {
-                            const profileImageUrl = (therapist as any).profilePicture || getRandomTherapistImage(therapist.id.toString());
-                            console.log('✅ Profile image loaded successfully:', profileImageUrl);
-                        }}
-                    />
-                </div>
-
-                {/* Distance Display - Top center under main image */}
-                <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-30">
-                    <div className="bg-black/60 text-white px-2 py-1 rounded-lg text-xs">
-                        <DistanceDisplay
-                            userLocation={userLocation}
-                            providerLocation={parseCoordinates(therapist.coordinates) || { lat: 0, lng: 0 }}
-                            className="text-white"
-                            showTravelTime={true}
-                            showIcon={true}
-                            size="sm"
+                {/* Profile Image - 50% on banner, 50% on card overlay */}
+                <div className="absolute top-36 left-4 z-20">
+                    <div className="w-24 h-24 bg-white rounded-full p-1 shadow-xl">
+                        <img 
+                            className="w-full h-full rounded-full object-cover aspect-square" 
+                            src={(therapist as any).profilePicture || getRandomTherapistImage(therapist.id.toString())} 
+                            alt={`${therapist.name} profile`} 
+                            onError={(e) => {
+                                const profileImageUrl = (therapist as any).profilePicture || getRandomTherapistImage(therapist.id.toString());
+                                console.error('👤 Profile image failed to load:', profileImageUrl);
+                                // Fallback to a working profile placeholder
+                                (e.target as HTMLImageElement).src = 'https://via.placeholder.com/150/FFB366/FFFFFF?text=' + encodeURIComponent(therapist.name.charAt(0));
+                            }}
+                            onLoad={() => {
+                                const profileImageUrl = (therapist as any).profilePicture || getRandomTherapistImage(therapist.id.toString());
+                                console.log('✅ Profile image loaded successfully:', profileImageUrl);
+                            }}
                         />
                     </div>
                 </div>
@@ -446,10 +434,22 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 </div>
             </div>
             
-            {/* Therapist Name and Status - Positioned to the right of profile image */}
-            <div className="absolute top-48 left-28 right-4 z-40">
-                <h3 className="text-lg font-bold text-gray-900">{therapist.name}</h3>
-                <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isOvertime ? 'bg-red-100 text-red-800' : style.bg} ${isOvertime ? '' : style.text} mt-1`}>
+            {/* Therapist Name and Distance - Same line layout */}
+            <div className="absolute top-52 left-32 right-4 z-10 flex items-center justify-between">
+                <h3 className="text-xl font-bold text-gray-900">{therapist.name}</h3>
+                <DistanceDisplay
+                    userLocation={userLocation}
+                    providerLocation={parseCoordinates(therapist.coordinates) || { lat: 0, lng: 0 }}
+                    className="text-gray-700"
+                    showTravelTime={true}
+                    showIcon={true}
+                    size="sm"
+                />
+            </div>
+            
+            {/* Online Status - With proper margin spacing */}
+            <div className="absolute top-56 left-32 z-10">
+                <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isOvertime ? 'bg-red-100 text-red-800' : style.bg} ${isOvertime ? '' : style.text} mt-3`}>
                     <span className="relative mr-1.5">
                         {displayStatus === AvailabilityStatus.Available && (
                             <span className="absolute inset-0 w-4 h-4 -left-1 -top-1 rounded-full bg-white opacity-60"></span>
@@ -467,28 +467,28 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 </div>
             </div>
             
-            {/* Content Section - Layout adjusted for profile image positioned above */}
-            <div className="p-4 pt-16 flex flex-col gap-4">
+            {/* Therapist Bio - Paragraph text with proper spacing from status */}
+            <div className="absolute top-72 left-4 right-4 z-10 therapist-bio-section">
+                <p className="text-xs text-gray-600 leading-relaxed text-justify">
+                    Certified massage therapist with {therapist.yearsOfExperience || 5}+ years experience. Specialized in therapeutic and relaxation techniques. Available for home, hotel, and villa services. Professional, licensed, and highly rated by clients for exceptional service quality.
+                </p>
+            </div>
+
+            
+            {/* Content Section - Layout adjusted for overlapping profile image */}
+            <div className="p-4 pt-40 flex flex-col gap-4">
                 <div className="flex items-start gap-4">
-                    <div className="flex-grow mt-10">
+                    <div className="flex-grow">
                         {/* Content starts below the positioned elements */}
                     </div>
                 </div>
 
-            {/* Massage Specializations - Compact layout */}
-            <div className="mt-2">
-                <div className="flex justify-between items-center mb-1">
+            {/* Massage Specializations - Above languages section */}
+            <div className="mt-4">
+                <div className="mb-2">
                     <h4 className="text-xs font-semibold text-gray-700">
                         {_t.home?.therapistCard?.experiencedArea || 'Massage Specializations'}
                     </h4>
-                    {therapist.yearsOfExperience && (
-                        <span className="text-xs font-semibold text-gray-700 flex items-center gap-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-                            </svg>
-                            {therapist.yearsOfExperience}y exp
-                        </span>
-                    )}
                 </div>
                 <div className="flex flex-wrap gap-1">
                     {massageTypes.slice(0, 4).map(type => (
@@ -512,8 +512,18 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     : [];
                 
                 return languages && Array.isArray(languages) && languages.length > 0 && (
-                    <div className="mt-2">
-                        <h4 className="text-xs font-semibold text-gray-700 mb-1">Languages</h4>
+                    <div className="mt-4">
+                        <div className="flex justify-between items-center mb-2">
+                            <h4 className="text-xs font-semibold text-gray-700">Languages</h4>
+                            {therapist.yearsOfExperience && (
+                                <span className="text-xs font-semibold text-gray-700 flex items-center gap-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                                    </svg>
+                                    {therapist.yearsOfExperience} years experience
+                                </span>
+                            )}
+                        </div>
                         <div className="flex flex-wrap gap-1">
                             {languages.slice(0, 2).map(lang => {
                                 const langMap: Record<string, {flag: string, name: string}> = {
@@ -524,6 +534,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                 return (
                                     <span key={lang} className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-gray-800 text-xs font-medium rounded-full flex items-center gap-1">
                                         <span className="text-xs">{langInfo.flag}</span>
+                                        <span className="text-xs">{langInfo.name}</span>
                                     </span>
                                 );
                             })}
@@ -537,7 +548,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
 
             {/* Discount Notice - Shows when discount is active */}
             {therapist.discountPercentage && therapist.discountPercentage > 0 && (
-                <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white py-2 px-3 rounded-lg shadow-md my-2">
+                <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white py-2 px-3 rounded-lg shadow-md my-4">
                     <div className="text-center">
                         <p className="font-bold text-sm mb-0.5 animate-pulse">
                             🔥 {therapist.discountPercentage}% OFF! 🔥
@@ -549,7 +560,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 </div>
             )}
 
-            <div className="grid grid-cols-3 gap-2 text-center text-sm mt-2">
+            <div className="grid grid-cols-3 gap-2 text-center text-sm mt-4">
                 {/* 60 min pricing */}
                 <div className={`bg-gray-100 p-1.5 rounded-lg border border-gray-200 shadow-md relative transition-all duration-500 ${
                     (therapist.discountPercentage && therapist.discountPercentage > 0) || (activeDiscount && discountTimeLeft !== 'EXPIRED')

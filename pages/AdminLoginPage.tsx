@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { adminAuth } from '../lib/auth';
 import { saveSessionCache } from '../lib/sessionManager';
 import { checkRateLimit, handleAppwriteError, resetRateLimit, resetAllRateLimits } from '../lib/rateLimitUtils';
+import PageNumberBadge from '../components/PageNumberBadge';
 
 interface AdminLoginPageProps {
     onAdminLogin: () => void;
@@ -164,6 +165,7 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin: _onAdminL
                 backgroundRepeat: 'no-repeat'
             }}
         >
+            <PageNumberBadge pageNumber={5} pageName="AdminLoginPage" isLocked={false} />
             {/* Overlay for better readability */}
             <div className="absolute inset-0 bg-black/40"></div>
 

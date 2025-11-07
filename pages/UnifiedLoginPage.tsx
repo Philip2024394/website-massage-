@@ -7,6 +7,7 @@ import HomeIcon from '../components/icons/HomeIcon';
 import MapPinIcon from '../components/icons/MapPinIcon';
 import DocumentTextIcon from '../components/icons/DocumentTextIcon';
 import { LogIn, UserPlus } from 'lucide-react';
+import PageNumberBadge from '../components/PageNumberBadge';
 
 const loginOptions = [
   { id: 'user', label: 'User', icon: UserSolidIcon },
@@ -108,6 +109,7 @@ const UnifiedLoginPage: React.FC = () => {
         backgroundRepeat: 'no-repeat'
       }}
     >
+      <PageNumberBadge pageNumber={3} pageName="UnifiedLoginPage" isLocked={false} />
       {/* Overlay for better readability */}
       <div className="absolute inset-0 bg-black/40"></div>
 

@@ -89,20 +89,13 @@ export function useTranslations(language?: 'en' | 'id') {
     // Fix: Check if translations have actual content, not just if they exist
     const hasTranslationContent = (obj: any) => obj && Object.keys(obj).length > 0;
     
-    // TEMPORARY: Force Indonesian fallback for testing
-    let finalTranslations;
-    if (currentLanguage === 'id') {
-        finalTranslations = (fallbackTranslations as any).id || fallbackTranslations.en;
-        console.log(`🔧 FORCED Indonesian fallback. Keys:`, Object.keys(finalTranslations || {}));
-        console.log(`🔧 FORCED Home section:`, finalTranslations?.home ? Object.keys(finalTranslations.home) : 'no home');
-    } else {
-        finalTranslations = 
-            (hasTranslationContent(translations[currentLanguage]) ? translations[currentLanguage] : null) ||
-            (hasTranslationContent(translations.en) ? translations.en : null) ||
-            (hasTranslationContent((fallbackTranslations as any)[currentLanguage]) ? (fallbackTranslations as any)[currentLanguage] : null) ||
-            fallbackTranslations.en ||
-            fallbackTranslations;
-    }
+    // Select appropriate translations based on current language
+    let finalTranslations = 
+        (hasTranslationContent(translations[currentLanguage]) ? translations[currentLanguage] : null) ||
+        (hasTranslationContent((fallbackTranslations as any)[currentLanguage]) ? (fallbackTranslations as any)[currentLanguage] : null) ||
+        (hasTranslationContent(translations.en) ? translations.en : null) ||
+        fallbackTranslations.en ||
+        fallbackTranslations;
     
     console.log(`🧭 useTranslations Debug for ${currentLanguage}:`);
     console.log(`  📦 translations[${currentLanguage}] exists:`, !!translations[currentLanguage]);

@@ -55,7 +55,25 @@ class BookingExpirationService {
 
   private async handleExpiredBooking(booking: any) {
     try {
-      console.log(`Handling expired booking: ${booking.$id}`);
+      console.log(`⏰ Handling expired booking: ${booking.$id}`);
+      console.log(`📋 Booking details:`, {
+        id: booking.$id,
+        therapistId: booking.therapistId,
+        therapistType: booking.therapistType,
+        status: booking.status,
+        createdAt: booking.createdAt
+      });
+
+      // Validate booking data
+      if (!booking.$id) {
+        console.error('❌ Invalid booking - missing ID');
+        return;
+      }
+
+      if (booking.status === 'expired') {
+        console.log(`ℹ️ Booking ${booking.$id} already marked as expired`);
+        return;
+      }
 
       // Update booking status to expired
       await databases.updateDocument(
@@ -63,32 +81,62 @@ class BookingExpirationService {
         APPWRITE_CONFIG.collections.bookings,
         booking.$id,
         {
-          status: 'expired',
-          expiredAt: new Date().toISOString()
+          status: 'expired'
+          // Note: No expiredAt field - we use createdAt + timeout to track expiration
         }
       );
 
-      // Release the original therapist if they're still marked as busy with this booking
+      console.log(`✅ Marked booking ${booking.$id} as expired`);
+
+      // Release the provider (therapist or place) if they're still marked as busy with this booking
       try {
-        const therapist = await databases.getDocument(
+        // Validate provider ID exists and is not null/undefined
+        if (!booking.therapistId || booking.therapistId === 'null' || booking.therapistId === 'undefined') {
+          console.log(`⚠️ Skipping provider release - invalid provider ID: ${booking.therapistId}`);
+          return;
+        }
+
+        // Determine which collection to use based on therapistType
+        const isTherapist = booking.therapistType === 'therapist';
+        const isPlace = booking.therapistType === 'place';
+        
+        if (!isTherapist && !isPlace) {
+          console.log(`⚠️ Unknown therapistType: ${booking.therapistType} for booking ${booking.$id}`);
+          return;
+        }
+
+        const collectionId = isTherapist ? 
+          APPWRITE_CONFIG.collections.therapists : 
+          APPWRITE_CONFIG.collections.places;
+
+        console.log(`🔍 Releasing ${booking.therapistType} ${booking.therapistId} from expired booking`);
+
+        const provider = await databases.getDocument(
           APPWRITE_CONFIG.databaseId,
-          APPWRITE_CONFIG.collections.therapists,
+          collectionId,
           booking.therapistId
         );
 
-        if (therapist.currentBookingId === booking.$id) {
+        if (provider.currentBookingId === booking.$id) {
           await databases.updateDocument(
             APPWRITE_CONFIG.databaseId,
-            APPWRITE_CONFIG.collections.therapists,
+            collectionId,
             booking.therapistId,
             {
               status: 'Available',
               currentBookingId: null
             }
           );
+          console.log(`✅ Released ${booking.therapistType} ${booking.therapistId} from expired booking`);
+        } else {
+          console.log(`ℹ️ ${booking.therapistType} ${booking.therapistId} was not assigned to this booking`);
         }
-      } catch (error) {
-        console.error(`Error releasing therapist ${booking.therapistId}:`, error);
+      } catch (error: any) {
+        if (error.code === 404) {
+          console.log(`⚠️ ${booking.therapistType || 'Provider'} ${booking.therapistId} not found - may have been deleted`);
+        } else {
+          console.error(`❌ Error releasing ${booking.therapistType || 'provider'} ${booking.therapistId}:`, error);
+        }
       }
 
       // Broadcast to all available therapists
@@ -101,6 +149,8 @@ class BookingExpirationService {
 
   private async broadcastBookingToAll(booking: any) {
     try {
+      console.log(`🔍 Looking for available therapists to broadcast booking ${booking.$id}...`);
+      
       // Get all available therapists
       const availableTherapists = await databases.listDocuments(
         APPWRITE_CONFIG.databaseId,
@@ -108,17 +158,26 @@ class BookingExpirationService {
         [Query.equal('status', 'Available')]
       );
 
+      // Also try to get total therapist count for debugging
+      const totalTherapists = await databases.listDocuments(
+        APPWRITE_CONFIG.databaseId,
+        APPWRITE_CONFIG.collections.therapists,
+        []
+      );
+
+      console.log(`📊 Therapist Status: ${availableTherapists.documents.length} available out of ${totalTherapists.documents.length} total`);
+
       if (availableTherapists.documents.length === 0) {
-        console.log('No available therapists to broadcast to');
+        console.log('⚠️ No available therapists to broadcast to - all therapists may be busy or offline');
         return;
       }
 
-      console.log(`Broadcasting booking ${booking.$id} to ${availableTherapists.documents.length} therapist(s)`);
+      console.log(`📢 Broadcasting expired booking ${booking.$id} to ${availableTherapists.documents.length} therapist(s)`);
 
       // In a real app, you'd send WhatsApp messages or notifications here
       // For now, we'll just log it
       for (const therapist of availableTherapists.documents) {
-        console.log(`Notifying therapist ${therapist.$id}: ${therapist.name}`);
+        console.log(`📱 Notifying therapist ${therapist.$id}: ${therapist.name} (Status: ${therapist.status})`);
         // TODO: Implement actual WhatsApp/notification sending
         // Example: sendWhatsAppMessage(therapist.phone, message);
       }

@@ -1,0 +1,15 @@
+{
+  "requireConfirmation": true,
+  "autoLockAfterSave": true,
+  "protectedDirectories": [
+    "pages",
+    "components"
+  ],
+  "enabled": true,
+  "excludePatterns": [
+    "*test*",
+    "*spec*",
+    "*demo*"
+  ],
+  "watcherEnabled": true
+}

@@ -106,7 +106,7 @@ const ConfirmPlacesPage: React.FC = () => {
 
       // Refresh list
       await fetchPlaces();
-      alert(`Massage place activated with ${membershipMonths} month(s) membership!`);
+      alert(`Massage place membership set to ${membershipMonths} month(s)!`);
     } catch (error: any) {
       console.error('Error activating place:', error);
       alert('Error activating place: ' + (error.message || 'Unknown error'));
@@ -260,7 +260,7 @@ const ConfirmPlacesPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-gray-800">Confirm Massage Place Accounts</h2>
+        <h2 className="text-xl font-bold text-gray-800">Manage Live Massage Place Profiles</h2>
         <button
           onClick={fetchPlaces}
           className="px-3 py-1.5 text-sm bg-white border border-gray-300 rounded hover:bg-gray-50"
@@ -504,7 +504,7 @@ const ConfirmPlacesPage: React.FC = () => {
                               handleActivate(place.$id, parseInt(select.value));
                             }}
                           >
-                            {updatingId === place.$id ? 'Activating...' : '✅ Activate Account'}
+                            {updatingId === place.$id ? 'Setting Membership...' : '💳 Set Membership Status'}
                           </Button>
                         </div>
                       ) : (

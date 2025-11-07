@@ -324,16 +324,65 @@ export const therapistService = {
     },
     async update(id: string, data: any): Promise<any> {
         try {
+            console.log('🔍 Attempting to update therapist:', {
+                id,
+                databaseId: APPWRITE_CONFIG.databaseId,
+                collectionId: APPWRITE_CONFIG.collections.therapists,
+                endpoint: APPWRITE_CONFIG.endpoint,
+                projectId: APPWRITE_CONFIG.projectId,
+                data
+            });
+            
+            console.log('📊 Appwrite client configuration:', {
+                endpoint: APPWRITE_CONFIG.endpoint,
+                projectId: APPWRITE_CONFIG.projectId,
+                databaseExists: !!APPWRITE_CONFIG.databaseId,
+                collectionExists: !!APPWRITE_CONFIG.collections.therapists
+            });
+            
+            // Map the data to match Appwrite schema exactly
+            const mappedData: any = {};
+            
+            // Handle status update - map to both fields if they exist
+            if (data.status) {
+                mappedData.status = data.status;
+                mappedData.availability = data.status; // Also update availability field
+            }
+            
+            // Handle other common fields
+            if (data.name) mappedData.name = data.name;
+            if (data.email) mappedData.email = data.email;
+            if (data.profilePicture) mappedData.profilePicture = data.profilePicture;
+            if (data.description) mappedData.description = data.description;
+            if (data.whatsappNumber) mappedData.whatsappNumber = data.whatsappNumber;
+            if (data.location) mappedData.location = data.location;
+            if (data.pricing) mappedData.pricing = data.pricing;
+            if (data.massageTypes) mappedData.massageTypes = data.massageTypes;
+            if (data.coordinates) mappedData.coordinates = data.coordinates;
+            if (data.isLive !== undefined) mappedData.isLive = data.isLive;
+            if (data.hourlyRate) mappedData.hourlyRate = data.hourlyRate;
+            if (data.specialization) mappedData.specialization = data.specialization;
+            if (data.yearsOfExperience) mappedData.yearsOfExperience = data.yearsOfExperience;
+            if (data.isLicensed !== undefined) mappedData.isLicensed = data.isLicensed;
+            
+            console.log('📋 Mapped data for Appwrite schema:', mappedData);
+            
             const response = await databases.updateDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.therapists,
                 id,
-                data
+                mappedData
             );
+            
+            console.log('✅ Therapist updated successfully:', response.$id);
             return response;
         } catch (error) {
-            console.error('Error updating therapist:', error);
-            throw error;
+            console.error('❌ Error updating therapist:', error);
+            console.error('🔧 Collection ID (confirmed valid):', APPWRITE_CONFIG.collections.therapists);
+            console.error('🔧 Database ID:', APPWRITE_CONFIG.databaseId);
+            console.error('🔧 Document ID:', id);
+            console.error('🔧 Original data:', data);
+            throw new Error(`Failed to update therapist. ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     },
     async delete(id: string): Promise<void> {
@@ -1295,7 +1344,7 @@ export const notificationService = {
         }
     },
 
-    async getUnread(providerId: number): Promise<any[]> {
+    async getUnread(providerId: number | string): Promise<any[]> {
         try {
             const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,

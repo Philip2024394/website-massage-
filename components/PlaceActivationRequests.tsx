@@ -75,7 +75,7 @@ const PlaceActivationRequests: React.FC<PlaceActivationRequestsProps> = ({ onRef
             await notificationService.create({
                 type: 'place_profile_approved',
                 title: 'Profile Approved!',
-                message: 'Congratulations! Your massage place profile has been approved and is now live.',
+                message: 'Your massage place profile has been reviewed and approved by our admin team.',
                 recipientType: 'place',
                 recipientId: notification.data.placeId,
                 data: {
@@ -152,7 +152,7 @@ const PlaceActivationRequests: React.FC<PlaceActivationRequestsProps> = ({ onRef
         return (
             <div className="flex items-center justify-center h-64">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
-                <span className="ml-2 text-gray-600">Loading activation requests...</span>
+                <span className="ml-2 text-gray-600">Loading review requests...</span>
             </div>
         );
     }
@@ -162,7 +162,7 @@ const PlaceActivationRequests: React.FC<PlaceActivationRequestsProps> = ({ onRef
             <div className="text-center py-12">
                 <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">All Caught Up!</h3>
-                <p className="text-gray-500">No massage place activation requests at the moment.</p>
+                <p className="text-gray-500">No massage place profiles need review at the moment.</p>
             </div>
         );
     }
@@ -171,10 +171,10 @@ const PlaceActivationRequests: React.FC<PlaceActivationRequestsProps> = ({ onRef
         <div className="space-y-4">
             <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-gray-900">
-                    Massage Place Activation Requests
+                    Live Massage Place Review Requests
                 </h2>
                 <span className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-medium">
-                    {notifications.length} pending
+                    {notifications.length} for review
                 </span>
             </div>
 
@@ -190,8 +190,8 @@ const PlaceActivationRequests: React.FC<PlaceActivationRequestsProps> = ({ onRef
                                 <h3 className="text-lg font-semibold text-gray-900">
                                     {notification.data.placeName}
                                 </h3>
-                                <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium">
-                                    Pending Review
+                                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                                    Live - Under Review
                                 </span>
                             </div>
 
@@ -225,7 +225,7 @@ const PlaceActivationRequests: React.FC<PlaceActivationRequestsProps> = ({ onRef
                             className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <CheckCircle className="w-4 h-4" />
-                            {processing === notification.$id ? 'Approving...' : 'Approve'}
+                            {processing === notification.$id ? 'Confirming...' : 'Mark as Reviewed'}
                         </button>
                         <button
                             onClick={() => handleReject(notification)}
@@ -233,7 +233,7 @@ const PlaceActivationRequests: React.FC<PlaceActivationRequestsProps> = ({ onRef
                             className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <XCircle className="w-4 h-4" />
-                            {processing === notification.$id ? 'Rejecting...' : 'Reject'}
+                            {processing === notification.$id ? 'Processing...' : 'Request Changes'}
                         </button>
                     </div>
                 </div>

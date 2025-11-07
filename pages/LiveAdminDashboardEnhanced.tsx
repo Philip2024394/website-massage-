@@ -11,6 +11,7 @@ import {
     bookingService
 } from '../lib/appwriteService';
 import { analyticsService } from '../services/analyticsService';
+import PageNumberBadge from '../components/PageNumberBadge';
 // import AdminChatListPage from './AdminChatListPage'; // Chat system removed
 
 // Add custom styles for better mobile experience
@@ -824,6 +825,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
 
     return (
         <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
+            <PageNumberBadge pageNumber={42} pageName="LiveAdminDashboard" isLocked={false} />
             {/* Header */}
             <div className="bg-white shadow-sm border-b">
                 <div className="px-4 sm:px-6 py-4">

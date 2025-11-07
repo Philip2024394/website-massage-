@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { Place, Analytics } from '../types';
-import { parsePricing, parseCoordinates } from '../utils/appwriteHelpers';
+import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages } from '../utils/appwriteHelpers';
 import DistanceDisplay from './DistanceDisplay';
 
 interface MassagePlaceCardProps {
@@ -238,14 +238,59 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                     Open Now
                 </div>
             </div>
+
+            {/* Massage Place Bio - 4 lines of detailed description (Same position as TherapistCard) */}
+            <div className="absolute top-72 left-4 right-4 z-10 massage-place-bio-section">
+                <p className="text-xs text-gray-600 leading-relaxed text-justify">
+                    Certified massage therapist with 4+ years experience. Specialized in therapeutic and relaxation techniques. Available for home, hotel, and villa services. Professional, licensed, and highly rated by clients for exceptional service quality.
+                </p>
+            </div>
             
             {/* Content */}
-            <div className="p-4 pt-16 flex flex-col gap-4">
+            <div className="p-4 pt-40 flex flex-col gap-4">
                 <div className="flex items-start gap-4">
                     <div className="flex-grow">
-                        <p className="text-sm text-gray-600 mt-10">{place.description || 'Experience authentic relaxation with expert massage services.'}</p>
+                        {/* Content starts below the positioned elements */}
                     </div>
                 </div>
+
+                {/* Massage Specializations - Mock badges */}
+                <div className="mt-4">
+                    <div className="mb-2">
+                        <h4 className="text-xs font-semibold text-gray-700">
+                            Massage Specializations
+                        </h4>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                        <span className="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs font-medium rounded-full border border-orange-200">Deep Tissue</span>
+                        <span className="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs font-medium rounded-full border border-orange-200">Swedish Massage</span>
+                    </div>
+                </div>
+
+                {/* Languages and Years Experience - Same line layout */}
+                <div className="mt-4">
+                    <div className="flex items-center justify-between mb-2">
+                        <h4 className="text-xs font-semibold text-gray-700">Languages</h4>
+                        <div className="flex items-center gap-1">
+                            <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span className="text-xs font-semibold text-gray-700">8+ Years Experience</span>
+                        </div>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                        <span className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-gray-800 text-xs font-medium rounded-full flex items-center gap-1">
+                            <span className="text-xs">🇬🇧</span>
+                            <span className="text-xs">English</span>
+                        </span>
+                        <span className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-gray-800 text-xs font-medium rounded-full flex items-center gap-1">
+                            <span className="text-xs">🇮🇩</span>
+                            <span className="text-xs">Indonesian</span>
+                        </span>
+                    </div>
+                </div>
+
+
 
                 {/* Amenities */}
                 {displayAmenities.length > 0 && (
@@ -643,3 +688,4 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
 };
 
 export default MassagePlaceCard;
+// Force rebuild

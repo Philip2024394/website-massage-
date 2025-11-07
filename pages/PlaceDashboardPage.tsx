@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { Place, Pricing, Booking, Notification } from '../types';
 import { BookingStatus, HotelVillaServiceStatus } from '../types';
 import { Calendar, TrendingUp, LogOut, Bell, MessageSquare, X, Megaphone, Menu } from 'lucide-react';
@@ -45,7 +45,7 @@ interface PlaceDashboardPageProps {
     onNavigateToNotifications: () => void;
     onNavigate?: (page: any) => void;
     onUpdateBookingStatus: (bookingId: number, status: BookingStatus) => void;
-    placeId: number;
+    placeId: number | string;
     place?: Place | null;
     bookings?: Booking[];
     notifications?: Notification[];
@@ -342,6 +342,92 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         }
     }, [mapsApiLoaded]);
 
+    // 🔄 AUTO-SAVE FUNCTIONALITY: Save form data to localStorage whenever it changes
+    const autoSaveFormData = useCallback(() => {
+        const formData = {
+            name,
+            description,
+            mainImage,
+            profilePicture,
+            galleryImages,
+            whatsappNumber,
+            pricing,
+            hotelVillaPricing,
+            useSamePricing,
+            discountPercentage,
+            location,
+            coordinates,
+            massageTypes,
+            languages,
+            additionalServices,
+            openingTime,
+            closingTime,
+            websiteUrl,
+            websiteTitle,
+            websiteDescription,
+            lastAutoSaved: new Date().toISOString()
+        };
+        
+        try {
+            const storageKey = `place_profile_autosave_${placeId}`;
+            localStorage.setItem(storageKey, JSON.stringify(formData));
+            console.log('💾 Auto-saved place form data to localStorage');
+        } catch (error) {
+            console.error('❌ Failed to auto-save place form data:', error);
+        }
+    }, [name, description, mainImage, profilePicture, galleryImages, whatsappNumber, pricing, hotelVillaPricing, useSamePricing, discountPercentage, location, coordinates, massageTypes, languages, additionalServices, openingTime, closingTime, websiteUrl, websiteTitle, websiteDescription, placeId]);
+
+    // Auto-save form data whenever any field changes (with 2 second debounce)
+    useEffect(() => {
+        const timeoutId = setTimeout(autoSaveFormData, 2000);
+        return () => clearTimeout(timeoutId);
+    }, [autoSaveFormData]);
+
+    // 🔄 RESTORE AUTO-SAVED DATA: Load form data from localStorage on component mount
+    useEffect(() => {
+        const restoreAutoSavedData = async () => {
+            try {
+                const storageKey = `place_profile_autosave_${placeId}`;
+                const savedData = localStorage.getItem(storageKey);
+                
+                if (savedData && !place) { // Only restore if no existing place data
+                    const parsedData = JSON.parse(savedData);
+                    console.log('🔄 Restoring auto-saved place form data');
+                    
+                    setName(parsedData.name || '');
+                    setDescription(parsedData.description || '');
+                    setMainImage(parsedData.mainImage || '');
+                    setProfilePicture(parsedData.profilePicture || '');
+                    setGalleryImages(parsedData.galleryImages || Array(6).fill({ imageUrl: '', caption: '', description: '' }));
+                    setWhatsappNumber(parsedData.whatsappNumber || '');
+                    setPricing(parsedData.pricing || { '60': 0, '90': 0, '120': 0 });
+                    setHotelVillaPricing(parsedData.hotelVillaPricing || { '60': 0, '90': 0, '120': 0 });
+                    setUseSamePricing(parsedData.useSamePricing !== undefined ? parsedData.useSamePricing : true);
+                    setDiscountPercentage(parsedData.discountPercentage || 0);
+                    setLocation(parsedData.location || '');
+                    setCoordinates(parsedData.coordinates || { lat: 0, lng: 0 });
+                    setMassageTypes(parsedData.massageTypes || []);
+                    setLanguages(parsedData.languages || []);
+                    setAdditionalServices(parsedData.additionalServices || []);
+                    setOpeningTime(parsedData.openingTime || '09:00');
+                    setClosingTime(parsedData.closingTime || '21:00');
+                    setWebsiteUrl(parsedData.websiteUrl || '');
+                    setWebsiteTitle(parsedData.websiteTitle || '');
+                    setWebsiteDescription(parsedData.websiteDescription || '');
+                    
+                    console.log('✅ Auto-saved place data restored successfully');
+                }
+            } catch (error) {
+                console.error('❌ Failed to restore auto-saved place data:', error);
+            }
+        };
+        
+        // Only restore auto-saved data if we don't have existing place data
+        if (!place && placeId) {
+            restoreAutoSavedData();
+        }
+    }, [placeId]); // Only depend on placeId to avoid infinite loops
+
     const handleSave = () => {
         // Filter out empty gallery images
         const safeGalleryImages = galleryImages || [];
@@ -414,6 +500,13 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                 console.warn('Failed to remove notification element:', error);
             }
         }, 6000);
+
+        // Clear auto-saved data after successful save
+        try {
+            localStorage.removeItem('place-dashboard-autosave');
+        } catch (error) {
+            console.warn('Failed to clear auto-saved place data:', error);
+        }
     };
     
     // Helper functions for pricing format (supporting 345k format)
@@ -898,7 +991,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                             </div>
                         </div>
                         <PushNotificationSettings 
-                            providerId={placeId} 
+                            providerId={typeof placeId === 'string' ? parseInt(placeId) : placeId} 
                             providerType="place" 
                         />
                     </div>

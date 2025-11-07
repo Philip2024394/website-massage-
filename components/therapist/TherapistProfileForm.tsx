@@ -8,6 +8,7 @@ import ImageUpload from '../ImageUpload';
 import CustomCheckbox from '../CustomCheckbox';
 import { MASSAGE_TYPES_CATEGORIZED } from '../../constants/rootConstants';
 import CurrencyRpIcon from '../icons/CurrencyRpIcon';
+import PageNumberBadge from '../PageNumberBadge';
 
 interface TherapistProfileFormProps {
     // Profile data
@@ -66,7 +67,12 @@ interface TherapistProfileFormProps {
     
     // Handlers
     handleSave: () => void;
+    handleGoLive?: () => void;
     handleSetLocation: () => void;
+    
+    // Profile status
+    isProfileReadyForSave?: boolean;
+    isProfileLive?: boolean;
 }
 
 export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
@@ -78,7 +84,8 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
     setHotelVillaPricing, setUseSamePricing, setLicenseNumber,
     showImageRequirementModal, setShowImageRequirementModal, pendingImageUrl, setPendingImageUrl,
     therapistId, t, locationInputRef, mapsApiLoaded, setToast,
-    handleSave, handleSetLocation
+    handleSave, handleGoLive, handleSetLocation,
+    isProfileReadyForSave, isProfileLive
 }) => {
     const therapistService = {
         getById: async (id: string) => {
@@ -221,6 +228,7 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
 
     return (
         <div className="space-y-6">
+            <PageNumberBadge pageNumber={23} pageName="TherapistProfile" isLocked={false} />
             {/* Profile Header */}
             <div className="border-b border-gray-200 pb-4">
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Profile</h2>
@@ -727,8 +735,57 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                 </div>
             </div>
             
-            <div className="pt-4">
-                <Button onClick={handleSave} className="w-full py-3 text-base font-semibold">{t.saveButton || 'Save Profile'}</Button>
+            <div className="pt-4 space-y-3">
+                {/* Save Profile Button - Always available for editing */}
+                <Button 
+                    onClick={handleSave} 
+                    className="w-full py-3 text-base font-semibold"
+                >
+                    {t.saveButton || 'Save Profile'}
+                </Button>
+                
+                {/* Go Live Button - Only show when profile is ready but not live */}
+                {isProfileReadyForSave && !isProfileLive && handleGoLive && (
+                    <div className="space-y-2">
+                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4">
+                            <div className="flex items-center gap-2 mb-2">
+                                <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                    </svg>
+                                </div>
+                                <h3 className="font-semibold text-green-800">Profile Ready!</h3>
+                            </div>
+                            <p className="text-sm text-green-700 mb-3">
+                                Your profile is complete and ready to go live. Activate it to start receiving bookings from customers.
+                            </p>
+                        </div>
+                        
+                        <Button 
+                            onClick={handleGoLive}
+                            className="w-full py-3 text-base font-semibold bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white"
+                        >
+                            🚀 Go Live & Start Receiving Bookings
+                        </Button>
+                    </div>
+                )}
+                
+                {/* Status Message for Live Profile */}
+                {isProfileLive && (
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                            <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center animate-pulse">
+                                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                            </div>
+                            <h3 className="font-semibold text-blue-800">Profile is Live!</h3>
+                        </div>
+                        <p className="text-sm text-blue-700">
+                            ✅ Your profile is active and customers can book your services. You can now set your availability status in the Status tab.
+                        </p>
+                    </div>
+                )}
             </div>
         </div>
     );

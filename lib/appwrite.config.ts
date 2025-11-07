@@ -6,10 +6,10 @@ export const APPWRITE_CONFIG = {
     // Database ID from your Appwrite project
     databaseId: '68f76ee1000e64ca8d05',
     
-    // Collection IDs from your Appwrite database
+    // Collection IDs from your Appwrite database  
     collections: {
         admins: 'admins_collection_id',
-        therapists: 'therapists_collection_id',
+        therapists: 'therapists_collection_id', // ✅ CONFIRMED - this is the correct collection ID
         places: 'places_collection_id', // ✅ Confirmed - this is the correct collection ID
         agents: 'agents_collection_id',
         agentVisits: 'agent_visits_collection_id', // NEW: Agent visit tracking

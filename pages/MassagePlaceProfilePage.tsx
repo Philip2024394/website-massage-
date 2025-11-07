@@ -10,6 +10,7 @@ import { Bike, Car } from 'lucide-react';
 import { getUserLocation, createTaxiBookingLink, openTaxiApp } from '../services/taxiBookingService';
 import { getAmenityIcon } from '../constants/amenityIcons';
 import { customLinksService } from '../lib/appwriteService';
+import PageNumberBadge from '../components/PageNumberBadge';
 
 interface Place {
     id?: string | number;
@@ -319,6 +320,8 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
 
             {/* Main Content */}
             <main className="w-full max-w-6xl mx-auto px-4 py-6 pb-4">
+                <PageNumberBadge pageNumber={83} pageName="MassagePlaceProfile" isLocked={false} />
+                
                 {/* Hero Section with place info and actions */}
                 <HeroSection
                     place={{ 
@@ -329,6 +332,22 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                     onBookNowClick={handleBookNowClick}
                     onBookClick={handleBookingClick}
                     isCustomerLoggedIn={!!loggedInCustomer}
+                    activeDiscount={(() => {
+                        // Mock discount data for testing - same logic as HomePage
+                        const hasDiscount = place && ((place.id === '1' || place.$id === '1') || (place.name && place.name.toLowerCase().includes('relax')));
+                        if (!hasDiscount) return null;
+                        
+                        // Match HomePage discount logic based on place ID/index
+                        let percentage = 20; // Default to 20% (first place)
+                        if (place.id === '2' || place.$id === '2') percentage = 15;
+                        else if (place.id === '3' || place.$id === '3') percentage = 10;
+                        else if (place.id === '4' || place.$id === '4') percentage = 5;
+                        
+                        return {
+                            percentage: percentage,
+                            expiresAt: new Date(Date.now() + 3 * 60 * 60 * 1000) // Expires in 3 hours
+                        };
+                    })()}
                     onRate={(place) => {
                         // TODO: Implement review modal for places
                         console.log('Rate place:', place);
@@ -376,15 +395,27 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                 </div>
 
                 {/* Amenities Section */}
-                <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-4">Amenities</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pb-20">
-                        {Array.isArray(amenities) && amenities.map((amenity, index) => (
-                            <div key={index} className="flex items-center gap-3 text-gray-700 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-orange-300 hover:bg-orange-50 transition-colors shadow-sm">
-                                {getAmenityIcon(amenity)}
-                                <span className="font-medium">{amenity}</span>
-                            </div>
-                        ))}
+                <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 relative overflow-hidden">
+                    {/* Background Image - Full Color View */}
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <img
+                            src="https://ik.imagekit.io/7grri5v7d/massage%20spa.png?updatedAt=1762514431664"
+                            alt="Massage Spa Background"
+                            className="w-full h-full object-cover opacity-100"
+                        />
+                    </div>
+                    
+                    {/* Content - Above Background with enhanced contrast */}
+                    <div className="relative z-10">
+                        <h3 className="text-2xl font-bold text-black mb-4 drop-shadow-lg">Amenities</h3>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pb-20">
+                            {Array.isArray(amenities) && amenities.map((amenity, index) => (
+                                <div key={index} className="flex items-center gap-3 text-gray-800 p-3 bg-white/95 backdrop-blur-md rounded-lg border border-white/50 hover:border-orange-300 hover:bg-orange-50/95 transition-colors shadow-lg">
+                                    {getAmenityIcon(amenity)}
+                                    <span className="font-medium">{amenity}</span>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
 

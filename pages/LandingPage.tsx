@@ -4,6 +4,7 @@ import { useTranslations } from '../lib/useTranslations';
 import { locationService } from '../services/locationService';
 import { deviceService } from '../services/deviceService';
 import { vscodeTranslateService } from '../lib/vscodeTranslateService';
+import PageNumberBadge from '../components/PageNumberBadge';
 import type { UserLocation } from '../types';
 import type { Language } from '../types/pageTypes';
 
@@ -160,6 +161,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
 
     return (
         <div className="fixed inset-0 w-full h-full flex overflow-hidden">
+            <PageNumberBadge pageNumber={1} pageName="LandingPage" isLocked={false} />
             <div
                 className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ease-in-out"
                 style={{

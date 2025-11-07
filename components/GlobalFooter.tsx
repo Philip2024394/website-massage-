@@ -20,7 +20,6 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
     const isActive = (buttonType: string) => {
         const homePages = ['home', 'landing'];
         const searchPages = ['search', 'therapists', 'places', 'massageTypes'];
-        const bookingPages = ['bookings', 'booking', 'bookingHistory'];
         const shopPages = ['coin-shop', 'shop', 'membership'];
         const profilePages = ['profile', 'customerDashboard', 'therapistDashboard', 'hotelDashboard', 'villaDashboard', 'agentDashboard', 'adminDashboard'];
 
@@ -29,8 +28,6 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
                 return homePages.includes(currentPage);
             case 'search':
                 return searchPages.includes(currentPage);
-            case 'booking':
-                return bookingPages.includes(currentPage);
             case 'shop':
                 return shopPages.includes(currentPage);
             case 'profile':
@@ -61,23 +58,6 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
             label: 'Search',
             onClick: () => onNavigate('therapists'),
             badgeCount: 0
-        },
-        {
-            key: 'booking',
-            icon: <Calendar className={`w-6 h-6 ${getColor('booking')}`} />,
-            label: 'Booking',
-            onClick: () => {
-                // Navigate based on user role
-                if (userRole === 'therapist' || userRole === 'place') {
-                    onNavigate('bookings'); // Provider bookings
-                } else if (userRole === 'customer') {
-                    onNavigate('bookingHistory'); // Customer booking history
-                } else {
-                    onNavigate('bookings'); // Default bookings
-                }
-            },
-            badgeCount: hasNewBookings ? 1 : 0,
-            showDot: hasNewBookings
         },
         {
             key: 'shop',
@@ -138,10 +118,7 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
                                     {item.badgeCount > 9 ? '9+' : item.badgeCount}
                                 </span>
                             )}
-                            {/* Dot indicator for new items */}
-                            {item.showDot && !item.badgeCount && (
-                                <span className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full border-2 border-white animate-pulse"></span>
-                            )}
+
                         </div>
                         <span className={`text-xs mt-1 font-medium transition-colors ${
                             isActive(item.key) ? 'text-orange-600' : 'text-gray-500 group-hover:text-gray-700'

@@ -21,7 +21,15 @@ interface SimpleLanguageProviderProps {
 }
 
 export const SimpleLanguageProvider: React.FC<SimpleLanguageProviderProps> = ({ children }) => {
-    const [language, setLanguage] = useState<Language>('id'); // Default to Indonesian
+    const [language, setLanguage] = useState<Language>(() => {
+        // Check localStorage for consistency with app state
+        try {
+            const storedLanguage = localStorage.getItem('app_language');
+            return (storedLanguage === 'id' || storedLanguage === 'en') ? storedLanguage as Language : 'en';
+        } catch {
+            return 'en'; // Default to English for consistency
+        }
+    });
 
     const handleSetLanguage = (lang: Language) => {
         console.log('🌍 SimpleLanguageContext: Setting language to:', lang);

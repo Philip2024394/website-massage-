@@ -15,7 +15,7 @@ interface PlaceDetailPageProps {
     onShowRegisterPrompt?: () => void; // Show registration popup
     isCustomerLoggedIn?: boolean; // Check if customer is logged in
     t: any;
-    loggedInProviderId?: number; // To prevent self-notification
+    loggedInProviderId?: number | string; // To prevent self-notification
 }
 
 const WhatsAppIcon: React.FC<{className?: string}> = ({ className }) => (

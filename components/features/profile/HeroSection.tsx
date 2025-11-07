@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Star, MapPin, Clock, Calendar, Globe, ShieldCheck } from 'lucide-react';
 
 // Language display mapping - Only English and Indonesian
@@ -32,6 +32,7 @@ interface HeroSectionProps {
     onBookClick: () => void;
     onRate?: (place: Place) => void; // For Leave Review
     isCustomerLoggedIn?: boolean; // Check if customer is logged in
+    activeDiscount?: { percentage: number; expiresAt: Date } | null;
 }
 
 /**
@@ -43,10 +44,36 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     onBookNowClick, 
     onBookClick,
     onRate,
-    isCustomerLoggedIn = false
+    isCustomerLoggedIn = false,
+    activeDiscount
 }) => {
     const [showReferModal, setShowReferModal] = useState(false);
     const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
+    const [discountTimeLeft, setDiscountTimeLeft] = useState<string>('');
+    
+    // Countdown timer for active discount - same as MassagePlaceCard
+    useEffect(() => {
+        if (!activeDiscount) return;
+        
+        const interval = setInterval(() => {
+            const now = new Date().getTime();
+            const distance = activeDiscount.expiresAt.getTime() - now;
+            
+            if (distance < 0) {
+                setDiscountTimeLeft('EXPIRED');
+                clearInterval(interval);
+                return;
+            }
+            
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            
+            setDiscountTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
+        }, 1000);
+        
+        return () => clearInterval(interval);
+    }, [activeDiscount]);
     return (
         <>
             <style>{`
@@ -91,20 +118,32 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             {/* Main Banner Image - Increased height by 10% */}
             <div className="relative h-48 md:h-72">
                 <img
-                    src={place.mainImage || 'https://ik.imagekit.io/7grri5v7d/massage%20indonsea.png?updatedAt=1761973275491'}
+                    src={place.mainImage || 'https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382'}
                     alt={place.name}
                     className="w-full h-full object-cover"
                 />
                 
-                {/* Discount Badge - Top Right Corner (when discount is set) */}
-                {place.discountPercentage && place.discountPercentage > 0 && (
-                    <div className="absolute top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-full shadow-lg animate-pulse">
-                        <span className="font-bold text-lg">-{place.discountPercentage}% OFF</span>
+                {/* Active Discount Badge - Top Right Corner - Same as MassagePlaceCard */}
+                {activeDiscount && discountTimeLeft !== 'EXPIRED' && (
+                    <div className="absolute top-2 right-2 flex flex-col items-end gap-1">
+                        <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-full px-4 py-2 shadow-lg animate-pulse">
+                            <span className="font-bold text-white text-xl">{activeDiscount.percentage}% OFF</span>
+                        </div>
+                        <div className="flex items-center gap-1 bg-black/80 backdrop-blur-md rounded-full px-3 py-1 shadow-lg">
+                            <svg className="w-3 h-3 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span className="text-xs text-white font-semibold">{discountTimeLeft}</span>
+                        </div>
                     </div>
                 )}
                 
-                {/* Operating Hours Badge - Left side */}
-                <div className="absolute top-4 left-4 bg-black/70 backdrop-blur-md text-white px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
+                {/* Operating Hours Badge - Right corner, positioned optimally when discount is active */}
+                <div className={`absolute bg-black/70 backdrop-blur-md text-white px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg transition-all duration-300 ${
+                    (activeDiscount && discountTimeLeft !== 'EXPIRED') 
+                        ? 'top-2 right-48 md:right-64' // Move up and to the left when discount is active
+                        : 'top-4 right-4' // Default position when no discount
+                }`}>
                     <Clock className="w-4 h-4 text-green-400" />
                     <span className="font-semibold text-sm">{place.operatingHours || 'Daily 9:00 AM - 9:00 PM'}</span>
                 </div>
@@ -116,61 +155,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                         <span className="font-semibold text-sm">{place.distance.toFixed(1)} km</span>
                     </div>
                 )}
-                
-                {/* Social Share Buttons - Left Side Vertical */}
-                <div className="absolute left-2 top-1/2 transform -translate-y-1/2 flex flex-col gap-2" onClick={(e) => e.stopPropagation()}>
-                    {/* Instagram */}
-                    <a
-                        href={`https://www.instagram.com/`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-9 h-9 bg-gradient-to-br from-purple-600 via-pink-600 to-orange-600 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
-                        aria-label="Share on Instagram"
-                    >
-                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                        </svg>
-                    </a>
-                    
-                    {/* WhatsApp */}
-                    <a
-                        href={`https://wa.me/?text=Check out ${place.name} on IndaStreet!`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-9 h-9 bg-green-500 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
-                        aria-label="Share on WhatsApp"
-                    >
-                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99 0-3.903-.52-5.614-1.486L.057 24z"/>
-                        </svg>
-                    </a>
-                    
-                    {/* Facebook */}
-                    <a
-                        href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-9 h-9 bg-blue-600 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
-                        aria-label="Share on Facebook"
-                    >
-                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                        </svg>
-                    </a>
-                    
-                    {/* TikTok */}
-                    <a
-                        href={`https://www.tiktok.com/`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-9 h-9 bg-black rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
-                        aria-label="Share on TikTok"
-                    >
-                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
-                        </svg>
-                    </a>
-                </div>
+
                 
                 {/* Circular Profile Image - LEFT side, 20% LARGER than before */}
                 <div className="absolute bottom-0 left-6 md:left-8 transform translate-y-1/2">
@@ -194,8 +179,52 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 </div>
             </div>
 
+            {/* Social Share Buttons - Below main image, right side with spacing */}
+            <div className="flex justify-end pr-6 py-4" onClick={(e) => e.stopPropagation()}>
+                <div className="flex gap-3">
+                    {/* WhatsApp */}
+                    <a
+                        href={`https://wa.me/?text=Check out ${place.name} on IndaStreet!`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
+                        aria-label="Share on WhatsApp"
+                    >
+                        <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99 0-3.903-.52-5.614-1.486L.057 24z"/>
+                        </svg>
+                    </a>
+                    
+                    {/* Instagram */}
+                    <a
+                        href={`https://www.instagram.com/`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-10 h-10 bg-gradient-to-br from-purple-600 via-pink-600 to-orange-600 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
+                        aria-label="Share on Instagram"
+                    >
+                        <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                        </svg>
+                    </a>
+                    
+                    {/* Facebook */}
+                    <a
+                        href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
+                        aria-label="Share on Facebook"
+                    >
+                        <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
             {/* Content Section with padding adjustments */}
-            <div className="p-6 pt-16 md:pt-16 relative">
+            <div className="p-6 pt-8 md:pt-8 relative">
                 {/* Verified Badge - Below main image on right side, no container */}
                 {place.isVerified && (
                     <div className="absolute -top-8 right-6 flex items-center gap-1.5 text-blue-600">
@@ -212,68 +241,60 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     <span className="text-sm md:text-base text-gray-600">{place.location}</span>
                 </div>
 
-                {/* Bio Text - Improved styling */}
-                <p className="text-gray-600 text-sm md:text-base leading-relaxed mb-4">
-                    {place.description || 'Experience authentic relaxation in Yogyakarta with expert hands targeting deep tension and promoting total body recovery.'}
-                </p>
+                {/* Bio Text - Same as MassagePlaceCard */}
+                <div className="mb-4">
+                    <p className="text-xs text-gray-600 leading-relaxed text-justify">
+                        Certified massage therapist with 4+ years experience. Specialized in therapeutic and relaxation techniques. Available for home, hotel, and villa services. Professional, licensed, and highly rated by clients for exceptional service quality.
+                    </p>
+                </div>
 
-                {/* Massage Types Offered Section - Positioned after bio */}
-                {place.massageTypes && (() => {
-                    const types = typeof place.massageTypes === 'string' 
-                        ? JSON.parse(place.massageTypes) 
-                        : place.massageTypes;
-                    return Array.isArray(types) && types.length > 0 ? (
-                        <div className="mb-6">
-                            <div className="flex items-center gap-2 mb-3">
-                                <Star className="w-5 h-5 text-orange-500" />
-                                <h4 className="text-sm font-semibold text-gray-900">Massage Types Offered</h4>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                                {types.map((type: string, index: number) => (
-                                    <div
-                                        key={index}
-                                        className="px-3 py-1.5 bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-full text-sm font-medium text-orange-900"
-                                    >
-                                        {type}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    ) : null;
-                })()}
+                {/* Massage Specializations - Same as MassagePlaceCard */}
+                <div className="mb-4">
+                    <div className="mb-2">
+                        <h4 className="text-xs font-semibold text-gray-700">
+                            Massage Specializations
+                        </h4>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                        <span className="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs font-medium rounded-full border border-orange-200">Deep Tissue</span>
+                        <span className="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs font-medium rounded-full border border-orange-200">Swedish Massage</span>
+                    </div>
+                </div>
 
-                {/* Languages Spoken Section */}
-                {place.languages && place.languages.length > 0 && (
-                    <div className="mb-6">
-                        <div className="flex items-center gap-2 mb-3">
-                            <Globe className="w-5 h-5 text-orange-500" />
-                            <h4 className="text-sm font-semibold text-gray-900">Languages Spoken</h4>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                            {place.languages.map((langCode) => {
-                                const lang = LANGUAGE_MAP[langCode];
-                                if (!lang) return null;
-                                return (
-                                    <div
-                                        key={langCode}
-                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-full text-sm"
-                                    >
-                                        <span className="text-base">{lang.flag}</span>
-                                        <span className="font-medium text-blue-900">{lang.name}</span>
-                                    </div>
-                                );
-                            })}
+                {/* Languages and Years Experience - Same line layout as MassagePlaceCard */}
+                <div className="mb-6">
+                    <div className="flex items-center justify-between mb-2">
+                        <h4 className="text-xs font-semibold text-gray-700">Languages</h4>
+                        <div className="flex items-center gap-1">
+                            <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span className="text-xs font-semibold text-gray-700">8+ Years Experience</span>
                         </div>
                     </div>
-                )}
+                    <div className="flex flex-wrap gap-1">
+                        <span className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-gray-800 text-xs font-medium rounded-full flex items-center gap-1">
+                            <span className="text-xs">🇬🇧</span>
+                            <span className="text-xs">English</span>
+                        </span>
+                        <span className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-gray-800 text-xs font-medium rounded-full flex items-center gap-1">
+                            <span className="text-xs">🇮🇩</span>
+                            <span className="text-xs">Indonesian</span>
+                        </span>
+                    </div>
+                </div>
 
                 {/* Pricing Grid - Same as Therapist Card */}
                 {place.pricing && (() => {
                     const pricing = typeof place.pricing === 'string' ? JSON.parse(place.pricing) : place.pricing;
                     return (
-                        <div className="grid grid-cols-3 gap-2 text-center text-sm mb-4">
+                        <div className="grid grid-cols-3 gap-2 text-center text-sm">
                             {/* 60 min pricing */}
-                            <div className="bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative">
+                            <div className={`bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative transition-all duration-500 ${
+                                (place.discountPercentage && place.discountPercentage > 0) || (activeDiscount && discountTimeLeft !== 'EXPIRED')
+                                    ? 'shadow-orange-500/60 shadow-xl ring-4 ring-orange-400/40 bg-gradient-to-br from-orange-50 to-orange-100 animate-pulse border-orange-300' 
+                                    : ''
+                            }`}>
                                 <p className="text-gray-600">60 min</p>
                                 {place.discountPercentage && place.discountPercentage > 0 ? (
                                     <>
@@ -284,13 +305,26 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                                             -{place.discountPercentage}%
                                         </span>
                                     </>
+                                ) : activeDiscount && discountTimeLeft !== 'EXPIRED' ? (
+                                    <>
+                                        <p className="font-bold text-gray-800">
+                                            Rp {Math.round(Number(pricing["60"]) * (1 - activeDiscount.percentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
+                                        </p>
+                                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-10 h-10 flex items-center justify-center shadow-lg animate-bounce">
+                                            -{activeDiscount.percentage}%
+                                        </span>
+                                    </>
                                 ) : (
                                     <p className="font-bold text-gray-800">Rp {Number(pricing["60"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
                                 )}
                             </div>
                             
                             {/* 90 min pricing */}
-                            <div className="bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative">
+                            <div className={`bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative transition-all duration-500 ${
+                                (place.discountPercentage && place.discountPercentage > 0) || (activeDiscount && discountTimeLeft !== 'EXPIRED')
+                                    ? 'shadow-orange-500/60 shadow-xl ring-4 ring-orange-400/40 bg-gradient-to-br from-orange-50 to-orange-100 animate-pulse border-orange-300' 
+                                    : ''
+                            }`}>
                                 <p className="text-gray-600">90 min</p>
                                 {place.discountPercentage && place.discountPercentage > 0 ? (
                                     <>
@@ -301,13 +335,26 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                                             -{place.discountPercentage}%
                                         </span>
                                     </>
+                                ) : activeDiscount && discountTimeLeft !== 'EXPIRED' ? (
+                                    <>
+                                        <p className="font-bold text-gray-800">
+                                            Rp {Math.round(Number(pricing["90"]) * (1 - activeDiscount.percentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
+                                        </p>
+                                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-10 h-10 flex items-center justify-center shadow-lg animate-bounce">
+                                            -{activeDiscount.percentage}%
+                                        </span>
+                                    </>
                                 ) : (
                                     <p className="font-bold text-gray-800">Rp {Number(pricing["90"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
                                 )}
                             </div>
                             
                             {/* 120 min pricing */}
-                            <div className="bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative">
+                            <div className={`bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative transition-all duration-500 ${
+                                (place.discountPercentage && place.discountPercentage > 0) || (activeDiscount && discountTimeLeft !== 'EXPIRED')
+                                    ? 'shadow-orange-500/60 shadow-xl ring-4 ring-orange-400/40 bg-gradient-to-br from-orange-50 to-orange-100 animate-pulse border-orange-300' 
+                                    : ''
+                            }`}>
                                 <p className="text-gray-600">120 min</p>
                                 {place.discountPercentage && place.discountPercentage > 0 ? (
                                     <>
@@ -318,6 +365,15 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                                             -{place.discountPercentage}%
                                         </span>
                                     </>
+                                ) : activeDiscount && discountTimeLeft !== 'EXPIRED' ? (
+                                    <>
+                                        <p className="font-bold text-gray-800">
+                                            Rp {Math.round(Number(pricing["120"]) * (1 - activeDiscount.percentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
+                                        </p>
+                                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-10 h-10 flex items-center justify-center shadow-lg animate-bounce">
+                                            -{activeDiscount.percentage}%
+                                        </span>
+                                    </>
                                 ) : (
                                     <p className="font-bold text-gray-800">Rp {Number(pricing["120"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
                                 )}
@@ -326,8 +382,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     );
                 })()}
 
-                {/* Booking Buttons */}
-                <div className="grid grid-cols-2 gap-3">
+                {/* Booking Buttons - Added margin-top for spacing from price containers */}
+                <div className="grid grid-cols-2 gap-3 mt-6">
                     <button
                         onClick={onBookNowClick}
                         className="flex items-center justify-center gap-2 py-2.5 px-4 bg-green-500 text-white font-semibold text-sm rounded-lg hover:bg-green-600 transition-colors shadow-lg"

@@ -1,0 +1,15 @@
+{
+  "therapist": {
+    "pages\\TherapistDashboardPage.tsx": true,
+    "pages\\TherapistStatusPage.tsx": true
+  },
+  "shared": {
+    "components\\shared\\DashboardComponents.tsx": true
+  },
+  "admin": {
+    "pages\\AdminDashboardPage.tsx": true
+  },
+  "drawer": {
+    "components\\AppDrawer.tsx": true
+  }
+}

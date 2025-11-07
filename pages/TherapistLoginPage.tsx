@@ -4,6 +4,7 @@ import PasswordInput from '../components/PasswordInput';
 import { therapistAuth } from '../lib/auth';
 import { trackDailySignIn } from '../lib/coinHooks';
 import { LogIn, UserPlus, Mail } from 'lucide-react';
+import PageNumberBadge from '../components/PageNumberBadge';
 
 interface TherapistLoginPageProps {
     onSuccess: (therapistId: string) => void;
@@ -134,6 +135,7 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({ onSuccess, onBa
                 backgroundRepeat: 'no-repeat'
             }}
         >
+            <PageNumberBadge pageNumber={4} pageName="TherapistLoginPage" isLocked={false} />
             {/* Overlay for better readability */}
             <div className="absolute inset-0 bg-black/40"></div>
 

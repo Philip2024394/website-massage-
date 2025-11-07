@@ -1,4 +1,4 @@
-import type { Therapist, Place, Agent } from '../types';
+import type { Therapist, Place, Agent, AvailabilityStatus } from '../types';
 import type { Page, LoggedInProvider } from '../types/pageTypes';
 import { therapistService, placeService, agentService, adminMessageService, notificationService } from '../lib/appwriteService';
 
@@ -61,20 +61,146 @@ export const useProviderAgentHandlers = ({
     setPlaces
 }: UseProviderAgentHandlersProps) => {
 
-    const handleTherapistStatusChange = async (status: string, handleSaveTherapist: any) => {
-        if (!loggedInProvider || loggedInProvider.type !== 'therapist') return;
+    const handleTherapistStatusChange = async (status: string) => {
+        console.log('🚀 ========== DEBUG: THERAPIST STATUS CHANGE START ==========');
+        console.log('📊 Input status:', status, 'Type:', typeof status);
+        console.log('🔍 loggedInProvider exists:', !!loggedInProvider);
+        console.log('🔍 loggedInProvider type:', loggedInProvider?.type);
+        console.log('🔍 loggedInProvider id:', loggedInProvider?.id);
+        console.log('🔍 loggedInProvider $id:', (loggedInProvider as any)?.$id);
+        
+        if (!loggedInProvider || loggedInProvider.type !== 'therapist') {
+            console.error('❌ VALIDATION FAILED: No logged in therapist provider');
+            console.error('❌ loggedInProvider full object:', JSON.stringify(loggedInProvider, null, 2));
+            throw new Error('No logged in therapist provider');
+        }
+        
+        // Declare documentId in broader scope for error handling
+        let documentId = '';
         
         try {
-            // Update status in backend
-            const therapist = therapists.find(t => t.id === loggedInProvider.id);
-            if (therapist) {
-                await handleSaveTherapist({
-                    ...therapist,
-                    status: status as any
-                });
+            console.log('🔄 STARTING therapist status update to:', status);
+            console.log('🔍 Full logged in provider data:', JSON.stringify(loggedInProvider, null, 2));
+            
+            // Enhanced debugging for ID resolution
+            const providerData = loggedInProvider as any;
+            console.log('🔍 ID Resolution Debug:');
+            console.log('  - providerData.id:', providerData.id, 'Type:', typeof providerData.id);
+            console.log('  - providerData.$id:', providerData.$id, 'Type:', typeof providerData.$id);
+            console.log('  - providerData.therapistId:', providerData.therapistId, 'Type:', typeof providerData.therapistId);
+            
+            // Appwrite uses $id as document ID, not the id field
+            // Try multiple ID strategies to find the correct document ID
+            let documentId = '';
+            
+            if (providerData.$id) {
+                // Appwrite document ID
+                documentId = providerData.$id;
+                console.log('✅ Using Appwrite document ID ($id):', documentId);
+            } else if (providerData.therapistId) {
+                // Custom therapistId field
+                documentId = providerData.therapistId;
+                console.log('✅ Using therapistId field:', documentId);
+            } else {
+                // Fallback to regular id
+                documentId = typeof loggedInProvider.id === 'string' 
+                    ? loggedInProvider.id 
+                    : loggedInProvider.id.toString();
+                console.log('✅ Using fallback id:', documentId);
             }
+            
+            console.log('📋 Final document ID for update:', documentId);
+            
+            // Test: Try to get existing therapist first to verify document exists
+            try {
+                console.log('🔍 Testing: Attempting to fetch existing therapist data...');
+                const existingTherapist = await therapistService.getById(documentId);
+                console.log('✅ Found existing therapist:', existingTherapist ? 'YES' : 'NO');
+                if (existingTherapist) {
+                    console.log('📋 Current therapist data:', {
+                        name: existingTherapist.name,
+                        currentStatus: existingTherapist.status,
+                        currentAvailability: existingTherapist.availability
+                    });
+                }
+            } catch (fetchError) {
+                console.error('❌ Could not fetch existing therapist:', fetchError);
+                throw new Error(`Therapist profile not found with ID: ${documentId}. ${fetchError instanceof Error ? fetchError.message : 'Unknown error'}`);
+            }
+            
+            // Update status directly using therapistService
+            console.log('🚀 ATTEMPTING STATUS UPDATE...');
+            console.log('📊 Update parameters:');
+            console.log('  - Document ID:', documentId);
+            console.log('  - Status value:', status);
+            console.log('  - Status type:', typeof status);
+            
+            // Based on your Appwrite data, update both status and availability fields
+            const updateData = { 
+                status: status as AvailabilityStatus,
+                availability: status as AvailabilityStatus  // Some therapists use this field
+            };
+            console.log('  - Update object:', updateData);
+            
+            const updateResult = await therapistService.update(documentId, updateData);
+            
+            console.log('✅ THERAPIST STATUS UPDATE SUCCESS!');
+            console.log('✅ Update result:', updateResult);
+            console.log('✅ Result $id:', updateResult?.$id);
+            console.log('✅ Result status:', updateResult?.status);
+            console.log('✅ Result availability:', updateResult?.availability);
+            
+            // Update local state - map through current therapists and update the matching one
+            const updatedTherapists = therapists.map((t: Therapist) => {
+                const tId = typeof t.id === 'string' ? t.id : t.id?.toString();
+                const tAppwriteId = (t as any).$id;
+                
+                // Match by either regular ID or Appwrite document ID
+                const isMatch = tId === documentId || tAppwriteId === documentId;
+                
+                if (isMatch) {
+                    console.log('🔄 Updating local state for therapist:', t.name, 'from', t.status, 'to', status);
+                }
+                
+                return isMatch 
+                    ? { ...t, status: status as AvailabilityStatus }
+                    : t;
+            });
+            
+            console.log('📊 Local therapists state updated, count:', updatedTherapists.length);
+            setTherapists(updatedTherapists);
+            
         } catch (error) {
-            console.error('Error updating therapist status:', error);
+            console.error('❌ ========== THERAPIST STATUS UPDATE FAILED ==========');
+            console.error('❌ Error type:', typeof error);
+            console.error('❌ Error object:', error);
+            console.error('❌ Error message:', error instanceof Error ? error.message : 'Unknown error');
+            console.error('❌ Error stack:', error instanceof Error ? error.stack : 'No stack');
+            try {
+                console.error('❌ Attempted document ID:', documentId);
+            } catch {
+                console.error('❌ Document ID not accessible in this scope');
+            }
+            console.error('❌ Attempted status:', status);
+            console.error('❌ loggedInProvider at error time:', JSON.stringify(loggedInProvider, null, 2));
+            console.error('❌ Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+            console.error('❌ Full error object:', JSON.stringify(error, null, 2));
+            
+            // More specific error message based on error type
+            let errorMessage = 'Failed to update status. Please try again.';
+            if (error instanceof Error) {
+                if (error.message.includes('Collection ID might be invalid')) {
+                    errorMessage = 'Database configuration error. Please check collection ID.';
+                } else if (error.message.includes('Document not found')) {
+                    errorMessage = 'Therapist profile not found. Please refresh and try again.';
+                } else if (error.message.includes('permission')) {
+                    errorMessage = 'Permission denied. Please check your account access.';
+                } else {
+                    errorMessage = `Update failed: ${error.message}`;
+                }
+            }
+            
+            throw new Error(errorMessage);
         }
     };
 
@@ -173,15 +299,15 @@ export const useProviderAgentHandlers = ({
                 location: updateData.location
             });
             
-            // If profile exists, preserve important fields
+            // If profile exists, preserve important fields but allow going live immediately
             if (existingTherapist) {
-                console.log('✏️ Updating existing profile, preserving isLive, email, rating, reviewCount, activeMembershipDate');
+                console.log('✏️ Updating existing profile, going live immediately');
                 await therapistService.update(therapistId, updateData);
             } else {
-                console.log('➕ Creating new profile with isLive=false (requires admin activation)');
+                console.log('➕ Creating new profile with isLive=true (goes live immediately, admin can review later)');
                 const createData = {
                     ...updateData,
-                    isLive: false,
+                    isLive: true, // 🔄 CHANGED: Now goes live immediately
                     email: `therapist${therapistId}@indostreet.com`,
                 };
                 await therapistService.create(createData);
@@ -210,7 +336,7 @@ export const useProviderAgentHandlers = ({
                     ...updateData,
                     id: loggedInProvider.id,
                     $id: therapistId,
-                    isLive: false,
+                    isLive: true, // 🔄 CHANGED: Now goes live immediately
                     rating: 0,
                     reviewCount: 0,
                     activeMembershipDate: new Date().toISOString().split('T')[0],
@@ -222,7 +348,27 @@ export const useProviderAgentHandlers = ({
             setTherapists(updatedTherapists);
             console.log('🔄 Updated therapists state with new data');
             
-            showToast('Profile saved successfully! All your changes have been saved.', 'success');
+            // Create admin notification for profile review (profile is already live)
+            try {
+                await notificationService.create({
+                    providerId: Number(loggedInProvider.id),
+                    message: `${updateData.name || 'A therapist'} has updated their profile and is now live for review`,
+                    type: 'system' as const,
+                    data: JSON.stringify({
+                        therapistId: String(loggedInProvider.id),
+                        therapistName: updateData.name || 'Unknown Therapist',
+                        email: updateData.email || '',
+                        location: updateData.location || '',
+                        submittedAt: new Date().toISOString()
+                    })
+                });
+                console.log('✅ Admin notification created for therapist profile review');
+            } catch (notificationError) {
+                console.warn('⚠️ Failed to create admin notification:', notificationError);
+                // Don't fail the entire save operation if notification fails
+            }
+            
+            showToast('Profile saved successfully! Your profile is now live and visible to customers.', 'success');
         } catch (error: any) {
             console.error('❌ Save error:', error);
             showToast('Error saving profile: ' + (error.message || 'Unknown error. Please try again.'), 'error');
@@ -300,7 +446,7 @@ export const useProviderAgentHandlers = ({
                         savedDoc = await placeService.create({
                             ...updateData,
                             id: loggedInProvider.id,
-                            isLive: false,
+                            isLive: true, // 🔄 CHANGED: Now goes live immediately
                             rating: 0,
                             reviewCount: 0,
                         });
@@ -318,7 +464,7 @@ export const useProviderAgentHandlers = ({
                 savedDoc = await placeService.create({
                     ...updateData,
                     id: loggedInProvider.id,
-                    isLive: false,
+                    isLive: true, // 🔄 CHANGED: Now goes live immediately
                     rating: 0,
                     reviewCount: 0,
                 });
@@ -351,7 +497,7 @@ export const useProviderAgentHandlers = ({
                     ...updateData,
                     id: loggedInProvider.id,
                     $id: placeDocumentId,
-                    isLive: false,
+                    isLive: true, // 🔄 CHANGED: Now goes live immediately
                     rating: 0,
                     reviewCount: 0,
                 } as any
@@ -360,11 +506,11 @@ export const useProviderAgentHandlers = ({
             setPlaces(finalPlaces);
             console.log('🔄 Updated places state with new data');
             
-            // Create admin notification for profile approval
+            // Create admin notification for profile review (profile is already live)
             try {
                 await notificationService.create({
                     providerId: Number(loggedInProvider.id),
-                    message: `${updateData.name || 'A massage place'} has submitted their profile for approval`,
+                    message: `${updateData.name || 'A massage place'} has updated their profile and is now live for review`,
                     type: 'place_profile_pending' as const,
                     data: JSON.stringify({
                         placeId: String(loggedInProvider.id),
@@ -380,7 +526,7 @@ export const useProviderAgentHandlers = ({
                 // Don't fail the entire save operation if notification fails
             }
             
-            showToast('Profile saved successfully! All your changes have been saved.', 'success');
+            showToast('Profile saved successfully! Your profile is now live and visible to customers.', 'success');
         } catch (error: any) {
             console.error('❌ Save error:', error);
             showToast('Error saving profile: ' + (error.message || 'Unknown error. Please try again.'), 'error');
