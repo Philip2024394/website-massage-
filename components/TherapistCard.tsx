@@ -290,25 +290,53 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     src={displayImage} 
                     alt={`${therapist.name} cover`} 
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                        console.error('🖼️ Main image failed to load:', displayImage);
+                        // Fallback to a working ImageKit URL
+                        (e.target as HTMLImageElement).src = 'https://ik.imagekit.io/7grri5v7d/hotel%20massage%20indoniseas.png?updatedAt=1761154913720';
+                    }}
+                    onLoad={() => {
+                        console.log('✅ Main image loaded successfully:', displayImage);
+                    }}
                 />
                 
-                {/* Profile Image Overlay - Full size, properly positioned */}
-                {!isMobileCorporate && (
-                    <div className="absolute bottom-0 left-4 transform translate-y-4 z-10">
-                        <div className="w-20 h-20 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white flex items-center justify-center">
-                            <img 
-                                src={(therapist as any).profilePicture || getRandomTherapistImage(therapist.id.toString())} 
-                                alt={`${therapist.name} profile`} 
-                                className="w-full h-full object-cover rounded-full"
-                            />
-                        </div>
+                {/* Profile Image - Overlapping the banner bottom */}
+                <div className="absolute top-32 left-4 z-50">
+                    <img 
+                        className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg bg-gray-100" 
+                        src={(therapist as any).profilePicture || getRandomTherapistImage(therapist.id.toString())} 
+                        alt={`${therapist.name} profile`} 
+                        onError={(e) => {
+                            const profileImageUrl = (therapist as any).profilePicture || getRandomTherapistImage(therapist.id.toString());
+                            console.error('👤 Profile image failed to load:', profileImageUrl);
+                            // Fallback to a working profile placeholder
+                            (e.target as HTMLImageElement).src = 'https://via.placeholder.com/150/FFB366/FFFFFF?text=' + encodeURIComponent(therapist.name.charAt(0));
+                        }}
+                        onLoad={() => {
+                            const profileImageUrl = (therapist as any).profilePicture || getRandomTherapistImage(therapist.id.toString());
+                            console.log('✅ Profile image loaded successfully:', profileImageUrl);
+                        }}
+                    />
+                </div>
+
+                {/* Distance Display - Top center under main image */}
+                <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-30">
+                    <div className="bg-black/60 text-white px-2 py-1 rounded-lg text-xs">
+                        <DistanceDisplay
+                            userLocation={userLocation}
+                            providerLocation={parseCoordinates(therapist.coordinates) || { lat: 0, lng: 0 }}
+                            className="text-white"
+                            showTravelTime={true}
+                            showIcon={true}
+                            size="sm"
+                        />
                     </div>
-                )}
+                </div>
 
                 
                 {/* Star Rating - Top Left Corner */}
                 <div 
-                    className="absolute top-2 left-2 flex items-center gap-1 bg-black/70 backdrop-blur-md rounded-full px-3 py-1.5 shadow-lg cursor-pointer"
+                    className="absolute top-2 left-2 flex items-center gap-1 bg-black/70 backdrop-blur-md rounded-full px-3 py-1.5 shadow-lg cursor-pointer z-30"
                     onClick={() => onRate(therapist)}
                     aria-label={`Rate ${therapist.name}`}
                     role="button"
@@ -418,73 +446,32 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 </div>
             </div>
             
-            {/* Therapist Name and Distance - Positioned to the left of the card (hidden when profile image exists) */}
-            {!((therapist as any).profilePicture && !isMobileCorporate) && (
-                <div className="absolute top-52 left-4 right-4 z-10">
-                    <div className="flex justify-between items-center">
-                        <h3 className="text-lg font-bold text-gray-900">{therapist.name}</h3>
-                        {/* Enhanced Distance Display with Google Maps Integration */}
-                        <DistanceDisplay
-                            userLocation={userLocation}
-                            providerLocation={parseCoordinates(therapist.coordinates) || { lat: 0, lng: 0 }}
-                            className="text-sm"
-                            showTravelTime={true}
-                            showIcon={true}
-                            size="sm"
-                        />
-                    </div>
-                    <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isOvertime ? 'bg-red-100 text-red-800' : style.bg} ${isOvertime ? '' : style.text} mt-1`}>
-                        <span className="relative mr-1.5">
-                            {displayStatus === AvailabilityStatus.Available && (
-                                <span className="absolute inset-0 w-4 h-4 -left-1 -top-1 rounded-full bg-white opacity-60"></span>
-                            )}
-                            <span className={`w-2 h-2 rounded-full block ${isOvertime ? 'bg-red-500' : style.dot}`}></span>
-                        </span>
-                        {displayStatus === AvailabilityStatus.Busy && countdown ? (
-                            <span>
-                                {isOvertime ? 'Busy - Extra Time ' : 'Busy - Free in '}
-                                {countdown}
-                            </span>
-                        ) : (
-                            displayStatus
+            {/* Therapist Name and Status - Positioned to the right of profile image */}
+            <div className="absolute top-48 left-28 right-4 z-40">
+                <h3 className="text-lg font-bold text-gray-900">{therapist.name}</h3>
+                <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isOvertime ? 'bg-red-100 text-red-800' : style.bg} ${isOvertime ? '' : style.text} mt-1`}>
+                    <span className="relative mr-1.5">
+                        {displayStatus === AvailabilityStatus.Available && (
+                            <span className="absolute inset-0 w-4 h-4 -left-1 -top-1 rounded-full bg-white opacity-60"></span>
                         )}
-                    </div>
-                    {/* Show booked-until info if present - removed as countdown is now in badge */}
+                        <span className={`w-2 h-2 rounded-full block ${isOvertime ? 'bg-red-500' : style.dot}`}></span>
+                    </span>
+                    {displayStatus === AvailabilityStatus.Busy && countdown ? (
+                        <span>
+                            {isOvertime ? 'Busy - Extra Time ' : 'Busy - Free in '}
+                            {countdown}
+                        </span>
+                    ) : (
+                        displayStatus
+                    )}
                 </div>
-            )}
+            </div>
             
-            {/* Content Section - Compact layout */}
-            <div className="p-4 pt-2">
-                {/* Name and Distance - Positioned to the right of profile picture */}
-                <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-bold text-gray-900 pl-12">{therapist.name}</h3>
-                    <DistanceDisplay
-                        userLocation={userLocation}
-                        providerLocation={parseCoordinates(therapist.coordinates) || { lat: 0, lng: 0 }}
-                        className="text-sm text-gray-500 flex items-center gap-1"
-                        showTravelTime={true}
-                        showIcon={true}
-                        size="sm"
-                    />
-                </div>
-                
-                {/* Status badge positioned to align with name */}
-                <div className="mt-0.5 pl-12">
-                    <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isOvertime ? 'bg-red-100 text-red-800' : style.bg} ${isOvertime ? '' : style.text}`}>
-                        <span className="relative mr-1.5">
-                            {displayStatus === AvailabilityStatus.Available && (
-                                <span className="absolute inset-0 w-4 h-4 -left-1 -top-1 rounded-full bg-white opacity-60"></span>
-                            )}
-                            <span className={`w-2 h-2 rounded-full block ${isOvertime ? 'bg-red-500' : style.dot}`}></span>
-                        </span>
-                        {displayStatus === AvailabilityStatus.Busy && countdown ? (
-                            <span>
-                                {isOvertime ? 'Busy - Extra Time ' : 'Busy - Free in '}
-                                {countdown}
-                            </span>
-                        ) : (
-                            displayStatus
-                        )}
+            {/* Content Section - Layout adjusted for profile image positioned above */}
+            <div className="p-4 pt-16 flex flex-col gap-4">
+                <div className="flex items-start gap-4">
+                    <div className="flex-grow mt-10">
+                        {/* Content starts below the positioned elements */}
                     </div>
                 </div>
 
@@ -784,6 +771,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                         value="https://indastreet.com/ref/USER123" 
                                         readOnly 
                                         className="flex-1 px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm"
+                                        placeholder="Your referral link"
+                                        title="Your referral link to share with friends"
+                                        aria-label="Referral link"
                                     />
                                     <button
                                         onClick={() => {

@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { Building, Image as ImageIcon, LogOut, Menu, Phone, QrCode, Star, Tag, User, X, Bell } from 'lucide-react';
 import { Therapist, Place, HotelVillaServiceStatus } from '../types';
 import { parsePricing } from '../utils/appwriteHelpers';
@@ -13,6 +13,51 @@ import HotelVillaServicesSettingsPage from './HotelVillaServicesSettingsPage';
 import HotelBookingModal from '../components/hotel/PropertyBookingModal';
 import HotelAnalyticsSection from '../components/hotel/PropertyAnalyticsSection';
 import { safeDownload } from '../utils/domSafeHelpers';
+
+// External component: DiscountCard
+const DiscountCard: React.FC<{ 
+    data: ProviderCard;
+    onShareClick: (qrLink: string) => void;
+}> = ({ data: p, onShareClick }) => (
+    <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 transition-transform hover:scale-[1.02]">
+        <div className="relative">
+            <img src={p.image} alt={p.name} className="w-full h-48 object-cover" />
+            <div className="absolute top-4 right-4 bg-orange-500 text-white text-sm font-bold px-4 py-1 rounded-full">
+                {p.discount}% OFF
+            </div>
+            <div className="absolute bottom-0 left-0 bg-gradient-to-t from-black/60 to-transparent w-full p-4">
+                <h3 className="font-bold text-white text-xl">{p.name}</h3>
+                <p className="text-xs text-gray-200">{p.location}</p>
+            </div>
+        </div>
+        <div className="p-5 flex flex-col">
+            <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center text-yellow-500">
+                    <Star className="w-5 h-5" fill="currentColor" />
+                    <span className="text-sm font-bold ml-1.5">{p.rating}</span>
+                    <span className="text-xs text-gray-500 ml-2">({p.reviewCount} reviews)</span>
+                </div>
+                <span className="text-sm font-medium px-3 py-1 rounded-full bg-gray-100 text-gray-700 capitalize">{p.type}</span>
+            </div>
+            <p className="text-sm text-gray-600 mb-5">{p.description}</p>
+            <div className="grid grid-cols-3 gap-3 text-sm mb-5">
+                {(['60','90','120'] as DurationKey[]).map((d) => (
+                    <div key={d} className="text-center p-3 bg-gray-50 rounded-lg">
+                        <div className="text-xs text-gray-500">{d} min</div>
+                        <div className="line-through text-gray-400 text-xs">Rp {p.pricing[d].toLocaleString()}</div>
+                        <div className="font-bold text-orange-600">Rp {Math.round(p.pricing[d] * (1 - p.discount/100)).toLocaleString()}</div>
+                    </div>
+                ))}
+            </div>
+            <button 
+                onClick={() => onShareClick(`${globalThis.location.href}?provider=${p.type}-${p.id}`)}
+                className="w-full px-4 py-2.5 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-all flex items-center justify-center gap-2"
+            >
+                <QrCode size={16} /><span>Share</span>
+            </button>
+        </div>
+    </div>
+);
 
 type DurationKey = '60' | '90' | '120';
 type ProviderType = 'therapist' | 'place';
@@ -78,9 +123,9 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
     const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(true);
     const [hotelDocumentId, setHotelDocumentId] = useState<string | null>(null);
 
-    const updateState = (updates: Partial<typeof state>) => {
+    const updateState = useCallback((updates: Partial<typeof state>) => {
         setState(prev => ({ ...prev, ...updates }));
-    };
+    }, []);
 
     // Constants
     const therapistBannerImages = getAllTherapistImages();
@@ -222,48 +267,6 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
         }
     };
 
-    // Shared component: DiscountCard
-    const DiscountCard: React.FC<{ data: ProviderCard }> = ({ data: p }) => (
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 transition-transform hover:scale-[1.02]">
-            <div className="relative">
-                <img src={p.image} alt={p.name} className="w-full h-48 object-cover" />
-                <div className="absolute top-4 right-4 bg-orange-500 text-white text-sm font-bold px-4 py-1 rounded-full">
-                    {p.discount}% OFF
-                </div>
-                <div className="absolute bottom-0 left-0 bg-gradient-to-t from-black/60 to-transparent w-full p-4">
-                    <h3 className="font-bold text-white text-xl">{p.name}</h3>
-                    <p className="text-xs text-gray-200">{p.location}</p>
-                </div>
-            </div>
-            <div className="p-5 flex flex-col">
-                <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center text-yellow-500">
-                        <Star className="w-5 h-5" fill="currentColor" />
-                        <span className="text-sm font-bold ml-1.5">{p.rating}</span>
-                        <span className="text-xs text-gray-500 ml-2">({p.reviewCount} reviews)</span>
-                    </div>
-                    <span className="text-sm font-medium px-3 py-1 rounded-full bg-gray-100 text-gray-700 capitalize">{p.type}</span>
-                </div>
-                <p className="text-sm text-gray-600 mb-5">{p.description}</p>
-                <div className="grid grid-cols-3 gap-3 text-sm mb-5">
-                    {(['60','90','120'] as DurationKey[]).map((d) => (
-                        <div key={d} className="text-center p-3 bg-gray-50 rounded-lg">
-                            <div className="text-xs text-gray-500">{d} min</div>
-                            <div className="line-through text-gray-400 text-xs">Rp {p.pricing[d].toLocaleString()}</div>
-                            <div className="font-bold text-orange-600">Rp {Math.round(p.pricing[d] * (1 - p.discount/100)).toLocaleString()}</div>
-                        </div>
-                    ))}
-                </div>
-                <button 
-                    onClick={() => updateState({ qrLink: `${globalThis.location.href}?provider=${p.type}-${p.id}`, qrOpen: true })}
-                    className="w-full px-4 py-2.5 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-all flex items-center justify-center gap-2"
-                >
-                    <QrCode size={16} /><span>Share</span>
-                </button>
-            </div>
-        </div>
-    );
-
     // Tab content renderer
     const renderTabContent = () => {
         switch (state.activeTab) {
@@ -285,7 +288,11 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
                         {providers.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                                 {displayProviders.map((p) => (
-                                    <DiscountCard key={`${p.type}-${p.id}`} data={p} />
+                                    <DiscountCard 
+                                        key={`${p.type}-${p.id}`} 
+                                        data={p} 
+                                        onShareClick={(qrLink) => updateState({ qrLink, qrOpen: true })}
+                                    />
                                 ))}
                             </div>
                         ) : (
@@ -455,7 +462,13 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
 
                         {providers.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                                {displayProviders.map((p) => <DiscountCard key={`${p.type}-${p.id}`} data={p} />)}
+                                {displayProviders.map((p) => (
+                                    <DiscountCard 
+                                        key={`${p.type}-${p.id}`} 
+                                        data={p} 
+                                        onShareClick={(qrLink) => updateState({ qrLink, qrOpen: true })}
+                                    />
+                                ))}
                             </div>
                         ) : (
                             <div className="text-center py-20 bg-white border-2 border-dashed border-gray-300 rounded-xl">

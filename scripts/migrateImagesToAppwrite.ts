@@ -145,7 +145,7 @@ async function migrateAllImages() {
             results.homePageImages.push(result);
             // Small delay to avoid rate limiting
             await new Promise(resolve => setTimeout(resolve, 500));
-        } catch (_error) {
+        } catch {
             console.error(`Failed to migrate home page image ${i + 1}`);
         }
     }
@@ -158,7 +158,7 @@ async function migrateAllImages() {
             const result = await migrateImageToAppwrite(url, `live-menu-therapist-${i + 1}.png`);
             results.liveMenuImages.push(result);
             await new Promise(resolve => setTimeout(resolve, 500));
-        } catch (_error) {
+        } catch {
             console.error(`Failed to migrate live menu image ${i + 1}`);
         }
     }
@@ -170,7 +170,7 @@ async function migrateAllImages() {
             const result = await migrateImageToAppwrite(image.url, image.name);
             results.landingPageImages.push(result);
             await new Promise(resolve => setTimeout(resolve, 500));
-        } catch (_error) {
+        } catch {
             console.error(`Failed to migrate landing page image: ${image.name}`);
         }
     }

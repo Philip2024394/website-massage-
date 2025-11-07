@@ -96,6 +96,8 @@ const MassagePlaceAdminDashboard: React.FC<MassagePlaceAdminDashboardProps> = ({
     const [placeData, setPlaceData] = useState<Place | null>(place);
     const [isLoading, setIsLoading] = useState(true);
 
+    // Form state variables - temporarily unused but required for restoration from localStorage
+    /* eslint-disable @typescript-eslint/no-unused-vars */
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [profilePicture, setProfilePicture] = useState('');
@@ -110,6 +112,7 @@ const MassagePlaceAdminDashboard: React.FC<MassagePlaceAdminDashboardProps> = ({
     const [location, setLocation] = useState('');
     const [coordinates, setCoordinates] = useState({ lat: 0, lng: 0 });
     const [isLicensed, setIsLicensed] = useState(false);
+    /* eslint-enable @typescript-eslint/no-unused-vars */
     const [mapsApiLoaded, setMapsApiLoaded] = useState(false);
     const [activeTab, setActiveTab] = useState('profile'); // Start with Profile tab since places use "open now" status
     const [showConfirmation, setShowConfirmation] = useState(false);

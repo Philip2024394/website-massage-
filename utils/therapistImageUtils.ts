@@ -6,18 +6,18 @@
 
 // Curated collection of professional therapist/massage images from Appwrite
 const APPWRITE_THERAPIST_IMAGES = [
-    'https://cloud.appwrite.io/v1/storage/buckets/674bf6850035ce7dd4c7/files/674bf6eb003e19b4c5b5/view?project=67473ad100020e4ce652&mode=admin',
-    'https://cloud.appwrite.io/v1/storage/buckets/674bf6850035ce7dd4c7/files/674bf6f7000f22dfb9c4/view?project=67473ad100020e4ce652&mode=admin',
-    'https://cloud.appwrite.io/v1/storage/buckets/674bf6850035ce7dd4c7/files/674bf701001da6b9a5e2/view?project=67473ad100020e4ce652&mode=admin',
-    'https://cloud.appwrite.io/v1/storage/buckets/674bf6850035ce7dd4c7/files/674bf70b0023e3eebe40/view?project=67473ad100020e4ce652&mode=admin',
-    'https://cloud.appwrite.io/v1/storage/buckets/674bf6850035ce7dd4c7/files/674bf715003e8fe2be94/view?project=67473ad100020e4ce652&mode=admin',
-    'https://cloud.appwrite.io/v1/storage/buckets/674bf6850035ce7dd4c7/files/674bf71f000f3ab8c1d8/view?project=67473ad100020e4ce652&mode=admin',
-    'https://cloud.appwrite.io/v1/storage/buckets/674bf6850035ce7dd4c7/files/674bf728003e15cf8ca0/view?project=67473ad100020e4ce652&mode=admin',
-    'https://cloud.appwrite.io/v1/storage/buckets/674bf6850035ce7dd4c7/files/674bf7320019749e0a31/view?project=67473ad100020e4ce652&mode=admin',
-    'https://cloud.appwrite.io/v1/storage/buckets/674bf6850035ce7dd4c7/files/674bf73c0028b42b2d14/view?project=67473ad100020e4ce652&mode=admin',
-    'https://cloud.appwrite.io/v1/storage/buckets/674bf6850035ce7dd4c7/files/674bf746000e40f73e93/view?project=67473ad100020e4ce652&mode=admin',
-    'https://cloud.appwrite.io/v1/storage/buckets/674bf6850035ce7dd4c7/files/674bf750002c6e3b35e9/view?project=67473ad100020e4ce652&mode=admin',
-    'https://cloud.appwrite.io/v1/storage/buckets/674bf6850035ce7dd4c7/files/674bf759003ab1fa7b25/view?project=67473ad100020e4ce652&mode=admin'
+    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4181001758526d84/view?project=68f23b11000d25eb3664',
+    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4182001d05a11a19/view?project=68f23b11000d25eb3664',
+    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4183001a3a6fd0de/view?project=68f23b11000d25eb3664',
+    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4184003b76cb5e94/view?project=68f23b11000d25eb3664',
+    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4185002b1b9a9f91/view?project=68f23b11000d25eb3664',
+    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe41860026f1e0cec5/view?project=68f23b11000d25eb3664',
+    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4187002166c85e5b/view?project=68f23b11000d25eb3664',
+    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe41880033c86a0901/view?project=68f23b11000d25eb3664',
+    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4189000f847d1ea0/view?project=68f23b11000d25eb3664',
+    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe418a00159e88de97/view?project=68f23b11000d25eb3664',
+    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe418b003b5dd26c5a/view?project=68f23b11000d25eb3664',
+    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe418c00355b8b4b69/view?project=68f23b11000d25eb3664'
 ];
 
 /**
@@ -38,9 +38,14 @@ export const getRandomTherapistImage = (therapistId: string): string => {
     
     // Use absolute value to ensure positive index
     const index = Math.abs(hash) % APPWRITE_THERAPIST_IMAGES.length;
+    const selectedImage = APPWRITE_THERAPIST_IMAGES[index];
     
-    console.log(`🎨 [Random Image] Therapist ${therapistId} assigned image index ${index}`);
-    return APPWRITE_THERAPIST_IMAGES[index];
+    console.log(`🎨 [Random Image] Therapist ${therapistId}:`);
+    console.log(`   - Hash: ${hash}`);
+    console.log(`   - Index: ${index} of ${APPWRITE_THERAPIST_IMAGES.length}`);
+    console.log(`   - Selected URL: ${selectedImage}`);
+    
+    return selectedImage;
 };
 
 /**

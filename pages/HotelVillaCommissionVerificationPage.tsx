@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import type { CommissionRecord } from '../types';
 import { CommissionPaymentStatus } from '../types';
 import { commissionPaymentService } from '../services/commissionPaymentService';
@@ -24,12 +24,7 @@ const HotelVillaCommissionVerificationPage: React.FC<HotelVillaCommissionVerific
     const [activeTab, setActiveTab] = useState<'pending' | 'history'>('pending');
     const [commissionHistory, setCommissionHistory] = useState<CommissionRecord[]>([]);
 
-    useEffect(() => {
-        loadPendingVerifications();
-        loadCommissionHistory();
-    }, [hotelVillaId]);
-
-    const loadPendingVerifications = async () => {
+    const loadPendingVerifications = useCallback(async () => {
         try {
             const payments = await commissionPaymentService.getHotelVillaPaymentVerificationQueue(
                 hotelVillaId
@@ -39,9 +34,9 @@ const HotelVillaCommissionVerificationPage: React.FC<HotelVillaCommissionVerific
             console.error('Failed to load pending verifications:', err);
             setError('Failed to load pending verifications');
         }
-    };
+    }, [hotelVillaId]);
 
-    const loadCommissionHistory = async () => {
+    const loadCommissionHistory = useCallback(async () => {
         try {
             const history = await commissionPaymentService.getHotelVillaCommissionHistory(
                 hotelVillaId
@@ -50,7 +45,12 @@ const HotelVillaCommissionVerificationPage: React.FC<HotelVillaCommissionVerific
         } catch (err) {
             console.error('Failed to load commission history:', err);
         }
-    };
+    }, [hotelVillaId]);
+
+    useEffect(() => {
+        loadPendingVerifications();
+        loadCommissionHistory();
+    }, [loadPendingVerifications, loadCommissionHistory]);
 
     const handleVerifyPayment = async (verified: boolean) => {
         if (!selectedPayment) return;

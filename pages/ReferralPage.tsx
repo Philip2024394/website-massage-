@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Copy, Share2, Gift, Users, CheckCircle, TrendingUp } from 'lucide-react';
 import { enhancedReferralService } from '../lib/referralService';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
@@ -72,11 +72,7 @@ const ReferralPage: React.FC<ReferralPageProps> = ({
     const [error, setError] = useState('');
 
     // Load referral code and stats
-    useEffect(() => {
-        loadReferralData();
-    }, [user.$id]);
-
-    const loadReferralData = async () => {
+    const loadReferralData = useCallback(async () => {
         try {
             // Check if user already has a referral link
             const existingReferral = await enhancedReferralService.getReferralByUser(user.$id);
@@ -98,7 +94,13 @@ const ReferralPage: React.FC<ReferralPageProps> = ({
         } catch (error) {
             console.error('Error loading referral data:', error);
         }
-    };
+    }, [user.$id, user.phone]);
+
+    useEffect(() => {
+        loadReferralData();
+    }, [user.$id, loadReferralData]);
+
+    
 
     const createReferralLink = async () => {
         setLoading(true);
@@ -368,6 +370,8 @@ const ReferralPage: React.FC<ReferralPageProps> = ({
                                 onClick={handleCopyLink}
                                 disabled={!referralData?.referralLink || loading}
                                 className="px-4 py-3 bg-gray-100 hover:bg-gray-200 disabled:bg-gray-50 rounded-lg transition-all border border-gray-300"
+                                aria-label="Copy referral link"
+                                title="Copy referral link"
                             >
                                 <Copy className="w-5 h-5 text-gray-700" />
                             </button>

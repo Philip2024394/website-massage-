@@ -154,8 +154,9 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                     console.log('📋 Using passed place data:', place);
                     initializeWithPlaceData(place);
                 } else if (place?.id) {
-                    console.log('🔄 Loading place data from database for ID:', place.id);
-                    const loadedPlace = await placeService.getById(place.id.toString());
+                    console.log('🔄 Loading place data from database for provider ID:', place.id);
+                    // Lookup by provider id attribute instead of assuming Appwrite document id
+                    const loadedPlace = await placeService.getByProviderId(place.id.toString());
                     if (loadedPlace) {
                         console.log('✅ Loaded place data from database:', loadedPlace);
                         initializeWithPlaceData(loadedPlace);

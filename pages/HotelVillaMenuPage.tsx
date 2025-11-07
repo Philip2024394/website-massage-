@@ -12,15 +12,12 @@ import type { LanguageCode } from '../services/autoTranslationService';
 interface HotelVillaMenuPageProps {
     venueId: string;
     venueName: string;
-    logo?: string;
     therapists: Therapist[];
     places: Place[];
     language?: string;
     onBook?: (provider: Therapist | Place, type: 'therapist' | 'place') => void;
     onBookingSubmit?: (bookingData: Partial<Booking>) => Promise<void>;
-    onBack?: () => void;
-    onNavigate?: (page: Page) => void;
-    t?: any;
+    setPage?: (page: Page) => void;
 }
 
 const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({ 
@@ -41,7 +38,78 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
     const [currentLanguage] = useState<'en' | 'id'>(propLanguage as 'en' | 'id');
     
     // Use translations with current language
+    // Use translations with current language
     const { t } = useTranslations(currentLanguage);
+
+    // Render therapist content
+    const renderTherapistContent = () => {
+        if (liveTherapists.length > 0) {
+            return (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {liveTherapists.map((therapist) => (
+                        <div key={therapist.id} className="relative">
+                            <div className="absolute top-2 right-2 z-10 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-bold">
+                                {therapist.hotelDiscount}% OFF
+                            </div>
+                            <TherapistCard
+                                therapist={therapist}
+                                onBook={(provider) => handleBookProvider(provider, 'therapist')}
+                                onRate={() => {}}
+                                onIncrementAnalytics={() => {}}
+                                t={t}
+                            />
+                        </div>
+                    ))}
+                </div>
+            );
+        }
+        
+        return (
+            <div className="text-center py-16">
+                <div className="text-gray-400 text-6xl mb-4">💆‍♂️</div>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                    No Room Massage Available
+                </h3>
+                <p className="text-gray-500">
+                    Check back later for available therapists
+                </p>
+            </div>
+        );
+    };
+
+    // Render place content
+    const renderPlaceContent = () => {
+        if (livePlaces.length > 0) {
+            return (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {livePlaces.map((place) => (
+                        <div key={place.id} className="relative">
+                            <div className="absolute top-2 right-2 z-10 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-bold">
+                                {place.hotelDiscount}% OFF
+                            </div>
+                            <PlaceCard
+                                place={place}
+                                onClick={() => handleBookProvider(place, 'place')}
+                                onRate={() => {}}
+                            />
+                        </div>
+                    ))}
+                </div>
+            );
+        }
+        
+        return (
+            <div className="text-center py-16">
+                <div className="text-gray-400 text-6xl mb-4">🏢</div>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                    No Massage Places Available
+                </h3>
+                <p className="text-gray-500">
+                    Check back later for available places
+                </p>
+            </div>
+        );
+    };
 
     // Handle booking modal opening
     const handleBookProvider = (provider: Therapist | Place, type: 'therapist' | 'place') => {
@@ -61,9 +129,9 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
             // Include hotel/villa information in booking data
             const completeBookingData = {
                 ...bookingData,
-                hotelVillaId: parseInt(venueId),
+                hotelVillaId: Number.parseInt(venueId),
                 hotelVillaName: venueName,
-                providerId: typeof selectedProvider?.id === 'string' ? parseInt(selectedProvider.id) : selectedProvider?.id,
+                providerId: typeof selectedProvider?.id === 'string' ? Number.parseInt(selectedProvider.id) : selectedProvider?.id,
                 providerType: selectedProviderType,
             };
 
@@ -206,63 +274,7 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
                     </div>
 
                     <div className="p-4 pb-20">
-                        {activeTab === 'therapists' ? (
-                            liveTherapists.length > 0 ? (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {liveTherapists.map((therapist) => (
-                                        <div key={therapist.id} className="relative">
-                                            <div className="absolute top-2 right-2 z-10 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-bold">
-                                                {therapist.hotelDiscount}% OFF
-                                            </div>
-                                            <TherapistCard
-                                                therapist={therapist}
-                                                onBook={(provider) => handleBookProvider(provider, 'therapist')}
-                                                onRate={() => {}}
-                                                onIncrementAnalytics={() => {}}
-                                                t={t}
-                                            />
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="text-center py-16">
-                                    <div className="text-gray-400 text-6xl mb-4">💆‍♂️</div>
-                                    <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                                        No Room Massage Available
-                                    </h3>
-                                    <p className="text-gray-500">
-                                        Check back later for available therapists
-                                    </p>
-                                </div>
-                            )
-                        ) : (
-                            livePlaces.length > 0 ? (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {livePlaces.map((place) => (
-                                        <div key={place.id} className="relative">
-                                            <div className="absolute top-2 right-2 z-10 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-bold">
-                                                {place.hotelDiscount}% OFF
-                                            </div>
-                                            <PlaceCard
-                                                place={place}
-                                                onClick={() => handleBookProvider(place, 'place')}
-                                                onRate={() => {}}
-                                            />
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="text-center py-16">
-                                    <div className="text-gray-400 text-6xl mb-4">🏢</div>
-                                    <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                                        No Massage Places Available
-                                    </h3>
-                                    <p className="text-gray-500">
-                                        Check back later for available places
-                                    </p>
-                                </div>
-                            )
-                        )}
+                        {activeTab === 'therapists' ? renderTherapistContent() : renderPlaceContent()}
                     </div>
                 </div>
             )}
@@ -274,7 +286,7 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
                         <HotelVillaGuestBookingPage
                             provider={selectedProvider}
                             providerType={selectedProviderType}
-                            hotelVillaId={parseInt(venueId)}
+                            hotelVillaId={Number.parseInt(venueId)}
                             hotelVillaName={venueName}
                             selectedLanguage={currentLanguage as LanguageCode}
                             onBookingSubmit={handleBookingSubmit}

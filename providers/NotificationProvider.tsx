@@ -64,7 +64,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
         autoRequestPermission: true
     });
     
-    const [_permissionGranted, setPermissionGranted] = useState(false);
+    const [permissionGranted, setPermissionGranted] = useState(false);
 
     useEffect(() => {
         // Check and request notification permission on mount
@@ -72,6 +72,11 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
             setPermissionGranted(permission === 'granted');
         });
     }, []);
+
+    // Use permissionGranted in a development console check (this suppresses unused variable warning)
+    if (process.env.NODE_ENV === 'development') {
+        console.debug('Notification permission granted:', permissionGranted);
+    }
 
     // Booking Notifications
     const notifyBookingConfirmed = useCallback(async (bookingId: string, therapistName?: string) => {

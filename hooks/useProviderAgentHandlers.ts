@@ -1,6 +1,6 @@
 import type { Therapist, Place, Agent } from '../types';
 import type { Page, LoggedInProvider } from '../types/pageTypes';
-import { therapistService, placeService, agentService, adminMessageService } from '../lib/appwriteService';
+import { therapistService, placeService, agentService, adminMessageService, notificationService } from '../lib/appwriteService';
 
 // Toast notification utility for better UX - uses safe DOM manipulation
 const showToast = (message: string, type: 'success' | 'error' | 'warning' = 'success') => {
@@ -271,16 +271,62 @@ export const useProviderAgentHandlers = ({
                     placeDocumentId = sessionData.documentId;
                     console.log('🔍 Using document ID from session cache:', placeDocumentId);
                 } else {
-                    // Last resort: use the provider ID as document ID
-                    placeDocumentId = typeof loggedInProvider.id === 'string' ? loggedInProvider.id : loggedInProvider.id.toString();
-                    console.log('🔍 Using provider ID as document ID:', placeDocumentId);
+                    // Try querying Appwrite by provider id attribute
+                    console.log('🔎 Looking up place document by provider id...');
+                    const remotePlace = await placeService.getByProviderId(String(loggedInProvider.id));
+                    if (remotePlace) {
+                        placeDocumentId = remotePlace.$id;
+                        console.log('✅ Found remote place document by provider id:', placeDocumentId);
+                    } else {
+                        // As a final fallback, we'll attempt creation below if update fails
+                        console.log('⚠️ No existing place document found by provider id');
+                    }
                 }
             }
             
-            console.log('💾 Updating place document with ID:', placeDocumentId);
-            console.log('💾 Update data:', updateData);
-            await placeService.update(placeDocumentId, updateData);
-            console.log('✅ Place profile saved successfully');
+            // If we have a document id, try updating; if update fails with not-found, create instead
+            let savedDoc: any | null = null;
+            if (placeDocumentId) {
+                console.log('💾 Updating place document with ID:', placeDocumentId);
+                console.log('💾 Update data:', updateData);
+                try {
+                    savedDoc = await placeService.update(placeDocumentId, updateData);
+                    console.log('✅ Place profile saved successfully via update');
+                } catch (err: any) {
+                    const msg = (err && (err.message || err.code || '')) || '';
+                    const isNotFound = String(msg).toLowerCase().includes('not found') || String(err?.code || '').includes('404');
+                    if (isNotFound) {
+                        console.warn('⚠️ Document not found on update, creating new document instead...');
+                        savedDoc = await placeService.create({
+                            ...updateData,
+                            id: loggedInProvider.id,
+                            isLive: false,
+                            rating: 0,
+                            reviewCount: 0,
+                        });
+                        placeDocumentId = savedDoc.$id;
+                        // Cache for future saves
+                        const session = JSON.parse(localStorage.getItem('app_session') || '{}');
+                        localStorage.setItem('app_session', JSON.stringify({ ...session, documentId: placeDocumentId }));
+                        console.log('✅ Place profile created successfully with new ID:', placeDocumentId);
+                    } else {
+                        throw err;
+                    }
+                }
+            } else {
+                console.log('🆕 Creating new place document (no existing ID) ...');
+                savedDoc = await placeService.create({
+                    ...updateData,
+                    id: loggedInProvider.id,
+                    isLive: false,
+                    rating: 0,
+                    reviewCount: 0,
+                });
+                placeDocumentId = savedDoc.$id;
+                const session = JSON.parse(localStorage.getItem('app_session') || '{}');
+                localStorage.setItem('app_session', JSON.stringify({ ...session, documentId: placeDocumentId }));
+                console.log('✅ Place profile created successfully with ID:', placeDocumentId);
+            }
             
             // Update the places state to reflect the changes immediately
             const updatedPlaces = places.map(place => {
@@ -297,9 +343,42 @@ export const useProviderAgentHandlers = ({
                 }
                 return place;
             });
+            // If the place was not in the list at all, add it
+            const existsInList = updatedPlaces.some(p => (p as any).$id === placeDocumentId || p.id === loggedInProvider.id);
+            const finalPlaces = existsInList ? updatedPlaces : [
+                ...updatedPlaces,
+                {
+                    ...updateData,
+                    id: loggedInProvider.id,
+                    $id: placeDocumentId,
+                    isLive: false,
+                    rating: 0,
+                    reviewCount: 0,
+                } as any
+            ];
             
-            setPlaces(updatedPlaces);
+            setPlaces(finalPlaces);
             console.log('🔄 Updated places state with new data');
+            
+            // Create admin notification for profile approval
+            try {
+                await notificationService.create({
+                    providerId: Number(loggedInProvider.id),
+                    message: `${updateData.name || 'A massage place'} has submitted their profile for approval`,
+                    type: 'place_profile_pending' as const,
+                    data: JSON.stringify({
+                        placeId: String(loggedInProvider.id),
+                        placeName: updateData.name || 'Unknown Place',
+                        email: updateData.email || '',
+                        location: updateData.location || '',
+                        submittedAt: new Date().toISOString()
+                    })
+                });
+                console.log('✅ Admin notification created for profile approval');
+            } catch (notificationError) {
+                console.warn('⚠️ Failed to create admin notification:', notificationError);
+                // Don't fail the entire save operation if notification fails
+            }
             
             showToast('Profile saved successfully! All your changes have been saved.', 'success');
         } catch (error: any) {

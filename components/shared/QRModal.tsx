@@ -42,7 +42,7 @@ export const QRModal: React.FC<QRModalProps> = ({
                             <h3 className="text-xl font-bold text-white">Guest Menu QR Code</h3>
                             <p className="text-orange-100 text-xs mt-0.5">Share with your guests</p>
                         </div>
-                        <button onClick={onClose} className="text-white/80 hover:text-white transition-colors p-1 hover:bg-white/20 rounded-lg">
+                        <button onClick={onClose} className="text-white/80 hover:text-white transition-colors p-1 hover:bg-white/20 rounded-lg" aria-label="Close modal">
                             <X size={20}/>
                         </button>
                     </div>
@@ -64,7 +64,7 @@ export const QRModal: React.FC<QRModalProps> = ({
                                         <div className="flex justify-center">
                                             <img 
                                                 src={qrCodeDataUrl} 
-                                                alt="QR code" 
+                                                alt={`QR code for ${entityName || `${type} menu`} - scan to view wellness menu`} 
                                                 className="w-64 h-64 object-contain" 
                                                 style={{ imageRendering: 'pixelated' }}
                                             />
@@ -96,8 +96,9 @@ export const QRModal: React.FC<QRModalProps> = ({
                             <button 
                                 onClick={downloadQR} 
                                 className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-bold hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl"
+                                aria-label="Download QR code as PNG image"
                             >
-                                <QrCode size={18} /> 
+                                <QrCode size={18} aria-hidden="true" /> 
                                 <span>Download QR Code</span>
                             </button>
                             
@@ -108,22 +109,25 @@ export const QRModal: React.FC<QRModalProps> = ({
                                         alert('Link copied!');
                                     }} 
                                     className="flex flex-col items-center justify-center gap-1.5 px-3 py-2.5 bg-gray-100 text-gray-800 rounded-lg font-semibold hover:bg-gray-200 transition-colors border-2 border-gray-200"
+                                    aria-label="Copy menu link to clipboard"
                                 >
-                                    <LinkIcon size={16} />
+                                    <LinkIcon size={16} aria-hidden="true" />
                                     <span className="text-xs">Copy</span>
                                 </button>
                                 <button 
                                     onClick={shareWhatsApp} 
                                     className="flex flex-col items-center justify-center gap-1.5 px-3 py-2.5 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition-colors"
+                                    aria-label="Share menu link via WhatsApp"
                                 >
-                                    <MessageSquare size={16} />
+                                    <MessageSquare size={16} aria-hidden="true" />
                                     <span className="text-xs">WhatsApp</span>
                                 </button>
                                 <button 
                                     onClick={() => window.open(`mailto:?subject=Menu%20-%20${encodeURIComponent(entityName || type)}&body=${encodeURIComponent(qrLink)}`)} 
                                     className="flex flex-col items-center justify-center gap-1.5 px-3 py-2.5 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition-colors"
+                                    aria-label="Share menu link via email"
                                 >
-                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                                         <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
                                         <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
                                     </svg>

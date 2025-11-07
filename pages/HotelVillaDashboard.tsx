@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { coinService } from '../lib/appwriteService';
 import CommissionConfirmation from '../components/CommissionConfirmation';
 
@@ -28,12 +28,7 @@ const HotelVillaDashboard: React.FC<HotelVillaDashboardProps> = ({
     const [loading, setLoading] = useState(true);
     const [coinBalance, setCoinBalance] = useState(0);
 
-    useEffect(() => {
-        loadPendingCommissions();
-        loadCoinBalance();
-    }, [hotelVillaId]);
-
-    const loadPendingCommissions = async () => {
+    const loadPendingCommissions = useCallback(async () => {
         try {
             // This would need to be implemented in appwriteService
             // For now, using mock data
@@ -61,16 +56,21 @@ const HotelVillaDashboard: React.FC<HotelVillaDashboardProps> = ({
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
-    const loadCoinBalance = async () => {
+    const loadCoinBalance = useCallback(async () => {
         try {
             const userCoins = await coinService.getUserCoins(userId);
             setCoinBalance(userCoins?.totalCoins || 0);
         } catch (error) {
             console.error('Failed to load coin balance:', error);
         }
-    };
+    }, [userId]);
+
+    useEffect(() => {
+        loadPendingCommissions();
+        loadCoinBalance();
+    }, [loadPendingCommissions, loadCoinBalance]);
 
     const handleConfirmationComplete = (success: boolean, message: string, bookingId: string) => {
         if (success) {

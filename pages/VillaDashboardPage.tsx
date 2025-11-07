@@ -14,6 +14,51 @@ import HotelBookingModal from '../components/hotel/PropertyBookingModal';
 import HotelAnalyticsSection from '../components/hotel/PropertyAnalyticsSection';
 import { safeDownload } from '../utils/domSafeHelpers';
 
+// External component: DiscountCard
+const DiscountCard: React.FC<{ 
+    data: ProviderCard;
+    onShareClick: (qrLink: string) => void;
+}> = ({ data: p, onShareClick }) => (
+    <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 transition-transform hover:scale-[1.02]">
+        <div className="relative">
+            <img src={p.image} alt={p.name} className="w-full h-48 object-cover" />
+            <div className="absolute top-4 right-4 bg-orange-500 text-white text-sm font-bold px-4 py-1 rounded-full">
+                {p.discount}% OFF
+            </div>
+            <div className="absolute bottom-0 left-0 bg-gradient-to-t from-black/60 to-transparent w-full p-4">
+                <h3 className="font-bold text-white text-xl">{p.name}</h3>
+                <p className="text-xs text-gray-200">{p.location}</p>
+            </div>
+        </div>
+        <div className="p-5 flex flex-col">
+            <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center text-yellow-500">
+                    <Star className="w-5 h-5" fill="currentColor" />
+                    <span className="text-sm font-bold ml-1.5">{p.rating}</span>
+                    <span className="text-xs text-gray-500 ml-2">({p.reviewCount} reviews)</span>
+                </div>
+                <span className="text-sm font-medium px-3 py-1 rounded-full bg-gray-100 text-gray-700 capitalize">{p.type}</span>
+            </div>
+            <p className="text-sm text-gray-600 mb-5">{p.description}</p>
+            <div className="grid grid-cols-3 gap-3 text-sm mb-5">
+                {(['60','90','120'] as DurationKey[]).map((d) => (
+                    <div key={d} className="text-center p-3 bg-gray-50 rounded-lg">
+                        <div className="text-xs text-gray-500">{d} min</div>
+                        <div className="line-through text-gray-400 text-xs">Rp {p.pricing[d].toLocaleString()}</div>
+                        <div className="font-bold text-orange-600">Rp {Math.round(p.pricing[d] * (1 - p.discount/100)).toLocaleString()}</div>
+                    </div>
+                ))}
+            </div>
+            <button 
+                onClick={() => onShareClick(`${globalThis.location.href}?provider=${p.type}-${p.id}`)}
+                className="w-full px-4 py-2.5 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-all flex items-center justify-center gap-2"
+            >
+                <QrCode size={16} /><span>Share</span>
+            </button>
+        </div>
+    </div>
+);
+
 type DurationKey = '60' | '90' | '120';
 type ProviderType = 'therapist' | 'place';
 
@@ -222,48 +267,6 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
         }
     };
 
-    // Shared component: DiscountCard
-    const DiscountCard: React.FC<{ data: ProviderCard }> = ({ data: p }) => (
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 transition-transform hover:scale-[1.02]">
-            <div className="relative">
-                <img src={p.image} alt={p.name} className="w-full h-48 object-cover" />
-                <div className="absolute top-4 right-4 bg-orange-500 text-white text-sm font-bold px-4 py-1 rounded-full">
-                    {p.discount}% OFF
-                </div>
-                <div className="absolute bottom-0 left-0 bg-gradient-to-t from-black/60 to-transparent w-full p-4">
-                    <h3 className="font-bold text-white text-xl">{p.name}</h3>
-                    <p className="text-xs text-gray-200">{p.location}</p>
-                </div>
-            </div>
-            <div className="p-5 flex flex-col">
-                <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center text-yellow-500">
-                        <Star className="w-5 h-5" fill="currentColor" />
-                        <span className="text-sm font-bold ml-1.5">{p.rating}</span>
-                        <span className="text-xs text-gray-500 ml-2">({p.reviewCount} reviews)</span>
-                    </div>
-                    <span className="text-sm font-medium px-3 py-1 rounded-full bg-gray-100 text-gray-700 capitalize">{p.type}</span>
-                </div>
-                <p className="text-sm text-gray-600 mb-5">{p.description}</p>
-                <div className="grid grid-cols-3 gap-3 text-sm mb-5">
-                    {(['60','90','120'] as DurationKey[]).map((d) => (
-                        <div key={d} className="text-center p-3 bg-gray-50 rounded-lg">
-                            <div className="text-xs text-gray-500">{d} min</div>
-                            <div className="line-through text-gray-400 text-xs">Rp {p.pricing[d].toLocaleString()}</div>
-                            <div className="font-bold text-orange-600">Rp {Math.round(p.pricing[d] * (1 - p.discount/100)).toLocaleString()}</div>
-                        </div>
-                    ))}
-                </div>
-                <button 
-                    onClick={() => updateState({ qrLink: `${globalThis.location.href}?provider=${p.type}-${p.id}`, qrOpen: true })}
-                    className="w-full px-4 py-2.5 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-all flex items-center justify-center gap-2"
-                >
-                    <QrCode size={16} /><span>Share</span>
-                </button>
-            </div>
-        </div>
-    );
-
     // Tab content renderer
     const renderTabContent = () => {
         switch (state.activeTab) {
@@ -285,7 +288,11 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
                         {providers.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                                 {displayProviders.map((p) => (
-                                    <DiscountCard key={`${p.type}-${p.id}`} data={p} />
+                                    <DiscountCard 
+                                        key={`${p.type}-${p.id}`} 
+                                        data={p} 
+                                        onShareClick={(qrLink) => updateState({ qrLink, qrOpen: true })}
+                                    />
                                 ))}
                             </div>
                         ) : (
@@ -455,7 +462,13 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
 
                         {providers.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                                {displayProviders.map((p) => <DiscountCard key={`${p.type}-${p.id}`} data={p} />)}
+                                {displayProviders.map((p) => (
+                                    <DiscountCard 
+                                        key={`${p.type}-${p.id}`} 
+                                        data={p} 
+                                        onShareClick={(qrLink) => updateState({ qrLink, qrOpen: true })}
+                                    />
+                                ))}
                             </div>
                         ) : (
                             <div className="text-center py-20 bg-white border-2 border-dashed border-gray-300 rounded-xl">
@@ -668,8 +681,21 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
 
             {/* QR Modal */}
             {state.qrOpen && (
-                <div className="fixed inset-0 bg-black/70 z-[9999] flex items-center justify-center p-4" onClick={() => updateState({ qrOpen: false })}>
-                    <div className="bg-white rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                <div 
+                    className="fixed inset-0 bg-black/70 z-[9999] flex items-center justify-center p-4" 
+                    onClick={() => updateState({ qrOpen: false })}
+                    onKeyDown={(e) => e.key === 'Escape' && updateState({ qrOpen: false })}
+                    role="dialog"
+                    tabIndex={0}
+                    aria-label="QR code modal"
+                >
+                    <div 
+                        className="bg-white rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden" 
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => e.stopPropagation()}
+                        role="dialog"
+                        tabIndex={-1}
+                    >
                         <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-3 flex justify-between items-center">
                             <h3 className="text-xl font-bold text-white">Guest Menu QR Code</h3>
                             <button 

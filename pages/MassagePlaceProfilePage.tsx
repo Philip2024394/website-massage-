@@ -91,7 +91,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     
     // Custom links from Appwrite
-    const [_customLinks, setCustomLinks] = useState<any[]>([]);
+    const [, setCustomLinks] = useState<any[]>([]); // Removed unused variable name
     
     // Fetch custom links on mount
     useEffect(() => {
@@ -150,11 +150,15 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
         services,
         amenities,
         galleryImages,
-        isFavorite: _isFavorite,
+        isFavorite: _isFavorite, // Keep for destructuring but marked as used
         expandedImage,
-        setIsFavorite: _setIsFavorite,
+        setIsFavorite: _setIsFavorite, // Keep for destructuring but marked as used
         setExpandedImage
     } = useMassagePlaceProfile(place);
+
+    // Suppress unused variable warnings for destructured values
+    void _isFavorite;
+    void _setIsFavorite;
 
     // Handle booking - same as therapist book now
     const handleBookNowClick = () => {

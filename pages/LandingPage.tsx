@@ -56,7 +56,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
             console.log('🌐 Language changed to:', selectedLanguage, 'refreshing translations...');
             refreshTranslations();
         }
-    }, [selectedLanguage]); // Remove refreshTranslations from dependencies
+    }, [selectedLanguage, refreshTranslations]);
 
     // Auto-detect location on component mount for mobile devices
     useEffect(() => {
@@ -174,7 +174,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
                     <span className="text-white">Inda</span><span className="text-orange-400">Street</span>
                 </h1>
                 <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold text-white mb-6">
-                    {t('landing.welcomeDescription')}
+                    Massage Hub
                 </p>
                 
                 <div className="w-full max-w-sm sm:max-w-md px-2 space-y-3 sm:space-y-4">

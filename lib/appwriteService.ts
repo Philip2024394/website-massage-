@@ -287,10 +287,19 @@ export const therapistService = {
             console.log('✅ Fetched therapists:', response.documents.length);
             
             // Add random main images to therapists that don't have one
-            const therapistsWithImages = response.documents.map((therapist, index) => ({
-                ...therapist,
-                mainImage: therapist.mainImage || getRandomMainImage(index)
-            }));
+            const therapistsWithImages = response.documents.map((therapist, index) => {
+                const assignedMainImage = therapist.mainImage || getRandomMainImage(index);
+                
+                console.log(`🎭 [Therapist Images] ${therapist.name || 'Unknown'} (ID: ${therapist.id || therapist.$id}):`);
+                console.log(`   - Original mainImage: ${therapist.mainImage || 'None'}`);
+                console.log(`   - Assigned mainImage: ${assignedMainImage}`);
+                console.log(`   - Profile picture: ${therapist.profilePicture || 'None'}`);
+                
+                return {
+                    ...therapist,
+                    mainImage: assignedMainImage
+                };
+            });
             
             return therapistsWithImages;
         } catch (error) {
@@ -367,6 +376,24 @@ export const placeService = {
         } catch (error) {
             console.error('Error creating place:', error);
             throw error;
+        }
+    },
+    async getByProviderId(providerId: string): Promise<any | null> {
+        // Find a place document by the provider's id field (stored in the document attributes)
+        try {
+            // Try matching both as string and number to be safe
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.places,
+                [
+                    // Appwrite equal can take an array of values
+                    Query.equal('id', [providerId, Number(providerId)])
+                ]
+            );
+            return response.documents.length > 0 ? response.documents[0] : null;
+        } catch (error) {
+            console.error('Error finding place by provider id:', error);
+            return null;
         }
     },
     async getPlaces(): Promise<any[]> {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import type { CommissionRecord } from '../types';
 import { CommissionPaymentStatus, CommissionPaymentMethod } from '../types';
 import ImageUpload from '../components/ImageUpload';
@@ -24,11 +24,7 @@ const ProviderCommissionPaymentPage: React.FC<ProviderCommissionPaymentPageProps
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
 
-    useEffect(() => {
-        loadPendingPayments();
-    }, [providerId, providerType]);
-
-    const loadPendingPayments = async () => {
+    const loadPendingPayments = useCallback(async () => {
         try {
             const payments = await commissionPaymentService.getProviderPendingPayments(
                 providerId,
@@ -39,7 +35,13 @@ const ProviderCommissionPaymentPage: React.FC<ProviderCommissionPaymentPageProps
             console.error('Failed to load pending payments:', err);
             setError('Failed to load pending payments');
         }
-    };
+    }, [providerId, providerType]);
+
+    useEffect(() => {
+        loadPendingPayments();
+    }, [providerId, providerType, loadPendingPayments]);
+
+    
 
     const loadBankDetails = async (hotelVillaId: number, hotelVillaType: 'hotel' | 'villa') => {
         try {

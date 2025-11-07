@@ -72,7 +72,7 @@ const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({
         
         // Keep legacy tracking for backwards compatibility
         onIncrementAnalytics('views');
-    }, [place.id]);
+    }, [place.id, onIncrementAnalytics]);
 
     const openWhatsApp = () => {
         // Convert place.id to number for comparison

@@ -8,7 +8,7 @@ import { LogIn, UserPlus } from 'lucide-react';
 interface HotelLoginPageProps {
     onSuccess: (hotelId: string) => void;
     onBack: () => void;
-    t: any;
+    t: (key: string, params?: Record<string, any>) => string; // Translation function type
 }
 
 const HomeIcon: React.FC<{className?: string}> = ({ className }) => (
@@ -104,9 +104,10 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) =>
                     throw new Error(response.error || 'Sign in failed');
                 }
             }
-        } catch (err: any) {
-            console.error(`Hotel ${isSignUp ? 'signup' : 'login'} error:`, err);
-            setError(handleAppwriteError(err, isSignUp ? 'signup' : 'login'));
+        } catch (err: unknown) {
+            const error = err as Error;
+            console.error(`Hotel ${isSignUp ? 'signup' : 'login'} error:`, error);
+            setError(handleAppwriteError(error, isSignUp ? 'signup' : 'login'));
         } finally {
             setLoading(false);
         }

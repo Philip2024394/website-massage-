@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { databases, ID } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import { Query } from 'appwrite';
@@ -41,24 +41,7 @@ const PaymentTransactionsPage: React.FC = () => {
     const [imageZoomOpen, setImageZoomOpen] = useState(false);
     const [imageScale, setImageScale] = useState(1);
 
-    useEffect(() => {
-        fetchTransactions();
-    }, [filter]);
-
-    // Keyboard support for zoom modal
-    useEffect(() => {
-        const handleKeyPress = (e: KeyboardEvent) => {
-            if (imageZoomOpen && e.key === 'Escape') {
-                setImageZoomOpen(false);
-                setImageScale(1);
-            }
-        };
-
-        window.addEventListener('keydown', handleKeyPress);
-        return () => window.removeEventListener('keydown', handleKeyPress);
-    }, [imageZoomOpen]);
-
-    const fetchTransactions = async () => {
+    const fetchTransactions = useCallback(async () => {
         setIsLoading(true);
         try {
             const queries = filter === 'all' 
@@ -77,7 +60,26 @@ const PaymentTransactionsPage: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [filter]);
+
+    useEffect(() => {
+        fetchTransactions();
+    }, [filter, fetchTransactions]);
+
+    // Keyboard support for zoom modal
+    useEffect(() => {
+        const handleKeyPress = (e: KeyboardEvent) => {
+            if (imageZoomOpen && e.key === 'Escape') {
+                setImageZoomOpen(false);
+                setImageScale(1);
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyPress);
+        return () => window.removeEventListener('keydown', handleKeyPress);
+    }, [imageZoomOpen]);
+
+    
 
     const handleApprove = async (transaction: PaymentTransaction) => {
         if (!confirm(`Approve payment for ${transaction.userName || 'this user'}? This will activate their ${transaction.packageDuration || 'membership'}.`)) {
@@ -402,6 +404,8 @@ The IndaStreet Team 🙏`;
                                 <button
                                     onClick={() => setSelectedTransaction(null)}
                                     className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                                    aria-label="Close payment proof"
+                                    title="Close"
                                 >
                                     <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

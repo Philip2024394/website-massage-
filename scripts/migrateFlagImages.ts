@@ -68,7 +68,7 @@ async function migrateFlagImages() {
             const result = await migrateImageToAppwrite(url, `${code}.png`);
             results.push(result);
             await new Promise(resolve => setTimeout(resolve, 500));
-        } catch (_error) {
+        } catch {
             console.error(`Failed to migrate ${code} flag`);
         }
     }
