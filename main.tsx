@@ -5,6 +5,30 @@ import ErrorBoundary from './components/ErrorBoundary';
 console.log('🚀 main.tsx: Starting React app...');
 console.log('🚀 main.tsx: DOM element found:', !!document.getElementById('root'));
 
+// 🚨 CRITICAL: Register Service Worker for Background Notifications
+console.log('🔧 Registering service worker for bulletproof notifications...');
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then((registration) => {
+        console.log('✅ CRITICAL: Service Worker registered successfully!', registration.scope);
+        console.log('🚨 Background notifications now ACTIVE - will work even when phone is closed!');
+        
+        // Check for updates
+        registration.addEventListener('updatefound', () => {
+          console.log('🔄 Service Worker update found, reloading...');
+          window.location.reload();
+        });
+      })
+      .catch((error) => {
+        console.error('❌ CRITICAL ERROR: Service Worker registration failed:', error);
+        console.error('⚠️ WARNING: Background notifications will NOT work!');
+      });
+  });
+} else {
+  console.warn('⚠️ WARNING: Service Worker not supported - background notifications limited!');
+}
+
 // REACT 19 CHROME DOM COMPATIBILITY LAYER - ULTRA MODE
 console.log('🔧 Applying React 19 Chrome DOM compatibility fixes...');
 

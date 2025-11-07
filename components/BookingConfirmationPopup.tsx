@@ -1,11 +1,22 @@
 import React, { useState, useEffect } from 'react';
 
+interface TherapistBankDetails {
+    bankName?: string;
+    bankAccountNumber?: string;
+    bankAccountName?: string;
+    mobilePaymentNumber?: string;
+    mobilePaymentType?: string;
+}
+
 interface BookingConfirmationPopupProps {
     isOpen: boolean;
     onClose: () => void;
     onOpenChat: () => void;
     providerName: string;
     language: 'en' | 'id';
+    bookingAmount?: number;
+    duration?: number;
+    therapistBankDetails?: TherapistBankDetails;
 }
 
 const BookingConfirmationPopup: React.FC<BookingConfirmationPopupProps> = ({
@@ -13,7 +24,10 @@ const BookingConfirmationPopup: React.FC<BookingConfirmationPopupProps> = ({
     onClose,
     onOpenChat,
     providerName,
-    language
+    language,
+    bookingAmount,
+    duration,
+    therapistBankDetails
 }) => {
     const [countdown, setCountdown] = useState(3);
 
@@ -50,7 +64,17 @@ const BookingConfirmationPopup: React.FC<BookingConfirmationPopupProps> = ({
             waitMessage: "Please wait for the therapist to reply.",
             redirectingIn: "Opening chat in",
             seconds: "seconds...",
-            openNow: "Open Chat Now"
+            openNow: "Open Chat Now",
+            paymentInfo: "Payment Information",
+            cashPayment: "💵 Cash Payment",
+            cashRequired: "Cash payment due after your massage",
+            exactAmount: "Please ensure you have the exact amount",
+            bankTransfer: "🏦 Bank Transfer Available",
+            bankName: "Bank",
+            accountNumber: "Account Number",
+            accountName: "Account Name",
+            eWallet: "📱 E-Wallet Available",
+            transfersAccepted: "Transfers accepted to the following account"
         },
         id: {
             title: "Booking Berhasil Ditempatkan!",
@@ -59,7 +83,17 @@ const BookingConfirmationPopup: React.FC<BookingConfirmationPopupProps> = ({
             waitMessage: "Silakan tunggu terapis membalas.",
             redirectingIn: "Membuka chat dalam",
             seconds: "detik...",
-            openNow: "Buka Chat Sekarang"
+            openNow: "Buka Chat Sekarang",
+            paymentInfo: "Informasi Pembayaran",
+            cashPayment: "💵 Pembayaran Tunai",
+            cashRequired: "Pembayaran tunai setelah pijat selesai",
+            exactAmount: "Harap siapkan uang pas",
+            bankTransfer: "🏦 Transfer Bank Tersedia",
+            bankName: "Bank",
+            accountNumber: "Nomor Rekening",
+            accountName: "Nama Rekening",
+            eWallet: "📱 E-Wallet Tersedia",
+            transfersAccepted: "Transfer diterima ke rekening berikut"
         }
     };
 
@@ -86,6 +120,94 @@ const BookingConfirmationPopup: React.FC<BookingConfirmationPopupProps> = ({
                         <p className="text-blue-800 text-sm font-medium">{t.chatRedirect}</p>
                         <p className="text-blue-600 text-sm mt-1">{t.waitMessage}</p>
                     </div>
+
+                    {/* Payment Information */}
+                    {bookingAmount && (
+                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4 mb-6">
+                            <h3 className="text-lg font-bold text-gray-800 mb-3 flex items-center">
+                                <span className="text-green-600 mr-2">💳</span>
+                                {t.paymentInfo}
+                            </h3>
+                            
+                            {/* Booking Amount */}
+                            <div className="bg-white rounded-lg p-3 mb-4 border border-green-100">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-gray-600 font-medium">
+                                        {duration ? `${duration} min massage` : 'Total Amount'}:
+                                    </span>
+                                    <span className="text-2xl font-bold text-green-600">
+                                        Rp {bookingAmount.toLocaleString('id-ID')}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Cash Payment (Always Available) */}
+                            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+                                <div className="flex items-start gap-2">
+                                    <span className="text-yellow-600 text-lg">💵</span>
+                                    <div className="flex-1">
+                                        <p className="font-semibold text-yellow-800">{t.cashPayment}</p>
+                                        <p className="text-yellow-700 text-sm">{t.cashRequired}</p>
+                                        <p className="text-yellow-600 text-xs mt-1">{t.exactAmount}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Bank Transfer (If Available) */}
+                            {therapistBankDetails?.bankName && therapistBankDetails?.bankAccountNumber && (
+                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
+                                    <div className="flex items-start gap-2 mb-2">
+                                        <span className="text-blue-600 text-lg">🏦</span>
+                                        <div className="flex-1">
+                                            <p className="font-semibold text-blue-800">{t.bankTransfer}</p>
+                                            <p className="text-blue-700 text-sm mb-2">{t.transfersAccepted}:</p>
+                                            
+                                            <div className="bg-white rounded-md p-2 border border-blue-100">
+                                                <div className="space-y-1 text-sm">
+                                                    <div className="flex justify-between">
+                                                        <span className="text-gray-600">{t.bankName}:</span>
+                                                        <span className="font-semibold text-gray-800">{therapistBankDetails.bankName}</span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span className="text-gray-600">{t.accountNumber}:</span>
+                                                        <span className="font-mono font-bold text-gray-800">{therapistBankDetails.bankAccountNumber}</span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span className="text-gray-600">{t.accountName}:</span>
+                                                        <span className="font-semibold text-gray-800">{therapistBankDetails.bankAccountName}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* E-Wallet (If Available) */}
+                            {therapistBankDetails?.mobilePaymentNumber && therapistBankDetails?.mobilePaymentType && (
+                                <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                                    <div className="flex items-start gap-2">
+                                        <span className="text-purple-600 text-lg">📱</span>
+                                        <div className="flex-1">
+                                            <p className="font-semibold text-purple-800">{t.eWallet}</p>
+                                            <div className="bg-white rounded-md p-2 border border-purple-100 mt-2">
+                                                <div className="space-y-1 text-sm">
+                                                    <div className="flex justify-between">
+                                                        <span className="text-gray-600">Type:</span>
+                                                        <span className="font-semibold text-gray-800">{therapistBankDetails.mobilePaymentType}</span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span className="text-gray-600">Number:</span>
+                                                        <span className="font-mono font-bold text-gray-800">{therapistBankDetails.mobilePaymentNumber}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     {/* Countdown */}
                     <div className="flex items-center justify-center gap-2 mb-6">

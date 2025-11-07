@@ -936,6 +936,15 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             }}
             providerName={therapist.name}
             language={currentLanguage}
+            bookingAmount={typeof therapist.pricing?.[60] === 'string' ? parseInt(therapist.pricing[60]) : (therapist.pricing?.[60] || 300000)}
+            duration={60}
+            therapistBankDetails={{
+                bankName: (therapist as any).bankName,
+                bankAccountNumber: (therapist as any).bankAccountNumber,
+                bankAccountName: (therapist as any).bankAccountName,
+                mobilePaymentNumber: (therapist as any).mobilePaymentNumber,
+                mobilePaymentType: (therapist as any).mobilePaymentType
+            }}
         />
         
         <style>{`

@@ -44,6 +44,7 @@ export const APPWRITE_CONFIG = {
         coins: 'coins', // NEW: Coin rewards transactions
         referrals: 'referrals', // NEW: Referral tracking
         activeDiscounts: 'active_discounts', // NEW: Promotional discount system
+        appConfig: 'app_config', // NEW: Global app configuration (membership toggle, etc.)
     },
     
     // Storage bucket ID

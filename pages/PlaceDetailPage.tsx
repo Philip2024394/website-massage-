@@ -295,6 +295,15 @@ const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({
                 }}
                 providerName={place.name}
                 language={currentLanguage}
+                bookingAmount={typeof place.pricing?.[60] === 'string' ? parseInt(place.pricing[60]) : (place.pricing?.[60] || 350000)}
+                duration={60}
+                therapistBankDetails={{
+                    bankName: (place as any).bankName,
+                    bankAccountNumber: (place as any).bankAccountNumber,
+                    bankAccountName: (place as any).bankAccountName,
+                    mobilePaymentNumber: (place as any).mobilePaymentNumber,
+                    mobilePaymentType: (place as any).mobilePaymentType
+                }}
             />
         </div>
     );
