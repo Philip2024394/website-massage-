@@ -863,6 +863,21 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
             </div>
             
             <div className="pt-4 space-y-3">
+                {/* One Card Policy Notice */}
+                <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg p-3">
+                    <div className="flex items-center gap-2 mb-1">
+                        <div className="w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center">
+                            <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                            </svg>
+                        </div>
+                        <h4 className="text-sm font-semibold text-amber-800">One Profile Policy</h4>
+                    </div>
+                    <p className="text-xs text-amber-700">
+                        You can only create <strong>one profile card</strong>, but you can edit and save it as many times as you want. This ensures quality and prevents duplicate listings.
+                    </p>
+                </div>
+                
                 {/* Save Profile Button - Always available for editing */}
                 <Button 
                     onClick={handleSave} 

@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Therapist Data Consistency Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .test-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: bold;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        #results {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            margin-top: 20px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-pass { background: #4CAF50; }
+        .status-fail { background: #F44336; }
+        .status-warn { background: #FF9800; }
+        
+        .instructions {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #2196F3;
+            margin-bottom: 20px;
+        }
+        
+        input[type="text"] {
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            margin: 5px;
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Therapist Data Consistency Test</h1>
+        
+        <div class="instructions">
+            <strong>📋 Instructions:</strong>
+            <ol>
+                <li>Make sure your massage app is running at <a href="http://localhost:3001" target="_blank">localhost:3001</a></li>
+                <li>Log in as a therapist and save your profile in the dashboard</li>
+                <li>Return to this page and run the tests below</li>
+                <li>Check if your card appears on the home page with correct data</li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <h3>🔍 Quick Tests</h3>
+            <button onclick="runFullTest()">🚀 Full Consistency Check</button>
+            <button onclick="runLiveCardTest()">🏠 Check Live Cards</button>
+            <button onclick="runDataSync()">🔐 Check Login Sync</button>
+            <button onclick="clearResults()">🧹 Clear Results</button>
+        </div>
+
+        <div class="test-section">
+            <h3>🎯 Specific Therapist Tests</h3>
+            <input type="text" id="therapistName" placeholder="Enter therapist name...">
+            <button onclick="runSpecificTest()">🧑‍⚕️ Test Specific Therapist</button>
+            <button onclick="runDashboardSim()">📊 Simulate Dashboard</button>
+        </div>
+
+        <div class="test-section">
+            <h3>🛠️ Debugging Tools</h3>
+            <button onclick="showAllTherapists()">👥 Show All Therapists</button>
+            <button onclick="showStorageData()">💾 Show Storage Data</button>
+            <button onclick="exportDebugData()">📤 Export Debug Data</button>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script src="therapist-consistency-test.js"></script>
+    <script>
+        const resultsDiv = document.getElementById('results');
+        
+        // Capture console output and display in results
+        const originalLog = console.log;
+        const originalWarn = console.warn;
+        const originalError = console.error;
+        
+        function addToResults(message, type = 'log') {
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'error' ? '❌' : type === 'warn' ? '⚠️' : 'ℹ️';
+            resultsDiv.textContent += `[${timestamp}] ${prefix} ${message}\n`;
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addToResults(args.join(' '), 'log');
+        };
+        
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            addToResults(args.join(' '), 'warn');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addToResults(args.join(' '), 'error');
+        };
+        
+        // Test runner functions
+        async function runFullTest() {
+            clearResults();
+            console.log('Starting full consistency check...');
+            try {
+                const result = await window.therapistConsistencyTest.fullConsistencyCheck();
+                console.log('✅ Full test completed successfully');
+                return result;
+            } catch (error) {
+                console.error('❌ Full test failed:', error.message);
+            }
+        }
+        
+        function runLiveCardTest() {
+            clearResults();
+            console.log('Checking live card display...');
+            try {
+                const result = window.therapistConsistencyTest.testLiveCardDisplay();
+                console.log('✅ Live card test completed');
+                return result;
+            } catch (error) {
+                console.error('❌ Live card test failed:', error.message);
+            }
+        }
+        
+        async function runDataSync() {
+            clearResults();
+            console.log('Checking login data sync...');
+            try {
+                const result = await window.therapistConsistencyTest.testLoginDataSync();
+                console.log('✅ Data sync test completed');
+                return result;
+            } catch (error) {
+                console.error('❌ Data sync test failed:', error.message);
+            }
+        }
+        
+        async function runSpecificTest() {
+            const therapistName = document.getElementById('therapistName').value.trim();
+            if (!therapistName) {
+                alert('Please enter a therapist name');
+                return;
+            }
+            
+            clearResults();
+            console.log(`Testing specific therapist: ${therapistName}`);
+            try {
+                const result = await window.therapistConsistencyTest.testDataConsistency(therapistName);
+                console.log('✅ Specific therapist test completed');
+                return result;
+            } catch (error) {
+                console.error('❌ Specific therapist test failed:', error.message);
+            }
+        }
+        
+        function runDashboardSim() {
+            const therapistName = document.getElementById('therapistName').value.trim();
+            if (!therapistName) {
+                alert('Please enter a therapist name');
+                return;
+            }
+            
+            clearResults();
+            console.log(`Simulating dashboard data for: ${therapistName}`);
+            try {
+                const result = window.therapistConsistencyTest.simulateDashboardData(therapistName);
+                console.log('✅ Dashboard simulation completed');
+                return result;
+            } catch (error) {
+                console.error('❌ Dashboard simulation failed:', error.message);
+            }
+        }
+        
+        function showAllTherapists() {
+            clearResults();
+            console.log('Loading all therapists data...');
+            try {
+                const therapists = JSON.parse(localStorage.getItem('app_therapists') || '[]');
+                console.log(`Found ${therapists.length} therapists in storage`);
+                
+                therapists.forEach((therapist, index) => {
+                    console.log(`${index + 1}. ${therapist.name || 'Unnamed'}`);
+                    console.log(`   - Email: ${therapist.email || 'Not set'}`);
+                    console.log(`   - Location: ${therapist.location || 'Not set'}`);
+                    console.log(`   - Is Live: ${therapist.isLive ? 'Yes' : 'No'}`);
+                    console.log(`   - Profile Picture: ${therapist.profilePicture ? 'Set' : 'Missing'}`);
+                });
+            } catch (error) {
+                console.error('❌ Failed to load therapists:', error.message);
+            }
+        }
+        
+        function showStorageData() {
+            clearResults();
+            console.log('Loading localStorage data...');
+            
+            const keys = [
+                'app_therapists',
+                'app_places',
+                'user_location', 
+                'current_user',
+                'debug_therapist_save',
+                'debug_therapist_load'
+            ];
+            
+            keys.forEach(key => {
+                const data = localStorage.getItem(key);
+                if (data) {
+                    console.log(`📦 ${key}:`, data.length > 100 ? data.substring(0, 100) + '...' : data);
+                } else {
+                    console.log(`❌ ${key}: Not found`);
+                }
+            });
+        }
+        
+        function exportDebugData() {
+            try {
+                const debugData = {
+                    timestamp: new Date().toISOString(),
+                    therapists: JSON.parse(localStorage.getItem('app_therapists') || '[]'),
+                    places: JSON.parse(localStorage.getItem('app_places') || '[]'),
+                    userLocation: localStorage.getItem('user_location'),
+                    currentUser: localStorage.getItem('current_user'),
+                    debugSave: localStorage.getItem('debug_therapist_save'),
+                    debugLoad: localStorage.getItem('debug_therapist_load')
+                };
+                
+                const blob = new Blob([JSON.stringify(debugData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `therapist-debug-${Date.now()}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                console.log('✅ Debug data exported successfully');
+            } catch (error) {
+                console.error('❌ Failed to export debug data:', error.message);
+            }
+        }
+        
+        function clearResults() {
+            resultsDiv.textContent = '';
+        }
+        
+        // Initialize
+        window.onload = function() {
+            console.log('🧪 Therapist Consistency Test Ready');
+            console.log('📋 Use the buttons above to run different tests');
+            console.log('🔍 Make sure your app is running at localhost:3001');
+        };
+    </script>
+</body>
+</html>

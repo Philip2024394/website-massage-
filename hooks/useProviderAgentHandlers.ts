@@ -326,18 +326,21 @@ export const useProviderAgentHandlers = ({
                 location: updateData.location
             });
             
-            // If profile exists, preserve important fields but allow going live immediately
+            // 🔒 ONE CARD PER THERAPIST POLICY
+            // Each therapist can only have ONE card but can edit it unlimited times
             if (existingTherapist) {
-                console.log('✏️ Updating existing profile, going live immediately');
+                console.log('✏️ Updating your existing therapist profile (1 card per therapist policy)');
+                console.log('🔄 You can save/edit this card as many times as needed');
                 await therapistService.update(therapistId, updateData);
             } else {
-                console.log('➕ Creating new profile with isLive=true (goes live immediately, admin can review later)');
+                console.log('➕ Creating your therapist profile (you can only create 1 card, but edit it unlimited times)');
                 const createData = {
                     ...updateData,
                     isLive: true, // 🔄 CHANGED: Now goes live immediately
                     email: `therapist${therapistId}@indostreet.com`,
                 };
                 await therapistService.create(createData);
+                console.log('📝 Your therapist card has been created. You can now edit and save it as many times as you want.');
             }
             
             console.log('✅ Therapist profile saved successfully');
@@ -469,14 +472,16 @@ export const useProviderAgentHandlers = ({
                 }
             }
             
-            // If we have a document id, try updating; if update fails with not-found, create instead
+            // 🔒 ONE CARD PER MASSAGE PLACE POLICY
+            // Each massage place can only have ONE card but can edit it unlimited times
             let savedDoc: any | null = null;
             if (placeDocumentId) {
-                console.log('💾 Updating place document with ID:', placeDocumentId);
+                console.log('✏️ Updating your existing massage place profile (1 card per place policy)');
+                console.log('🔄 You can save/edit this card as many times as needed');
                 console.log('💾 Update data:', updateData);
                 try {
                     savedDoc = await placeService.update(placeDocumentId, updateData);
-                    console.log('✅ Place profile saved successfully via update');
+                    console.log('✅ Massage place profile saved successfully via update');
                 } catch (err: any) {
                     const msg = (err && (err.message || err.code || '')) || '';
                     const isNotFound = String(msg).toLowerCase().includes('not found') || String(err?.code || '').includes('404');
@@ -493,13 +498,13 @@ export const useProviderAgentHandlers = ({
                         // Cache for future saves
                         const session = JSON.parse(localStorage.getItem('app_session') || '{}');
                         localStorage.setItem('app_session', JSON.stringify({ ...session, documentId: placeDocumentId }));
-                        console.log('✅ Place profile created successfully with new ID:', placeDocumentId);
+                        console.log('✅ Massage place profile created successfully with new ID:', placeDocumentId);
                     } else {
                         throw err;
                     }
                 }
             } else {
-                console.log('🆕 Creating new place document (no existing ID) ...');
+                console.log('➕ Creating your massage place profile (you can only create 1 card, but edit it unlimited times)');
                 savedDoc = await placeService.create({
                     ...updateData,
                     id: loggedInProvider.id,
@@ -510,7 +515,7 @@ export const useProviderAgentHandlers = ({
                 placeDocumentId = savedDoc.$id;
                 const session = JSON.parse(localStorage.getItem('app_session') || '{}');
                 localStorage.setItem('app_session', JSON.stringify({ ...session, documentId: placeDocumentId }));
-                console.log('✅ Place profile created successfully with ID:', placeDocumentId);
+                console.log('📝 Your massage place card has been created. You can now edit and save it as many times as you want.');
             }
             
             // Update the places state to reflect the changes immediately

@@ -49,7 +49,17 @@ export const useAppState = () => {
         return 'rewardBannersTest';
       }
       
-      // Default to landing page
+      // Check if user has already entered the app (has user location and language set)
+      const hasUserLocation = localStorage.getItem('user_location');
+      const hasLanguage = localStorage.getItem('app_language');
+      
+      if (hasUserLocation && hasLanguage) {
+        console.log('🏠 User has already entered app, going to home page');
+        return 'home';
+      }
+      
+      // Default to landing page for first-time users
+      console.log('👋 First-time user, showing landing page');
       return 'landing';
     } catch {
       console.log('⚠️ URL parameter parsing failed, defaulting to landing page');

@@ -228,10 +228,10 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     // Helper function to format price in "123K" format
     const formatPrice = (price: number): string => {
         if (!price || price === 0 || isNaN(price)) {
-            return "Call"; // Show "Call" instead of "0K" when no price is set
+            return "Contact"; // Show "Contact" instead of "0K" when no price is set
         }
         // Prices are already in thousands (e.g., 400 = 400K), so just add K suffix
-        return `${price}K`;
+        return `${Math.round(price)}K`;
     };
     
     // Get main image from therapist data - use mainImage for background, profilePicture for overlay
@@ -469,10 +469,11 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 </div>
             </div>
             
-            {/* Therapist Bio - Paragraph text with proper spacing from status */}
-            <div className="absolute top-72 left-4 right-4 z-10 therapist-bio-section">
-                <p className="text-xs text-gray-600 leading-relaxed text-justify">
-                    Certified massage therapist with {therapist.yearsOfExperience || 5}+ years experience. Specialized in therapeutic and relaxation techniques. Available for home, hotel, and villa services. Professional, licensed, and highly rated by clients for exceptional service quality.
+            {/* Therapist Bio - Use actual therapist description or fallback */}
+            <div className="absolute top-72 left-4 right-4 z-10 therapist-bio-section max-h-16 overflow-hidden">
+                <p className="text-xs text-gray-600 leading-relaxed text-justify line-clamp-3">
+                    {therapist.description || 
+                     `Certified massage therapist with ${therapist.yearsOfExperience || 5}+ years experience. Specialized in therapeutic and relaxation techniques. Available for home, hotel, and villa services. Professional, licensed, and highly rated by clients for exceptional service quality.`}
                 </p>
             </div>
 
@@ -493,14 +494,14 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     </h4>
                 </div>
                 <div className="flex flex-wrap gap-1">
-                    {massageTypes.slice(0, 4).map(type => (
+                    {massageTypes.slice(0, 5).map(type => (
                         <span key={type} className="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs font-medium rounded-full border border-orange-200">{type}</span>
                     ))}
                     {massageTypes.length === 0 && (
                         <span className="text-xs text-gray-400">No specialties selected</span>
                     )}
-                    {massageTypes.length > 4 && (
-                        <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">+{massageTypes.length - 4}</span>
+                    {massageTypes.length > 5 && (
+                        <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">+{massageTypes.length - 5}</span>
                     )}
                 </div>
             </div>
@@ -527,21 +528,34 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                             )}
                         </div>
                         <div className="flex flex-wrap gap-1">
-                            {languages.slice(0, 2).map(lang => {
+                            {languages.slice(0, 3).map(lang => {
                                 const langMap: Record<string, {flag: string, name: string}> = {
-                                    'en': {flag: '🇬🇧', name: 'English'},
-                                    'id': {flag: '🇮🇩', name: 'Indonesian'}
+                                    'en': {flag: '🇬🇧', name: 'EN'},
+                                    'id': {flag: '🇮🇩', name: 'ID'},
+                                    'zh': {flag: '🇨🇳', name: 'ZH'},
+                                    'ja': {flag: '🇯🇵', name: 'JP'},
+                                    'ko': {flag: '🇰🇷', name: 'KR'},
+                                    'th': {flag: '🇹🇭', name: 'TH'},
+                                    'vi': {flag: '🇻🇳', name: 'VI'},
+                                    'fr': {flag: '🇫🇷', name: 'FR'},
+                                    'de': {flag: '🇩🇪', name: 'DE'},
+                                    'es': {flag: '🇪🇸', name: 'ES'},
+                                    'pt': {flag: '🇵🇹', name: 'PT'},
+                                    'it': {flag: '🇮�', name: 'IT'},
+                                    'ru': {flag: '🇷🇺', name: 'RU'},
+                                    'ar': {flag: '🇸🇦', name: 'AR'},
+                                    'hi': {flag: '🇮🇳', name: 'HI'}
                                 };
-                                const langInfo = langMap[lang] || {flag: '🌐', name: lang};
+                                const langInfo = langMap[lang.toLowerCase()] || {flag: '🌐', name: lang.toUpperCase().slice(0, 2)};
                                 return (
                                     <span key={lang} className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-gray-800 text-xs font-medium rounded-full flex items-center gap-1">
                                         <span className="text-xs">{langInfo.flag}</span>
-                                        <span className="text-xs">{langInfo.name}</span>
+                                        <span className="text-xs font-semibold">{langInfo.name}</span>
                                     </span>
                                 );
                             })}
-                            {languages.length > 2 && (
-                                <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">+{languages.length - 2}</span>
+                            {languages.length > 3 && (
+                                <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">+{languages.length - 3}</span>
                             )}
                         </div>
                     </div>
@@ -564,16 +578,16 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
 
             <div className="grid grid-cols-3 gap-2 text-center text-sm mt-4">
                 {/* 60 min pricing */}
-                <div className={`bg-gray-100 p-1.5 rounded-lg border border-gray-200 shadow-md relative transition-all duration-500 ${
+                <div className={`bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative transition-all duration-500 min-h-[60px] flex flex-col justify-center ${
                     (therapist.discountPercentage && therapist.discountPercentage > 0) || (activeDiscount && discountTimeLeft !== 'EXPIRED')
                         ? 'shadow-orange-500/60 shadow-xl ring-2 ring-orange-400/40 bg-gradient-to-br from-orange-50 to-orange-100 animate-pulse border-orange-300' 
                         : ''
                 }`}>
-                    <p className="text-gray-600 text-xs">60 min</p>
+                    <p className="text-gray-600 text-xs mb-1">60 min</p>
                     {therapist.discountPercentage && therapist.discountPercentage > 0 ? (
                         <>
                             {/* Discounted price - what customer will actually pay */}
-                            <p className="font-bold text-gray-800 text-sm">
+                            <p className="font-bold text-gray-800 text-sm leading-tight">
                                 Rp {formatPrice(Math.round(Number(pricing["60"]) * (1 - therapist.discountPercentage / 100)))}
                             </p>
                             {/* Discount badge to show they're getting a deal */}
@@ -582,20 +596,20 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                             </span>
                         </>
                     ) : (
-                        <p className="font-bold text-gray-800 text-sm">Rp {formatPrice(Number(pricing["60"]))}</p>
+                        <p className="font-bold text-gray-800 text-sm leading-tight">Rp {formatPrice(Number(pricing["60"]))}</p>
                     )}
                 </div>
                 
                 {/* 90 min pricing */}
-                <div className={`bg-gray-100 p-1.5 rounded-lg border border-gray-200 shadow-md relative transition-all duration-500 ${
+                <div className={`bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative transition-all duration-500 min-h-[60px] flex flex-col justify-center ${
                     (therapist.discountPercentage && therapist.discountPercentage > 0) || (activeDiscount && discountTimeLeft !== 'EXPIRED')
                         ? 'shadow-orange-500/60 shadow-xl ring-2 ring-orange-400/40 bg-gradient-to-br from-orange-50 to-orange-100 animate-pulse border-orange-300' 
                         : ''
                 }`}>
-                    <p className="text-gray-600 text-xs">90 min</p>
+                    <p className="text-gray-600 text-xs mb-1">90 min</p>
                     {therapist.discountPercentage && therapist.discountPercentage > 0 ? (
                         <>
-                            <p className="font-bold text-gray-800 text-sm">
+                            <p className="font-bold text-gray-800 text-sm leading-tight">
                                 Rp {formatPrice(Math.round(Number(pricing["90"]) * (1 - therapist.discountPercentage / 100)))}
                             </p>
                             <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-lg animate-bounce">
@@ -603,20 +617,20 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                             </span>
                         </>
                     ) : (
-                        <p className="font-bold text-gray-800 text-sm">Rp {formatPrice(Number(pricing["90"]))}</p>
+                        <p className="font-bold text-gray-800 text-sm leading-tight">Rp {formatPrice(Number(pricing["90"]))}</p>
                     )}
                 </div>
                 
                 {/* 120 min pricing */}
-                <div className={`bg-gray-100 p-1.5 rounded-lg border border-gray-200 shadow-md relative transition-all duration-500 ${
+                <div className={`bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative transition-all duration-500 min-h-[60px] flex flex-col justify-center ${
                     (therapist.discountPercentage && therapist.discountPercentage > 0) || (activeDiscount && discountTimeLeft !== 'EXPIRED')
                         ? 'shadow-orange-500/60 shadow-xl ring-2 ring-orange-400/40 bg-gradient-to-br from-orange-50 to-orange-100 animate-pulse border-orange-300' 
                         : ''
                 }`}>
-                    <p className="text-gray-600 text-xs">120 min</p>
+                    <p className="text-gray-600 text-xs mb-1">120 min</p>
                     {therapist.discountPercentage && therapist.discountPercentage > 0 ? (
                         <>
-                            <p className="font-bold text-gray-800 text-sm">
+                            <p className="font-bold text-gray-800 text-sm leading-tight">
                                 Rp {formatPrice(Math.round(Number(pricing["120"]) * (1 - therapist.discountPercentage / 100)))}
                             </p>
                             <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-lg animate-bounce">
@@ -624,7 +638,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                             </span>
                         </>
                     ) : (
-                        <p className="font-bold text-gray-800 text-sm">Rp {formatPrice(Number(pricing["120"]))}</p>
+                        <p className="font-bold text-gray-800 text-sm leading-tight">Rp {formatPrice(Number(pricing["120"]))}</p>
                     )}
                 </div>
             </div>

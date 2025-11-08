@@ -119,7 +119,7 @@ const DeepTissueMassagePage: React.FC<DeepTissueMassagePageProps> = ({
                 <div className="absolute inset-0 bg-black bg-opacity-40"></div>
                 
                 <div className="max-w-6xl mx-auto px-4 text-center relative z-10">
-                    <h1 className="text-6xl font-bold mb-6 drop-shadow-lg">Deep Tissue Massage 💪</h1>
+                    <h1 className="text-6xl font-bold mb-6 drop-shadow-lg">Deep Tissue Massage</h1>
                     <p className="text-2xl text-white mb-4 drop-shadow-md">
                         Targeted Therapy for Chronic Pain & Muscle Tension
                     </p>
@@ -315,42 +315,78 @@ const DeepTissueMassagePage: React.FC<DeepTissueMassagePageProps> = ({
                     <h2 className="text-4xl font-bold text-gray-900 mb-8 text-center">Therapeutic Benefits</h2>
                     <div className="grid md:grid-cols-3 gap-6">
                         <div className="bg-white rounded-xl p-6 shadow-lg text-center">
-                            <div className="text-5xl mb-4">🩹</div>
+                            <div className="mb-4 flex justify-center">
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/breaks%20down%20massage.png?updatedAt=1762574910291" 
+                                    alt="Breaks Down Scar Tissue" 
+                                    className="w-16 h-16 object-contain"
+                                />
+                            </div>
                             <h3 className="font-bold text-gray-900 mb-2">Breaks Down Scar Tissue</h3>
                             <p className="text-gray-600 text-sm">
                                 Improves healing and flexibility after injuries or surgery
                             </p>
                         </div>
                         <div className="bg-white rounded-xl p-6 shadow-lg text-center">
-                            <div className="text-5xl mb-4">💊</div>
+                            <div className="mb-4 flex justify-center">
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/massage%20guys.png?updatedAt=1762574963120" 
+                                    alt="Reduces Chronic Pain" 
+                                    className="w-16 h-16 object-contain"
+                                />
+                            </div>
                             <h3 className="font-bold text-gray-900 mb-2">Reduces Chronic Pain</h3>
                             <p className="text-gray-600 text-sm">
                                 Alleviates persistent muscle tension and joint discomfort
                             </p>
                         </div>
                         <div className="bg-white rounded-xl p-6 shadow-lg text-center">
-                            <div className="text-5xl mb-4">🤸</div>
+                            <div className="mb-4 flex justify-center">
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/massage%20guys%20new.png?updatedAt=1762575002634" 
+                                    alt="Improves Mobility" 
+                                    className="w-16 h-16 object-contain"
+                                />
+                            </div>
                             <h3 className="font-bold text-gray-900 mb-2">Improves Mobility</h3>
                             <p className="text-gray-600 text-sm">
                                 Increases range of motion and joint flexibility
                             </p>
                         </div>
                         <div className="bg-white rounded-xl p-6 shadow-lg text-center">
-                            <div className="text-5xl mb-4">❤️</div>
+                            <div className="mb-4 flex justify-center">
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/heart%20attach.png?updatedAt=1762575043659" 
+                                    alt="Lowers Blood Pressure" 
+                                    className="w-16 h-16 object-contain"
+                                />
+                            </div>
                             <h3 className="font-bold text-gray-900 mb-2">Lowers Blood Pressure</h3>
                             <p className="text-gray-600 text-sm">
                                 Reduces stress hormones and promotes cardiovascular health
                             </p>
                         </div>
                         <div className="bg-white rounded-xl p-6 shadow-lg text-center">
-                            <div className="text-5xl mb-4">🏃</div>
+                            <div className="mb-4 flex justify-center">
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/heart%20attachd.png?updatedAt=1762575087903" 
+                                    alt="Speeds Recovery" 
+                                    className="w-16 h-16 object-contain"
+                                />
+                            </div>
                             <h3 className="font-bold text-gray-900 mb-2">Speeds Recovery</h3>
                             <p className="text-gray-600 text-sm">
                                 Enhances muscle repair after workouts or sports
                             </p>
                         </div>
                         <div className="bg-white rounded-xl p-6 shadow-lg text-center">
-                            <div className="text-5xl mb-4">😌</div>
+                            <div className="mb-4 flex justify-center">
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/heart%20attachdd.png?updatedAt=1762575127361" 
+                                    alt="Relieves Stress" 
+                                    className="w-16 h-16 object-contain"
+                                />
+                            </div>
                             <h3 className="font-bold text-gray-900 mb-2">Relieves Stress</h3>
                             <p className="text-gray-600 text-sm">
                                 Releases endorphins and reduces anxiety levels
@@ -469,17 +505,31 @@ const DeepTissueMassagePage: React.FC<DeepTissueMassagePageProps> = ({
                 </div>
 
                 {/* CTA */}
-                <div className="text-center bg-gradient-to-r from-red-500 to-red-600 rounded-2xl p-12 text-white">
-                    <h2 className="text-3xl font-bold mb-4">Ready to Address Your Chronic Pain?</h2>
-                    <p className="text-xl text-red-100 mb-8 max-w-2xl mx-auto">
-                        Find certified deep tissue massage specialists across Indonesia
-                    </p>
-                    <button 
-                        onClick={() => {/* Navigate to therapists */}}
-                        className="px-12 py-4 bg-white text-red-600 font-bold rounded-lg hover:bg-red-50 transition-colors shadow-lg text-lg"
-                    >
-                        Find Specialists Now
-                    </button>
+                <div className="bg-gradient-to-r from-red-500 to-red-600 rounded-2xl p-12 text-white">
+                    <div className="flex flex-col lg:flex-row items-center gap-8">
+                        {/* Text Content */}
+                        <div className="flex-1 text-center lg:text-left">
+                            <h2 className="text-3xl font-bold mb-4">Ready to Address Your Chronic Pain?</h2>
+                            <p className="text-xl text-red-100 mb-8 max-w-2xl">
+                                Find certified deep tissue massage specialists across Indonesia
+                            </p>
+                            <button 
+                                onClick={() => onNavigate?.('home')}
+                                className="px-12 py-4 bg-white text-red-600 font-bold rounded-lg hover:bg-red-50 transition-colors shadow-lg text-lg"
+                            >
+                                Find Specialists Now
+                            </button>
+                        </div>
+                        
+                        {/* Image */}
+                        <div className="flex-1 lg:flex-none">
+                            <img 
+                                src="https://ik.imagekit.io/7grri5v7d/massage%20deep%20tissue%20indoniseas.png?updatedAt=1762579867409"
+                                alt="Deep Tissue Massage Therapy"
+                                className="w-full max-w-md mx-auto rounded-xl shadow-2xl border-4 border-white/20"
+                            />
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

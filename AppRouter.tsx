@@ -133,13 +133,17 @@ const renderDashboardPages = (page: Page, props: AppRouterProps) => {
     switch (page) {
         case 'therapistDashboard':
             return <TherapistDashboardPage 
-                loggedInProvider={loggedInProvider} 
+                onSave={handleSaveTherapist}
                 onLogout={handleProviderLogout}
-                setPage={setPage}
+                onNavigateToNotifications={handleNavigateToNotifications}
+                onUpdateBookingStatus={handleUpdateBookingStatus}
+                onStatusChange={async (status: AvailabilityStatus) => {
+                    await handleTherapistStatusChange(status as string);
+                }}
+                therapistId={loggedInProvider?.id || ''}
                 bookings={bookings}
-                notifications={notifications}
-                onMarkNotificationAsRead={props.handleMarkNotificationAsRead}
-                onUpdateBookingStatus={props.handleUpdateBookingStatus}
+                notifications={notifications.filter(n => n.providerId === loggedInProvider?.id)}
+                t={t.providerDashboard || {}}
             />;
         case 'placeDashboard':
             return <PlaceDashboardPage 
@@ -940,7 +944,22 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             
         case 'deep-tissue-massage': 
  
-            return <DeepTissueMassagePage onNavigate={(page: string) => setPage(page as Page)} t={t} />;
+            return <DeepTissueMassagePage 
+                onNavigate={(page: string) => setPage(page as Page)} 
+                onMassageJobsClick={() => setPage('massage-jobs' as Page)}
+                onHotelPortalClick={() => setPage('hotel-login' as Page)}
+                onVillaPortalClick={() => setPage('villa-login' as Page)}
+                onTherapistPortalClick={() => setPage('therapist-login' as Page)}
+                onMassagePlacePortalClick={() => setPage('place-login' as Page)}
+                onAgentPortalClick={() => setPage('agent-auth' as Page)}
+                onCustomerPortalClick={() => setPage('customer-auth' as Page)}
+                onAdminPortalClick={() => setPage('admin-auth' as Page)}
+                onTermsClick={() => setPage('terms' as Page)}
+                onPrivacyClick={() => setPage('privacy' as Page)}
+                therapists={therapists}
+                places={places}
+                t={t} 
+            />;
             
         // case 'swedish-massage': 
         //     return <SwedishMassagePage onBack={handleBackToHome} onNavigate={(page: Page) => setPage(page as Page)} t={t} />;

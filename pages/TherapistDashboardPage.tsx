@@ -138,8 +138,23 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                 location: existingTherapist.location,
                 whatsappNumber: existingTherapist.whatsappNumber,
                 yearsOfExperience: (existingTherapist as any).yearsOfExperience,
-                massageTypes: existingTherapist.massageTypes
+                massageTypes: existingTherapist.massageTypes,
+                isLive: existingTherapist.isLive // 🔍 TROUBLESHOOTING: Check live status
             });
+            
+            // 🔍 TROUBLESHOOTING: Store profile load info
+            localStorage.setItem('debug_therapist_load', JSON.stringify({
+                timestamp: new Date().toISOString(),
+                therapistId: therapistId,
+                profileFound: true,
+                isLive: existingTherapist.isLive,
+                hasRequiredFields: {
+                    name: !!existingTherapist.name,
+                    profilePicture: !!existingTherapist.profilePicture,
+                    location: !!existingTherapist.location,
+                    whatsappNumber: !!existingTherapist.whatsappNumber
+                }
+            }));
             setTherapist(existingTherapist);
             setName(existingTherapist.name || '');
             setDescription(existingTherapist.description || '');
@@ -549,6 +564,28 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
             };
             
             console.log('💾 Calling onSave with data:', saveData);
+            console.log('🔍 TROUBLESHOOTING - Save data includes:', {
+                name: saveData.name,
+                hasProfilePicture: !!saveData.profilePicture,
+                hasLocation: !!saveData.location,
+                massageTypesCount: Array.isArray(massageTypes) ? massageTypes.length : 0,
+                therapistId: therapistId
+            });
+            
+            // Store debug info for troubleshooting
+            localStorage.setItem('debug_therapist_save', JSON.stringify({
+                timestamp: new Date().toISOString(),
+                therapistId: therapistId,
+                saveData: saveData,
+                onSaveExists: !!onSave
+            }));
+            
+            if (!onSave) {
+                console.error('❌ CRITICAL ERROR: onSave prop is missing!');
+                alert('Save function is not available. Please refresh the page and try again.');
+                return;
+            }
+            
             onSave(saveData as any);
             console.log('✅ Save function called successfully');
             setShowConfirmation(true);
