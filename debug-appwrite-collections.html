@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Appwrite Collections</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@16.0.0"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Appwrite Collections Debug</h1>
+        
+        <div class="status info">
+            <strong>Purpose:</strong> This tool checks if your Appwrite collections exist and are properly configured.
+        </div>
+
+        <button onclick="checkCollections()">🚀 Check Collections</button>
+        <button onclick="createMissingCollections()">🛠️ Create Missing Collections</button>
+        <button onclick="testTherapistSave()">💾 Test Therapist Save</button>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        // Appwrite configuration from your app
+        const APPWRITE_CONFIG = {
+            endpoint: 'https://syd.cloud.appwrite.io/v1',
+            projectId: '68f23b11000d25eb3664',
+            databaseId: '68f76ee1000e64ca8d05',
+            collections: {
+                therapists: 'therapists_collection_id',
+                places: 'places',
+                agents: 'agents',
+                bookings: 'bookings',
+                reviews: 'reviews',
+                notifications: 'notifications',
+                users: 'users'
+            }
+        };
+
+        // Initialize Appwrite
+        const client = new Appwrite.Client()
+            .setEndpoint(APPWRITE_CONFIG.endpoint)
+            .setProject(APPWRITE_CONFIG.projectId);
+
+        const databases = new Appwrite.Databases(client);
+        const account = new Appwrite.Account(client);
+
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = message;
+            results.appendChild(div);
+            console.log(message);
+        }
+
+        async function checkCollections() {
+            document.getElementById('results').innerHTML = '';
+            log('🔍 Starting collection check...', 'info');
+            
+            try {
+                // Check database connection
+                log('📡 Testing database connection...', 'info');
+                const database = await databases.get(APPWRITE_CONFIG.databaseId);
+                log(`✅ Database connected: ${database.name} (ID: ${database.$id})`, 'success');
+                
+                // Check each collection
+                for (const [name, id] of Object.entries(APPWRITE_CONFIG.collections)) {
+                    try {
+                        const collection = await databases.getCollection(APPWRITE_CONFIG.databaseId, id);
+                        log(`✅ Collection "${name}" exists (ID: ${id})`, 'success');
+                        
+                        // List documents in collection
+                        try {
+                            const docs = await databases.listDocuments(APPWRITE_CONFIG.databaseId, id, []);
+                            log(`📊 Collection "${name}" has ${docs.documents.length} documents`, 'info');
+                        } catch (listError) {
+                            log(`⚠️ Could not list documents in "${name}": ${listError.message}`, 'warning');
+                        }
+                    } catch (error) {
+                        if (error.code === 404) {
+                            log(`❌ Collection "${name}" NOT FOUND (ID: ${id})`, 'error');
+                        } else {
+                            log(`❌ Error checking collection "${name}": ${error.message}`, 'error');
+                        }
+                    }
+                }
+                
+            } catch (error) {
+                log(`❌ Database connection failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function createMissingCollections() {
+            log('🛠️ Creating missing collections...', 'info');
+            
+            const collectionSchemas = {
+                therapists: {
+                    name: 'Therapists',
+                    attributes: [
+                        { key: 'name', type: 'string', size: 255, required: true },
+                        { key: 'email', type: 'string', size: 255, required: false },
+                        { key: 'profilePicture', type: 'string', size: 2000, required: false },
+                        { key: 'description', type: 'string', size: 2000, required: false },
+                        { key: 'whatsappNumber', type: 'string', size: 50, required: false },
+                        { key: 'location', type: 'string', size: 255, required: false },
+                        { key: 'pricing', type: 'string', size: 500, required: false },
+                        { key: 'massageTypes', type: 'string', size: 1000, required: false },
+                        { key: 'coordinates', type: 'string', size: 100, required: false },
+                        { key: 'status', type: 'string', size: 50, required: false, default: 'offline' },
+                        { key: 'isLive', type: 'boolean', required: false, default: false },
+                        { key: 'specialization', type: 'string', size: 255, required: false },
+                        { key: 'yearsOfExperience', type: 'integer', required: false, min: 0, max: 50 },
+                        { key: 'isLicensed', type: 'boolean', required: false, default: false },
+                        { key: 'analytics', type: 'string', size: 2000, required: false }
+                    ]
+                },
+                places: {
+                    name: 'Places',
+                    attributes: [
+                        { key: 'name', type: 'string', size: 255, required: true },
+                        { key: 'description', type: 'string', size: 2000, required: false },
+                        { key: 'location', type: 'string', size: 255, required: false },
+                        { key: 'coordinates', type: 'string', size: 100, required: false },
+                        { key: 'pricing', type: 'string', size: 500, required: false }
+                    ]
+                }
+            };
+
+            for (const [collectionName, config] of Object.entries(collectionSchemas)) {
+                try {
+                    const collectionId = APPWRITE_CONFIG.collections[collectionName];
+                    
+                    // Check if collection exists
+                    try {
+                        await databases.getCollection(APPWRITE_CONFIG.databaseId, collectionId);
+                        log(`ℹ️ Collection "${collectionName}" already exists`, 'info');
+                        continue;
+                    } catch (error) {
+                        if (error.code !== 404) throw error;
+                    }
+                    
+                    // Create collection
+                    log(`🆕 Creating collection "${collectionName}"...`, 'info');
+                    const collection = await databases.createCollection(
+                        APPWRITE_CONFIG.databaseId,
+                        collectionId,
+                        config.name
+                    );
+                    
+                    log(`✅ Created collection "${collectionName}" (${collection.$id})`, 'success');
+                    
+                    // Add attributes
+                    for (const attr of config.attributes) {
+                        try {
+                            let attributePromise;
+                            switch (attr.type) {
+                                case 'string':
+                                    attributePromise = databases.createStringAttribute(
+                                        APPWRITE_CONFIG.databaseId,
+                                        collectionId,
+                                        attr.key,
+                                        attr.size,
+                                        attr.required,
+                                        attr.default
+                                    );
+                                    break;
+                                case 'integer':
+                                    attributePromise = databases.createIntegerAttribute(
+                                        APPWRITE_CONFIG.databaseId,
+                                        collectionId,
+                                        attr.key,
+                                        attr.required,
+                                        attr.min,
+                                        attr.max,
+                                        attr.default
+                                    );
+                                    break;
+                                case 'boolean':
+                                    attributePromise = databases.createBooleanAttribute(
+                                        APPWRITE_CONFIG.databaseId,
+                                        collectionId,
+                                        attr.key,
+                                        attr.required,
+                                        attr.default
+                                    );
+                                    break;
+                            }
+                            
+                            if (attributePromise) {
+                                await attributePromise;
+                                log(`  ✅ Added attribute: ${attr.key} (${attr.type})`, 'success');
+                            }
+                        } catch (attrError) {
+                            log(`  ⚠️ Failed to add attribute ${attr.key}: ${attrError.message}`, 'warning');
+                        }
+                    }
+                    
+                } catch (error) {
+                    log(`❌ Failed to create collection "${collectionName}": ${error.message}`, 'error');
+                }
+            }
+        }
+
+        async function testTherapistSave() {
+            log('💾 Testing therapist save operation...', 'info');
+            
+            try {
+                const testTherapist = {
+                    name: 'Test Therapist',
+                    email: 'test@example.com',
+                    description: 'Test therapist for debugging',
+                    whatsappNumber: '+1234567890',
+                    location: 'Test Location',
+                    status: 'online',
+                    isLive: true,
+                    specialization: 'Swedish Massage',
+                    yearsOfExperience: 5,
+                    isLicensed: true
+                };
+                
+                log('📝 Creating test therapist document...', 'info');
+                const result = await databases.createDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.therapists,
+                    'unique()',
+                    testTherapist
+                );
+                
+                log(`✅ Test therapist created successfully! Document ID: ${result.$id}`, 'success');
+                log(`📋 Created document: <pre>${JSON.stringify(result, null, 2)}</pre>`, 'info');
+                
+                // Clean up - delete the test document
+                await databases.deleteDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.therapists,
+                    result.$id
+                );
+                log('🧹 Test document cleaned up', 'info');
+                
+            } catch (error) {
+                log(`❌ Test therapist save failed: ${error.message}`, 'error');
+                if (error.code) {
+                    log(`Error code: ${error.code}`, 'error');
+                }
+            }
+        }
+
+        // Auto-run check on load
+        window.onload = () => {
+            log('🚀 Page loaded. Click "Check Collections" to start debugging.', 'info');
+        };
+    </script>
+</body>
+</html>

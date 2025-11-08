@@ -1218,11 +1218,11 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                                 onChange={(e) => handleGalleryDescriptionChange(index, e.target.value)}
                                                 placeholder="e.g., Our peaceful relaxation room with ambient lighting and comfortable seating where guests can unwind before and after their massage treatments..."
                                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
-                                                maxLength={250}
+                                                maxLength={350}
                                                 rows={4}
                                             />
                                             <p className="text-xs text-gray-500 mt-1">
-                                                {(galleryItem.description || '').length}/250 characters
+                                                {(galleryItem.description || '').length}/350 characters
                                             </p>
                                         </div>
                                     </div>
@@ -1243,16 +1243,16 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                 <textarea 
                                     value={description} 
                                     onChange={e => {
-                                        if (e.target.value.length <= 250) {
+                                        if (e.target.value.length <= 350) {
                                             setDescription(e.target.value);
                                         }
                                     }} 
                                     rows={3} 
-                                    maxLength={250}
+                                    maxLength={350}
                                     className="mt-1 block w-full pl-10 pr-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-green focus:border-brand-green text-gray-900" 
                                 />
                                 <p className="text-xs text-gray-500 mt-1">
-                                    {description.length}/250 characters
+                                    {description.length}/350 characters
                                 </p>
                             </div>
                         </div>

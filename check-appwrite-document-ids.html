@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appwrite Document IDs Checker</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .section h3 {
+            color: #ffd700;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        button {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        }
+        .success { color: #4ade80; font-weight: bold; }
+        .error { color: #f87171; font-weight: bold; }
+        .info { color: #60a5fa; font-weight: bold; }
+        .warning { color: #fbbf24; font-weight: bold; }
+        
+        pre {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            overflow-x: auto;
+            margin: 10px 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        
+        input::placeholder, textarea::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .id-list {
+            max-height: 200px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        
+        .id-item {
+            padding: 5px;
+            margin: 2px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .id-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .copy-btn {
+            background: #10b981;
+            font-size: 12px;
+            padding: 4px 8px;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Appwrite Document IDs Checker</h1>
+        
+        <div class="section">
+            <h3>📋 Manual Document ID Input</h3>
+            <p>Copy document IDs from your Appwrite console ($id column) and paste them here to test:</p>
+            <input type="text" id="manualId" placeholder="Paste document ID here (e.g., 67291234abcd567890ef1234)">
+            <button onclick="testDocumentId()">Test This Document ID</button>
+            <div id="manualResult"></div>
+        </div>
+
+        <div class="section">
+            <h3>👥 List All Therapists</h3>
+            <p>This will show all therapist documents with their $id values:</p>
+            <button onclick="listAllTherapists()">Load All Therapist IDs</button>
+            <div id="therapistsList"></div>
+        </div>
+
+        <div class="section">
+            <h3>📊 Collection Statistics</h3>
+            <button onclick="getCollectionStats()">Get Collection Info</button>
+            <div id="statsResult"></div>
+        </div>
+
+        <div class="section">
+            <h3>🔧 Test Specific Therapist Profile</h3>
+            <p>Enter a therapist document ID to load their full profile:</p>
+            <input type="text" id="therapistId" placeholder="Enter therapist document ID">
+            <button onclick="loadTherapistProfile()">Load Profile</button>
+            <div id="profileResult"></div>
+        </div>
+
+        <div class="section">
+            <h3>🆕 Create Test Therapist</h3>
+            <p>Create a new test therapist to verify the system works:</p>
+            <button onclick="createTestTherapist()">Create Test Therapist</button>
+            <div id="createResult"></div>
+        </div>
+
+        <div class="section">
+            <h3>🔐 Connection Status</h3>
+            <div id="connectionStatus">
+                <button onclick="checkAppwriteConnection()">Check Appwrite Connection</button>
+                <div id="statusResult"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { Client, Databases, Account, ID } from 'https://cdn.skypack.dev/appwrite@13.0.0';
+
+        // Appwrite Configuration
+        const client = new Client();
+        const databases = new Databases(client);
+        const account = new Account(client);
+
+        // Configure Appwrite
+        client
+            .setEndpoint('https://cloud.appwrite.io/v1')
+            .setProject('672b0d68002359397374'); // Your project ID
+
+        const DATABASE_ID = '672b0d7b00249d81e129';
+        const THERAPISTS_COLLECTION_ID = 'therapists_collection_id';
+
+        window.checkAppwriteConnection = async function() {
+            const statusDiv = document.getElementById('statusResult');
+            statusDiv.innerHTML = '<div class="info">Checking connection...</div>';
+            
+            try {
+                // Test account session
+                const session = await account.getSession('current');
+                statusDiv.innerHTML += '<div class="success">✅ User session active</div>';
+                statusDiv.innerHTML += `<div class="info">User ID: ${session.userId}</div>`;
+                
+                // Test database access
+                const collections = await databases.listCollections(DATABASE_ID);
+                statusDiv.innerHTML += '<div class="success">✅ Database accessible</div>';
+                statusDiv.innerHTML += `<div class="info">Found ${collections.collections.length} collections</div>`;
+                
+                // Find therapists collection
+                const therapistsCollection = collections.collections.find(c => 
+                    c.$id === THERAPISTS_COLLECTION_ID || c.name.includes('therapist')
+                );
+                
+                if (therapistsCollection) {
+                    statusDiv.innerHTML += '<div class="success">✅ Therapists collection found</div>';
+                    statusDiv.innerHTML += `<div class="info">Collection ID: ${therapistsCollection.$id}</div>';
+                } else {
+                    statusDiv.innerHTML += '<div class="warning">⚠️ Therapists collection not found</div>';
+                }
+                
+            } catch (error) {
+                statusDiv.innerHTML += `<div class="error">❌ Connection Error: ${error.message}</div>`;
+                console.error('Connection test failed:', error);
+            }
+        };
+
+        window.listAllTherapists = async function() {
+            const listDiv = document.getElementById('therapistsList');
+            listDiv.innerHTML = '<div class="info">Loading therapists...</div>';
+            
+            try {
+                const response = await databases.listDocuments(
+                    DATABASE_ID,
+                    THERAPISTS_COLLECTION_ID
+                );
+                
+                if (response.documents.length === 0) {
+                    listDiv.innerHTML = '<div class="warning">⚠️ No therapist documents found</div>';
+                    return;
+                }
+                
+                let html = `<div class="success">✅ Found ${response.documents.length} therapist(s)</div>`;
+                html += '<div class="id-list">';
+                
+                response.documents.forEach((doc, index) => {
+                    html += `
+                        <div class="id-item">
+                            <strong>${index + 1}.</strong> ID: ${doc.$id}
+                            <button class="copy-btn" onclick="copyToClipboard('${doc.$id}')">Copy</button>
+                            <br><small>Name: ${doc.name || 'No name'} | Created: ${new Date(doc.$createdAt).toLocaleDateString()}</small>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                listDiv.innerHTML = html;
+                
+            } catch (error) {
+                listDiv.innerHTML = `<div class="error">❌ Error loading therapists: ${error.message}</div>`;
+                console.error('Error listing therapists:', error);
+            }
+        };
+
+        window.testDocumentId = async function() {
+            const docId = document.getElementById('manualId').value.trim();
+            const resultDiv = document.getElementById('manualResult');
+            
+            if (!docId) {
+                resultDiv.innerHTML = '<div class="warning">⚠️ Please enter a document ID</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div class="info">Testing document ID...</div>';
+            
+            try {
+                const document = await databases.getDocument(
+                    DATABASE_ID,
+                    THERAPISTS_COLLECTION_ID,
+                    docId
+                );
+                
+                resultDiv.innerHTML = `
+                    <div class="success">✅ Document found!</div>
+                    <div class="info">Name: ${document.name || 'No name'}</div>
+                    <div class="info">Created: ${new Date(document.$createdAt).toLocaleDateString()}</div>
+                    <div class="info">Updated: ${new Date(document.$updatedAt).toLocaleDateString()}</div>
+                    <pre>${JSON.stringify(document, null, 2)}</pre>
+                `;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Document not found: ${error.message}</div>`;
+                console.error('Error testing document:', error);
+            }
+        };
+
+        window.loadTherapistProfile = async function() {
+            const therapistId = document.getElementById('therapistId').value.trim();
+            const resultDiv = document.getElementById('profileResult');
+            
+            if (!therapistId) {
+                resultDiv.innerHTML = '<div class="warning">⚠️ Please enter a therapist ID</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div class="info">Loading therapist profile...</div>';
+            
+            try {
+                const therapist = await databases.getDocument(
+                    DATABASE_ID,
+                    THERAPISTS_COLLECTION_ID,
+                    therapistId
+                );
+                
+                resultDiv.innerHTML = `
+                    <div class="success">✅ Profile loaded successfully!</div>
+                    <div class="info"><strong>Name:</strong> ${therapist.name || 'No name'}</div>
+                    <div class="info"><strong>Email:</strong> ${therapist.email || 'No email'}</div>
+                    <div class="info"><strong>Phone:</strong> ${therapist.phone || 'No phone'}</div>
+                    <div class="info"><strong>Location:</strong> ${therapist.location || 'No location'}</div>
+                    <div class="info"><strong>Created:</strong> ${new Date(therapist.$createdAt).toLocaleString()}</div>
+                    <pre>${JSON.stringify(therapist, null, 2)}</pre>
+                `;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error loading profile: ${error.message}</div>`;
+                console.error('Error loading therapist:', error);
+            }
+        };
+
+        window.createTestTherapist = async function() {
+            const resultDiv = document.getElementById('createResult');
+            resultDiv.innerHTML = '<div class="info">Creating test therapist...</div>';
+            
+            const testData = {
+                name: `Test Therapist ${Date.now()}`,
+                email: `test${Date.now()}@example.com`,
+                phone: '+62812345678',
+                location: 'Jakarta',
+                services: ['Full Body Massage', 'Reflexology'],
+                price_home: '150',
+                price_hotel: '180',
+                price_villa: '200',
+                bio: 'Test therapist created for debugging',
+                experience: '2',
+                certifications: ['Certified Massage Therapist'],
+                available: true
+            };
+            
+            try {
+                const document = await databases.createDocument(
+                    DATABASE_ID,
+                    THERAPISTS_COLLECTION_ID,
+                    ID.unique(),
+                    testData
+                );
+                
+                resultDiv.innerHTML = `
+                    <div class="success">✅ Test therapist created successfully!</div>
+                    <div class="info"><strong>Document ID:</strong> ${document.$id}</div>
+                    <div class="info"><strong>Name:</strong> ${document.name}</div>
+                    <div class="info">Copy this ID to test in your dashboard:</div>
+                    <input type="text" value="${document.$id}" readonly style="background: rgba(255,255,255,0.2);">
+                    <button class="copy-btn" onclick="copyToClipboard('${document.$id}')">Copy ID</button>
+                `;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error creating therapist: ${error.message}</div>`;
+                console.error('Error creating therapist:', error);
+            }
+        };
+
+        window.getCollectionStats = async function() {
+            const resultDiv = document.getElementById('statsResult');
+            resultDiv.innerHTML = '<div class="info">Getting collection statistics...</div>';
+            
+            try {
+                const collections = await databases.listCollections(DATABASE_ID);
+                
+                let html = `<div class="success">✅ Database has ${collections.collections.length} collections:</div>`;
+                
+                for (const collection of collections.collections) {
+                    try {
+                        const docs = await databases.listDocuments(DATABASE_ID, collection.$id, [], 1);
+                        html += `
+                            <div class="info">
+                                <strong>${collection.name}</strong> (ID: ${collection.$id})
+                                - ${docs.total} documents
+                            </div>
+                        `;
+                    } catch (e) {
+                        html += `
+                            <div class="warning">
+                                <strong>${collection.name}</strong> (ID: ${collection.$id})
+                                - Access denied or error
+                            </div>
+                        `;
+                    }
+                }
+                
+                resultDiv.innerHTML = html;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error getting stats: ${error.message}</div>`;
+                console.error('Error getting collection stats:', error);
+            }
+        };
+
+        window.copyToClipboard = function(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('ID copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        };
+
+        // Auto-check connection on load
+        window.addEventListener('load', () => {
+            checkAppwriteConnection();
+        });
+    </script>
+</body>
+</html>

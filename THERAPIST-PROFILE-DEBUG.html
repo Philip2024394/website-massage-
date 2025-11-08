@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Therapist Profile Save Debugging</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .diagnostic {
+            background: white;
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .error { border-left: 5px solid #dc3545; background: #fff5f5; }
+        .warning { border-left: 5px solid #ffc107; background: #fffef5; }
+        .success { border-left: 5px solid #28a745; background: #f8fff9; }
+        .info { border-left: 5px solid #17a2b8; background: #f0fdff; }
+        .step {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 3px solid #007bff;
+        }
+        .console-log {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+        }
+        button {
+            background: #ff6b35;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 8px;
+        }
+        button:hover { background: #e55a2b; }
+        .checklist li { margin: 8px 0; }
+        .red { color: #dc3545; font-weight: bold; }
+        .green { color: #28a745; font-weight: bold; }
+        .orange { color: #fd7e14; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Therapist Profile Save Debugging Guide</h1>
+    
+    <div class="diagnostic error">
+        <h2>🚨 Issue: No Profile Data on Therapist Dashboard</h2>
+        <p><strong>Problem:</strong> Therapist profile data is not being saved to Appwrite database</p>
+        <p><strong>Impact:</strong> Therapists can't edit their profile because data isn't persisting</p>
+    </div>
+
+    <div class="diagnostic info">
+        <h2>📊 Quick Server Status Check</h2>
+        <button onclick="window.open('http://localhost:3006', '_blank')">
+            🌐 Open Website (localhost:3006)
+        </button>
+        <p>First verify your development server is running on the correct port</p>
+    </div>
+
+    <div class="diagnostic warning">
+        <h2>🔧 Step-by-Step Debugging Process</h2>
+        
+        <div class="step">
+            <h3>Step 1: Check Browser Console for Save Errors</h3>
+            <ol>
+                <li>Open your website: <code>http://localhost:3006</code></li>
+                <li>Login as a therapist</li>
+                <li>Go to Dashboard → Profile</li>
+                <li>Open Browser DevTools (F12) → Console tab</li>
+                <li>Fill out the profile form</li>
+                <li>Click "Save Profile" button</li>
+                <li><strong>Look for these console messages:</strong></li>
+            </ol>
+            
+            <div class="console-log">✅ Expected Success Messages:
+💾 SAVE BUTTON CLICKED - Starting save process...
+💾 Calling onSave with data: {name: "...", ...}
+✅ Therapist profile saved successfully
+
+❌ Common Error Messages:
+❌ Could not save therapist profile
+❌ Invalid document structure: Missing required attribute
+❌ Network request failed
+❌ onSave is not a function</div>
+        </div>
+
+        <div class="step">
+            <h3>Step 2: Verify Appwrite Connection</h3>
+            <p>Check if the save function is actually being called:</p>
+            <ul class="checklist">
+                <li>Does the console show "💾 SAVE BUTTON CLICKED"?</li>
+                <li>Does it show "💾 Calling onSave with data"?</li>
+                <li>Is there an error message after the save attempt?</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <h3>Step 3: Check Required Fields</h3>
+            <p>According to the Appwrite schema, these fields are REQUIRED:</p>
+            <ul class="checklist">
+                <li><span class="red">✓ name</span> - Therapist full name</li>
+                <li><span class="red">✓ whatsappNumber</span> - Contact number</li>
+                <li><span class="red">✓ profilePicture</span> - Profile image URL</li>
+                <li><span class="red">✓ specialization</span> - Massage type</li>
+                <li><span class="red">✓ availability</span> - "full-time"</li>
+                <li><span class="red">✓ hourlyRate</span> - Pricing info</li>
+            </ul>
+            <p><span class="orange">Missing any of these will cause save to fail!</span></p>
+        </div>
+    </div>
+
+    <div class="diagnostic info">
+        <h2>🎯 Most Likely Causes</h2>
+        
+        <div class="step">
+            <h3>1. Missing Profile Picture (Most Common)</h3>
+            <p><span class="red">Profile image is REQUIRED</span> for save to work</p>
+            <ul>
+                <li>Must upload a profile picture before saving</li>
+                <li>Check if image upload is working correctly</li>
+                <li>Verify image URL is not empty or too long (>512 chars)</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <h3>2. Collection ID Mismatch</h3>
+            <p>Verify the correct collection ID is being used:</p>
+            <div class="console-log">Expected: "therapists_collection_id"</div>
+        </div>
+
+        <div class="step">
+            <h3>3. Appwrite Schema Fields Missing</h3>
+            <p>The save function needs to include ALL required Appwrite fields:</p>
+            <ul>
+                <li>specialization (derived from massage types)</li>
+                <li>availability ("full-time")</li>
+                <li>hourlyRate (calculated from pricing)</li>
+                <li>therapistId (same as document ID)</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="diagnostic success">
+        <h2>✅ Expected Working Flow</h2>
+        <ol>
+            <li><span class="green">Login as therapist</span></li>
+            <li><span class="green">Navigate to Dashboard → Profile</span></li>
+            <li><span class="green">Fill required fields (name, whatsapp, upload image)</span></li>
+            <li><span class="green">Select massage types</span></li>
+            <li><span class="green">Add pricing information</span></li>
+            <li><span class="green">Click "Save Profile"</span></li>
+            <li><span class="green">See success message</span></li>
+            <li><span class="green">Refresh page → Data should persist</span></li>
+        </ol>
+    </div>
+
+    <div class="diagnostic error">
+        <h2>🚨 Emergency Fixes</h2>
+        
+        <div class="step">
+            <h3>If Profile Image Upload Fails:</h3>
+            <p>Temporarily bypass the profile image requirement to test other save functionality</p>
+        </div>
+
+        <div class="step">
+            <h3>If Save Function Not Called:</h3>
+            <p>Check if the onSave prop is properly passed from AppRouter to TherapistDashboardPage</p>
+        </div>
+
+        <div class="step">
+            <h3>If Appwrite Errors:</h3>
+            <p>Verify collection exists in Appwrite console with correct attributes</p>
+        </div>
+    </div>
+
+    <div class="diagnostic warning">
+        <h2>📝 Action Items</h2>
+        <ol>
+            <li><strong>Test the save process</strong> with browser console open</li>
+            <li><strong>Check for error messages</strong> in console</li>
+            <li><strong>Verify required fields</strong> are filled (especially profile image)</li>
+            <li><strong>Report back</strong> with the specific error message you see</li>
+        </ol>
+        
+        <button onclick="window.open('http://localhost:3006', '_blank')">
+            🧪 Start Testing Now
+        </button>
+    </div>
+
+    <script>
+        console.log('🔍 Therapist Profile Save Debugging Guide Loaded');
+        console.log('📊 Server should be running on: http://localhost:3006');
+        console.log('🎯 Look for save errors in browser console when testing');
+    </script>
+</body>
+</html>

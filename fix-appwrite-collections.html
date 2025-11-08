@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix Appwrite Collection IDs</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .problem { background-color: #f8d7da; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #f5c6cb; }
+        .solution { background-color: #d4edda; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #c3e6cb; }
+        .code { background-color: #f8f9fa; padding: 10px; border-radius: 4px; font-family: monospace; margin: 10px 0; }
+        button { padding: 10px 15px; margin: 5px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        .step { margin: 20px 0; padding: 15px; border-left: 4px solid #007bff; background-color: #f8f9fa; }
+        .warning { background-color: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #ffeaa7; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Fix Appwrite Collection IDs for Production</h1>
+    
+    <div class="problem">
+        <h3>❌ Problem Identified</h3>
+        <p>Your Appwrite configuration uses <strong>placeholder</strong> collection IDs instead of real ones:</p>
+        <div class="code">
+// Current (BROKEN):
+therapists: 'therapists_collection_id'  ❌ Placeholder
+places: 'places_collection_id'          ❌ Placeholder
+bookings: 'bookings_collection_id'      ❌ Placeholder
+        </div>
+        <p><strong>This is why therapist data doesn't save!</strong> Appwrite can't find collections with these fake IDs.</p>
+    </div>
+
+    <div class="solution">
+        <h3>✅ Solution: Get Real Collection IDs</h3>
+        <p>We need to fetch the <strong>actual</strong> collection IDs from your Appwrite database.</p>
+    </div>
+
+    <div class="step">
+        <h3>Step 1: Connect to Your Appwrite Database</h3>
+        <button onclick="testConnection()">Test Appwrite Connection</button>
+        <div id="connectionResult"></div>
+    </div>
+
+    <div class="step">
+        <h3>Step 2: Get Real Collection IDs</h3>
+        <button onclick="fetchCollectionIds()">Fetch Real Collection IDs</button>
+        <div id="collectionsResult"></div>
+    </div>
+
+    <div class="step">
+        <h3>Step 3: Update Configuration</h3>
+        <p>Replace placeholders with real IDs in <code>lib/appwrite.config.ts</code></p>
+        <div id="configUpdate"></div>
+    </div>
+
+    <div class="warning">
+        <h3>⚠️ Important</h3>
+        <p>This will connect to your live Appwrite database. Make sure your:</p>
+        <ul>
+            <li>Project ID: <strong>68f23b11000d25eb3664</strong></li>
+            <li>Database ID: <strong>68f76ee1000e64ca8d05</strong></li>
+            <li>Endpoint: <strong>https://syd.cloud.appwrite.io/v1</strong></li>
+        </ul>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@15.0.0"></script>
+    <script>
+        // Initialize Appwrite
+        const sdk = new Appwrite.Client();
+        sdk.setEndpoint('https://syd.cloud.appwrite.io/v1')
+           .setProject('68f23b11000d25eb3664');
+
+        const databases = new Appwrite.Databases(sdk);
+        const databaseId = '68f76ee1000e64ca8d05';
+
+        async function testConnection() {
+            const resultDiv = document.getElementById('connectionResult');
+            resultDiv.innerHTML = '<p>🔄 Testing connection...</p>';
+
+            try {
+                const database = await databases.get(databaseId);
+                resultDiv.innerHTML = `
+                    <div style="background-color: #d4edda; padding: 10px; border-radius: 4px; margin: 10px 0;">
+                        <h4>✅ Connection Successful!</h4>
+                        <p><strong>Database Name:</strong> ${database.name}</p>
+                        <p><strong>Collections:</strong> ${database.$createdAt}</p>
+                        <p>Ready to fetch collection IDs...</p>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div style="background-color: #f8d7da; padding: 10px; border-radius: 4px; margin: 10px 0;">
+                        <h4>❌ Connection Failed</h4>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p>Check your Appwrite settings and permissions.</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function fetchCollectionIds() {
+            const resultDiv = document.getElementById('collectionsResult');
+            resultDiv.innerHTML = '<p>🔄 Fetching collections...</p>';
+
+            try {
+                const collections = await databases.listCollections(databaseId);
+                
+                if (collections.total === 0) {
+                    resultDiv.innerHTML = `
+                        <div style="background-color: #fff3cd; padding: 10px; border-radius: 4px; margin: 10px 0;">
+                            <h4>⚠️ No Collections Found</h4>
+                            <p>Your database exists but has no collections yet.</p>
+                            <p>You need to create collections first in the Appwrite console.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let collectionsHtml = '<h4>✅ Found Collections:</h4><ul>';
+                let configCode = '\n// UPDATED CONFIG - COPY THIS TO lib/appwrite.config.ts:\ncollections: {\n';
+                
+                collections.documents.forEach(collection => {
+                    collectionsHtml += `<li><strong>${collection.name}</strong>: <code>${collection.$id}</code></li>`;
+                    
+                    // Map collection names to config keys
+                    const configKey = getConfigKey(collection.name);
+                    if (configKey) {
+                        configCode += `    ${configKey}: '${collection.$id}',\n`;
+                    }
+                });
+
+                collectionsHtml += '</ul>';
+                configCode += '}';
+
+                resultDiv.innerHTML = `
+                    <div style="background-color: #d4edda; padding: 10px; border-radius: 4px; margin: 10px 0;">
+                        ${collectionsHtml}
+                        <div style="background-color: #f8f9fa; padding: 10px; border-radius: 4px; font-family: monospace; margin: 10px 0; white-space: pre-wrap;">${configCode}</div>
+                        <button onclick="copyConfig('${configCode}')">Copy Updated Config</button>
+                    </div>
+                `;
+
+                // Update the config section
+                document.getElementById('configUpdate').innerHTML = `
+                    <div style="background-color: #d4edda; padding: 10px; border-radius: 4px;">
+                        <h4>📝 Next Steps:</h4>
+                        <ol>
+                            <li>Copy the config above</li>
+                            <li>Open <code>lib/appwrite.config.ts</code></li>
+                            <li>Replace the <code>collections: { ... }</code> section</li>
+                            <li>Save the file</li>
+                            <li>Restart your development server</li>
+                        </ol>
+                    </div>
+                `;
+
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div style="background-color: #f8d7da; padding: 10px; border-radius: 4px; margin: 10px 0;">
+                        <h4>❌ Failed to Fetch Collections</h4>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function getConfigKey(collectionName) {
+            const nameMap = {
+                'therapists': 'therapists',
+                'Therapists': 'therapists',
+                'places': 'places',
+                'Places': 'places',
+                'bookings': 'bookings',
+                'Bookings': 'bookings',
+                'agents': 'agents',
+                'Agents': 'agents',
+                'reviews': 'reviews',
+                'Reviews': 'reviews',
+                'notifications': 'notifications',
+                'Notifications': 'notifications',
+                'users': 'users',
+                'Users': 'users',
+                'admins': 'admins',
+                'Admins': 'admins'
+            };
+            return nameMap[collectionName] || collectionName.toLowerCase();
+        }
+
+        function copyConfig(configText) {
+            navigator.clipboard.writeText(configText).then(() => {
+                alert('✅ Configuration copied to clipboard!\n\nNow paste it into lib/appwrite.config.ts');
+            }).catch(() => {
+                alert('❌ Failed to copy. Please copy manually from the text above.');
+            });
+        }
+    </script>
+</body>
+</html>

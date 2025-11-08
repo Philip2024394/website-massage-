@@ -216,7 +216,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     // Parse Appwrite string fields with fallbacks
     const pricing = parsePricing(therapist.pricing) || { "60": 0, "90": 0, "120": 0 };
     
-    // Debug logging for pricing issues
+    // Debug logging for pricing issues (only when no pricing data)
     if (!therapist.pricing || (pricing["60"] === 0 && pricing["90"] === 0 && pricing["120"] === 0)) {
         console.warn(`⚠️ TherapistCard - ${therapist.name} has no pricing data:`, {
             rawPricing: therapist.pricing,
@@ -225,13 +225,36 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     }
     const massageTypes = parseMassageTypes(therapist.massageTypes) || [];
     
-    // Helper function to format price in "123K" format
-    const formatPrice = (price: number): string => {
-        if (!price || price === 0 || isNaN(price)) {
-            return "Contact"; // Show "Contact" instead of "0K" when no price is set
+    // Helper function to format price in "234k" format (lowercase k)
+    const formatPrice = (price: number | string): string => {
+        const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+        
+        if (!numPrice || numPrice === 0 || isNaN(numPrice)) {
+            return "Contact"; // Show "Contact" instead of "0k" when no price is set
         }
-        // Prices are already in thousands (e.g., 400 = 400K), so just add K suffix
-        return `${Math.round(price)}K`;
+        
+        // 🔧 FIX: Ensure 3-digit format (150k, 200k, 250k)
+        let priceInThousands = Math.round(numPrice / 1000);
+        
+        // If the price is less than 100k, it's probably entered incorrectly
+        // Convert common incorrect formats to proper 3-digit format
+        if (priceInThousands < 100) {
+            // If someone entered 22 (meaning 220k), convert to 220
+            if (priceInThousands >= 10 && priceInThousands < 100) {
+                priceInThousands = priceInThousands * 10;
+            }
+            // If someone entered single digit (like 2 meaning 200k), convert to 200
+            else if (priceInThousands < 10 && priceInThousands > 0) {
+                priceInThousands = priceInThousands * 100;
+            }
+        }
+        
+        // Ensure minimum reasonable price (100k minimum for massage services)
+        if (priceInThousands < 100) {
+            priceInThousands = 150; // Default to 150k if too low
+        }
+        
+        return `${priceInThousands}k`;
     };
     
     // Get main image from therapist data - use mainImage for background, profilePicture for overlay
@@ -436,9 +459,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 </div>
             </div>
             
-            {/* Therapist Name and Distance - Same line layout */}
-            <div className="absolute top-52 left-32 right-4 z-10 flex items-center justify-between">
-                <h3 className="text-xl font-bold text-gray-900">{therapist.name}</h3>
+            {/* Distance Display - Positioned at top right */}
+            <div className="absolute top-52 right-4 z-10">
                 <DistanceDisplay
                     userLocation={userLocation}
                     providerLocation={parseCoordinates(therapist.coordinates) || { lat: 0, lng: 0 }}
@@ -449,8 +471,13 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 />
             </div>
             
-            {/* Online Status - With proper margin spacing */}
-            <div className="absolute top-56 left-32 z-10">
+            {/* Therapist Name - Positioned in new line below distance */}
+            <div className="absolute top-56 left-32 right-4 z-10">
+                <h3 className="text-xl font-bold text-gray-900">{therapist.name}</h3>
+            </div>
+            
+            {/* Online Status - Positioned below name on same left alignment */}
+            <div className="absolute top-60 left-32 z-10">
                 <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isOvertime ? 'bg-red-100 text-red-800' : style.bg} ${isOvertime ? '' : style.text} mt-3`}>
                     <span className="relative mr-1.5">
                         {displayStatus === AvailabilityStatus.Available && (
@@ -470,8 +497,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             </div>
             
             {/* Therapist Bio - Use actual therapist description or fallback */}
-            <div className="absolute top-72 left-4 right-4 z-10 therapist-bio-section max-h-16 overflow-hidden">
-                <p className="text-xs text-gray-600 leading-relaxed text-justify line-clamp-3">
+            <div className="absolute top-72 left-6 right-6 z-10 therapist-bio-section max-h-32 overflow-hidden bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-sm">
+                <p className="text-xs text-gray-700 leading-5 break-words whitespace-normal line-clamp-6">
                     {therapist.description || 
                      `Certified massage therapist with ${therapist.yearsOfExperience || 5}+ years experience. Specialized in therapeutic and relaxation techniques. Available for home, hotel, and villa services. Professional, licensed, and highly rated by clients for exceptional service quality.`}
                 </p>
@@ -479,7 +506,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
 
             
             {/* Content Section - Layout adjusted for overlapping profile image */}
-            <div className="p-4 pt-40 flex flex-col gap-4">
+            <div className="p-4 pt-44 flex flex-col gap-4">
                 <div className="flex items-start gap-4">
                     <div className="flex-grow">
                         {/* Content starts below the positioned elements */}
@@ -596,7 +623,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                             </span>
                         </>
                     ) : (
-                        <p className="font-bold text-gray-800 text-sm leading-tight">Rp {formatPrice(Number(pricing["60"]))}</p>
+                        <p className="font-bold text-gray-800 text-sm leading-tight">
+                            Rp {formatPrice(Number(pricing["60"]))}
+                        </p>
                     )}
                 </div>
                 
@@ -617,7 +646,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                             </span>
                         </>
                     ) : (
-                        <p className="font-bold text-gray-800 text-sm leading-tight">Rp {formatPrice(Number(pricing["90"]))}</p>
+                        <p className="font-bold text-gray-800 text-sm leading-tight">
+                            Rp {formatPrice(Number(pricing["90"]))}
+                        </p>
                     )}
                 </div>
                 
@@ -638,7 +669,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                             </span>
                         </>
                     ) : (
-                        <p className="font-bold text-gray-800 text-sm leading-tight">Rp {formatPrice(Number(pricing["120"]))}</p>
+                        <p className="font-bold text-gray-800 text-sm leading-tight">
+                            Rp {formatPrice(Number(pricing["120"]))}
+                        </p>
                     )}
                 </div>
             </div>

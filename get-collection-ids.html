@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get Appwrite Collection IDs - URGENT FIX</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .urgent {
+            background: #ff4757;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);
+        }
+        .step {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #2ed573;
+        }
+        .code {
+            background: #2c2c2c;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            margin: 10px 0;
+            border-left: 4px solid #2ed573;
+        }
+        .button {
+            background: #2ed573;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(46, 213, 115, 0.4);
+        }
+        .button:hover {
+            background: #25c763;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(46, 213, 115, 0.6);
+        }
+        .results {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            min-height: 200px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        .link {
+            color: #70a1ff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .link:hover {
+            color: #7bed9f;
+            text-decoration: underline;
+        }
+        .warning {
+            background: #ffa502;
+            color: #2c2c2c;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: bold;
+            text-align: center;
+        }
+        .success {
+            background: #2ed573;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: bold;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚨 URGENT: Get Real Collection IDs</h1>
+        
+        <div class="urgent">
+            ⚠️ Your app is failing because collection IDs are placeholders!<br>
+            This tool will get the REAL collection IDs from your Appwrite database.
+        </div>
+
+        <div class="step">
+            <h3>🔧 Current Status</h3>
+            <p>Your therapist dashboard is empty because the app can't connect to Appwrite collections.</p>
+            <p><strong>Project ID:</strong> 68f23b11000d25eb3664</p>
+            <p><strong>Database ID:</strong> 68f76ee1000e64ca8d05</p>
+            <p><strong>Problem:</strong> Collection IDs in config are placeholders like "therapists_collection_id"</p>
+        </div>
+
+        <div class="step">
+            <h3>📋 Step 1: Get Collection IDs Automatically</h3>
+            <p>Click the button below to fetch all collection IDs from your Appwrite database:</p>
+            <button class="button" onclick="fetchCollectionIds()">🔍 Get Real Collection IDs</button>
+        </div>
+
+        <div class="step">
+            <h3>🌐 Step 2: Manual Backup Method</h3>
+            <p>If the automatic method fails, manually get IDs:</p>
+            <a href="https://syd.cloud.appwrite.io/console/project-68f23b11000d25eb3664/databases/database-68f76ee1000e64ca8d05/collections" 
+               class="link" target="_blank">
+                🔗 Open Appwrite Collections Dashboard
+            </a>
+            <p>Copy each collection ID and paste it below.</p>
+        </div>
+
+        <div class="results" id="results">Click "Get Real Collection IDs" to start...</div>
+
+        <div class="step">
+            <h3>⚡ Step 3: Apply Fix Immediately</h3>
+            <p>Once you have the real collection IDs, the fix will be generated automatically:</p>
+            <button class="button" onclick="generateFix()" style="background: #ff4757;">⚡ Generate Fix Code</button>
+        </div>
+    </div>
+
+    <script>
+        let collectionIds = {};
+
+        async function fetchCollectionIds() {
+            const results = document.getElementById('results');
+            results.textContent = '🔄 Fetching collection IDs from Appwrite...\n\n';
+
+            try {
+                // We'll use fetch to get collections from Appwrite REST API
+                const endpoint = 'https://syd.cloud.appwrite.io/v1';
+                const projectId = '68f23b11000d25eb3664';
+                const databaseId = '68f76ee1000e64ca8d05';
+
+                results.textContent += '📡 Connecting to Appwrite...\n';
+                results.textContent += `🎯 Endpoint: ${endpoint}\n`;
+                results.textContent += `📋 Project: ${projectId}\n`;
+                results.textContent += `💾 Database: ${databaseId}\n\n`;
+
+                // Note: This requires proper CORS setup or will need to be done manually
+                const response = await fetch(`${endpoint}/databases/${databaseId}/collections`, {
+                    method: 'GET',
+                    headers: {
+                        'X-Appwrite-Project': projectId,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                
+                results.textContent += '✅ SUCCESS! Found collections:\n\n';
+                
+                data.collections.forEach((collection, index) => {
+                    const name = collection.name || collection.$id;
+                    collectionIds[name] = collection.$id;
+                    results.textContent += `${index + 1}. 📁 ${name}\n`;
+                    results.textContent += `   ID: ${collection.$id}\n\n`;
+                });
+
+                results.textContent += '\n🎉 All collection IDs retrieved successfully!\n';
+                results.textContent += '👇 Click "Generate Fix Code" to get your solution!\n';
+
+            } catch (error) {
+                results.textContent += '❌ Automatic fetch failed (CORS restriction)\n\n';
+                results.textContent += '🔧 MANUAL METHOD:\n';
+                results.textContent += '1. Open: https://syd.cloud.appwrite.io/console/project-68f23b11000d25eb3664/databases/database-68f76ee1000e64ca8d05/collections\n';
+                results.textContent += '2. Look for collections named:\n';
+                results.textContent += '   - therapists (or similar)\n';
+                results.textContent += '   - places (or similar)\n';
+                results.textContent += '   - users (or similar)\n';
+                results.textContent += '   - bookings (or similar)\n\n';
+                results.textContent += '3. Click each collection and copy the Collection ID\n';
+                results.textContent += '4. Paste the IDs below when you click "Generate Fix Code"\n\n';
+                results.textContent += `Error details: ${error.message}\n`;
+            }
+        }
+
+        function generateFix() {
+            const results = document.getElementById('results');
+            
+            results.textContent = '🛠️ IMMEDIATE FIX FOR APPWRITE.CONFIG.TS\n\n';
+            results.textContent += '📝 Replace your appwrite.config.ts collections section with:\n\n';
+
+            // Generate the fix code
+            const fixCode = `// collections: {
+    therapists: 'PASTE_THERAPIST_COLLECTION_ID_HERE',
+    places: 'PASTE_PLACES_COLLECTION_ID_HERE', 
+    agents: 'PASTE_AGENTS_COLLECTION_ID_HERE',
+    agentVisits: 'PASTE_AGENT_VISITS_COLLECTION_ID_HERE',
+    bookings: 'PASTE_BOOKINGS_COLLECTION_ID_HERE',
+    hotelBookings: 'PASTE_HOTEL_BOOKINGS_COLLECTION_ID_HERE',
+    reviews: 'PASTE_REVIEWS_COLLECTION_ID_HERE',
+    notifications: 'PASTE_NOTIFICATIONS_COLLECTION_ID_HERE',
+    users: 'PASTE_USERS_COLLECTION_ID_HERE',
+    hotels: 'PASTE_HOTELS_COLLECTION_ID_HERE',
+    massageTypes: 'PASTE_MASSAGE_TYPES_COLLECTION_ID_HERE',
+    membershipPricing: 'PASTE_MEMBERSHIP_PRICING_COLLECTION_ID_HERE',
+    // ... other collections as needed
+// },`;
+
+            results.textContent += fixCode + '\n\n';
+            results.textContent += '⚡ CRITICAL STEPS:\n';
+            results.textContent += '1. Open lib/appwrite.config.ts in VS Code\n';
+            results.textContent += '2. Find the collections object (around line 10)\n';  
+            results.textContent += '3. Replace "therapists_collection_id" with the REAL ID\n';
+            results.textContent += '4. Replace "places_collection_id" with the REAL ID\n';
+            results.textContent += '5. Save the file\n';
+            results.textContent += '6. Refresh your app - therapist dashboard should work!\n\n';
+            
+            results.textContent += '🎯 EXAMPLE:\n';
+            results.textContent += 'Change: therapists: "therapists_collection_id"\n';
+            results.textContent += 'To:     therapists: "67523abc123456789def"\n\n';
+            
+            results.textContent += '✅ Once fixed, your therapist profiles will save and display correctly!\n';
+        }
+    </script>
+</body>
+</html>

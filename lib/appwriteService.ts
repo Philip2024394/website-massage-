@@ -322,6 +322,29 @@ export const therapistService = {
             return null;
         }
     },
+    async getByEmail(email: string): Promise<any[]> {
+        try {
+            console.log('🔍 Searching for therapist by email:', email);
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.therapists,
+                [Query.equal('email', email)]
+            );
+            console.log('📋 Found therapists with email:', response.documents.length);
+            return response.documents;
+        } catch (error) {
+            console.error('Error finding therapist by email:', error);
+            return [];
+        }
+    },
+    async getCurrentUser(): Promise<any> {
+        try {
+            return await account.get();
+        } catch (error) {
+            console.error('Error getting current user:', error);
+            return null;
+        }
+    },
     async update(id: string, data: any): Promise<any> {
         try {
             console.log('🔍 Attempting to update therapist:', {
@@ -512,6 +535,29 @@ export const placeService = {
         } catch (error) {
             console.error('Error deleting place:', error);
             throw error;
+        }
+    },
+    async getByEmail(email: string): Promise<any[]> {
+        try {
+            console.log('🔍 Searching for massage place by email:', email);
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.places,
+                [Query.equal('email', email)]
+            );
+            console.log('📋 Found massage places with email:', response.documents.length);
+            return response.documents;
+        } catch (error) {
+            console.error('Error finding massage place by email:', error);
+            return [];
+        }
+    },
+    async getCurrentUser(): Promise<any> {
+        try {
+            return await account.get();
+        } catch (error) {
+            console.error('Error getting current user:', error);
+            return null;
         }
     }
 };

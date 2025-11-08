@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Therapist Save - Fixed Collection ID</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@16.0.0"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✅ Test Therapist Save - Collection ID Fixed</h1>
+        
+        <div class="status success">
+            <strong>Collection ID Updated!</strong> Changed from 'therapists' to 'therapists_collection_id'
+        </div>
+
+        <h2>📝 Create Test Therapist Profile</h2>
+        
+        <div class="form-group">
+            <label>Name (Required):</label>
+            <input type="text" id="name" placeholder="Enter therapist name" value="Test Therapist">
+        </div>
+        
+        <div class="form-group">
+            <label>Email (Required):</label>
+            <input type="email" id="email" placeholder="Enter email" value="test@example.com">
+        </div>
+        
+        <div class="form-group">
+            <label>Therapist ID (Required):</label>
+            <input type="text" id="therapistId" placeholder="Enter unique therapist ID" value="test-therapist-001">
+        </div>
+        
+        <div class="form-group">
+            <label>Hotel ID (Required):</label>
+            <input type="text" id="hotelId" placeholder="Enter hotel ID" value="hotel-001">
+        </div>
+        
+        <div class="form-group">
+            <label>WhatsApp Number:</label>
+            <input type="text" id="whatsappNumber" placeholder="+1234567890" value="+1234567890">
+        </div>
+        
+        <div class="form-group">
+            <label>Location (Required):</label>
+            <input type="text" id="location" placeholder="Enter location" value="Test Location, Jakarta">
+        </div>
+        
+        <div class="form-group">
+            <label>Specialization (Required):</label>
+            <select id="specialization">
+                <option value="Swedish Massage">Swedish Massage</option>
+                <option value="Thai Massage">Thai Massage</option>
+                <option value="Deep Tissue">Deep Tissue</option>
+                <option value="Hot Stone">Hot Stone</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Years of Experience (Required, 0-50):</label>
+            <input type="number" id="yearsOfExperience" min="0" max="50" value="5">
+        </div>
+        
+        <div class="form-group">
+            <label>Hourly Rate (Required, 50-500):</label>
+            <input type="number" id="hourlyRate" min="50" max="500" step="10" value="150">
+        </div>
+        
+        <div class="form-group">
+            <label>Pricing (Required):</label>
+            <input type="text" id="pricing" placeholder='{"60": 150000, "90": 200000, "120": 250000}' value='{"60": 150000, "90": 200000, "120": 250000}'>
+        </div>
+        
+        <div class="form-group">
+            <label>Coordinates (Required):</label>
+            <input type="text" id="coordinates" placeholder='{"lat": -6.2088, "lng": 106.8456}' value='{"lat": -6.2088, "lng": 106.8456}'>
+        </div>
+        
+        <div class="form-group">
+            <label>
+                <input type="checkbox" id="isLicensed" checked> Is Licensed (Required)
+            </label>
+        </div>
+        
+        <div class="form-group">
+            <label>Availability (Required):</label>
+            <select id="availability">
+                <option value="online">Online</option>
+                <option value="offline">Offline</option>
+                <option value="busy">Busy</option>
+            </select>
+        </div>
+
+        <button onclick="testSaveTherapist()">💾 Test Save Therapist</button>
+        <button onclick="listTherapists()">📋 List All Therapists</button>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        // Fixed Appwrite configuration
+        const APPWRITE_CONFIG = {
+            endpoint: 'https://syd.cloud.appwrite.io/v1',
+            projectId: '68f23b11000d25eb3664',
+            databaseId: '68f76ee1000e64ca8d05',
+            collections: {
+                therapists: 'therapists_collection_id' // Fixed collection ID
+            }
+        };
+
+        // Initialize Appwrite
+        const client = new Appwrite.Client()
+            .setEndpoint(APPWRITE_CONFIG.endpoint)
+            .setProject(APPWRITE_CONFIG.projectId);
+
+        const databases = new Appwrite.Databases(client);
+
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = message;
+            results.appendChild(div);
+            console.log(message);
+        }
+
+        async function testSaveTherapist() {
+            document.getElementById('results').innerHTML = '';
+            log('💾 Testing therapist save with correct collection ID...', 'info');
+            
+            try {
+                // Get form values
+                const therapistData = {
+                    name: document.getElementById('name').value,
+                    email: document.getElementById('email').value,
+                    therapistId: document.getElementById('therapistId').value,
+                    hotelId: document.getElementById('hotelId').value,
+                    id: document.getElementById('therapistId').value, // Use same as therapistId
+                    whatsappNumber: document.getElementById('whatsappNumber').value,
+                    location: document.getElementById('location').value,
+                    specialization: document.getElementById('specialization').value,
+                    yearsOfExperience: parseInt(document.getElementById('yearsOfExperience').value),
+                    hourlyRate: parseFloat(document.getElementById('hourlyRate').value),
+                    pricing: document.getElementById('pricing').value,
+                    coordinates: document.getElementById('coordinates').value,
+                    isLicensed: document.getElementById('isLicensed').checked,
+                    availability: document.getElementById('availability').value,
+                    isLive: false, // Default
+                    status: document.getElementById('availability').value // Use availability for status
+                };
+                
+                // Validate required fields
+                const requiredFields = ['name', 'email', 'therapistId', 'hotelId', 'location', 'specialization', 'pricing', 'coordinates'];
+                for (const field of requiredFields) {
+                    if (!therapistData[field] || therapistData[field].toString().trim() === '') {
+                        throw new Error(`Required field missing: ${field}`);
+                    }
+                }
+                
+                log(`📋 Therapist data prepared: ${JSON.stringify(therapistData, null, 2)}`, 'info');
+                
+                // Test the save operation
+                const result = await databases.createDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.therapists,
+                    'unique()',
+                    therapistData
+                );
+                
+                log(`✅ SUCCESS! Therapist saved with Document ID: ${result.$id}`, 'success');
+                log(`🎉 The collection ID fix worked! You can now save therapist profiles.`, 'success');
+                log(`📊 Saved document details: <pre>${JSON.stringify(result, null, 2)}</pre>`, 'info');
+                
+            } catch (error) {
+                log(`❌ Error saving therapist: ${error.message}`, 'error');
+                if (error.code) {
+                    log(`Error code: ${error.code}`, 'error');
+                }
+                if (error.type) {
+                    log(`Error type: ${error.type}`, 'error');
+                }
+            }
+        }
+
+        async function listTherapists() {
+            log('📋 Fetching all therapists...', 'info');
+            
+            try {
+                const response = await databases.listDocuments(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.therapists
+                );
+                
+                log(`✅ Found ${response.documents.length} therapists in database`, 'success');
+                
+                if (response.documents.length > 0) {
+                    log('📝 Therapist list:', 'info');
+                    response.documents.forEach((therapist, index) => {
+                        log(`${index + 1}. ${therapist.name} (ID: ${therapist.$id}) - ${therapist.specialization}`, 'info');
+                    });
+                }
+                
+            } catch (error) {
+                log(`❌ Error fetching therapists: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-run on load
+        window.onload = () => {
+            log('🚀 Collection ID has been fixed! Fill out the form and click "Test Save Therapist" to verify the fix works.', 'success');
+        };
+    </script>
+</body>
+</html>

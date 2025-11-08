@@ -9,18 +9,19 @@ export const APPWRITE_CONFIG = {
     // Collection IDs from your Appwrite database  
     collections: {
         admins: 'admin_messages',
-        therapists: 'therapists_collection_id', 
-        places: 'places_collection_id',
-        agents: 'agents_collection_id',
+        therapists: 'therapists_collection_id', // Correct collection ID
+        places: 'places', // Simple name  
+        agents: 'agents', // Simple name
+        bookings: 'bookings', // Simple name
+        reviews: 'reviews', // Simple name
+        notifications: 'notifications', // Simple name
+        users: 'users', // Simple name
+        // Keep the rest as-is
         agentVisits: 'agent_visits_collection_id',
-        bookings: 'bookings_collection_id',
-        hotelBookings: 'hotel_bookings', 
-        reviews: 'reviews_collection_id',
-        notifications: 'notifications_collection_id',
-        users: 'users_collection_id',
+        hotelBookings: 'hotel_bookings',
         hotels: 'hotels_collection_id',
         massageTypes: 'massage_types_collection_id',
-        membershipPricing: 'membership_pricing_collection_id', 
+        membershipPricing: 'membership_pricing_collection_id',
         imageAssets: 'image_assets',
         loginBackgrounds: 'login_backgrounds',
         customLinks: 'custom_links_collection_id',

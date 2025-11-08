@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Therapist Profile Saving - Step by Step</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .step {
+            background: #f8f9fa;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .step h3 {
+            margin-top: 0;
+            color: #28a745;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 8px;
+            font-size: 16px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn:hover { background: #0056b3; }
+        .btn-success { background: #28a745; }
+        .btn-success:hover { background: #218838; }
+        .code {
+            background: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: monospace;
+            border: 1px solid #e9ecef;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Therapist Profile Saving</h1>
+        
+        <div class="status success">
+            <strong>✅ Collection ID Fixed!</strong> Changed from 'therapists' to 'therapists_collection_id'
+        </div>
+        
+        <div class="status info">
+            <strong>🎯 Goal:</strong> Test if therapist profile saving works after the collection ID fix
+        </div>
+
+        <h2>📋 Step-by-Step Testing Instructions</h2>
+
+        <div class="step">
+            <h3>Step 1: Open Your Website</h3>
+            <p>Click this link to open your React app in a new browser tab:</p>
+            <a href="http://localhost:3000" target="_blank" class="btn btn-success">🚀 Open Website (localhost:3000)</a>
+            <div class="highlight">
+                <strong>Note:</strong> This opens in your default browser, not VS Code. That's normal and preferred for testing.
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>Step 2: Login as Therapist</h3>
+            <p>On your website homepage:</p>
+            <ul>
+                <li>Look for a "Login as Therapist" button or similar</li>
+                <li>Click it to access the therapist dashboard</li>
+                <li>If there's no login button, you might need to navigate to the therapist section</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <h3>Step 3: Fill Out Profile Form</h3>
+            <p>Complete the therapist profile with these required fields:</p>
+            <ul>
+                <li><strong>Name:</strong> Your therapist name</li>
+                <li><strong>Email:</strong> Valid email address</li>
+                <li><strong>Therapist ID:</strong> Unique identifier (e.g., "therapist001")</li>
+                <li><strong>Hotel ID:</strong> Hotel identifier (e.g., "hotel001")</li>
+                <li><strong>Location:</strong> Your service location</li>
+                <li><strong>Specialization:</strong> Type of massage</li>
+                <li><strong>Years of Experience:</strong> Number between 0-50</li>
+                <li><strong>Hourly Rate:</strong> Amount between 50-500</li>
+                <li><strong>Pricing:</strong> JSON format for different durations</li>
+                <li><strong>Coordinates:</strong> Location coordinates</li>
+                <li><strong>Is Licensed:</strong> Check the checkbox</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <h3>Step 4: Save Profile</h3>
+            <p>Click the "Save Profile" button and watch for:</p>
+            <div class="status success">
+                <strong>✅ Success:</strong> "Profile saved successfully" or similar message
+            </div>
+            <div class="status error">
+                <strong>❌ Error:</strong> Any error messages - report back what you see
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>Step 5: Check Browser Console (Important!)</h3>
+            <p>Open browser developer tools to see detailed logs:</p>
+            <ul>
+                <li>Press <span class="code">F12</span> or right-click → "Inspect"</li>
+                <li>Click the <span class="code">Console</span> tab</li>
+                <li>Look for any red error messages</li>
+                <li>Look for green success messages</li>
+            </ul>
+            <div class="highlight">
+                <strong>Report back:</strong> Tell me exactly what messages you see in the console!
+            </div>
+        </div>
+
+        <h2>🔍 What to Look For</h2>
+
+        <div class="status info">
+            <h4>Expected Success Signs:</h4>
+            <ul>
+                <li>✅ "Therapist saved successfully" message</li>
+                <li>✅ Console shows "Therapist updated successfully"</li>
+                <li>✅ No error messages in console</li>
+                <li>✅ Form data gets saved and persists</li>
+            </ul>
+        </div>
+
+        <div class="status warning">
+            <h4>Possible Error Messages (Report These):</h4>
+            <ul>
+                <li>❌ "Collection with the requested ID could not be found" (should be fixed now)</li>
+                <li>❌ "Failed to fetch" (CORS issue)</li>
+                <li>❌ "Unauthorized" (authentication issue)</li>
+                <li>❌ "Attribute validation failed" (missing required fields)</li>
+            </ul>
+        </div>
+
+        <h2>🆘 If You Get Errors</h2>
+
+        <div class="step">
+            <h3>Report Back With:</h3>
+            <ol>
+                <li><strong>Exact error message</strong> you see on screen</li>
+                <li><strong>Console error messages</strong> (from F12 developer tools)</li>
+                <li><strong>Which step failed</strong> (login, filling form, or saving)</li>
+            </ol>
+            <p>This information will help me provide the exact fix!</p>
+        </div>
+
+        <div class="status success">
+            <strong>🎉 Ready to Test!</strong><br>
+            The collection ID has been fixed from 'therapists' to 'therapists_collection_id'. 
+            This should resolve the "Collection not found" error you encountered earlier.
+        </div>
+    </div>
+</body>
+</html>

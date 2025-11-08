@@ -3,7 +3,7 @@ import type { Place, Pricing, Booking, Notification } from '../types';
 import type { Page } from '../types/pageTypes';
 import { BookingStatus, HotelVillaServiceStatus } from '../types';
 import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages } from '../utils/appwriteHelpers';
-import '../lib/appwriteService';
+import { placeService } from '../lib/appwriteService';
 import { User, Calendar, TrendingUp, Hotel, FileCheck, LogOut, Bell, Tag, Menu, Crown, Coins, History } from 'lucide-react';
 import { useTranslations } from '../lib/useTranslations';
 import DiscountSharePage from './DiscountSharePage';
@@ -128,84 +128,98 @@ const MassagePlaceAdminDashboard: React.FC<MassagePlaceAdminDashboardProps> = ({
     const fetchPlaceData = useCallback(async () => {
         setIsLoading(true);
         
-        console.log('📖 Loading place data:', place);
-        
-        // First, try to restore from localStorage
-        const profileKey = `massage_place_profile_${place?.id || 'temp'}`;
-        const savedProfileData = localStorage.getItem(profileKey);
-        
-        if (savedProfileData) {
+        try {
+            console.log('📖 Fetching place data for place:', place);
+            
+            let existingPlace = null;
+            
+            // 🎯 PRIMARY: Find massage place by logged-in user's email (FIXED APPROACH)
             try {
-                const parsedData = JSON.parse(savedProfileData);
-                console.log('🔄 Restored profile data from localStorage:', parsedData);
+                console.log('🔐 Getting current authenticated user...');
+                const currentUser = await placeService.getCurrentUser();
                 
-                // Restore all form fields from saved data
-                setName(parsedData.name || '');
-                setDescription(parsedData.description || '');
-                setProfilePicture(parsedData.profilePicture || '');
-                setWhatsappNumber(parsedData.whatsappNumber || '');
-                setYearsOfExperience(parsedData.yearsOfExperience || 0);
-                setMassageTypes(parsedData.massageTypes ? parseMassageTypes(parsedData.massageTypes) : []);
-                setLanguages(parsedData.languages || []);
-                setPricing(parsedData.pricing ? parsePricing(parsedData.pricing) : { 60: 0, 90: 0, 120: 0 });
-                setDiscountPercentage(parsedData.discountPercentage || 0);
-                setHotelVillaPricing(parsedData.hotelVillaPricing ? parsePricing(parsedData.hotelVillaPricing) : { 60: 0, 90: 0, 120: 0 });
-                setUseSamePricing(!parsedData.hotelVillaPricing); // If no hotel pricing, use same pricing
-                setLocation(parsedData.location || '');
-                setCoordinates(parsedData.coordinates ? parseCoordinates(parsedData.coordinates) : { lat: 0, lng: 0 });
-                setIsLicensed(parsedData.isLicensed || false);
-                
-                setIsLoading(false);
-                return; // Exit early since we have saved data
-            } catch (error) {
-                console.warn('⚠️ Failed to restore saved profile data:', error);
-                // Continue with normal flow if restoration fails
+                if (currentUser && currentUser.email) {
+                    console.log('✅ Found logged-in user:', currentUser.email);
+                    
+                    // Find massage place profile by email
+                    console.log('🔍 Searching for massage place profile by email...');
+                    const placeProfiles = await placeService.getByEmail(currentUser.email);
+                    
+                    if (placeProfiles && placeProfiles.length > 0) {
+                        existingPlace = placeProfiles[0];
+                        console.log('✅ Found massage place profile by email:', existingPlace.name);
+                    } else {
+                        console.log('⚠️ No massage place profile found for email:', currentUser.email);
+                    }
+                } else {
+                    console.log('⚠️ No authenticated user found');
+                }
+            } catch (appwriteError: any) {
+                console.log('⚠️ Authentication or profile search failed:', appwriteError?.message || appwriteError);
             }
-        }
-        
-        if (place) {
-            console.log('✅ Found existing place profile:', place);
-            setPlaceData(place);
-            setName(place.name || '');
-            setDescription(place.description || '');
-            setProfilePicture(place.profilePicture || '');
-            setWhatsappNumber(place.whatsappNumber || '');
-            setYearsOfExperience(0); // Places don't have experience
-            setMassageTypes(place.massageTypes ? parseMassageTypes(place.massageTypes) : []);
-            setLanguages(place.languages 
-                ? (typeof place.languages === 'string' 
-                    ? parseLanguages(place.languages) 
-                    : place.languages)
-                : []);
-            setPricing(place.pricing ? parsePricing(place.pricing) : { 60: 0, 90: 0, 120: 0 });
-            setDiscountPercentage(0); // Initialize discount percentage
             
-            setHotelVillaPricing(place.pricing ? parsePricing(place.pricing) : { 60: 0, 90: 0, 120: 0 });
-            setUseSamePricing(true);
+            // Fallback 1: Try with place ID prop if provided
+            if (!existingPlace && place?.id) {
+                try {
+                    console.log('📡 Fallback: Loading place data by ID:', place.id);
+                    existingPlace = await placeService.getById(place.id.toString());
+                    if (existingPlace) {
+                        console.log('✅ Found place data by ID:', existingPlace.name);
+                    }
+                } catch (idError: any) {
+                    console.log('⚠️ ID-based fetch failed:', idError?.message || idError);
+                }
+            }
             
-            setLocation(place.location || '');
-            setCoordinates(place.coordinates ? parseCoordinates(place.coordinates) : { lat: 0, lng: 0 });
-            setIsLicensed(false); // Places don't have individual licenses
-        } else {
-            console.log('📝 No place data provided, starting with empty form');
-            // No place data - start with empty data
-            setPlaceData(null);
-            setName('');
-            setDescription('');
-            setProfilePicture('');
-            setWhatsappNumber('');
-            setYearsOfExperience(0);
-            setMassageTypes([]);
-            setLanguages([]);
-            setPricing({ "60": 0, "90": 0, "120": 0 });
-            setHotelVillaPricing({ "60": 0, "90": 0, "120": 0 });
-            setUseSamePricing(true);
-            setLocation('');
-            setCoordinates({ lat: 0, lng: 0 });
-            setIsLicensed(false);
+            // Fallback 2: Use existing data from props
+            if (!existingPlace && place) {
+                console.log('📋 Using existing place data from props:', place.name);
+                existingPlace = place;
+            }
+            
+            if (existingPlace) {
+                console.log('✅ Found existing place profile:', existingPlace);
+                setPlaceData(existingPlace);
+                
+                // Update form fields with place data
+                setName(existingPlace.name || '');
+                setDescription(existingPlace.description || '');
+                setProfilePicture(existingPlace.profilePicture || '');
+                setWhatsappNumber(existingPlace.phone || existingPlace.whatsappNumber || '');
+                setLocation(existingPlace.address || existingPlace.location || '');
+                
+                if (existingPlace.coordinates) {
+                    setCoordinates(parseCoordinates(existingPlace.coordinates));
+                }
+                
+                // Parse place-specific data
+                if (existingPlace.services) {
+                    setMassageTypes(Array.isArray(existingPlace.services) ? existingPlace.services : []);
+                }
+                
+                if (existingPlace.pricing) {
+                    setPricing(parsePricing(existingPlace.pricing));
+                }
+                
+                // Set discount and additional pricing if available
+                setDiscountPercentage((existingPlace as any).discountPercentage || 0);
+                if ((existingPlace as any).hotelVillaPricing) {
+                    setHotelVillaPricing(parsePricing((existingPlace as any).hotelVillaPricing));
+                    setUseSamePricing(false);
+                } else {
+                    setUseSamePricing(true);
+                }
+                
+                setIsLicensed((existingPlace as any).isLicensed || false);
+            }
+            
+        } catch (error) {
+            console.error('⚠️ Error fetching place data:', error);
+        } finally {
+            setIsLoading(false);
         }
-        
-        setIsLoading(false);
+            console.log('📝 No place data found, starting with empty form');
+        }
     }, [place]);
 
     useEffect(() => {

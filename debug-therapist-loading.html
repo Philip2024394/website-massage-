@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Therapist Profile Loading</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@16.0.0"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 8px;
+            font-size: 14px;
+        }
+        button:hover { background: #0056b3; }
+        .btn-success { background: #28a745; }
+        .btn-success:hover { background: #218838; }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            font-size: 12px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Debug Therapist Profile Loading</h1>
+        
+        <div class="status info">
+            <strong>Purpose:</strong> Diagnose why therapist profile data isn't loading in the dashboard
+        </div>
+
+        <h2>🎯 Step 1: Check Therapist ID</h2>
+        <div class="form-group">
+            <label>Enter Therapist ID to test:</label>
+            <input type="text" id="therapistId" placeholder="Enter the therapist ID (e.g., test-therapist-001)" value="">
+        </div>
+        <button onclick="debugTherapistId()">🔍 Debug This Therapist ID</button>
+
+        <h2>🎯 Step 2: Check Session & Authentication</h2>
+        <button onclick="checkSession()">👤 Check User Session</button>
+        <button onclick="testAppwriteConnection()">🌐 Test Appwrite Connection</button>
+
+        <h2>🎯 Step 3: List All Therapists</h2>
+        <button onclick="listAllTherapists()">📋 List All Therapists in Database</button>
+
+        <h2>🎯 Step 4: Create Test Profile</h2>
+        <button onclick="createTestProfile()" class="btn-success">➕ Create Test Therapist Profile</button>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        // Appwrite configuration
+        const APPWRITE_CONFIG = {
+            endpoint: 'https://syd.cloud.appwrite.io/v1',
+            projectId: '68f23b11000d25eb3664',
+            databaseId: '68f76ee1000e64ca8d05',
+            collections: {
+                therapists: 'therapists_collection_id'
+            }
+        };
+
+        // Initialize Appwrite
+        const client = new Appwrite.Client()
+            .setEndpoint(APPWRITE_CONFIG.endpoint)
+            .setProject(APPWRITE_CONFIG.projectId);
+
+        const databases = new Appwrite.Databases(client);
+
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = message;
+            results.appendChild(div);
+            console.log(message);
+        }
+
+        async function debugTherapistId() {
+            const therapistId = document.getElementById('therapistId').value;
+            if (!therapistId) {
+                log('❌ Please enter a therapist ID first', 'error');
+                return;
+            }
+
+            document.getElementById('results').innerHTML = '';
+            log(`🔍 Debugging therapist ID: ${therapistId}`, 'info');
+
+            try {
+                log('📡 Attempting to fetch therapist from Appwrite...', 'info');
+                
+                const therapist = await databases.getDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.therapists,
+                    therapistId
+                );
+
+                log(`✅ SUCCESS! Found therapist profile:`, 'success');
+                log(`📋 Therapist Data: <pre>${JSON.stringify(therapist, null, 2)}</pre>`, 'info');
+                
+                // Check required fields
+                const requiredFields = ['name', 'email', 'therapistId', 'hotelId', 'location', 'specialization', 'yearsOfExperience', 'hourlyRate', 'pricing', 'coordinates', 'isLicensed', 'availability'];
+                const missingFields = requiredFields.filter(field => !therapist[field]);
+                
+                if (missingFields.length > 0) {
+                    log(`⚠️ Missing required fields: ${missingFields.join(', ')}`, 'warning');
+                } else {
+                    log('✅ All required fields are present', 'success');
+                }
+
+            } catch (error) {
+                log(`❌ Failed to fetch therapist: ${error.message}`, 'error');
+                
+                if (error.code === 404) {
+                    log('💡 Solution: The therapist profile doesn\'t exist. You need to create one first.', 'warning');
+                } else if (error.code === 401) {
+                    log('💡 Solution: Authentication required. Make sure you\'re logged in.', 'warning');
+                } else {
+                    log(`💡 Error details: ${JSON.stringify(error, null, 2)}`, 'error');
+                }
+            }
+        }
+
+        async function checkSession() {
+            log('👤 Checking user session...', 'info');
+            
+            try {
+                // Check localStorage session
+                const userSession = localStorage.getItem('userSession');
+                if (userSession) {
+                    const session = JSON.parse(userSession);
+                    log(`📋 localStorage session found: <pre>${JSON.stringify(session, null, 2)}</pre>`, 'success');
+                    
+                    // Auto-fill therapist ID if available
+                    const therapistIdField = document.getElementById('therapistId');
+                    if (session.userId && !therapistIdField.value) {
+                        therapistIdField.value = session.userId.toString();
+                        log(`🎯 Auto-filled therapist ID: ${session.userId}`, 'info');
+                    }
+                } else {
+                    log('⚠️ No user session found in localStorage', 'warning');
+                }
+
+                // Check Appwrite account
+                const account = new Appwrite.Account(client);
+                try {
+                    const user = await account.get();
+                    log(`✅ Appwrite session active: ${user.name} (${user.email})`, 'success');
+                } catch (authError) {
+                    log(`⚠️ No active Appwrite session: ${authError.message}`, 'warning');
+                }
+
+            } catch (error) {
+                log(`❌ Session check failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAppwriteConnection() {
+            log('🌐 Testing Appwrite connection...', 'info');
+            
+            try {
+                // Test basic connection
+                const response = await fetch(APPWRITE_CONFIG.endpoint + '/health');
+                if (response.ok) {
+                    log('✅ Appwrite server is reachable', 'success');
+                } else {
+                    log(`⚠️ Appwrite server returned: ${response.status}`, 'warning');
+                }
+
+                // Test database access
+                const database = await databases.get(APPWRITE_CONFIG.databaseId);
+                log(`✅ Database accessible: ${database.name}`, 'success');
+
+                // Test collection access
+                const collection = await databases.getCollection(APPWRITE_CONFIG.databaseId, APPWRITE_CONFIG.collections.therapists);
+                log(`✅ Collection accessible: ${collection.name}`, 'success');
+
+            } catch (error) {
+                log(`❌ Connection test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function listAllTherapists() {
+            log('📋 Listing all therapists in database...', 'info');
+            
+            try {
+                const response = await databases.listDocuments(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.therapists
+                );
+
+                log(`✅ Found ${response.documents.length} therapists in database`, 'success');
+                
+                if (response.documents.length > 0) {
+                    log('📝 Therapist list:', 'info');
+                    response.documents.forEach((therapist, index) => {
+                        log(`${index + 1}. ${therapist.name || 'Unnamed'} (ID: ${therapist.$id}) - ${therapist.specialization || 'No specialization'}`, 'info');
+                    });
+                    
+                    log('<h4>💡 Tips:</h4>', 'info');
+                    log('• Copy one of the IDs above and test it in Step 1', 'info');
+                    log('• Make sure your app is using the correct therapist ID', 'info');
+                } else {
+                    log('📝 No therapists found in database. You need to create one first!', 'warning');
+                }
+                
+            } catch (error) {
+                log(`❌ Failed to list therapists: ${error.message}`, 'error');
+            }
+        }
+
+        async function createTestProfile() {
+            log('➕ Creating test therapist profile...', 'info');
+            
+            const testTherapist = {
+                name: 'Test Therapist',
+                email: 'test-therapist@example.com',
+                therapistId: 'test-therapist-001',
+                hotelId: 'test-hotel-001', 
+                id: 'test-therapist-001',
+                location: 'Jakarta, Indonesia',
+                specialization: 'Swedish Massage',
+                yearsOfExperience: 5,
+                hourlyRate: 150,
+                pricing: '{"60": 150000, "90": 200000, "120": 250000}',
+                coordinates: '{"lat": -6.2088, "lng": 106.8456}',
+                isLicensed: true,
+                availability: 'online',
+                status: 'online',
+                isLive: true,
+                whatsappNumber: '+62812345678',
+                description: 'Professional massage therapist with 5 years experience',
+                massageTypes: '["Swedish Massage", "Deep Tissue"]'
+            };
+
+            try {
+                const result = await databases.createDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.therapists,
+                    'unique()',
+                    testTherapist
+                );
+
+                log(`✅ Test profile created successfully!`, 'success');
+                log(`📋 Document ID: ${result.$id}`, 'success');
+                log(`🎯 You can now test with this ID: ${result.$id}`, 'success');
+                
+                // Auto-fill the therapist ID field
+                document.getElementById('therapistId').value = result.$id;
+
+            } catch (error) {
+                log(`❌ Failed to create test profile: ${error.message}`, 'error');
+                
+                if (error.message.includes('already exists')) {
+                    log('💡 A profile with this ID already exists. Try a different therapistId.', 'warning');
+                }
+            }
+        }
+
+        // Auto-run session check on load
+        window.onload = () => {
+            log('🚀 Therapist Profile Debug Tool Loaded', 'info');
+            checkSession();
+        };
+    </script>
+</body>
+</html>

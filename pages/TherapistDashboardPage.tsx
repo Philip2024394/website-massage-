@@ -32,6 +32,7 @@ interface TherapistDashboardPageProps {
     onStatusChange?: (status: AvailabilityStatus) => void; // Add status change handler
     handleNavigateToAdminLogin?: () => void;
     therapistId: number | string; // Support both for Appwrite compatibility
+    existingTherapistData?: Therapist; // 🔥 NEW: Pre-loaded therapist data from home page
     bookings?: Booking[]; // Make optional to handle undefined cases
     notifications: Notification[];
     t: any;
@@ -83,7 +84,7 @@ const BookingCard: React.FC<{ booking: Booking; onUpdateStatus: (id: number, sta
     );
 }
 
-const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave, onLogout, onNavigateToNotifications: _onNavigateToNotifications, onNavigate, onUpdateBookingStatus, onStatusChange, handleNavigateToAdminLogin, therapistId, bookings, notifications, t }) => {
+const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave, onLogout, onNavigateToNotifications: _onNavigateToNotifications, onNavigate, onUpdateBookingStatus, onStatusChange, handleNavigateToAdminLogin, therapistId, existingTherapistData, bookings, notifications, t }) => {
     const { t: t_new } = useTranslations(); // New translation system
     const [therapist, setTherapist] = useState<Therapist | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -126,8 +127,106 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
         
         try {
             console.log('📖 Fetching therapist data for ID:', therapistId);
-            // Try to fetch existing therapist data from Appwrite
-            const existingTherapist = await therapistService.getById(therapistId.toString());
+            
+            // � NEW: First check local database for saved data
+            let existingTherapist = null;
+            
+            // 🎯 PRIMARY: Find therapist by logged-in user's email (FIXED APPROACH)
+            try {
+                console.log('🔐 Getting current authenticated user...');
+                const currentUser = await therapistService.getCurrentUser();
+                
+                if (currentUser && currentUser.email) {
+                    console.log('✅ Found logged-in user:', currentUser.email);
+                    
+                    // Find therapist profile by email
+                    console.log('🔍 Searching for therapist profile by email...');
+                    const therapistProfiles = await therapistService.getByEmail(currentUser.email);
+                    
+                    if (therapistProfiles && therapistProfiles.length > 0) {
+                        existingTherapist = therapistProfiles[0];
+                        console.log('✅ Found therapist profile by email:', existingTherapist.name);
+                    } else {
+                        console.log('⚠️ No therapist profile found for email:', currentUser.email);
+                    }
+                } else {
+                    console.log('⚠️ No authenticated user found');
+                }
+            } catch (appwriteError: any) {
+                console.log('⚠️ Authentication or profile search failed:', appwriteError?.message || appwriteError);
+            }
+            
+            // Fallback 1: Try with therapistId prop if provided
+            if (!existingTherapist && therapistId) {
+                try {
+                    console.log('📡 Fallback: Loading therapist data by ID:', therapistId);
+                    existingTherapist = await therapistService.getById(therapistId.toString());
+                    if (existingTherapist) {
+                        console.log('✅ Found therapist data by ID:', existingTherapist.name);
+                    }
+                } catch (idError: any) {
+                    console.log('⚠️ ID-based fetch failed:', idError?.message || idError);
+                }
+            }
+            
+            // Fallback: Use existing data from props
+            if (!existingTherapist && existingTherapistData) {
+                console.log('📋 Using existing therapist data from props:', existingTherapistData.name);
+                existingTherapist = existingTherapistData;
+            }
+            
+            // REMOVED: localStorage database loading (now using Appwrite only)
+            /* COMMENTED OUT localStorage CODE:
+            try {
+                const localDB = localStorage.getItem('localDatabase');
+                if (localDB) {
+                    const data = JSON.parse(localDB);
+                    console.log('📊 Checking local database for therapist data...');
+                    
+                    // Find therapist by current user session
+                    const userSession = localStorage.getItem('userSession');
+                    if (userSession) {
+                        const session = JSON.parse(userSession);
+                        const userId = session.userId || session.id;
+                        
+                        // Look for therapist with matching email or ID
+                        existingTherapist = data.therapists?.find(t => 
+                            t.email === session.email || 
+                            t.id === userId.toString() ||
+                            t.id === `local_${userId}` ||
+                            t.email?.includes(userId.toString())
+                        );
+                        
+                        if (existingTherapist) {
+                            console.log('✅ Found therapist data in local database:', existingTherapist.name);
+                        } else {
+                            console.log('� No matching therapist found in local database');
+                            console.log('   - Session email:', session.email);
+                            console.log('   - Session ID:', userId);
+                            console.log('   - Available therapists:', data.therapists?.length || 0);
+                        }
+                    }
+                }
+            } catch (localError) {
+                console.log('⚠️ Local database check failed:', localError);
+            }
+            
+            // Fallback: Use existing data from props
+            if (!existingTherapist && existingTherapistData) {
+                console.log('✅ Using existing therapist data from home page:', existingTherapistData);
+                existingTherapist = existingTherapistData;
+            }
+            
+            // Last resort: Try Appwrite (for backward compatibility)
+            if (!existingTherapist) {
+                console.log('📡 No local data found, trying Appwrite as fallback...');
+                try {
+                    existingTherapist = await therapistService.getById(therapistId.toString());
+                } catch (appwriteError) {
+                    console.log('⚠️ Appwrite fetch failed (expected with local database):', appwriteError);
+                }
+            }
+            */ // END COMMENTED OUT localStorage CODE
         
         if (existingTherapist) {
             console.log('✅ Found existing therapist profile:', existingTherapist);
@@ -331,7 +430,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
         }
         
         setIsLoading(false);
-    }, [therapistId]);
+    }, [therapistId, existingTherapistData]);
 
     useEffect(() => {
         fetchTherapistData();
@@ -1497,13 +1596,13 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                 </svg>
                             </div>
                         </div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">Profile Saved!</h3>
-                        <p className="text-gray-600 mb-6">Admin Will Confirm Your Profile Soon</p>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">🎉 Congratulations!</h3>
+                        <p className="text-gray-600 mb-6">Your Profile Is Live</p>
                         <button
                             onClick={() => setShowConfirmation(false)}
                             className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
                         >
-                            Got it
+                            Close
                         </button>
                     </div>
                 </div>

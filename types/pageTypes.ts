@@ -14,7 +14,8 @@ export type Page =
     | 'registrationChoice' 
     | 'providerAuth' 
     | 'therapistStatus' 
-    | 'therapistDashboard' 
+    | 'therapistDashboard'
+    | 'therapistProfile' // 🎯 NEW: Customer-facing therapist profile page 
     | 'placeDashboard' 
     | 'agent' 
     | 'agentAuth' 

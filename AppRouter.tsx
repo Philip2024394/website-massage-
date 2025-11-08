@@ -11,9 +11,11 @@ import HomePage from './pages/HomePage';
 import PlaceDetailPage from './pages/PlaceDetailPage';
 import MassagePlaceProfilePage from './pages/MassagePlaceProfilePage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
+// AdminDatabaseManager disabled - using Appwrite production database only
 import AdminLoginPage from './pages/AdminLoginPage';
 import RegistrationChoicePage from './pages/RegistrationChoicePage';
 import TherapistDashboardPage from './pages/TherapistDashboardPage';
+import TherapistProfilePage from './pages/TherapistProfilePage'; // 🎯 NEW: Customer-facing therapist profile
 import TherapistStatusPage from './pages/TherapistStatusPage';
 import PlaceDashboardPage from './pages/PlaceDashboardPage';
 import AgentPage from './pages/AgentPage';
@@ -132,6 +134,10 @@ const renderDashboardPages = (page: Page, props: AppRouterProps) => {
 
     switch (page) {
         case 'therapistDashboard':
+            // 🔥 FIX: Pass existing therapist data from home page instead of refetching
+            const existingTherapist = therapists.find(t => 
+                t.id === loggedInProvider?.id || t.$id === loggedInProvider?.id
+            );
             return <TherapistDashboardPage 
                 onSave={handleSaveTherapist}
                 onLogout={handleProviderLogout}
@@ -141,6 +147,7 @@ const renderDashboardPages = (page: Page, props: AppRouterProps) => {
                     await handleTherapistStatusChange(status as string);
                 }}
                 therapistId={loggedInProvider?.id || ''}
+                existingTherapistData={existingTherapist} // 🎯 Pass the same data home page uses
                 bookings={bookings}
                 notifications={notifications.filter(n => n.providerId === loggedInProvider?.id)}
                 t={t.providerDashboard || {}}
@@ -267,6 +274,7 @@ interface AppRouterProps {
     userLocation: UserLocation | null;
     selectedMassageType: string | null;
     selectedPlace: Place | null;
+    selectedTherapist: Therapist | null; // 🎯 NEW: Selected therapist for profile view
 
     isAdminLoggedIn: boolean;
     isHotelLoggedIn: boolean;
@@ -287,6 +295,7 @@ interface AppRouterProps {
     handleEnterApp: (lang: Language, location: UserLocation) => Promise<void>;
     handleSetUserLocation: (location: UserLocation) => void;
     handleSetSelectedPlace: (place: Place) => void;
+    handleSetSelectedTherapist: (therapist: Therapist) => void; // 🎯 NEW: Set selected therapist
     handleLogout: () => Promise<void>;
     handleNavigateToTherapistLogin: () => void;
     handleNavigateToRegistrationChoice: () => void;
@@ -355,6 +364,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         userLocation,
         selectedMassageType,
         selectedPlace,
+        selectedTherapist, // 🎯 NEW: Selected therapist
         // language, // Unused variable
         isAdminLoggedIn,
         isHotelLoggedIn,
@@ -371,6 +381,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         handleEnterApp,
         handleSetUserLocation,
         handleSetSelectedPlace,
+        handleSetSelectedTherapist, // 🎯 NEW: Handler for selecting therapist
         handleLogout,
         handleNavigateToTherapistLogin,
         handleNavigateToRegistrationChoice,
@@ -485,6 +496,28 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 isLoading={isLoading}
                 t={t} 
             />;
+
+        case 'therapistProfile':
+            return selectedTherapist && <TherapistProfilePage 
+                therapist={selectedTherapist}
+                onBack={() => setPage('home')}
+                onQuickBookWithChat={(therapist: Therapist) => handleQuickBookWithChat(therapist, 'therapist')}
+                userLocation={userLocation}
+                loggedInCustomer={loggedInCustomer}
+                onMassageJobsClick={() => setPage('massageJobs')}
+                onTherapistJobsClick={() => setPage('therapistJobs')}
+                onVillaPortalClick={handleNavigateToVillaLogin}
+                onTherapistPortalClick={handleNavigateToTherapistLogin}
+                onMassagePlacePortalClick={handleNavigateToMassagePlaceLogin}
+                onAgentPortalClick={() => setPage('agent')}
+                onCustomerPortalClick={handleNavigateToCustomerDashboard}
+                onAdminPortalClick={handleNavigateToAdminLogin}
+                onNavigate={(page: string) => setPage(page as Page)}
+                onTermsClick={handleNavigateToServiceTerms}
+                onPrivacyClick={handleNavigateToPrivacyPolicy}
+                therapists={therapists}
+                places={places}
+            /> || null;
             
         case 'detail': 
             return selectedPlace && <PlaceDetailPage 

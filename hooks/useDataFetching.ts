@@ -19,6 +19,8 @@ export const useDataFetching = () => {
         try {
             setIsLoading(true);
             
+
+            
             // Add timeout to prevent infinite loading
             const timeout = new Promise((_, reject) => 
                 setTimeout(() => reject(new Error('Fetch timeout')), APP_CONFIG.DATA_FETCH_TIMEOUT)

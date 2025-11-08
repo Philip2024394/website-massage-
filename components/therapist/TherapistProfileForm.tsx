@@ -172,67 +172,61 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
     };
 
     const handlePriceChange = (duration: string, value: string) => {
-        // Remove any non-digit characters except 'k'
-        let cleanValue = value.toLowerCase().replace(/[^\dk]/g, '');
+        // Remove any non-digit characters - only allow digits
+        let cleanValue = value.replace(/[^\d]/g, '');
         
-        // Limit to 4 characters max (3 digits + k)
-        if (cleanValue.length > 4) {
-            cleanValue = cleanValue.substring(0, 4);
+        // 🔥 STRICT REQUIREMENT: Must be exactly 3 digits
+        if (cleanValue.length > 3) {
+            cleanValue = cleanValue.substring(0, 3);
         }
+        
+        // Auto-add 'k' for display if user entered digits
+        const displayValue = cleanValue ? `${cleanValue}k` : '';
         
         // Update local input state immediately for real-time display
         setInputValues(prev => ({
             ...prev,
-            regular: { ...prev.regular, [duration]: cleanValue }
+            regular: { ...prev.regular, [duration]: displayValue }
         }));
         
-        // If user completes the format with 'k'
-        if (cleanValue.endsWith('k')) {
-            // Remove the 'k' and get digits only
-            let digits = cleanValue.slice(0, -1);
+        // Save to pricing ONLY if user has entered exactly 3 digits
+        if (cleanValue && cleanValue.length === 3) {
+            // Convert to actual price (multiply by 1000) and save
+            const numericValue = parseInt(cleanValue, 10) * 1000 || 0;
+            setPricing({ ...pricing, [duration]: numericValue });
             
-            // Only save if we have valid digits (1-3 digits)
-            if (digits.length >= 1 && digits.length <= 3) {
-                // Convert to actual price (multiply by 1000) and save
-                const numericValue = parseInt(digits, 10) * 1000 || 0;
-                setPricing({ ...pricing, [duration]: numericValue });
-                
-                if (useSamePricing) {
-                    setHotelVillaPricing({ ...hotelVillaPricing, [duration]: numericValue });
-                }
+            if (useSamePricing) {
+                setHotelVillaPricing({ ...hotelVillaPricing, [duration]: numericValue });
             }
         }
     };
 
     const handleHotelVillaPriceChange = (duration: string, value: string) => {
-        // Remove any non-digit characters except 'k'
-        let cleanValue = value.toLowerCase().replace(/[^\dk]/g, '');
+        // Remove any non-digit characters - only allow digits
+        let cleanValue = value.replace(/[^\d]/g, '');
         
-        // Limit to 4 characters max (3 digits + k)
-        if (cleanValue.length > 4) {
-            cleanValue = cleanValue.substring(0, 4);
+        // 🔥 STRICT LIMIT: Only allow 3 digits max
+        if (cleanValue.length > 3) {
+            cleanValue = cleanValue.substring(0, 3);
         }
+        
+        // Auto-add 'k' for display if user entered digits
+        const displayValue = cleanValue ? `${cleanValue}k` : '';
         
         // Update local input state immediately for real-time display
         setInputValues(prev => ({
             ...prev,
-            hotel: { ...prev.hotel, [duration]: cleanValue }
+            hotel: { ...prev.hotel, [duration]: displayValue }
         }));
         
-        // If user completes the format with 'k'
-        if (cleanValue.endsWith('k')) {
-            // Remove the 'k' and get digits only
-            let digits = cleanValue.slice(0, -1);
+        // Save to pricing if user has entered valid digits
+        if (cleanValue && cleanValue.length >= 1 && cleanValue.length <= 3) {
+            // Convert to actual price (multiply by 1000)
+            const numericValue = parseInt(cleanValue, 10) * 1000 || 0;
+            const maxPrice = Math.floor(pricing[duration] * 1.2);
             
-            // Only save if we have valid digits (1-3 digits)
-            if (digits.length >= 1 && digits.length <= 3) {
-                // Convert to actual price (multiply by 1000)
-                const numericValue = parseInt(digits, 10) * 1000 || 0;
-                const maxPrice = Math.floor(pricing[duration] * 1.2);
-                
-                if (numericValue <= maxPrice || pricing[duration] === 0) {
-                    setHotelVillaPricing({ ...hotelVillaPricing, [duration]: numericValue });
-                }
+            if (numericValue <= maxPrice || pricing[duration] === 0) {
+                setHotelVillaPricing({ ...hotelVillaPricing, [duration]: numericValue });
             }
         }
     };
@@ -516,18 +510,18 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                     <textarea 
                         value={description} 
                         onChange={e => {
-                            if (e.target.value.length <= 250) {
+                            if (e.target.value.length <= 350) {
                                 setDescription(e.target.value);
                             }
                         }} 
                         rows={3} 
-                        maxLength={250}
+                        maxLength={350}
                         placeholder="Describe your massage expertise and specialties"
                         aria-label="Therapist description"
                         className="mt-1 block w-full pl-10 pr-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-orange focus:border-brand-orange text-gray-900" 
                     />
                     <p className="text-xs text-gray-500 mt-1">
-                        {description.length}/250 characters
+                        {description.length}/350 characters
                     </p>
                 </div>
             </div>
@@ -706,7 +700,7 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
             <div>
                 <h3 className="text-sm sm:text-md font-medium text-gray-800 mb-1">Set Your Prices (Rp)</h3>
                 <p className="text-xs text-gray-500 mb-1">These Prices Displayed On The App</p>
-                <p className="text-xs text-orange-600 mb-3 font-medium">⚠️ Format: Enter exactly 3 digits + 'k' (e.g., 250k, 350k, 450k)</p>
+                <p className="text-xs text-orange-600 mb-3 font-medium">⚠️ Format: Enter 1-3 digits only (e.g., 250, 350, 450) - 'k' is auto-added</p>
                 <div className="grid grid-cols-3 gap-2 sm:gap-3">
                     <div>
                        <label className="block text-xs font-medium text-gray-600 mb-1">{t['60min'] || '60min'}</label>
@@ -716,12 +710,14 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                                type="text" 
                                value={inputValues.regular["60"]} 
                                onChange={e => handlePriceChange("60", e.target.value)} 
-                               placeholder="250k" 
-                               maxLength={4}
+                               placeholder="250" 
+                               maxLength={3}
+                               pattern="[0-9]{1,3}"
+                               title="Enter 1-3 digits (e.g., 250 - k will be added automatically)"
                                className="block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm" 
                            />
                         </div>
-                        <p className="text-xs text-gray-400 mt-1">Format: 250k (3 digits + k)</p>
+                        <p className="text-xs text-gray-400 mt-1">Enter digits only (k auto-added)</p>
                     </div>
                     <div>
                        <label className="block text-xs font-medium text-gray-600 mb-1">{t['90min'] || '90min'}</label>
@@ -731,12 +727,14 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                                type="text" 
                                value={inputValues.regular["90"]} 
                                onChange={e => handlePriceChange("90", e.target.value)} 
-                               placeholder="350k" 
-                               maxLength={4}
+                               placeholder="350" 
+                               maxLength={3}
+                               pattern="[0-9]{1,3}"
+                               title="Enter 1-3 digits (e.g., 350 - k will be added automatically)"
                                className="block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm" 
                            />
                         </div>
-                        <p className="text-xs text-gray-400 mt-1">Format: 350k (3 digits + k)</p>
+                        <p className="text-xs text-gray-400 mt-1">Enter digits only (k auto-added)</p>
                     </div>
                      <div>
                        <label className="block text-xs font-medium text-gray-600 mb-1">{t['120min'] || '120min'}</label>
@@ -746,12 +744,14 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                                type="text" 
                                value={inputValues.regular["120"]} 
                                onChange={e => handlePriceChange("120", e.target.value)} 
-                               placeholder="450k" 
-                               maxLength={4}
+                               placeholder="450" 
+                               maxLength={3}
+                               pattern="[0-9]{1,3}"
+                               title="Enter 1-3 digits (e.g., 450 - k will be added automatically)"
                                className="block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm" 
                            />
                         </div>
-                        <p className="text-xs text-gray-400 mt-1">Format: 450k (3 digits + k)</p>
+                        <p className="text-xs text-gray-400 mt-1">Enter digits only (k auto-added)</p>
                     </div>
                 </div>
             </div>
@@ -792,8 +792,10 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                                type="text" 
                                value={inputValues.hotel["60"]} 
                                onChange={e => handleHotelVillaPriceChange("60", e.target.value)} 
-                               placeholder="250k" 
-                               maxLength={4}
+                               placeholder="250" 
+                               maxLength={3}
+                               pattern="[0-9]{1,3}"
+                               title="Enter 1-3 digits (e.g., 250 - k will be added automatically)"
                                disabled={useSamePricing}
                                className={`block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 border border-gray-300 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm ${
                                    useSamePricing ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
@@ -806,7 +808,7 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                             </p>
                         )}
                         {!useSamePricing && pricing["60"] === 0 && (
-                            <p className="text-xs text-gray-400 mt-1">Format: 250k (3 digits + k)</p>
+                            <p className="text-xs text-gray-400 mt-1">Enter digits only (k auto-added)</p>
                         )}
                     </div>
                     <div>
@@ -817,8 +819,10 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                                type="text" 
                                value={inputValues.hotel["90"]} 
                                onChange={e => handleHotelVillaPriceChange("90", e.target.value)} 
-                               placeholder="350k" 
-                               maxLength={4}
+                               placeholder="350" 
+                               maxLength={3}
+                               pattern="[0-9]{1,3}"
+                               title="Enter 1-3 digits (e.g., 350 - k will be added automatically)"
                                disabled={useSamePricing}
                                className={`block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 border border-gray-300 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm ${
                                    useSamePricing ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
@@ -831,7 +835,7 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                             </p>
                         )}
                         {!useSamePricing && pricing["90"] === 0 && (
-                            <p className="text-xs text-gray-400 mt-1">Format: 350k (3 digits + k)</p>
+                            <p className="text-xs text-gray-400 mt-1">Enter digits only (k auto-added)</p>
                         )}
                     </div>
                      <div>
@@ -842,8 +846,10 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                                type="text" 
                                value={inputValues.hotel["120"]} 
                                onChange={e => handleHotelVillaPriceChange("120", e.target.value)} 
-                               placeholder="450k" 
-                               maxLength={4}
+                               placeholder="450" 
+                               maxLength={3}
+                               pattern="[0-9]{1,3}"
+                               title="Enter 1-3 digits (e.g., 450 - k will be added automatically)"
                                disabled={useSamePricing}
                                className={`block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 border border-gray-300 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm ${
                                    useSamePricing ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
@@ -856,7 +862,7 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                             </p>
                         )}
                         {!useSamePricing && pricing["120"] === 0 && (
-                            <p className="text-xs text-gray-400 mt-1">Format: 450k (3 digits + k)</p>
+                            <p className="text-xs text-gray-400 mt-1">Enter digits only (k auto-added)</p>
                         )}
                     </div>
                 </div>

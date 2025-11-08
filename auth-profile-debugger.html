@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Authentication-Profile Connection Debugger</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .section h3 {
+            color: #ffd700;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        button {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        }
+        .success { color: #4ade80; font-weight: bold; }
+        .error { color: #f87171; font-weight: bold; }
+        .info { color: #60a5fa; font-weight: bold; }
+        .warning { color: #fbbf24; font-weight: bold; }
+        
+        pre {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            overflow-x: auto;
+            margin: 10px 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 12px;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        
+        input::placeholder, textarea::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .problem-box {
+            background: rgba(255, 87, 87, 0.2);
+            border: 2px solid #f87171;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .solution-box {
+            background: rgba(74, 222, 128, 0.2);
+            border: 2px solid #4ade80;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .step-box {
+            background: rgba(255, 215, 0, 0.1);
+            border-left: 4px solid #ffd700;
+            padding: 15px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Authentication-Profile Connection Debugger</h1>
+        <p style="text-align: center; color: #60a5fa; font-size: 1.1em;">
+            Diagnose why therapist profile page is empty after login
+        </p>
+
+        <div class="problem-box">
+            <h3>❌ IDENTIFIED PROBLEM</h3>
+            <p><strong>Issue:</strong> Therapist creates profile → Gets document ID → Logs in → Profile page is empty</p>
+            <p><strong>Root Cause:</strong> No connection between logged-in user email and their therapist profile document ID</p>
+        </div>
+
+        <div class="section">
+            <h3>🔍 Step 1: Check Current Authentication</h3>
+            <button onclick="checkCurrentUser()">Check Who's Logged In</button>
+            <div id="authResult"></div>
+        </div>
+
+        <div class="section">
+            <h3>📋 Step 2: Find Therapist Profiles by Email</h3>
+            <p>Search for therapist profiles that match the logged-in user's email:</p>
+            <button onclick="findTherapistByEmail()">Find My Therapist Profile</button>
+            <div id="profileSearchResult"></div>
+        </div>
+
+        <div class="section">
+            <h3>🔧 Step 3: Test Manual Connection</h3>
+            <p>Manually test profile loading with a specific document ID:</p>
+            <input type="text" id="testDocId" placeholder="Enter therapist document ID to test">
+            <button onclick="testManualProfileLoad()">Test Profile Loading</button>
+            <div id="manualTestResult"></div>
+        </div>
+
+        <div class="section">
+            <h3>📊 Step 4: List All Therapist Profiles</h3>
+            <p>See all therapist profiles to identify yours:</p>
+            <button onclick="listAllTherapists()">List All Therapist Profiles</button>
+            <div id="allTherapistsResult"></div>
+        </div>
+
+        <div class="solution-box">
+            <h3>✅ SOLUTION APPROACHES</h3>
+            <div class="step-box">
+                <strong>Option 1: Email Matching</strong><br>
+                Modify fetchTherapistData to find therapist by logged-in user's email
+            </div>
+            <div class="step-box">
+                <strong>Option 2: User ID Field</strong><br>
+                Add userId field to therapist profiles linking to auth account
+            </div>
+            <div class="step-box">
+                <strong>Option 3: Session Storage</strong><br>
+                Store document ID in session after profile creation
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>🔧 Step 5: Apply Quick Fix</h3>
+            <p>Apply automatic fix to connect your current session to your therapist profile:</p>
+            <button onclick="applyQuickFix()">Auto-Connect Profile to Session</button>
+            <div id="quickFixResult"></div>
+        </div>
+
+        <div class="section">
+            <h3>📝 Implementation Code</h3>
+            <p>Here's the code to fix this in TherapistDashboardPage:</p>
+            <pre id="fixCode">
+// FIXED: fetchTherapistData function
+const fetchTherapistData = async () => {
+    try {
+        // Get current logged-in user
+        const currentUser = await authService.getCurrentUser();
+        if (!currentUser) {
+            console.error('No user logged in');
+            return;
+        }
+
+        // Method 1: Find therapist profile by email
+        const response = await databases.listDocuments(
+            DATABASE_ID,
+            'therapists_collection_id',
+            [Query.equal('email', currentUser.email)]
+        );
+
+        if (response.documents.length > 0) {
+            const therapistProfile = response.documents[0];
+            console.log('✅ Found therapist profile:', therapistProfile.name);
+            setTherapistData(therapistProfile);
+            // Update all form fields...
+        } else {
+            console.log('❌ No therapist profile found for:', currentUser.email);
+        }
+    } catch (error) {
+        console.error('Error loading profile:', error);
+    }
+};
+            </pre>
+        </div>
+    </div>
+
+    <script type="module">
+        import { Client, Databases, Account, Query } from 'https://cdn.skypack.dev/appwrite@13.0.0';
+
+        // Appwrite Configuration
+        const client = new Client();
+        const databases = new Databases(client);
+        const account = new Account(client);
+
+        // Configure Appwrite
+        client
+            .setEndpoint('https://cloud.appwrite.io/v1')
+            .setProject('672b0d68002359397374');
+
+        const DATABASE_ID = '672b0d7b00249d81e129';
+        const THERAPISTS_COLLECTION_ID = 'therapists_collection_id';
+
+        let currentUser = null;
+
+        window.checkCurrentUser = async function() {
+            const resultDiv = document.getElementById('authResult');
+            resultDiv.innerHTML = '<div class="info">🔍 Checking authentication...</div>';
+            
+            try {
+                currentUser = await account.get();
+                resultDiv.innerHTML = `
+                    <div class="success">✅ User is logged in:</div>
+                    <div class="info">
+                        <strong>User ID:</strong> ${currentUser.$id}<br>
+                        <strong>Email:</strong> ${currentUser.email}<br>
+                        <strong>Name:</strong> ${currentUser.name}<br>
+                        <strong>Registration:</strong> ${new Date(currentUser.registration).toLocaleString()}
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">❌ No user logged in</div>
+                    <div class="warning">You need to log in first to test profile connection</div>
+                `;
+                console.error('Authentication check failed:', error);
+            }
+        };
+
+        window.findTherapistByEmail = async function() {
+            const resultDiv = document.getElementById('profileSearchResult');
+            
+            if (!currentUser) {
+                resultDiv.innerHTML = '<div class="warning">⚠️ Please check authentication first</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div class="info">🔍 Searching for therapist profile...</div>';
+            
+            try {
+                const response = await databases.listDocuments(
+                    DATABASE_ID,
+                    THERAPISTS_COLLECTION_ID,
+                    [Query.equal('email', currentUser.email)]
+                );
+                
+                if (response.documents.length === 0) {
+                    resultDiv.innerHTML = `
+                        <div class="error">❌ No therapist profile found</div>
+                        <div class="warning">
+                            No therapist profile exists with email: <strong>${currentUser.email}</strong><br>
+                            This is why your profile page is empty!
+                        </div>
+                    `;
+                } else {
+                    const therapist = response.documents[0];
+                    resultDiv.innerHTML = `
+                        <div class="success">✅ Found your therapist profile!</div>
+                        <div class="info">
+                            <strong>Document ID:</strong> ${therapist.$id}<br>
+                            <strong>Name:</strong> ${therapist.name}<br>
+                            <strong>Email:</strong> ${therapist.email}<br>
+                            <strong>Created:</strong> ${new Date(therapist.$createdAt).toLocaleString()}
+                        </div>
+                        <div class="success">
+                            This is the profile that should load in your dashboard!
+                        </div>
+                    `;
+                    
+                    // Store for quick fix
+                    window.foundTherapistId = therapist.$id;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error searching profiles: ${error.message}</div>`;
+                console.error('Profile search failed:', error);
+            }
+        };
+
+        window.testManualProfileLoad = async function() {
+            const docId = document.getElementById('testDocId').value.trim();
+            const resultDiv = document.getElementById('manualTestResult');
+            
+            if (!docId) {
+                resultDiv.innerHTML = '<div class="warning">⚠️ Please enter a document ID</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div class="info">🔍 Testing profile load...</div>';
+            
+            try {
+                const therapist = await databases.getDocument(
+                    DATABASE_ID,
+                    THERAPISTS_COLLECTION_ID,
+                    docId
+                );
+                
+                resultDiv.innerHTML = `
+                    <div class="success">✅ Profile loads successfully!</div>
+                    <div class="info">
+                        <strong>Name:</strong> ${therapist.name}<br>
+                        <strong>Email:</strong> ${therapist.email}<br>
+                        <strong>Phone:</strong> ${therapist.phone || 'Not set'}<br>
+                        <strong>Location:</strong> ${therapist.location || 'Not set'}
+                    </div>
+                    <div class="success">
+                        If this is your profile, use this document ID: <strong>${docId}</strong>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Profile not found: ${error.message}</div>`;
+                console.error('Manual test failed:', error);
+            }
+        };
+
+        window.listAllTherapists = async function() {
+            const resultDiv = document.getElementById('allTherapistsResult');
+            resultDiv.innerHTML = '<div class="info">🔍 Loading all therapist profiles...</div>';
+            
+            try {
+                const response = await databases.listDocuments(
+                    DATABASE_ID,
+                    THERAPISTS_COLLECTION_ID
+                );
+                
+                if (response.documents.length === 0) {
+                    resultDiv.innerHTML = '<div class="warning">⚠️ No therapist profiles found</div>';
+                    return;
+                }
+                
+                let html = `<div class="success">✅ Found ${response.documents.length} therapist profiles:</div>`;
+                
+                response.documents.forEach((therapist, index) => {
+                    const isCurrentUserProfile = currentUser && therapist.email === currentUser.email;
+                    const highlightClass = isCurrentUserProfile ? 'style="background: rgba(74, 222, 128, 0.2); border-radius: 5px; padding: 10px;"' : '';
+                    
+                    html += `
+                        <div ${highlightClass}>
+                            <strong>${index + 1}. ${therapist.name || 'No Name'}</strong>
+                            ${isCurrentUserProfile ? ' <span style="color: #4ade80;">← YOUR PROFILE!</span>' : ''}<br>
+                            <small>
+                                ID: ${therapist.$id}<br>
+                                Email: ${therapist.email || 'No email'}<br>
+                                Created: ${new Date(therapist.$createdAt).toLocaleDateString()}
+                            </small>
+                        </div>
+                    `;
+                });
+                
+                resultDiv.innerHTML = html;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error loading profiles: ${error.message}</div>`;
+                console.error('List profiles failed:', error);
+            }
+        };
+
+        window.applyQuickFix = async function() {
+            const resultDiv = document.getElementById('quickFixResult');
+            
+            if (!currentUser) {
+                resultDiv.innerHTML = '<div class="warning">⚠️ Please check authentication first</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div class="info">🔧 Applying quick fix...</div>';
+            
+            try {
+                // Find therapist profile by email
+                const response = await databases.listDocuments(
+                    DATABASE_ID,
+                    THERAPISTS_COLLECTION_ID,
+                    [Query.equal('email', currentUser.email)]
+                );
+                
+                if (response.documents.length === 0) {
+                    resultDiv.innerHTML = `
+                        <div class="error">❌ Cannot apply fix - no therapist profile found</div>
+                        <div class="warning">You need to create a therapist profile first</div>
+                    `;
+                    return;
+                }
+                
+                const therapist = response.documents[0];
+                
+                // Store the connection in localStorage for immediate use
+                const sessionData = {
+                    userId: currentUser.$id,
+                    email: currentUser.email,
+                    therapistDocumentId: therapist.$id,
+                    connectionTime: new Date().toISOString()
+                };
+                
+                localStorage.setItem('therapist_session_connection', JSON.stringify(sessionData));
+                
+                resultDiv.innerHTML = `
+                    <div class="success">✅ Quick fix applied successfully!</div>
+                    <div class="info">
+                        <strong>Connected:</strong> ${currentUser.email} → ${therapist.name}<br>
+                        <strong>Document ID:</strong> ${therapist.$id}<br>
+                        <strong>Fix:</strong> Session connection stored
+                    </div>
+                    <div class="success">
+                        Now refresh your therapist dashboard page - it should show your profile!
+                    </div>
+                `;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Quick fix failed: ${error.message}</div>`;
+                console.error('Quick fix failed:', error);
+            }
+        };
+
+        // Auto-check authentication on page load
+        window.addEventListener('load', () => {
+            checkCurrentUser();
+        });
+    </script>
+</body>
+</html>

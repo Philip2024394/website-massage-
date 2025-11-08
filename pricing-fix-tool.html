@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .test-section {
+            border: 2px solid #28a745;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .issue {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .solution {
+            background: #d1edff;
+            border: 1px solid #b8daff;
+            color: #004085;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 10px;
+        }
+        
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        
+        input {
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            margin: 5px;
+            width: 80px;
+        }
+        
+        #output {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Pricing Display Fix Tool</h1>
+        
+        <div class="issue">
+            <h3>❌ Current Issue</h3>
+            <p><strong>Problem:</strong> Therapist cards show "Contact" instead of prices</p>
+            <p><strong>Root Cause:</strong> Pricing data is being saved as 0 or in wrong format</p>
+        </div>
+
+        <div class="solution">
+            <h3>✅ Solution</h3>
+            <p><strong>Fix:</strong> Ensure prices are entered correctly in dashboard and saved in proper format</p>
+        </div>
+
+        <div class="test-section">
+            <h3>🧪 Test Pricing Logic</h3>
+            <p>Enter test prices to see how they should be saved:</p>
+            
+            <div>
+                <label>60 min: </label>
+                <input type="text" id="price60" placeholder="100k" value="100k">
+                
+                <label>90 min: </label>
+                <input type="text" id="price90" placeholder="150k" value="150k">
+                
+                <label>120 min: </label>
+                <input type="text" id="price120" placeholder="200k" value="200k">
+                
+                <button onclick="testPricing()">🧮 Test Pricing</button>
+            </div>
+            
+            <div id="output"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 Check Current Data</h3>
+            <button onclick="checkCurrentPricing()">🔍 Check App Pricing Data</button>
+            <button onclick="simulateCorrectSave()">💾 Simulate Correct Save</button>
+            <button onclick="showFixInstructions()">📋 Show Fix Instructions</button>
+        </div>
+    </div>
+
+    <script>
+        function testPricing() {
+            const price60 = document.getElementById('price60').value;
+            const price90 = document.getElementById('price90').value;
+            const price120 = document.getElementById('price120').value;
+            
+            let output = '🧪 PRICING TEST RESULTS:\n';
+            output += '======================\n\n';
+            
+            // Simulate dashboard processing
+            function processDashboardInput(input) {
+                const cleanValue = input.toLowerCase().replace(/[^\dk]/g, '');
+                if (cleanValue.endsWith('k')) {
+                    const digits = cleanValue.slice(0, -1);
+                    if (digits.length >= 1 && digits.length <= 3) {
+                        return parseInt(digits, 10) * 1000;
+                    }
+                }
+                return 0;
+            }
+            
+            const processed60 = processDashboardInput(price60);
+            const processed90 = processDashboardInput(price90);
+            const processed120 = processDashboardInput(price120);
+            
+            output += 'Dashboard Processing:\n';
+            output += `Input: "${price60}" → Saved as: ${processed60}\n`;
+            output += `Input: "${price90}" → Saved as: ${processed90}\n`;
+            output += `Input: "${price120}" → Saved as: ${processed120}\n\n`;
+            
+            // Create pricing object for Appwrite
+            const pricingObject = {
+                "60": processed60,
+                "90": processed90,
+                "120": processed120
+            };
+            
+            output += 'Appwrite Save Format:\n';
+            output += JSON.stringify(pricingObject, null, 2) + '\n\n';
+            
+            // Simulate card display
+            function formatPrice(price) {
+                const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+                if (!numPrice || numPrice === 0 || isNaN(numPrice)) {
+                    return "Contact";
+                }
+                return `${Math.round(numPrice / 1000)}K`; // Convert back to K format
+            }
+            
+            output += 'Card Display Results:\n';
+            output += `60 min: Rp ${formatPrice(processed60)}\n`;
+            output += `90 min: Rp ${formatPrice(processed90)}\n`;
+            output += `120 min: Rp ${formatPrice(processed120)}\n\n`;
+            
+            const allZero = processed60 === 0 && processed90 === 0 && processed120 === 0;
+            output += allZero ? '❌ Result: Will show "Contact" (all prices are 0)\n' : '✅ Result: Will show actual prices\n';
+            
+            document.getElementById('output').textContent = output;
+        }
+        
+        function checkCurrentPricing() {
+            const therapists = JSON.parse(localStorage.getItem('app_therapists') || '[]');
+            
+            let output = '📊 CURRENT APP PRICING DATA:\n';
+            output += '=============================\n\n';
+            
+            if (therapists.length === 0) {
+                output += '❌ No therapist data found in app\n';
+                output += 'Try refreshing the app or logging in as a therapist\n';
+            } else {
+                output += `Found ${therapists.length} therapists:\n\n`;
+                
+                therapists.forEach((therapist, index) => {
+                    output += `${index + 1}. ${therapist.name || 'Unnamed'}\n`;
+                    output += `   Raw pricing: ${therapist.pricing || 'None'}\n`;
+                    
+                    try {
+                        const pricing = typeof therapist.pricing === 'string' ? 
+                            JSON.parse(therapist.pricing) : therapist.pricing;
+                        
+                        if (pricing) {
+                            output += `   60min: ${pricing["60"] || 0}\n`;
+                            output += `   90min: ${pricing["90"] || 0}\n`;
+                            output += `   120min: ${pricing["120"] || 0}\n`;
+                            
+                            const hasValidPricing = (pricing["60"] > 0 || pricing["90"] > 0 || pricing["120"] > 0);
+                            output += `   Will show prices: ${hasValidPricing ? '✅ Yes' : '❌ No (Contact)'}\n`;
+                        }
+                    } catch (e) {
+                        output += `   ❌ Pricing parse error: ${e.message}\n`;
+                    }
+                    
+                    output += '\n';
+                });
+            }
+            
+            document.getElementById('output').textContent = output;
+        }
+        
+        function simulateCorrectSave() {
+            let output = '💾 CORRECT SAVE SIMULATION:\n';
+            output += '===========================\n\n';
+            
+            output += 'If you enter these values in dashboard:\n';
+            output += '60 min: 100k\n';
+            output += '90 min: 150k\n';
+            output += '120 min: 200k\n\n';
+            
+            output += 'It should save as:\n';
+            output += '{\n';
+            output += '  "60": 100000,\n';
+            output += '  "90": 150000,\n';
+            output += '  "120": 200000\n';
+            output += '}\n\n';
+            
+            output += 'And display on cards as:\n';
+            output += '60 min: Rp 100K\n';
+            output += '90 min: Rp 150K\n';
+            output += '120 min: Rp 200K\n\n';
+            
+            output += '🎯 If you see "Contact" instead, the issue is:\n';
+            output += '1. Prices not being entered in dashboard\n';
+            output += '2. Prices being saved as 0\n';
+            output += '3. Profile not being saved to database\n';
+            
+            document.getElementById('output').textContent = output;
+        }
+        
+        function showFixInstructions() {
+            let output = '📋 PRICING FIX INSTRUCTIONS:\n';
+            output += '============================\n\n';
+            
+            output += 'Step 1: Login as Therapist\n';
+            output += '- Go to therapist login\n';
+            output += '- Enter email and password\n';
+            output += '- Navigate to dashboard\n\n';
+            
+            output += 'Step 2: Enter Prices Correctly\n';
+            output += '- In pricing section, enter: 100k, 150k, 200k\n';
+            output += '- Make sure to include the "k" suffix\n';
+            output += '- Do NOT enter: 100, 100000, or empty fields\n\n';
+            
+            output += 'Step 3: Save Profile\n';
+            output += '- Click "Save Profile" button\n';
+            output += '- Check browser console (F12) for any errors\n';
+            output += '- Look for success message\n\n';
+            
+            output += 'Step 4: Verify on Home Page\n';
+            output += '- Go to home page\n';
+            output += '- Look for your therapist card\n';
+            output += '- Prices should show as "Rp 100K" not "Contact"\n\n';
+            
+            output += '🚨 If still showing "Contact":\n';
+            output += '- Check console for save errors\n';
+            output += '- Verify you\'re logged in correctly\n';
+            output += '- Try refreshing the page after save\n';
+            
+            document.getElementById('output').textContent = output;
+        }
+        
+        // Auto-run initial test
+        window.onload = function() {
+            testPricing();
+        };
+    </script>
+</body>
+</html>
