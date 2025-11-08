@@ -84,6 +84,7 @@ export type Page =
     | 'todaysDiscounts' 
     | 'faq' 
     | 'indastreet-partners'
+    | 'partnership-application'
     | 'balinese-massage' 
     | 'deep-tissue-massage' 
     | 'swedish-massage'

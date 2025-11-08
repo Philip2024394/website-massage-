@@ -661,7 +661,10 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                         Join our network of verified wellness professionals and luxury accommodations. 
                         Get featured on our platform and boost your online visibility.
                     </p>
-                    <button className="bg-white text-orange-600 px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors duration-200 text-sm sm:text-base">
+                    <button 
+                        onClick={() => onNavigate && onNavigate('partnership-application')}
+                        className="bg-white text-orange-600 px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors duration-200 text-sm sm:text-base"
+                    >
                         Apply for Partnership
                     </button>
                 </div>

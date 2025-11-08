@@ -39,6 +39,7 @@ import JobPostingPaymentPage from './pages/JobPostingPaymentPage';
 import BrowseJobsPage from './pages/BrowseJobsPage';
 import MassageJobsPage from './pages/MassageJobsPage';
 import IndastreetPartnersPage from './pages/IndastreetPartnersPage';
+import PartnershipApplicationPage from './pages/PartnershipApplicationPage';
 import TherapistJobRegistrationPage from './pages/TherapistJobRegistrationPage';
 import JobUnlockPaymentPage from './pages/JobUnlockPaymentPage';
 import AdminBankSettingsPage from './pages/AdminBankSettingsPage';
@@ -908,6 +909,12 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onPrivacyClick={() => setPage('privacy' as Page)}
                 therapists={therapists}
                 places={places}
+                t={t} 
+            />;
+            
+        case 'partnership-application': 
+            return <PartnershipApplicationPage 
+                onBack={() => setPage('indastreet-partners' as Page)} 
                 t={t} 
             />;
             
