@@ -302,7 +302,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 
                 {/* Profile Image - 50% on banner, 50% on card overlay */}
                 <div className="absolute top-36 left-4 z-20">
-                    <div className="w-24 h-24 bg-white rounded-full p-1 shadow-xl">
+                    <div className="w-24 h-24 bg-white rounded-full p-1 shadow-xl relative">
                         <img 
                             className="w-full h-full rounded-full object-cover aspect-square" 
                             src={(therapist as any).profilePicture || getRandomTherapistImage(therapist.id.toString())} 
@@ -318,6 +318,22 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                 console.log('✅ Profile image loaded successfully:', profileImageUrl);
                             }}
                         />
+                        
+                        {/* Qualified Therapist Badge - Small Icon on Profile Image Edge */}
+                        {((() => {
+                            const hasTimeRequirement = therapist.membershipStartDate ? 
+                                new Date().getTime() - new Date(therapist.membershipStartDate).getTime() >= (3 * 30 * 24 * 60 * 60 * 1000) : false;
+                            const hasPerformanceRequirement = (therapist.reviewCount ?? 0) >= 30 || (therapist.analytics && JSON.parse(therapist.analytics).bookings >= 90);
+                            const hasRatingRequirement = (therapist.rating ?? 0) >= 4.0;
+                            
+                            return hasTimeRequirement && hasPerformanceRequirement && hasRatingRequirement;
+                        })()) && (
+                            <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full border-2 border-white shadow-lg flex items-center justify-center">
+                                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
+                                </svg>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -349,21 +365,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     </div>
                 )}
                 
-                {/* Qualified Therapist Badge - Top Right Corner */}
-                {/* Badge requirements: */}
-                {/* 1. 3+ consecutive months of paid membership */}
-                {/* 2. 4.0+ star rating */}
-                {/* 3. Max 5-day grace period between renewals */}
-                {((therapist.totalActiveMembershipMonths ?? 0) >= 3 && 
-                  (therapist.rating ?? 0) >= 4.0 && 
-                  (therapist.badgeEligible ?? false)) && (
-                    <div className="absolute top-2 right-2 flex items-center gap-1 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full px-3 py-1.5 shadow-lg">
-                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
-                        </svg>
-                        <span className="font-semibold text-white text-xs">Qualified</span>
-                    </div>
-                )}
+
 
                 {/* Social Share Buttons - Bottom Right Corner */}
                 <div className="absolute bottom-2 right-2 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>

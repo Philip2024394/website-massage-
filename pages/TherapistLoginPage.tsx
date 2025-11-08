@@ -127,7 +127,7 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({ onSuccess, onBa
 
     return (
         <div 
-            className="h-screen w-full flex items-center justify-center p-4 relative overflow-hidden fixed inset-0"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-hidden"
             style={{
                 backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/garden%20forest.png?updatedAt=1761334454082)',
                 backgroundSize: 'cover',
@@ -137,19 +137,19 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({ onSuccess, onBa
         >
             <PageNumberBadge pageNumber={4} pageName="TherapistLoginPage" isLocked={false} />
             {/* Overlay for better readability */}
-            <div className="absolute inset-0 bg-black/40"></div>
+            <div className="absolute inset-0 bg-black/40 z-10"></div>
 
             {/* Home Button */}
             <button
                 onClick={onBack}
-                className="fixed top-6 left-6 w-12 h-12 bg-orange-500 hover:bg-orange-600 rounded-full shadow-lg flex items-center justify-center transition-all z-20 border border-orange-400"
+                className="fixed top-6 left-6 w-12 h-12 bg-orange-500 hover:bg-orange-600 rounded-full shadow-lg flex items-center justify-center transition-all z-30 border border-orange-400"
                 aria-label="Go to home"
             >
                 <HomeIcon className="w-6 h-6 text-white" />
             </button>
 
             {/* Glass Effect Login Container */}
-            <div className="max-w-md w-full bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-8 relative z-10 border border-white/20 max-h-[90vh] overflow-y-auto">
+            <div className="max-w-md w-full bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-8 relative z-20 border border-white/20 max-h-[90vh] overflow-y-auto">
                 <div className="text-center mb-8">
                     <h1 className="text-4xl font-bold mb-2">
                         <span className="text-white">Inda</span>

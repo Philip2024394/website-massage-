@@ -106,6 +106,20 @@ export const useAllHooks = () => {
         t: {} // Will be provided by App.tsx
     });
     
+    // Create a refresh function that re-fetches data from the database
+    const refreshData = async () => {
+        try {
+            console.log('🔄 Refreshing therapists and places data...');
+            const { therapists, places } = await dataFetching.fetchPublicData();
+            state.setTherapists(therapists);
+            state.setPlaces(places);
+            console.log('✅ Data refresh completed');
+        } catch (error) {
+            console.error('❌ Failed to refresh data:', error);
+            throw error;
+        }
+    };
+
     // ALWAYS call provider/agent handlers in the same order
     const providerAgentHandlers = useProviderAgentHandlers({
         loggedInProvider: state.loggedInProvider,
@@ -118,7 +132,8 @@ export const useAllHooks = () => {
         setAdminMessages: state.setAdminMessages,
         setPage: state.setPage,
         setTherapists: state.setTherapists,
-        setPlaces: state.setPlaces
+        setPlaces: state.setPlaces,
+        refreshData: refreshData
     });
     
     // ALWAYS call footer navigation in the same order

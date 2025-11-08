@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { authService, userService } from '../lib/appwriteService';
-import { LogIn, UserPlus, MapPin } from 'lucide-react';
+import { LogIn, UserPlus } from 'lucide-react';
 import PageNumberBadge from '../components/PageNumberBadge';
 
 interface CustomerAuthPageProps {
@@ -13,12 +13,15 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, 
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [showLocationWarning, setShowLocationWarning] = useState(false);
   
   // Form fields
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  
+  // Password visibility
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +35,7 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, 
 
       // Get user profile
       const currentUser = await authService.getCurrentUser();
-      const userProfile = await userService.getByUserId(currentUser.$id);
+      const userProfile = await userService.getByEmail(currentUser.email);
 
       if (!userProfile) {
         setError('User profile not found. Please register again.');
@@ -55,50 +58,58 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, 
   };
 
   const handleRegister = async (e: React.FormEvent) => {
+    console.log('📝 Register button clicked!');
     e.preventDefault();
     setError('');
 
-    // ⚠️ LOCATION REQUIRED CHECK
-    if (!userLocation || !userLocation.address) {
-      setShowLocationWarning(true);
-      setError('');
-      return;
-    }
+    // Location is not required for user registration anymore
 
     // Validation
     if (!email || !password) {
+      console.log('❌ Validation failed: Missing email or password');
       setError('Please fill in all required fields');
       return;
     }
 
     if (password !== confirmPassword) {
+      console.log('❌ Validation failed: Passwords do not match');
       setError('Passwords do not match');
       return;
     }
 
     if (password.length < 8) {
+      console.log('❌ Validation failed: Password too short');
       setError('Password must be at least 8 characters');
       return;
     }
 
+    console.log('✅ Validation passed, setting loading state...');
     setIsLoading(true);
 
     try {
+      console.log('🚀 Starting registration process...');
+      
       // Register with Appwrite
       const user = await authService.register(email, password, email.split('@')[0]);
       console.log('✅ Registration successful:', user);
 
-      // Create user profile WITH LOCATION
-      await userService.create({
-        userId: user.$id,
-        name: email.split('@')[0], // Use email prefix as default name
-        email,
-        location: userLocation.address, // Save user's location
-        coordinates: JSON.stringify({ lat: userLocation.lat, lng: userLocation.lng }),
-        createdAt: new Date().toISOString(),
-        totalBookings: 0,
-        membershipLevel: 'free'
-      });
+      // Create user profile - Use smaller integer for userId
+      const userData = {
+        userId: Math.floor(Date.now() / 1000), // Unix timestamp (smaller integer)
+        collectionId: 1,
+        name: email.split('@')[0],
+        email: email,
+        phoneNumber: '',
+        isActivated: true,
+        memberSince: new Date().toISOString()
+      };
+      
+      console.log('📝 Creating user with data:', userData);
+      console.log('📝 userId type:', typeof userData.userId);
+      console.log('📝 collectionId type:', typeof userData.collectionId);
+      
+      const userProfileDoc = await userService.create(userData);
+      console.log('✅ User profile created:', userProfileDoc);
 
       // Play success sound
       const audio = new Audio('/sounds/success-notification.mp3');
@@ -106,13 +117,27 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, 
       audio.play().catch(() => {});
 
       // Auto-login after registration
+      console.log('🔄 Getting current user...');
       const currentUser = await authService.getCurrentUser();
-      const userProfile = await userService.getByUserId(currentUser.$id);
+      console.log('✅ Current user:', currentUser);
+      
+      console.log('🔄 Getting user profile by email...');
+      const userProfile = await userService.getByEmail(currentUser.email);
+      console.log('✅ User profile:', userProfile);
 
+      console.log('🔄 Calling onSuccess callback...');
       onSuccess({ ...currentUser, ...userProfile }, true); // true = isNewUser
+      console.log('✅ Registration process completed successfully!');
+      
     } catch (err: any) {
       console.error('❌ Registration error:', err);
-      setError(err.message || 'Registration failed. Email may already be in use.');
+      console.error('❌ Error details:', {
+        message: err.message,
+        code: err.code,
+        type: err.type,
+        stack: err.stack
+      });
+      setError(err.message || 'Registration failed. Please check the console for details.');
     } finally {
       setIsLoading(false);
     }
@@ -200,14 +225,23 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, 
               <label className="block text-sm font-medium text-white/90 mb-2">
                 Password
               </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg p-3 focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
-                placeholder="••••••••"
-                required
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg p-3 pr-12 focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
+                  placeholder="••••••••"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                >
+                  {showPassword ? '🙈' : '👁️'}
+                </button>
+              </div>
             </div>
 
             <button
@@ -246,34 +280,53 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, 
               <label className="block text-sm font-medium text-white/90 mb-2">
                 Password <span className="text-red-400">*</span>
               </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg p-3 focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
-                placeholder="Minimum 8 characters"
-                required
-                minLength={8}
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg p-3 pr-12 focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
+                  placeholder="Minimum 8 characters"
+                  required
+                  minLength={8}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                >
+                  {showPassword ? '🙈' : '👁️'}
+                </button>
+              </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-white/90 mb-2">
                 Confirm Password <span className="text-red-400">*</span>
               </label>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg p-3 focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
-                placeholder="Re-enter password"
-                required
-              />
+              <div className="relative">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg p-3 pr-12 focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
+                  placeholder="Re-enter password"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                >
+                  {showConfirmPassword ? '🙈' : '👁️'}
+                </button>
+              </div>
             </div>
 
             <button
               type="submit"
               disabled={isLoading}
+              onClick={() => console.log('🖱️ Button clicked directly!')}
               className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 shadow-lg transition-all mt-6 disabled:opacity-50"
             >
               {isLoading ? (
@@ -303,63 +356,7 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, 
         )}
       </div>
 
-      {/* Location Warning Modal */}
-      {showLocationWarning && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl max-w-md w-full p-8 relative border border-white/20">
-            {/* Icon */}
-            <div className="w-20 h-20 bg-orange-500/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-6">
-              <MapPin className="w-10 h-10 text-orange-400" />
-            </div>
 
-            {/* Title */}
-            <h2 className="text-2xl font-bold text-white text-center mb-4">
-              Location Required
-            </h2>
-
-            {/* Message */}
-            <p className="text-white/90 text-center mb-2 leading-relaxed">
-              You must set your location before registering an account.
-            </p>
-            <p className="text-white/70 text-sm text-center mb-6">
-              This helps us show you nearby therapists and provide accurate service.
-            </p>
-
-            {/* Location Display */}
-            {userLocation && userLocation.address ? (
-              <div className="bg-green-500/20 backdrop-blur-sm border border-green-400/30 rounded-lg p-4 mb-6">
-                <p className="text-sm text-green-100 font-semibold mb-1">📍 Current Location:</p>
-                <p className="text-sm text-green-200">{userLocation.address}</p>
-              </div>
-            ) : (
-              <div className="bg-red-500/20 backdrop-blur-sm border border-red-400/30 rounded-lg p-4 mb-6">
-                <p className="text-sm text-red-100 font-semibold mb-1">⚠️ No Location Set</p>
-                <p className="text-xs text-red-200">Please use "Set My Location" button on the home page</p>
-              </div>
-            )}
-
-            {/* Action Buttons */}
-            <div className="space-y-3">
-              <button
-                onClick={() => {
-                  setShowLocationWarning(false);
-                  onBack(); // Go back to home page where they can set location
-                }}
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 shadow-lg transition-all"
-              >
-                <MapPin className="w-5 h-5" />
-                Go Set My Location
-              </button>
-              <button
-                onClick={() => setShowLocationWarning(false)}
-                className="w-full bg-white/20 backdrop-blur-sm border border-white/30 text-white py-3 rounded-lg hover:bg-white/30 transition-all font-semibold"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

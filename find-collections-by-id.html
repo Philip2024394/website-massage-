@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Find Collections by ID</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.0"></script>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        .collection { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        button { padding: 10px 20px; background: #4CAF50; color: white; border: none; cursor: pointer; }
+        .highlight { background: yellow; }
+    </style>
+</head>
+<body>
+    <h2>🔍 Find Collections by ID Pattern</h2>
+    <p class="info">Since your collections use ID names, let's scan for them systematically.</p>
+    
+    <div>
+        <h3>Method 1: Try Database ID Pattern</h3>
+        <p>Your database ID: <code>68f76ee1000e64ca8d05</code></p>
+        <button onclick="scanByPattern()">Scan by Database ID Pattern</button>
+    </div>
+    
+    <div>
+        <h3>Method 2: Manual Input</h3>
+        <p>If you know a collection ID, enter it here:</p>
+        <input type="text" id="manualId" placeholder="Enter collection ID" style="width: 300px; padding: 5px;">
+        <button onclick="testManualId()">Test This ID</button>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        const { Client, Databases, ID, Query } = Appwrite;
+        
+        const client = new Client()
+            .setEndpoint('https://syd.cloud.appwrite.io/v1')
+            .setProject('68f23b11000d25eb3664');
+            
+        const databases = new Databases(client);
+        const DATABASE_ID = '68f76ee1000e64ca8d05';
+        
+        async function scanByPattern() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<div class="info">🔍 Scanning collections based on database ID pattern...</div>';
+            
+            // Extract base pattern from database ID and try variations
+            const basePattern = '68f76ee1000e64ca8d';  // Base from database ID
+            const possibleIds = [];
+            
+            // Try incremental IDs from the database pattern
+            for (let i = 0; i < 50; i++) {
+                const hexSuffix = i.toString(16).padStart(2, '0');
+                possibleIds.push(basePattern + hexSuffix);
+            }
+            
+            // Also try some other common patterns
+            const otherPatterns = [
+                '67', '68', '69', '6a', '6b', '6c', '6d', '6e', '6f'
+            ];
+            
+            for (const pattern of otherPatterns) {
+                for (let i = 0; i < 10; i++) {
+                    possibleIds.push(pattern + 'f76ee1000e64ca8d0' + i.toString(16));
+                }
+            }
+            
+            let foundCollections = [];
+            
+            results.innerHTML += '<div class="info">Testing ' + possibleIds.length + ' possible collection IDs...</div>';
+            
+            for (const collectionId of possibleIds) {
+                try {
+                    const docs = await databases.listDocuments(DATABASE_ID, collectionId, [
+                        Query.limit(1)
+                    ]);
+                    
+                    foundCollections.push({
+                        id: collectionId,
+                        total: docs.total,
+                        sampleDoc: docs.documents[0] || null
+                    });
+                    
+                    results.innerHTML += `<div class="success">✅ Found: ${collectionId} (${docs.total} documents)</div>`;
+                    
+                } catch (error) {
+                    // Collection doesn't exist or no access
+                }
+            }
+            
+            if (foundCollections.length === 0) {
+                results.innerHTML += '<div class="error">❌ No collections found with this pattern.</div>';
+                results.innerHTML += '<div class="info">Try checking your Appwrite console for the exact collection IDs, or use Method 2 above.</div>';
+                return;
+            }
+            
+            // Analyze found collections
+            for (const collection of foundCollections) {
+                if (collection.sampleDoc) {
+                    const fields = Object.keys(collection.sampleDoc);
+                    results.innerHTML += `
+                        <div class="collection">
+                            <h3>📁 Collection ID: ${collection.id}</h3>
+                            <div class="info">📊 Documents: ${collection.total}</div>
+                            <div class="info">📋 Fields: ${fields.join(', ')}</div>
+                            ${analyzeCollectionType(fields, collection.id)}
+                        </div>
+                    `;
+                }
+            }
+        }
+        
+        async function testManualId() {
+            const manualId = document.getElementById('manualId').value.trim();
+            const results = document.getElementById('results');
+            
+            if (!manualId) {
+                results.innerHTML += '<div class="error">Please enter a collection ID</div>';
+                return;
+            }
+            
+            try {
+                const docs = await databases.listDocuments(DATABASE_ID, manualId, [Query.limit(1)]);
+                const fields = docs.documents[0] ? Object.keys(docs.documents[0]) : [];
+                
+                results.innerHTML += `
+                    <div class="collection">
+                        <h3 class="success">✅ Collection ${manualId} found!</h3>
+                        <div class="info">📊 Documents: ${docs.total}</div>
+                        ${docs.documents[0] ? `<div class="info">📋 Fields: ${fields.join(', ')}</div>` : ''}
+                        ${analyzeCollectionType(fields, manualId)}
+                    </div>
+                `;
+            } catch (error) {
+                results.innerHTML += `<div class="error">❌ Collection ${manualId} not found: ${error.message}</div>`;
+            }
+        }
+        
+        function analyzeCollectionType(fields, collectionId) {
+            let analysis = '<div class="info">🎯 Analysis: ';
+            
+            // Check if it looks like therapists
+            if (fields.some(f => f.includes('therapist') || f.includes('massage') || f.includes('whatsapp') || f.includes('pricing'))) {
+                analysis += '<span class="highlight">Likely THERAPISTS collection</span>';
+            }
+            // Check if it looks like places
+            else if (fields.some(f => f.includes('place') || f.includes('spa') || f.includes('location') || f.includes('venue'))) {
+                analysis += '<span class="highlight">Likely PLACES collection</span>';
+            }
+            // Check if it looks like users
+            else if (fields.some(f => f.includes('user') || f.includes('customer') || f.includes('client'))) {
+                analysis += '<span class="highlight">Likely USERS collection</span>';
+            }
+            // Check if it looks like bookings
+            else if (fields.some(f => f.includes('booking') || f.includes('appointment') || f.includes('reservation'))) {
+                analysis += '<span class="highlight">Likely BOOKINGS collection</span>';
+            }
+            else {
+                analysis += 'Unknown type - check fields above';
+            }
+            
+            analysis += '</div>';
+            return analysis;
+        }
+    </script>
+</body>
+</html>

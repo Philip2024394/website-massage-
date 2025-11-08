@@ -113,7 +113,7 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
 
     return (
         <div 
-            className="min-h-screen flex items-center justify-center p-4 relative"
+            className="min-h-screen h-screen w-full flex items-center justify-center p-4 overflow-hidden fixed inset-0 z-50"
             style={{
                 backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/garden%20forest.png?updatedAt=1761334454082)',
                 backgroundSize: 'cover',
@@ -122,17 +122,17 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
             }}
         >
             {/* Dark Overlay */}
-            <div className="absolute inset-0 bg-black/40"></div>
+            <div className="absolute inset-0 bg-black/40 z-10"></div>
 
             {/* Back Button */}
             <button
                 onClick={onBack}
-                className="fixed top-6 left-6 w-12 h-12 bg-orange-500 hover:bg-orange-600 rounded-full shadow-lg flex items-center justify-center transition-all z-20 border border-orange-400"
+                className="fixed top-6 left-6 w-12 h-12 bg-orange-500 hover:bg-orange-600 rounded-full shadow-lg flex items-center justify-center transition-all z-30 border border-orange-400"
             >
                 <HomeIcon className="w-6 h-6 text-white" />
             </button>
 
-            <div className="max-w-md w-full bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-8 relative z-10 border border-white/20 max-h-[90vh] overflow-y-auto">
+            <div className="max-w-md w-full bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-8 relative z-20 border border-white/20 max-h-[90vh] overflow-y-auto">
                 {/* Header */}
                 <div className="text-center mb-8">
                     <div className="flex items-center justify-center mb-4">

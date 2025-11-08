@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Appwrite Collections</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.0"></script>
+    <style>
+        body { font-family: monospace; padding: 20px; max-width: 800px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        button { padding: 10px 15px; margin: 5px; background: #4CAF50; color: white; border: none; cursor: pointer; }
+        button:hover { background: #45a049; }
+        .step { margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h2>🚀 Create Essential Appwrite Collections</h2>
+    <div class="info">This will create the basic collections needed for your massage app to work.</div>
+    
+    <div class="section">
+        <h3>Step 1: Create Collections</h3>
+        <button onclick="createAllCollections()">Create All Collections</button>
+        <div id="creation-results"></div>
+    </div>
+
+    <div class="section">
+        <h3>Step 2: Add Sample Data</h3>
+        <button onclick="addSampleData()">Add Sample Therapists & Places</button>
+        <div id="data-results"></div>
+    </div>
+
+    <script>
+        const { Client, Databases, ID } = Appwrite;
+        
+        const client = new Client()
+            .setEndpoint('https://syd.cloud.appwrite.io/v1')
+            .setProject('68f23b11000d25eb3664');
+            
+        const databases = new Databases(client);
+        const DATABASE_ID = '68f76ee1000e64ca8d05';
+        
+        async function createAllCollections() {
+            const results = document.getElementById('creation-results');
+            results.innerHTML = '<div class="info">Creating collections...</div>';
+            
+            const collections = [
+                { id: 'therapists', name: 'Therapists' },
+                { id: 'places', name: 'Massage Places' },
+                { id: 'users', name: 'Users' },
+                { id: 'bookings', name: 'Bookings' },
+                { id: 'reviews', name: 'Reviews' },
+                { id: 'admins', name: 'Admins' }
+            ];
+            
+            for (const collection of collections) {
+                try {
+                    await databases.createCollection(
+                        DATABASE_ID,
+                        collection.id,
+                        collection.name
+                    );
+                    results.innerHTML += `<div class="success">✅ Created ${collection.name} collection</div>`;
+                } catch (error) {
+                    if (error.message.includes('already exists')) {
+                        results.innerHTML += `<div class="info">ℹ️ ${collection.name} already exists</div>`;
+                    } else {
+                        results.innerHTML += `<div class="error">❌ Failed to create ${collection.name}: ${error.message}</div>`;
+                    }
+                }
+            }
+            
+            results.innerHTML += '<div class="success">✅ Collection creation complete!</div>';
+        }
+        
+        async function addSampleData() {
+            const results = document.getElementById('data-results');
+            results.innerHTML = '<div class="info">Adding sample data...</div>';
+            
+            // Sample therapist data
+            const sampleTherapists = [
+                {
+                    name: 'Maria Silva',
+                    email: 'maria@massage.com',
+                    whatsappNumber: '+62812345678',
+                    location: 'Jakarta Central',
+                    coordinates: '{"lat":-6.2088,"lng":106.8456}',
+                    pricing: '{"60":150,"90":200,"120":250}',
+                    massageTypes: '["Swedish","Deep Tissue","Thai"]',
+                    description: 'Professional massage therapist with 5+ years experience',
+                    profilePicture: 'https://ik.imagekit.io/7grri5v7d/therapist1.jpg',
+                    rating: 4.8,
+                    reviewCount: 45,
+                    status: 'Available',
+                    isLive: true,
+                    yearsOfExperience: 5,
+                    languages: '["English","Indonesian"]'
+                },
+                {
+                    name: 'Ahmad Rahman',
+                    email: 'ahmad@massage.com', 
+                    whatsappNumber: '+62812345679',
+                    location: 'Bali Ubud',
+                    coordinates: '{"lat":-8.5069,"lng":115.2625}',
+                    pricing: '{"60":120,"90":180,"120":220}',
+                    massageTypes: '["Balinese","Hot Stone","Aromatherapy"]',
+                    description: 'Traditional Balinese massage specialist',
+                    profilePicture: 'https://ik.imagekit.io/7grri5v7d/therapist2.jpg',
+                    rating: 4.9,
+                    reviewCount: 67,
+                    status: 'Available',
+                    isLive: true,
+                    yearsOfExperience: 8,
+                    languages: '["Indonesian","English"]'
+                }
+            ];
+            
+            // Sample massage places
+            const samplePlaces = [
+                {
+                    name: 'Zen Spa Jakarta',
+                    location: 'Jakarta Selatan',
+                    coordinates: '{"lat":-6.2615,"lng":106.8106}',
+                    pricing: '{"60":100,"90":150,"120":200}',
+                    massageTypes: '["Swedish","Hot Stone","Reflexology"]',
+                    description: 'Luxury spa in the heart of Jakarta',
+                    image: 'https://ik.imagekit.io/7grri5v7d/spa1.jpg',
+                    rating: 4.5,
+                    reviewCount: 23,
+                    whatsappNumber: '+62812345680'
+                },
+                {
+                    name: 'Bali Wellness Center',
+                    location: 'Bali Seminyak', 
+                    coordinates: '{"lat":-8.6919,"lng":115.1721}',
+                    pricing: '{"60":80,"90":120,"120":160}',
+                    massageTypes: '["Balinese","Thai","Aromatherapy"]',
+                    description: 'Traditional Balinese healing center',
+                    image: 'https://ik.imagekit.io/7grri5v7d/spa2.jpg',
+                    rating: 4.7,
+                    reviewCount: 34,
+                    whatsappNumber: '+62812345681'
+                }
+            ];
+            
+            // Add therapists
+            for (const therapist of sampleTherapists) {
+                try {
+                    await databases.createDocument(DATABASE_ID, 'therapists', ID.unique(), therapist);
+                    results.innerHTML += `<div class="success">✅ Added therapist: ${therapist.name}</div>`;
+                } catch (error) {
+                    results.innerHTML += `<div class="error">❌ Failed to add ${therapist.name}: ${error.message}</div>`;
+                }
+            }
+            
+            // Add places
+            for (const place of samplePlaces) {
+                try {
+                    await databases.createDocument(DATABASE_ID, 'places', ID.unique(), place);
+                    results.innerHTML += `<div class="success">✅ Added place: ${place.name}</div>`;
+                } catch (error) {
+                    results.innerHTML += `<div class="error">❌ Failed to add ${place.name}: ${error.message}</div>`;
+                }
+            }
+            
+            results.innerHTML += '<div class="success">🎉 Sample data added! Your app should now work!</div>';
+            results.innerHTML += '<div class="info">Go back to localhost:3003 and try login/signup now!</div>';
+        }
+    </script>
+</body>
+</html>

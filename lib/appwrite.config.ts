@@ -8,26 +8,26 @@ export const APPWRITE_CONFIG = {
     
     // Collection IDs from your Appwrite database  
     collections: {
-        admins: 'admins_collection_id',
-        therapists: 'therapists_collection_id', // ✅ CONFIRMED - this is the correct collection ID
-        places: 'places_collection_id', // ✅ Confirmed - this is the correct collection ID
+        admins: 'admin_messages',
+        therapists: 'therapists_collection_id', 
+        places: 'places_collection_id',
         agents: 'agents_collection_id',
-        agentVisits: 'agent_visits_collection_id', // NEW: Agent visit tracking
+        agentVisits: 'agent_visits_collection_id',
         bookings: 'bookings_collection_id',
-        hotelBookings: 'hotel_bookings',
+        hotelBookings: 'hotel_bookings', 
         reviews: 'reviews_collection_id',
         notifications: 'notifications_collection_id',
         users: 'users_collection_id',
         hotels: 'hotels_collection_id',
         massageTypes: 'massage_types_collection_id',
-        membershipPricing: 'membership_pricing_collection_id',
+        membershipPricing: 'membership_pricing_collection_id', 
         imageAssets: 'image_assets',
         loginBackgrounds: 'login_backgrounds',
         customLinks: 'custom_links_collection_id',
         translations: 'translations_collection_id',
         commissionRecords: 'commission_records',
-        attributes: 'attributes',
-        analyticsEvents: 'analytics_events',
+        attributes: 'ATTRIBUTES',
+        analyticsEvents: 'Analytics Events',
         therapistJobListings: 'therapist_job_listings',
         employerJobPostings: 'employer_job_postings',
         bankDetails: 'bank_details',

@@ -45,6 +45,7 @@ interface UseProviderAgentHandlersProps {
     setPage: (page: Page) => void;
     setTherapists: (therapists: Therapist[]) => void;
     setPlaces: (places: Place[]) => void;
+    refreshData?: () => Promise<void>; // Add optional refresh function
 }
 
 export const useProviderAgentHandlers = ({
@@ -58,7 +59,8 @@ export const useProviderAgentHandlers = ({
     setAdminMessages,
     setPage,
     setTherapists,
-    setPlaces
+    setPlaces,
+    refreshData
 }: UseProviderAgentHandlersProps) => {
 
     const handleTherapistStatusChange = async (status: string) => {
@@ -263,6 +265,7 @@ export const useProviderAgentHandlers = ({
 
             // Prepare update data with better data preservation (valid schema attributes only)
             const updateData: any = {
+                id: therapistId, // Required unique document identifier
                 name: therapistData.name,
                 description: therapistData.description,
                 whatsappNumber: therapistData.whatsappNumber,
@@ -276,20 +279,44 @@ export const useProviderAgentHandlers = ({
                 coordinates: compactJsonString(therapistData.coordinates, 'coordinates', '{"lat":0,"lng":0}'),
                 status: therapistData.status,
                 rating: existingTherapist?.rating || 0,
-                reviewCount: existingTherapist?.reviewCount || 0,
+                // reviewCount removed - not in collection schema
                 isLicensed: (therapistData as any).isLicensed || false,
-                licenseNumber: (therapistData as any).licenseNumber || '',
+                // licenseNumber: (therapistData as any).licenseNumber || '', // Removed - not in collection schema
                 analytics: compactJsonString(therapistData.analytics, 'analytics', '{"impressions":0,"views":0,"profileViews":0,"whatsappClicks":0}'),
-                hotelVillaServiceStatus: existingTherapist?.hotelVillaServiceStatus || 'NotOptedIn',
+                // hotelVillaServiceStatus: existingTherapist?.hotelVillaServiceStatus || 'NotOptedIn', // Removed - not in collection schema
+                hotelId: existingTherapist?.hotelId || '', // Required field - empty for independent therapists
                 hotelDiscount: existingTherapist?.hotelDiscount || 0,
-                villaDiscount: existingTherapist?.villaDiscount || 0,
-                serviceRadius: existingTherapist?.serviceRadius || 10,
+                // villaDiscount: existingTherapist?.villaDiscount || 0, // Removed - not in collection schema
+                // serviceRadius: existingTherapist?.serviceRadius || 10, // Removed - not in collection schema
+                // Required Appwrite schema fields
+                specialization: (() => {
+                    // Use the first massage type as specialization, or default
+                    try {
+                        const massageTypesArray = JSON.parse(compactJsonString(therapistData.massageTypes, 'massageTypes', '[]'));
+                        return massageTypesArray.length > 0 ? massageTypesArray[0] : 'General Massage';
+                    } catch {
+                        return 'General Massage';
+                    }
+                })(),
+                availability: 'full-time', // Required field
+                hourlyRate: (() => {
+                    // Calculate hourly rate from pricing (use 60min price or default)
+                    try {
+                        const pricingObj = JSON.parse(pricingString);
+                        const rate = pricingObj["60"] || pricingObj[60] || 100;
+                        // Ensure it's within the 50-500 range
+                        return Math.max(50, Math.min(500, rate));
+                    } catch {
+                        return 100; // Safe default
+                    }
+                })(),
+                therapistId: therapistId, // Required unique identifier
                 // Preserve system fields
                 email: existingTherapist?.email || `therapist${therapistId}@indostreet.com`,
                 password: existingTherapist?.password || '',
                 isLive: existingTherapist?.isLive || false,
-                activeMembershipDate: existingTherapist?.activeMembershipDate || new Date().toISOString().split('T')[0],
-                createdAt: existingTherapist?.createdAt || new Date().toISOString()
+                activeMembershipDate: existingTherapist?.activeMembershipDate || new Date().toISOString().split('T')[0]
+                // createdAt: existingTherapist?.createdAt || new Date().toISOString() // Removed - not in collection schema
             };
             
             console.log('💾 Saving therapist data:', {
@@ -338,7 +365,7 @@ export const useProviderAgentHandlers = ({
                     $id: therapistId,
                     isLive: true, // 🔄 CHANGED: Now goes live immediately
                     rating: 0,
-                    reviewCount: 0,
+                    // reviewCount: 0, // Removed - not in collection schema
                     activeMembershipDate: new Date().toISOString().split('T')[0],
                     email: `therapist${therapistId}@indostreet.com`,
                 };
@@ -347,6 +374,18 @@ export const useProviderAgentHandlers = ({
             
             setTherapists(updatedTherapists);
             console.log('🔄 Updated therapists state with new data');
+            
+            // Refresh data from database to ensure consistency across the app
+            if (refreshData) {
+                try {
+                    console.log('🔄 Refreshing data from database to sync live site...');
+                    await refreshData();
+                    console.log('✅ Data refresh completed - live site should show updated info');
+                } catch (refreshError) {
+                    console.warn('⚠️ Failed to refresh data after save:', refreshError);
+                    // Don't fail the save operation if refresh fails
+                }
+            }
             
             // Create admin notification for profile review (profile is already live)
             try {
@@ -448,7 +487,7 @@ export const useProviderAgentHandlers = ({
                             id: loggedInProvider.id,
                             isLive: true, // 🔄 CHANGED: Now goes live immediately
                             rating: 0,
-                            reviewCount: 0,
+                            // reviewCount: 0, // Removed - not in collection schema
                         });
                         placeDocumentId = savedDoc.$id;
                         // Cache for future saves
@@ -466,7 +505,7 @@ export const useProviderAgentHandlers = ({
                     id: loggedInProvider.id,
                     isLive: true, // 🔄 CHANGED: Now goes live immediately
                     rating: 0,
-                    reviewCount: 0,
+                    // reviewCount: 0, // Removed - not in collection schema
                 });
                 placeDocumentId = savedDoc.$id;
                 const session = JSON.parse(localStorage.getItem('app_session') || '{}');
@@ -499,12 +538,24 @@ export const useProviderAgentHandlers = ({
                     $id: placeDocumentId,
                     isLive: true, // 🔄 CHANGED: Now goes live immediately
                     rating: 0,
-                    reviewCount: 0,
+                    // reviewCount: 0, // Removed - not in collection schema
                 } as any
             ];
             
             setPlaces(finalPlaces);
             console.log('🔄 Updated places state with new data');
+            
+            // Refresh data from database to ensure consistency across the app
+            if (refreshData) {
+                try {
+                    console.log('🔄 Refreshing data from database to sync live site...');
+                    await refreshData();
+                    console.log('✅ Data refresh completed - live site should show updated info');
+                } catch (refreshError) {
+                    console.warn('⚠️ Failed to refresh data after save:', refreshError);
+                    // Don't fail the save operation if refresh fails
+                }
+            }
             
             // Create admin notification for profile review (profile is already live)
             try {

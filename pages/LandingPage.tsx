@@ -27,7 +27,15 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
     console.log('onEnterApp prop received:', !!onEnterApp);
     
     const [imageLoaded, setImageLoaded] = useState(false);
-    const [selectedLanguage, setSelectedLanguage] = useState<Language>('id'); // Default to Indonesian
+    const [selectedLanguage, setSelectedLanguage] = useState<Language>(() => {
+        // Check localStorage, default to English for consistency
+        try {
+            const storedLanguage = localStorage.getItem('app_language');
+            return (storedLanguage === 'id' || storedLanguage === 'en') ? storedLanguage as Language : 'en';
+        } catch {
+            return 'en';
+        }
+    });
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isDetectingLocation, setIsDetectingLocation] = useState(false);
     
@@ -161,7 +169,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
 
     return (
         <div className="fixed inset-0 w-full h-full flex overflow-hidden">
-            <PageNumberBadge pageNumber={1} pageName="LandingPage" isLocked={false} />
+            <PageNumberBadge pageNumber={1} pageName="LandingPage" />
             <div
                 className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ease-in-out"
                 style={{
@@ -224,6 +232,13 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
                                                 console.log('Language selected:', lang.name);
                                                 const newLanguage = lang.code as Language;
                                                 setSelectedLanguage(newLanguage);
+                                                
+                                                // Save to localStorage for persistence
+                                                try {
+                                                    localStorage.setItem('app_language', newLanguage);
+                                                } catch (error) {
+                                                    console.warn('Failed to save language to localStorage:', error);
+                                                }
                                                 
                                                 // Activate VS Code Google Translate for selected language
                                                 vscodeTranslateService.activateOnLanguageChange(newLanguage as 'en' | 'id');

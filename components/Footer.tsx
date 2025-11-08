@@ -7,6 +7,7 @@ interface FooterProps {
     unreadNotifications?: number;
     unreadChats?: number;
     hasWhatsAppClick?: boolean;
+    user?: any; // Add user prop to check if logged in
     onHomeClick?: () => void;
     onNotificationsClick?: () => void;
     onProfileClick?: () => void;
@@ -14,6 +15,7 @@ interface FooterProps {
     onSearchClick?: () => void;
     onMenuClick?: () => void;
     onChatClick?: () => void;
+    onLoginClick?: () => void; // Add login callback
     t: any;
 }
 
@@ -80,13 +82,15 @@ const Footer: React.FC<FooterProps> = ({
     unreadNotifications = 0,
     unreadChats = 0,
     hasWhatsAppClick = false,
+    user = null,
     onHomeClick = () => {},
     onNotificationsClick = () => {},
     onProfileClick = () => {},
     onDashboardClick = () => {},
     onSearchClick = () => {},
     onMenuClick = () => {},
-    onChatClick = () => {}
+    onChatClick = () => {},
+    onLoginClick = () => {}
 }) => {
     // Admin Footer
     if (userRole === 'admin') {
@@ -398,7 +402,7 @@ const Footer: React.FC<FooterProps> = ({
                     <span className="text-xs mt-1 text-black">Chat</span>
                 </button>
 
-                {/* Alerts */}
+                {/* Notifications */}
                 <button 
                     onClick={onNotificationsClick}
                     className="flex flex-col items-center justify-center flex-1 h-full relative"
@@ -411,16 +415,18 @@ const Footer: React.FC<FooterProps> = ({
                             </span>
                         )}
                     </div>
-                    <span className="text-xs mt-1 text-black">Alerts</span>
+                    <span className="text-xs mt-1 text-black">Notifications</span>
                 </button>
 
-                {/* Profile */}
+                {/* Profile - Different behavior for signed in vs signed out */}
                 <button 
-                    onClick={onProfileClick}
+                    onClick={user ? onProfileClick : onLoginClick}
                     className="flex flex-col items-center justify-center flex-1 h-full"
                 >
-                    <UserIcon className="w-6 h-6 text-orange-500" />
-                    <span className="text-xs mt-1 text-black">Profile</span>
+                    <UserIcon className={`w-6 h-6 ${user ? 'text-orange-500' : 'text-gray-400'}`} />
+                    <span className={`text-xs mt-1 ${user ? 'text-black' : 'text-gray-400'}`}>
+                        {user ? 'Profile' : 'Sign In'}
+                    </span>
                 </button>
             </div>
         </footer>

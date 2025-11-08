@@ -18,6 +18,7 @@ import MapPinIcon from '../components/icons/MapPinIcon';
 import ClockIcon from '../components/icons/ClockIcon';
 import NotificationBell from '../components/NotificationBell';
 import CustomCheckbox from '../components/CustomCheckbox';
+import ValidationPopup from '../components/ValidationPopup';
 import { MASSAGE_TYPES_CATEGORIZED, ADDITIONAL_SERVICES } from '../constants/rootConstants';
 import { notificationService } from '../lib/appwriteService';
 import { soundNotificationService } from '../utils/soundNotificationService';
@@ -138,6 +139,10 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     // Image upload warning modal states
     const [showImageRequirementModal, setShowImageRequirementModal] = useState(false);
     const [pendingImageUrl, setPendingImageUrl] = useState('');
+    
+    // Validation popup state
+    const [showValidationPopup, setShowValidationPopup] = useState(false);
+    const [validationMissingFields, setValidationMissingFields] = useState<string[]>([]);
 
     const locationInputRef = useRef<HTMLInputElement>(null);
 
@@ -429,6 +434,31 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     }, [placeId]); // Only depend on placeId to avoid infinite loops
 
     const handleSave = () => {
+        // Comprehensive validation with detailed error messages
+        const missingFields = [];
+        
+        if (!name || name.trim() === '') missingFields.push('• Business/Place Name');
+        if (!whatsappNumber || whatsappNumber.trim() === '') missingFields.push('• WhatsApp Number');
+        if (!location || location.trim() === '') missingFields.push('• Full Address/Location');
+        if (!description || description.trim() === '') missingFields.push('• Business Description');
+        if (!mainImage || mainImage.trim() === '') missingFields.push('• Main Business Photo');
+        if (!profilePicture || profilePicture.trim() === '') missingFields.push('• Profile Picture');
+        if (!openingTime || openingTime.trim() === '') missingFields.push('• Opening Time');
+        if (!closingTime || closingTime.trim() === '') missingFields.push('• Closing Time');
+        
+        // Check if at least one pricing is set
+        const hasPricing = Object.values(pricing).some(price => price > 0);
+        if (!hasPricing) missingFields.push('• At least one service pricing (30, 60, 90, or 120 minutes)');
+        
+        // Check massage types
+        if (!massageTypes || massageTypes.length === 0) missingFields.push('• At least one massage type/service offered');
+        
+        if (missingFields.length > 0) {
+            setValidationMissingFields(missingFields);
+            setShowValidationPopup(true);
+            return;
+        }
+        
         // Filter out empty gallery images
         const safeGalleryImages = galleryImages || [];
         const filteredGallery = safeGalleryImages.filter(img => img && img.imageUrl && img.imageUrl.trim() !== '');
@@ -1840,6 +1870,15 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                 onNotificationsClick={onNavigateToNotifications}
                 unreadNotifications={(notifications || []).filter(n => !n.isRead).length}
                 t={t}
+            />
+
+            {/* Validation Popup */}
+            <ValidationPopup
+                isOpen={showValidationPopup}
+                onClose={() => setShowValidationPopup(false)}
+                title="Complete Your Business Profile"
+                missingFields={validationMissingFields}
+                type="error"
             />
         </div>
     );

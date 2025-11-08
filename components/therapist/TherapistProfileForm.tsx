@@ -87,6 +87,34 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
     handleSave, handleGoLive, handleSetLocation,
     isProfileReadyForSave, isProfileLive
 }) => {
+    // Local state for input values to allow real-time typing
+    const [inputValues, setInputValues] = React.useState({
+        regular: { '60': '', '90': '', '120': '' },
+        hotel: { '60': '', '90': '', '120': '' }
+    });
+
+    // Update local input values when pricing changes
+    React.useEffect(() => {
+        setInputValues(prev => ({
+            ...prev,
+            regular: {
+                '60': formatPriceDisplay(pricing["60"]),
+                '90': formatPriceDisplay(pricing["90"]),
+                '120': formatPriceDisplay(pricing["120"])
+            }
+        }));
+    }, [pricing]);
+
+    React.useEffect(() => {
+        setInputValues(prev => ({
+            ...prev,
+            hotel: {
+                '60': formatPriceDisplay(hotelVillaPricing["60"]),
+                '90': formatPriceDisplay(hotelVillaPricing["90"]),
+                '120': formatPriceDisplay(hotelVillaPricing["120"])
+            }
+        }));
+    }, [hotelVillaPricing]);
     const therapistService = {
         getById: async (id: string) => {
             // Mock implementation - replace with actual service
@@ -138,24 +166,74 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
 
     const formatPriceDisplay = (price: number): string => {
         if (price === 0) return '';
-        return price.toLocaleString();
+        // Convert stored price (in thousands) to display format with 'k'
+        const priceInK = Math.floor(price / 1000);
+        return priceInK > 0 ? `${priceInK}k` : '';
     };
 
     const handlePriceChange = (duration: string, value: string) => {
-        const numericValue = parseInt(value.replace(/[^\d]/g, ''), 10) || 0;
-        setPricing({ ...pricing, [duration]: numericValue });
+        // Remove any non-digit characters except 'k'
+        let cleanValue = value.toLowerCase().replace(/[^\dk]/g, '');
         
-        if (useSamePricing) {
-            setHotelVillaPricing({ ...hotelVillaPricing, [duration]: numericValue });
+        // Limit to 4 characters max (3 digits + k)
+        if (cleanValue.length > 4) {
+            cleanValue = cleanValue.substring(0, 4);
+        }
+        
+        // Update local input state immediately for real-time display
+        setInputValues(prev => ({
+            ...prev,
+            regular: { ...prev.regular, [duration]: cleanValue }
+        }));
+        
+        // If user completes the format with 'k'
+        if (cleanValue.endsWith('k')) {
+            // Remove the 'k' and get digits only
+            let digits = cleanValue.slice(0, -1);
+            
+            // Only save if we have valid digits (1-3 digits)
+            if (digits.length >= 1 && digits.length <= 3) {
+                // Convert to actual price (multiply by 1000) and save
+                const numericValue = parseInt(digits, 10) * 1000 || 0;
+                setPricing({ ...pricing, [duration]: numericValue });
+                
+                if (useSamePricing) {
+                    setHotelVillaPricing({ ...hotelVillaPricing, [duration]: numericValue });
+                }
+            }
         }
     };
 
     const handleHotelVillaPriceChange = (duration: string, value: string) => {
-        const numericValue = parseInt(value.replace(/[^\d]/g, ''), 10) || 0;
-        const maxPrice = Math.floor(pricing[duration] * 1.2);
+        // Remove any non-digit characters except 'k'
+        let cleanValue = value.toLowerCase().replace(/[^\dk]/g, '');
         
-        if (numericValue <= maxPrice || pricing[duration] === 0) {
-            setHotelVillaPricing({ ...hotelVillaPricing, [duration]: numericValue });
+        // Limit to 4 characters max (3 digits + k)
+        if (cleanValue.length > 4) {
+            cleanValue = cleanValue.substring(0, 4);
+        }
+        
+        // Update local input state immediately for real-time display
+        setInputValues(prev => ({
+            ...prev,
+            hotel: { ...prev.hotel, [duration]: cleanValue }
+        }));
+        
+        // If user completes the format with 'k'
+        if (cleanValue.endsWith('k')) {
+            // Remove the 'k' and get digits only
+            let digits = cleanValue.slice(0, -1);
+            
+            // Only save if we have valid digits (1-3 digits)
+            if (digits.length >= 1 && digits.length <= 3) {
+                // Convert to actual price (multiply by 1000)
+                const numericValue = parseInt(digits, 10) * 1000 || 0;
+                const maxPrice = Math.floor(pricing[duration] * 1.2);
+                
+                if (numericValue <= maxPrice || pricing[duration] === 0) {
+                    setHotelVillaPricing({ ...hotelVillaPricing, [duration]: numericValue });
+                }
+            }
         }
     };
 
@@ -403,16 +481,16 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                 </div>
                 <div className="bg-white/50 rounded-lg p-3 space-y-2">
                     <div className="text-xs text-green-800">
-                        <p className="font-semibold mb-2">Badge Requirements:</p>
+                        <p className="font-semibold mb-2">Auto-Qualification Criteria:</p>
                         <ul className="space-y-1 ml-4 list-disc">
-                            <li>3 consecutive months of paid membership</li>
-                            <li>Maximum 5-day grace period between renewals</li>
+                            <li>Active on platform for 3 months or more</li>
+                            <li>Achieve 30+ verified reviews OR 90+ completed bookings</li>
                             <li>Maintain a rating of 4.0 stars or higher</li>
                         </ul>
                     </div>
                     <div className="text-xs text-green-700 bg-green-100 rounded p-2 mt-2">
-                        <p className="font-semibold">📢 Membership Reminder:</p>
-                        <p className="mt-1">You will receive a WhatsApp notification 7 days before your membership expires with renewal instructions and badge status.</p>
+                        <p className="font-semibold">🏆 Achievement Badge:</p>
+                        <p className="mt-1">Badge is automatically applied when criteria are met. No membership duration requirements - earned through performance and customer satisfaction!</p>
                     </div>
                     {isLicensed && (
                         <div className="mt-3 pt-3 border-t border-green-200">
@@ -627,28 +705,53 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
 
             <div>
                 <h3 className="text-sm sm:text-md font-medium text-gray-800 mb-1">Set Your Prices (Rp)</h3>
-                <p className="text-xs text-gray-500 mb-3">These Prices Displayed On The App</p>
+                <p className="text-xs text-gray-500 mb-1">These Prices Displayed On The App</p>
+                <p className="text-xs text-orange-600 mb-3 font-medium">⚠️ Format: Enter exactly 3 digits + 'k' (e.g., 250k, 350k, 450k)</p>
                 <div className="grid grid-cols-3 gap-2 sm:gap-3">
                     <div>
                        <label className="block text-xs font-medium text-gray-600 mb-1">{t['60min'] || '60min'}</label>
                        <div className="relative">
                            <div className="absolute inset-y-0 left-0 pl-2 sm:pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" /></div>
-                           <input type="text" value={formatPriceDisplay(pricing["60"])} onChange={e => handlePriceChange("60", e.target.value)} placeholder="250k" className="block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm" />
+                           <input 
+                               type="text" 
+                               value={inputValues.regular["60"]} 
+                               onChange={e => handlePriceChange("60", e.target.value)} 
+                               placeholder="250k" 
+                               maxLength={4}
+                               className="block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm" 
+                           />
                         </div>
+                        <p className="text-xs text-gray-400 mt-1">Format: 250k (3 digits + k)</p>
                     </div>
                     <div>
                        <label className="block text-xs font-medium text-gray-600 mb-1">{t['90min'] || '90min'}</label>
                          <div className="relative">
                            <div className="absolute inset-y-0 left-0 pl-2 sm:pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" /></div>
-                           <input type="text" value={formatPriceDisplay(pricing["90"])} onChange={e => handlePriceChange("90", e.target.value)} placeholder="350k" className="block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm" />
+                           <input 
+                               type="text" 
+                               value={inputValues.regular["90"]} 
+                               onChange={e => handlePriceChange("90", e.target.value)} 
+                               placeholder="350k" 
+                               maxLength={4}
+                               className="block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm" 
+                           />
                         </div>
+                        <p className="text-xs text-gray-400 mt-1">Format: 350k (3 digits + k)</p>
                     </div>
                      <div>
                        <label className="block text-xs font-medium text-gray-600 mb-1">{t['120min'] || '120min'}</label>
                         <div className="relative">
                            <div className="absolute inset-y-0 left-0 pl-2 sm:pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" /></div>
-                           <input type="text" value={formatPriceDisplay(pricing["120"])} onChange={e => handlePriceChange("120", e.target.value)} placeholder="450k" className="block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm" />
+                           <input 
+                               type="text" 
+                               value={inputValues.regular["120"]} 
+                               onChange={e => handlePriceChange("120", e.target.value)} 
+                               placeholder="450k" 
+                               maxLength={4}
+                               className="block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm" 
+                           />
                         </div>
+                        <p className="text-xs text-gray-400 mt-1">Format: 450k (3 digits + k)</p>
                     </div>
                 </div>
             </div>
@@ -657,9 +760,21 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
             <div className="border-t border-gray-200 pt-4">
                 <div className="mb-3">
                     <h3 className="text-sm sm:text-md font-medium text-gray-800">Hotel/Villa Live Menu Pricing</h3>
-                    <p className="text-xs text-gray-500 mt-1">
-                        Set special prices for hotel/villa guest Menu
-                    </p>
+                    <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="flex items-start gap-2">
+                            <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
+                                <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p className="text-xs text-blue-800 font-semibold mb-1">Commission Structure</p>
+                                <p className="text-xs text-blue-700 leading-relaxed">
+                                    Hotels and villas receive a <span className="font-semibold">20% commission</span> for each guest room service massage booking. The prices you set here already include this 20% commission, so you'll receive 80% of the displayed amount.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                     <div className="mt-3">
                         <CustomCheckbox
                             label="Same as regular"
@@ -675,9 +790,10 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                            <div className="absolute inset-y-0 left-0 pl-2 sm:pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" /></div>
                            <input 
                                type="text" 
-                               value={formatPriceDisplay(hotelVillaPricing["60"])} 
+                               value={inputValues.hotel["60"]} 
                                onChange={e => handleHotelVillaPriceChange("60", e.target.value)} 
                                placeholder="250k" 
+                               maxLength={4}
                                disabled={useSamePricing}
                                className={`block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 border border-gray-300 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm ${
                                    useSamePricing ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
@@ -689,6 +805,9 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                                 Max: {formatPriceDisplay(Math.floor(pricing["60"] * 1.2))}
                             </p>
                         )}
+                        {!useSamePricing && pricing["60"] === 0 && (
+                            <p className="text-xs text-gray-400 mt-1">Format: 250k (3 digits + k)</p>
+                        )}
                     </div>
                     <div>
                        <label className="block text-xs font-medium text-gray-600 mb-1">{t['90min'] || '90min'}</label>
@@ -696,9 +815,10 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                            <div className="absolute inset-y-0 left-0 pl-2 sm:pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" /></div>
                            <input 
                                type="text" 
-                               value={formatPriceDisplay(hotelVillaPricing["90"])} 
+                               value={inputValues.hotel["90"]} 
                                onChange={e => handleHotelVillaPriceChange("90", e.target.value)} 
                                placeholder="350k" 
+                               maxLength={4}
                                disabled={useSamePricing}
                                className={`block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 border border-gray-300 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm ${
                                    useSamePricing ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
@@ -710,6 +830,9 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                                 Max: {formatPriceDisplay(Math.floor(pricing["90"] * 1.2))}
                             </p>
                         )}
+                        {!useSamePricing && pricing["90"] === 0 && (
+                            <p className="text-xs text-gray-400 mt-1">Format: 350k (3 digits + k)</p>
+                        )}
                     </div>
                      <div>
                        <label className="block text-xs font-medium text-gray-600 mb-1">{t['120min'] || '120min'}</label>
@@ -717,9 +840,10 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                            <div className="absolute inset-y-0 left-0 pl-2 sm:pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" /></div>
                            <input 
                                type="text" 
-                               value={formatPriceDisplay(hotelVillaPricing["120"])} 
+                               value={inputValues.hotel["120"]} 
                                onChange={e => handleHotelVillaPriceChange("120", e.target.value)} 
                                placeholder="450k" 
+                               maxLength={4}
                                disabled={useSamePricing}
                                className={`block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 border border-gray-300 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm ${
                                    useSamePricing ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
@@ -730,6 +854,9 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                             <p className="text-xs text-gray-500 mt-1">
                                 Max: {formatPriceDisplay(Math.floor(pricing["120"] * 1.2))}
                             </p>
+                        )}
+                        {!useSamePricing && pricing["120"] === 0 && (
+                            <p className="text-xs text-gray-400 mt-1">Format: 450k (3 digits + k)</p>
                         )}
                     </div>
                 </div>

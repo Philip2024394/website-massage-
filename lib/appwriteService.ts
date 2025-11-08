@@ -1444,7 +1444,7 @@ export const messagingService = {
         try {
             const response = await databases.createDocument(
                 APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.messages || 'messages_collection_id', // Add to config
+                APPWRITE_CONFIG.collections.messages || 'chat_messages', // Add to config
                 ID.unique(),
                 {
                     ...message,
@@ -2602,10 +2602,10 @@ import { ShopItem, ShopCoinTransaction, ShopOrder, UserCoins } from '../types';
 const COIN_SHOP_DATABASE_ID = '68f76ee1000e64ca8d05';
 
 // Collection IDs
-const SHOP_ITEMS_COLLECTION_ID = 'shopitems';
-const COIN_TRANSACTIONS_COLLECTION_ID = 'cointransactions';
-const SHOP_ORDERS_COLLECTION_ID = 'shoporders';
-const USER_COINS_COLLECTION_ID = 'usercoins';
+const SHOP_ITEMS_COLLECTION_ID = 'shop_items_collection_id';
+const COIN_TRANSACTIONS_COLLECTION_ID = 'coin_transactions_collection_id';
+const SHOP_ORDERS_COLLECTION_ID = 'shop_orders_collection_id';
+const USER_COINS_COLLECTION_ID = 'user_coins_collection_id';
 
 // Shop Items Service
 export const shopItemService = {

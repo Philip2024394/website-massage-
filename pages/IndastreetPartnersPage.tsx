@@ -170,6 +170,118 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
             specialties: ['Wellness Programs', 'Beauty Treatments', 'Holistic Health'],
             addedDate: '2024-10-03',
             websitePreview: 'https://api.screenshotlayer.com/api/capture?access_key=demo&url=wellnessspatreatment.com&viewport=1440x900&width=400'
+        },
+        {
+            id: '7',
+            name: 'Mike Massage Therapist',
+            websiteUrl: 'https://www.massagelondonsw1.com/',
+            websiteTitle: 'Bespoke Massage Therapy in Central London',
+            description: 'Professional massage therapist with 10+ years experience offering bespoke Eastern and Western massage techniques. Deep tissue, relaxation, and sports massage sessions available 24/7 in Central London.',
+            category: 'therapist',
+            location: 'Pimlico, Central London',
+            phone: '+44 7852967884',
+            verified: true,
+            rating: 4.8,
+            imageUrl: 'https://ik.imagekit.io/7grri5v7d/spa%20london.png?updatedAt=1762568808299',
+            specialties: ['Deep Tissue Massage', 'Relaxation Massage', 'Sports Massage', 'Bespoke Therapy', '24/7 Service'],
+            addedDate: '2024-11-08',
+            websitePreview: 'https://api.screenshotlayer.com/api/capture?access_key=demo&url=massagelondonsw1.com&viewport=1440x900&width=400'
+        },
+        {
+            id: '8',
+            name: 'Vabali Spa Berlin',
+            websiteUrl: 'https://www.vabali.de/en/berlin/',
+            websiteTitle: 'Balinese Wellness Oasis in Berlin',
+            description: 'A world-class Balinese wellness resort in the heart of Berlin featuring 10 saunas, 3 steam baths, 4 pools, massage services, and Indonesian-inspired ambience. Complete wellness destination with restaurant and relaxation facilities.',
+            category: 'massage-place',
+            location: 'Berlin, Germany',
+            phone: '+49 30 12345678',
+            verified: true,
+            rating: 4.9,
+            imageUrl: 'https://ik.imagekit.io/7grri5v7d/spa%20gemany.png?updatedAt=1762569055961',
+            specialties: ['Balinese Wellness', '10 Saunas', '3 Steam Baths', '4 Pools', 'Massage Services', 'Indonesian Spa', 'Wellness Resort'],
+            addedDate: '2024-11-08',
+            websitePreview: 'https://api.screenshotlayer.com/api/capture?access_key=demo&url=vabali.de&viewport=1440x900&width=400'
+        },
+        {
+            id: '9',
+            name: "Let's Relax Spa Xi'an",
+            websiteUrl: 'https://letsrelaxspa.com/branch/xi-an-china',
+            websiteTitle: 'Modern Contemporary Thai-Chinese Spa',
+            description: 'Premium spa located in Great Tang All Day Mall, Xi\'an, featuring modern contemporary design with Thai-Chinese touch. Urban retreat offering traditional Thai massage, foot massage, spa packages and wellness treatments with earth tone ambiance.',
+            category: 'massage-place',
+            location: 'Qujiang New District, Xi\'an, Shaanxi, China',
+            phone: '+86 (0)29-88089988',
+            verified: true,
+            rating: 4.7,
+            imageUrl: 'https://ik.imagekit.io/7grri5v7d/spa%20china.png?updatedAt=1762569611254',
+            specialties: ['Thai Massage', 'Foot Massage', 'Spa Experience', 'Heavenly Relax Package', 'Herbal Treatments', 'Aroma Oil Therapy'],
+            addedDate: '2024-11-08',
+            websitePreview: 'https://api.screenshotlayer.com/api/capture?access_key=demo&url=letsrelaxspa.com&viewport=1440x900&width=400'
+        },
+        {
+            id: '10',
+            name: 'Mandarin Oriental Wellness & Spa',
+            websiteUrl: 'https://www.mandarinoriental.com/en/wellness',
+            websiteTitle: 'Award-Winning Luxury Spa & Wellness',
+            description: 'World-renowned luxury spa brand with 12 Forbes Five-Star spas and 11 Four-Star spas globally. Rooted in oriental philosophy and authentic rituals, combining ancient techniques with modern innovations for personalized wellness journeys.',
+            category: 'hotel',
+            location: 'Global Luxury Hotels',
+            phone: '+852 2885 4888',
+            verified: true,
+            rating: 5.0,
+            imageUrl: 'https://ik.imagekit.io/7grri5v7d/spa%20wellness.png?updatedAt=1762569860409',
+            specialties: ['Forbes Five-Star Spas', 'Oriental Philosophy', 'Ancient Techniques', 'Personalized Wellness', 'Luxury Retreats', 'Signature Programs'],
+            addedDate: '2024-11-08',
+            websitePreview: 'https://api.screenshotlayer.com/api/capture?access_key=demo&url=mandarinoriental.com&viewport=1440x900&width=400'
+        },
+        {
+            id: '11',
+            name: 'Marbella Club Hotel',
+            websiteUrl: 'https://www.marbellaclub.com/',
+            websiteTitle: 'Mediterranean Beachfront Paradise',
+            description: 'Legendary luxury beachfront hotel in Marbella with true Andalusian spirit. Features holistic wellbeing spa, yoga studio, meditation facilities, and natural healing treatments by the sea. Elegant simplicity in a storied finca with 300+ days of sunshine.',
+            category: 'hotel',
+            location: 'Marbella, Costa del Sol, Spain',
+            phone: '+34 952 82 22 11',
+            verified: true,
+            rating: 4.9,
+            imageUrl: 'https://ik.imagekit.io/7grri5v7d/massage%20spa%20place.png?updatedAt=1762570193941',
+            specialties: ['Holistic Wellbeing', 'Beachfront Spa', 'Yoga & Meditation', 'Natural Healing', 'Andalusian Luxury', 'Mediterranean Wellness'],
+            addedDate: '2024-11-08',
+            websitePreview: 'https://api.screenshotlayer.com/api/capture?access_key=demo&url=marbellaclub.com&viewport=1440x900&width=400'
+        },
+        {
+            id: '12',
+            name: 'La Finca Resort',
+            websiteUrl: 'https://www.lafincaresort.com/',
+            websiteTitle: 'Paraíso Escondido en la Costa Blanca',
+            description: 'Luxury 5-star resort in Costa Blanca featuring La Finca Spa with 10% discount on treatments and massages. Includes two 18-hole golf courses, sports facilities (tennis, paddle, gym), and gourmet restaurants. Bright rooms with terraces overlooking golf, pool, or gardens.',
+            category: 'hotel',
+            location: 'Algorfa, Alicante, Costa Blanca, Spain',
+            phone: '+34 966 729 055',
+            verified: true,
+            rating: 4.8,
+            imageUrl: 'https://ik.imagekit.io/7grri5v7d/spa%20massage%20place%20new%20shop.png?updatedAt=1762570457253',
+            specialties: ['La Finca Spa', '10% Spa Discount', 'Golf Resort', 'Sports Facilities', 'Wellness Experiences', 'Gourmet Dining'],
+            addedDate: '2024-11-08',
+            websitePreview: 'https://api.screenshotlayer.com/api/capture?access_key=demo&url=lafincaresort.com&viewport=1440x900&width=400'
+        },
+        {
+            id: '13',
+            name: 'Six Senses Hotels Resorts Spas',
+            websiteUrl: 'https://www.sixsenses.com/',
+            websiteTitle: 'Pioneering Wellness & Empathetic Hospitality',
+            description: 'Global luxury wellness brand offering meaningful experiences in places of incredible natural beauty. Features pioneering wellness programs, high-tech and high-touch spa treatments, personalized wellness programs, and sustainability initiatives across properties worldwide.',
+            category: 'hotel',
+            location: 'Global Luxury Resorts & Spas',
+            phone: '+66 2631 9777',
+            verified: true,
+            rating: 5.0,
+            imageUrl: 'https://ik.imagekit.io/7grri5v7d/spa%20massage%20place%20new%20shops.png?updatedAt=1762570584171',
+            specialties: ['Pioneering Wellness', 'High-Tech Spa Treatments', 'Personalized Programs', 'Natural Beauty Locations', 'Sustainability Focus', 'Empathetic Hospitality'],
+            addedDate: '2024-11-08',
+            websitePreview: 'https://api.screenshotlayer.com/api/capture?access_key=demo&url=sixsenses.com&viewport=1440x900&width=400'
         }
     ];
 
@@ -277,7 +389,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-100 flex items-center justify-center">
+            <div className="min-h-screen bg-white flex items-center justify-center">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
                     <p className="mt-4 text-gray-600">Loading Indastreet Partners...</p>
@@ -287,7 +399,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-100">
+        <div className="min-h-screen bg-white">
             {/* Flying Butterfly Animation */}
             <FlyingButterfly />
             
@@ -362,89 +474,89 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
             
             {/* Hero Section with Background Image */}
             <div 
-                className="relative text-white py-24 overflow-hidden bg-cover bg-center"
+                className="relative text-white py-12 sm:py-16 lg:py-24 overflow-hidden bg-cover bg-center"
                 style={{
-                    backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/indastreet%20flyers.png?updatedAt=1762422804652)',
+                    backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/indastreet%20massage%20service.png?updatedAt=1762567819270)',
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     backgroundRepeat: 'no-repeat'
                 }}
             >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-                    <h1 className="text-4xl font-bold sm:text-5xl lg:text-6xl drop-shadow-lg">
+                    <h1 className="text-2xl font-bold sm:text-4xl lg:text-5xl xl:text-6xl drop-shadow-lg">
                         <span className="text-black">Inda</span><span className="text-orange-500">street</span>
-                        <span className="text-black text-3xl sm:text-4xl lg:text-5xl ml-2">Partners</span>
+                        <span className="text-black text-xl sm:text-3xl lg:text-4xl xl:text-5xl ml-2">Partners</span>
                     </h1>
-                    <p className="mt-4 text-xl text-white max-w-3xl mx-auto drop-shadow-md">
+                    <p className="mt-3 sm:mt-4 text-sm sm:text-lg lg:text-xl text-white max-w-3xl mx-auto drop-shadow-md px-4">
                         Discover our trusted network of verified wellness professionals, luxury accommodations, 
                         and spa destinations. Each partner maintains their own website with detailed services and live previews.
                     </p>
-                    <div className="mt-6 flex items-center justify-center space-x-6 text-sm text-white">
+                    <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-4 lg:space-x-6 text-xs sm:text-sm text-white px-4">
                         <div className="flex items-center">
-                            <BadgeCheckIcon className="w-5 h-5 text-green-400 mr-2" />
-                            Verified Partners
+                            <BadgeCheckIcon className="w-4 h-4 sm:w-5 sm:h-5 text-green-400 mr-1 sm:mr-2" />
+                            <span>Verified Partners</span>
                         </div>
                         <div className="flex items-center">
-                            <EyeIcon className="w-5 h-5 text-orange-400 mr-2" />
-                            Live Website Previews
+                            <EyeIcon className="w-4 h-4 sm:w-5 sm:h-5 text-orange-400 mr-1 sm:mr-2" />
+                            <span>Live Website Previews</span>
                         </div>
                         <div className="flex items-center">
-                            <StarIcon className="w-5 h-5 text-yellow-400 mr-2" />
-                            Quality Assured
+                            <StarIcon className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400 mr-1 sm:mr-2" />
+                            <span>Quality Assured</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24">
+            <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8 pb-20 sm:pb-24">
                 {/* Enhanced Search and Filter Section */}
-                <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+                <div className="bg-white rounded-lg sm:rounded-xl shadow-lg p-4 sm:p-6 mb-6 sm:mb-8">
+                    <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
                         {/* Search Bar */}
-                        <div className="flex-1 max-w-lg">
+                        <div className="flex-1 lg:max-w-lg">
                             <div className="relative">
                                 <input
                                     type="text"
-                                    placeholder="Search partners by name, location, or services..."
+                                    placeholder="Search partners by name, location..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    className="w-full pl-10 pr-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                                 />
-                                <GlobeAltIcon className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+                                <GlobeAltIcon className="absolute left-3 top-2.5 sm:top-3.5 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                             </div>
                         </div>
 
                         {/* Category Statistics */}
-                        <div className="flex items-center space-x-4 text-sm text-gray-600">
-                            <UsersIcon className="w-5 h-5" />
+                        <div className="flex items-center justify-center sm:justify-start space-x-3 sm:space-x-4 text-xs sm:text-sm text-gray-600">
+                            <UsersIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                             <span><strong>{partners.length}</strong> Total Partners</span>
-                            <span>•</span>
+                            <span className="hidden sm:inline">•</span>
                             <span><strong>{partners.filter(p => p.verified).length}</strong> Verified</span>
                         </div>
                     </div>
                 </div>
 
                 {/* Enhanced Category Filter Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
                     {categories.map((category) => (
                         <button
                             key={category.value}
                             onClick={() => setSelectedCategory(category.value)}
-                            className={`p-4 rounded-xl text-left transition-all duration-300 transform hover:scale-105 ${
+                            className={`p-3 sm:p-4 rounded-lg sm:rounded-xl text-left transition-all duration-300 transform hover:scale-105 ${
                                 selectedCategory === category.value
                                     ? `${category.color} text-white shadow-xl`
                                     : 'bg-white text-gray-700 hover:bg-gray-50 shadow-lg'
                             }`}
                         >
-                            <div className="flex items-center justify-between mb-2">
-                                <span className="text-2xl">{category.icon}</span>
-                                <span className={`text-2xl font-bold ${
+                            <div className="flex items-center justify-between mb-1 sm:mb-2">
+                                <span className="text-lg sm:text-2xl">{category.icon}</span>
+                                <span className={`text-lg sm:text-2xl font-bold ${
                                     selectedCategory === category.value ? 'text-white' : 'text-gray-900'
                                 }`}>
                                     {category.count}
                                 </span>
                             </div>
-                            <h3 className="font-semibold text-sm leading-tight">
+                            <h3 className="font-semibold text-xs sm:text-sm leading-tight">
                                 {category.label}
                             </h3>
                         </button>
@@ -452,12 +564,30 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                 </div>
 
                 {/* Enhanced Partners Grid with Website Previews */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
                     {filteredPartners.map((partner) => (
-                        <div key={partner.id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+                        <div key={partner.id} className="bg-white rounded-lg sm:rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 sm:hover:-translate-y-2">
                             {/* Website Preview Section */}
-                            <div className="relative h-48 bg-gradient-to-r from-orange-400 to-amber-500">
-                                {partner.websitePreview ? (
+                            <div className="relative h-40 sm:h-48 bg-gradient-to-r from-orange-400 to-amber-500">
+                                {partner.imageUrl && !partner.imageUrl.includes('/api/placeholder') ? (
+                                    <div className="relative h-full">
+                                        <img
+                                            src={partner.imageUrl}
+                                            alt={`${partner.name} image`}
+                                            className="w-full h-full object-cover opacity-90"
+                                            onError={(e) => {
+                                                // Fallback to gradient background
+                                                e.currentTarget.style.display = 'none';
+                                            }}
+                                        />
+                                        <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300">
+                                            <div className="bg-white bg-opacity-90 rounded-lg px-3 py-2 flex items-center space-x-2">
+                                                <EyeIcon className="w-4 h-4 text-orange-600" />
+                                                <span className="text-xs font-medium text-gray-700">Partner Image</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : partner.websitePreview ? (
                                     <div className="relative h-full">
                                         <img
                                             src={partner.websitePreview}
@@ -514,7 +644,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                             </div>
 
                             {/* Partner Details */}
-                            <div className="p-6">
+                            <div className="p-4 sm:p-6">
                                 <div className="flex items-start justify-between mb-3">
                                     <h3 className="text-xl font-bold text-gray-900 leading-tight">
                                         {partner.name}
@@ -605,22 +735,22 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                 )}
 
                 {/* Join Partner Program CTA */}
-                <div className="mt-12 bg-gradient-to-r from-orange-600 to-amber-600 rounded-xl p-8 text-center text-white">
-                    <h2 className="text-2xl font-bold mb-4">Want to become an Indastreet Partner?</h2>
-                    <p className="text-orange-100 mb-6 max-w-2xl mx-auto">
+                <div className="mt-8 sm:mt-12 bg-gradient-to-r from-orange-600 to-amber-600 rounded-lg sm:rounded-xl p-6 sm:p-8 text-center text-white mx-2 sm:mx-0">
+                    <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Want to become an Indastreet Partner?</h2>
+                    <p className="text-orange-100 mb-4 sm:mb-6 max-w-2xl mx-auto text-sm sm:text-base px-2">
                         Join our network of verified wellness professionals and luxury accommodations. 
                         Get featured on our platform and boost your online visibility.
                     </p>
-                    <button className="bg-white text-orange-600 px-8 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors duration-200">
+                    <button className="bg-white text-orange-600 px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors duration-200 text-sm sm:text-base">
                         Apply for Partnership
                     </button>
                 </div>
             </div>
 
             {/* SEO Footer */}
-            <div className="bg-gray-50 mt-12 py-8">
+            <div className="bg-white border-t border-gray-100 mt-8 sm:mt-12 py-6 sm:py-8">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                    <p className="text-gray-600 text-sm">
+                    <p className="text-gray-600 text-xs sm:text-sm">
                         All partner websites are independently owned and operated. 
                         Indastreet connects you with trusted wellness and hospitality professionals.
                     </p>

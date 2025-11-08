@@ -3,6 +3,8 @@ import { MASSAGE_TYPES_CATEGORIZED, getMassageTypeImage, getMassageTypeDetails }
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import CloseIcon from '../components/icons/CloseIcon';
 import { Page } from '../types/pageTypes';
+import { AppDrawer } from '../components/AppDrawer';
+import { React19SafeWrapper } from '../components/React19SafeWrapper';
 
 interface MassageTypesPageProps {
     onBack: () => void;
@@ -10,6 +12,19 @@ interface MassageTypesPageProps {
     onFindTherapists?: (massageType: string) => void;
     onFindPlaces?: (massageType: string) => void;
     t?: any;
+    // AppDrawer props
+    onMassageJobsClick?: () => void;
+    onHotelPortalClick?: () => void;
+    onVillaPortalClick?: () => void;
+    onTherapistPortalClick?: () => void;
+    onMassagePlacePortalClick?: () => void;
+    onAgentPortalClick?: () => void;
+    onCustomerPortalClick?: () => void;
+    onAdminPortalClick?: () => void;
+    onTermsClick?: () => void;
+    onPrivacyClick?: () => void;
+    therapists?: any[];
+    places?: any[];
 }
 
 const StarIcon: React.FC<{ className?: string }> = ({ className }) => (
@@ -45,10 +60,23 @@ interface MassageType {
 
 const MassageTypesPage: React.FC<MassageTypesPageProps> = ({ 
     onBack, 
-    onNavigate: _onNavigate, // Mark as unused for now
+    onNavigate,
     onFindTherapists, 
     onFindPlaces, 
-    t: _t // Mark as unused for now
+    t,
+    // AppDrawer props
+    onMassageJobsClick,
+    onHotelPortalClick,
+    onVillaPortalClick,
+    onTherapistPortalClick,
+    onMassagePlacePortalClick,
+    onAgentPortalClick,
+    onCustomerPortalClick,
+    onAdminPortalClick,
+    onTermsClick,
+    onPrivacyClick,
+    therapists = [],
+    places = []
 }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     
@@ -142,52 +170,27 @@ const MassageTypesPage: React.FC<MassageTypesPageProps> = ({
                 </div>
             </header>
 
-            {/* Menu Drawer */}
-            {isMenuOpen && (
-                <div className="fixed inset-0 z-50" role="dialog" aria-modal="true">
-                    <div 
-                        className="absolute inset-0 bg-black bg-opacity-50 transition-opacity" 
-                        onClick={() => setIsMenuOpen(false)}
-                        aria-hidden="true"
-                    ></div>
-    
-                    <div className={`absolute right-0 top-0 bottom-0 w-[70%] sm:w-80 bg-gradient-to-br from-white via-gray-50 to-gray-100 shadow-2xl flex flex-col transform transition-transform ease-in-out duration-300 ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-                        {/* Brand Header */}
-                        <div className="p-6 flex justify-between items-center">
-                            <h2 className="font-bold text-2xl">
-                                <span className="text-black">inda</span>
-                                <span className="text-orange-500">Street</span>
-                            </h2>
-                            <button 
-                                onClick={() => setIsMenuOpen(false)} 
-                                className="text-gray-600 hover:bg-gray-200 p-2 rounded-full transition-all" 
-                                aria-label="Close menu"
-                            >
-                                <CloseIcon className="w-6 h-6" />
-                            </button>
-                        </div>
-
-                        {/* Menu Content */}
-                        <nav className="flex-1 overflow-y-auto px-4 py-2">
-                            <div className="space-y-2">
-                                <button 
-                                    onClick={() => { onBack(); setIsMenuOpen(false); }} 
-                                    className="w-full text-left px-4 py-3 rounded-lg hover:bg-white transition-colors text-gray-700 font-medium"
-                                >
-                                    Home
-                                </button>
-                            </div>
-                        </nav>
-
-                        {/* Footer */}
-                        <div className="p-4 bg-gray-50 border-t border-gray-200 space-y-3">
-                            <p className="text-xs text-center text-gray-500">
-                                © 2025 IndaStreet Massage
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {/* App Drawer - Same as HomePage */}
+            <React19SafeWrapper condition={isMenuOpen}>
+                <AppDrawer
+                    isOpen={isMenuOpen}
+                    onClose={() => setIsMenuOpen(false)}
+                    t={t}
+                    onMassageJobsClick={onMassageJobsClick}
+                    onHotelPortalClick={onHotelPortalClick}
+                    onVillaPortalClick={onVillaPortalClick}
+                    onTherapistPortalClick={onTherapistPortalClick}
+                    onMassagePlacePortalClick={onMassagePlacePortalClick}
+                    onAgentPortalClick={onAgentPortalClick}
+                    onCustomerPortalClick={onCustomerPortalClick}
+                    onAdminPortalClick={onAdminPortalClick}
+                    onNavigate={onNavigate ? (page: string) => onNavigate(page as Page) : undefined}
+                    onTermsClick={onTermsClick}
+                    onPrivacyClick={onPrivacyClick}
+                    therapists={therapists}
+                    places={places}
+                />
+            </React19SafeWrapper>
 
             <main className="p-4 pb-20">
                 <div className="flex flex-col gap-4">

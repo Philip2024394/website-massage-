@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Check Appwrite Collections & Data</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.0"></script>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        .collection { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h2>🔍 Checking Your Appwrite Collections & Data</h2>
+    <button onclick="checkAllCollections()">Check Collections</button>
+    <div id="results"></div>
+
+    <script>
+        const { Client, Databases } = Appwrite;
+        
+        const client = new Client()
+            .setEndpoint('https://syd.cloud.appwrite.io/v1')
+            .setProject('68f23b11000d25eb3664');
+            
+        const databases = new Databases(client);
+        const DATABASE_ID = '68f76ee1000e64ca8d05';
+        
+        // Collections to check
+        const collectionsToCheck = {
+            'Therapists': ['therapists', 'therapist', 'providers', 'masseurs'],
+            'Massage Places': ['places', 'massageplaces', 'locations', 'venues'],
+            'Users/Customers': ['users', 'customers', 'clients'],
+            'Massage Types': ['massageTypes', 'massage_types', 'services', 'treatments'],
+            'Bookings': ['bookings', 'appointments', 'reservations'],
+            'Reviews': ['reviews', 'ratings', 'feedback']
+        };
+        
+        async function checkAllCollections() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<div class="info">🔍 Scanning your Appwrite database...</div>';
+            
+            for (const [categoryName, possibleNames] of Object.entries(collectionsToCheck)) {
+                results.innerHTML += `<div class="collection"><h3>${categoryName}</h3>`;
+                
+                let found = false;
+                for (const collectionName of possibleNames) {
+                    try {
+                        const docs = await databases.listDocuments(DATABASE_ID, collectionName, []);
+                        results.innerHTML += `<div class="success">✅ Found "${collectionName}" collection with ${docs.total} documents</div>`;
+                        
+                        // Show first document structure if available
+                        if (docs.documents.length > 0) {
+                            const sampleDoc = docs.documents[0];
+                            const keys = Object.keys(sampleDoc).slice(0, 8); // First 8 fields
+                            results.innerHTML += `<div class="info">📋 Sample fields: ${keys.join(', ')}</div>`;
+                        }
+                        found = true;
+                        break;
+                    } catch (error) {
+                        // Collection doesn't exist, continue checking
+                    }
+                }
+                
+                if (!found) {
+                    results.innerHTML += `<div class="error">❌ No collection found for ${categoryName}</div>`;
+                    results.innerHTML += `<div class="info">📝 Tried: ${possibleNames.join(', ')}</div>`;
+                }
+                
+                results.innerHTML += '</div>';
+            }
+            
+            results.innerHTML += '<div class="info"><h3>🎯 Summary:</h3><p>This shows what collections exist in your Appwrite database and how many records each has.</p></div>';
+        }
+    </script>
+</body>
+</html>

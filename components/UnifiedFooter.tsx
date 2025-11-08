@@ -6,6 +6,7 @@ interface UnifiedFooterProps {
     unreadNotifications?: number;
     unreadChats?: number;
     hasNewBookings?: boolean;
+    user?: any; // Add user prop to check if logged in
     onHomeClick?: () => void;
     onNotificationsClick?: () => void;
     onChatClick?: () => void;
@@ -13,6 +14,7 @@ interface UnifiedFooterProps {
     onProfileClick?: () => void;
     onBookingsClick?: () => void;
     onMenuClick?: () => void;
+    onLoginClick?: () => void; // Add login callback
     t: any;
 }
 
@@ -128,6 +130,7 @@ const UnifiedFooter: React.FC<UnifiedFooterProps> = ({
     unreadNotifications = 0,
     unreadChats = 0,
     hasNewBookings = false,
+    user = null,
     onHomeClick = () => {},
     onNotificationsClick = () => {},
     onChatClick = () => {},
@@ -135,6 +138,7 @@ const UnifiedFooter: React.FC<UnifiedFooterProps> = ({
     onProfileClick = () => {},
     onBookingsClick = () => {},
     onMenuClick = () => {},
+    onLoginClick = () => {},
     t
 }) => {
     // Helper function to determine if a button is active
@@ -336,9 +340,9 @@ const UnifiedFooter: React.FC<UnifiedFooterProps> = ({
                     },
                     {
                         key: 'profile',
-                        icon: <UserIcon className={`w-6 h-6 ${getIconColor('profile')}`} isActive={isActive('profile')} />,
-                        label: t?.('footer.profile') || 'Profile',
-                        onClick: onProfileClick,
+                        icon: <UserIcon className={`w-6 h-6 ${user ? getIconColor('profile') : 'text-gray-400'}`} isActive={user && isActive('profile')} />,
+                        label: user ? (t?.('footer.profile') || 'Profile') : (t?.('footer.signIn') || 'Sign In'),
+                        onClick: user ? onProfileClick : onLoginClick,
                         badgeCount: 0
                     }
                 ];

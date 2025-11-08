@@ -733,7 +733,24 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             
         case 'massageTypes': 
  
-            return <MassageTypesPage onBack={handleBackToHome} onNavigate={(page: Page) => setPage(page)} t={t.massageTypes} />;
+            return <MassageTypesPage 
+                onBack={handleBackToHome} 
+                onNavigate={(page: Page) => setPage(page)} 
+                t={t.massageTypes}
+                // AppDrawer props - same as HomePage
+                onMassageJobsClick={() => setPage('massageJobs')}
+                onHotelPortalClick={() => setPage('hotelLogin')}
+                onVillaPortalClick={() => setPage('villaLogin')}
+                onTherapistPortalClick={() => setPage('therapistLogin')}
+                onMassagePlacePortalClick={() => setPage('massagePlaceLogin')}
+                onAgentPortalClick={() => setPage('agentAuth')}
+                onCustomerPortalClick={() => setPage('customerAuth')}
+                onAdminPortalClick={() => setPage('adminLogin')}
+                onTermsClick={() => setPage('serviceTerms')}
+                onPrivacyClick={() => setPage('privacy')}
+                therapists={therapists}
+                places={places}
+            />;
             
         case 'hotelLogin': 
             return <HotelLoginPage 
