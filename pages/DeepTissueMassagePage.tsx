@@ -106,13 +106,24 @@ const DeepTissueMassagePage: React.FC<DeepTissueMassagePageProps> = ({
                 places={places}
             />
             {/* Hero Section */}
-            <div className="bg-gradient-to-r from-red-600 to-purple-600 text-white py-24">
-                <div className="max-w-6xl mx-auto px-4 text-center">
-                    <h1 className="text-6xl font-bold mb-6">Deep Tissue Massage 💪</h1>
-                    <p className="text-2xl text-red-100 mb-4">
+            <div 
+                className="relative text-white py-24 bg-cover bg-center bg-no-repeat"
+                style={{
+                    backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/massage%20deep%20tissue%20indonisea.png?updatedAt=1762573128421)',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat'
+                }}
+            >
+                {/* Clean overlay for better text readability */}
+                <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+                
+                <div className="max-w-6xl mx-auto px-4 text-center relative z-10">
+                    <h1 className="text-6xl font-bold mb-6 drop-shadow-lg">Deep Tissue Massage 💪</h1>
+                    <p className="text-2xl text-white mb-4 drop-shadow-md">
                         Targeted Therapy for Chronic Pain & Muscle Tension
                     </p>
-                    <p className="text-lg text-red-100 mb-8">
+                    <p className="text-lg text-white mb-8 drop-shadow-md">
                         Intense pressure • Trigger point release • Sports injury recovery • Chronic pain relief
                     </p>
                     <button 
