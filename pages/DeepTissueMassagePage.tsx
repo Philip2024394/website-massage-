@@ -152,17 +152,35 @@ const DeepTissueMassagePage: React.FC<DeepTissueMassagePageProps> = ({
                         </p>
                         <div className="grid md:grid-cols-3 gap-6 mt-8">
                             <div className="bg-red-50 rounded-xl p-6 text-center">
-                                <div className="text-5xl mb-3">🎯</div>
+                                <div className="mb-3 flex justify-center">
+                                    <img 
+                                        src="https://ik.imagekit.io/7grri5v7d/treatment-removebg-preview.png?updatedAt=1762573646457" 
+                                        alt="Targeted Treatment" 
+                                        className="w-16 h-16 object-contain"
+                                    />
+                                </div>
                                 <h3 className="font-bold text-gray-900 mb-2">Targeted Treatment</h3>
                                 <p className="text-gray-600 text-sm">Focuses on specific problem areas rather than full body</p>
                             </div>
                             <div className="bg-purple-50 rounded-xl p-6 text-center">
-                                <div className="text-5xl mb-3">💪</div>
+                                <div className="mb-3 flex justify-center">
+                                    <img 
+                                        src="https://ik.imagekit.io/7grri5v7d/wellness-removebg-preview.png?updatedAt=1762573646318" 
+                                        alt="Deep Pressure" 
+                                        className="w-16 h-16 object-contain"
+                                    />
+                                </div>
                                 <h3 className="font-bold text-gray-900 mb-2">Deep Pressure</h3>
                                 <p className="text-gray-600 text-sm">Reaches muscle layers beneath surface tissue</p>
                             </div>
                             <div className="bg-blue-50 rounded-xl p-6 text-center">
-                                <div className="text-5xl mb-3">🔬</div>
+                                <div className="mb-3 flex justify-center">
+                                    <img 
+                                        src="https://ik.imagekit.io/7grri5v7d/wellnesss-removebg-preview.png?updatedAt=1762573646104" 
+                                        alt="Therapeutic" 
+                                        className="w-16 h-16 object-contain"
+                                    />
+                                </div>
                                 <h3 className="font-bold text-gray-900 mb-2">Therapeutic</h3>
                                 <p className="text-gray-600 text-sm">Clinical approach to treating chronic conditions</p>
                             </div>
