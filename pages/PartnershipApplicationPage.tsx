@@ -1,12 +1,46 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Upload, MapPin, Phone, Mail, Globe, Star, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Upload, MapPin, Phone, Mail, Globe, Star, CheckCircle, Menu, Building2, User, Hotel, Home } from 'lucide-react';
+import Header from '../components/Header';
+import UnifiedFooter from '../components/UnifiedFooter';
+import { AppDrawer } from '../components/AppDrawer';
+import { React19SafeWrapper } from '../components/React19SafeWrapper';
 
 interface PartnershipApplicationPageProps {
     onBack: () => void;
     t?: any;
+    // Navigation props for header and drawer
+    onNavigate?: (page: any) => void;
+    onMassageJobsClick?: () => void;
+    onHotelPortalClick?: () => void;
+    onVillaPortalClick?: () => void;
+    onTherapistPortalClick?: () => void;
+    onMassagePlacePortalClick?: () => void;
+    onAgentPortalClick?: () => void;
+    onCustomerPortalClick?: () => void;
+    onAdminPortalClick?: () => void;
+    onTermsClick?: () => void;
+    onPrivacyClick?: () => void;
+    therapists?: any[];
+    places?: any[];
 }
 
-const PartnershipApplicationPage: React.FC<PartnershipApplicationPageProps> = ({ onBack, t }) => {
+const PartnershipApplicationPage: React.FC<PartnershipApplicationPageProps> = ({ 
+    onBack, 
+    t,
+    onNavigate,
+    onMassageJobsClick,
+    onHotelPortalClick,
+    onVillaPortalClick,
+    onTherapistPortalClick,
+    onMassagePlacePortalClick,
+    onAgentPortalClick,
+    onCustomerPortalClick,
+    onAdminPortalClick,
+    onTermsClick,
+    onPrivacyClick,
+    therapists = [],
+    places = []
+}) => {
     const [formData, setFormData] = useState({
         businessName: '',
         businessType: 'massage-place',
@@ -35,12 +69,13 @@ const PartnershipApplicationPage: React.FC<PartnershipApplicationPageProps> = ({
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const businessTypes = [
-        { value: 'massage-place', label: 'Massage Place/Spa' },
-        { value: 'therapist', label: 'Individual Therapist' },
-        { value: 'hotel', label: 'Hotel/Resort' },
-        { value: 'villa', label: 'Villa/Private Retreat' }
+        { value: 'massage-place', label: 'Massage Place/Spa', icon: Building2 },
+        { value: 'therapist', label: 'Individual Therapist', icon: User },
+        { value: 'hotel', label: 'Hotel/Resort', icon: Hotel },
+        { value: 'villa', label: 'Villa/Private Retreat', icon: Home }
     ];
 
     const specialtyOptions = [
