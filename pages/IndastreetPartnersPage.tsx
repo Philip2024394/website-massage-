@@ -282,6 +282,22 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
             specialties: ['Pioneering Wellness', 'High-Tech Spa Treatments', 'Personalized Programs', 'Natural Beauty Locations', 'Sustainability Focus', 'Empathetic Hospitality'],
             addedDate: '2024-11-08',
             websitePreview: 'https://api.screenshotlayer.com/api/capture?access_key=demo&url=sixsenses.com&viewport=1440x900&width=400'
+        },
+        {
+            id: '14',
+            name: 'Majestic Hotel Group',
+            websiteUrl: 'https://majestichotelgroup.com/',
+            websiteTitle: 'Over 100 Years of Luxury Hotel Excellence',
+            description: 'Hotel management company with over 100 years of experience in the tourism industry. Specializing in luxury and lifestyle hotels with unique personalities, integrated into local culture and aesthetics. Comprehensive hotel services including spa facilities, wellness programs, and premium accommodations.',
+            category: 'hotel',
+            location: 'International Hotel Management',
+            phone: '+34 971 123 456',
+            verified: true,
+            rating: 4.8,
+            imageUrl: 'https://ik.imagekit.io/7grri5v7d/majestic%20hotel%20luxury.png?updatedAt=1762570900000',
+            specialties: ['Luxury Hotel Management', 'Lifestyle Hotels', 'Spa & Wellness', '100+ Years Experience', 'Cultural Integration', 'Premium Services'],
+            addedDate: '2024-11-08',
+            websitePreview: 'https://api.screenshotlayer.com/api/capture?access_key=demo&url=majestichotelgroup.com&viewport=1440x900&width=400'
         }
     ];
 
