@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Star, User, CheckCircle, MessageSquare } from 'lucide-react';
 import { reviewService, type Review, type ReviewSummary } from '../lib/reviewService';
+import { getDisplayRating, getDisplayReviewCount, formatRating } from '../utils/ratingUtils';
 import type { Therapist, Place } from '../types';
 
 interface ReviewSystemProps {
@@ -27,8 +28,8 @@ const ReviewSystem: React.FC<ReviewSystemProps> = ({
 }) => {
     const [reviews, setReviews] = useState<Review[]>([]);
     const [reviewSummary, setReviewSummary] = useState<ReviewSummary>({
-        averageRating: provider.rating,
-        totalReviews: provider.reviewCount,
+        averageRating: getDisplayRating(provider.rating, provider.reviewCount),
+        totalReviews: getDisplayReviewCount(provider.reviewCount),
         ratingDistribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
     });
     const [showReviewForm, setShowReviewForm] = useState(false);
@@ -172,11 +173,11 @@ const ReviewSystem: React.FC<ReviewSystemProps> = ({
             <div className="grid md:grid-cols-2 gap-6 mb-6">
                 <div className="text-center">
                     <div className="text-4xl font-bold text-gray-800 mb-2">
-                        {provider.rating.toFixed(1)}
+                        {formatRating(getDisplayRating(provider.rating, provider.reviewCount))}
                     </div>
-                    {renderStars(provider.rating, 'lg')}
+                    {renderStars(getDisplayRating(provider.rating, provider.reviewCount), 'lg')}
                     <div className="text-gray-600 mt-2">
-                        Based on {provider.reviewCount} reviews
+                        Based on {getDisplayReviewCount(provider.reviewCount)} reviews
                     </div>
                 </div>
                 

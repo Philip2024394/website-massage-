@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Fix Pricing Data in Appwrite</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@16.0.0"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .step {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #ffd700;
+        }
+        .step h3 {
+            color: #ffd700;
+            margin-bottom: 15px;
+        }
+        button {
+            background: #ff6b35;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            background: #e55a2b;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success { background: rgba(76, 175, 80, 0.3); color: #4ade80; }
+        .error { background: rgba(244, 67, 54, 0.3); color: #f87171; }
+        .info { background: rgba(33, 150, 243, 0.3); color: #60a5fa; }
+        .warning { background: rgba(255, 193, 7, 0.3); color: #fbbf24; }
+        #output {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Fix Therapist Pricing Data</h1>
+        
+        <div class="step">
+            <h3>Step 1: Add New Attributes to Appwrite</h3>
+            <p>First, go to your Appwrite Console and add these attributes to the <strong>therapists_collection_id</strong> collection:</p>
+            <ul>
+                <li><strong>price60</strong> - String, size 500, not required, default ""</li>
+                <li><strong>price90</strong> - String, size 500, not required, default ""</li>
+                <li><strong>price120</strong> - String, size 500, not required, default ""</li>
+            </ul>
+            <div class="warning">⚠️ Add these attributes in Appwrite Console first, then come back here!</div>
+        </div>
+
+        <div class="step">
+            <h3>Step 2: Convert Existing Data</h3>
+            <p>This will convert your existing JSON pricing data to the new format:</p>
+            <button onclick="scanExistingData()">🔍 Scan Existing Therapist Data</button>
+            <button onclick="fixPricingData()">🔧 Fix All Pricing Data</button>
+            <button onclick="testNewFormat()">🧪 Test New Format</button>
+        </div>
+
+        <div class="step">
+            <h3>Step 3: Verify Results</h3>
+            <button onclick="verifyPricingFix()">✅ Verify All Therapists</button>
+            <button onclick="createTestTherapist()">➕ Create Test Therapist</button>
+        </div>
+
+        <div id="output"></div>
+    </div>
+
+    <script>
+        // Appwrite Configuration
+        const client = new Appwrite.Client()
+            .setEndpoint('https://syd.cloud.appwrite.io/v1')
+            .setProject('68f23b11000d25eb3664');
+
+        const databases = new Appwrite.Databases(client);
+
+        const DATABASE_ID = '68f76ee1000e64ca8d05';
+        const THERAPISTS_COLLECTION_ID = 'therapists_collection_id';
+
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️';
+            output.textContent += `[${timestamp}] ${icon} ${message}\n`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        async function scanExistingData() {
+            document.getElementById('output').textContent = '';
+            log('🔍 Scanning existing therapist data...', 'info');
+            
+            try {
+                const response = await databases.listDocuments(
+                    DATABASE_ID,
+                    THERAPISTS_COLLECTION_ID
+                );
+                
+                log(`Found ${response.documents.length} therapists`, 'success');
+                
+                let needsConversion = 0;
+                let alreadyConverted = 0;
+                let hasProblems = 0;
+                
+                response.documents.forEach((therapist, index) => {
+                    const hasNewFormat = therapist.price60 !== undefined;
+                    const hasOldFormat = therapist.pricing;
+                    
+                    if (hasNewFormat) {
+                        alreadyConverted++;
+                        log(`${index + 1}. ${therapist.name || 'Unnamed'} - ✅ Already has new pricing format`, 'success');
+                    } else if (hasOldFormat) {
+                        needsConversion++;
+                        try {
+                            const pricing = JSON.parse(therapist.pricing);
+                            log(`${index + 1}. ${therapist.name || 'Unnamed'} - 🔄 Needs conversion (${pricing['60']}/${pricing['90']}/${pricing['120']})`, 'warning');
+                        } catch {
+                            hasProblems++;
+                            log(`${index + 1}. ${therapist.name || 'Unnamed'} - ❌ Has broken pricing data`, 'error');
+                        }
+                    } else {
+                        log(`${index + 1}. ${therapist.name || 'Unnamed'} - 📝 No pricing data`, 'info');
+                    }
+                });
+                
+                log(`\n📊 Summary:`, 'info');
+                log(`✅ Already converted: ${alreadyConverted}`, 'success');
+                log(`🔄 Need conversion: ${needsConversion}`, 'warning');
+                log(`❌ Have problems: ${hasProblems}`, 'error');
+                log(`📝 No pricing: ${response.documents.length - alreadyConverted - needsConversion - hasProblems}`, 'info');
+                
+            } catch (error) {
+                log(`❌ Error scanning data: ${error.message}`, 'error');
+            }
+        }
+
+        async function fixPricingData() {
+            log('\n🔧 Starting pricing data conversion...', 'info');
+            
+            try {
+                const response = await databases.listDocuments(
+                    DATABASE_ID,
+                    THERAPISTS_COLLECTION_ID
+                );
+                
+                let converted = 0;
+                let skipped = 0;
+                let errors = 0;
+                
+                for (const therapist of response.documents) {
+                    // Skip if already has new format
+                    if (therapist.price60 !== undefined) {
+                        skipped++;
+                        continue;
+                    }
+                    
+                    // Convert from old JSON format
+                    if (therapist.pricing) {
+                        try {
+                            const pricing = JSON.parse(therapist.pricing);
+                            
+                            // Convert from full price (e.g., 350000) to k format (e.g., "350")
+                            const price60 = pricing['60'] ? Math.round(pricing['60'] / 1000).toString() : '';
+                            const price90 = pricing['90'] ? Math.round(pricing['90'] / 1000).toString() : '';
+                            const price120 = pricing['120'] ? Math.round(pricing['120'] / 1000).toString() : '';
+                            
+                            await databases.updateDocument(
+                                DATABASE_ID,
+                                THERAPISTS_COLLECTION_ID,
+                                therapist.$id,
+                                {
+                                    price60: price60,
+                                    price90: price90,
+                                    price120: price120
+                                }
+                            );
+                            
+                            converted++;
+                            log(`✅ Converted ${therapist.name || therapist.$id}: ${price60}k/${price90}k/${price120}k`, 'success');
+                            
+                        } catch (parseError) {
+                            errors++;
+                            log(`❌ Failed to parse pricing for ${therapist.name || therapist.$id}`, 'error');
+                        }
+                    }
+                }
+                
+                log(`\n🎉 Conversion complete!`, 'success');
+                log(`✅ Converted: ${converted} therapists`, 'success');
+                log(`⏭️ Skipped: ${skipped} (already converted)`, 'info');
+                log(`❌ Errors: ${errors}`, errors > 0 ? 'error' : 'info');
+                
+            } catch (error) {
+                log(`❌ Error during conversion: ${error.message}`, 'error');
+            }
+        }
+
+        async function testNewFormat() {
+            log('\n🧪 Testing new pricing format...', 'info');
+            
+            // Create test therapist with new format
+            const testData = {
+                name: `Test Therapist ${Date.now()}`,
+                email: `test${Date.now()}@example.com`,
+                price60: '250',  // 250k
+                price90: '350',  // 350k  
+                price120: '450', // 450k
+                description: 'Test therapist with new pricing format',
+                location: 'Jakarta Test',
+                isLive: false
+            };
+            
+            try {
+                const result = await databases.createDocument(
+                    DATABASE_ID,
+                    THERAPISTS_COLLECTION_ID,
+                    'unique()',
+                    testData
+                );
+                
+                log(`✅ Created test therapist: ${result.name}`, 'success');
+                log(`   60min: ${result.price60}k`, 'info');
+                log(`   90min: ${result.price90}k`, 'info');
+                log(`  120min: ${result.price120}k`, 'info');
+                log(`   Document ID: ${result.$id}`, 'info');
+                
+                // Test display format
+                const displayPricing = {
+                    "60": result.price60 ? `${result.price60}k` : 'Contact',
+                    "90": result.price90 ? `${result.price90}k` : 'Contact',
+                    "120": result.price120 ? `${result.price120}k` : 'Contact'
+                };
+                
+                log(`📺 Display format: ${JSON.stringify(displayPricing)}`, 'success');
+                
+            } catch (error) {
+                log(`❌ Error creating test therapist: ${error.message}`, 'error');
+            }
+        }
+
+        async function verifyPricingFix() {
+            log('\n✅ Verifying pricing fix...', 'info');
+            
+            try {
+                const response = await databases.listDocuments(
+                    DATABASE_ID,
+                    THERAPISTS_COLLECTION_ID
+                );
+                
+                let withNewFormat = 0;
+                let withoutPricing = 0;
+                let withProblems = 0;
+                
+                response.documents.forEach((therapist, index) => {
+                    const hasNewFormat = therapist.price60 !== undefined || 
+                                        therapist.price90 !== undefined || 
+                                        therapist.price120 !== undefined;                    if (hasNewFormat) {
+                        withNewFormat++;
+                        const pricing = {
+                            "60": therapist.price60 || '',
+                            "90": therapist.price90 || '',
+                            "120": therapist.price120 || ''
+                        };
+                        
+                        const displayFormat = {
+                            "60": pricing["60"] ? `${pricing["60"]}k` : 'Contact',
+                            "90": pricing["90"] ? `${pricing["90"]}k` : 'Contact',
+                            "120": pricing["120"] ? `${pricing["120"]}k` : 'Contact'
+                        };
+                        
+                        log(`${index + 1}. ${therapist.name || 'Unnamed'} - ${JSON.stringify(displayFormat)}`, 'success');
+                    } else {
+                        withoutPricing++;
+                        log(`${index + 1}. ${therapist.name || 'Unnamed'} - No pricing data (will show 'Contact')`, 'warning');
+                    }
+                });
+                
+                log(`\n📊 Final Status:`, 'info');
+                log(`✅ With new pricing format: ${withNewFormat}`, 'success');
+                log(`📝 Without pricing: ${withoutPricing}`, 'warning');
+                log(`\n🎯 Result: Therapists without pricing will show 'Contact' on cards`, 'info');
+                log(`🎯 Therapists with pricing will show correct prices like '250k', '350k', etc.`, 'success');
+                
+            } catch (error) {
+                log(`❌ Error verifying: ${error.message}`, 'error');
+            }
+        }
+
+        async function createTestTherapist() {
+            log('\n➕ Creating test therapist with empty pricing...', 'info');
+            
+            const testData = {
+                name: `Empty Pricing Test ${Date.now()}`,
+                email: `empty${Date.now()}@example.com`,
+                description: 'Test therapist with no pricing (should show Contact)',
+                location: 'Test Location',
+                isLive: true,
+                // No pricing fields - will default to empty
+            };
+            
+            try {
+                const result = await databases.createDocument(
+                    DATABASE_ID,
+                    THERAPISTS_COLLECTION_ID,
+                    'unique()',
+                    testData
+                );
+                
+                log(`✅ Created therapist: ${result.name}`, 'success');
+                log(`   60min: ${result.price60 || 'undefined'} (will show 'Contact')`, 'info');
+                log(`   90min: ${result.price90 || 'undefined'} (will show 'Contact')`, 'info');
+                log(`  120min: ${result.price120 || 'undefined'} (will show 'Contact')`, 'info');
+                log(`   Document ID: ${result.$id}`, 'info');
+                log(`\n🎯 This therapist will show 'Contact' on all pricing until they set prices`, 'warning');
+                
+            } catch (error) {
+                log(`❌ Error creating test therapist: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-run scan on page load
+        window.addEventListener('load', () => {
+            log('🔧 Pricing Data Fix Tool Ready', 'success');
+            log('Click "Scan Existing Data" to start', 'info');
+        });
+    </script>
+</body>
+</html>

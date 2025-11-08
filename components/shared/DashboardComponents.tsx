@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Page } from '../../types/pageTypes';
 import { Star, QrCode, Tag, Building, Menu, Users, Bell, Package, Settings, LogOut, X } from 'lucide-react';
+import { getDisplayRating, getDisplayReviewCount, formatRating } from '../../utils/ratingUtils';
 import { useTranslations } from '../../lib/useTranslations';
 
 interface ProviderCard {
@@ -47,8 +48,8 @@ export const DiscountCard: React.FC<{
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center text-yellow-500">
                         <Star className="w-5 h-5" fill="currentColor" />
-                        <span className="text-sm font-bold ml-1.5">{p.rating}</span>
-                        <span className="text-xs text-gray-500 ml-2">({p.reviewCount} reviews)</span>
+                        <span className="text-sm font-bold ml-1.5">{formatRating(getDisplayRating(p.rating, p.reviewCount))}</span>
+                        <span className="text-xs text-gray-500 ml-2">({getDisplayReviewCount(p.reviewCount)} reviews)</span>
                     </div>
                     <div className="text-sm font-medium px-3 py-1 rounded-full bg-gray-100 text-gray-700 capitalize">
                         {p.type}

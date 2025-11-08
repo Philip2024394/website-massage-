@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, MapPin, Star, Clock, MessageCircle, Phone, Share2, Heart } from 'lucide-react';
 import { AppDrawer } from '../components/AppDrawer';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
+import { getDisplayRating, getDisplayReviewCount, formatRating } from '../utils/ratingUtils';
 import { Therapist, Place } from '../types';
 
 interface TherapistProfilePageProps {
@@ -220,8 +221,8 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                                     <h1 className="text-2xl font-bold text-gray-900">{therapist.name}</h1>
                                     <div className="flex items-center gap-1">
                                         <Star className="w-5 h-5 text-yellow-400 fill-current" />
-                                        <span className="font-semibold">{therapist.rating?.toFixed(1) || '5.0'}</span>
-                                        <span className="text-gray-500">({therapist.reviewCount || 0})</span>
+                                        <span className="font-semibold">{formatRating(getDisplayRating(therapist.rating, therapist.reviewCount))}</span>
+                                        <span className="text-gray-500">({getDisplayReviewCount(therapist.reviewCount)})</span>
                                     </div>
                                 </div>
                                 

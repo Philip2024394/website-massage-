@@ -379,7 +379,13 @@ export const therapistService = {
             if (data.description) mappedData.description = data.description;
             if (data.whatsappNumber) mappedData.whatsappNumber = data.whatsappNumber;
             if (data.location) mappedData.location = data.location;
+            
+            // Handle pricing - support both old JSON format and new separate fields
             if (data.pricing) mappedData.pricing = data.pricing;
+            if (data.price60 !== undefined) mappedData.price60 = data.price60;
+            if (data.price90 !== undefined) mappedData.price90 = data.price90;
+            if (data.price120 !== undefined) mappedData.price120 = data.price120;
+            
             if (data.massageTypes) mappedData.massageTypes = data.massageTypes;
             if (data.coordinates) mappedData.coordinates = data.coordinates;
             if (data.isLive !== undefined) mappedData.isLive = data.isLive;

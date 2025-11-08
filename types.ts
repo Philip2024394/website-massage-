@@ -242,7 +242,11 @@ export interface Therapist {
     mainImage?: string; // Main banner image URL
     description: string;
     status: AvailabilityStatus;
-    pricing: PricingString; // JSON string for Appwrite
+    pricing: PricingString; // JSON string for Appwrite (legacy format)
+    // New separate pricing fields for cleaner data management
+    price60?: string; // 60-minute massage price (stored as "250" for 250k)
+    price90?: string; // 90-minute massage price (stored as "350" for 350k) 
+    price120?: string; // 120-minute massage price (stored as "450" for 450k)
     whatsappNumber: string;
     distance: number;
     rating: number;

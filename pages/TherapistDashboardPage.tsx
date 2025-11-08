@@ -5,6 +5,7 @@ import { AvailabilityStatus, BookingStatus, HotelVillaServiceStatus } from '../t
 import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages, stringifyPricing, stringifyCoordinates, stringifyMassageTypes, stringifyAnalytics } from '../utils/appwriteHelpers';
 import { therapistService, notificationService } from '../lib/appwriteService';
 import { soundNotificationService } from '../utils/soundNotificationService';
+import { getInitialRatingData } from '../utils/ratingUtils';
 import { LogOut, Activity, Menu, Calendar, TrendingUp, Bell } from 'lucide-react';
 import { ColoredProfileIcon, ColoredCalendarIcon, ColoredAnalyticsIcon, ColoredHotelIcon, ColoredTagIcon, ColoredCrownIcon, ColoredDocumentIcon, ColoredGlobeIcon, ColoredHistoryIcon, ColoredCoinsIcon, ColoredBellIcon } from '../components/ColoredIcons';
 import { useTranslations } from '../lib/useTranslations';
@@ -269,7 +270,20 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                     ? parseLanguages(existingTherapist.languages) 
                     : existingTherapist.languages)
                 : []);
-            setPricing(parsePricing(existingTherapist.pricing));
+            // Load pricing - try new format first, fallback to old format
+            const loadedPricing = (() => {
+                // Try new separate fields first
+                if (existingTherapist.price60 !== undefined || existingTherapist.price90 !== undefined || existingTherapist.price120 !== undefined) {
+                    return {
+                        "60": existingTherapist.price60 ? parseInt(existingTherapist.price60) * 1000 : 0,
+                        "90": existingTherapist.price90 ? parseInt(existingTherapist.price90) * 1000 : 0,
+                        "120": existingTherapist.price120 ? parseInt(existingTherapist.price120) * 1000 : 0
+                    };
+                }
+                // Fallback to old JSON format
+                return parsePricing(existingTherapist.pricing);
+            })();
+            setPricing(loadedPricing);
             setDiscountPercentage((existingTherapist as any).discountPercentage || 0);
             
             // Load hotel/villa pricing if exists
@@ -639,7 +653,11 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                 whatsappNumber,
                 yearsOfExperience,
                 isLicensed,
-                pricing: stringifyPricing(pricing),
+                // NEW: Save pricing in both formats for compatibility
+                pricing: stringifyPricing(pricing), // Keep old format for backward compatibility
+                price60: pricing["60"] ? Math.round(pricing["60"] / 1000).toString() : '',
+                price90: pricing["90"] ? Math.round(pricing["90"] / 1000).toString() : '',
+                price120: pricing["120"] ? Math.round(pricing["120"] / 1000).toString() : '',
                 hotelVillaPricing: useSamePricing ? undefined : stringifyPricing(hotelVillaPricing),
                 discountPercentage,
                 location,
@@ -657,6 +675,8 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                 }),
                 massageTypes: stringifyMassageTypes(massageTypes),
                 languages,
+                // Rating system - start new therapists with 4.8 rating
+                ...(!therapist?.rating || therapist?.reviewCount === 0 ? getInitialRatingData() : {}),
                 // Required Appwrite fields that were missing
                 specialization: massageTypes.length > 0 ? massageTypes[0] : 'General Massage',
                 availability: 'full-time', // Default availability

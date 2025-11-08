@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { Place, Analytics } from '../types';
 import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages } from '../utils/appwriteHelpers';
+import { getDisplayRating, getDisplayReviewCount, formatRating } from '../utils/ratingUtils';
 import DistanceDisplay from './DistanceDisplay';
 
 interface MassagePlaceCardProps {
@@ -115,8 +116,8 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                     role="button"
                 >
                     <StarIcon className="w-4 h-4 text-yellow-400"/>
-                    <span className="font-bold text-white text-sm">{(place.rating || 0).toFixed(1)}</span>
-                    <span className="text-xs text-gray-300">({place.reviewCount || 0})</span>
+                    <span className="font-bold text-white text-sm">{formatRating(getDisplayRating(place.rating, place.reviewCount))}</span>
+                    <span className="text-xs text-gray-300">({getDisplayReviewCount(place.reviewCount)})</span>
                 </div>
 
                 {/* Active Discount Badge - Top Right Corner */}

@@ -4,6 +4,7 @@ import { AvailabilityStatus } from '../types';
 import { parsePricing, parseMassageTypes, parseCoordinates, parseLanguages } from '../utils/appwriteHelpers';
 import { notificationService } from '../lib/appwriteService';
 import { getRandomTherapistImage } from '../utils/therapistImageUtils';
+import { getDisplayRating, getDisplayReviewCount, formatRating } from '../utils/ratingUtils';
 import DistanceDisplay from './DistanceDisplay';
 import BookingConfirmationPopup from './BookingConfirmationPopup';
 
@@ -213,13 +214,33 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     const displayStatus = getDisplayStatus(therapistWithStatus);
     const style = statusStyles[displayStatus];
     
-    // Parse Appwrite string fields with fallbacks
-    const pricing = parsePricing(therapist.pricing) || { "60": 0, "90": 0, "120": 0 };
+    // Parse pricing - support both new separate fields and old JSON format
+    const getPricing = () => {
+        // Try new separate fields first (preferred format)
+        if (therapist.price60 !== undefined || therapist.price90 !== undefined || therapist.price120 !== undefined) {
+            return {
+                "60": therapist.price60 ? parseInt(therapist.price60) * 1000 : 0,
+                "90": therapist.price90 ? parseInt(therapist.price90) * 1000 : 0,
+                "120": therapist.price120 ? parseInt(therapist.price120) * 1000 : 0
+            };
+        }
+        
+        // Fallback to old JSON format
+        return parsePricing(therapist.pricing) || { "60": 0, "90": 0, "120": 0 };
+    };
+    
+    const pricing = getPricing();
     
     // Debug logging for pricing issues (only when no pricing data)
-    if (!therapist.pricing || (pricing["60"] === 0 && pricing["90"] === 0 && pricing["120"] === 0)) {
+    const hasAnyPricing = pricing["60"] > 0 || pricing["90"] > 0 || pricing["120"] > 0;
+    if (!hasAnyPricing) {
         console.warn(`⚠️ TherapistCard - ${therapist.name} has no pricing data:`, {
-            rawPricing: therapist.pricing,
+            newFormat: {
+                price60: therapist.price60,
+                price90: therapist.price90,
+                price120: therapist.price120
+            },
+            oldFormat: therapist.pricing,
             parsedPricing: pricing
         });
     }
@@ -347,7 +368,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                             const hasTimeRequirement = therapist.membershipStartDate ? 
                                 new Date().getTime() - new Date(therapist.membershipStartDate).getTime() >= (3 * 30 * 24 * 60 * 60 * 1000) : false;
                             const hasPerformanceRequirement = (therapist.reviewCount ?? 0) >= 30 || (therapist.analytics && JSON.parse(therapist.analytics).bookings >= 90);
-                            const hasRatingRequirement = (therapist.rating ?? 0) >= 4.0;
+                            const hasRatingRequirement = getDisplayRating(therapist.rating, therapist.reviewCount) >= 4.0;
                             
                             return hasTimeRequirement && hasPerformanceRequirement && hasRatingRequirement;
                         })()) && (
@@ -369,8 +390,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     role="button"
                 >
                     <StarIcon className="w-4 h-4 text-yellow-400"/>
-                    <span className="font-bold text-white text-sm">{(therapist.rating || 0).toFixed(1)}</span>
-                    <span className="text-xs text-gray-300">({therapist.reviewCount || 0})</span>
+                    <span className="font-bold text-white text-sm">{formatRating(getDisplayRating(therapist.rating, therapist.reviewCount))}</span>
+                    <span className="text-xs text-gray-300">({getDisplayReviewCount(therapist.reviewCount)})</span>
                 </div>
 
                 {/* Active Discount Badge - Top Right Corner */}
