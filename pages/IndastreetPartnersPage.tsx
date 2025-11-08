@@ -294,7 +294,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
             phone: '+34 971 123 456',
             verified: true,
             rating: 4.8,
-            imageUrl: 'https://ik.imagekit.io/7grri5v7d/majestic%20hotel%20luxury.png?updatedAt=1762570900000',
+            imageUrl: 'https://ik.imagekit.io/7grri5v7d/massage%20itay.png?updatedAt=1762571418409',
             specialties: ['Luxury Hotel Management', 'Lifestyle Hotels', 'Spa & Wellness', '100+ Years Experience', 'Cultural Integration', 'Premium Services'],
             addedDate: '2024-11-08',
             websitePreview: 'https://api.screenshotlayer.com/api/capture?access_key=demo&url=majestichotelgroup.com&viewport=1440x900&width=400'
