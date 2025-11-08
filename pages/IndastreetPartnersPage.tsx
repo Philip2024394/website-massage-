@@ -73,106 +73,10 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
     const [searchTerm, setSearchTerm] = useState('');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    // Enhanced mock data with website previews
+    // Enhanced mock data with website previews - Only partners with custom images
     const mockPartners: PartnerWebsite[] = [
         {
             id: '1',
-            name: 'Serenity Spa Therapy',
-            websiteUrl: 'https://serenityspatherapy.com',
-            websiteTitle: 'Professional Massage & Wellness',
-            description: 'Award-winning spa offering traditional Thai massage, deep tissue therapy, and wellness treatments with certified therapists.',
-            category: 'therapist',
-            location: 'Seminyak, Bali',
-            phone: '+62 361 555 0123',
-            verified: true,
-            rating: 4.9,
-            imageUrl: '/api/placeholder/300/200',
-            specialties: ['Thai Massage', 'Deep Tissue', 'Aromatherapy', 'Hot Stone'],
-            addedDate: '2024-10-15',
-            websitePreview: 'https://api.screenshotlayer.com/api/capture?access_key=demo&url=serenityspatherapy.com&viewport=1440x900&width=400'
-        },
-        {
-            id: '2',
-            name: 'Ocean View Resort & Spa',
-            websiteUrl: 'https://oceanviewresort.com',
-            websiteTitle: 'Luxury Resort with World-Class Spa',
-            description: 'Beachfront luxury resort featuring comprehensive spa services, wellness programs, and world-class amenities.',
-            category: 'hotel',
-            location: 'Nusa Dua, Bali',
-            phone: '+62 361 555 0456',
-            verified: true,
-            rating: 4.8,
-            imageUrl: '/api/placeholder/300/200',
-            specialties: ['Luxury Spa', 'Wellness Programs', 'Beachfront', '5-Star Service'],
-            addedDate: '2024-10-12',
-            websitePreview: 'https://api.screenshotlayer.com/api/capture?access_key=demo&url=oceanviewresort.com&viewport=1440x900&width=400'
-        },
-        {
-            id: '3',
-            name: 'Healing Hands Massage Center',
-            websiteUrl: 'https://healinghandsmassage.com',
-            websiteTitle: 'Therapeutic Massage & Rehabilitation',
-            description: 'Specialized massage center focusing on therapeutic treatments, sports rehabilitation, and wellness recovery programs.',
-            category: 'massage-place',
-            location: 'Ubud, Bali',
-            phone: '+62 361 555 0789',
-            verified: true,
-            rating: 4.7,
-            imageUrl: '/api/placeholder/300/200',
-            specialties: ['Sports Massage', 'Rehabilitation', 'Physical Therapy', 'Wellness Recovery'],
-            addedDate: '2024-10-10',
-            websitePreview: 'https://api.screenshotlayer.com/api/capture?access_key=demo&url=healinghandsmassage.com&viewport=1440x900&width=400'
-        },
-        {
-            id: '4',
-            name: 'Paradise Villa Retreat',
-            websiteUrl: 'https://paradisevillaretreat.com',
-            websiteTitle: 'Private Villa with In-House Spa',
-            description: 'Exclusive private villa offering personalized spa experiences, couple retreats, and holistic wellness programs.',
-            category: 'villa',
-            location: 'Canggu, Bali',
-            phone: '+62 361 555 0321',
-            verified: false,
-            rating: 4.6,
-            imageUrl: '/api/placeholder/300/200',
-            specialties: ['Private Spa', 'Couples Retreat', 'Yoga', 'Holistic Wellness'],
-            addedDate: '2024-10-08',
-            websitePreview: 'https://api.screenshotlayer.com/api/capture?access_key=demo&url=paradisevillaretreat.com&viewport=1440x900&width=400'
-        },
-        {
-            id: '5',
-            name: 'Traditional Balinese Healing',
-            websiteUrl: 'https://balinesehealingcenter.com',
-            websiteTitle: 'Authentic Balinese Massage & Healing',
-            description: 'Traditional Balinese healing center offering authentic massage techniques passed down through generations.',
-            category: 'therapist',
-            location: 'Ubud, Bali',
-            phone: '+62 361 555 0987',
-            verified: true,
-            rating: 4.8,
-            imageUrl: '/api/placeholder/300/200',
-            specialties: ['Balinese Massage', 'Traditional Healing', 'Herbal Therapy'],
-            addedDate: '2024-10-05',
-            websitePreview: 'https://api.screenshotlayer.com/api/capture?access_key=demo&url=balinesehealingcenter.com&viewport=1440x900&width=400'
-        },
-        {
-            id: '6',
-            name: 'Wellness Spa & Treatment Center',
-            websiteUrl: 'https://wellnessspatreatment.com',
-            websiteTitle: 'Complete Wellness & Spa Solutions',
-            description: 'Comprehensive wellness center offering massage therapy, beauty treatments, and holistic health programs.',
-            category: 'massage-place',
-            location: 'Sanur, Bali',
-            phone: '+62 361 555 0654',
-            verified: true,
-            rating: 4.5,
-            imageUrl: '/api/placeholder/300/200',
-            specialties: ['Wellness Programs', 'Beauty Treatments', 'Holistic Health'],
-            addedDate: '2024-10-03',
-            websitePreview: 'https://api.screenshotlayer.com/api/capture?access_key=demo&url=wellnessspatreatment.com&viewport=1440x900&width=400'
-        },
-        {
-            id: '7',
             name: 'Mike Massage Therapist',
             websiteUrl: 'https://www.massagelondonsw1.com/',
             websiteTitle: 'Bespoke Massage Therapy in Central London',
@@ -188,7 +92,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
             websitePreview: 'https://api.screenshotlayer.com/api/capture?access_key=demo&url=massagelondonsw1.com&viewport=1440x900&width=400'
         },
         {
-            id: '8',
+            id: '2',
             name: 'Vabali Spa Berlin',
             websiteUrl: 'https://www.vabali.de/en/berlin/',
             websiteTitle: 'Balinese Wellness Oasis in Berlin',
@@ -204,7 +108,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
             websitePreview: 'https://api.screenshotlayer.com/api/capture?access_key=demo&url=vabali.de&viewport=1440x900&width=400'
         },
         {
-            id: '9',
+            id: '3',
             name: "Let's Relax Spa Xi'an",
             websiteUrl: 'https://letsrelaxspa.com/branch/xi-an-china',
             websiteTitle: 'Modern Contemporary Thai-Chinese Spa',
@@ -220,7 +124,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
             websitePreview: 'https://api.screenshotlayer.com/api/capture?access_key=demo&url=letsrelaxspa.com&viewport=1440x900&width=400'
         },
         {
-            id: '10',
+            id: '4',
             name: 'Mandarin Oriental Wellness & Spa',
             websiteUrl: 'https://www.mandarinoriental.com/en/wellness',
             websiteTitle: 'Award-Winning Luxury Spa & Wellness',
@@ -236,7 +140,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
             websitePreview: 'https://api.screenshotlayer.com/api/capture?access_key=demo&url=mandarinoriental.com&viewport=1440x900&width=400'
         },
         {
-            id: '11',
+            id: '5',
             name: 'Marbella Club Hotel',
             websiteUrl: 'https://www.marbellaclub.com/',
             websiteTitle: 'Mediterranean Beachfront Paradise',
@@ -252,7 +156,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
             websitePreview: 'https://api.screenshotlayer.com/api/capture?access_key=demo&url=marbellaclub.com&viewport=1440x900&width=400'
         },
         {
-            id: '12',
+            id: '6',
             name: 'La Finca Resort',
             websiteUrl: 'https://www.lafincaresort.com/',
             websiteTitle: 'Paraíso Escondido en la Costa Blanca',
@@ -268,7 +172,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
             websitePreview: 'https://api.screenshotlayer.com/api/capture?access_key=demo&url=lafincaresort.com&viewport=1440x900&width=400'
         },
         {
-            id: '13',
+            id: '7',
             name: 'Six Senses Hotels Resorts Spas',
             websiteUrl: 'https://www.sixsenses.com/',
             websiteTitle: 'Pioneering Wellness & Empathetic Hospitality',
@@ -284,7 +188,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
             websitePreview: 'https://api.screenshotlayer.com/api/capture?access_key=demo&url=sixsenses.com&viewport=1440x900&width=400'
         },
         {
-            id: '14',
+            id: '8',
             name: 'Majestic Hotel Group',
             websiteUrl: 'https://majestichotelgroup.com/',
             websiteTitle: 'Over 100 Years of Luxury Hotel Excellence',
