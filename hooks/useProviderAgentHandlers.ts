@@ -277,6 +277,31 @@ export const useProviderAgentHandlers = ({
                 massageTypes: compactJsonString(therapistData.massageTypes, 'massageTypes', '[]'),
                 languages: compactJsonString((therapistData as any).languages || [], 'languages', '[]'),
                 pricing: pricingString,
+                // Individual pricing fields required by database schema (as strings)
+                price60: (() => {
+                    try {
+                        const parsed = JSON.parse(pricingString);
+                        return String(parsed["60"] || parsed[60] || 100);
+                    } catch {
+                        return '100';
+                    }
+                })(),
+                price90: (() => {
+                    try {
+                        const parsed = JSON.parse(pricingString);
+                        return String(parsed["90"] || parsed[90] || 150);
+                    } catch {
+                        return '150';
+                    }
+                })(),
+                price120: (() => {
+                    try {
+                        const parsed = JSON.parse(pricingString);
+                        return String(parsed["120"] || parsed[120] || 200);
+                    } catch {
+                        return '200';
+                    }
+                })(),
                 location: therapistData.location,
                 coordinates: compactJsonString(therapistData.coordinates, 'coordinates', '{"lat":0,"lng":0}'),
                 status: therapistData.status,

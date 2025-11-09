@@ -39,23 +39,8 @@ const getDisplayStatus = (therapist: Therapist): AvailabilityStatus => {
         // ignore parsing errors
     }
 
-    if (therapist.status === AvailabilityStatus.Available) {
-        return AvailabilityStatus.Available;
-    }
-    
-    if (therapist.status === AvailabilityStatus.Busy) {
-        return AvailabilityStatus.Busy;
-    }
-    
-    // Offline status: 80% chance to display as Busy
-    if (therapist.status === AvailabilityStatus.Offline) {
-        // Use therapist ID to create consistent randomization
-        const hash = String(therapist.id).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-        const shouldShowBusy = (hash % 100) < 80; // 80% will be < 80
-        return shouldShowBusy ? AvailabilityStatus.Busy : AvailabilityStatus.Offline;
-    }
-    
-    return therapist.status;
+    // Always return the actual therapist status - no more fake busy display
+    return therapist.status || AvailabilityStatus.Offline;
 };
 
 const WhatsAppIcon: React.FC<{className?: string}> = ({ className }) => (
@@ -210,7 +195,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         status: validStatus
     };
     
-    // Get the display status (may differ from actual status)
+    // Get the display status (now always shows actual status)
     const displayStatus = getDisplayStatus(therapistWithStatus);
     const style = statusStyles[displayStatus];
     

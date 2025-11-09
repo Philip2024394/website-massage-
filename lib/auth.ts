@@ -127,6 +127,9 @@ export const therapistAuth = {
                     whatsappNumber: '',
                     location: '',
                     pricing: JSON.stringify({ '60': 100, '90': 150, '120': 200 }),
+                    price60: '100', // Required string field for 60-minute massage
+                    price90: '150', // Required string field for 90-minute massage
+                    price120: '200', // Required string field for 120-minute massage
                     status: 'Offline',
                     isLive: true, // 🚀 AUTO-ACTIVE: New registrations are automatically live
                     hourlyRate: 100, // Required by Appwrite schema (50-500 range)

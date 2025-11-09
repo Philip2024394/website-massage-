@@ -300,7 +300,9 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
             
             setLocation(existingTherapist.location || '');
             setCoordinates(parseCoordinates(existingTherapist.coordinates));
-            setStatus(existingTherapist.status || AvailabilityStatus.Offline);
+            const therapistStatus = existingTherapist.status || AvailabilityStatus.Offline;
+            console.log('🎯 Loading therapist status:', therapistStatus);
+            setStatus(therapistStatus);
             setIsLicensed((existingTherapist as any).isLicensed || false);
             setLicenseNumber((existingTherapist as any).licenseNumber || '');
             
@@ -452,6 +454,24 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
     useEffect(() => {
         fetchTherapistData();
     }, [fetchTherapistData]);
+
+    // Sync status with prop changes
+    useEffect(() => {
+        if (existingTherapistData?.status) {
+            console.log('🔄 Syncing status from props:', existingTherapistData.status);
+            setStatus(existingTherapistData.status);
+        }
+    }, [existingTherapistData?.status]);
+
+    // Debug status changes
+    useEffect(() => {
+        console.log('💡 Current status state:', status);
+        console.log('💡 Button highlighting should show:', {
+            Available: status === AvailabilityStatus.Available,
+            Busy: status === AvailabilityStatus.Busy, 
+            Offline: status === AvailabilityStatus.Offline
+        });
+    }, [status]);
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -818,14 +838,27 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                         console.log('📋 Found therapist document:', currentTherapist.$id);
                         
                         // Update status using new comprehensive preservation method
-                        await therapistService.update(currentTherapist.$id, {
-                            status: newStatus,
-                            availability: newStatus,
+                        const lowercaseStatus = newStatus.toLowerCase(); // Convert to lowercase for database
+                        const updateResult = await therapistService.update(currentTherapist.$id, {
+                            status: lowercaseStatus,
+                            availability: lowercaseStatus,
                             isOnline: newStatus === 'Available',
                             isLive: true
                         });
                         
-                        console.log('✅ Status saved successfully to document:', currentTherapist.$id);
+                        if (updateResult._fallback) {
+                            console.warn('⚠️ Status update used fallback mode:', updateResult._error);
+                            setToast({ 
+                                message: `Status updated locally (Database: ${updateResult._error})`, 
+                                type: 'warning' 
+                            });
+                        } else {
+                            console.log('✅ Status saved successfully to document:', currentTherapist.$id);
+                            setToast({ 
+                                message: 'Status updated successfully!', 
+                                type: 'success' 
+                            });
+                        }
                         
                         // Call parent handler if provided
                         if (onStatusChange) {
@@ -835,7 +868,10 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                         console.error('❌ Error saving status:', error);
                         // Revert status on error
                         setStatus(status);
-                        alert('Failed to update status. Please try again.');
+                        setToast({ 
+                            message: 'Failed to update status. Please try again.', 
+                            type: 'error' 
+                        });
                     }
                 };
                 
@@ -864,82 +900,17 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                 </div>
                             </div>
 
-                            {/* Membership Timer */}
-                            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200/50">
+                            {/* Free Unlimited Account Banner */}
+                            <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-4 shadow-lg border border-green-200">
                                 <div className="text-center">
-                                    <div className="inline-flex items-center gap-2 mb-3">
-                                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center">
+                                    <div className="inline-flex items-center gap-2">
+                                        <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
                                             <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                             </svg>
                                         </div>
-                                        <h3 className="text-lg font-bold text-gray-900">Membership Status</h3>
+                                        <h3 className="text-lg font-bold text-green-800">Free Unlimited Account</h3>
                                     </div>
-                                    
-                                    {therapist?.activeMembershipDate ? (
-                                        <div className="space-y-2">
-                                            <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200">
-                                                <p className="text-sm font-semibold text-green-800 mb-1">Premium Membership</p>
-                                                <div className="flex items-center justify-center gap-2">
-                                                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                                    <p className="text-xs text-green-700">
-                                                        Expires: {new Date(therapist.activeMembershipDate).toLocaleDateString()}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg p-3 border border-blue-200">
-                                                <p className="text-xs text-blue-800 font-medium">
-                                                    ⏰ {Math.max(0, Math.ceil((new Date(therapist.activeMembershipDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))} days remaining
-                                                </p>
-                                            </div>
-                                            
-                                            {/* Profile Activation Status */}
-                                            <div className={`rounded-lg p-3 border ${
-                                                therapist?.isLive 
-                                                    ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200'
-                                                    : 'bg-gradient-to-r from-red-50 to-orange-50 border-red-200'
-                                            }`}>
-                                                <div className="flex items-center justify-center gap-2">
-                                                    <div className={`w-2 h-2 rounded-full ${
-                                                        therapist?.isLive ? 'bg-green-500 animate-pulse' : 'bg-red-500'
-                                                    }`}></div>
-                                                    <p className={`text-xs font-medium ${
-                                                        therapist?.isLive ? 'text-green-800' : 'text-red-800'
-                                                    }`}>
-                                                        {therapist?.isLive ? '🚀 Profile Active - Auto-Live System' : '⚠️ Profile Inactive (Admin Deactivated)'}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="space-y-2">
-                                            <div className="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl p-4 border border-orange-200">
-                                                <div className="flex items-center justify-center gap-2 mb-2">
-                                                    <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce"></div>
-                                                    <p className="text-sm font-bold text-orange-800">Free Membership Trial</p>
-                                                </div>
-                                                <p className="text-xs text-orange-700">Unlimited access during trial period</p>
-                                            </div>
-                                            
-                                            {/* Profile Activation Status for Free Trial */}
-                                            <div className={`rounded-lg p-3 border ${
-                                                therapist?.isLive 
-                                                    ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200'
-                                                    : 'bg-gradient-to-r from-red-50 to-orange-50 border-red-200'
-                                            }`}>
-                                                <div className="flex items-center justify-center gap-2">
-                                                    <div className={`w-2 h-2 rounded-full ${
-                                                        therapist?.isLive ? 'bg-green-500 animate-pulse' : 'bg-red-500'
-                                                    }`}></div>
-                                                    <p className={`text-xs font-medium ${
-                                                        therapist?.isLive ? 'text-green-800' : 'text-red-800'
-                                                    }`}>
-                                                        {therapist?.isLive ? '🚀 Profile Active - Auto-Live System' : '⚠️ Profile Inactive (Admin Deactivated)'}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
                                 </div>
                             </div>
 

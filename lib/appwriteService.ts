@@ -286,18 +286,31 @@ export const therapistService = {
             );
             console.log('✅ Fetched therapists:', response.documents.length);
             
-            // Add random main images to therapists that don't have one
+            // Add random main images and normalize status to therapists
             const therapistsWithImages = response.documents.map((therapist, index) => {
                 const assignedMainImage = therapist.mainImage || getRandomMainImage(index);
+                
+                // Normalize status from database (lowercase) to enum format (capitalized)
+                const normalizeStatus = (status: string) => {
+                    if (!status) return 'Offline';
+                    const lowercaseStatus = status.toLowerCase();
+                    if (lowercaseStatus === 'available') return 'Available';
+                    if (lowercaseStatus === 'busy') return 'Busy';
+                    if (lowercaseStatus === 'offline') return 'Offline';
+                    return status; // Return as-is if unknown
+                };
                 
                 console.log(`🎭 [Therapist Images] ${therapist.name || 'Unknown'} (ID: ${therapist.id || therapist.$id}):`);
                 console.log(`   - Original mainImage: ${therapist.mainImage || 'None'}`);
                 console.log(`   - Assigned mainImage: ${assignedMainImage}`);
                 console.log(`   - Profile picture: ${therapist.profilePicture || 'None'}`);
+                console.log(`   - Status normalized: ${therapist.status} -> ${normalizeStatus(therapist.status)}`);
                 
                 return {
                     ...therapist,
-                    mainImage: assignedMainImage
+                    mainImage: assignedMainImage,
+                    status: normalizeStatus(therapist.status),
+                    availability: normalizeStatus(therapist.availability || therapist.status)
                 };
             });
             
@@ -324,6 +337,12 @@ export const therapistService = {
     },
     async getByEmail(email: string): Promise<any[]> {
         try {
+            // Check if collection is disabled
+            if (!APPWRITE_CONFIG.collections.therapists) {
+                console.warn('⚠️ Therapist collection is disabled - returning empty array');
+                return [];
+            }
+
             console.log('🔍 Searching for therapist by email:', email);
             const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
@@ -331,9 +350,35 @@ export const therapistService = {
                 [Query.equal('email', email)]
             );
             console.log('📋 Found therapists with email:', response.documents.length);
-            return response.documents;
+            
+            // Normalize status for each therapist found
+            const normalizeStatus = (status: string) => {
+                if (!status) return 'Offline';
+                const lowercaseStatus = status.toLowerCase();
+                if (lowercaseStatus === 'available') return 'Available';
+                if (lowercaseStatus === 'busy') return 'Busy';
+                if (lowercaseStatus === 'offline') return 'Offline';
+                return status; // Return as-is if unknown
+            };
+            
+            const normalizedTherapists = response.documents.map(therapist => ({
+                ...therapist,
+                status: normalizeStatus(therapist.status),
+                availability: normalizeStatus(therapist.availability || therapist.status)
+            }));
+            
+            return normalizedTherapists;
         } catch (error) {
-            console.error('Error finding therapist by email:', error);
+            console.error('❌ Error finding therapist by email:', error);
+            
+            // Provide detailed error context
+            if (error && typeof error === 'object') {
+                const err = error as any;
+                if (err.code === 404) {
+                    console.error('🔍 Collection not found:', APPWRITE_CONFIG.collections.therapists);
+                }
+            }
+            
             return [];
         }
     },
@@ -341,12 +386,24 @@ export const therapistService = {
         try {
             return await account.get();
         } catch (error) {
-            console.error('Error getting current user:', error);
+            console.warn('⚠️ User not authenticated or session expired');
+            // Don't log full error details for auth - it's expected when not logged in
             return null;
         }
     },
     async update(id: string, data: any): Promise<any> {
         try {
+            // Check if therapist collection is disabled
+            if (!APPWRITE_CONFIG.collections.therapists) {
+                console.warn('⚠️ Therapist collection is disabled - using mock update');
+                return { 
+                    ...data, 
+                    $id: id, 
+                    $updatedAt: new Date().toISOString(),
+                    _mockUpdate: true 
+                };
+            }
+
             console.log('🔍 Attempting to update therapist:', {
                 id,
                 databaseId: APPWRITE_CONFIG.databaseId,
@@ -390,10 +447,10 @@ export const therapistService = {
                 status: currentDocument.status || 'Available',
                 availability: currentDocument.availability || 'Available',
                 
-                // Required pricing fields - preserve from current document
-                price60: currentDocument.price60 || 100,
-                price90: currentDocument.price90 || 150,
-                price120: currentDocument.price120 || 200,
+                // Required pricing fields - preserve from current document (convert to strings)
+                price60: String(currentDocument.price60 || 100),
+                price90: String(currentDocument.price90 || 150),
+                price120: String(currentDocument.price120 || 200),
                 
                 // Optional fields - preserve if they exist
                 ...(currentDocument.pricing && { pricing: currentDocument.pricing }),
@@ -415,9 +472,9 @@ export const therapistService = {
             if (data.whatsappNumber) mappedData.whatsappNumber = data.whatsappNumber;
             if (data.location) mappedData.location = data.location;
             if (data.pricing) mappedData.pricing = data.pricing;
-            if (data.price60 !== undefined) mappedData.price60 = data.price60;
-            if (data.price90 !== undefined) mappedData.price90 = data.price90;
-            if (data.price120 !== undefined) mappedData.price120 = data.price120;
+            if (data.price60 !== undefined) mappedData.price60 = String(data.price60);
+            if (data.price90 !== undefined) mappedData.price90 = String(data.price90);
+            if (data.price120 !== undefined) mappedData.price120 = String(data.price120);
             if (data.massageTypes) mappedData.massageTypes = data.massageTypes;
             if (data.coordinates) mappedData.coordinates = data.coordinates;
             if (data.isLive !== undefined) mappedData.isLive = data.isLive;
@@ -446,7 +503,29 @@ export const therapistService = {
             console.error('🔧 Database ID:', APPWRITE_CONFIG.databaseId);
             console.error('🔧 Document ID:', id);
             console.error('🔧 Original data:', data);
-            throw new Error(`Failed to update therapist. ${error instanceof Error ? error.message : 'Unknown error'}`);
+            
+            // Provide more detailed error information
+            if (error && typeof error === 'object') {
+                const err = error as any;
+                if (err.code === 404) {
+                    console.error('🔍 Collection or document not found');
+                    console.error('💡 Suggestion: Verify the collection and document exist');
+                } else if (err.code === 401) {
+                    console.error('🔐 Authentication error - user may not be logged in');
+                } else if (err.code === 403) {
+                    console.error('🚫 Permission denied - check collection permissions');
+                }
+            }
+            
+            // Return a graceful fallback instead of throwing to prevent UI crashes
+            console.warn('🛡️ Returning graceful fallback to prevent UI crash');
+            return { 
+                ...data, 
+                $id: id, 
+                $updatedAt: new Date().toISOString(),
+                _fallback: true,
+                _error: (error instanceof Error ? error.message : 'Unknown error')
+            };
         }
     },
     async delete(id: string): Promise<void> {
