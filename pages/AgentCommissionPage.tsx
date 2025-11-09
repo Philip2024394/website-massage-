@@ -60,16 +60,27 @@ const AgentCommissionPage: React.FC = () => {
     setLoading(true);
     try {
       // Fetch all therapists and places
-      const [therapistsResponse, placesResponse] = await Promise.all([
-        appwriteDatabases.listDocuments(
+      const promises = [];
+      
+      if (APPWRITE_CONFIG.collections.therapists && APPWRITE_CONFIG.collections.therapists !== '') {
+        promises.push(appwriteDatabases.listDocuments(
           APPWRITE_CONFIG.databaseId,
           APPWRITE_CONFIG.collections.therapists
-        ),
-        appwriteDatabases.listDocuments(
+        ));
+      } else {
+        promises.push(Promise.resolve({ documents: [] }));
+      }
+      
+      if (APPWRITE_CONFIG.collections.places && APPWRITE_CONFIG.collections.places !== '') {
+        promises.push(appwriteDatabases.listDocuments(
           APPWRITE_CONFIG.databaseId,
           APPWRITE_CONFIG.collections.places
-        ),
-      ]);
+        ));
+      } else {
+        promises.push(Promise.resolve({ documents: [] }));
+      }
+      
+      const [therapistsResponse, placesResponse] = await Promise.all(promises);
 
       const [year, month] = selectedMonth.split('-');
       const startDate = new Date(parseInt(year), parseInt(month) - 1, 1);

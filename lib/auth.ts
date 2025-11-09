@@ -128,7 +128,7 @@ export const therapistAuth = {
                     location: '',
                     pricing: JSON.stringify({ '60': 100, '90': 150, '120': 200 }),
                     status: 'Offline',
-                    isLive: false,
+                    isLive: true, // 🚀 AUTO-ACTIVE: New registrations are automatically live
                     hourlyRate: 100, // Required by Appwrite schema (50-500 range)
                     therapistId: therapistId, // Required by Appwrite schema
                     hotelId: '', // Required by Appwrite schema - empty for independent therapists

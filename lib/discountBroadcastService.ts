@@ -3,9 +3,9 @@ import { APPWRITE_CONFIG } from './appwrite.config';
 import { Query } from 'appwrite';
 
 const DATABASE_ID = APPWRITE_CONFIG.databaseId;
-const CHAT_ROOMS_COLLECTION_ID = APPWRITE_CONFIG.collections.chatRooms;
-const NOTIFICATIONS_COLLECTION_ID = APPWRITE_CONFIG.collections.notifications;
-const USERS_COLLECTION_ID = APPWRITE_CONFIG.collections.users;
+const CHAT_ROOMS_COLLECTION_ID = APPWRITE_CONFIG.collections.chatRooms || '';
+const NOTIFICATIONS_COLLECTION_ID = APPWRITE_CONFIG.collections.notifications || '';
+const USERS_COLLECTION_ID = APPWRITE_CONFIG.collections.users || '';
 
 /**
  * Broadcast discount notification to all customers who have chatted with the provider

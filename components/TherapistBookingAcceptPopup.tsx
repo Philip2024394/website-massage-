@@ -34,16 +34,20 @@ const TherapistBookingAcceptPopup: React.FC<TherapistBookingAcceptPopupProps> = 
 
     try {
       // Update booking status to 'confirmed'
-      await databases.updateDocument(
-        APPWRITE_CONFIG.databaseId,
-        APPWRITE_CONFIG.collections.bookings,
-        bookingId,
-        {
-          status: 'confirmed',
-          confirmedAt: new Date().toISOString(),
-          confirmedBy: therapistId
-        }
-      );
+      if (APPWRITE_CONFIG.collections.bookings && APPWRITE_CONFIG.collections.bookings !== '') {
+        await databases.updateDocument(
+          APPWRITE_CONFIG.databaseId,
+          APPWRITE_CONFIG.collections.bookings,
+          bookingId,
+          {
+            status: 'confirmed',
+            confirmedAt: new Date().toISOString(),
+            confirmedBy: therapistId
+          }
+        );
+      } else {
+        console.warn('⚠️ Bookings collection disabled - simulating booking confirmation');
+      }
 
       // Update therapist status to Busy (if not already)
       await databases.updateDocument(

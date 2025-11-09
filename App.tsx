@@ -202,10 +202,12 @@ const App = () => {
                     venueMenuId={state.venueMenuId}
                     hotelVillaLogo={null}
                     impersonatedAgent={state.impersonatedAgent}
+                    selectedTherapist={state.selectedTherapist}
                     handleLanguageSelect={handleLanguageSelect}
                     handleEnterApp={navigation?.handleEnterApp || (() => Promise.resolve())}
                     handleSetUserLocation={navigation?.handleSetUserLocation || (() => {})}
                     handleSetSelectedPlace={navigation?.handleSetSelectedPlace || (() => {})}
+                    handleSetSelectedTherapist={(therapist: any) => state.setSelectedTherapist(therapist)}
                     handleLogout={authHandlers?.handleProviderLogout || (() => Promise.resolve())}
                     handleNavigateToTherapistLogin={navigation?.handleNavigateToTherapistLogin || (() => {})}
                     handleNavigateToRegistrationChoice={navigation?.handleNavigateToRegistrationChoice || (() => {})}

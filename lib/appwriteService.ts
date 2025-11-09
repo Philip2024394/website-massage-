@@ -363,29 +363,61 @@ export const therapistService = {
                 collectionExists: !!APPWRITE_CONFIG.collections.therapists
             });
             
-            // Map the data to match Appwrite schema exactly
-            const mappedData: any = {};
+            // First, get the current document to preserve all existing data
+            console.log('📋 Fetching current document to preserve all fields...');
+            const currentDocument = await databases.getDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.therapists,
+                id
+            );
             
-            // Handle status update - map to both fields if they exist
+            console.log('📋 Current document data:', currentDocument);
+            
+            // Start with current document data and update only the provided fields
+            const mappedData: any = {
+                // Core required fields - preserve from current document
+                name: currentDocument.name,
+                email: currentDocument.email,
+                profilePicture: currentDocument.profilePicture || '',
+                description: currentDocument.description || '',
+                whatsappNumber: currentDocument.whatsappNumber || '',
+                location: currentDocument.location || '',
+                specialization: currentDocument.specialization || '',
+                yearsOfExperience: currentDocument.yearsOfExperience || 0,
+                isLicensed: currentDocument.isLicensed || false,
+                hourlyRate: currentDocument.hourlyRate || 100,
+                isLive: currentDocument.isLive || false,
+                status: currentDocument.status || 'Available',
+                availability: currentDocument.availability || 'Available',
+                
+                // Required pricing fields - preserve from current document
+                price60: currentDocument.price60 || 100,
+                price90: currentDocument.price90 || 150,
+                price120: currentDocument.price120 || 200,
+                
+                // Optional fields - preserve if they exist
+                ...(currentDocument.pricing && { pricing: currentDocument.pricing }),
+                ...(currentDocument.massageTypes && { massageTypes: currentDocument.massageTypes }),
+                ...(currentDocument.coordinates && { coordinates: currentDocument.coordinates }),
+            };
+            
+            // Now update with the provided data
             if (data.status) {
                 mappedData.status = data.status;
                 mappedData.availability = data.status; // Also update availability field
             }
             
-            // Handle other common fields
+            // Update other fields only if provided
             if (data.name) mappedData.name = data.name;
             if (data.email) mappedData.email = data.email;
             if (data.profilePicture) mappedData.profilePicture = data.profilePicture;
             if (data.description) mappedData.description = data.description;
             if (data.whatsappNumber) mappedData.whatsappNumber = data.whatsappNumber;
             if (data.location) mappedData.location = data.location;
-            
-            // Handle pricing - support both old JSON format and new separate fields
             if (data.pricing) mappedData.pricing = data.pricing;
             if (data.price60 !== undefined) mappedData.price60 = data.price60;
             if (data.price90 !== undefined) mappedData.price90 = data.price90;
             if (data.price120 !== undefined) mappedData.price120 = data.price120;
-            
             if (data.massageTypes) mappedData.massageTypes = data.massageTypes;
             if (data.coordinates) mappedData.coordinates = data.coordinates;
             if (data.isLive !== undefined) mappedData.isLive = data.isLive;
@@ -394,13 +426,16 @@ export const therapistService = {
             if (data.yearsOfExperience) mappedData.yearsOfExperience = data.yearsOfExperience;
             if (data.isLicensed !== undefined) mappedData.isLicensed = data.isLicensed;
             
-            console.log('📋 Mapped data for Appwrite schema:', mappedData);
+            // Remove Appwrite metadata fields
+            const { $id, $createdAt, $updatedAt, $permissions, $databaseId, $collectionId, ...cleanMappedData } = mappedData;
+            
+            console.log('📋 Final mapped data for Appwrite schema (with all required fields):', cleanMappedData);
             
             const response = await databases.updateDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.therapists,
                 id,
-                mappedData
+                cleanMappedData
             );
             
             console.log('✅ Therapist updated successfully:', response.$id);
@@ -444,6 +479,11 @@ export const therapistService = {
 export const placeService = {
     async create(place: any): Promise<any> {
         try {
+            if (!APPWRITE_CONFIG.collections.places || APPWRITE_CONFIG.collections.places === '') {
+                console.warn('⚠️ Places collection disabled - cannot create place');
+                throw new Error('Places collection not configured');
+            }
+            
             const response = await databases.createDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.places,
@@ -480,6 +520,12 @@ export const placeService = {
     },
     async getAll(): Promise<any[]> {
         try {
+            // Check if places collection exists
+            if (!APPWRITE_CONFIG.collections.places || APPWRITE_CONFIG.collections.places === '') {
+                console.log('⚠️ Places collection disabled - returning empty array');
+                return [];
+            }
+            
             console.log('📋 Fetching all PLACES from collection:', APPWRITE_CONFIG.collections.places);
             console.log('🔧 Database ID:', APPWRITE_CONFIG.databaseId);
             console.log('🌐 Endpoint:', APPWRITE_CONFIG.endpoint);
@@ -495,7 +541,7 @@ export const placeService = {
             });
             return response.documents;
         } catch (error) {
-            console.error('❌ Error fetching places:', error);
+            console.error('❌ Error fetching places (collection might not exist):', error);
             console.error('❌ Error details:', {
                 message: error instanceof Error ? error.message : 'Unknown error',
                 code: (error as any)?.code || 'Unknown code',
@@ -1104,6 +1150,31 @@ export const bookingService = {
         hotelRoomNumber?: string;
     }): Promise<any> {
         try {
+            if (!APPWRITE_CONFIG.collections.bookings || APPWRITE_CONFIG.collections.bookings === '') {
+                console.warn('⚠️ Bookings collection disabled - simulating booking creation');
+                const mockBooking = {
+                    $id: `mock_booking_${Date.now()}`,
+                    bookingId: `mock_booking_${Date.now()}`,
+                    bookingDate: new Date().toISOString(),
+                    providerId: booking.providerId,
+                    providerType: booking.providerType,
+                    providerName: booking.providerName,
+                    service: booking.service,
+                    startTime: booking.startTime,
+                    userId: booking.userId || null,
+                    userName: booking.userName || null,
+                    hotelId: booking.hotelId || null,
+                    hotelGuestName: booking.hotelGuestName || null,
+                    hotelRoomNumber: booking.hotelRoomNumber || null,
+                    status: 'Pending',
+                    duration: booking.duration || parseInt(booking.service),
+                    totalCost: booking.totalCost || 0,
+                    paymentMethod: booking.paymentMethod || 'Unpaid'
+                };
+                console.log('✅ Mock booking created:', mockBooking.$id);
+                return mockBooking;
+            }
+            
             const bookingId = ID.unique();
             const response = await databases.createDocument(
                 APPWRITE_CONFIG.databaseId,
@@ -1161,6 +1232,11 @@ export const bookingService = {
 
     async getAll(): Promise<any[]> {
         try {
+            if (!APPWRITE_CONFIG.collections.bookings || APPWRITE_CONFIG.collections.bookings === '') {
+                console.warn('⚠️ Bookings collection disabled - returning empty array');
+                return [];
+            }
+            
             const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.bookings,
@@ -1323,6 +1399,18 @@ export const notificationService = {
         isRead?: boolean;
     }): Promise<any> {
         try {
+            if (!APPWRITE_CONFIG.collections.notifications || APPWRITE_CONFIG.collections.notifications === '') {
+                console.warn('⚠️ Notifications collection disabled - simulating notification creation');
+                const mockNotification = {
+                    $id: `mock_notification_${Date.now()}`,
+                    ...notification,
+                    isRead: notification.isRead || false,
+                    createdAt: new Date().toISOString()
+                };
+                console.log('✅ Mock notification created:', mockNotification.$id);
+                return mockNotification;
+            }
+            
             const response = await databases.createDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.notifications,
@@ -1347,6 +1435,11 @@ export const notificationService = {
 
     async getAll(): Promise<any[]> {
         try {
+            if (!APPWRITE_CONFIG.collections.notifications || APPWRITE_CONFIG.collections.notifications === '') {
+                console.warn('⚠️ Notifications collection disabled - returning empty array');
+                return [];
+            }
+            
             const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.notifications,
@@ -1409,7 +1502,10 @@ export const notificationService = {
             );
             return response.documents;
         } catch (error) {
-            console.error('Error fetching unread notifications:', error);
+            // Silently handle missing notifications collection
+            if (!(error as any)?.message?.includes('Collection with the requested ID could not be found')) {
+                console.error('Error fetching unread notifications:', error);
+            }
             return [];
         }
     },

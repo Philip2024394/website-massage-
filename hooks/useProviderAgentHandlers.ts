@@ -137,10 +137,12 @@ export const useProviderAgentHandlers = ({
             console.log('  - Status value:', status);
             console.log('  - Status type:', typeof status);
             
-            // Based on your Appwrite data, update both status and availability fields
+            // Based on your Appwrite data, update status, availability, and isOnline fields
+            // Note: All fields are optional in Appwrite to avoid conflicts with existing documents
             const updateData = { 
                 status: status as AvailabilityStatus,
-                availability: status as AvailabilityStatus  // Some therapists use this field
+                availability: status as AvailabilityStatus,  // Backup field for status
+                isOnline: status !== 'Offline'  // Set isOnline based on status (true for Available/Busy, false for Offline)
             };
             console.log('  - Update object:', updateData);
             
@@ -314,7 +316,7 @@ export const useProviderAgentHandlers = ({
                 // Preserve system fields
                 email: existingTherapist?.email || `therapist${therapistId}@indostreet.com`,
                 password: existingTherapist?.password || '',
-                isLive: existingTherapist?.isLive || false,
+                isLive: true, // 🚀 AUTO-ACTIVE: All therapist profiles are automatically live
                 activeMembershipDate: existingTherapist?.activeMembershipDate || new Date().toISOString().split('T')[0]
                 // createdAt: existingTherapist?.createdAt || new Date().toISOString() // Removed - not in collection schema
             };
@@ -366,7 +368,7 @@ export const useProviderAgentHandlers = ({
                     ...updateData,
                     id: loggedInProvider.id,
                     $id: therapistId,
-                    isLive: true, // 🔄 CHANGED: Now goes live immediately
+                    isLive: true, // � AUTO-ACTIVE: All new therapists go live immediately
                     rating: 0,
                     // reviewCount: 0, // Removed - not in collection schema
                     activeMembershipDate: new Date().toISOString().split('T')[0],

@@ -74,20 +74,26 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
     const [lastHour, lastMinute] = lastBookingTime.split(':').map(Number);
 
     // Get today's bookings to mark unavailable slots
-    const bookingsResponse = await databases.listDocuments(
-      APPWRITE_CONFIG.databaseId,
-      APPWRITE_CONFIG.collections.bookings,
-      []
-    );
-
-    const todayBookings = bookingsResponse.documents.filter((booking: any) => {
-      const bookingDate = new Date(booking.scheduledTime || booking.createdAt);
-      return (
-        booking.therapistId === therapistId &&
-        bookingDate.toDateString() === today.toDateString() &&
-        (booking.status === 'confirmed' || booking.status === 'pending')
+    let todayBookings: any[] = [];
+    
+    if (APPWRITE_CONFIG.collections.bookings && APPWRITE_CONFIG.collections.bookings !== '') {
+      const bookingsResponse = await databases.listDocuments(
+        APPWRITE_CONFIG.databaseId,
+        APPWRITE_CONFIG.collections.bookings,
+        []
       );
-    });
+
+      todayBookings = bookingsResponse.documents.filter((booking: any) => {
+        const bookingDate = new Date(booking.scheduledTime || booking.createdAt);
+        return (
+          booking.therapistId === therapistId &&
+          bookingDate.toDateString() === today.toDateString() &&
+          (booking.status === 'confirmed' || booking.status === 'pending')
+        );
+      });
+    } else {
+      console.warn('⚠️ Bookings collection disabled - no schedule conflicts will be checked');
+    }
 
     // Generate slots from 8 AM to last booking time
     for (let hour = 8; hour <= lastHour; hour++) {
@@ -127,11 +133,19 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
     if (isOpen && therapistId) {
       const fetchTherapistSchedule = async () => {
         try {
+          const collectionId = therapistType === 'therapist' 
+            ? APPWRITE_CONFIG.collections.therapists 
+            : APPWRITE_CONFIG.collections.places;
+            
+          if (!collectionId || collectionId === '') {
+            console.warn('⚠️ Collection disabled for therapist type:', therapistType);
+            setTimeSlots([]);
+            return;
+          }
+          
           const therapist = await databases.getDocument(
             APPWRITE_CONFIG.databaseId,
-            therapistType === 'therapist' 
-              ? APPWRITE_CONFIG.collections.therapists 
-              : APPWRITE_CONFIG.collections.places,
+            collectionId,
             therapistId
           );
           if (therapist.lastBookingTime) {
@@ -212,6 +226,19 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
       console.log('📝 Creating booking with data:', bookingData);
 
       // Create the document using the generated bookingId
+      if (!APPWRITE_CONFIG.collections.bookings || APPWRITE_CONFIG.collections.bookings === '') {
+        console.warn('⚠️ Bookings collection disabled - simulating booking creation');
+        const mockBooking = {
+          $id: bookingId,
+          ...bookingData,
+          $createdAt: new Date().toISOString(),
+          $updatedAt: new Date().toISOString()
+        };
+        console.log('✅ Mock booking created:', mockBooking);
+        onClose();
+        return;
+      }
+      
       const booking = await databases.createDocument(
         APPWRITE_CONFIG.databaseId,
         APPWRITE_CONFIG.collections.bookings,

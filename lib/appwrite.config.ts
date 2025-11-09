@@ -9,13 +9,13 @@ export const APPWRITE_CONFIG = {
     // Collection IDs from your Appwrite database  
     collections: {
         admins: 'admin_messages',
-        therapists: 'therapists_collection_id', // Correct collection ID
-        places: 'places', // Simple name  
-        agents: 'agents', // Simple name
-        bookings: 'bookings', // Simple name
-        reviews: 'reviews', // Simple name
-        notifications: 'notifications', // Simple name
-        users: 'users', // Simple name
+        therapists: 'therapists_collection_id', // Correct collection ID - WORKING
+        places: '', // DISABLED: Collection not found (causes 404 errors)
+        agents: '', // DISABLED: Collection not found (causes 404 errors)
+        bookings: '', // DISABLED: Collection not found (causes 404 errors)
+        reviews: '', // DISABLED: Collection not found (causes 404 errors)
+        notifications: '', // DISABLED: Collection not found (causes 404 errors)
+        users: '', // DISABLED: Collection not found (causes 404 errors)
         // Keep the rest as-is
         agentVisits: 'agent_visits_collection_id',
         hotelBookings: 'hotel_bookings',

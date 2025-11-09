@@ -143,6 +143,7 @@ export const useAppState = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [allAdminTherapists, setAllAdminTherapists] = useState<Therapist[]>([]);
   const [allAdminPlaces, setAllAdminPlaces] = useState<Place[]>([]);
+  const [selectedTherapist, setSelectedTherapist] = useState<Therapist | null>(null);
   
   // Provider state - with localStorage persistence
   const [loggedInProvider, _setLoggedInProvider] = useState<LoggedInProvider | null>(() => getFromLocalStorage('app_logged_in_provider'));
@@ -246,6 +247,7 @@ export const useAppState = () => {
     notifications, setNotifications,
     allAdminTherapists, setAllAdminTherapists,
     allAdminPlaces, setAllAdminPlaces,
+    selectedTherapist, setSelectedTherapist,
     
     // Provider
     loggedInProvider, setLoggedInProvider,

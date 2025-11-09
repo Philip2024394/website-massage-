@@ -54,6 +54,9 @@ export default defineConfig({
     minify: 'esbuild',
     chunkSizeWarningLimit: 1000, // Increase limit to reduce warnings
     rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, 'index.html')
+      },
       output: {
         // 🔥 CACHE-BUSTING: Add content hash to filenames
         entryFileNames: 'assets/[name].[hash].js',

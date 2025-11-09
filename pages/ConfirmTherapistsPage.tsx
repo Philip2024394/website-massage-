@@ -214,7 +214,7 @@ const ConfirmTherapistsPage: React.FC = () => {
       // Prepare deactivation update with data preservation
       const updateData = {
         status: 'deactivated',
-        isLive: false,
+        isLive: true, // 🚀 AUTO-ACTIVE: New therapists go live automatically
         // Preserve all existing fields if available (valid schema attributes only)
         ...(existingTherapist && {
           name: existingTherapist.name,

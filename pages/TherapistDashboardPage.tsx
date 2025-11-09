@@ -147,6 +147,8 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                     if (therapistProfiles && therapistProfiles.length > 0) {
                         existingTherapist = therapistProfiles[0];
                         console.log('✅ Found therapist profile by email:', existingTherapist.name);
+                        console.log('🔧 Document ID from profile:', existingTherapist.$id);
+                        console.log('🔧 User Account ID (therapistId prop):', therapistId);
                     } else {
                         console.log('⚠️ No therapist profile found for email:', currentUser.email);
                     }
@@ -255,6 +257,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                     whatsappNumber: !!existingTherapist.whatsappNumber
                 }
             }));
+            
             setTherapist(existingTherapist);
             setName(existingTherapist.name || '');
             setDescription(existingTherapist.description || '');
@@ -357,7 +360,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                 location: '',
                 coordinates: stringifyCoordinates({ lat: 0, lng: 0 }),
                 status: AvailabilityStatus.Offline,
-                isLive: false,
+                isLive: true, // 🚀 AUTO-ACTIVE: New therapists go live automatically
                 rating: 0,
                 reviewCount: 0,
                 activeMembershipDate: new Date().toISOString().split('T')[0],
@@ -407,7 +410,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                 location: '',
                 coordinates: stringifyCoordinates({ lat: 0, lng: 0 }),
                 status: AvailabilityStatus.Offline,
-                isLive: false,
+                isLive: true, // 🚀 AUTO-ACTIVE: New therapists go live automatically (error case)
                 rating: 0,
                 reviewCount: 0,
                 activeMembershipDate: new Date().toISOString().split('T')[0],
@@ -534,7 +537,10 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
 
                 lastNotificationCount = whatsappNotifications.length;
             } catch (error) {
-                console.error('Error checking notifications:', error);
+                // Silently handle missing notifications collection - don't log error
+                if (!(error as any)?.message?.includes('Collection with the requested ID could not be found')) {
+                    console.error('Error checking notifications:', error);
+                }
             }
         };
 
@@ -642,6 +648,16 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
         // Validate profile image requirement
         if (!profilePicture || profilePicture.trim() === '') {
             alert('Profile Image Required!\n\nYou must upload a profile image before saving your profile.\n\nPlease add:\n• A clear front or side view of your face\n• Well-lit, professional appearance\n• Recent photo (within 6 months)\n\nThis helps customers identify you and builds trust.');
+            return;
+        }
+        
+        // Validate required pricing fields (all three must be filled)
+        const hasPrice60 = pricing["60"] && pricing["60"] > 0;
+        const hasPrice90 = pricing["90"] && pricing["90"] > 0;  
+        const hasPrice120 = pricing["120"] && pricing["120"] > 0;
+        
+        if (!hasPrice60 || !hasPrice90 || !hasPrice120) {
+            alert('All Pricing Fields Required!\n\nYou must fill in ALL three pricing options:\n\n• 60 minutes price\n• 90 minutes price\n• 120 minutes price\n\nExample: 250, 350, 450 (numbers only)\n\nThese prices will be displayed on your profile card.');
             return;
         }
         
@@ -789,9 +805,27 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                     // Auto-save status to database after confirmation
                     try {
                         console.log('💾 Auto-saving status:', newStatus);
-                        const therapistIdString = typeof therapistId === 'string' ? therapistId : therapistId.toString();
-                        await therapistService.update(therapistIdString, { status: newStatus });
-                        console.log('✅ Status saved successfully');
+                        
+                        // Get current user and find therapist document
+                        const user = await therapistService.getCurrentUser();
+                        const therapists = await therapistService.getByEmail(user.email);
+                        
+                        if (!therapists || therapists.length === 0) {
+                            throw new Error('Therapist profile not found');
+                        }
+                        
+                        const currentTherapist = therapists[0];
+                        console.log('📋 Found therapist document:', currentTherapist.$id);
+                        
+                        // Update status using new comprehensive preservation method
+                        await therapistService.update(currentTherapist.$id, {
+                            status: newStatus,
+                            availability: newStatus,
+                            isOnline: newStatus === 'Available',
+                            isLive: true
+                        });
+                        
+                        console.log('✅ Status saved successfully to document:', currentTherapist.$id);
                         
                         // Call parent handler if provided
                         if (onStatusChange) {
@@ -872,7 +906,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                                     <p className={`text-xs font-medium ${
                                                         therapist?.isLive ? 'text-green-800' : 'text-red-800'
                                                     }`}>
-                                                        {therapist?.isLive ? '✅ Profile Activated' : '🔒 Awaiting Admin Approval'}
+                                                        {therapist?.isLive ? '🚀 Profile Active - Auto-Live System' : '⚠️ Profile Inactive (Admin Deactivated)'}
                                                     </p>
                                                 </div>
                                             </div>
@@ -900,7 +934,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                                     <p className={`text-xs font-medium ${
                                                         therapist?.isLive ? 'text-green-800' : 'text-red-800'
                                                     }`}>
-                                                        {therapist?.isLive ? '✅ Profile Activated' : '🔒 Awaiting Admin Approval'}
+                                                        {therapist?.isLive ? '🚀 Profile Active - Auto-Live System' : '⚠️ Profile Inactive (Admin Deactivated)'}
                                                     </p>
                                                 </div>
                                             </div>

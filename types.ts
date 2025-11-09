@@ -235,6 +235,7 @@ export interface Analytics {
 
 export interface Therapist {
     id: number | string; // Support both for Appwrite compatibility ($id is string)
+    $id?: string; // Appwrite document ID (added for update operations)
     name: string;
     email: string;
     password?: string;

@@ -110,7 +110,7 @@ const AgentAuthPage: React.FC<AgentAuthPageProps> = ({ onRegister, onLogin, onBa
                     successRate: null,                              // Success rate (0-1)
                     tier: 'Standard',                               // Agent tier
                     lastLogin: null,                                // Last login timestamp
-                    isLive: false,                                  // Live status
+                    isLive: true,                                   // 🚀 AUTO-ACTIVE: Live status (automatically active)
                     activeTherapists: 0,                            // Active therapist count
                     password: '',                                   // Password (managed by Auth)
                     whatsappNumber: null,                           // WhatsApp number

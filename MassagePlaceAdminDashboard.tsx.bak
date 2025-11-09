@@ -211,14 +211,14 @@ const MassagePlaceAdminDashboard: React.FC<MassagePlaceAdminDashboardProps> = ({
                 }
                 
                 setIsLicensed((existingPlace as any).isLicensed || false);
-            } else {
-                console.log('📝 No place data found, starting with empty form');
             }
             
         } catch (error) {
             console.error('⚠️ Error fetching place data:', error);
         } finally {
             setIsLoading(false);
+        }
+            console.log('📝 No place data found, starting with empty form');
         }
     }, [place]);
 
@@ -521,9 +521,28 @@ const MassagePlaceAdminDashboard: React.FC<MassagePlaceAdminDashboardProps> = ({
                             </div>
                         </div>
                         <DiscountSharePage 
-                            providerId={String(place?.id || 'place1')}
-                            providerName={place?.name || ''}
-                            providerType="place"
+                            // Pass place data adapted as therapist data
+                            therapist={{
+                                ...place,
+                                id: place?.id || 'place1',
+                                name: place?.name || '',
+                                description: place?.description || '',
+                                profilePicture: place?.profilePicture || '',
+                                whatsappNumber: place?.whatsappNumber || '',
+                                massageTypes: place?.massageTypes || '[]',
+                                pricing: place?.pricing || '{"60":0,"90":0,"120":0}',
+                                location: place?.location || '',
+                                coordinates: place?.coordinates || '{"lat":0,"lng":0}',
+                                isLive: place?.isLive || false,
+                                rating: place?.rating || 0,
+                                reviewCount: place?.reviewCount || 0,
+                                activeMembershipDate: new Date().toISOString().split('T')[0],
+                                email: `place${place?.id}@indostreet.com`,
+                                distance: 0,
+                                analytics: '{"impressions":0,"views":0,"profileViews":0,"whatsappClicks":0,"bookings":0}',
+                                languages: place?.languages || '[]'
+                            }}
+                            t={t}
                         />
                     </div>
                 );
@@ -552,53 +571,37 @@ const MassagePlaceAdminDashboard: React.FC<MassagePlaceAdminDashboardProps> = ({
                         </div>
                         <TherapistProfileForm
                             // Pass place data adapted as therapist data
-                            // Profile data
-                            profilePicture={profilePicture}
-                            name={name}
-                            yearsOfExperience={yearsOfExperience}
-                            description={description}
-                            whatsappNumber={whatsappNumber}
-                            massageTypes={massageTypes}
-                            languages={languages}
-                            location={location}
-                            coordinates={coordinates}
-                            pricing={pricing}
-                            hotelVillaPricing={hotelVillaPricing}
-                            useSamePricing={useSamePricing}
-                            isLicensed={isLicensed}
-                            licenseNumber=""
-                            
-                            // Setters
-                            setProfilePicture={setProfilePicture}
-                            setName={setName}
-                            setYearsOfExperience={setYearsOfExperience}
-                            setDescription={setDescription}
-                            setWhatsappNumber={setWhatsappNumber}
-                            setMassageTypes={setMassageTypes}
-                            setLanguages={setLanguages}
-                            setLocation={setLocation}
-                            setCoordinates={setCoordinates}
-                            setPricing={setPricing}
-                            setHotelVillaPricing={setHotelVillaPricing}
-                            setUseSamePricing={setUseSamePricing}
-                            setLicenseNumber={() => {}}
-                            
-                            // Modal state
-                            showImageRequirementModal={false}
-                            setShowImageRequirementModal={() => {}}
-                            pendingImageUrl=""
-                            setPendingImageUrl={() => {}}
-                            
-                            // Additional props
-                            therapistId={String(place?.id || 'place1')}
+                            therapist={{
+                                ...place,
+                                id: place?.id || 'place1',
+                                name: place?.name || '',
+                                description: place?.description || '',
+                                profilePicture: place?.profilePicture || '',
+                                whatsappNumber: place?.whatsappNumber || '',
+                                massageTypes: place?.massageTypes || '[]',
+                                pricing: place?.pricing || '{"60":0,"90":0,"120":0}',
+                                location: place?.location || '',
+                                coordinates: place?.coordinates || '{"lat":0,"lng":0}',
+                                isLive: place?.isLive || false,
+                                rating: place?.rating || 0,
+                                reviewCount: place?.reviewCount || 0,
+                                activeMembershipDate: new Date().toISOString().split('T')[0],
+                                email: `place${place?.id}@indostreet.com`,
+                                distance: 0,
+                                analytics: '{"impressions":0,"views":0,"profileViews":0,"whatsappClicks":0,"bookings":0}',
+                                languages: place?.languages || '[]'
+                            }}
+                            onSave={(data) => {
+                                console.log('Saving place profile:', data);
+                                setToast({ message: 'Profile saved successfully!', type: 'success' });
+                            }}
+                            onNavigateToLocationPicker={() => console.log('Navigate to location picker')}
+                            isEditMode={true}
                             t={t}
-                            locationInputRef={locationInputRef}
-                            mapsApiLoaded={mapsApiLoaded}
-                            setToast={setToast}
-                            
-                            // Handlers
-                            handleSave={() => console.log('Save profile')}
-                            handleSetLocation={() => console.log('Set location')}
+                            onLocationChange={(loc, coords) => {
+                                setLocation(loc);
+                                setCoordinates(coords);
+                            }}
                         />
                     </div>
                 );

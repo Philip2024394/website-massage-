@@ -19,6 +19,12 @@ const AcceptBookingPage: React.FC = () => {
       }
 
       try {
+        if (!APPWRITE_CONFIG.collections.bookings || APPWRITE_CONFIG.collections.bookings === '') {
+          setError('Bookings are not available at this time');
+          setLoading(false);
+          return;
+        }
+        
         const bookingDoc = await databases.getDocument(
           APPWRITE_CONFIG.databaseId,
           APPWRITE_CONFIG.collections.bookings,

@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✅ Verify Therapist Status Fields</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@15.0.0"></script>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        .button {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+            margin: 10px;
+        }
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
+        }
+        .button.success {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+        }
+        .results {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 500px;
+            overflow-y: auto;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .step {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border-left: 5px solid #4CAF50;
+        }
+        .success { color: #4caf50; }
+        .error { color: #f44336; }
+        .warning { color: #ff9800; }
+        .info { color: #2196f3; }
+        h1 { text-align: center; margin-bottom: 30px; }
+        .test-section {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✅ Therapist Status Fields Verification</h1>
+        
+        <div class="step">
+            <h3>🎯 Verification Tests</h3>
+            <p>Let's verify that your new attributes are working correctly:</p>
+            <ul>
+                <li>✅ <code>isOnline</code> (Boolean, Required, Default: false)</li>
+                <li>✅ <code>status</code> (Enum: Available/Busy/Offline, Required, Default: Offline)</li>
+                <li>✅ <code>availability</code> (Enum: Available/Busy/Offline, Optional, Default: Offline)</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3>🔍 Test 1: Check Field Structure</h3>
+            <button class="button" onclick="checkFields()">Check New Fields</button>
+        </div>
+
+        <div class="test-section">
+            <h3>🧪 Test 2: Update Therapist Status</h3>
+            <button class="button" onclick="testStatusUpdate('Available')" style="background: linear-gradient(135deg, #4CAF50, #45a049);">Set Available</button>
+            <button class="button" onclick="testStatusUpdate('Busy')" style="background: linear-gradient(135deg, #FF9800, #F57C00);">Set Busy</button>
+            <button class="button" onclick="testStatusUpdate('Offline')" style="background: linear-gradient(135deg, #9E9E9E, #616161);">Set Offline</button>
+        </div>
+
+        <div class="test-section">
+            <h3>🎉 Test 3: Full Status Cycle</h3>
+            <button class="button success" onclick="runFullTest()">Run Complete Test</button>
+        </div>
+
+        <div id="results" class="results" style="display: none;"></div>
+    </div>
+
+    <script>
+        // Appwrite configuration
+        const client = new Appwrite.Client()
+            .setEndpoint('https://syd.cloud.appwrite.io/v1')
+            .setProject('68f23b11000d25eb3664');
+
+        const databases = new Appwrite.Databases(client);
+
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const span = document.createElement('span');
+            span.className = type;
+            span.textContent = message + '\n';
+            results.appendChild(span);
+            results.style.display = 'block';
+            results.scrollTop = results.scrollHeight;
+        }
+
+        function clearResults() {
+            const results = document.getElementById('results');
+            results.innerHTML = '';
+            results.style.display = 'block';
+        }
+
+        async function checkFields() {
+            clearResults();
+            log('🔍 CHECKING THERAPIST STATUS FIELDS...', 'info');
+            log('', 'info');
+            
+            try {
+                // Get therapist documents
+                const response = await databases.listDocuments(
+                    '68f76ee1000e64ca8d05',
+                    'therapists_collection_id',
+                    []
+                );
+                
+                if (response.documents.length === 0) {
+                    log('❌ No therapist documents found!', 'error');
+                    log('Create a therapist profile first.', 'warning');
+                    return;
+                }
+                
+                const therapist = response.documents[0];
+                log(`✅ Found ${response.documents.length} therapist(s)`, 'success');
+                log(`🎯 Testing with: ${therapist.name || therapist.$id}`, 'info');
+                log('', 'info');
+                
+                // Check each status field
+                const expectedFields = {
+                    'isOnline': { type: 'boolean', expected: false },
+                    'status': { type: 'string', expected: 'Offline' },
+                    'availability': { type: 'string', expected: 'Offline' }
+                };
+                
+                let allFieldsExist = true;
+                
+                for (const [field, config] of Object.entries(expectedFields)) {
+                    const value = therapist[field];
+                    
+                    if (value !== undefined) {
+                        log(`✅ ${field}: ${JSON.stringify(value)} (${typeof value})`, 'success');
+                    } else {
+                        log(`❌ ${field}: MISSING!`, 'error');
+                        allFieldsExist = false;
+                    }
+                }
+                
+                if (allFieldsExist) {
+                    log('', 'info');
+                    log('🎉 ALL STATUS FIELDS EXIST!', 'success');
+                    log('Your therapist status system should work now!', 'success');
+                } else {
+                    log('', 'info');
+                    log('🚨 Some fields are still missing!', 'error');
+                    log('Make sure you saved the attributes in Appwrite.', 'warning');
+                }
+                
+            } catch (error) {
+                log('❌ ERROR: ' + error.message, 'error');
+                
+                if (error.message.includes('Collection with the requested ID could not be found')) {
+                    log('', 'info');
+                    log('🚨 COLLECTION NOT FOUND!', 'error');
+                    log('Make sure the collection ID is correct.', 'error');
+                }
+            }
+        }
+
+        async function testStatusUpdate(newStatus) {
+            log(`🧪 TESTING STATUS UPDATE: ${newStatus}`, 'info');
+            log('', 'info');
+            
+            try {
+                // Get first therapist
+                const response = await databases.listDocuments(
+                    '68f76ee1000e64ca8d05',
+                    'therapists_collection_id',
+                    []
+                );
+                
+                if (response.documents.length === 0) {
+                    log('❌ No therapist to test with!', 'error');
+                    return;
+                }
+                
+                const therapist = response.documents[0];
+                log(`🎯 Updating therapist: ${therapist.name || therapist.$id}`, 'info');
+                
+                // Update status fields
+                const updateData = {
+                    status: newStatus,
+                    availability: newStatus,
+                    isOnline: newStatus === 'Available' || newStatus === 'Busy'
+                };
+                
+                log(`📤 Update data: ${JSON.stringify(updateData)}`, 'info');
+                
+                const result = await databases.updateDocument(
+                    '68f76ee1000e64ca8d05',
+                    'therapists_collection_id',
+                    therapist.$id,
+                    updateData
+                );
+                
+                log('✅ STATUS UPDATE SUCCESS!', 'success');
+                log(`✅ New status: ${result.status}`, 'success');
+                log(`✅ New isOnline: ${result.isOnline}`, 'success');
+                log(`✅ New availability: ${result.availability}`, 'success');
+                log('', 'info');
+                
+            } catch (error) {
+                log('❌ STATUS UPDATE FAILED: ' + error.message, 'error');
+                
+                if (error.message.includes('Missing required attribute')) {
+                    log('', 'info');
+                    log('🚨 MISSING REQUIRED FIELD!', 'error');
+                    log('One of the status fields is not properly configured.', 'error');
+                }
+            }
+        }
+
+        async function runFullTest() {
+            clearResults();
+            log('🚀 RUNNING COMPLETE THERAPIST STATUS TEST', 'info');
+            log('==========================================', 'info');
+            log('', 'info');
+            
+            // Test 1: Check fields exist
+            await checkFields();
+            
+            // Wait a moment
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            log('', 'info');
+            log('🔄 Testing status transitions...', 'info');
+            log('', 'info');
+            
+            // Test status transitions
+            const statuses = ['Available', 'Busy', 'Offline'];
+            
+            for (let i = 0; i < statuses.length; i++) {
+                const status = statuses[i];
+                log(`${i + 1}. Testing: ${status}`, 'info');
+                await testStatusUpdate(status);
+                
+                // Wait between tests
+                await new Promise(resolve => setTimeout(resolve, 500));
+                log('', 'info');
+            }
+            
+            log('🎉 COMPLETE TEST FINISHED!', 'success');
+            log('', 'info');
+            log('✅ If all tests passed, your therapist status system is ready!', 'success');
+            log('✅ You can now change status in your therapist dashboard.', 'success');
+            log('✅ Status changes will appear on therapist cards immediately.', 'success');
+        }
+    </script>
+</body>
+</html>

@@ -698,12 +698,13 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
             </div>
 
             <div>
-                <h3 className="text-sm sm:text-md font-medium text-gray-800 mb-1">Set Your Prices (Rp)</h3>
+                <h3 className="text-sm sm:text-md font-medium text-gray-800 mb-1">Set Your Prices (Rp) <span className="text-red-500">*</span></h3>
                 <p className="text-xs text-gray-500 mb-1">These Prices Displayed On The App</p>
+                <p className="text-xs text-red-600 mb-2 font-medium">🔴 Required: All three pricing fields must be filled</p>
                 <p className="text-xs text-orange-600 mb-3 font-medium">⚠️ Format: Enter 1-3 digits only (e.g., 250, 350, 450) - 'k' is auto-added</p>
                 <div className="grid grid-cols-3 gap-2 sm:gap-3">
                     <div>
-                       <label className="block text-xs font-medium text-gray-600 mb-1">{t['60min'] || '60min'}</label>
+                       <label className="block text-xs font-medium text-gray-600 mb-1">{t['60min'] || '60min'} <span className="text-red-500">*</span></label>
                        <div className="relative">
                            <div className="absolute inset-y-0 left-0 pl-2 sm:pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" /></div>
                            <input 
@@ -713,14 +714,15 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                                placeholder="250" 
                                maxLength={3}
                                pattern="[0-9]{1,3}"
-                               title="Enter 1-3 digits (e.g., 250 - k will be added automatically)"
-                               className="block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm" 
+                               title="REQUIRED: Enter 1-3 digits (e.g., 250 - k will be added automatically)"
+                               className="block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 bg-white border-2 border-red-200 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm focus:border-red-400 focus:ring-red-400" 
+                               required
                            />
                         </div>
-                        <p className="text-xs text-gray-400 mt-1">Enter digits only (k auto-added)</p>
+                        <p className="text-xs text-red-500 mt-1 font-medium">Required field</p>
                     </div>
                     <div>
-                       <label className="block text-xs font-medium text-gray-600 mb-1">{t['90min'] || '90min'}</label>
+                       <label className="block text-xs font-medium text-gray-600 mb-1">{t['90min'] || '90min'} <span className="text-red-500">*</span></label>
                          <div className="relative">
                            <div className="absolute inset-y-0 left-0 pl-2 sm:pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" /></div>
                            <input 
@@ -730,14 +732,15 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                                placeholder="350" 
                                maxLength={3}
                                pattern="[0-9]{1,3}"
-                               title="Enter 1-3 digits (e.g., 350 - k will be added automatically)"
-                               className="block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm" 
+                               title="REQUIRED: Enter 1-3 digits (e.g., 350 - k will be added automatically)"
+                               className="block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 bg-white border-2 border-red-200 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm focus:border-red-400 focus:ring-red-400" 
+                               required
                            />
                         </div>
-                        <p className="text-xs text-gray-400 mt-1">Enter digits only (k auto-added)</p>
+                        <p className="text-xs text-red-500 mt-1 font-medium">Required field</p>
                     </div>
                      <div>
-                       <label className="block text-xs font-medium text-gray-600 mb-1">{t['120min'] || '120min'}</label>
+                       <label className="block text-xs font-medium text-gray-600 mb-1">{t['120min'] || '120min'} <span className="text-red-500">*</span></label>
                         <div className="relative">
                            <div className="absolute inset-y-0 left-0 pl-2 sm:pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" /></div>
                            <input 
@@ -747,11 +750,12 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                                placeholder="450" 
                                maxLength={3}
                                pattern="[0-9]{1,3}"
-                               title="Enter 1-3 digits (e.g., 450 - k will be added automatically)"
-                               className="block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm" 
+                               title="REQUIRED: Enter 1-3 digits (e.g., 450 - k will be added automatically)"
+                               required
+                               className="block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 bg-white border-2 border-red-200 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm focus:border-red-400 focus:ring-red-400" 
                            />
                         </div>
-                        <p className="text-xs text-gray-400 mt-1">Enter digits only (k auto-added)</p>
+                        <p className="text-xs text-red-500 mt-1 font-medium">Required field</p>
                     </div>
                 </div>
             </div>
@@ -892,29 +896,20 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                     {t.saveButton || 'Save Profile'}
                 </Button>
                 
-                {/* Go Live Button - Only show when profile is ready but not live */}
-                {isProfileReadyForSave && !isProfileLive && handleGoLive && (
-                    <div className="space-y-2">
-                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4">
-                            <div className="flex items-center gap-2 mb-2">
-                                <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-                                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                    </svg>
-                                </div>
-                                <h3 className="font-semibold text-green-800">Profile Ready!</h3>
+                {/* Auto-Active Message - Show when profile is saved (automatically live) */}
+                {isProfileReadyForSave && (
+                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                            <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center animate-pulse">
+                                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
                             </div>
-                            <p className="text-sm text-green-700 mb-3">
-                                Your profile is complete and ready to go live. Activate it to start receiving bookings from customers.
-                            </p>
+                            <h3 className="font-semibold text-green-800">Profile is Live!</h3>
                         </div>
-                        
-                        <Button 
-                            onClick={handleGoLive}
-                            className="w-full py-3 text-base font-semibold bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white"
-                        >
-                            🚀 Go Live & Start Receiving Bookings
-                        </Button>
+                        <p className="text-sm text-green-700">
+                            🚀 Your profile is automatically active and customers can book your services! You can set your availability status in the Status tab.
+                        </p>
                     </div>
                 )}
                 

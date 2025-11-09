@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Upload, MapPin, Phone, Mail, Globe, Star, CheckCircle, Menu, Building2, User, Hotel, Home } from 'lucide-react';
-import Header from '../components/Header';
 import UnifiedFooter from '../components/UnifiedFooter';
 import { AppDrawer } from '../components/AppDrawer';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
@@ -92,13 +91,17 @@ const PartnershipApplicationPage: React.FC<PartnershipApplicationPageProps> = ({
         
         if (name.includes('.')) {
             const [parent, child] = name.split('.');
-            setFormData(prev => ({
-                ...prev,
-                [parent]: {
-                    ...prev[parent as keyof typeof prev],
-                    [child]: value
-                }
-            }));
+            setFormData(prev => {
+                const parentObj = prev[parent as keyof typeof prev];
+                const validParentObj = (typeof parentObj === 'object' && parentObj !== null) ? parentObj as Record<string, any> : {};
+                return {
+                    ...prev,
+                    [parent]: {
+                        ...validParentObj,
+                        [child]: value
+                    }
+                };
+            });
         } else if (type === 'checkbox') {
             const target = e.target as HTMLInputElement;
             setFormData(prev => ({

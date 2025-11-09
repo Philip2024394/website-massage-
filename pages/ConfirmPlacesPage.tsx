@@ -119,7 +119,7 @@ const ConfirmPlacesPage: React.FC = () => {
     setUpdatingId(placeId);
     try {
       await placeService.update(placeId, {
-        isLive: false,
+        isLive: true, // 🚀 AUTO-ACTIVE: New places go live automatically
       });
 
       await fetchPlaces();

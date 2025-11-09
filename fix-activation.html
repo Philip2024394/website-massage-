@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Fix Therapist Activation</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@15.0.0"></script>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 20px;
+        }
+        .button {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        .results {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success { color: #4caf50; }
+        .error { color: #f44336; }
+        .warning { color: #ff9800; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Fix Therapist Activation</h1>
+        <p>This will set all therapists to <code>isLive: true</code> so they can update their status.</p>
+        
+        <button class="button" onclick="runFix()">✅ Activate All Therapists</button>
+        
+        <div id="results" class="results" style="display: none;"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = message;
+            results.appendChild(div);
+            results.style.display = 'block';
+            results.scrollTop = results.scrollHeight;
+        }
+
+        async function runFix() {
+            document.getElementById('results').innerHTML = '';
+            log('🚀 EMERGENCY FIX - Auto-Activate All Therapists', 'warning');
+            log('🔧 Starting therapist activation fix...', 'info');
+            
+            try {
+                const client = new Appwrite.Client()
+                    .setEndpoint('https://syd.cloud.appwrite.io/v1')
+                    .setProject('68f23b11000d25eb3664');
+
+                const databases = new Appwrite.Databases(client);
+
+                log('📋 Fetching all therapists...', 'info');
+                const response = await databases.listDocuments(
+                    '68f76ee1000e64ca8d05',
+                    'therapists_collection_id',
+                    []
+                );
+
+                log(`✅ Found ${response.documents.length} therapists`, 'success');
+                log('', 'info');
+
+                let activatedCount = 0;
+                for (const therapist of response.documents) {
+                    const name = therapist.name || therapist.$id;
+                    
+                    if (!therapist.isLive) {
+                        log(`🔧 Activating: ${name}`, 'warning');
+                        
+                        await databases.updateDocument(
+                            '68f76ee1000e64ca8d05',
+                            'therapists_collection_id',
+                            therapist.$id,
+                            { 
+                                isLive: true,
+                                status: 'Offline',
+                                isOnline: false
+                            }
+                        );
+                        
+                        log(`✅ ${name} - ACTIVATED!`, 'success');
+                        activatedCount++;
+                    } else {
+                        log(`✅ ${name} - Already active`, 'success');
+                    }
+                }
+
+                log('', 'info');
+                log('🎉 ACTIVATION COMPLETE!', 'success');
+                log(`📊 Activated ${activatedCount} therapists`, 'success');
+                log(`📊 Total active: ${response.documents.length} therapists`, 'success');
+                log('', 'info');
+                log('✅ All therapists can now update their status!', 'success');
+                log('🧪 Test: Go to therapist status page and try changing status', 'warning');
+
+            } catch (error) {
+                log('❌ Fix failed: ' + error.message, 'error');
+                
+                if (error.message.includes('Collection with the requested ID could not be found')) {
+                    log('🚨 Collection ID issue - check if "therapists_collection_id" is correct', 'error');
+                }
+            }
+        }
+    </script>
+</body>
+</html>
