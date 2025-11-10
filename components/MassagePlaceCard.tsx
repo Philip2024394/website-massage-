@@ -462,10 +462,10 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
             
             {/* Refer Friend Modal */}
             {showReferModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setShowReferModal(false)}>
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[90vw] sm:max-w-md p-3 sm:p-5 animate-fadeIn" onClick={(e) => e.stopPropagation()}>
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4" onClick={() => setShowReferModal(false)}>
+                    <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-[95vw] max-h-[90vh] sm:max-w-sm md:max-w-md p-3 sm:p-4 md:p-5 animate-fadeIn overflow-y-auto" onClick={(e) => e.stopPropagation()}>
                         <div className="text-center">
-                            <div className="w-32 h-32 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4 overflow-hidden relative">
+                            <div className="w-24 h-24 sm:w-32 sm:h-32 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 overflow-hidden relative">
                                 {/* Falling Coins Animation */}
                                 {[...Array(6)].map((_, i) => (
                                     <img

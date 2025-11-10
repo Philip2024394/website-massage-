@@ -318,7 +318,7 @@ const HomePage: React.FC<HomePageProps> = ({
         const filterByLocation = async () => {
             const locationToUse = autoDetectedLocation || userLocation;
             if (!locationToUse) {
-                // No location available - show all therapists/places
+                // No location available, show all therapists
                 setNearbyTherapists(therapists);
                 setNearbyPlaces(places);
                 return;
@@ -333,6 +333,7 @@ const HomePage: React.FC<HomePageProps> = ({
                     : autoDetectedLocation;
 
                 if (!coords) {
+                    // No coordinates available, show all therapists
                     setNearbyTherapists(therapists);
                     setNearbyPlaces(places);
                     return;
@@ -345,7 +346,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 console.log(`📍 Found ${nearbyTherapistsResult.length} nearby therapists`);
                 console.log(`📍 Found ${nearbyPlacesResult.length} nearby places`);
                 
-                // If no nearby providers found, fallback to all providers
+                // If no nearby providers found, fallback to all therapists
                 setNearbyTherapists(nearbyTherapistsResult.length > 0 ? nearbyTherapistsResult : therapists);
                 setNearbyPlaces(nearbyPlacesResult.length > 0 ? nearbyPlacesResult : places);
                 

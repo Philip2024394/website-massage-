@@ -1,4 +1,5 @@
 @import './styles/device-specific.css';
+@import './src/styles/mobile-animations.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

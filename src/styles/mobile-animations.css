@@ -1,0 +1,91 @@
+/* Mobile Animation Optimization - Slower animations for better mobile experience */
+
+/* Custom slower pulse animation for mobile */
+@media (max-width: 768px) {
+  .animate-pulse {
+    animation: mobile-pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite !important;
+  }
+  
+  .animate-bounce {
+    animation: mobile-bounce 2s infinite !important;
+  }
+  
+  .animate-ping {
+    animation: mobile-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite !important;
+  }
+}
+
+/* Custom keyframes for slower mobile animations */
+@keyframes mobile-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes mobile-bounce {
+  0%, 100% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: translateY(-25%);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+@keyframes mobile-ping {
+  75%, 100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+/* Additional mobile-specific animation controls */
+@media (max-width: 768px) {
+  /* Slow down coin fall animations on mobile */
+  .animate-coin-fall-1,
+  .animate-coin-fall-2,
+  .animate-coin-fall-3,
+  .animate-coin-fall-4,
+  .animate-coin-fall-5,
+  .animate-coin-fall-6 {
+    animation-duration: 4s, 3s !important;
+  }
+  
+  /* Reduce animation frequency for status indicators */
+  .status-indicator.animate-pulse {
+    animation: mobile-pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite !important;
+  }
+  
+  /* Slower notification badge animations */
+  .notification-badge.animate-bounce {
+    animation: mobile-bounce 3s infinite !important;
+  }
+  
+  /* Disable overly aggressive animations on mobile */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-pulse,
+    .animate-bounce,
+    .animate-ping {
+      animation: none !important;
+    }
+  }
+}
+
+/* Desktop keeps original animation speeds */
+@media (min-width: 769px) {
+  .animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  .animate-bounce {
+    animation: bounce 1s infinite;
+  }
+  
+  .animate-ping {
+    animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+}

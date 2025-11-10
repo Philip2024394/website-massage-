@@ -312,7 +312,7 @@ const Footer: React.FC<FooterProps> = ({
     // Therapist Footer - Enhanced with prominent notifications
     if (userRole === 'therapist' || userRole === 'place') {
         return (
-            <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40">
+            <footer className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-orange-300 shadow-2xl z-50" style={{minHeight: '64px'}}>
                 <div className="flex justify-around items-center h-16 max-w-md mx-auto">
                     {/* Home */}
                     <button 

@@ -134,10 +134,28 @@ const renderDashboardPages = (page: Page, props: AppRouterProps) => {
 
     switch (page) {
         case 'therapistDashboard':
-            // 🔥 FIX: Pass existing therapist data from home page instead of refetching
+            // 🔥 FIX: Find therapist by document ID (now passed from login)
             const existingTherapist = therapists.find(t => 
-                t.id === loggedInProvider?.id || t.$id === loggedInProvider?.id
+                t.id === loggedInProvider?.id || 
+                t.$id === loggedInProvider?.id ||
+                t.documentId === loggedInProvider?.id ||
+                t.therapistId === loggedInProvider?.id
             );
+            
+            console.log('🎯 AppRouter: Searching for therapist in homepage data:', {
+                loggedInProviderId: loggedInProvider?.id,
+                totalTherapistsInArray: therapists.length,
+                searchResult: !!existingTherapist,
+                foundTherapistName: existingTherapist?.name,
+                foundTherapistId: existingTherapist?.$id || existingTherapist?.id,
+                allAvailableIds: therapists.slice(0, 3).map(t => ({ 
+                    name: t.name, 
+                    id: t.id, 
+                    $id: t.$id, 
+                    documentId: t.documentId,
+                    therapistId: t.therapistId 
+                }))
+            });
             return <TherapistDashboardPage 
                 onSave={handleSaveTherapist}
                 onLogout={handleProviderLogout}
@@ -578,20 +596,6 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             
         case 'providerAuth': 
             return providerAuthInfo && <UnifiedLoginPage /> || null;
-            
-        case 'therapistDashboard': 
-            return loggedInProvider?.type === 'therapist' ? <TherapistDashboardPage 
-                onSave={handleSaveTherapist}
-                onLogout={handleProviderLogout}
-                onNavigateToNotifications={handleNavigateToNotifications}
-                onUpdateBookingStatus={handleUpdateBookingStatus}
-                onStatusChange={async (status: AvailabilityStatus) => {
-                    await handleTherapistStatusChange(status as string);
-                }}
-                therapistId={loggedInProvider.id}
-                notifications={notifications.filter(n => n.providerId === loggedInProvider.id)}
-                t={t.providerDashboard}
-            /> : <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t?.registrationChoice || {}} />;
             
         case 'placeDashboard': {
             console.log('🏢 PlaceDashboard Case - loggedInProvider:', loggedInProvider);

@@ -139,9 +139,14 @@ export const useProviderAgentHandlers = ({
             
             // Based on your Appwrite data, update status, availability, and isOnline fields
             // Note: All fields are optional in Appwrite to avoid conflicts with existing documents
+            
+            // Convert status to proper format for database fields
+            const normalizedStatus = status.toLowerCase(); // status field expects lowercase
+            const capitalizedStatus = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase(); // availability expects capitalized
+            
             const updateData = { 
-                status: status as AvailabilityStatus,
-                availability: status as AvailabilityStatus,  // Backup field for status
+                status: normalizedStatus, // Database expects lowercase: 'available', 'busy', 'offline'
+                availability: capitalizedStatus as AvailabilityStatus,  // Backup field expects capitalized: 'Available', 'Busy', 'Offline'
                 isOnline: status !== 'Offline'  // Set isOnline based on status (true for Available/Busy, false for Offline)
             };
             console.log('  - Update object:', updateData);
@@ -304,7 +309,7 @@ export const useProviderAgentHandlers = ({
                 })(),
                 location: therapistData.location,
                 coordinates: compactJsonString(therapistData.coordinates, 'coordinates', '{"lat":0,"lng":0}'),
-                status: therapistData.status,
+                status: 'available', // AUTO-LIVE SYSTEM: All new therapists start as available
                 rating: existingTherapist?.rating || 0,
                 // reviewCount removed - not in collection schema
                 isLicensed: (therapistData as any).isLicensed || false,
@@ -325,7 +330,7 @@ export const useProviderAgentHandlers = ({
                         return 'General Massage';
                     }
                 })(),
-                availability: 'full-time', // Required field
+                availability: 'Available', // AUTO-LIVE SYSTEM: All new therapists start as Available
                 hourlyRate: (() => {
                     // Calculate hourly rate from pricing (use 60min price or default)
                     try {
@@ -341,7 +346,9 @@ export const useProviderAgentHandlers = ({
                 // Preserve system fields
                 email: existingTherapist?.email || `therapist${therapistId}@indostreet.com`,
                 password: existingTherapist?.password || '',
-                isLive: true, // 🚀 AUTO-ACTIVE: All therapist profiles are automatically live
+                // AUTO-LIVE SYSTEM: All new therapists start as live and available
+                isLive: true, // Profile is live and visible to customers
+                isOnline: true, // Mark as online
                 activeMembershipDate: existingTherapist?.activeMembershipDate || new Date().toISOString().split('T')[0]
                 // createdAt: existingTherapist?.createdAt || new Date().toISOString() // Removed - not in collection schema
             };
@@ -689,9 +696,18 @@ export const useProviderAgentHandlers = ({
     
         try {
             const agentId = loggedInAgent.$id || loggedInAgent.id?.toString() || loggedInAgent.agentId;
-            await agentService.update(agentId, agentData);
             
-            const updatedAgent = { ...loggedInAgent, ...agentData };
+            // Filter out any invalid fields that aren't part of Agent schema
+            const { status, availability, ...validAgentData } = agentData as any;
+            
+            // Log if invalid fields were filtered out
+            if (status || availability) {
+                console.warn('⚠️ Filtered out invalid Agent fields:', { status, availability });
+            }
+            
+            await agentService.update(agentId, validAgentData);
+            
+            const updatedAgent = { ...loggedInAgent, ...validAgentData };
             setLoggedInAgent(updatedAgent);
             localStorage.setItem('loggedInAgent', JSON.stringify(updatedAgent));
             showToast('Profile saved successfully!', 'success');

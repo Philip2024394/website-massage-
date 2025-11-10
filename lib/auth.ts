@@ -130,14 +130,14 @@ export const therapistAuth = {
                     price60: '100', // Required string field for 60-minute massage
                     price90: '150', // Required string field for 90-minute massage
                     price120: '200', // Required string field for 120-minute massage
-                    status: 'Offline',
+                    status: 'available', // Valid enum: available, busy, offline
                     isLive: true, // 🚀 AUTO-ACTIVE: New registrations are automatically live
                     hourlyRate: 100, // Required by Appwrite schema (50-500 range)
                     therapistId: therapistId, // Required by Appwrite schema
                     hotelId: '', // Required by Appwrite schema - empty for independent therapists
                     isLicensed: false, // Required by Appwrite schema - license verification
                     specialization: 'General Massage', // Required by actual Appwrite collection
-                    availability: 'full-time', // Required by actual Appwrite collection
+                    availability: 'Available', // Valid enum: Available, Busy, Offline
                     
                     // Optional fields with defaults per schema
                     description: '',

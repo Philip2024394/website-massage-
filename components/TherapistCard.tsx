@@ -7,6 +7,7 @@ import { getRandomTherapistImage } from '../utils/therapistImageUtils';
 import { getDisplayRating, getDisplayReviewCount, formatRating } from '../utils/ratingUtils';
 import DistanceDisplay from './DistanceDisplay';
 import BookingConfirmationPopup from './BookingConfirmationPopup';
+import BusyCountdownTimer from './BusyCountdownTimer';
 
 interface TherapistCardProps {
     therapist: Therapist;
@@ -24,9 +25,16 @@ interface TherapistCardProps {
 }
 
 // Utility function to determine display status
-// 80% of offline therapists will display as busy
 const getDisplayStatus = (therapist: Therapist): AvailabilityStatus => {
-    // If therapist has an explicit bookedUntil timestamp in the future, show Busy
+    // Check if therapist has a busyUntil timestamp and is still busy
+    if (therapist.busyUntil) {
+        const busyUntil = new Date(therapist.busyUntil);
+        if (!isNaN(busyUntil.getTime()) && busyUntil > new Date()) {
+            return AvailabilityStatus.Busy;
+        }
+    }
+    
+    // Legacy: If therapist has an explicit bookedUntil timestamp in the future, show Busy
     try {
         const bookedUntil: any = (therapist as any).bookedUntil;
         if (bookedUntil) {
@@ -39,7 +47,7 @@ const getDisplayStatus = (therapist: Therapist): AvailabilityStatus => {
         // ignore parsing errors
     }
 
-    // Always return the actual therapist status - no more fake busy display
+    // Return the actual therapist status
     return therapist.status || AvailabilityStatus.Offline;
 };
 
@@ -67,7 +75,7 @@ const StarIcon: React.FC<{className?: string}> = ({ className }) => (
 const statusStyles: { [key in AvailabilityStatus]: { text: string; bg: string; dot: string } } = {
     [AvailabilityStatus.Available]: { text: 'text-green-700', bg: 'bg-green-100', dot: 'bg-green-500' },
     [AvailabilityStatus.Busy]: { text: 'text-yellow-700', bg: 'bg-yellow-100', dot: 'bg-yellow-500' },
-    [AvailabilityStatus.Offline]: { text: 'text-gray-700', bg: 'bg-gray-100', dot: 'bg-gray-500' },
+    [AvailabilityStatus.Offline]: { text: 'text-red-700', bg: 'bg-red-100', dot: 'bg-red-500' },
 };
 
 const TherapistCard: React.FC<TherapistCardProps> = ({ 
@@ -231,7 +239,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     }
     const massageTypes = parseMassageTypes(therapist.massageTypes) || [];
     
-    // Helper function to format price in "234k" format (lowercase k)
+    // Helper function to format price in 4-character format: "280k"
     const formatPrice = (price: number | string): string => {
         const numPrice = typeof price === 'string' ? parseFloat(price) : price;
         
@@ -239,27 +247,17 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             return "Contact"; // Show "Contact" instead of "0k" when no price is set
         }
         
-        // 🔧 FIX: Ensure 3-digit format (150k, 200k, 250k)
+        // Convert to thousands and ensure 3-digit format (100-999)
         let priceInThousands = Math.round(numPrice / 1000);
         
-        // If the price is less than 100k, it's probably entered incorrectly
-        // Convert common incorrect formats to proper 3-digit format
+        // Ensure 3-digit display (100k-999k range)
         if (priceInThousands < 100) {
-            // If someone entered 22 (meaning 220k), convert to 220
-            if (priceInThousands >= 10 && priceInThousands < 100) {
-                priceInThousands = priceInThousands * 10;
-            }
-            // If someone entered single digit (like 2 meaning 200k), convert to 200
-            else if (priceInThousands < 10 && priceInThousands > 0) {
-                priceInThousands = priceInThousands * 100;
-            }
+            priceInThousands = 100; // Minimum 100k
+        } else if (priceInThousands > 999) {
+            priceInThousands = 999; // Maximum 999k for 4-char display
         }
         
-        // Ensure minimum reasonable price (100k minimum for massage services)
-        if (priceInThousands < 100) {
-            priceInThousands = 150; // Default to 150k if too low
-        }
-        
+        // Always return exactly 4 characters: 3 digits + "k"
         return `${priceInThousands}k`;
     };
     
@@ -314,11 +312,19 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     return (
         <div className="bg-white rounded-xl shadow-md overflow-visible relative">
             {/* Main Image Banner */}
-            <div className="h-48 w-full bg-gradient-to-r from-orange-400 to-orange-600 overflow-visible relative rounded-t-xl">
+            <div className={`h-48 w-full bg-gradient-to-r from-orange-400 to-orange-600 overflow-visible relative rounded-t-xl transition-all duration-500 ${
+                (therapist.discountPercentage && therapist.discountPercentage > 0) 
+                    ? 'shadow-2xl shadow-red-500/60 ring-4 ring-red-400/40 animate-pulse' 
+                    : ''
+            }`}>
                 <img 
                     src={displayImage} 
                     alt={`${therapist.name} cover`} 
-                    className="w-full h-full object-cover"
+                    className={`w-full h-full object-cover transition-all duration-500 ${
+                        (therapist.discountPercentage && therapist.discountPercentage > 0) 
+                            ? 'brightness-110 contrast-110 saturate-110' 
+                            : ''
+                    }`}
                     onError={(e) => {
                         console.error('🖼️ Main image failed to load:', displayImage);
                         // Fallback to a working ImageKit URL
@@ -328,6 +334,46 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         console.log('✅ Main image loaded successfully:', displayImage);
                     }}
                 />
+
+                {/* 🎯 DISCOUNT BADGE ON MAIN IMAGE */}
+                {therapist.discountPercentage && therapist.discountPercentage > 0 && (
+                    <div className="absolute top-4 right-4 z-30">
+                        <div className="relative">
+                            {/* Glow Effect Background */}
+                            <div className="absolute -inset-2 bg-gradient-to-r from-red-500 via-pink-500 to-red-600 rounded-full blur-lg opacity-75 animate-pulse"></div>
+                            
+                            {/* Main Discount Badge */}
+                            <div className="relative bg-gradient-to-r from-red-500 to-red-600 text-white font-bold text-lg px-4 py-2 rounded-full shadow-2xl border-2 border-white flex items-center gap-1 animate-bounce">
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 17.5 9.134a1 1 0 010 1.732L14.146 12.8l-1.179 4.456a1 1 0 01-1.934 0L9.854 12.8 6.5 10.866a1 1 0 010-1.732L9.854 7.2l1.179-4.456A1 1 0 0112 2z" clipRule="evenodd"/>
+                                </svg>
+                                {therapist.discountPercentage}% OFF
+                            </div>
+                            
+                            {/* Sparkle Effects */}
+                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-ping"></div>
+                            <div className="absolute -bottom-1 -left-1 w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                        </div>
+                    </div>
+                )}
+
+                {/* 🎯 DISCOUNT TIMER (if discount is active and time-limited) */}
+                {therapist.discountPercentage && therapist.discountPercentage > 0 && therapist.discountEndTime && (
+                    <div className="absolute top-4 left-4 z-30">
+                        <div className="bg-black/70 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-lg font-mono">
+                            ⏰ {(() => {
+                                const now = new Date();
+                                const endTime = new Date(therapist.discountEndTime);
+                                const timeLeft = endTime.getTime() - now.getTime();
+                                if (timeLeft <= 0) return 'EXPIRED';
+                                
+                                const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+                                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                                return `${hours}h ${minutes}m`;
+                            })()}
+                        </div>
+                    </div>
+                )}
                 
                 {/* Profile Image - 50% on banner, 50% on card overlay */}
                 <div className="absolute top-36 left-4 z-20">
@@ -487,11 +533,26 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isOvertime ? 'bg-red-100 text-red-800' : style.bg} ${isOvertime ? '' : style.text} mt-3`}>
                     <span className="relative mr-1.5">
                         {displayStatus === AvailabilityStatus.Available && (
-                            <span className="absolute inset-0 w-4 h-4 -left-1 -top-1 rounded-full bg-white opacity-60"></span>
+                            <>
+                                {/* Satellite ring animation for Available status */}
+                                <span className="absolute inset-0 w-6 h-6 -left-2 -top-2 rounded-full border-2 border-green-300 animate-ping opacity-75"></span>
+                                <span className="absolute inset-0 w-5 h-5 -left-1.5 -top-1.5 rounded-full border border-green-400 animate-pulse"></span>
+                            </>
                         )}
-                        <span className={`w-2 h-2 rounded-full block ${isOvertime ? 'bg-red-500' : style.dot}`}></span>
+                        <span className={`w-2 h-2 rounded-full block status-indicator ${isOvertime ? 'bg-red-500' : style.dot} ${displayStatus === AvailabilityStatus.Available ? 'animate-pulse' : ''}`}></span>
                     </span>
-                    {displayStatus === AvailabilityStatus.Busy && countdown ? (
+                    {displayStatus === AvailabilityStatus.Busy && therapist.busyUntil ? (
+                        <div className="flex items-center gap-1">
+                            <span>Busy</span>
+                            <BusyCountdownTimer 
+                                endTime={therapist.busyUntil}
+                                onExpired={() => {
+                                    // Optionally refresh the therapist status or trigger a re-render
+                                    console.log('Therapist should be available again');
+                                }}
+                            />
+                        </div>
+                    ) : displayStatus === AvailabilityStatus.Busy && countdown ? (
                         <span>
                             {isOvertime ? 'Busy - Extra Time ' : 'Busy - Free in '}
                             {countdown}
@@ -502,25 +563,25 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 </div>
             </div>
             
-            {/* Therapist Bio - Use actual therapist description or fallback */}
-            <div className="absolute top-72 left-6 right-6 z-10 therapist-bio-section max-h-32 overflow-hidden bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-sm">
-                <p className="text-xs text-gray-700 leading-5 break-words whitespace-normal line-clamp-6">
+            {/* Therapist Bio - Use actual therapist description or fallback - Expanded for 350 characters */}
+            <div className="absolute top-72 left-6 right-6 z-10 therapist-bio-section max-h-40 overflow-hidden bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-sm">
+                <p className="text-xs text-gray-700 leading-5 break-words whitespace-normal line-clamp-8">
                     {therapist.description || 
                      `Certified massage therapist with ${therapist.yearsOfExperience || 5}+ years experience. Specialized in therapeutic and relaxation techniques. Available for home, hotel, and villa services. Professional, licensed, and highly rated by clients for exceptional service quality.`}
                 </p>
             </div>
 
             
-            {/* Content Section - Layout adjusted for overlapping profile image */}
-            <div className="p-4 pt-44 flex flex-col gap-4">
+            {/* Content Section - Layout adjusted for expanded bio section */}
+            <div className="p-4 pt-52 flex flex-col gap-4">
                 <div className="flex items-start gap-4">
                     <div className="flex-grow">
                         {/* Content starts below the positioned elements */}
                     </div>
                 </div>
 
-            {/* Massage Specializations - Above languages section */}
-            <div className="mt-4">
+            {/* Massage Specializations - Above languages section - Moved down for bio space */}
+            <div className="mt-6 border-t border-gray-100 pt-4">
                 <div className="mb-2">
                     <h4 className="text-xs font-semibold text-gray-700">
                         {_t.home?.therapistCard?.experiencedArea || 'Massage Specializations'}
@@ -611,10 +672,10 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
 
             <div className="grid grid-cols-3 gap-2 text-center text-sm mt-4">
                 {/* 60 min pricing */}
-                <div className={`bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative transition-all duration-500 min-h-[60px] flex flex-col justify-center ${
-                    (therapist.discountPercentage && therapist.discountPercentage > 0) || (activeDiscount && discountTimeLeft !== 'EXPIRED')
-                        ? 'shadow-orange-500/60 shadow-xl ring-2 ring-orange-400/40 bg-gradient-to-br from-orange-50 to-orange-100 animate-pulse border-orange-300' 
-                        : ''
+                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 min-h-[60px] flex flex-col justify-center ${
+                    (therapist.discountPercentage && therapist.discountPercentage > 0)
+                        ? 'bg-gradient-to-br from-red-50 to-pink-50 border-red-300 shadow-red-500/60 shadow-2xl ring-4 ring-red-400/40 animate-pulse' 
+                        : 'bg-gray-100 border-gray-200'
                 }`}>
                     <p className="text-gray-600 text-xs mb-1">60 min</p>
                     {therapist.discountPercentage && therapist.discountPercentage > 0 ? (
@@ -624,7 +685,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                 Rp {formatPrice(Math.round(Number(pricing["60"]) * (1 - therapist.discountPercentage / 100)))}
                             </p>
                             {/* Discount badge to show they're getting a deal */}
-                            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-lg animate-bounce">
+                            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-lg notification-badge animate-bounce">
                                 -{therapist.discountPercentage}%
                             </span>
                         </>
@@ -636,10 +697,10 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 </div>
                 
                 {/* 90 min pricing */}
-                <div className={`bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative transition-all duration-500 min-h-[60px] flex flex-col justify-center ${
-                    (therapist.discountPercentage && therapist.discountPercentage > 0) || (activeDiscount && discountTimeLeft !== 'EXPIRED')
-                        ? 'shadow-orange-500/60 shadow-xl ring-2 ring-orange-400/40 bg-gradient-to-br from-orange-50 to-orange-100 animate-pulse border-orange-300' 
-                        : ''
+                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 min-h-[60px] flex flex-col justify-center ${
+                    (therapist.discountPercentage && therapist.discountPercentage > 0)
+                        ? 'bg-gradient-to-br from-red-50 to-pink-50 border-red-300 shadow-red-500/60 shadow-2xl ring-4 ring-red-400/40 animate-pulse' 
+                        : 'bg-gray-100 border-gray-200'
                 }`}>
                     <p className="text-gray-600 text-xs mb-1">90 min</p>
                     {therapist.discountPercentage && therapist.discountPercentage > 0 ? (
@@ -659,10 +720,10 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 </div>
                 
                 {/* 120 min pricing */}
-                <div className={`bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative transition-all duration-500 min-h-[60px] flex flex-col justify-center ${
-                    (therapist.discountPercentage && therapist.discountPercentage > 0) || (activeDiscount && discountTimeLeft !== 'EXPIRED')
-                        ? 'shadow-orange-500/60 shadow-xl ring-2 ring-orange-400/40 bg-gradient-to-br from-orange-50 to-orange-100 animate-pulse border-orange-300' 
-                        : ''
+                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 min-h-[60px] flex flex-col justify-center ${
+                    (therapist.discountPercentage && therapist.discountPercentage > 0)
+                        ? 'bg-gradient-to-br from-red-50 to-pink-50 border-red-300 shadow-red-500/60 shadow-2xl ring-4 ring-red-400/40 animate-pulse' 
+                        : 'bg-gray-100 border-gray-200'
                 }`}>
                     <p className="text-gray-600 text-xs mb-1">120 min</p>
                     {therapist.discountPercentage && therapist.discountPercentage > 0 ? (
@@ -770,15 +831,15 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
 
             {/* Refer Friend Modal */}
             {showReferModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setShowReferModal(false)}>
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[90vw] sm:max-w-md p-3 sm:p-5 animate-fadeIn" onClick={(e) => e.stopPropagation()}>
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4" onClick={() => setShowReferModal(false)}>
+                    <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-[95vw] max-h-[90vh] sm:max-w-sm md:max-w-md p-3 sm:p-4 md:p-5 animate-fadeIn overflow-y-auto" onClick={(e) => e.stopPropagation()}>
                         <div className="text-center">
-                            <div className="w-32 h-32 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4 overflow-hidden relative">
+                            <div className="w-24 h-24 sm:w-32 sm:h-32 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 overflow-hidden relative">
                                 {/* Main coin image */}
                                 <img 
                                     src="https://ik.imagekit.io/7grri5v7d/INDASTREET_coins_new-removebg-preview.png?updatedAt=1762338892035"
                                     alt="IndaStreet Coins"
-                                    className="w-28 h-28 object-contain z-10 relative"
+                                    className="w-20 h-20 sm:w-28 sm:h-28 object-contain z-10 relative"
                                 />
                                 
                                 {/* Falling coins animation */}
@@ -813,30 +874,30 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                 ))}
                             </div>
                             
-                            <h3 className="text-2xl font-bold text-gray-900 mb-2">Refer a Friend</h3>
-                            <p className="text-gray-600 mb-6">Share IndaStreet with friends and earn coins! 🎁</p>
+                            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Refer a Friend</h3>
+                            <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">Share IndaStreet with friends and earn coins! 🎁</p>
                             
-                            <div className="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl p-4 mb-6">
-                                <div className="flex items-center justify-center gap-2 mb-2">
-                                    <svg className="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                            <div className="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg sm:rounded-xl p-3 sm:p-4 mb-4 sm:mb-6">
+                                <div className="flex items-center justify-center gap-2 mb-1 sm:mb-2">
+                                    <svg className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
                                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" />
                                     </svg>
-                                    <span className="text-2xl font-bold text-orange-600">50 Coins</span>
+                                    <span className="text-xl sm:text-2xl font-bold text-orange-600">50 Coins</span>
                                 </div>
-                                <p className="text-sm text-gray-700">For each friend who signs up!</p>
+                                <p className="text-xs sm:text-sm text-gray-700">For each friend who signs up!</p>
                             </div>
                             
-                            <div className="space-y-3 mb-6">
-                                <p className="text-sm text-gray-600 text-left">
+                            <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
+                                <p className="text-xs sm:text-sm text-gray-600 text-left">
                                     📱 Share your referral link:
                                 </p>
-                                <div className="flex gap-2">
+                                <div className="flex gap-1 sm:gap-2">
                                     <input 
                                         type="text" 
                                         value="https://indastreet.com/ref/USER123" 
                                         readOnly 
-                                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm"
+                                        className="flex-1 px-2 sm:px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-xs sm:text-sm"
                                         placeholder="Your referral link"
                                         title="Your referral link to share with friends"
                                         aria-label="Referral link"
@@ -846,76 +907,76 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                             navigator.clipboard.writeText('https://indastreet.com/ref/USER123');
                                             alert('Link copied to clipboard!');
                                         }}
-                                        className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-semibold text-sm"
+                                        className="px-2 sm:px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-semibold text-xs sm:text-sm whitespace-nowrap"
                                     >
                                         Copy
                                     </button>
                                 </div>
                             </div>
                             
-                            <div className="space-y-2 mb-6">
-                                <p className="text-sm text-gray-600 mb-3">Share via:</p>
-                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                            <div className="space-y-2 mb-4 sm:mb-6">
+                                <p className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3">Share via:</p>
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
                                     <button
                                         onClick={() => {
                                             window.open(`https://wa.me/?text=${encodeURIComponent('Check out IndaStreet - Book amazing massages! https://indastreet.com/ref/USER123')}`, '_blank');
                                         }}
-                                        className="flex flex-col items-center gap-2 p-3 sm:p-4 rounded-lg transition-all hover:scale-105"
+                                        className="flex flex-col items-center gap-1 sm:gap-2 p-2 sm:p-3 rounded-lg transition-all hover:scale-105"
                                     >
                                         <img 
                                             src="https://ik.imagekit.io/7grri5v7d/whats%20app%20icon.png?updatedAt=1761844859402" 
                                             alt="WhatsApp"
-                                            className="w-12 h-12 sm:w-14 sm:h-14 object-contain"
+                                            className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 object-contain"
                                         />
-                                        <span className="text-xs sm:text-sm font-semibold text-gray-700">WhatsApp</span>
+                                        <span className="text-xs font-semibold text-gray-700">WhatsApp</span>
                                     </button>
                                     <button
                                         onClick={() => {
                                             window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://indastreet.com/ref/USER123')}`, '_blank');
                                         }}
-                                        className="flex flex-col items-center gap-2 p-3 sm:p-4 rounded-lg transition-all hover:scale-105"
+                                        className="flex flex-col items-center gap-1 sm:gap-2 p-2 sm:p-3 rounded-lg transition-all hover:scale-105"
                                     >
                                         <img 
                                             src="https://ik.imagekit.io/7grri5v7d/facebook.png?updatedAt=1761844676576" 
                                             alt="Facebook"
-                                            className="w-12 h-12 sm:w-14 sm:h-14 object-contain"
+                                            className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 object-contain"
                                         />
-                                        <span className="text-xs sm:text-sm font-semibold text-gray-700">Facebook</span>
+                                        <span className="text-xs font-semibold text-gray-700">Facebook</span>
                                     </button>
                                     <button
                                         onClick={() => {
                                             navigator.clipboard.writeText('Check out IndaStreet - Book amazing massages! https://indastreet.com/ref/USER123');
                                             alert('Instagram message copied! Open Instagram and paste to share.');
                                         }}
-                                        className="flex flex-col items-center gap-2 p-3 sm:p-4 rounded-lg transition-all hover:scale-105"
+                                        className="flex flex-col items-center gap-1 sm:gap-2 p-2 sm:p-3 rounded-lg transition-all hover:scale-105"
                                     >
                                         <img 
                                             src="https://ik.imagekit.io/7grri5v7d/insta.png?updatedAt=1761845305146" 
                                             alt="Instagram"
-                                            className="w-12 h-12 sm:w-14 sm:h-14 object-contain"
+                                            className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 object-contain"
                                         />
-                                        <span className="text-xs sm:text-sm font-semibold text-gray-700">Instagram</span>
+                                        <span className="text-xs font-semibold text-gray-700">Instagram</span>
                                     </button>
                                     <button
                                         onClick={() => {
                                             navigator.clipboard.writeText('Check out IndaStreet - Book amazing massages! https://indastreet.com/ref/USER123');
                                             alert('TikTok message copied! Open TikTok and paste to share.');
                                         }}
-                                        className="flex flex-col items-center gap-2 p-3 sm:p-4 rounded-lg transition-all hover:scale-105"
+                                        className="flex flex-col items-center gap-1 sm:gap-2 p-2 sm:p-3 rounded-lg transition-all hover:scale-105"
                                     >
                                         <img 
                                             src="https://ik.imagekit.io/7grri5v7d/tiktok.png?updatedAt=1761845101981" 
                                             alt="TikTok"
-                                            className="w-12 h-12 sm:w-14 sm:h-14 object-contain"
+                                            className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 object-contain"
                                         />
-                                        <span className="text-xs sm:text-sm font-semibold text-gray-700">TikTok</span>
+                                        <span className="text-xs font-semibold text-gray-700">TikTok</span>
                                     </button>
                                 </div>
                             </div>
                             
                             <button
                                 onClick={() => setShowReferModal(false)}
-                                className="w-full px-6 py-3 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 transition-colors"
+                                className="w-full px-4 sm:px-6 py-2 sm:py-3 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 transition-colors text-sm sm:text-base"
                             >
                                 Close
                             </button>
@@ -1043,12 +1104,22 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 0%, 100% { transform: translateY(0px); }
                 50% { transform: translateY(-3px); }
             }
-            .animate-coin-fall-1 { animation: coin-fall-1 3s ease-in forwards, coin-float 2s ease-in-out 3s infinite; }
-            .animate-coin-fall-2 { animation: coin-fall-2 3s ease-in forwards, coin-float 2s ease-in-out 3.3s infinite; }
-            .animate-coin-fall-3 { animation: coin-fall-3 3s ease-in forwards, coin-float 2s ease-in-out 3.6s infinite; }
-            .animate-coin-fall-4 { animation: coin-fall-4 3s ease-in forwards, coin-float 2s ease-in-out 3.9s infinite; }
-            .animate-coin-fall-5 { animation: coin-fall-5 3s ease-in forwards, coin-float 2s ease-in-out 4.2s infinite; }
-            .animate-coin-fall-6 { animation: coin-fall-6 3s ease-in forwards, coin-float 2s ease-in-out 4.5s infinite; }
+            .animate-coin-fall-1 { animation: coin-fall-1 4s ease-in forwards, coin-float 3s ease-in-out 4s infinite; }
+            .animate-coin-fall-2 { animation: coin-fall-2 4s ease-in forwards, coin-float 3s ease-in-out 4.5s infinite; }
+            .animate-coin-fall-3 { animation: coin-fall-3 4s ease-in forwards, coin-float 3s ease-in-out 5s infinite; }
+            .animate-coin-fall-4 { animation: coin-fall-4 4s ease-in forwards, coin-float 3s ease-in-out 5.5s infinite; }
+            .animate-coin-fall-5 { animation: coin-fall-5 4s ease-in forwards, coin-float 3s ease-in-out 6s infinite; }
+            .animate-coin-fall-6 { animation: coin-fall-6 4s ease-in forwards, coin-float 3s ease-in-out 6.5s infinite; }
+            
+            /* Mobile-specific slower animations */
+            @media (max-width: 768px) {
+                .animate-coin-fall-1 { animation: coin-fall-1 5s ease-in forwards, coin-float 4s ease-in-out 5s infinite; }
+                .animate-coin-fall-2 { animation: coin-fall-2 5s ease-in forwards, coin-float 4s ease-in-out 5.5s infinite; }
+                .animate-coin-fall-3 { animation: coin-fall-3 5s ease-in forwards, coin-float 4s ease-in-out 6s infinite; }
+                .animate-coin-fall-4 { animation: coin-fall-4 5s ease-in forwards, coin-float 4s ease-in-out 6.5s infinite; }
+                .animate-coin-fall-5 { animation: coin-fall-5 5s ease-in forwards, coin-float 4s ease-in-out 7s infinite; }
+                .animate-coin-fall-6 { animation: coin-fall-6 5s ease-in forwards, coin-float 4s ease-in-out 7.5s infinite; }
+            }
         `}</style>
     </div>
     );

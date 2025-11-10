@@ -247,6 +247,19 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
                 .animate-confetti {
                     animation: confetti linear forwards;
                 }
+
+                /* Mobile optimizations for slower animations */
+                @media (max-width: 768px) {
+                    .animate-fall-slow {
+                        animation: fall-slow linear infinite;
+                        animation-duration: 15s !important; /* Override inline duration on mobile */
+                    }
+                    
+                    .animate-confetti {
+                        animation: confetti linear forwards;
+                        animation-duration: 6s !important; /* Override inline duration on mobile */
+                    }
+                }
             `}</style>
 
             <div className="min-h-screen bg-white">
@@ -333,21 +346,29 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
             <div className="max-w-7xl mx-auto px-4 py-6 relative">
                 {/* Falling Coins Animation - Positioned from coin bar */}
                 <div className="fixed left-0 right-0 pointer-events-none overflow-hidden z-5" style={{ top: '112px', bottom: 0 }}>
-                    {[...Array(15)].map((_, i) => (
-                        <div
-                            key={i}
-                            className="absolute animate-fall-slow"
-                            style={{
-                                left: `${Math.random() * 100}%`,
-                                top: 0,
-                                animationDelay: `${Math.random() * 5}s`,
-                                animationDuration: `${8 + Math.random() * 4}s`,
-                                fontSize: `${20 + Math.random() * 20}px`
-                            }}
-                        >
-                            🪙
-                        </div>
-                    ))}
+                    {[...Array(15)].map((_, i) => {
+                        // Slower animation on mobile
+                        const isMobile = window.innerWidth <= 768;
+                        const baseDuration = isMobile ? 15 : 8;
+                        const randomExtra = isMobile ? Math.random() * 8 : Math.random() * 4;
+                        const delay = isMobile ? Math.random() * 8 : Math.random() * 5;
+                        
+                        return (
+                            <div
+                                key={i}
+                                className="absolute animate-fall-slow"
+                                style={{
+                                    left: `${Math.random() * 100}%`,
+                                    top: 0,
+                                    animationDelay: `${delay}s`,
+                                    animationDuration: `${baseDuration + randomExtra}s`,
+                                    fontSize: `${20 + Math.random() * 20}px`
+                                }}
+                            >
+                                🪙
+                            </div>
+                        );
+                    })}
                 </div>
 
                 {/* Product Content */}
@@ -482,23 +503,31 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 pb-20 overflow-y-auto">
                     {/* Confetti Animation */}
                     <div className="fixed inset-0 pointer-events-none overflow-hidden">
-                        {[...Array(50)].map((_, i) => (
-                            <div
-                                key={`confetti-${i}`}
-                                className="absolute animate-confetti"
-                                style={{
-                                    left: `${Math.random() * 100}%`,
-                                    top: '-10%',
-                                    animationDelay: `${Math.random() * 3}s`,
-                                    animationDuration: `${2 + Math.random() * 2}s`,
-                                    opacity: 0.8,
-                                    fontSize: `${10 + Math.random() * 10}px`,
-                                    color: ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#6c5ce7'][Math.floor(Math.random() * 5)]
-                                }}
-                            >
-                                {['🎉', '🎊', '✨', '⭐', '💫'][Math.floor(Math.random() * 5)]}
-                            </div>
-                        ))}
+                        {[...Array(50)].map((_, i) => {
+                            // Slower confetti animation on mobile
+                            const isMobile = window.innerWidth <= 768;
+                            const baseDuration = isMobile ? 5 : 2;
+                            const randomExtra = isMobile ? Math.random() * 3 : Math.random() * 2;
+                            const delay = isMobile ? Math.random() * 4 : Math.random() * 3;
+                            
+                            return (
+                                <div
+                                    key={`confetti-${i}`}
+                                    className="absolute animate-confetti"
+                                    style={{
+                                        left: `${Math.random() * 100}%`,
+                                        top: '-10%',
+                                        animationDelay: `${delay}s`,
+                                        animationDuration: `${baseDuration + randomExtra}s`,
+                                        opacity: 0.8,
+                                        fontSize: `${10 + Math.random() * 10}px`,
+                                        color: ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#6c5ce7'][Math.floor(Math.random() * 5)]
+                                    }}
+                                >
+                                    {['🎉', '🎊', '✨', '⭐', '💫'][Math.floor(Math.random() * 5)]}
+                                </div>
+                            );
+                        })}
                     </div>
                     
                     <div className="bg-white rounded-2xl max-w-md w-full p-6 animate-fadeIn relative z-10 my-8">

@@ -9,7 +9,7 @@ import { getInitialRatingData } from '../utils/ratingUtils';
 import { LogOut, Activity, Menu, Calendar, TrendingUp, Bell } from 'lucide-react';
 import { ColoredProfileIcon, ColoredCalendarIcon, ColoredAnalyticsIcon, ColoredHotelIcon, ColoredTagIcon, ColoredCrownIcon, ColoredDocumentIcon, ColoredGlobeIcon, ColoredHistoryIcon, ColoredCoinsIcon, ColoredBellIcon } from '../components/ColoredIcons';
 import { useTranslations } from '../lib/useTranslations';
-import DiscountSharePage from './DiscountSharePage';
+
 import MembershipPlansPage from './MembershipPlansPage';
 import HotelVillaOptIn from '../components/HotelVillaOptIn';
 import { TherapistProfileForm } from '../components/therapist/TherapistProfileForm';
@@ -19,6 +19,7 @@ import TherapistTermsPage from './TherapistTermsPage';
 import PushNotificationSettings from '../components/PushNotificationSettings';
 import Footer from '../components/Footer';
 import TherapistNotifications from '../components/TherapistNotifications';
+import BusyTimerModal from '../components/BusyTimerModal';
 // Removed chat import - chat system removed
 // import MemberChatWindow from '../components/MemberChatWindow';
 import '../utils/pricingHelper'; // Load pricing helper for console access
@@ -89,6 +90,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
     const { t: t_new } = useTranslations(); // New translation system
     const [therapist, setTherapist] = useState<Therapist | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [dataLoaded, setDataLoaded] = useState(false);
 
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
@@ -118,6 +120,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false); // Notifications modal state
+    const [showBusyTimerModal, setShowBusyTimerModal] = useState(false);
 
     const locationInputRef = useRef<HTMLInputElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -135,7 +138,18 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
             // 🎯 PRIMARY: Find therapist by logged-in user's email (FIXED APPROACH)
             try {
                 console.log('🔐 Getting current authenticated user...');
+                console.log('📍 DEBUG: fetchTherapistData called with therapistId:', therapistId);
+                console.log('📍 DEBUG: existingTherapistData:', existingTherapistData);
+                console.log('🔍 AUTH FLOW DEBUGGING:', {
+                    providedTherapistId: therapistId,
+                    hasExistingData: !!existingTherapistData,
+                    existingDataName: existingTherapistData?.name,
+                    timestamp: new Date().toISOString()
+                });
+                
                 const currentUser = await therapistService.getCurrentUser();
+                console.log('🔍 Current user result:', currentUser);
+                console.log('📧 User email for lookup:', currentUser?.email);
                 
                 if (currentUser && currentUser.email) {
                     console.log('✅ Found logged-in user:', currentUser.email);
@@ -143,14 +157,36 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                     // Find therapist profile by email
                     console.log('🔍 Searching for therapist profile by email...');
                     const therapistProfiles = await therapistService.getByEmail(currentUser.email);
+                    console.log('📋 Therapist profiles found:', therapistProfiles);
                     
                     if (therapistProfiles && therapistProfiles.length > 0) {
                         existingTherapist = therapistProfiles[0];
                         console.log('✅ Found therapist profile by email:', existingTherapist.name);
                         console.log('🔧 Document ID from profile:', existingTherapist.$id);
                         console.log('🔧 User Account ID (therapistId prop):', therapistId);
+                        console.log('📊 Profile data preview:', {
+                            id: existingTherapist.$id,
+                            name: existingTherapist.name,
+                            email: existingTherapist.email,
+                            description: existingTherapist.description?.substring(0, 50) + '...',
+                            whatsappNumber: existingTherapist.whatsappNumber
+                        });
+                        
+                        // 🔍 DETAILED FIELD ANALYSIS
+                        console.log('🔍 DETAILED FIELD ANALYSIS:');
+                        console.log('   📝 Name:', existingTherapist.name || 'EMPTY');
+                        console.log('   📄 Description:', existingTherapist.description || 'EMPTY');
+                        console.log('   📱 WhatsApp:', existingTherapist.whatsappNumber || 'EMPTY');
+                        console.log('   📍 Location:', existingTherapist.location || 'EMPTY');
+                        console.log('   🎯 Years Experience:', existingTherapist.yearsOfExperience || 'EMPTY/0');
+                        console.log('   💰 Pricing:', existingTherapist.pricing || 'EMPTY');
+                        console.log('   🏷️ Profile Picture:', existingTherapist.profilePicture || 'EMPTY');
+                        console.log('   🗣️ Languages:', existingTherapist.languages || 'EMPTY');
+                        console.log('   💼 Massage Types:', existingTherapist.massageTypes || 'EMPTY');
                     } else {
                         console.log('⚠️ No therapist profile found for email:', currentUser.email);
+                        console.log('🔍 Will try other lookup methods...');
+                        console.log('📋 Therapist profiles response was:', therapistProfiles);
                     }
                 } else {
                     console.log('⚠️ No authenticated user found');
@@ -172,10 +208,46 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                 }
             }
             
-            // Fallback: Use existing data from props
+            // 🔥 CRITICAL FALLBACK: Use existing data from AppRouter (homepage data)
             if (!existingTherapist && existingTherapistData) {
-                console.log('📋 Using existing therapist data from props:', existingTherapistData.name);
+                console.log('🎯 FALLBACK: Using existing therapist data from AppRouter props:', {
+                    name: existingTherapistData.name,
+                    email: existingTherapistData.email,
+                    hasProfile: !!existingTherapistData.profilePicture,
+                    hasDescription: !!existingTherapistData.description,
+                    source: 'AppRouter-existingTherapistData'
+                });
                 existingTherapist = existingTherapistData;
+            }
+            
+            // 🚨 CRITICAL FIX: Force email lookup if no therapist found by ID
+            if (!existingTherapist) {
+                try {
+                    console.log('🆘 CRITICAL FIX: No therapist found by ID, forcing email lookup...');
+                    console.log('🔍 This commonly happens after login when therapistId is document ID but homepage array uses different IDs');
+                    
+                    const currentUser = await therapistService.getCurrentUser();
+                    if (currentUser?.email) {
+                        console.log('📧 FORCE: Fetching therapist by authenticated user email:', currentUser.email);
+                        const emailTherapists = await therapistService.getByEmail(currentUser.email);
+                        if (emailTherapists && emailTherapists.length > 0) {
+                            existingTherapist = emailTherapists[0];
+                            console.log('✅ CRITICAL SUCCESS: Found therapist by email:', {
+                                name: existingTherapist.name,
+                                id: existingTherapist.$id,
+                                email: existingTherapist.email,
+                                hasFullProfile: !!(existingTherapist.description && existingTherapist.whatsappNumber)
+                            });
+                        } else {
+                            console.error('❌ CRITICAL ERROR: No therapist profile exists for authenticated email:', currentUser.email);
+                            console.log('💡 This suggests the therapist document was not created during registration');
+                        }
+                    } else {
+                        console.error('❌ CRITICAL ERROR: No authenticated user session found');
+                    }
+                } catch (criticalError: any) {
+                    console.error('❌ CRITICAL ERROR in email lookup:', criticalError?.message || criticalError);
+                }
             }
             
             // REMOVED: localStorage database loading (now using Appwrite only)
@@ -216,7 +288,13 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
             
             // Fallback: Use existing data from props
             if (!existingTherapist && existingTherapistData) {
-                console.log('✅ Using existing therapist data from home page:', existingTherapistData);
+                console.log('✅ Using existing therapist data from home page:', {
+                    name: existingTherapistData.name,
+                    description: existingTherapistData.description?.substring(0, 50) + '...',
+                    whatsappNumber: existingTherapistData.whatsappNumber,
+                    location: existingTherapistData.location,
+                    dataSource: 'Live Card Data'
+                });
                 existingTherapist = existingTherapistData;
             }
             
@@ -259,24 +337,74 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
             }));
             
             setTherapist(existingTherapist);
-            setName(existingTherapist.name || '');
-            setDescription(existingTherapist.description || '');
-            setProfilePicture(existingTherapist.profilePicture || '');
-            console.log('📷 Loaded profilePicture from database:', existingTherapist.profilePicture);
-            console.log('ℹ️ Main image is automatically assigned from curated collection');
-            console.log('🔄 State updated - name:', existingTherapist.name, 'description length:', existingTherapist.description?.length);
+            
+            // Only set form fields if they're currently empty to prevent overwriting user input
+            console.log('🔄 About to set form fields. Current state:', {
+                currentName: name,
+                loadedName: existingTherapist.name,
+                currentDescription: description?.substring(0, 30) + '...',
+                loadedDescription: existingTherapist.description?.substring(0, 30) + '...'
+            });
+            
+            console.log('📋 ALL LOADED DATA FOR FORM FIELDS:');
+            console.log('   Name: "' + (existingTherapist.name || 'EMPTY') + '"');
+            console.log('   Description: "' + (existingTherapist.description || 'EMPTY') + '"');
+            console.log('   WhatsApp: "' + (existingTherapist.whatsappNumber || 'EMPTY') + '"');
+            console.log('   Location: "' + (existingTherapist.location || 'EMPTY') + '"');
+            console.log('   Years Exp: ' + (existingTherapist.yearsOfExperience || 0));
+            console.log('   Profile Pic: "' + (existingTherapist.profilePicture || 'EMPTY') + '"');
+            
+            if (!name || name === '') {
+                console.log('📝 Setting name from loaded data:', existingTherapist.name);
+                setName(existingTherapist.name || '');
+            } else {
+                console.log('⚠️ Skipping name set - current name exists:', name);
+            }
+            
+            if (!description || description === '') {
+                console.log('📝 Setting description from loaded data:', existingTherapist.description);
+                setDescription(existingTherapist.description || '');
+            } else {
+                console.log('⚠️ Skipping description set - current description exists:', description);
+            }
+            
+            if (!profilePicture || profilePicture === '') {
+                console.log('📝 Setting profile picture from loaded data:', existingTherapist.profilePicture);
+                setProfilePicture(existingTherapist.profilePicture || '');
+            } else {
+                console.log('⚠️ Skipping profile picture set - current picture exists:', profilePicture);
+            }
+            
+            // Set other fields with logging
+            console.log('📱 Setting WhatsApp number:', existingTherapist.whatsappNumber);
             setWhatsappNumber(existingTherapist.whatsappNumber || '');
+            
+            console.log('📍 Setting location:', existingTherapist.location);
+            setLocation(existingTherapist.location || '');
+            
+            console.log('🎯 Setting years of experience:', existingTherapist.yearsOfExperience);
             setYearsOfExperience((existingTherapist as any).yearsOfExperience || 0);
+            
+            // Set remaining complex fields  
+            console.log('🎭 Setting massage types:', existingTherapist.massageTypes);
             setMassageTypes(parseMassageTypes(existingTherapist.massageTypes));
+            
+            console.log('🗣️ Setting languages:', existingTherapist.languages);
             setLanguages(existingTherapist.languages 
                 ? (typeof existingTherapist.languages === 'string' 
                     ? parseLanguages(existingTherapist.languages) 
                     : existingTherapist.languages)
                 : []);
             // Load pricing - try new format first, fallback to old format
+            console.log('💰 Loading pricing data...');
             const loadedPricing = (() => {
                 // Try new separate fields first
                 if (existingTherapist.price60 !== undefined || existingTherapist.price90 !== undefined || existingTherapist.price120 !== undefined) {
+                    console.log('💰 Using new price format:', {
+                        price60: existingTherapist.price60,
+                        price90: existingTherapist.price90,
+                        price120: existingTherapist.price120
+                    });
                     return {
                         "60": existingTherapist.price60 ? parseInt(existingTherapist.price60) * 1000 : 0,
                         "90": existingTherapist.price90 ? parseInt(existingTherapist.price90) * 1000 : 0,
@@ -284,10 +412,38 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                     };
                 }
                 // Fallback to old JSON format
+                console.log('💰 Using old pricing format:', existingTherapist.pricing);
                 return parsePricing(existingTherapist.pricing);
             })();
+            console.log('💰 Final pricing set:', loadedPricing);
             setPricing(loadedPricing);
+            
+            // 🎯 Load discount data
+            console.log('🎯 Loading discount data...');
             setDiscountPercentage((existingTherapist as any).discountPercentage || 0);
+            setDiscountDuration((existingTherapist as any).discountDuration || 0);
+            
+            // Check if discount is still active
+            if ((existingTherapist as any).discountEndTime) {
+                const endTime = new Date((existingTherapist as any).discountEndTime);
+                const now = new Date();
+                if (endTime > now) {
+                    setDiscountEndTime(endTime);
+                    setIsDiscountActive(true);
+                    console.log('✅ Active discount found:', {
+                        percentage: (existingTherapist as any).discountPercentage,
+                        endTime: endTime.toISOString(),
+                        timeLeft: Math.round((endTime.getTime() - now.getTime()) / (1000 * 60 * 60)) + 'h'
+                    });
+                } else {
+                    console.log('⏰ Discount expired, clearing...');
+                    setDiscountEndTime(null);
+                    setIsDiscountActive(false);
+                }
+            } else {
+                setDiscountEndTime(null);
+                setIsDiscountActive(false);
+            }
             
             // Load hotel/villa pricing if exists
             if ((existingTherapist as any).hotelVillaPricing) {
@@ -298,13 +454,21 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                 setUseSamePricing(true);
             }
             
-            setLocation(existingTherapist.location || '');
+            // Set remaining fields
+            console.log('📍 Setting coordinates:', existingTherapist.coordinates);
             setCoordinates(parseCoordinates(existingTherapist.coordinates));
+            
             const therapistStatus = existingTherapist.status || AvailabilityStatus.Offline;
-            console.log('🎯 Loading therapist status:', therapistStatus);
+            console.log('🎯 Setting therapist status:', therapistStatus);
             setStatus(therapistStatus);
+            
+            console.log('🎓 Setting license info:', existingTherapist.isLicensed, existingTherapist.licenseNumber);
             setIsLicensed((existingTherapist as any).isLicensed || false);
             setLicenseNumber((existingTherapist as any).licenseNumber || '');
+            
+            // Mark data as loaded to prevent future overwrites
+            console.log('✅ All profile data loaded successfully');
+            setDataLoaded(true);
             
             // Load discount data from analytics field
             try {
@@ -401,6 +565,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
             console.error('❌ Error fetching therapist data:', error);
             // If there's an error fetching data, treat as no existing profile
             console.log('📝 Error occurred, starting with empty form');
+            setDataLoaded(true); // Mark as "loaded" to prevent retry loops
             const emptyTherapist = {
                 id: therapistId,
                 name: '',
@@ -452,8 +617,26 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
     }, [therapistId, existingTherapistData]);
 
     useEffect(() => {
-        fetchTherapistData();
-    }, [fetchTherapistData]);
+        // Add delay to ensure authentication is ready and check if data already exists
+        const timer = setTimeout(async () => {
+            console.log('⏰ Delayed fetch triggered - checking if data needs to be loaded...');
+            console.log('📊 Current state - dataLoaded:', dataLoaded, 'name:', name, 'therapistId:', therapistId);
+            console.log('📊 Component props - existingTherapistData:', existingTherapistData);
+            
+            // Only fetch if data hasn't been loaded yet
+            if (!dataLoaded && (!name || name === '')) {
+                console.log('🔄 No data loaded yet, fetching from server...');
+                console.log('🔄 Calling fetchTherapistData...');
+                await fetchTherapistData();
+                console.log('✅ fetchTherapistData completed');
+            } else {
+                console.log('✅ Data already loaded or available, name:', name);
+                console.log('📊 Skipping fetch - dataLoaded:', dataLoaded);
+            }
+        }, 200); // Increased delay to ensure auth is fully ready
+
+        return () => clearTimeout(timer);
+    }, [fetchTherapistData, dataLoaded, name]);
 
     // Sync status with prop changes
     useEffect(() => {
@@ -698,7 +881,11 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                 discountPercentage,
                 location,
                 coordinates: stringifyCoordinates(coordinates),
-                status,
+                // AUTO-LIVE SYSTEM: All new/updated profiles are automatically set to Available
+                status: 'available', // Always set to available when saving profile
+                availability: 'Available', // Always set to Available when saving profile
+                isOnline: true, // Mark as online when saving profile
+                isLive: true, // Mark as live when saving profile
                 analytics: therapist?.analytics || stringifyAnalytics({ 
                   impressions: 0, 
                   views: 0, 
@@ -714,8 +901,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                 // Rating system - start new therapists with 4.8 rating
                 ...(!therapist?.rating || therapist?.reviewCount === 0 ? getInitialRatingData() : {}),
                 // Required Appwrite fields that were missing
-                specialization: massageTypes.length > 0 ? massageTypes[0] : 'General Massage',
-                availability: 'full-time', // Default availability
+                specialization: massageTypes.length > 0 ? massageTypes[0] : 'General Massage'
             };
             
             console.log('💾 Calling onSave with data:', saveData);
@@ -743,6 +929,11 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
             
             onSave(saveData as any);
             console.log('✅ Save function called successfully');
+            
+            // AUTO-LIVE SYSTEM: Update local status to Available after successful save
+            setStatus(AvailabilityStatus.Available);
+            console.log('🟢 Profile saved! Status automatically set to Available - therapist is now live!');
+            
             setShowConfirmation(true);
         } catch (error) {
             console.error('❌ Error in handleSave:', error);
@@ -751,6 +942,92 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
         }
     };
     
+    // 🎯 Discount Management Functions
+    const activateDiscount = async () => {
+        if (!discountPercentage || !discountDuration) {
+            console.warn('Missing discount percentage or duration');
+            return;
+        }
+
+        try {
+            const endTime = new Date();
+            endTime.setHours(endTime.getHours() + discountDuration);
+            
+            setDiscountEndTime(endTime);
+            setIsDiscountActive(true);
+            
+            console.log(`🎯 Activated ${discountPercentage}% discount for ${discountDuration} hours`);
+            
+            // Update therapist profile with discount
+            if (onSave) {
+                const saveData = {
+                    name: name.trim(),
+                    description,
+                    profilePicture,
+                    whatsappNumber,
+                    location,
+                    coordinates,
+                    yearsOfExperience,
+                    massageTypes,
+                    languages,
+                    pricing: { 60: pricing[60], 90: pricing[90], 120: pricing[120] },
+                    hotelVillaPricing: useSamePricing ? pricing : hotelVillaPricing,
+                    useSamePricing,
+                    discountPercentage, // 🎯 Include discount in save
+                    discountEndTime: endTime,
+                    isLicensed,
+                    licenseNumber,
+                    status
+                };
+                onSave(saveData as any);
+            }
+            
+            // Auto-deactivate after duration
+            setTimeout(() => {
+                deactivateDiscount();
+            }, discountDuration * 60 * 60 * 1000);
+
+        } catch (error) {
+            console.error('Error activating discount:', error);
+        }
+    };
+
+    const deactivateDiscount = async () => {
+        try {
+            setIsDiscountActive(false);
+            setDiscountEndTime(null);
+            setDiscountPercentage(0);
+            
+            console.log('🔚 Discount deactivated');
+            
+            // Update therapist profile to remove discount
+            if (onSave) {
+                const saveData = {
+                    name: name.trim(),
+                    description,
+                    profilePicture,
+                    whatsappNumber,
+                    location,
+                    coordinates,
+                    yearsOfExperience,
+                    massageTypes,
+                    languages,
+                    pricing: { 60: pricing[60], 90: pricing[90], 120: pricing[120] },
+                    hotelVillaPricing: useSamePricing ? pricing : hotelVillaPricing,
+                    useSamePricing,
+                    discountPercentage: 0, // 🎯 Remove discount
+                    discountEndTime: null,
+                    isLicensed,
+                    licenseNumber,
+                    status
+                };
+                onSave(saveData as any);
+            }
+        } catch (error) {
+            console.error('Error deactivating discount:', error);
+        }
+    };
+
     const handleSetLocation = () => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(position => {
@@ -786,6 +1063,88 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
         setShowNotifications(false);
     };
 
+    // Handle busy timer functionality
+    const handleBusyTimerConfirm = async (durationMinutes: number) => {
+        try {
+            console.log('⏰ Setting busy timer for', durationMinutes, 'minutes');
+            
+            const user = await therapistService.getCurrentUser();
+            const therapists = await therapistService.getByEmail(user.email);
+            
+            if (!therapists || therapists.length === 0) {
+                throw new Error('Therapist profile not found');
+            }
+            
+            const currentTherapist = therapists[0];
+            
+            // Calculate busy until time
+            const busyUntil = new Date(Date.now() + durationMinutes * 60 * 1000).toISOString();
+            
+            // Update status to busy with timer
+            const updateResult = await therapistService.update(currentTherapist.$id, {
+                status: 'busy', // lowercase for database
+                availability: AvailabilityStatus.Busy, // capitalized for availability field
+                busyUntil: busyUntil,
+                busyDuration: durationMinutes,
+                isOnline: false,
+                isLive: true
+            });
+            
+            if (updateResult._fallback) {
+                console.warn('⚠️ Busy timer update used fallback mode:', updateResult._error);
+                setToast({ 
+                    message: `Status updated locally (Database: ${updateResult._error})`, 
+                    type: 'warning' 
+                });
+            } else {
+                console.log('✅ Busy timer saved successfully:', currentTherapist.$id);
+                setToast({ 
+                    message: `Busy status set for ${Math.floor(durationMinutes / 60)}h ${durationMinutes % 60}m!`, 
+                    type: 'success' 
+                });
+            }
+            
+            // Update local state
+            setStatus(AvailabilityStatus.Busy);
+            
+            // Set timer to automatically return to Available
+            setTimeout(() => {
+                handleAutoReturnToAvailable(currentTherapist.$id);
+            }, durationMinutes * 60 * 1000);
+            
+        } catch (error) {
+            console.error('❌ Error setting busy timer:', error);
+            setToast({ 
+                message: 'Failed to set busy timer. Please try again.', 
+                type: 'error' 
+            });
+        }
+    };
+
+    const handleAutoReturnToAvailable = async (therapistId: string) => {
+        try {
+            console.log('⏰ Auto-returning therapist to Available status');
+            
+            await therapistService.update(therapistId, {
+                status: 'available',
+                availability: AvailabilityStatus.Available,
+                busyUntil: null,
+                busyDuration: null,
+                isOnline: true,
+                isLive: true
+            });
+            
+            setStatus(AvailabilityStatus.Available);
+            setToast({ 
+                message: 'You are now Available again!', 
+                type: 'success' 
+            });
+            
+        } catch (error) {
+            console.error('❌ Error auto-returning to available:', error);
+        }
+    };
+
     const now = new Date();
     const upcomingBookings = (bookings || []).filter(b => new Date(b.startTime) >= now).sort((a,b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
     const pastBookings = (bookings || []).filter(b => new Date(b.startTime) < now).sort((_, b) => new Date(b.startTime).getTime() - new Date(b.startTime).getTime());
@@ -801,7 +1160,13 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                         return;
                     }
                     
-                    // Add confirmation for status changes
+                    // Special handling for Busy status - show timer modal
+                    if (newStatus === AvailabilityStatus.Busy) {
+                        setShowBusyTimerModal(true);
+                        return;
+                    }
+                    
+                    // Add confirmation for Available/Offline status changes
                     const statusLabels = {
                         [AvailabilityStatus.Available]: 'Available',
                         [AvailabilityStatus.Busy]: 'Busy',
@@ -1060,47 +1425,97 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                 </div>
                             </div>
 
-                            {/* Promotional Banners Redirect Section */}
-                            <div className="bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-300 rounded-2xl p-6 shadow-lg">
-                                <div className="text-center">
-                                    <div className="inline-flex items-center gap-3 mb-4">
-                                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-700 flex items-center justify-center">
+                            {/* Live Card Discount Controls */}
+                            <div className="bg-gradient-to-br from-indigo-400 via-purple-500 to-pink-500 rounded-2xl p-6 shadow-xl border border-indigo-300/50 backdrop-blur-sm">
+                                <div className="text-white">
+                                    <div className="flex items-center gap-4 mb-4">
+                                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
                                             <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                                <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
-                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd"/>
+                                                <path fillRule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 17.5 9.134a1 1 0 010 1.732L14.146 12.8l-1.179 4.456a1 1 0 01-1.934 0L9.854 12.8 6.5 10.866a1 1 0 010-1.732L9.854 7.2l1.179-4.456A1 1 0 0112 2z" clipRule="evenodd"/>
                                             </svg>
                                         </div>
                                         <div>
-                                            <h3 className="text-xl font-bold text-orange-800">🎁 Promotional Discount Banners</h3>
-                                            <p className="text-sm text-orange-600">Professional 5%, 10%, 15%, 20% discount campaigns</p>
+                                            <h3 className="text-xl font-bold text-white">� Live Card Discounts</h3>
+                                            <p className="text-sm text-white/80">Set instant discounts for your live therapist card</p>
                                         </div>
                                     </div>
                                     
-                                    <div className="bg-white bg-opacity-70 rounded-xl p-4 mb-4">
-                                        <div className="grid grid-cols-2 gap-4 text-center mb-4">
-                                            <div>
-                                                <p className="text-2xl font-bold text-orange-600">4</p>
-                                                <p className="text-xs text-orange-700">Banner Options</p>
+                                    {/* Active Discount Display */}
+                                    {isDiscountActive && discountEndTime && (
+                                        <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4 mb-4">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <span className="text-white font-bold text-lg">Active: {discountPercentage}% OFF</span>
+                                                <div className="bg-green-500 text-white text-xs px-2 py-1 rounded-full font-bold animate-pulse">
+                                                    LIVE
+                                                </div>
                                             </div>
-                                            <div>
-                                                <p className="text-2xl font-bold text-green-600">📱</p>
-                                                <p className="text-xs text-orange-700">WhatsApp Ready</p>
-                                            </div>
+                                            <p className="text-white/90 text-sm">
+                                                Expires: {discountEndTime.toLocaleString()}
+                                            </p>
                                         </div>
-                                        <p className="text-sm text-orange-700 font-medium">
-                                            ✨ Create professional discount banners that link directly to your therapist profile on the Indastreet app
-                                        </p>
+                                    )}
+                                    
+                                    <div className="grid grid-cols-2 gap-2 mb-4">
+                                        {/* Discount percentages */}
+                                        {[5, 10, 15, 20].map((percentage) => (
+                                            <button
+                                                key={percentage}
+                                                onClick={() => setDiscountPercentage(percentage)}
+                                                className={`p-3 rounded-lg font-bold text-sm transition-all ${
+                                                    discountPercentage === percentage 
+                                                        ? 'bg-white text-orange-600 shadow-lg scale-105 ring-2 ring-orange-500' 
+                                                        : 'bg-white text-orange-600 hover:bg-orange-50 border border-orange-200'
+                                                }`}
+                                            >
+                                                {percentage}% OFF
+                                            </button>
+                                        ))}
                                     </div>
                                     
-                                    <button
-                                        onClick={() => setActiveTab('discounts')}
-                                        className="w-full bg-gradient-to-r from-orange-500 via-orange-600 to-red-600 text-white py-4 px-6 rounded-xl font-bold text-lg hover:from-orange-600 hover:via-orange-700 hover:to-red-700 transition-all duration-300 transform hover:scale-[1.02] active:scale-95 shadow-lg hover:shadow-xl flex items-center justify-center gap-3"
-                                    >
-                                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                                            <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"/>
-                                        </svg>
-                                        Create & Share Promotional Banners
-                                    </button>
+                                    <div className="grid grid-cols-2 gap-2 mb-4">
+                                        {/* Time duration */}
+                                        {[
+                                            { hours: 4, label: '4h' },
+                                            { hours: 8, label: '8h' }, 
+                                            { hours: 12, label: '12h' },
+                                            { hours: 24, label: '24h' }
+                                        ].map(({ hours, label }) => (
+                                            <button
+                                                key={hours}
+                                                onClick={() => setDiscountDuration(hours)}
+                                                className={`p-2 rounded-lg font-bold text-xs transition-all ${
+                                                    discountDuration === hours 
+                                                        ? 'bg-white text-orange-600 shadow-lg scale-105 ring-2 ring-orange-500' 
+                                                        : 'bg-white text-orange-600 hover:bg-orange-50 border border-orange-200'
+                                                }`}
+                                            >
+                                                {label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    
+                                    {!isDiscountActive ? (
+                                        <button
+                                            onClick={activateDiscount}
+                                            disabled={!discountPercentage || !discountDuration}
+                                            className="w-full bg-white text-purple-600 py-3 px-6 rounded-xl font-bold text-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-[1.02] active:scale-95 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                        >
+                                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clipRule="evenodd"/>
+                                            </svg>
+                                            Activate Live Discount
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={deactivateDiscount}
+                                            className="w-full bg-red-500 text-white py-3 px-6 rounded-xl font-bold text-lg hover:bg-red-600 transition-all duration-300 transform hover:scale-[1.02] active:scale-95 shadow-lg flex items-center justify-center gap-2"
+                                        >
+                                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd"/>
+                                            </svg>
+                                            Deactivate Discount
+                                        </button>
+                                    )}
                                 </div>
                             </div>
 
@@ -1280,14 +1695,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                         />
                     </div>
                 );
-            case 'discounts':
-                return (
-                    <DiscountSharePage
-                        providerId={String(therapistId)}
-                        providerName={therapist?.name || 'Therapist'}
-                        providerType="therapist"
-                    />
-                );
+
             case 'membership':
                 return (
                     <MembershipPlansPage 
@@ -1491,18 +1899,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                     </span>
                                 )}
                             </button>
-                            <button
-                                onClick={() => {
-                                    setActiveTab('discounts');
-                                    setIsSideDrawerOpen(false);
-                                }}
-                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
-                                    activeTab === 'discounts' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
-                                }`}
-                            >
-                                <ColoredTagIcon className="w-6 h-6" />
-                                <span className="font-medium">Discounts</span>
-                            </button>
+
                             <button
                                 onClick={() => {
                                     setActiveTab('membership');
@@ -1649,6 +2046,10 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                 currentPage="dashboard"
                 t={t}
                 onNotificationsClick={handleShowNotifications}
+                onHomeClick={() => onNavigate?.('home')}
+                onProfileClick={() => setActiveTab('profile')}
+                onChatClick={() => {/* Add chat handler if needed */}}
+                unreadNotifications={notifications?.length || 0}
             />
 
             {/* Notifications Modal */}
@@ -1661,6 +2062,14 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                     userRole="therapist"
                 />
             )}
+
+            {/* Busy Timer Modal */}
+            <BusyTimerModal
+                isOpen={showBusyTimerModal}
+                onClose={() => setShowBusyTimerModal(false)}
+                onConfirm={handleBusyTimerConfirm}
+                t={t}
+            />
         </div>
     );
 };

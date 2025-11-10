@@ -279,6 +279,9 @@ export interface Therapist {
     // Dynamic pricing support
     hasPackages?: boolean;
     discountPercentage?: number; // Overall discount for promotions
+    discountEndTime?: string | Date; // When the discount expires (ISO timestamp)
+    discountDuration?: number; // Duration in hours for the discount period
+    isDiscountActive?: boolean; // Whether discount is currently active
     membershipExpiryDate?: string; // Date when current membership expires
     lastMembershipUpdateDate?: string; // Date of last membership renewal
     totalActiveMembershipMonths?: number; // Total months of active membership
@@ -292,6 +295,10 @@ export interface Therapist {
     serviceRadius?: number; // minimum 7km - how far they will travel for hotel/villa services
     languages?: string[]; // Languages spoken: ['en', 'id', 'zh', 'ja', 'ko', 'ru', 'fr', 'de', 'es']
     hotelVillaPricing?: PricingString; // Special pricing for hotel/villa live menu (JSON string for Appwrite)
+    
+    // Busy timer functionality
+    busyUntil?: string; // ISO timestamp when therapist becomes available again
+    busyDuration?: number; // Duration in minutes for the busy period
 }
 
 export interface Place {

@@ -76,7 +76,15 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({ onSuccess, onBa
                     // Clear any cached data
                     sessionStorage.clear();
                     localStorage.removeItem('therapist-cache');
-                    onSuccess(response.userId);
+                    
+                    // 🔥 FIX: Use documentId (therapist profile) instead of userId (Appwrite account)
+                    const therapistId = response.documentId || response.userId;
+                    console.log('🎯 [Login Success] Passing therapist ID to dashboard:', {
+                        userId: response.userId,
+                        documentId: response.documentId,
+                        usingId: therapistId
+                    });
+                    onSuccess(therapistId);
                 } else {
                     // Specific error messages
                     if (response.error?.includes('Invalid credentials') || 

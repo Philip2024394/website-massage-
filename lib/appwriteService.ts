@@ -306,11 +306,29 @@ export const therapistService = {
                 console.log(`   - Profile picture: ${therapist.profilePicture || 'None'}`);
                 console.log(`   - Status normalized: ${therapist.status} -> ${normalizeStatus(therapist.status)}`);
                 
+                // Extract busy timer data from description if present
+                let extractedBusyTimer = null;
+                let cleanDescription = therapist.description || '';
+                
+                const timerMatch = cleanDescription.match(/\[TIMER:(.+?)\]/);
+                if (timerMatch) {
+                    try {
+                        extractedBusyTimer = JSON.parse(timerMatch[1]);
+                        // Remove timer data from description for display
+                        cleanDescription = cleanDescription.replace(/\[TIMER:.+?\]/, '').trim();
+                    } catch (e) {
+                        console.warn('Failed to parse timer data for therapist:', therapist.name);
+                    }
+                }
+
                 return {
                     ...therapist,
                     mainImage: assignedMainImage,
                     status: normalizeStatus(therapist.status),
-                    availability: normalizeStatus(therapist.availability || therapist.status)
+                    availability: normalizeStatus(therapist.availability || therapist.status),
+                    description: cleanDescription,
+                    busyUntil: extractedBusyTimer?.busyUntil || null,
+                    busyDuration: extractedBusyTimer?.busyDuration || null
                 };
             });
             
@@ -361,11 +379,31 @@ export const therapistService = {
                 return status; // Return as-is if unknown
             };
             
-            const normalizedTherapists = response.documents.map(therapist => ({
-                ...therapist,
-                status: normalizeStatus(therapist.status),
-                availability: normalizeStatus(therapist.availability || therapist.status)
-            }));
+            const normalizedTherapists = response.documents.map(therapist => {
+                // Extract busy timer data from description if present
+                let extractedBusyTimer = null;
+                let cleanDescription = therapist.description || '';
+                
+                const timerMatch = cleanDescription.match(/\[TIMER:(.+?)\]/);
+                if (timerMatch) {
+                    try {
+                        extractedBusyTimer = JSON.parse(timerMatch[1]);
+                        // Remove timer data from description for display
+                        cleanDescription = cleanDescription.replace(/\[TIMER:.+?\]/, '').trim();
+                    } catch (e) {
+                        console.warn('Failed to parse timer data for therapist:', therapist.name);
+                    }
+                }
+
+                return {
+                    ...therapist,
+                    status: normalizeStatus(therapist.status),
+                    availability: normalizeStatus(therapist.availability || therapist.status),
+                    description: cleanDescription,
+                    busyUntil: extractedBusyTimer?.busyUntil || null,
+                    busyDuration: extractedBusyTimer?.busyDuration || null
+                };
+            });
             
             return normalizedTherapists;
         } catch (error) {
@@ -461,7 +499,9 @@ export const therapistService = {
             // Now update with the provided data
             if (data.status) {
                 mappedData.status = data.status.toLowerCase(); // Database expects lowercase for status
-                mappedData.availability = data.status; // Database expects capitalized for availability
+                // Convert status to proper capitalized format for availability field
+                const statusCapitalized = data.status.charAt(0).toUpperCase() + data.status.slice(1).toLowerCase();
+                mappedData.availability = statusCapitalized; // Database expects capitalized for availability
             }
             
             // Handle explicit availability field (ensure it's capitalized)
@@ -500,6 +540,44 @@ export const therapistService = {
             if (data.specialization) mappedData.specialization = data.specialization;
             if (data.yearsOfExperience) mappedData.yearsOfExperience = data.yearsOfExperience;
             if (data.isLicensed !== undefined) mappedData.isLicensed = data.isLicensed;
+            
+            // Handle busy timer fields - store in existing description field as JSON for now
+            if (data.busyUntil !== undefined || data.busyDuration !== undefined) {
+                try {
+                    // Get current description to preserve it
+                    let currentDesc = currentDocument.description || '';
+                    let busyTimerData = null;
+                    
+                    // Try to extract existing timer data from description
+                    const timerMatch = currentDesc.match(/\[TIMER:(.+?)\]/);
+                    if (timerMatch) {
+                        try {
+                            busyTimerData = JSON.parse(timerMatch[1]);
+                            // Remove old timer data from description
+                            currentDesc = currentDesc.replace(/\[TIMER:.+?\]/, '').trim();
+                        } catch (e) {
+                            console.warn('Failed to parse existing timer data');
+                        }
+                    }
+                    
+                    // Update timer data
+                    if (data.busyUntil !== undefined || data.busyDuration !== undefined) {
+                        busyTimerData = {
+                            busyUntil: data.busyUntil ?? busyTimerData?.busyUntil ?? null,
+                            busyDuration: data.busyDuration ?? busyTimerData?.busyDuration ?? null
+                        };
+                        
+                        // Only add timer data if busyUntil exists
+                        if (busyTimerData.busyUntil) {
+                            mappedData.description = currentDesc + (currentDesc ? ' ' : '') + `[TIMER:${JSON.stringify(busyTimerData)}]`;
+                        } else {
+                            mappedData.description = currentDesc;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Failed to handle busy timer data:', e);
+                }
+            }
             
             // Remove Appwrite metadata fields
             const { $id, $createdAt, $updatedAt, $permissions, $databaseId, $collectionId, ...cleanMappedData } = mappedData;
@@ -1594,6 +1672,12 @@ export const notificationService = {
 
     async getUnread(providerId: number | string): Promise<any[]> {
         try {
+            // 🔒 SECURITY FIX: Check if notifications collection is configured
+            if (!APPWRITE_CONFIG.collections.notifications || APPWRITE_CONFIG.collections.notifications === '') {
+                console.log('ℹ️ Notifications collection not configured - returning empty array');
+                return [];
+            }
+            
             const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.notifications,
@@ -1605,8 +1689,12 @@ export const notificationService = {
             );
             return response.documents;
         } catch (error) {
-            // Silently handle missing notifications collection
-            if (!(error as any)?.message?.includes('Collection with the requested ID could not be found')) {
+            // Silently handle missing notifications collection or permissions
+            if ((error as any)?.message?.includes('Collection with the requested ID could not be found') ||
+                (error as any)?.message?.includes('missing scopes') ||
+                (error as any)?.message?.includes('Unauthorized')) {
+                console.log('ℹ️ Notifications not available - collection disabled or insufficient permissions');
+            } else {
                 console.error('Error fetching unread notifications:', error);
             }
             return [];
@@ -1615,6 +1703,12 @@ export const notificationService = {
 
     async markAsRead(notificationId: string): Promise<any> {
         try {
+            // 🔒 SECURITY FIX: Check if notifications collection is configured
+            if (!APPWRITE_CONFIG.collections.notifications || APPWRITE_CONFIG.collections.notifications === '') {
+                console.log('ℹ️ Notifications collection not configured - skipping mark as read');
+                return null;
+            }
+            
             const response = await databases.updateDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.notifications,
@@ -1664,6 +1758,12 @@ export const notificationService = {
 
     async delete(notificationId: string): Promise<void> {
         try {
+            // 🔒 SECURITY FIX: Check if notifications collection is configured
+            if (!APPWRITE_CONFIG.collections.notifications || APPWRITE_CONFIG.collections.notifications === '') {
+                console.log('ℹ️ Notifications collection not configured - skipping delete');
+                return;
+            }
+            
             await databases.deleteDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.notifications,

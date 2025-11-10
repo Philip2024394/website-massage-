@@ -172,15 +172,16 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
     };
 
     const handlePriceChange = (duration: string, value: string) => {
-        // Remove any non-digit characters - only allow digits
+        // Accept both formats: "350" or "350k"
+        // Remove 'k' suffix if present, keep only digits
         let cleanValue = value.replace(/[^\d]/g, '');
         
-        // 🔥 STRICT REQUIREMENT: Must be exactly 3 digits
+        // Allow up to 3 digits maximum
         if (cleanValue.length > 3) {
             cleanValue = cleanValue.substring(0, 3);
         }
         
-        // Auto-add 'k' for display if user entered digits
+        // Always display with 'k' suffix if digits are entered
         const displayValue = cleanValue ? `${cleanValue}k` : '';
         
         // Update local input state immediately for real-time display
@@ -189,8 +190,8 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
             regular: { ...prev.regular, [duration]: displayValue }
         }));
         
-        // Save to pricing ONLY if user has entered exactly 3 digits
-        if (cleanValue && cleanValue.length === 3) {
+        // Save to pricing if user has entered 1-3 digits (more flexible)
+        if (cleanValue && cleanValue.length >= 1 && cleanValue.length <= 3) {
             // Convert to actual price (multiply by 1000) and save
             const numericValue = parseInt(cleanValue, 10) * 1000 || 0;
             setPricing({ ...pricing, [duration]: numericValue });
@@ -430,7 +431,10 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
             
             <div>
                 <label className="block text-sm font-medium text-gray-700">{t.nameLabel}</label>
-                {renderInput(name, setName, UserSolidIcon, "Enter your full name")}
+{(() => {
+                    console.log('🏷️ Rendering name field with value:', name);
+                    return renderInput(name, setName, UserSolidIcon, "Enter your full name");
+                })()}
             </div>
 
             <div>
@@ -501,7 +505,7 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                 </div>
             </div>
 
-            <div>
+            <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700">{t.descriptionLabel}</label>
                 <div className="relative">
                     <div className="absolute top-3.5 left-0 pl-3 flex items-center pointer-events-none">
@@ -514,13 +518,13 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                                 setDescription(e.target.value);
                             }
                         }} 
-                        rows={3} 
+                        rows={4} 
                         maxLength={350}
                         placeholder="Describe your massage expertise and specialties"
                         aria-label="Therapist description"
-                        className="mt-1 block w-full pl-10 pr-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-orange focus:border-brand-orange text-gray-900" 
+                        className="mt-1 block w-full pl-10 pr-3 py-3 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-orange focus:border-brand-orange text-gray-900 resize-none" 
                     />
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-gray-500 mt-2">
                         {description.length}/350 characters
                     </p>
                 </div>
@@ -551,33 +555,6 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                     <PhoneIcon className="w-4 h-4" />
                     <span>Test WhatsApp Connection</span>
                 </Button>
-            </div>
-
-            <div>
-                <label className="block text-sm font-medium text-gray-700">
-                    {t.massageTypesLabel}
-                    <span className="text-xs text-gray-500 ml-2">
-                        (Select up to 5 specialties - {massageTypes.length}/5 selected)
-                    </span>
-                </label>
-                <div className="mt-2 p-3 bg-white border border-gray-200 rounded-lg space-y-4">
-                    {MASSAGE_TYPES_CATEGORIZED.map((category: any) => (
-                        <div key={category.category}>
-                            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{category.category}</h4>
-                            <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-2">
-                                {category.types.map((type: string) => (
-                                    <CustomCheckbox
-                                        key={type}
-                                        label={type}
-                                        checked={massageTypes.includes(type)}
-                                        onChange={() => handleMassageTypeChange(type)}
-                                        disabled={!massageTypes.includes(type) && massageTypes.length >= 5}
-                                    />
-                                ))}
-                            </div>
-                        </div>
-                    ))}
-                </div>
             </div>
 
             {/* Languages Selection */}
@@ -616,6 +593,34 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                             </button>
                         ))}
                     </div>
+                </div>
+            </div>
+
+            {/* Massage Specializations - Positioned with extra spacing to avoid bio text overlap */}
+            <div className="mt-8 pt-4 border-t border-gray-100">
+                <label className="block text-sm font-medium text-gray-700">
+                    {t.massageTypesLabel}
+                    <span className="text-xs text-gray-500 ml-2">
+                        (Select up to 5 specialties - {massageTypes.length}/5 selected)
+                    </span>
+                </label>
+                <div className="mt-2 p-3 bg-white border border-gray-200 rounded-lg space-y-4">
+                    {MASSAGE_TYPES_CATEGORIZED.map((category: any) => (
+                        <div key={category.category}>
+                            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{category.category}</h4>
+                            <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-2">
+                                {category.types.map((type: string) => (
+                                    <CustomCheckbox
+                                        key={type}
+                                        label={type}
+                                        checked={massageTypes.includes(type)}
+                                        onChange={() => handleMassageTypeChange(type)}
+                                        disabled={!massageTypes.includes(type) && massageTypes.length >= 5}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
 
@@ -701,7 +706,7 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                 <h3 className="text-sm sm:text-md font-medium text-gray-800 mb-1">Set Your Prices (Rp) <span className="text-red-500">*</span></h3>
                 <p className="text-xs text-gray-500 mb-1">These Prices Displayed On The App</p>
                 <p className="text-xs text-red-600 mb-2 font-medium">🔴 Required: All three pricing fields must be filled</p>
-                <p className="text-xs text-orange-600 mb-3 font-medium">⚠️ Format: Enter 1-3 digits only (e.g., 250, 350, 450) - 'k' is auto-added</p>
+                <p className="text-xs text-orange-600 mb-3 font-medium">⚠️ Format: Enter 1-3 digits with optional 'k' (e.g., 250, 350k, 450) - accepts both formats</p>
                 <div className="grid grid-cols-3 gap-2 sm:gap-3">
                     <div>
                        <label className="block text-xs font-medium text-gray-600 mb-1">{t['60min'] || '60min'} <span className="text-red-500">*</span></label>
@@ -711,10 +716,10 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                                type="text" 
                                value={inputValues.regular["60"]} 
                                onChange={e => handlePriceChange("60", e.target.value)} 
-                               placeholder="250" 
-                               maxLength={3}
-                               pattern="[0-9]{1,3}"
-                               title="REQUIRED: Enter 1-3 digits (e.g., 250 - k will be added automatically)"
+                               placeholder="250k" 
+                               maxLength={4}
+                               pattern="[0-9]{1,3}k?"
+                               title="REQUIRED: Enter 1-3 digits with optional 'k' (e.g., 250 or 250k)"
                                className="block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 bg-white border-2 border-red-200 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm focus:border-red-400 focus:ring-red-400" 
                                required
                            />
@@ -729,10 +734,10 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                                type="text" 
                                value={inputValues.regular["90"]} 
                                onChange={e => handlePriceChange("90", e.target.value)} 
-                               placeholder="350" 
-                               maxLength={3}
-                               pattern="[0-9]{1,3}"
-                               title="REQUIRED: Enter 1-3 digits (e.g., 350 - k will be added automatically)"
+                               placeholder="350k" 
+                               maxLength={4}
+                               pattern="[0-9]{1,3}k?"
+                               title="REQUIRED: Enter 1-3 digits with optional 'k' (e.g., 350 or 350k)"
                                className="block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 bg-white border-2 border-red-200 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm focus:border-red-400 focus:ring-red-400" 
                                required
                            />
@@ -747,10 +752,10 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                                type="text" 
                                value={inputValues.regular["120"]} 
                                onChange={e => handlePriceChange("120", e.target.value)} 
-                               placeholder="450" 
-                               maxLength={3}
-                               pattern="[0-9]{1,3}"
-                               title="REQUIRED: Enter 1-3 digits (e.g., 450 - k will be added automatically)"
+                               placeholder="450k" 
+                               maxLength={4}
+                               pattern="[0-9]{1,3}k?"
+                               title="REQUIRED: Enter 1-3 digits with optional 'k' (e.g., 450 or 450k)"
                                required
                                className="block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 bg-white border-2 border-red-200 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm focus:border-red-400 focus:ring-red-400" 
                            />
@@ -797,9 +802,9 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                                value={inputValues.hotel["60"]} 
                                onChange={e => handleHotelVillaPriceChange("60", e.target.value)} 
                                placeholder="250" 
-                               maxLength={3}
-                               pattern="[0-9]{1,3}"
-                               title="Enter 1-3 digits (e.g., 250 - k will be added automatically)"
+                               maxLength={4}
+                               pattern="[0-9]{1,3}k?"
+                               title="Enter 1-3 digits with optional 'k' (e.g., 250 or 250k)"
                                disabled={useSamePricing}
                                className={`block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 border border-gray-300 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm ${
                                    useSamePricing ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
@@ -812,7 +817,7 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                             </p>
                         )}
                         {!useSamePricing && pricing["60"] === 0 && (
-                            <p className="text-xs text-gray-400 mt-1">Enter digits only (k auto-added)</p>
+                            <p className="text-xs text-gray-400 mt-1">Enter digits with optional 'k' (e.g., 250 or 250k)</p>
                         )}
                     </div>
                     <div>
@@ -824,9 +829,9 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                                value={inputValues.hotel["90"]} 
                                onChange={e => handleHotelVillaPriceChange("90", e.target.value)} 
                                placeholder="350" 
-                               maxLength={3}
-                               pattern="[0-9]{1,3}"
-                               title="Enter 1-3 digits (e.g., 350 - k will be added automatically)"
+                               maxLength={4}
+                               pattern="[0-9]{1,3}k?"
+                               title="Enter 1-3 digits with optional 'k' (e.g., 350 or 350k)"
                                disabled={useSamePricing}
                                className={`block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 border border-gray-300 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm ${
                                    useSamePricing ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
@@ -839,7 +844,7 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                             </p>
                         )}
                         {!useSamePricing && pricing["90"] === 0 && (
-                            <p className="text-xs text-gray-400 mt-1">Enter digits only (k auto-added)</p>
+                            <p className="text-xs text-gray-400 mt-1">Enter digits with optional 'k' (e.g., 350 or 350k)</p>
                         )}
                     </div>
                      <div>
@@ -851,9 +856,9 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                                value={inputValues.hotel["120"]} 
                                onChange={e => handleHotelVillaPriceChange("120", e.target.value)} 
                                placeholder="450" 
-                               maxLength={3}
-                               pattern="[0-9]{1,3}"
-                               title="Enter 1-3 digits (e.g., 450 - k will be added automatically)"
+                               maxLength={4}
+                               pattern="[0-9]{1,3}k?"
+                               title="Enter 1-3 digits with optional 'k' (e.g., 450 or 450k)"
                                disabled={useSamePricing}
                                className={`block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 border border-gray-300 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm ${
                                    useSamePricing ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
@@ -866,7 +871,7 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                             </p>
                         )}
                         {!useSamePricing && pricing["120"] === 0 && (
-                            <p className="text-xs text-gray-400 mt-1">Enter digits only (k auto-added)</p>
+                            <p className="text-xs text-gray-400 mt-1">Enter digits with optional 'k' (e.g., 450 or 450k)</p>
                         )}
                     </div>
                 </div>
@@ -908,7 +913,7 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                             <h3 className="font-semibold text-green-800">Profile is Live!</h3>
                         </div>
                         <p className="text-sm text-green-700">
-                            🚀 Your profile is automatically active and customers can book your services! You can set your availability status in the Status tab.
+                            � Your profile is now LIVE and automatically set to "Available"! Customers can immediately book your services. You can change to "Busy" or "Offline" anytime in the Status tab.
                         </p>
                     </div>
                 )}
@@ -925,7 +930,7 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                             <h3 className="font-semibold text-blue-800">Profile is Live!</h3>
                         </div>
                         <p className="text-sm text-blue-700">
-                            ✅ Your profile is active and customers can book your services. You can now set your availability status in the Status tab.
+                            🟢 Your profile is LIVE and automatically set to "Available"! Customers can book your services now. Use the Status tab to change to "Busy" or "Offline" when needed.
                         </p>
                     </div>
                 )}
