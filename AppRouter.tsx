@@ -134,6 +134,10 @@ const renderDashboardPages = (page: Page, props: AppRouterProps) => {
 
     switch (page) {
         case 'therapistDashboard':
+            console.log('🎯 AppRouter: THERAPIST DASHBOARD CASE TRIGGERED!');
+            console.log('🔍 AppRouter: Current loggedInProvider:', loggedInProvider);
+            console.log('🔍 AppRouter: Available therapists count:', therapists.length);
+            
             // 🔥 FIX: Find therapist by document ID (now passed from login)
             const existingTherapist = therapists.find(t => 
                 t.id === loggedInProvider?.id || 
@@ -144,6 +148,7 @@ const renderDashboardPages = (page: Page, props: AppRouterProps) => {
             
             console.log('🎯 AppRouter: Searching for therapist in homepage data:', {
                 loggedInProviderId: loggedInProvider?.id,
+                loggedInProviderType: loggedInProvider?.type,
                 totalTherapistsInArray: therapists.length,
                 searchResult: !!existingTherapist,
                 foundTherapistName: existingTherapist?.name,
@@ -154,9 +159,31 @@ const renderDashboardPages = (page: Page, props: AppRouterProps) => {
                     $id: t.$id, 
                     documentId: t.documentId,
                     therapistId: t.therapistId 
-                }))
+                })),
+                // Debug info from login
+                loginDebugInfo: localStorage.getItem('therapist_login_debug')
             });
-            return <TherapistDashboardPage 
+            
+            // Additional check: ensure we have a logged in provider
+            if (!loggedInProvider) {
+                console.error('❌ AppRouter: No loggedInProvider found! User should be redirected to login.');
+                // Optionally redirect to login
+                // setPage('therapistLogin');
+                // return null;
+            }
+            
+            if (loggedInProvider?.type !== 'therapist') {
+                console.error('❌ AppRouter: loggedInProvider type is not therapist:', loggedInProvider?.type);
+            }
+            console.log('✅ AppRouter: About to render TherapistDashboardPage with props:', {
+                therapistId: loggedInProvider?.id || '',
+                existingTherapistData: existingTherapist ? { name: existingTherapist.name, id: existingTherapist.id } : null,
+                bookingsCount: bookings.length,
+                notificationsCount: notifications.filter(n => n.providerId === loggedInProvider?.id).length
+            });
+            
+            // 🔥 FORCE RENDER: Always render the dashboard if we reach this case
+            const dashboardComponent = <TherapistDashboardPage 
                 onSave={handleSaveTherapist}
                 onLogout={handleProviderLogout}
                 onNavigateToNotifications={handleNavigateToNotifications}
@@ -170,6 +197,9 @@ const renderDashboardPages = (page: Page, props: AppRouterProps) => {
                 notifications={notifications.filter(n => n.providerId === loggedInProvider?.id)}
                 t={t.providerDashboard || {}}
             />;
+            
+            console.log('🎯 AppRouter: TherapistDashboard component created, returning...');
+            return dashboardComponent;
         case 'placeDashboard':
             return <PlaceDashboardPage 
                 loggedInProvider={loggedInProvider} 
@@ -468,8 +498,17 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'therapistLogin': 
             return <TherapistLoginPage 
                 onSuccess={(therapistId) => {
+                    console.log('🚀 AppRouter: TherapistLogin onSuccess called with ID:', therapistId);
+                    console.log('🔧 AppRouter: Setting loggedInProvider...');
                     setLoggedInProvider({ id: therapistId, type: 'therapist' });
+                    console.log('🔧 AppRouter: Setting page to therapistDashboard...');
                     setPage('therapistDashboard');
+                    console.log('✅ AppRouter: Login success handler complete');
+                    
+                    // Add a small delay to ensure state is updated
+                    setTimeout(() => {
+                        console.log('🔍 AppRouter: Post-login state check - current page should be therapistDashboard');
+                    }, 100);
                 }} 
                 onBack={handleBackToHome} 
             />;
@@ -1159,6 +1198,38 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             />;
             
         default: 
+            console.error('🚨 AppRouter: Unknown page case reached!', {
+                page,
+                loggedInProvider,
+                expectedCases: ['therapistDashboard', 'therapistLogin', 'home', 'landing'],
+                allProps: Object.keys(props)
+            });
+            
+            // If we should be on therapist dashboard but ended up in default, force it
+            if (loggedInProvider?.type === 'therapist' && 
+                ['therapistDashboard', 'therapist-dashboard'].includes(page as string)) {
+                console.log('🔧 AppRouter: Force rendering therapist dashboard from default case');
+                
+                return <TherapistDashboardPage 
+                    onSave={handleSaveTherapist}
+                    onLogout={handleProviderLogout}
+                    onNavigateToNotifications={handleNavigateToNotifications}
+                    onUpdateBookingStatus={handleUpdateBookingStatus}
+                    onStatusChange={async (status: AvailabilityStatus) => {
+                        await handleTherapistStatusChange(status as string);
+                    }}
+                    therapistId={loggedInProvider.id.toString()}
+                    existingTherapistData={therapists.find(t => 
+                        t.id === loggedInProvider.id || 
+                        t.$id === loggedInProvider.id ||
+                        (t as any).documentId === loggedInProvider.id
+                    ) || undefined}
+                    bookings={bookings}
+                    notifications={notifications.filter(n => n.providerId === loggedInProvider.id)}
+                    t={t.providerDashboard || {}}
+                />;
+            }
+            
             return null;
     }
 };
