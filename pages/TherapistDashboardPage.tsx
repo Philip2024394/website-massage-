@@ -841,7 +841,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                         const lowercaseStatus = newStatus.toLowerCase(); // Convert to lowercase for database
                         const updateResult = await therapistService.update(currentTherapist.$id, {
                             status: lowercaseStatus,
-                            availability: lowercaseStatus,
+                            availability: newStatus, // Keep capitalized for availability field
                             isOnline: newStatus === 'Available',
                             isLive: true
                         });

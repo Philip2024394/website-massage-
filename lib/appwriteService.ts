@@ -460,8 +460,26 @@ export const therapistService = {
             
             // Now update with the provided data
             if (data.status) {
-                mappedData.status = data.status;
-                mappedData.availability = data.status; // Also update availability field
+                mappedData.status = data.status.toLowerCase(); // Database expects lowercase for status
+                mappedData.availability = data.status; // Database expects capitalized for availability
+            }
+            
+            // Handle explicit availability field (ensure it's capitalized)
+            if (data.availability) {
+                // Ensure availability is properly capitalized
+                const availabilityValue = data.availability;
+                if (typeof availabilityValue === 'string') {
+                    // If it's lowercase, convert to proper case
+                    if (availabilityValue.toLowerCase() === 'available') {
+                        mappedData.availability = 'Available';
+                    } else if (availabilityValue.toLowerCase() === 'busy') {
+                        mappedData.availability = 'Busy';
+                    } else if (availabilityValue.toLowerCase() === 'offline') {
+                        mappedData.availability = 'Offline';
+                    } else {
+                        mappedData.availability = availabilityValue; // Use as-is if already correct
+                    }
+                }
             }
             
             // Update other fields only if provided
@@ -487,6 +505,12 @@ export const therapistService = {
             const { $id, $createdAt, $updatedAt, $permissions, $databaseId, $collectionId, ...cleanMappedData } = mappedData;
             
             console.log('📋 Final mapped data for Appwrite schema (with all required fields):', cleanMappedData);
+            console.log('🔍 Status/Availability values being sent:', {
+                status: cleanMappedData.status,
+                availability: cleanMappedData.availability,
+                originalStatus: data.status,
+                originalAvailability: data.availability
+            });
             
             const response = await databases.updateDocument(
                 APPWRITE_CONFIG.databaseId,
