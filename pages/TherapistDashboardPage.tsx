@@ -6,7 +6,7 @@ import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages, stri
 import { therapistService } from '../lib/appwriteService';
 import { MASSAGE_TYPES_CATEGORIZED } from '../constants/rootConstants';
 import { LogOut, Activity, Calendar, TrendingUp, Bell } from 'lucide-react';
-import { ColoredProfileIcon, ColoredCalendarIcon, ColoredAnalyticsIcon, ColoredHotelIcon, ColoredCrownIcon, ColoredDocumentIcon, ColoredGlobeIcon, ColoredHistoryIcon, ColoredCoinsIcon } from '../components/ColoredIcons';
+import { ColoredProfileIcon, ColoredCalendarIcon, ColoredAnalyticsIcon, ColoredHotelIcon, ColoredCrownIcon, ColoredDocumentIcon, ColoredGlobeIcon, ColoredHistoryIcon, ColoredCoinsIcon, ColoredTagIcon } from '../components/ColoredIcons';
 import { useTranslations } from '../lib/useTranslations';
 
 import Footer from '../components/Footer';
@@ -2280,6 +2280,126 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                     </div>
                                                 </button>
                                             ))}
+                                        </div>
+                                    </div>
+
+                                    {/* ADDITIONAL FEATURES SECTION */}
+                                    <div className="mb-6">
+                                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2">
+                                            Additional Features
+                                        </h3>
+                                        <div className="space-y-2">
+                                            
+                                            {/* Discount System */}
+                                            {onNavigate && (
+                                                <button
+                                                    onClick={() => {
+                                                        setIsSideDrawerOpen(false);
+                                                        onNavigate('therapist-discount-system' as any);
+                                                    }}
+                                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-orange-400 group transform hover:scale-105 hover:bg-orange-50"
+                                                >
+                                                    <div className="p-2 bg-gradient-to-br from-orange-400 to-yellow-500 rounded-lg">
+                                                        <div className="w-5 h-5 flex items-center justify-center text-white text-sm font-bold">
+                                                            %
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex-grow">
+                                                        <p className="font-semibold text-gray-800 group-hover:text-orange-600 transition-colors">
+                                                            Discount System
+                                                        </p>
+                                                        <p className="text-xs text-gray-500">Manage special offers</p>
+                                                    </div>
+                                                    <span className="bg-gradient-to-r from-orange-400 to-yellow-500 text-white text-xs px-2 py-1 rounded-full font-bold">
+                                                        NEW
+                                                    </span>
+                                                </button>
+                                            )}
+
+                                            {/* Discount Badges */}
+                                            {onNavigate && (
+                                                <button
+                                                    onClick={() => {
+                                                        setIsSideDrawerOpen(false);
+                                                        onNavigate('therapistDiscountBadge' as any);
+                                                    }}
+                                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-purple-400 group transform hover:scale-105 hover:bg-purple-50"
+                                                >
+                                                    <div className="p-2 bg-gradient-to-br from-purple-400 to-purple-500 rounded-lg">
+                                                        <ColoredTagIcon className="w-5 h-5 text-white" />
+                                                    </div>
+                                                    <div className="flex-grow">
+                                                        <p className="font-semibold text-gray-800 group-hover:text-purple-600 transition-colors">
+                                                            Discount Badges
+                                                        </p>
+                                                        <p className="text-xs text-gray-500">Design badge promotions</p>
+                                                    </div>
+                                                </button>
+                                            )}
+
+                                            {/* Website Management */}
+                                            {onNavigate && (
+                                                <button
+                                                    onClick={() => {
+                                                        setIsSideDrawerOpen(false);
+                                                        onNavigate('website-management' as any);
+                                                    }}
+                                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-indigo-400 group transform hover:scale-105 hover:bg-indigo-50"
+                                                >
+                                                    <div className="p-2 bg-gradient-to-br from-indigo-400 to-indigo-500 rounded-lg">
+                                                        <ColoredGlobeIcon className="w-5 h-5 text-white" />
+                                                    </div>
+                                                    <div className="flex-grow">
+                                                        <p className="font-semibold text-gray-800 group-hover:text-indigo-600 transition-colors">
+                                                            Website Management
+                                                        </p>
+                                                        <p className="text-xs text-gray-500">Manage online presence</p>
+                                                    </div>
+                                                </button>
+                                            )}
+
+                                            {/* Coin History */}
+                                            {onNavigate && (
+                                                <button
+                                                    onClick={() => {
+                                                        setIsSideDrawerOpen(false);
+                                                        onNavigate('coin-history' as any);
+                                                    }}
+                                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-blue-400 group transform hover:scale-105 hover:bg-blue-50"
+                                                >
+                                                    <div className="p-2 bg-gradient-to-br from-blue-400 to-blue-500 rounded-lg">
+                                                        <ColoredHistoryIcon className="w-5 h-5 text-white" />
+                                                    </div>
+                                                    <div className="flex-grow">
+                                                        <p className="font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
+                                                            Coin History
+                                                        </p>
+                                                        <p className="text-xs text-gray-500">View reward transactions</p>
+                                                    </div>
+                                                </button>
+                                            )}
+
+                                            {/* Coin Shop */}
+                                            {onNavigate && (
+                                                <button
+                                                    onClick={() => {
+                                                        setIsSideDrawerOpen(false);
+                                                        onNavigate('coin-shop' as any);
+                                                    }}
+                                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-green-400 group transform hover:scale-105 hover:bg-green-50"
+                                                >
+                                                    <div className="p-2 bg-gradient-to-br from-green-400 to-green-500 rounded-lg">
+                                                        <ColoredCoinsIcon className="w-5 h-5 text-white" />
+                                                    </div>
+                                                    <div className="flex-grow">
+                                                        <p className="font-semibold text-gray-800 group-hover:text-green-600 transition-colors">
+                                                            Coin Shop
+                                                        </p>
+                                                        <p className="text-xs text-gray-500">Redeem rewards & benefits</p>
+                                                    </div>
+                                                </button>
+                                            )}
+
                                         </div>
                                     </div>
 

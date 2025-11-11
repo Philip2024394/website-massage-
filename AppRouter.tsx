@@ -18,6 +18,7 @@ import TherapistDashboardPage from './pages/TherapistDashboardPage';
 import TherapistProfilePage from './pages/TherapistProfilePage'; // 🎯 NEW: Customer-facing therapist profile
 import TherapistStatusPage from './pages/TherapistStatusPage';
 import PlaceDashboardPage from './pages/PlaceDashboardPage';
+import PlaceDiscountSystemPage from './pages/PlaceDiscountSystemPage';
 import AgentPage from './pages/AgentPage';
 import AgentAuthPage from './pages/AgentAuthPage';
 import AgentDashboardPage from './pages/AgentDashboardPage';
@@ -187,6 +188,7 @@ const renderDashboardPages = (page: Page, props: AppRouterProps) => {
                 onSave={handleSaveTherapist}
                 onLogout={handleProviderLogout}
                 onNavigateToNotifications={handleNavigateToNotifications}
+                onNavigate={setPage}
                 onUpdateBookingStatus={handleUpdateBookingStatus}
                 onStatusChange={async (status: AvailabilityStatus) => {
                     await handleTherapistStatusChange(status as string);
@@ -205,10 +207,21 @@ const renderDashboardPages = (page: Page, props: AppRouterProps) => {
                 loggedInProvider={loggedInProvider} 
                 onLogout={handleProviderLogout}
                 setPage={setPage}
+                onNavigate={setPage}
                 bookings={bookings}
                 notifications={notifications}
                 onMarkNotificationAsRead={props.handleMarkNotificationAsRead}
                 onUpdateBookingStatus={props.handleUpdateBookingStatus}
+            />;
+        case 'place-discount-system':
+            return <PlaceDiscountSystemPage 
+                place={loggedInProvider?.type === 'place' ? loggedInProvider as any : undefined}
+                onBack={() => setPage('placeDashboard')}
+                onSave={(placeData) => {
+                    // TODO: Save the discount data to the database
+                    console.log('Saving place discount data:', placeData);
+                    setPage('placeDashboard');
+                }}
             />;
         case 'hotelDashboard':
             return <HotelDashboardPage 
@@ -629,6 +642,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return <TherapistDashboardPage 
                 onSave={handleSaveTherapist}
                 onLogout={handleProviderLogout}
+                onNavigate={setPage}
                 onNavigateToNotifications={handleNavigateToNotifications}
                 onUpdateBookingStatus={handleUpdateBookingStatus}
                 onStatusChange={async (status: AvailabilityStatus) => {

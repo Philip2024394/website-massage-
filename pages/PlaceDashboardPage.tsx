@@ -1621,6 +1621,26 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                         <div>
                             <h3 className="text-md font-medium text-gray-800">{t?.pricingTitle || 'Pricing'}</h3>
                             <p className="text-xs text-gray-500 mt-1">Enter prices as: 345k for 345,000 or full amount like 400000</p>
+                            
+                            {/* 100% Income Notice */}
+                            <div className="mb-4 p-3 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg mt-2">
+                                <div className="flex items-start space-x-3">
+                                    <div className="flex-shrink-0">
+                                        <svg className="w-5 h-5 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                                        </svg>
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="text-sm font-semibold text-green-800">
+                                            💰 100% Your Income
+                                        </p>
+                                        <p className="text-sm text-green-700 mt-1">
+                                            These prices are for <strong>direct bookings from the home page</strong>. You keep <strong>100% of the income</strong> - no commission deducted!
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <div className="grid grid-cols-3 gap-2 mt-2">
                                 <div>
                                 <label className="block text-xs font-medium text-gray-900">{t?.['60min'] || '60 min'}</label>
@@ -1679,124 +1699,6 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                             </div>
                         </div>
 
-                        {/* Discount Activation System */}
-                        <div className="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl p-6 border border-orange-200">
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
-                                    <svg className="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                                    </svg>
-                                </div>
-                                <h3 className="text-lg font-semibold text-gray-900">💥 Discount Activation System</h3>
-                            </div>
-                            
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {/* Discount Percentage */}
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Discount Percentage</label>
-                                    <div className="flex gap-2">
-                                        {[5, 10, 15, 20, 25, 30].map(percent => (
-                                            <button
-                                                key={percent}
-                                                type="button"
-                                                onClick={() => setDiscountPercentage(percent)}
-                                                className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
-                                                    discountPercentage === percent
-                                                        ? 'bg-orange-600 text-white shadow-lg transform scale-105'
-                                                        : 'bg-white text-gray-700 border border-gray-300 hover:bg-orange-50'
-                                                }`}
-                                            >
-                                                {percent}%
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                                
-                                {/* Duration */}
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Duration (Hours)</label>
-                                    <div className="flex gap-2">
-                                        {[6, 12, 24, 48, 72].map(hours => (
-                                            <button
-                                                key={hours}
-                                                type="button"
-                                                onClick={() => setDiscountDuration(hours)}
-                                                className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
-                                                    discountDuration === hours
-                                                        ? 'bg-blue-600 text-white shadow-lg transform scale-105'
-                                                        : 'bg-white text-gray-700 border border-gray-300 hover:bg-blue-50'
-                                                }`}
-                                            >
-                                                {hours}h
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            {/* Activation Button */}
-                            <div className="mt-6 flex items-center justify-between">
-                                <div>
-                                    {isDiscountActive && discountEndTime && (
-                                        <div className="text-sm text-green-600 font-medium">
-                                            🟢 Active until: {new Date(discountEndTime).toLocaleString()}
-                                        </div>
-                                    )}
-                                    {!isDiscountActive && (
-                                        <div className="text-sm text-gray-500">
-                                            ⚪ No active discount
-                                        </div>
-                                    )}
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        if (!isDiscountActive && discountPercentage > 0) {
-                                            const endTime = new Date();
-                                            endTime.setHours(endTime.getHours() + discountDuration);
-                                            setDiscountEndTime(endTime.toISOString());
-                                            setIsDiscountActive(true);
-                                        } else {
-                                            setIsDiscountActive(false);
-                                            setDiscountEndTime('');
-                                        }
-                                    }}
-                                    className={`px-6 py-3 rounded-lg font-semibold transition-all ${
-                                        !isDiscountActive && discountPercentage > 0
-                                            ? 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-lg'
-                                            : isDiscountActive
-                                            ? 'bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 shadow-lg'
-                                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                    }`}
-                                    disabled={!isDiscountActive && discountPercentage === 0}
-                                >
-                                    {!isDiscountActive && discountPercentage > 0 ? '🚀 Activate Discount' :
-                                     isDiscountActive ? '🛑 Deactivate Discount' : 
-                                     '⚠️ Select Discount %'}
-                                </button>
-                            </div>
-                            
-                            {/* Preview */}
-                            {discountPercentage > 0 && (
-                                <div className="mt-4 p-4 bg-white rounded-lg border-2 border-dashed border-orange-300">
-                                    <h4 className="text-sm font-semibold text-gray-800 mb-2">💡 Preview: How it will look</h4>
-                                    <div className="grid grid-cols-3 gap-2">
-                                        {Object.entries(pricing).map(([duration, price]) => (
-                                            <div key={duration} className="bg-gradient-to-br from-orange-50 to-orange-100 p-2 rounded-lg border border-orange-300">
-                                                <p className="text-xs text-gray-600">{duration} min</p>
-                                                <p className="text-xs text-gray-800 line-through opacity-60">
-                                                    Rp {Number(price).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
-                                                </p>
-                                                <p className="font-bold text-orange-600">
-                                                    Rp {Math.round(Number(price) * (1 - discountPercentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
-                                                </p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
                         {/* Hotel/Villa Special Pricing Section */}
                         <div className="border-t border-gray-200 pt-4">
                             <div className="flex items-center justify-between mb-3">
@@ -1816,6 +1718,32 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                     <span className="text-xs text-gray-600">Same as regular</span>
                                 </label>
                             </div>
+                            
+                            {/* Commission Notice */}
+                            <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                <div className="flex items-start space-x-3">
+                                    <div className="flex-shrink-0">
+                                        <svg className="w-5 h-5 text-yellow-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.99-.833-2.732 0L3.732 16c-.77.833.19 2.5 1.732 2.5z" />
+                                        </svg>
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="text-sm font-semibold text-yellow-800">
+                                            ⚠️ Commission Information - Hotel & Villa Only
+                                        </p>
+                                        <p className="text-sm text-yellow-700 mt-1">
+                                            <strong>20% commission</strong> will be deducted from your earnings for hotel and villa bookings. This covers platform fees, payment processing, and hotel/villa partnership costs.
+                                        </p>
+                                        <p className="text-xs text-yellow-600 mt-2 font-medium">
+                                            Example: If you charge IDR 250K, you'll receive IDR 200K after commission.
+                                        </p>
+                                        <p className="text-xs text-green-700 mt-2 font-bold bg-green-100 px-2 py-1 rounded">
+                                            💡 Remember: Your regular home page prices above are 100% commission-free!
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <div className="grid grid-cols-3 gap-2">
                                 <div>
                                 <label className="block text-xs font-medium text-gray-900">{t['60min']}</label>
@@ -2009,6 +1937,23 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                             >
                                 <ColoredHotelIcon className="w-6 h-6" />
                                 <span className="font-medium">Hotel & Villa</span>
+                            </button>
+                            <button
+                                onClick={() => {
+                                    if (onNavigate) onNavigate('place-discount-system');
+                                    setIsSideDrawerOpen(false);
+                                }}
+                                className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 border-transparent text-gray-700"
+                            >
+                                <div className="w-6 h-6 bg-gradient-to-br from-orange-400 to-yellow-500 rounded-lg flex items-center justify-center text-white text-sm font-bold">
+                                    %
+                                </div>
+                                <span className="font-medium">Discount System</span>
+                                <div className="ml-auto">
+                                    <span className="bg-gradient-to-r from-orange-400 to-yellow-500 text-white text-xs px-2 py-1 rounded-full font-bold">
+                                        NEW
+                                    </span>
+                                </div>
                             </button>
                             <button
                                 onClick={() => {
