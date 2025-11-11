@@ -82,8 +82,19 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({ onSuccess, onBa
                     console.log('🎯 [Login Success] Passing therapist ID to dashboard:', {
                         userId: response.userId,
                         documentId: response.documentId,
-                        usingId: therapistId
+                        usingId: therapistId,
+                        fullResponse: response
                     });
+                    
+                    // Store additional session info for debugging
+                    localStorage.setItem('therapist_login_debug', JSON.stringify({
+                        loginTime: new Date().toISOString(),
+                        userId: response.userId,
+                        documentId: response.documentId,
+                        usedId: therapistId
+                    }));
+                    
+                    console.log('✅ [Login Success] About to call onSuccess with ID:', therapistId);
                     onSuccess(therapistId);
                 } else {
                     // Specific error messages

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { Therapist, Pricing, Booking, Notification } from '../types';
 import type { Page } from '../types/pageTypes';
 import { AvailabilityStatus, BookingStatus, HotelVillaServiceStatus } from '../types';
-import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages, stringifyPricing, stringifyCoordinates, stringifyMassageTypes, stringifyLanguages, stringifyAnalytics } from '../utils/appwriteHelpers';
+import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages, stringifyPricing, stringifyCoordinates, stringifyMassageTypes, stringifyAnalytics } from '../utils/appwriteHelpers';
 import { therapistService, notificationService } from '../lib/appwriteService';
 import { soundNotificationService } from '../utils/soundNotificationService';
 import { getInitialRatingData } from '../utils/ratingUtils';
@@ -125,7 +125,6 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
     const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
     const [showBusyTimerModal, setShowBusyTimerModal] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
 
     const dropdownRef = useRef<HTMLDivElement>(null);
     const sideDrawerRef = useRef<HTMLDivElement>(null);
@@ -305,15 +304,14 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
 
     // Handle save with comprehensive data structure
     const handleSave = useCallback(async () => {
-        setIsSaving(true);
-        
         const therapistData = {
             name,
             description,
             profilePicture,
             whatsappNumber,
             yearsOfExperience,
-
+            massageTypes,
+            languages,
             pricing: stringifyPricing(pricing),
             hotelVillaPricing: stringifyPricing(hotelVillaPricing),
             location,
@@ -323,33 +321,18 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
             licenseNumber,
             discountPercentage,
             discountDuration,
-            discountEndTime: discountEndTime?.toISOString() || undefined,
+            discountEndTime: discountEndTime?.toISOString() || null,
             isDiscountActive,
             distance: 0, // Add required field
-            analytics: stringifyAnalytics({ 
-                impressions: 0, 
-                views: 0, 
-                profileViews: 0, 
-                whatsapp_clicks: 0,
-                whatsappClicks: 0,
-                phone_clicks: 0,
-                directions_clicks: 0,
-                bookings: 0
-            }),
-            massageTypes: stringifyMassageTypes(massageTypes),
-            languages: stringifyLanguages(languages)
+            analytics: stringifyAnalytics({}) // Add required field
         };
 
         try {
-            await onSave(therapistData as any);
+            await onSave(therapistData);
             setToast({ message: 'Profile updated successfully!', type: 'success' });
-            setTimeout(() => setToast(null), 3000);
         } catch (error) {
             console.error('Error saving:', error);
             setToast({ message: 'Failed to update profile', type: 'error' });
-            setTimeout(() => setToast(null), 5000);
-        } finally {
-            setIsSaving(false);
         }
     }, [
         name, description, profilePicture, whatsappNumber, yearsOfExperience,
@@ -368,9 +351,9 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                             {/* Burger Menu */}
                             <button
                                 onClick={() => setIsSideDrawerOpen(!isSideDrawerOpen)}
-                                className="lg:hidden p-3 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors border border-gray-200 hover:border-orange-200"
+                                className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
                             >
-                                <Menu className="w-6 h-6" />
+                                <Menu className="w-6 h-6 text-gray-600" />
                             </button>
                             <h1 className="text-xl lg:text-2xl font-bold text-gray-900">
                                 {t.therapistDashboard || 'Therapist Dashboard'}
@@ -396,13 +379,13 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                 <button
                                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                                     className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                        status === AvailabilityStatus.Available ? 'bg-green-100 text-green-800 hover:bg-green-200' :
+                                        status === AvailabilityStatus.Online ? 'bg-green-100 text-green-800 hover:bg-green-200' :
                                         status === AvailabilityStatus.Busy ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' :
                                         'bg-gray-100 text-gray-800 hover:bg-gray-200'
                                     }`}
                                 >
                                     <span className={`w-2 h-2 rounded-full ${
-                                        status === AvailabilityStatus.Available ? 'bg-green-500' :
+                                        status === AvailabilityStatus.Online ? 'bg-green-500' :
                                         status === AvailabilityStatus.Busy ? 'bg-yellow-500' :
                                         'bg-gray-500'
                                     }`} />
@@ -491,7 +474,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                             }}
                                                             className={`p-4 rounded-xl border-2 text-center font-medium transition-all ${
                                                                 status === statusOption
-                                                                    ? statusOption === AvailabilityStatus.Available 
+                                                                    ? statusOption === AvailabilityStatus.Online 
                                                                         ? 'bg-green-100 border-green-300 text-green-800'
                                                                         : statusOption === AvailabilityStatus.Busy
                                                                         ? 'bg-yellow-100 border-yellow-300 text-yellow-800'
@@ -500,7 +483,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                             }`}
                                                         >
                                                             <div className={`w-4 h-4 rounded-full mx-auto mb-2 ${
-                                                                statusOption === AvailabilityStatus.Available ? 'bg-green-500' :
+                                                                statusOption === AvailabilityStatus.Online ? 'bg-green-500' :
                                                                 statusOption === AvailabilityStatus.Busy ? 'bg-yellow-500' :
                                                                 'bg-gray-500'
                                                             }`} />
@@ -582,300 +565,45 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                 {activeTab === 'profile' && (
                                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                                         <h2 className="text-xl font-bold text-gray-900 mb-6">{t.profile || 'Profile'}</h2>
-                                        
-                                        {/* Profile Form */}
-                                        <div className="space-y-8">
-                                            {/* Profile Picture & Basic Info */}
-                                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                                                <div className="lg:col-span-1">
-                                                    <div className="flex flex-col items-center space-y-4">
-                                                        <div className="relative">
-                                                            {profilePicture ? (
-                                                                <img 
-                                                                    src={profilePicture} 
-                                                                    alt="Profile" 
-                                                                    className="w-32 h-32 rounded-full object-cover border-4 border-orange-200"
-                                                                />
-                                                            ) : (
-                                                                <div className="w-32 h-32 rounded-full bg-gray-200 border-4 border-gray-300 flex items-center justify-center">
-                                                                    <svg className="w-16 h-16 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
-                                                                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                                                                    </svg>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                        <button 
-                                                            onClick={() => {
-                                                                const input = document.createElement('input');
-                                                                input.type = 'file';
-                                                                input.accept = 'image/*';
-                                                                input.onchange = (e: any) => {
-                                                                    const file = e.target.files[0];
-                                                                    if (file) {
-                                                                        const reader = new FileReader();
-                                                                        reader.onload = (e) => {
-                                                                            setProfilePicture(e.target?.result as string);
-                                                                        };
-                                                                        reader.readAsDataURL(file);
-                                                                    }
-                                                                };
-                                                                input.click();
-                                                            }}
-                                                            className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
-                                                        >
-                                                            {profilePicture ? 'Change Photo' : 'Upload Photo'}
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div className="lg:col-span-2 space-y-6">
-                                                    {/* Name */}
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                            Full Name *
-                                                        </label>
-                                                        <input
-                                                            type="text"
-                                                            value={name}
-                                                            onChange={(e) => setName(e.target.value)}
-                                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                                            placeholder="Enter your full name"
-                                                        />
-                                                    </div>
-
-                                                    {/* WhatsApp Number */}
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                            WhatsApp Number *
-                                                        </label>
-                                                        <input
-                                                            type="tel"
-                                                            value={whatsappNumber}
-                                                            onChange={(e) => setWhatsappNumber(e.target.value)}
-                                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                                            placeholder="e.g., +62 812 3456 7890"
-                                                        />
-                                                    </div>
-
-                                                    {/* Years of Experience */}
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                            Years of Experience
-                                                        </label>
-                                                        <input
-                                                            type="number"
-                                                            value={yearsOfExperience}
-                                                            onChange={(e) => setYearsOfExperience(parseInt(e.target.value) || 0)}
-                                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                                            min="0"
-                                                            max="50"
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Description */}
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                    Professional Description *
-                                                </label>
-                                                <textarea
-                                                    value={description}
-                                                    onChange={(e) => setDescription(e.target.value)}
-                                                    rows={4}
-                                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                                    placeholder="Tell clients about your services, expertise, and experience..."
-                                                />
-                                            </div>
-
-                                            {/* Location */}
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                    Service Location *
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={location}
-                                                    onChange={(e) => setLocation(e.target.value)}
-                                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                                    placeholder="e.g., Seminyak, Bali"
-                                                />
-                                            </div>
-
-                                            {/* Massage Types */}
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                    Massage Specialties
-                                                </label>
-                                                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                                    {['Swedish', 'Deep Tissue', 'Hot Stone', 'Thai Massage', 'Aromatherapy', 'Sports Massage', 'Couples Massage', 'Prenatal', 'Reflexology'].map((type) => (
-                                                        <label key={type} className="flex items-center space-x-2 cursor-pointer">
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={massageTypes.includes(type)}
-                                                                onChange={(e) => {
-                                                                    if (e.target.checked) {
-                                                                        setMassageTypes([...massageTypes, type]);
-                                                                    } else {
-                                                                        setMassageTypes(massageTypes.filter(t => t !== type));
-                                                                    }
-                                                                }}
-                                                                className="rounded border-gray-300 text-orange-600 shadow-sm focus:border-orange-300 focus:ring focus:ring-orange-200"
-                                                            />
-                                                            <span className="text-sm text-gray-700">{type}</span>
-                                                        </label>
-                                                    ))}
-                                                </div>
-                                            </div>
-
-                                            {/* Languages */}
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                    Languages Spoken
-                                                </label>
-                                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                                    {['English', 'Indonesian', 'Mandarin', 'Japanese', 'Korean', 'Russian', 'French', 'German'].map((language) => (
-                                                        <label key={language} className="flex items-center space-x-2 cursor-pointer">
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={languages.includes(language)}
-                                                                onChange={(e) => {
-                                                                    if (e.target.checked) {
-                                                                        setLanguages([...languages, language]);
-                                                                    } else {
-                                                                        setLanguages(languages.filter(l => l !== language));
-                                                                    }
-                                                                }}
-                                                                className="rounded border-gray-300 text-orange-600 shadow-sm focus:border-orange-300 focus:ring focus:ring-orange-200"
-                                                            />
-                                                            <span className="text-sm text-gray-700">{language}</span>
-                                                        </label>
-                                                    ))}
-                                                </div>
-                                            </div>
-
-                                            {/* Pricing */}
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-4">
-                                                    Service Pricing (IDR)
-                                                </label>
-                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                                    {[60, 90, 120].map((duration) => (
-                                                        <div key={duration}>
-                                                            <label className="block text-xs font-medium text-gray-600 mb-1">
-                                                                {duration} Minutes
-                                                            </label>
-                                                            <input
-                                                                type="number"
-                                                                value={(pricing as any)[duration] || 0}
-                                                                onChange={(e) => setPricing({
-                                                                    ...pricing,
-                                                                    [duration]: parseInt(e.target.value) || 0
-                                                                })}
-                                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                                                placeholder="0"
-                                                            />
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-
-                                            {/* Certification */}
-                                            <div>
-                                                <div className="flex items-center space-x-3 mb-4">
-                                                    <input
-                                                        type="checkbox"
-                                                        id="isLicensed"
-                                                        checked={isLicensed}
-                                                        onChange={(e) => setIsLicensed(e.target.checked)}
-                                                        className="rounded border-gray-300 text-orange-600 shadow-sm focus:border-orange-300 focus:ring focus:ring-orange-200"
-                                                    />
-                                                    <label htmlFor="isLicensed" className="text-sm font-medium text-gray-700">
-                                                        I have professional certification/license
-                                                    </label>
-                                                </div>
-                                                {isLicensed && (
-                                                    <input
-                                                        type="text"
-                                                        value={licenseNumber}
-                                                        onChange={(e) => setLicenseNumber(e.target.value)}
-                                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                                        placeholder="License/Certification Number"
-                                                    />
-                                                )}
-                                            </div>
-
-                                            {/* Data Source Info */}
-                                            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                                                <h3 className="font-semibold text-blue-800 mb-2">📊 Data Connection Status</h3>
-                                                <div className="text-sm text-blue-700 space-y-1">
-                                                    <p><strong>Therapist ID:</strong> {therapistId}</p>
-                                                    <p><strong>Data Source:</strong> {therapist ? 'Appwrite Database' : 'New Profile'}</p>
-                                                    <p><strong>Profile Status:</strong> {therapist ? '✅ Connected' : '⚠️ Not Found'}</p>
-                                                    {therapist && (
-                                                        <p><strong>Document ID:</strong> {therapist.$id || 'N/A'}</p>
-                                                    )}
-                                                </div>
-                                            </div>
-
-                                            {/* Action Buttons */}
-                                            <div className="flex flex-col sm:flex-row gap-4 pt-6">
-                                                <button
-                                                    onClick={handleSave}
-                                                    disabled={isSaving}
-                                                    className="flex-1 bg-orange-500 text-white py-3 px-6 rounded-lg font-medium hover:bg-orange-600 transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                                                >
-                                                    {isSaving ? (
-                                                        <>
-                                                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                                                            Saving...
-                                                        </>
-                                                    ) : (
-                                                        'Save Profile'
-                                                    )}
-                                                </button>
-                                                <button
-                                                    onClick={fetchTherapistData}
-                                                    className="flex-1 bg-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                                                >
-                                                    Refresh Data
-                                                </button>
-                                            </div>
-                                        </div>
+                                        <TherapistProfileForm
+                                            therapist={therapist}
+                                            onSave={handleSave}
+                                            t={t}
+                                        />
                                     </div>
                                 )}
 
                                 {activeTab === 'membership' && (
                                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                                        <div className="p-4 bg-gray-50 rounded-lg">
-                                            <p className="text-gray-600">Membership plans will be integrated here.</p>
-                                        </div>
+                                        <MembershipPlansPage 
+                                            therapist={therapist}
+                                            onSave={handleSave}
+                                            t={t}
+                                        />
                                     </div>
                                 )}
 
                                 {activeTab === 'hotel-villa' && (
                                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                                         <h2 className="text-xl font-bold text-gray-900 mb-6">{t.hotelVilla || 'Hotel & Villa Services'}</h2>
-                                        <div className="p-4 bg-gray-50 rounded-lg">
-                                            <p className="text-gray-600">Hotel & Villa services will be integrated here.</p>
-                                        </div>
+                                        <HotelVillaOptIn 
+                                            therapist={therapist}
+                                            onSave={handleSave}
+                                            t={t}
+                                        />
                                     </div>
                                 )}
 
                                 {activeTab === 'terms' && (
                                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                                        <div className="p-4 bg-gray-50 rounded-lg">
-                                            <p className="text-gray-600">Terms & Conditions will be shown here.</p>
-                                        </div>
+                                        <TherapistTermsPage t={t} />
                                     </div>
                                 )}
 
                                 {activeTab === 'settings' && (
                                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                                         <h2 className="text-xl font-bold text-gray-900 mb-6">{t.settings || 'Settings'}</h2>
-                                        <div className="p-4 bg-gray-50 rounded-lg">
-                                            <p className="text-gray-600">Push notification settings will be available here.</p>
-                                        </div>
+                                        <PushNotificationSettings />
                                     </div>
                                 )}
                             </>
@@ -888,7 +616,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
             {isSideDrawerOpen && (
                 <div className="lg:hidden fixed inset-0 z-50 flex">
                     <div className="fixed inset-0 bg-gray-600 bg-opacity-50" onClick={() => setIsSideDrawerOpen(false)} />
-                    <div className="relative flex flex-col w-64 max-w-xs bg-white shadow-xl transform transition-transform duration-300" ref={sideDrawerRef}>
+                    <div className="relative flex flex-col w-64 max-w-xs bg-white shadow-xl" ref={sideDrawerRef}>
                         <div className="flex items-center justify-between p-4 border-b border-gray-200">
                             <h2 className="text-lg font-semibold text-gray-900">{t.menu || 'Menu'}</h2>
                             <button
@@ -935,14 +663,10 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                             </button>
                         </div>
                         <div className="p-4 overflow-y-auto max-h-80">
-                            <div className="p-4">
-                                <p className="text-gray-600">Notifications: {notifications.length}</p>
-                                {notifications.map((notification, index) => (
-                                    <div key={index} className="p-2 border-b border-gray-200">
-                                        {notification.message}
-                                    </div>
-                                ))}
-                            </div>
+                            <TherapistNotifications 
+                                notifications={notifications}
+                                t={t}
+                            />
                         </div>
                     </div>
                 </div>
@@ -972,7 +696,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                 </div>
             )}
 
-            <Footer t={t} />
+            <Footer />
         </div>
     );
 };
