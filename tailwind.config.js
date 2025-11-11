@@ -21,6 +21,12 @@ export default {
           800: '#9a3412',
           900: '#7c2d12',
         },
+        'brand-orange': '#f97316',
+        'brand-orange-dark': '#ea580c',
+        'brand-orange-light': '#fed7aa',
+        'brand-green': '#16a34a',
+        'brand-green-dark': '#15803d',
+        'brand-green-light': '#86efac',
       }
     },
   },

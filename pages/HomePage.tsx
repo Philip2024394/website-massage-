@@ -655,11 +655,10 @@ const HomePage: React.FC<HomePageProps> = ({
                                     allFields: Object.keys(therapist)
                                 });
                                 
-                                // Mock discount data - show all 4 discount levels (20%, 15%, 10%, 5%) on first 4 therapists
-                                const hasDiscount = index < 4;
-                                const mockDiscount = hasDiscount ? {
-                                    percentage: index === 0 ? 20 : index === 1 ? 15 : index === 2 ? 10 : 5,
-                                    expiresAt: new Date(Date.now() + (index + 2) * 60 * 60 * 1000) // Expires in 2-5 hours
+                                // Real discount data - check if therapist has active discount
+                                const realDiscount = (therapist.discountPercentage && therapist.discountPercentage > 0 && therapist.discountEndTime) ? {
+                                    percentage: therapist.discountPercentage,
+                                    expiresAt: new Date(therapist.discountEndTime)
                                 } : null;
                                 
                                 return (
@@ -675,7 +674,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                         isCustomerLoggedIn={!!loggedInCustomer}
                                         onIncrementAnalytics={(metric) => onIncrementAnalytics(therapist.id || therapist.$id, 'therapist', metric)}
                                         loggedInProviderId={loggedInProvider?.id}
-                                        activeDiscount={mockDiscount}
+                                        activeDiscount={realDiscount}
                                         t={t}
                                     />
                                 );
@@ -821,7 +820,7 @@ const HomePage: React.FC<HomePageProps> = ({
                     }
                 }
                 .animate-float {
-                    animation: float 2s ease-in-out infinite;
+                    animation: float 6s ease-in-out infinite;
                 }
             `}</style>
         </div>

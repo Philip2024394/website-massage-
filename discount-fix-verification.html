@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🎯 Discount System Fix Verification</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .success { background: #d4edda; border: 2px solid #28a745; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .error { background: #f8d7da; border: 2px solid #dc3545; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .info { background: #d1ecf1; border: 2px solid #17a2b8; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .warning { background: #fff3cd; border: 2px solid #ffc107; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        button { background: #007bff; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 5px; font-size: 14px; }
+        button:hover { background: #0056b3; }
+        .step { margin: 15px 0; padding: 15px; background: #f8f9fa; border-left: 4px solid #007bff; }
+        code { background: #f8f9fa; padding: 2px 6px; border-radius: 3px; font-family: monospace; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Discount System Fix Verification</h1>
+        
+        <div class="success">
+            <h3>✅ Bug Fixed: Missing Field Mapping</h3>
+            <p><strong>Root Cause:</strong> Discount fields were missing from the handler's <code>updateData</code> mapping in <code>useProviderAgentHandlers.ts</code></p>
+            <p><strong>Solution:</strong> Added discount fields using the exact same pattern as working profile fields</p>
+        </div>
+
+        <div class="step">
+            <h4>🔧 Fix Applied:</h4>
+            <pre>
+// BEFORE (in useProviderAgentHandlers.ts updateData):
+isLive: true,
+activeMembershipDate: existingTherapist?.activeMembershipDate || new Date().toISOString().split('T')[0]
+// ❌ No discount fields - they were being lost!
+
+// AFTER (Fixed):
+isLive: true, 
+activeMembershipDate: existingTherapist?.activeMembershipDate || new Date().toISOString().split('T')[0],
+
+// ✅ ADDED: Discount fields using same pattern as profile fields
+discountPercentage: (therapistData as any).discountPercentage !== undefined ? (therapistData as any).discountPercentage : (existingTherapist?.discountPercentage || 0),
+discountDuration: (therapistData as any).discountDuration !== undefined ? (therapistData as any).discountDuration : (existingTherapist?.discountDuration || 0),
+discountEndTime: (therapistData as any).discountEndTime || existingTherapist?.discountEndTime || null,
+isDiscountActive: (therapistData as any).isDiscountActive !== undefined ? (therapistData as any).isDiscountActive : (existingTherapist?.isDiscountActive || false)
+            </pre>
+        </div>
+
+        <div class="info">
+            <h4>📋 Testing Steps:</h4>
+            <ol>
+                <li>Go to therapist dashboard</li>
+                <li>Activate a discount (select percentage and hours)</li>
+                <li>Check browser console for discount debug logs</li>
+                <li>Verify discount data is saved to Appwrite</li>
+                <li>Check if discount badge appears on therapist card</li>
+            </ol>
+        </div>
+
+        <button onclick="testDiscountDataFlow()">🧪 Test Discount Data Flow</button>
+        <button onclick="verifyPhil10Discount()">👤 Check Phil10 Discount Status</button>
+        <button onclick="simulateDiscountActivation()">🎯 Simulate Activation Process</button>
+        
+        <div id="results"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.1"></script>
+    <script>
+        const { Client, Databases, Query } = Appwrite;
+        
+        const client = new Client()
+            .setEndpoint('https://cloud.appwrite.io/v1')
+            .setProject('68f23b11000d25eb3664');
+        
+        const databases = new Databases(client);
+        
+        async function testDiscountDataFlow() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p>🔄 Testing discount data flow...</p>';
+            
+            try {
+                // Get phil10 data
+                const response = await databases.listDocuments(
+                    '68f23b11000d25eb3664',
+                    '68f25bf4000ba08315b5',
+                    [Query.equal('name', 'phil10')]
+                );
+                
+                if (response.documents.length === 0) {
+                    resultsDiv.innerHTML = '<div class="error">❌ Phil10 not found</div>';
+                    return;
+                }
+                
+                const phil10 = response.documents[0];
+                
+                let html = '<h3>🔍 Data Flow Test Results</h3>';
+                
+                // Test profile fields (should work)
+                const profileFieldsWork = !!(phil10.name && phil10.location);
+                
+                // Test discount fields (should work after fix)
+                const discountFieldsPresent = (
+                    phil10.discountPercentage !== undefined &&
+                    phil10.discountEndTime !== undefined &&
+                    phil10.isDiscountActive !== undefined &&
+                    phil10.discountDuration !== undefined
+                );
+                
+                if (profileFieldsWork) {
+                    html += '<div class="success"><strong>✅ Profile Data Flow:</strong> Working correctly</div>';
+                } else {
+                    html += '<div class="error"><strong>❌ Profile Data Flow:</strong> Not working (unexpected)</div>';
+                }
+                
+                if (discountFieldsPresent) {
+                    html += '<div class="success"><strong>✅ Discount Data Flow:</strong> Fields present in database</div>';
+                    
+                    // Check if discount is actually active
+                    const discountActive = (
+                        phil10.discountPercentage > 0 &&
+                        phil10.isDiscountActive === true &&
+                        phil10.discountEndTime &&
+                        new Date(phil10.discountEndTime) > new Date()
+                    );
+                    
+                    if (discountActive) {
+                        html += '<div class="success"><strong>🎉 DISCOUNT SYSTEM WORKING:</strong> Phil10 has active discount!</div>';
+                    } else {
+                        html += '<div class="warning"><strong>⚠️ Discount Present But Inactive:</strong> Fields exist but discount not active/expired</div>';
+                    }
+                } else {
+                    html += '<div class="error"><strong>❌ Discount Data Flow:</strong> Fields missing - handler fix didn\'t work</div>';
+                }
+                
+                // Show field details
+                html += '<div class="info">';
+                html += '<h4>📊 Field Details:</h4>';
+                html += '<strong>Profile Fields:</strong><br>';
+                html += '• Name: ' + (phil10.name || 'undefined') + '<br>';
+                html += '• Location: ' + (phil10.location || 'undefined') + '<br><br>';
+                html += '<strong>Discount Fields:</strong><br>';
+                html += '• discountPercentage: ' + (phil10.discountPercentage !== undefined ? phil10.discountPercentage : 'undefined') + '<br>';
+                html += '• discountEndTime: ' + (phil10.discountEndTime || 'undefined') + '<br>';
+                html += '• isDiscountActive: ' + (phil10.isDiscountActive !== undefined ? phil10.isDiscountActive : 'undefined') + '<br>';
+                html += '• discountDuration: ' + (phil10.discountDuration !== undefined ? phil10.discountDuration : 'undefined') + '<br>';
+                html += '</div>';
+                
+                resultsDiv.innerHTML = html;
+                
+            } catch (error) {
+                console.error('❌ Test failed:', error);
+                resultsDiv.innerHTML = '<div class="error">❌ Test failed: ' + error.message + '</div>';
+            }
+        }
+        
+        async function verifyPhil10Discount() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p>🔄 Checking Phil10 discount status...</p>';
+            
+            try {
+                const response = await databases.listDocuments(
+                    '68f23b11000d25eb3664',
+                    '68f25bf4000ba08315b5',
+                    [Query.equal('name', 'phil10')]
+                );
+                
+                if (response.documents.length === 0) {
+                    resultsDiv.innerHTML = '<div class="error">❌ Phil10 not found</div>';
+                    return;
+                }
+                
+                const phil10 = response.documents[0];
+                
+                // Simulate the isDiscountActive function from TherapistCard
+                function testIsDiscountActive(therapist) {
+                    const hasDiscountData = !!(
+                        therapist.discountPercentage && 
+                        therapist.discountPercentage > 0 && 
+                        therapist.discountEndTime &&
+                        therapist.isDiscountActive === true
+                    );
+                    
+                    if (!hasDiscountData) return false;
+                    
+                    const now = new Date();
+                    const endTime = therapist.discountEndTime ? new Date(therapist.discountEndTime) : null;
+                    const notExpired = endTime && !isNaN(endTime.getTime()) && endTime > now;
+                    
+                    return hasDiscountData && notExpired;
+                }
+                
+                const shouldShowBadge = testIsDiscountActive(phil10);
+                
+                let html = '<h3>👤 Phil10 Discount Verification</h3>';
+                
+                if (shouldShowBadge) {
+                    html += '<div class="success">';
+                    html += '<h4>🎉 SUCCESS: Discount Badge Should Display!</h4>';
+                    html += '<p>The discount system is working correctly. Phil10\'s discount badge should appear on their therapist card.</p>';
+                    html += '</div>';
+                } else {
+                    html += '<div class="warning">';
+                    html += '<h4>⚠️ No Active Discount</h4>';
+                    html += '<p>Phil10 doesn\'t currently have an active discount, or it has expired. Try activating a new discount from the dashboard.</p>';
+                    html += '</div>';
+                }
+                
+                html += '<div class="info">';
+                html += '<h4>📊 Current Status:</h4>';
+                html += '<strong>Discount Percentage:</strong> ' + (phil10.discountPercentage || 0) + '%<br>';
+                html += '<strong>Active Flag:</strong> ' + (phil10.isDiscountActive || false) + '<br>';
+                html += '<strong>End Time:</strong> ' + (phil10.discountEndTime || 'Not set') + '<br>';
+                if (phil10.discountEndTime) {
+                    const endTime = new Date(phil10.discountEndTime);
+                    const now = new Date();
+                    const timeLeft = endTime.getTime() - now.getTime();
+                    html += '<strong>Time Remaining:</strong> ' + (timeLeft > 0 ? Math.round(timeLeft / (1000 * 60)) + ' minutes' : 'EXPIRED') + '<br>';
+                }
+                html += '</div>';
+                
+                resultsDiv.innerHTML = html;
+                
+            } catch (error) {
+                console.error('❌ Verification failed:', error);
+                resultsDiv.innerHTML = '<div class="error">❌ Verification failed: ' + error.message + '</div>';
+            }
+        }
+        
+        function simulateDiscountActivation() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `
+                <h3>🎯 Discount Activation Process Simulation</h3>
+                
+                <div class="step">
+                    <h4>Step 1: Dashboard Activation</h4>
+                    <p>When therapist clicks activation button in <code>TherapistDashboardPage.tsx</code>:</p>
+                    <pre>
+const therapistData = {
+    // ... all profile fields
+    discountPercentage: 15,
+    discountDuration: 8,
+    discountEndTime: '2025-11-11T20:00:00.000Z',
+    isDiscountActive: true
+};
+
+await onSave(therapistData); // Calls handleSaveTherapist
+                    </pre>
+                </div>
+                
+                <div class="step">
+                    <h4>Step 2: Handler Mapping (FIXED)</h4>
+                    <p>In <code>useProviderAgentHandlers.ts</code>, discount fields are now mapped:</p>
+                    <pre>
+const updateData = {
+    name: therapistData.name,              // ✅ Profile field (was working)
+    location: therapistData.location,      // ✅ Profile field (was working)
+    
+    // ✅ NEW: Discount fields (now working too!)
+    discountPercentage: therapistData.discountPercentage,
+    discountDuration: therapistData.discountDuration,
+    discountEndTime: therapistData.discountEndTime,
+    isDiscountActive: therapistData.isDiscountActive
+};
+                    </pre>
+                </div>
+                
+                <div class="step">
+                    <h4>Step 3: Appwrite Storage</h4>
+                    <p>Data saves to Appwrite with discount fields included</p>
+                </div>
+                
+                <div class="step">
+                    <h4>Step 4: Card Display</h4>
+                    <p><code>TherapistCard.tsx</code> receives therapist object with discount data and displays badge</p>
+                </div>
+                
+                <div class="success">
+                    <h4>✅ Fix Summary</h4>
+                    <p>The discount system now follows the exact same successful pattern as profile data. Discount fields are properly mapped in the handler, saved to Appwrite, and available for display on therapist cards.</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Discount Save Error Debug</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .header h1 {
+            color: #ff6b35;
+            margin: 0;
+            font-size: 2.5em;
+        }
+        .issue-analysis {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #ffc107;
+        }
+        .issue-analysis h3 {
+            color: #856404;
+            margin-top: 0;
+        }
+        .debug-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #dc3545;
+        }
+        .debug-section h3 {
+            color: #dc3545;
+            margin-top: 0;
+        }
+        .console-command {
+            background: #263238;
+            color: #00e676;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+        .step {
+            background: white;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid #28a745;
+        }
+        .step-number {
+            background: #28a745;
+            color: white;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        .error-pattern {
+            background: #f8d7da;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #dc3545;
+        }
+        .error-pattern h4 {
+            color: #721c24;
+            margin-top: 0;
+        }
+        .button {
+            display: inline-block;
+            background: #ff6b35;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        .button:hover {
+            background: #e55a2b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 Discount Save Error Debug</h1>
+            <p>Button turns green for 3 seconds then red = Save failure</p>
+        </div>
+
+        <div class="issue-analysis">
+            <h3>🎯 Issue Analysis</h3>
+            <p><strong>Symptoms:</strong> Discount activation button turns green for 3 seconds, then back to red</p>
+            <p><strong>Root Cause:</strong> The <code>handleSave()</code> function is throwing an error during the discount save process</p>
+            <p><strong>Expected:</strong> Button should stay green when discount is active</p>
+        </div>
+
+        <div class="debug-section">
+            <h3>🔍 Debug Steps</h3>
+            
+            <div class="step">
+                <span class="step-number">1</span>
+                <strong>Open Browser Console:</strong>
+                <p>Press F12, go to Console tab, then try activating a discount (5% + 8h)</p>
+            </div>
+
+            <div class="step">
+                <span class="step-number">2</span>
+                <strong>Look for These Console Messages:</strong>
+                <div class="console-command">
+🚀 Activating discount with: {percentage: 5, duration: 8}
+📅 Discount end time calculated: [timestamp]
+🌐 Dashboard Debug - Languages before save: [array]
+💾 Dashboard Debug - Discount data being saved: {...}
+🌐 Dashboard Debug - Full therapist data being saved: {...}
+                </div>
+            </div>
+
+            <div class="step">
+                <span class="step-number">3</span>
+                <strong>Check for Error Messages:</strong>
+                <p>After the debug messages, look for red error text indicating what failed</p>
+            </div>
+        </div>
+
+        <div class="error-pattern">
+            <h4>🚨 Common Error Patterns</h4>
+            <ul>
+                <li><strong>"Failed to update document"</strong> → Appwrite permission error</li>
+                <li><strong>"Cannot read property of undefined"</strong> → Missing therapist ID</li>
+                <li><strong>"Invalid document structure"</strong> → Field type mismatch</li>
+                <li><strong>"Authentication required"</strong> → User not logged in properly</li>
+                <li><strong>"Network request failed"</strong> → Connection issue</li>
+            </ul>
+        </div>
+
+        <div class="debug-section">
+            <h3>🛠️ Potential Fixes</h3>
+            
+            <div class="error-pattern">
+                <h4>Fix 1: Field Type Issue</h4>
+                <p>If the error mentions field types, the issue might be:</p>
+                <ul>
+                    <li>discountEndTime should be string, but we're sending Date object</li>
+                    <li>discountPercentage should be integer, but we're sending string</li>
+                </ul>
+            </div>
+
+            <div class="error-pattern">
+                <h4>Fix 2: Authentication Issue</h4>
+                <p>If the error mentions authentication:</p>
+                <ul>
+                    <li>Try logging out and logging back in</li>
+                    <li>Check if therapist session is valid</li>
+                    <li>Verify Appwrite permissions for therapist collection</li>
+                </ul>
+            </div>
+
+            <div class="error-pattern">
+                <h4>Fix 3: Document ID Issue</h4>
+                <p>If the error mentions document not found:</p>
+                <ul>
+                    <li>Therapist document may not exist in database</li>
+                    <li>Wrong collection ID being used</li>
+                    <li>Therapist ID mismatch</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="debug-section">
+            <h3>📊 Console Commands to Try</h3>
+            <p>Run these in browser console while on therapist dashboard:</p>
+            
+            <div class="console-command">
+// Check if therapist data exists
+console.log('Session:', localStorage.getItem('userSession'));
+
+// Check therapist document
+console.log('Current therapist data loaded:', window.therapistData);
+
+// Check Appwrite connection
+console.log('Appwrite available:', window.Appwrite ? 'Yes' : 'No');
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <button class="button" onclick="testDiscount()">🧪 Test Discount Now</button>
+            <button class="button" onclick="showConsoleHelp()">🔧 Console Help</button>
+        </div>
+
+        <div class="issue-analysis">
+            <h3>📝 What I Need From You</h3>
+            <p>Please run the test and share:</p>
+            <ol>
+                <li>The console messages that appear when you click "Activate Discount"</li>
+                <li>Any red error messages in the console</li>
+                <li>Whether you see the debug messages I mentioned</li>
+            </ol>
+            <p>This will help me identify the exact error and provide a targeted fix!</p>
+        </div>
+    </div>
+
+    <script>
+        function testDiscount() {
+            alert('🧪 Test Steps:\n\n1. Open localhost:3005 in another tab\n2. Login as therapist\n3. Go to discount section\n4. Open browser console (F12)\n5. Select 5% and 8h\n6. Click Activate Discount\n7. Copy any error messages and share them!');
+            window.open('http://localhost:3005/', '_blank');
+        }
+
+        function showConsoleHelp() {
+            alert('🔧 Console Debug Help:\n\n1. Press F12\n2. Click Console tab\n3. Try activating discount\n4. Look for red error messages\n5. Copy the full error text\n6. Share it so I can fix the issue!');
+        }
+    </script>
+</body>
+</html>

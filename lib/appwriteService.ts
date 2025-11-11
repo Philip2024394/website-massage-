@@ -494,6 +494,12 @@ export const therapistService = {
                 ...(currentDocument.pricing && { pricing: currentDocument.pricing }),
                 ...(currentDocument.massageTypes && { massageTypes: currentDocument.massageTypes }),
                 ...(currentDocument.coordinates && { coordinates: currentDocument.coordinates }),
+                
+                // Discount fields - preserve from current document
+                discountPercentage: currentDocument.discountPercentage || 0,
+                discountDuration: currentDocument.discountDuration || 0,
+                discountEndTime: currentDocument.discountEndTime || null,
+                isDiscountActive: currentDocument.isDiscountActive || false,
             };
             
             // Now update with the provided data
@@ -541,6 +547,25 @@ export const therapistService = {
             if (data.specialization) mappedData.specialization = data.specialization;
             if (data.yearsOfExperience) mappedData.yearsOfExperience = data.yearsOfExperience;
             if (data.isLicensed !== undefined) mappedData.isLicensed = data.isLicensed;
+            
+            // Handle discount fields - preserve from current document if not provided
+            if (data.discountPercentage !== undefined) mappedData.discountPercentage = data.discountPercentage;
+            if (data.discountDuration !== undefined) mappedData.discountDuration = data.discountDuration;
+            if (data.discountEndTime !== undefined) mappedData.discountEndTime = data.discountEndTime;
+            if (data.isDiscountActive !== undefined) mappedData.isDiscountActive = data.isDiscountActive;
+            
+            console.log('💰 Discount fields being updated:', {
+                discountPercentage: data.discountPercentage,
+                discountDuration: data.discountDuration,
+                discountEndTime: data.discountEndTime,
+                isDiscountActive: data.isDiscountActive,
+                mappedData: {
+                    discountPercentage: mappedData.discountPercentage,
+                    discountDuration: mappedData.discountDuration,
+                    discountEndTime: mappedData.discountEndTime,
+                    isDiscountActive: mappedData.isDiscountActive
+                }
+            });
             
             // Handle busy timer fields - store in existing description field as JSON for now
             if (data.busyUntil !== undefined || data.busyDuration !== undefined) {

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Upload, MapPin, Phone, Mail, Globe, Star, CheckCircle, Menu, Building2, User, Hotel, Home } from 'lucide-react';
-import UnifiedFooter from '../components/UnifiedFooter';
+import { ArrowLeft, Upload, MapPin, Phone, Mail, Globe, CheckCircle, Building2, User, Hotel, Home } from 'lucide-react';
 import { AppDrawer } from '../components/AppDrawer';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';

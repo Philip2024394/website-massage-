@@ -39,6 +39,28 @@ export const useAllHooks = () => {
         initializeData();
     }, []); // Empty dependency array - only run once on mount
     
+    // 🔄 Listen for discount activation events and refresh data
+    useEffect(() => {
+        const handleDataRefresh = async (event: Event) => {
+            const customEvent = event as CustomEvent;
+            console.log('🔄 Data refresh triggered:', customEvent.detail);
+            try {
+                const { therapists, places } = await dataFetching.fetchPublicData();
+                state.setTherapists(therapists);
+                state.setPlaces(places);
+                console.log('✅ Data refreshed successfully after discount activation');
+            } catch (error) {
+                console.error('❌ Failed to refresh data:', error);
+            }
+        };
+        
+        window.addEventListener('refreshTherapistData', handleDataRefresh);
+        
+        return () => {
+            window.removeEventListener('refreshTherapistData', handleDataRefresh);
+        };
+    }, [dataFetching, state]);
+    
     // ALWAYS call navigation hook in the same order
     const navigation = useNavigation({
         setPage: state.setPage,

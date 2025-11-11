@@ -1,6 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Star, MapPin, Clock, Calendar, Globe, ShieldCheck } from 'lucide-react';
 
+// Helper function to check if discount is active and not expired
+const isDiscountActive = (place: Place): boolean => {
+    const placeData = place as any;
+    return (
+        placeData.isDiscountActive && 
+        placeData.discountPercentage && 
+        placeData.discountPercentage > 0 &&
+        placeData.discountEndTime && 
+        new Date(placeData.discountEndTime) > new Date()
+    );
+};
+
 // Language display mapping - Only English and Indonesian
 const LANGUAGE_MAP: Record<string, { flag: string; name: string }> = {
     'en': { flag: '🇬🇧', name: 'English' },
@@ -24,6 +36,9 @@ interface Place {
     activeMembershipDate?: string;
     pricing?: any;
     discountPercentage?: number;
+    discountDuration?: number;
+    isDiscountActive?: boolean;
+    discountEndTime?: string;
 }
 
 interface HeroSectionProps {
@@ -113,6 +128,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 .animate-coin-fall-4 { animation: coin-fall-4 2s infinite ease-in-out; }
                 .animate-coin-fall-5 { animation: coin-fall-5 2s infinite ease-in-out; }
                 .animate-coin-fall-6 { animation: coin-fall-6 2s infinite ease-in-out; }
+
+                @keyframes discountFade {
+                    0%, 100% { opacity: 1; }
+                    50% { opacity: 0.7; }
+                }
             `}</style>
             <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
             {/* Main Banner Image - Increased height by 10% */}
@@ -123,8 +143,41 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     className="w-full h-full object-cover"
                 />
                 
-                {/* Active Discount Badge - Top Right Corner - Same as MassagePlaceCard */}
-                {activeDiscount && discountTimeLeft !== 'EXPIRED' && (
+                {/* Discount Badge - Database driven discount */}
+                {isDiscountActive(place) && (
+                    <div className="absolute top-2 right-2 flex flex-col items-end gap-1">
+                        <div 
+                            className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-full px-4 py-2 shadow-lg"
+                            style={{
+                                animation: 'discountFade 2s ease-in-out infinite',
+                                filter: 'drop-shadow(0 0 8px rgba(249, 115, 22, 0.6))'
+                            }}
+                        >
+                            <span className="font-bold text-white text-xl">{(place as any).discountPercentage}% OFF</span>
+                        </div>
+                        <div className="flex items-center gap-1 bg-black/80 backdrop-blur-md rounded-full px-3 py-1 shadow-lg">
+                            <svg className="w-3 h-3 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span className="text-xs text-white font-semibold">
+                                {(() => {
+                                    const endTime = new Date((place as any).discountEndTime);
+                                    const now = new Date();
+                                    const diff = endTime.getTime() - now.getTime();
+                                    
+                                    if (diff <= 0) return 'EXPIRED';
+                                    
+                                    const hours = Math.floor(diff / (1000 * 60 * 60));
+                                    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                                    return `${hours}h ${minutes}m`;
+                                })()}
+                            </span>
+                        </div>
+                    </div>
+                )}
+
+                {/* Active Discount Badge - External discount prop (fallback) */}
+                {!isDiscountActive(place) && activeDiscount && discountTimeLeft !== 'EXPIRED' && (
                     <div className="absolute top-2 right-2 flex flex-col items-end gap-1">
                         <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-full px-4 py-2 shadow-lg animate-pulse">
                             <span className="font-bold text-white text-xl">{activeDiscount.percentage}% OFF</span>
@@ -140,7 +193,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 
                 {/* Operating Hours Badge - Right corner, positioned optimally when discount is active */}
                 <div className={`absolute bg-black/70 backdrop-blur-md text-white px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg transition-all duration-300 ${
-                    (activeDiscount && discountTimeLeft !== 'EXPIRED') 
+                    (isDiscountActive(place) || (activeDiscount && discountTimeLeft !== 'EXPIRED')) 
                         ? 'top-2 right-48 md:right-64' // Move up and to the left when discount is active
                         : 'top-4 right-4' // Default position when no discount
                 }`}>

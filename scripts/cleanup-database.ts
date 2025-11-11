@@ -5,7 +5,6 @@
  */
 
 import { appwriteDatabases as databases } from '../lib/appwriteService';
-import { Query } from 'appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 
 const KEEP_EMAIL = 'phil4@gmail.com';

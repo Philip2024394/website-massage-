@@ -163,24 +163,6 @@
       }
     }
     </script>
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'brand-orange': '#f97316',
-                        'brand-orange-dark': '#ea580c',
-                        'brand-orange-light': '#fed7aa',
-                        'brand-green': '#16a34a',
-                        'brand-green-dark': '#15803d',
-                        'brand-green-light': '#86efac',
-                    }
-                }
-            }
-        }
-    </script>
     <style>
         /* Hide scrollbar for navigation buttons */
         .overflow-x-auto::-webkit-scrollbar {
@@ -227,6 +209,57 @@
             scrollbar-width: none;  /* Firefox */
         }
     </style>
+    
+    <!-- 🔧 Appwrite SDK Multiple CDN Fallbacks -->
+    <script>
+        // Try multiple CDNs for Appwrite SDK
+        let appwriteLoaded = false;
+        
+        function loadAppwriteFromCDN(url, name) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = url;
+                script.onload = () => {
+                    if (window.Appwrite) {
+                        console.log(`✅ Appwrite SDK loaded from ${name}:`, url);
+                        appwriteLoaded = true;
+                        resolve(true);
+                    } else {
+                        console.warn(`⚠️ ${name} loaded but Appwrite not available globally`);
+                        reject(new Error('Appwrite not available'));
+                    }
+                };
+                script.onerror = () => {
+                    console.warn(`❌ Failed to load Appwrite from ${name}:`, url);
+                    reject(new Error(`Failed to load from ${name}`));
+                };
+                document.head.appendChild(script);
+            });
+        }
+        
+        // Try multiple CDNs in sequence
+        async function loadAppwrite() {
+            const cdns = [
+                { url: 'https://unpkg.com/appwrite@21.4.0/dist/appwrite.js', name: 'unpkg' },
+                { url: 'https://cdn.jsdelivr.net/npm/appwrite@21.4.0/dist/appwrite.js', name: 'jsDelivr' },
+                { url: 'https://cdnjs.cloudflare.com/ajax/libs/appwrite/21.4.0/appwrite.min.js', name: 'cdnjs' }
+            ];
+            
+            for (const cdn of cdns) {
+                try {
+                    await loadAppwriteFromCDN(cdn.url, cdn.name);
+                    return; // Success, exit
+                } catch (error) {
+                    // Continue to next CDN
+                }
+            }
+            
+            console.error('❌ All Appwrite CDN attempts failed - will rely on npm import');
+        }
+        
+        // Start loading immediately
+        loadAppwrite();
+    </script>
 </head>
 <body class="bg-gray-100">
     <div id="root"></div>

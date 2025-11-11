@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { Place, Pricing, Booking, Notification } from '../types';
 import { BookingStatus, HotelVillaServiceStatus } from '../types';
 import { Calendar, TrendingUp, LogOut, Bell, MessageSquare, X, Megaphone, Menu } from 'lucide-react';
+import { loadGoogleMapsScript } from '../constants/appConstants';
+import { getStoredGoogleMapsApiKey } from '../utils/appConfig';
 import Button from '../components/Button';
 import DiscountSharePage from './DiscountSharePage';
 import MembershipPlansPage from './MembershipPlansPage';
@@ -120,11 +122,27 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     const [hotelVillaPricing, setHotelVillaPricing] = useState<Pricing>({ 60: 0, 90: 0, 120: 0 });
     const [useSamePricing, setUseSamePricing] = useState(false);
     const [discountPercentage, setDiscountPercentage] = useState<number>(0);
+    const [discountDuration, setDiscountDuration] = useState<number>(24); // hours
+    const [isDiscountActive, setIsDiscountActive] = useState<boolean>(false);
+    const [discountEndTime, setDiscountEndTime] = useState<string>('');
     const [location, setLocation] = useState('');
+    const [isLocationManuallyEdited, setIsLocationManuallyEdited] = useState(false);
     const [massageTypes, setMassageTypes] = useState<string[]>([]);
     const [languages, setLanguages] = useState<string[]>([]);
     const [additionalServices, setAdditionalServices] = useState<string[]>([]);
     const [coordinates, setCoordinates] = useState({ lat: 0, lng: 0 });
+
+    // Debug function to check location system status
+    const debugLocationSystem = () => {
+        console.log('🔍 Location System Debug Info:');
+        console.log('- mapsApiLoaded:', mapsApiLoaded);
+        console.log('- Google Maps available:', !!(window as any).google?.maps);
+        console.log('- Current location:', location);
+        console.log('- Coordinates:', coordinates);
+        console.log('- Is manually edited:', isLocationManuallyEdited);
+        console.log('- Navigator geolocation:', !!navigator.geolocation);
+        console.log('- API Key configured:', !!getStoredGoogleMapsApiKey());
+    };
     const [openingTime, setOpeningTime] = useState('09:00');
     const [closingTime, setClosingTime] = useState('21:00');
     const [mapsApiLoaded, setMapsApiLoaded] = useState(false);
@@ -220,6 +238,9 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             }
             
             setDiscountPercentage((placeData as any).discountPercentage || 0);
+            setDiscountDuration((placeData as any).discountDuration || 24);
+            setIsDiscountActive((placeData as any).isDiscountActive || false);
+            setDiscountEndTime((placeData as any).discountEndTime || '');
             
             setCoordinates(typeof placeData.coordinates === 'string' ? JSON.parse(placeData.coordinates) : placeData.coordinates || { lat: 0, lng: 0 });
             setMassageTypes(typeof placeData.massageTypes === 'string' ? JSON.parse(placeData.massageTypes) : placeData.massageTypes || []);
@@ -250,6 +271,9 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         setHotelVillaPricing({ '60': 0, '90': 0, '120': 0 });
         setUseSamePricing(true);
         setDiscountPercentage(0);
+        setDiscountDuration(24);
+        setIsDiscountActive(false);
+        setDiscountEndTime('');
         setCoordinates({ lat: 0, lng: 0 });
         setMassageTypes([]);
         setLanguages([]);
@@ -301,14 +325,37 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
 
     useEffect(() => {
         const checkGoogleMaps = () => {
-             if ((window as any).google && (window as any).google.maps && (window as any).google.maps.places) {
+            if ((window as any).google && (window as any).google.maps && (window as any).google.maps.places) {
                 setMapsApiLoaded(true);
                 return true;
             }
             return false;
         };
 
+        const loadMapsAPI = () => {
+            const apiKey = getStoredGoogleMapsApiKey();
+            if (!apiKey) {
+                console.warn('⚠️ Google Maps API key not configured. Location features will be limited.');
+                return;
+            }
+
+            console.log('🗺️ Loading Google Maps API for PlaceDashboardPage...');
+            loadGoogleMapsScript(
+                apiKey,
+                () => {
+                    console.log('✅ Google Maps API loaded successfully in PlaceDashboardPage');
+                    setMapsApiLoaded(true);
+                },
+                () => {
+                    console.error('❌ Failed to load Google Maps API in PlaceDashboardPage');
+                }
+            );
+        };
+
         if (!checkGoogleMaps()) {
+            loadMapsAPI();
+            
+            // Fallback: Keep checking for 10 seconds in case script loads externally
             const interval = setInterval(() => {
                 if (checkGoogleMaps()) {
                     clearInterval(interval);
@@ -317,10 +364,10 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             
             const timeout = setTimeout(() => {
                 clearInterval(interval);
-            }, 5000);
+            }, 10000);
 
             return () => {
-                clearInterval(interval)
+                clearInterval(interval);
                 clearTimeout(timeout);
             };
         }
@@ -336,6 +383,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                 const placeResult = autocomplete.getPlace();
                 if (placeResult.formatted_address) {
                     setLocation(placeResult.formatted_address);
+                    setIsLocationManuallyEdited(false); // Reset since this is from Google autocomplete
                 }
                 if (placeResult.geometry && placeResult.geometry.location) {
                     setCoordinates({
@@ -360,7 +408,11 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             hotelVillaPricing,
             useSamePricing,
             discountPercentage,
+            discountDuration,
+            isDiscountActive,
+            discountEndTime,
             location,
+            isLocationManuallyEdited,
             coordinates,
             massageTypes,
             languages,
@@ -380,7 +432,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         } catch (error) {
             console.error('❌ Failed to auto-save place form data:', error);
         }
-    }, [name, description, mainImage, profilePicture, galleryImages, whatsappNumber, pricing, hotelVillaPricing, useSamePricing, discountPercentage, location, coordinates, massageTypes, languages, additionalServices, openingTime, closingTime, websiteUrl, websiteTitle, websiteDescription, placeId]);
+    }, [name, description, mainImage, profilePicture, galleryImages, whatsappNumber, pricing, hotelVillaPricing, useSamePricing, discountPercentage, discountDuration, isDiscountActive, discountEndTime, location, coordinates, massageTypes, languages, additionalServices, openingTime, closingTime, websiteUrl, websiteTitle, websiteDescription, isLocationManuallyEdited, placeId]);
 
     // Auto-save form data whenever any field changes (with 2 second debounce)
     useEffect(() => {
@@ -409,7 +461,11 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                     setHotelVillaPricing(parsedData.hotelVillaPricing || { '60': 0, '90': 0, '120': 0 });
                     setUseSamePricing(parsedData.useSamePricing !== undefined ? parsedData.useSamePricing : true);
                     setDiscountPercentage(parsedData.discountPercentage || 0);
+                    setDiscountDuration(parsedData.discountDuration || 24);
+                    setIsDiscountActive(parsedData.isDiscountActive || false);
+                    setDiscountEndTime(parsedData.discountEndTime || '');
                     setLocation(parsedData.location || '');
+                    setIsLocationManuallyEdited(parsedData.isLocationManuallyEdited || false);
                     setCoordinates(parsedData.coordinates || { lat: 0, lng: 0 });
                     setMassageTypes(parsedData.massageTypes || []);
                     setLanguages(parsedData.languages || []);
@@ -473,6 +529,9 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             pricing: JSON.stringify(pricing),
             hotelVillaPricing: useSamePricing ? undefined : JSON.stringify(hotelVillaPricing),
             discountPercentage,
+            discountDuration,
+            isDiscountActive,
+            discountEndTime,
             location,
             coordinates: JSON.stringify(coordinates),
             massageTypes: JSON.stringify(massageTypes),
@@ -653,9 +712,19 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     const [isGettingLocation, setIsGettingLocation] = useState(false);
     
     const handleSetLocation = () => {
-        if (navigator.geolocation) {
-            setIsGettingLocation(true);
-            navigator.geolocation.getCurrentPosition(position => {
+        if (!navigator.geolocation) {
+            alert('Geolocation is not supported by this browser.');
+            return;
+        }
+
+        if (!mapsApiLoaded || !(window as any).google || !(window as any).google.maps) {
+            alert('Google Maps is not loaded yet. Please wait a moment and try again.');
+            return;
+        }
+
+        setIsGettingLocation(true);
+        navigator.geolocation.getCurrentPosition(position => {
+            try {
                 const geocoder = new (window as any).google.maps.Geocoder();
                 const latlng = {
                     lat: position.coords.latitude,
@@ -666,6 +735,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                     setIsGettingLocation(false);
                     if (status === 'OK' && results[0]) {
                         setLocation(results[0].formatted_address);
+                        setIsLocationManuallyEdited(false);
                         // Mobile-friendly notification
                         if ('vibrate' in navigator) {
                             navigator.vibrate(200);
@@ -697,7 +767,12 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                         alert('Could not find address for your location.');
                     }
                 });
-            }, (error) => {
+            } catch (error) {
+                setIsGettingLocation(false);
+                console.error('Error in location detection:', error);
+                alert('Failed to get location. Please ensure Google Maps is loaded and try again.');
+            }
+        }, (error) => {
                 setIsGettingLocation(false);
                 let errorMessage = 'Could not get your location.';
                 switch(error.code) {
@@ -717,9 +792,6 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                 timeout: 10000,
                 maximumAge: 60000
             });
-        } else {
-            alert('Geolocation is not supported by this browser.');
-        }
     };
 
     // Profile image handling with warning modal
@@ -1383,6 +1455,13 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                         </div>
                                     )}
                                 </div>
+                                {/* Debug Button - Remove in production */}
+                                <button 
+                                    onClick={debugLocationSystem}
+                                    className="mt-2 text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
+                                >
+                                    🔍 Debug Location System
+                                </button>
                             </div>
                             
                             {mapsApiLoaded ? (
@@ -1399,9 +1478,22 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                                 </div>
                                             )}
                                         </div>
-                                        <p className="text-sm text-gray-600">
+                                        <p className="text-sm text-gray-600 mb-2">
                                             {location || 'No location set'}
                                         </p>
+                                        {location && (
+                                            <div className="flex items-center justify-between text-xs">
+                                                <span className="text-gray-500">
+                                                    📍 Ready for customer navigation
+                                                </span>
+                                                <div className="flex items-center gap-1">
+                                                    <div className={`w-2 h-2 rounded-full ${isLocationManuallyEdited ? 'bg-blue-500' : 'bg-green-500'}`}></div>
+                                                    <span className="font-medium text-gray-600">
+                                                        {isLocationManuallyEdited ? 'Manual' : 'GPS'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                     
                                     {/* Mobile Location Button */}
@@ -1430,8 +1522,8 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                                 {isGettingLocation
                                                     ? '🔍 Getting your location...'
                                                     : coordinates.lat !== 0 || coordinates.lng !== 0 
-                                                    ? '📍 Location Set Successfully' 
-                                                    : '📱 Set My Current Location'
+                                                    ? '📍 Update GPS Location' 
+                                                    : '📱 Use My Device Location'
                                                 }
                                             </span>
                                             {coordinates.lat === 0 && coordinates.lng === 0 && (
@@ -1443,15 +1535,86 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                         <div className="text-center mt-3">
                                             <p className="text-xs text-gray-500">
                                                 {coordinates.lat !== 0 || coordinates.lng !== 0 
-                                                    ? '✅ Your location is now active and visible to customers'
-                                                    : '💡 Tap the button above to use your phone\'s GPS location'
+                                                    ? '✅ GPS coordinates active - customers can navigate directly to you'
+                                                    : '💡 Enable device location for accurate customer navigation'
                                                 }
                                             </p>
                                         </div>
+
+                                        {/* Manual Address Edit Field */}
+                                        <div className="mt-4">
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                📝 Edit Address (if needed)
+                                            </label>
+                                            <div className="relative">
+                                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                    <MapPinIcon className="h-5 w-5 text-gray-400" />
+                                                </div>
+                                                <input
+                                                    ref={locationInputRef}
+                                                    type="text"
+                                                    value={location}
+                                                    onChange={(e) => {
+                                                        setLocation(e.target.value);
+                                                        setIsLocationManuallyEdited(true);
+                                                    }}
+                                                    placeholder="Enter your business address..."
+                                                    className="block w-full pl-10 pr-3 py-3 bg-white border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 placeholder-gray-500"
+                                                />
+                                            </div>
+                                            <div className="flex items-center justify-between mt-2">
+                                                <p className="text-xs text-gray-500">
+                                                    💡 You can manually edit the address detected by GPS or type your own
+                                                </p>
+                                                {location && (
+                                                    <div className="flex items-center gap-1">
+                                                        <div className={`w-2 h-2 rounded-full ${isLocationManuallyEdited ? 'bg-blue-500' : 'bg-green-500'}`}></div>
+                                                        <span className="text-xs font-medium text-gray-600">
+                                                            {isLocationManuallyEdited ? 'Manual' : 'GPS'}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
                                 </>
                             ) : (
-                                <div className="mt-2 p-3 bg-yellow-100 text-yellow-800 text-sm rounded-md">
-                                {t?.mapsApiError || 'Maps API error'}
+                                <div className="space-y-3">
+                                    <div className="p-4 bg-yellow-100 border border-yellow-300 text-yellow-800 text-sm rounded-lg">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                            </svg>
+                                            <span className="font-medium">Google Maps Not Available</span>
+                                        </div>
+                                        <p className="text-xs mb-3">
+                                            Google Maps API is required for location features. Please configure the API key in the admin settings or enter your address manually below.
+                                        </p>
+                                    </div>
+                                    
+                                    {/* Manual Address Input (Fallback) */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            📝 Enter Business Address Manually
+                                        </label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <MapPinIcon className="h-5 w-5 text-gray-400" />
+                                            </div>
+                                            <input
+                                                type="text"
+                                                value={location}
+                                                onChange={(e) => {
+                                                    setLocation(e.target.value);
+                                                    setIsLocationManuallyEdited(true);
+                                                }}
+                                                placeholder="Enter your full business address..."
+                                                className="block w-full pl-10 pr-3 py-3 bg-white border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 placeholder-gray-500"
+                                            />
+                                        </div>
+                                        <p className="text-xs text-gray-500 mt-2">
+                                            💡 Without Google Maps, you'll need to enter your address manually
+                                        </p>
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -1514,6 +1677,124 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                     )}
                                 </div>
                             </div>
+                        </div>
+
+                        {/* Discount Activation System */}
+                        <div className="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl p-6 border border-orange-200">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                                    <svg className="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                                    </svg>
+                                </div>
+                                <h3 className="text-lg font-semibold text-gray-900">💥 Discount Activation System</h3>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {/* Discount Percentage */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Discount Percentage</label>
+                                    <div className="flex gap-2">
+                                        {[5, 10, 15, 20, 25, 30].map(percent => (
+                                            <button
+                                                key={percent}
+                                                type="button"
+                                                onClick={() => setDiscountPercentage(percent)}
+                                                className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
+                                                    discountPercentage === percent
+                                                        ? 'bg-orange-600 text-white shadow-lg transform scale-105'
+                                                        : 'bg-white text-gray-700 border border-gray-300 hover:bg-orange-50'
+                                                }`}
+                                            >
+                                                {percent}%
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                
+                                {/* Duration */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Duration (Hours)</label>
+                                    <div className="flex gap-2">
+                                        {[6, 12, 24, 48, 72].map(hours => (
+                                            <button
+                                                key={hours}
+                                                type="button"
+                                                onClick={() => setDiscountDuration(hours)}
+                                                className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
+                                                    discountDuration === hours
+                                                        ? 'bg-blue-600 text-white shadow-lg transform scale-105'
+                                                        : 'bg-white text-gray-700 border border-gray-300 hover:bg-blue-50'
+                                                }`}
+                                            >
+                                                {hours}h
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {/* Activation Button */}
+                            <div className="mt-6 flex items-center justify-between">
+                                <div>
+                                    {isDiscountActive && discountEndTime && (
+                                        <div className="text-sm text-green-600 font-medium">
+                                            🟢 Active until: {new Date(discountEndTime).toLocaleString()}
+                                        </div>
+                                    )}
+                                    {!isDiscountActive && (
+                                        <div className="text-sm text-gray-500">
+                                            ⚪ No active discount
+                                        </div>
+                                    )}
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        if (!isDiscountActive && discountPercentage > 0) {
+                                            const endTime = new Date();
+                                            endTime.setHours(endTime.getHours() + discountDuration);
+                                            setDiscountEndTime(endTime.toISOString());
+                                            setIsDiscountActive(true);
+                                        } else {
+                                            setIsDiscountActive(false);
+                                            setDiscountEndTime('');
+                                        }
+                                    }}
+                                    className={`px-6 py-3 rounded-lg font-semibold transition-all ${
+                                        !isDiscountActive && discountPercentage > 0
+                                            ? 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-lg'
+                                            : isDiscountActive
+                                            ? 'bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 shadow-lg'
+                                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                    }`}
+                                    disabled={!isDiscountActive && discountPercentage === 0}
+                                >
+                                    {!isDiscountActive && discountPercentage > 0 ? '🚀 Activate Discount' :
+                                     isDiscountActive ? '🛑 Deactivate Discount' : 
+                                     '⚠️ Select Discount %'}
+                                </button>
+                            </div>
+                            
+                            {/* Preview */}
+                            {discountPercentage > 0 && (
+                                <div className="mt-4 p-4 bg-white rounded-lg border-2 border-dashed border-orange-300">
+                                    <h4 className="text-sm font-semibold text-gray-800 mb-2">💡 Preview: How it will look</h4>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {Object.entries(pricing).map(([duration, price]) => (
+                                            <div key={duration} className="bg-gradient-to-br from-orange-50 to-orange-100 p-2 rounded-lg border border-orange-300">
+                                                <p className="text-xs text-gray-600">{duration} min</p>
+                                                <p className="text-xs text-gray-800 line-through opacity-60">
+                                                    Rp {Number(price).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
+                                                </p>
+                                                <p className="font-bold text-orange-600">
+                                                    Rp {Math.round(Number(price) * (1 - discountPercentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
+                                                </p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* Hotel/Villa Special Pricing Section */}

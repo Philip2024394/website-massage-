@@ -113,7 +113,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                     50% { transform: translateY(-10px); }
                 }
                 .animate-float {
-                    animation: float 3s ease-in-out infinite;
+                    animation: float 6s ease-in-out infinite;
                 }
             `}</style>
             <div className="fixed inset-0 z-50" role="dialog" aria-modal="true">

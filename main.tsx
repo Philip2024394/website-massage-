@@ -1,6 +1,7 @@
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import ErrorBoundary from './components/ErrorBoundary';
+import './index.css';
 
 console.log('🚀 main.tsx: Starting React app...');
 console.log('🚀 main.tsx: DOM element found:', !!document.getElementById('root'));

@@ -1,4 +1,4 @@
-﻿import { databases } from '../lib/appwrite';
+﻿import { databases, account } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import { Query } from 'appwrite';
 
@@ -29,7 +29,30 @@ class BookingExpirationService {
 
   private async checkExpiredBookings() {
     try {
+      // 🔧 Check if bookings collection is configured
+      if (!APPWRITE_CONFIG.collections.bookings || APPWRITE_CONFIG.collections.bookings === '') {
+        console.log('⚠️ Bookings collection not configured - skipping expiration check');
+        return;
+      }
+
+      // Check if user is already logged in before creating anonymous session
+      try {
+        const currentUser = await account.get();
+        console.log('✅ Using existing user session for booking checks:', currentUser.email);
+      } catch {
+        // No user session, try anonymous (but this might be disabled)
+        try {
+          await account.createAnonymousSession();
+          console.log('✅ Anonymous session created for booking expiration check');
+        } catch (error: any) {
+          console.log('⚠️ Could not create session for booking checks:', error.message);
+          return; // Skip this check if we can't get permissions
+        }
+      }
+
       const now = new Date().toISOString();
+      
+      console.log('🔍 Checking expired bookings with collection ID:', APPWRITE_CONFIG.collections.bookings);
 
       // Query for pending bookings with expired deadlines
       const expiredBookings = await databases.listDocuments(

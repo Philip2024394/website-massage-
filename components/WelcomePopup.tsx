@@ -145,7 +145,7 @@ const WelcomePopup: React.FC<WelcomePopupProps> = ({ language, isAdmin = false, 
             50% { transform: translateY(-8px); }
           }
           .animate-float {
-            animation: float 2s ease-in-out infinite;
+            animation: float 6s ease-in-out infinite;
           }
         `}</style>
         

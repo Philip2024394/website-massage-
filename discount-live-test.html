@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Discount System Live Test</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .header h1 {
+            color: #ff6b35;
+            margin: 0;
+            font-size: 2.5em;
+        }
+        .test-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #28a745;
+        }
+        .test-section h3 {
+            color: #155724;
+            margin-top: 0;
+        }
+        .step-by-step {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .step {
+            background: white;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid #2196F3;
+            font-weight: 500;
+        }
+        .step .step-number {
+            background: #2196F3;
+            color: white;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        .button {
+            display: inline-block;
+            background: #ff6b35;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        .button:hover {
+            background: #e55a2b;
+            transform: translateY(-2px);
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #c3e6cb;
+            margin: 15px 0;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #f5c6cb;
+            margin: 15px 0;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ffeaa7;
+            margin: 15px 0;
+        }
+        .console-log {
+            background: #263238;
+            color: #00e676;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 15px 0;
+        }
+        .url-bar {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 Discount System Live Test</h1>
+            <p>Database fields verified ✅ - Now testing functionality</p>
+        </div>
+
+        <div class="success">
+            <h4>✅ Database Status: READY</h4>
+            <p>All 4 discount fields are properly configured in Appwrite:</p>
+            <ul>
+                <li><strong>discountPercentage</strong> (integer, 0-100) ✅</li>
+                <li><strong>discountDuration</strong> (integer, 0-168) ✅</li>
+                <li><strong>discountEndTime</strong> (string, size 50) ✅</li>
+                <li><strong>isDiscountActive</strong> (boolean) ✅</li>
+            </ul>
+        </div>
+
+        <div class="step-by-step">
+            <h3>📋 Step-by-Step Testing Instructions</h3>
+            
+            <div class="step">
+                <span class="step-number">1</span>
+                <strong>Open Development Site:</strong>
+                <div class="url-bar">http://localhost:3005/</div>
+                <button class="button" onclick="openDevSite()">🌐 Open Dev Site</button>
+            </div>
+
+            <div class="step">
+                <span class="step-number">2</span>
+                <strong>Login as Therapist:</strong>
+                Navigate to therapist login and sign in with your therapist account
+            </div>
+
+            <div class="step">
+                <span class="step-number">3</span>
+                <strong>Go to Dashboard:</strong>
+                Once logged in, navigate to the therapist dashboard
+            </div>
+
+            <div class="step">
+                <span class="step-number">4</span>
+                <strong>Find Discount Section:</strong>
+                Look for the discount/pricing section in the dashboard
+            </div>
+
+            <div class="step">
+                <span class="step-number">5</span>
+                <strong>Test Button Selection:</strong>
+                <ul>
+                    <li>Click on 5% button - should stay highlighted</li>
+                    <li>Click on 10% button - should switch to 10%</li>
+                    <li>Try each percentage (5%, 10%, 15%, 20%)</li>
+                </ul>
+            </div>
+
+            <div class="step">
+                <span class="step-number">6</span>
+                <strong>Test Duration Selection:</strong>
+                <ul>
+                    <li>Click on 2h button - should stay highlighted</li>
+                    <li>Click on 4h button - should switch to 4h</li>
+                    <li>Try each duration (2h, 4h, 8h, 24h)</li>
+                </ul>
+            </div>
+
+            <div class="step">
+                <span class="step-number">7</span>
+                <strong>Check Activate Button:</strong>
+                When both percentage and duration are selected, "Activate Discount" button should appear
+            </div>
+
+            <div class="step">
+                <span class="step-number">8</span>
+                <strong>Test Activation:</strong>
+                Click "Activate Discount" and check for success message or errors
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔍 What to Look For (Troubleshooting)</h3>
+            
+            <div class="warning">
+                <h4>⚠️ If Buttons Don't Stay Selected:</h4>
+                <ul>
+                    <li>Open browser console (F12) and check for errors</li>
+                    <li>Look for React state management errors</li>
+                    <li>Check if component is re-rendering unexpectedly</li>
+                </ul>
+            </div>
+
+            <div class="warning">
+                <h4>⚠️ If "Activate Discount" Button Doesn't Appear:</h4>
+                <ul>
+                    <li>Make sure both percentage AND duration are selected</li>
+                    <li>Check browser console for conditional rendering errors</li>
+                    <li>Verify the condition logic in the code</li>
+                </ul>
+            </div>
+
+            <div class="error">
+                <h4>🚨 If You Get Errors When Activating:</h4>
+                <ul>
+                    <li>Check browser console for Appwrite errors</li>
+                    <li>Verify therapist is properly authenticated</li>
+                    <li>Check network tab for failed API calls</li>
+                    <li>Look for permission errors in Appwrite</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🐛 Debug Console</h3>
+            <p>If you encounter issues, press F12 and look for these errors:</p>
+            <div class="console-log" id="commonErrors">
+<strong>Common Error Patterns to Look For:</strong>
+
+❌ "Cannot read property 'discountPercentage' of undefined"
+   → Therapist data not loaded properly
+
+❌ "Failed to update document"
+   → Appwrite permission or authentication error
+
+❌ "TypeError: Cannot set property of undefined"
+   → React state management issue
+
+❌ "Network request failed"
+   → Connection to Appwrite server issue
+
+✅ "Discount activated successfully"
+   → Everything working correctly!
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <button class="button" onclick="openDevSite()">🌐 Test on Dev Site</button>
+            <button class="button" onclick="openConsole()">🔧 Console Debug Guide</button>
+            <button class="button" onclick="checkAuth()">👤 Check Authentication</button>
+        </div>
+    </div>
+
+    <script>
+        function openDevSite() {
+            window.open('http://localhost:3005/', '_blank');
+        }
+
+        function openConsole() {
+            alert('🔧 Debug Steps:\n\n1. Open the dev site (localhost:3005)\n2. Press F12 to open developer tools\n3. Go to Console tab\n4. Try using the discount system\n5. Watch for any error messages\n6. Report back any red errors you see!');
+        }
+
+        function checkAuth() {
+            alert('👤 Authentication Check:\n\n1. Make sure you\'re logged into a therapist account\n2. Try logging out and logging back in\n3. Check if the therapist profile loads correctly\n4. Verify you can access the dashboard\n\nWithout proper authentication, the discount system won\'t work!');
+        }
+    </script>
+</body>
+</html>

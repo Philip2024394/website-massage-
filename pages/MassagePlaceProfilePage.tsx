@@ -12,6 +12,18 @@ import { getAmenityIcon } from '../constants/amenityIcons';
 import { customLinksService } from '../lib/appwriteService';
 import PageNumberBadge from '../components/PageNumberBadge';
 
+// Helper function to check if discount is active and not expired
+const isDiscountActive = (place: Place): boolean => {
+    const placeData = place as any;
+    return (
+        placeData.isDiscountActive && 
+        placeData.discountPercentage && 
+        placeData.discountPercentage > 0 &&
+        placeData.discountEndTime && 
+        new Date(placeData.discountEndTime) > new Date()
+    );
+};
+
 interface Place {
     id?: string | number;
     $id?: string;
@@ -36,6 +48,10 @@ interface Place {
     activeMembershipDate?: string;
     languages?: string[];
     galleryImages?: Array<{ imageUrl: string; caption: string }>;
+    discountPercentage?: number;
+    discountDuration?: number;
+    isDiscountActive?: boolean;
+    discountEndTime?: string;
 }
 
 interface MassagePlaceProfilePageProps {
@@ -383,9 +399,21 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                     <div className="relative z-10 p-6">
                         <h3 className="text-2xl font-bold text-gray-900 mb-4">Massage Prices</h3>
                         <div className="space-y-3">
+                            {isDiscountActive(place) && (
+                                <div className="text-center mb-4">
+                                    <p className="text-black font-semibold text-sm flex items-center justify-center gap-1">
+                                        🔥 Discounted Price's Displayed
+                                    </p>
+                                </div>
+                            )}
                             {services.length > 0 ? (
                                 services.map((service, index) => (
-                                    <ServiceItem key={index} service={service} />
+                                    <ServiceItem 
+                                        key={index} 
+                                        service={service} 
+                                        isDiscountActive={isDiscountActive(place)}
+                                        discountPercentage={(place as any).discountPercentage}
+                                    />
                                 ))
                             ) : (
                                 <p className="text-gray-500">Contact us for pricing details</p>

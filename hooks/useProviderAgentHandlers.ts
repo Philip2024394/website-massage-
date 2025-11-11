@@ -349,7 +349,13 @@ export const useProviderAgentHandlers = ({
                 // AUTO-LIVE SYSTEM: All new therapists start as live and available
                 isLive: true, // Profile is live and visible to customers
                 isOnline: true, // Mark as online
-                activeMembershipDate: existingTherapist?.activeMembershipDate || new Date().toISOString().split('T')[0]
+                activeMembershipDate: existingTherapist?.activeMembershipDate || new Date().toISOString().split('T')[0],
+                
+                // 🎯 DISCOUNT SYSTEM FIELDS - Copy exact same pattern as profile fields that work
+                discountPercentage: (therapistData as any).discountPercentage !== undefined ? (therapistData as any).discountPercentage : (existingTherapist?.discountPercentage || 0),
+                discountDuration: (therapistData as any).discountDuration !== undefined ? (therapistData as any).discountDuration : (existingTherapist?.discountDuration || 0),
+                discountEndTime: (therapistData as any).discountEndTime || existingTherapist?.discountEndTime || null,
+                isDiscountActive: (therapistData as any).isDiscountActive !== undefined ? (therapistData as any).isDiscountActive : (existingTherapist?.isDiscountActive || false)
                 // createdAt: existingTherapist?.createdAt || new Date().toISOString() // Removed - not in collection schema
             };
             
@@ -358,6 +364,17 @@ export const useProviderAgentHandlers = ({
                 profilePicture: updateData.profilePicture?.substring(0, 50) + '...',
                 mainImage: updateData.mainImage?.substring(0, 50) + '...',
                 location: updateData.location
+            });
+            
+            console.log('🎯 DISCOUNT DEBUG - Handler mapping discount fields:', {
+                inputDiscountPercentage: (therapistData as any).discountPercentage,
+                inputDiscountDuration: (therapistData as any).discountDuration,
+                inputDiscountEndTime: (therapistData as any).discountEndTime,
+                inputIsDiscountActive: (therapistData as any).isDiscountActive,
+                mappedDiscountPercentage: updateData.discountPercentage,
+                mappedDiscountDuration: updateData.discountDuration,
+                mappedDiscountEndTime: updateData.discountEndTime,
+                mappedIsDiscountActive: updateData.isDiscountActive
             });
             
             // 🔒 ONE CARD PER THERAPIST POLICY

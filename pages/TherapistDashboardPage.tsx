@@ -1,23 +1,15 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { Therapist, Pricing, Booking, Notification } from '../types';
 import type { Page } from '../types/pageTypes';
-import { AvailabilityStatus, BookingStatus, HotelVillaServiceStatus } from '../types';
+import { AvailabilityStatus, BookingStatus } from '../types';
 import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages, stringifyPricing, stringifyCoordinates, stringifyMassageTypes, stringifyLanguages, stringifyAnalytics } from '../utils/appwriteHelpers';
-import { therapistService, notificationService } from '../lib/appwriteService';
-import { soundNotificationService } from '../utils/soundNotificationService';
-import { getInitialRatingData } from '../utils/ratingUtils';
+import { therapistService } from '../lib/appwriteService';
 import { MASSAGE_TYPES_CATEGORIZED } from '../constants/rootConstants';
-import { LogOut, Activity, Menu, Calendar, TrendingUp, Bell } from 'lucide-react';
-import { ColoredProfileIcon, ColoredCalendarIcon, ColoredAnalyticsIcon, ColoredHotelIcon, ColoredTagIcon, ColoredCrownIcon, ColoredDocumentIcon, ColoredGlobeIcon, ColoredHistoryIcon, ColoredCoinsIcon, ColoredBellIcon } from '../components/ColoredIcons';
+import { LogOut, Activity, Calendar, TrendingUp, Bell } from 'lucide-react';
+import { ColoredProfileIcon, ColoredCalendarIcon, ColoredAnalyticsIcon, ColoredHotelIcon, ColoredCrownIcon, ColoredDocumentIcon, ColoredGlobeIcon, ColoredHistoryIcon, ColoredCoinsIcon } from '../components/ColoredIcons';
 import { useTranslations } from '../lib/useTranslations';
 
-import MembershipPlansPage from './MembershipPlansPage';
-import HotelVillaOptIn from '../components/HotelVillaOptIn';
-import { TherapistProfileForm } from '../components/therapist/TherapistProfileForm';
-import TherapistTermsPage from './TherapistTermsPage';
-import PushNotificationSettings from '../components/PushNotificationSettings';
 import Footer from '../components/Footer';
-import TherapistNotifications from '../components/TherapistNotifications';
 import BusyTimerModal from '../components/BusyTimerModal';
 
 
@@ -225,17 +217,14 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
     onNavigate, 
     onUpdateBookingStatus, 
     onStatusChange, 
-    handleNavigateToAdminLogin, 
     therapistId, 
     existingTherapistData, 
     bookings, 
     notifications, 
     t 
 }) => {
-    const { t: t_new } = useTranslations();
     const [therapist, setTherapist] = useState<Therapist | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [dataLoaded, setDataLoaded] = useState(false);
 
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
@@ -246,11 +235,11 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
     const [languages, setLanguages] = useState<string[]>([]);
     const [pricing, setPricing] = useState<Pricing>({ 60: 0, 90: 0, 120: 0 });
     const [hotelVillaPricing, setHotelVillaPricing] = useState<Pricing>({ 60: 0, 90: 0, 120: 0 });
-    const [useSamePricing, setUseSamePricing] = useState(true);
     const [discountPercentage, setDiscountPercentage] = useState<number>(0);
     const [discountDuration, setDiscountDuration] = useState<number>(0);
     const [discountEndTime, setDiscountEndTime] = useState<Date | null>(null);
     const [isDiscountActive, setIsDiscountActive] = useState(false);
+    const [isSavingDiscount, setIsSavingDiscount] = useState(false);
     
     // Separate state for UI selections (these persist during user interaction)
     const [selectedDiscountPercentage, setSelectedDiscountPercentage] = useState<number>(0);
@@ -268,9 +257,6 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
     const [showBusyTimerModal, setShowBusyTimerModal] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [busyUntil, setBusyUntil] = useState<Date | null>(null);
-
-    const dropdownRef = useRef<HTMLDivElement>(null);
-    const sideDrawerRef = useRef<HTMLDivElement>(null);
     
     const fetchTherapistData = useCallback(async () => {
         setIsLoading(true);
@@ -472,20 +458,31 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                 setDiscountPercentage(existingTherapist.discountPercentage || 0);
                 setDiscountDuration(existingTherapist.discountDuration || 0);
                 
-                if (existingTherapist.discountEndTime) {
-                    const endTime = new Date(existingTherapist.discountEndTime);
-                    setDiscountEndTime(endTime);
-                    setIsDiscountActive(endTime > new Date());
-                    
-                    // If there's an active discount, also set the selected values
-                    if (endTime > new Date()) {
-                        setSelectedDiscountPercentage(existingTherapist.discountPercentage || 0);
-                        setSelectedDiscountDuration(existingTherapist.discountDuration || 0);
+                // Only update discount state if not currently saving (prevents data refresh from overriding activation)
+                if (!isSavingDiscount) {
+                    if (existingTherapist.discountEndTime) {
+                        const endTime = new Date(existingTherapist.discountEndTime);
+                        setDiscountEndTime(endTime);
+                        setIsDiscountActive(endTime > new Date());
+                        
+                        // If there's an active discount, also set the selected values for display
+                        if (endTime > new Date()) {
+                            setSelectedDiscountPercentage(existingTherapist.discountPercentage || 0);
+                            setSelectedDiscountDuration(existingTherapist.discountDuration || 0);
+                            console.log('✅ Active discount loaded - UI buttons will show selected:', {
+                                percentage: existingTherapist.discountPercentage,
+                                duration: existingTherapist.discountDuration
+                            });
+                        } else {
+                            // Discount expired - keep current selections if user was making them
+                            console.log('⏰ Discount expired - keeping any user selections');
+                        }
+                    } else {
+                        setDiscountEndTime(null);
+                        setIsDiscountActive(false);
+                        // No discount in DB - keep any current user selections for new discount
+                        console.log('💡 No discount in DB - preserving user selections for new discount');
                     }
-                } else {
-                    setDiscountEndTime(null);
-                    setIsDiscountActive(false);
-                    // Don't reset selected values if no active discount - preserve user selections
                 }
                 
                 // Set availability status
@@ -507,7 +504,6 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                     setBusyUntil(null);
                 }
                 
-                setDataLoaded(true);
             } else {
                 console.log('⚠️ No therapist data found - creating new profile');
                 
@@ -532,7 +528,6 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                 setIsDiscountActive(false);
                 setBusyUntil(null);
                 
-                setDataLoaded(false);
             }
         } catch (error) {
             console.error('❌ Error fetching therapist data:', error);
@@ -629,6 +624,12 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
 
         console.log('🌐 Dashboard Debug - Languages before save:', languages);
         console.log('🌐 Dashboard Debug - Stringified languages:', stringifyLanguages(languages));
+        console.log('💾 Dashboard Debug - Discount data being saved:', {
+            discountPercentage,
+            discountDuration, 
+            discountEndTime: discountEndTime?.toISOString(),
+            isDiscountActive
+        });
         console.log('🌐 Dashboard Debug - Full therapist data being saved:', therapistData);
         
         try {
@@ -922,11 +923,8 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                                 <button
                                                                     key={percent}
                                                                     onClick={() => {
+                                                                        console.log('🎯 Discount percentage selected:', percent);
                                                                         setSelectedDiscountPercentage(percent);
-                                                                        // Update therapist data immediately for live preview
-                                                                        if (onStatusChange) {
-                                                                            onStatusChange(status);
-                                                                        }
                                                                     }}
                                                                     className={`p-4 rounded-xl border-2 text-center font-bold transition-all ${
                                                                         selectedDiscountPercentage === percent
@@ -953,7 +951,10 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                             ].map((option) => (
                                                                 <button
                                                                     key={option.hours}
-                                                                    onClick={() => setSelectedDiscountDuration(option.hours)}
+                                                                    onClick={() => {
+                                                                        console.log('⏰ Discount duration selected:', option.hours);
+                                                                        setSelectedDiscountDuration(option.hours);
+                                                                    }}
                                                                     className={`p-4 rounded-xl border-2 text-center font-medium transition-all ${
                                                                         selectedDiscountDuration === option.hours
                                                                             ? 'bg-amber-100 border-amber-400 text-amber-800 shadow-md'
@@ -968,7 +969,14 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                     </div>
 
                                                     {/* Discount Preview & Activation */}
-                                                    {selectedDiscountPercentage > 0 && selectedDiscountDuration > 0 && (
+                                                    {(() => {
+                                                        console.log('🔍 Activation condition check:', {
+                                                            selectedDiscountPercentage,
+                                                            selectedDiscountDuration,
+                                                            condition: selectedDiscountPercentage > 0 && selectedDiscountDuration > 0
+                                                        });
+                                                        return selectedDiscountPercentage > 0 && selectedDiscountDuration > 0;
+                                                    })() && (
                                                         <div className="p-4 bg-white border-2 border-orange-200 rounded-xl">
                                                             <div className="text-center mb-4">
                                                                 <div className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-full font-bold">
@@ -980,56 +988,222 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                                 </p>
                                                             </div>
                                                             
-                                                            <button
-                                                                onClick={async () => {
-                                                                    const endTime = new Date();
-                                                                    endTime.setHours(endTime.getHours() + selectedDiscountDuration);
-                                                                    
-                                                                    // Set active discount values from selected values
-                                                                    setDiscountPercentage(selectedDiscountPercentage);
-                                                                    setDiscountDuration(selectedDiscountDuration);
-                                                                    setDiscountEndTime(endTime);
-                                                                    setIsDiscountActive(true);
-                                                                    
-                                                                    // Auto-save immediately to update therapist card
-                                                                    try {
-                                                                        await handleSave();
-                                                                        
-                                                                        setToast({ 
-                                                                            message: `🎉 ${selectedDiscountPercentage}% discount activated for ${selectedDiscountDuration} hours! Your profile is now flashing to attract customers!`, 
-                                                                            type: 'success' 
-                                                                        });
-                                                                        setTimeout(() => setToast(null), 5000);
-
-                                                                        // Start countdown timer that will auto-deactivate when expired
-                                                                        const checkExpiration = setInterval(() => {
-                                                                            if (new Date() >= endTime) {
-                                                                                setIsDiscountActive(false);
-                                                                                setDiscountEndTime(null);
-                                                                                setDiscountPercentage(0);
-                                                                                setDiscountDuration(0);
-                                                                                // Also reset selected values when expired
-                                                                                setSelectedDiscountPercentage(0);
-                                                                                setSelectedDiscountDuration(0);
-                                                                                handleSave(); // Auto-save when expired
-                                                                                clearInterval(checkExpiration);
-                                                                                
-                                                                                setToast({ 
-                                                                                    message: '⏰ Discount promotion has expired and been automatically deactivated.', 
-                                                                                    type: 'warning' 
-                                                                                });
-                                                                                setTimeout(() => setToast(null), 4000);
-                                                                            }
-                                                                        }, 1000);
-                                                                    } catch (error) {
-                                                                        setToast({ 
-                                                                            message: '❌ Failed to activate discount. Please try again.', 
-                                                                            type: 'error' 
-                                                                        });
-                                                                        setTimeout(() => setToast(null), 4000);
-                                                                    }
+                                            <button
+                                                onClick={async () => {
+                                                    console.log('🔥 ACTIVATION BUTTON CLICKED!');
+                                                    console.log('🔍 CURRENT STATE:', {
+                                                        selectedDiscountPercentage,
+                                                        selectedDiscountDuration,
+                                                        isDiscountActive,
+                                                        isSavingDiscount,
+                                                        therapistId
+                                                    });
+                                                    
+                                                    // Validation check
+                                                    if (selectedDiscountPercentage === 0) {
+                                                        alert('❌ Please select a discount percentage first!');
+                                                        return;
+                                                    }
+                                                    if (selectedDiscountDuration === 0) {
+                                                        alert('❌ Please select a discount duration first!');
+                                                        return;
+                                                    }
+                                                    
+                                                    // Prevent data refresh during save operation
+                                                    setIsSavingDiscount(true);
+                                                    
+                                                    console.log('🚀 Activating discount with:', {
+                                                        percentage: selectedDiscountPercentage,
+                                                        duration: selectedDiscountDuration
+                                                    });
+                                                    
+                                                    // 🌍 Use UTC timezone for consistent handling across regions
+                                                    const now = new Date();
+                                                    const endTime = new Date(now.getTime() + (selectedDiscountDuration * 60 * 60 * 1000));
+                                                    
+                                                    console.log('📅 Discount timing (UTC):', {
+                                                        startTime: now.toISOString(),
+                                                        endTime: endTime.toISOString(),
+                                                        duration: selectedDiscountDuration + ' hours',
+                                                        localStart: now.toLocaleString(),
+                                                        localEnd: endTime.toLocaleString()
+                                                    });
+                                                    
+                                                    // Prepare discount data for immediate save
+                                                    const discountData = {
+                                                        discountPercentage: selectedDiscountPercentage,
+                                                        discountDuration: selectedDiscountDuration,
+                                                        discountEndTime: endTime.toISOString(),
+                                                        isDiscountActive: true
+                                                    };
+                                                    
+                                                    console.log('� Discount Debug - Saving discount data:', discountData);
+                                                    
+                                                    // 🔐 Ensure authentication before save
+                                                    try {
+                                                        // Check authentication status
+                                                        const { account } = await import('../lib/appwrite');
+                                                        try {
+                                                            const session = await account.get();
+                                                            console.log('✅ Authenticated session found:', session.email || 'anonymous');
+                                                        } catch (authError) {
+                                                            console.log('🔓 No session found, creating anonymous session for save...');
+                                                            await account.createAnonymousSession();
+                                                            console.log('✅ Anonymous session created for discount save');
+                                                        }
+                                                        
+                                                        // Auto-save immediately with new discount values
+                                                        const therapistData = {
+                                                            name,
+                                                            description,
+                                                            profilePicture,
+                                                            whatsappNumber,
+                                                            yearsOfExperience,
+                                                            pricing: stringifyPricing(pricing),
+                                                            hotelVillaPricing: stringifyPricing(hotelVillaPricing),
+                                                            location,
+                                                            coordinates: stringifyCoordinates(coordinates),
+                                                            serviceRadius,
+                                                            status,
+                                                            ...discountData, // Use new discount values directly
+                                                            distance: 0,
+                                                            analytics: stringifyAnalytics({ 
+                                                                impressions: 0, 
+                                                                views: 0, 
+                                                                profileViews: 0, 
+                                                                whatsapp_clicks: 0,
+                                                                whatsappClicks: 0,
+                                                                phone_clicks: 0,
+                                                                directions_clicks: 0,
+                                                                bookings: 0
+                                                            }),
+                                                            massageTypes: stringifyMassageTypes(massageTypes),
+                                                            languages: stringifyLanguages(languages),
+                                                            busyUntil: busyUntil?.toISOString() || undefined
+                                                        };
+                                                        
+                                                        console.log('💾 Discount Debug - Full save data:', therapistData);
+                                                        console.log('� Discount Debug - Detailed discount fields being sent:', {
+                                                            discountPercentage: therapistData.discountPercentage,
+                                                            discountDuration: therapistData.discountDuration, 
+                                                            discountEndTime: therapistData.discountEndTime,
+                                                            isDiscountActive: therapistData.isDiscountActive,
+                                                            therapistId: therapistId
+                                                        });
+                                                        console.log('�💾 About to call onSave function...');
+                                                        console.log('💾 onSave type:', typeof onSave);
+                                                        
+                                                        const saveResult = await onSave(therapistData as any);
+                                                        console.log('💾 Save completed successfully:', saveResult);
+                                                        
+                                                        // 🔄 FORCE DATA REFRESH: Trigger home page data reload
+                                                        console.log('🔄 Triggering global data refresh...');
+                                                        const refreshEvent = new CustomEvent('refreshTherapistData', {
+                                                            detail: { 
+                                                                therapistId: therapistId,
+                                                                action: 'discountActivated',
+                                                                discountData: {
+                                                                    percentage: selectedDiscountPercentage,
+                                                                    duration: selectedDiscountDuration,
+                                                                    endTime: endTime.toISOString(),
+                                                                    active: true
+                                                                }
+                                                            }
+                                                        });
+                                                        window.dispatchEvent(refreshEvent);
+                                                        
+                                                        // Update state after successful save
+                                                        setDiscountPercentage(selectedDiscountPercentage);
+                                                        setDiscountDuration(selectedDiscountDuration);
+                                                        setDiscountEndTime(endTime);
+                                                        setIsDiscountActive(true);
+                                                        
+                                                        setToast({ 
+                                                            message: `🎉 ${selectedDiscountPercentage}% discount activated for ${selectedDiscountDuration} hours! Your profile is now flashing to attract customers!`, 
+                                                            type: 'success' 
+                                                        });
+                                                        setTimeout(() => setToast(null), 5000);
+                                                        
+                                                        // 🔍 Verify the save actually worked by reading back the data
+                                                        setTimeout(async () => {
+                                                            try {
+                                                                const { therapistService } = await import('../lib/appwriteService');
+                                                                const savedTherapist = await therapistService.getById(String(therapistId));
+                                                                console.log('🔍 Verification - Saved discount data in database:', {
+                                                                    discountPercentage: savedTherapist.discountPercentage,
+                                                                    discountDuration: savedTherapist.discountDuration,
+                                                                    discountEndTime: savedTherapist.discountEndTime,
+                                                                    isDiscountActive: savedTherapist.isDiscountActive
+                                                                });
+                                                                
+                                                                if (savedTherapist.isDiscountActive && savedTherapist.discountPercentage > 0) {
+                                                                    console.log('✅ Database verification: Discount saved successfully!');
+                                                                } else {
+                                                                    console.error('❌ Database verification: Discount not saved properly!');
+                                                                }
+                                                            } catch (verifyError) {
+                                                                console.error('❌ Verification failed:', verifyError);
+                                                            }
+                                                        }, 1000); // Wait 1 second for database consistency
+                                                        
+                                                        // Allow data refresh again after successful save
+                                                        setIsSavingDiscount(false);
+                                                        
+                                                        // Start countdown timer that will auto-deactivate when expired
+                                                        const checkExpiration = setInterval(() => {
+                                                            if (new Date() >= endTime) {
+                                                                setIsDiscountActive(false);
+                                                                setDiscountEndTime(null);
+                                                                setDiscountPercentage(0);
+                                                                setDiscountDuration(0);
+                                                                // Also reset selected values when expired
+                                                                setSelectedDiscountPercentage(0);
+                                                                setSelectedDiscountDuration(0);
+                                                                handleSave(); // Auto-save when expired
+                                                                clearInterval(checkExpiration);
+                                                                
+                                                                setToast({ 
+                                                                    message: '⏰ Discount promotion has expired and been automatically deactivated.', 
+                                                                    type: 'warning' 
+                                                                });
+                                                                setTimeout(() => setToast(null), 4000);
+                                                            }
+                                                        }, 1000);
+                                                        
+                                                    } catch (error) {
+                                                        console.error('💥 Discount activation error:', error);
+                                                        
+                                                        // 🔍 Detailed error analysis
+                                                        let errorMessage = 'Failed to activate discount. Please try again.';
+                                                        if (error instanceof Error) {
+                                                            console.error('💥 Error details:', {
+                                                                message: error.message,
+                                                                stack: error.stack,
+                                                                name: error.name
+                                                            });
+                                                            
+                                                            // Specific error handling
+                                                            if (error.message.includes('permission')) {
+                                                                errorMessage = 'Permission denied. Please log in and try again.';
+                                                            } else if (error.message.includes('network')) {
+                                                                errorMessage = 'Network error. Check your connection and try again.';
+                                                            } else if (error.message.includes('timeout')) {
+                                                                errorMessage = 'Request timeout. Please try again.';
+                                                            }
+                                                        }
+                                                        
+                                                        setToast({ 
+                                                            message: `❌ ${errorMessage}`, 
+                                                            type: 'error' 
+                                                        });
+                                                        setTimeout(() => setToast(null), 6000);
+                                                        
+                                                        // Allow data refresh again after error
+                                                        setIsSavingDiscount(false);
+                                                    }
                                                                 }}
                                                                 disabled={isDiscountActive}
+                                                                onMouseOver={() => console.log('🔍 BUTTON STATE:', { disabled: isDiscountActive, selectedPercentage: selectedDiscountPercentage, selectedDuration: selectedDiscountDuration })}
                                                                 className={`w-full py-3 px-6 rounded-xl font-bold transition-all transform ${
                                                                     isDiscountActive
                                                                         ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg animate-pulse'
@@ -2024,7 +2198,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                             50% { transform: translateY(-10px); }
                         }
                         .animate-float {
-                            animation: float 3s ease-in-out infinite;
+                            animation: float 6s ease-in-out infinite;
                         }
                     `}</style>
                     <div className="fixed inset-0 z-50" role="dialog" aria-modal="true">

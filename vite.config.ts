@@ -43,7 +43,7 @@ export default defineConfig({
     hmr: {
       timeout: 30000,
       overlay: false, // Disable error overlay to prevent conflicts
-      port: 24682, // Use different port for HMR to avoid conflicts
+      // Let Vite automatically find an available port for HMR
     },
     // Graceful shutdown handling
     strictPort: false,

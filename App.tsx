@@ -55,6 +55,44 @@ const App = () => {
 
     // Start booking expiration service on mount
     useEffect(() => {
+        // 🔧 FIX: Initialize Appwrite SDK and make it globally available
+        const initializeAppwriteSession = async () => {
+            try {
+                // Check if Appwrite is already loaded from CDN
+                if (!(window as any).Appwrite) {
+                    console.log('📦 CDN failed, loading Appwrite from npm...');
+                    // Import and expose Appwrite globally as fallback
+                    const appwriteModule = await import('appwrite');
+                    (window as any).Appwrite = appwriteModule;
+                    console.log('✅ Appwrite SDK loaded from npm:', Object.keys(appwriteModule));
+                } else {
+                    console.log('✅ Appwrite SDK already available from CDN');
+                }
+                
+                const { account } = await import('./lib/appwrite');
+                
+                // Check if user is already logged in first
+                try {
+                    const currentUser = await account.get();
+                    console.log('✅ User session active:', currentUser.email);
+                    return; // Don't create anonymous session if user is logged in
+                } catch (userError) {
+                    // No user session, try anonymous
+                    console.log('No user session found, attempting anonymous...');
+                }
+                
+                // Only create anonymous session if no user is logged in
+                await account.createAnonymousSession();
+                console.log('✅ Anonymous session initialized for app-wide database access');
+            } catch (error: any) {
+                // Session might already exist, which is fine
+                if (!error.message?.includes('already exists')) {
+                    console.log('Session initialization:', error.message);
+                }
+            }
+        };
+
+        initializeAppwriteSession();
         bookingExpirationService.start();
         
         // Initialize VS Code translation service

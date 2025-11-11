@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🔧 Fix Appwrite Permission Errors</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .error { background: #f8d7da; border: 2px solid #dc3545; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; border: 2px solid #28a745; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .warning { background: #fff3cd; border: 2px solid #ffc107; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .info { background: #d1ecf1; border: 2px solid #17a2b8; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        button { background: #007bff; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        code { background: #f8f9fa; padding: 2px 6px; border-radius: 3px; font-family: monospace; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; font-size: 12px; }
+        .step { margin: 15px 0; padding: 15px; background: #f8f9fa; border-left: 4px solid #007bff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Fix Appwrite Permission Errors</h1>
+        
+        <div class="error">
+            <h3>❌ Current Error</h3>
+            <p><strong>User:</strong> phil10@gmail.com (role: users)</p>
+            <p><strong>Missing Scopes:</strong> ["collections.read"]</p>
+            <p><strong>Issue:</strong> User doesn't have permission to read from database collections</p>
+        </div>
+
+        <div class="info">
+            <h3>🔍 Error Analysis</h3>
+            <p>The Appwrite database collections have restricted permissions. The user needs proper read access to:</p>
+            <ul>
+                <li><code>therapists_collection_id</code> - for therapist data</li>
+                <li>Booking collections - for booking expiration checks</li>
+                <li>Other collections used by the app</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <h4>📋 Quick Solutions</h4>
+            
+            <h5>Option 1: Use Anonymous Sessions (Recommended)</h5>
+            <p>Allow anonymous users to read public therapist data without authentication.</p>
+            
+            <h5>Option 2: Fix Collection Permissions</h5>
+            <p>Update Appwrite collection permissions to allow authenticated users to read data.</p>
+            
+            <h5>Option 3: Use Server-Side API Key</h5>
+            <p>Use an API key with full permissions for server operations.</p>
+        </div>
+
+        <button onclick="testCurrentPermissions()">🧪 Test Current Permissions</button>
+        <button onclick="tryAnonymousAccess()">👤 Try Anonymous Access</button>
+        <button onclick="showPermissionFix()">🔧 Show Permission Fix</button>
+        
+        <div id="results"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.1"></script>
+    <script>
+        const { Client, Databases, Account, Query } = Appwrite;
+        
+        const client = new Client()
+            .setEndpoint('https://cloud.appwrite.io/v1')
+            .setProject('68f23b11000d25eb3664');
+        
+        const databases = new Databases(client);
+        const account = new Account(client);
+        
+        async function testCurrentPermissions() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p>🔄 Testing current permissions...</p>';
+            
+            try {
+                // First, check if user is logged in
+                let currentUser;
+                try {
+                    currentUser = await account.get();
+                    console.log('Current user:', currentUser);
+                } catch (e) {
+                    console.log('No user session:', e);
+                    currentUser = null;
+                }
+                
+                let html = '<h3>🔍 Permission Test Results</h3>';
+                
+                if (currentUser) {
+                    html += '<div class="info">';
+                    html += '<strong>Logged in as:</strong> ' + currentUser.email + '<br>';
+                    html += '<strong>User ID:</strong> ' + currentUser.$id + '<br>';
+                    html += '<strong>Roles:</strong> ' + (currentUser.labels || []).join(', ') + '<br>';
+                    html += '</div>';
+                } else {
+                    html += '<div class="warning"><strong>No active session</strong> - User not logged in</div>';
+                }
+                
+                // Test database access
+                try {
+                    const response = await databases.listDocuments(
+                        '68f76ee1000e64ca8d05',
+                        '68f25bf4000ba08315b5', // therapists collection
+                        [Query.limit(1)]
+                    );
+                    
+                    html += '<div class="success">';
+                    html += '<strong>✅ Database Access:</strong> Working<br>';
+                    html += '<strong>Documents Found:</strong> ' + response.total + '<br>';
+                    html += '</div>';
+                } catch (error) {
+                    html += '<div class="error">';
+                    html += '<strong>❌ Database Access Failed:</strong><br>';
+                    html += '<strong>Error:</strong> ' + error.message + '<br>';
+                    html += '<strong>Code:</strong> ' + error.code + '<br>';
+                    html += '</div>';
+                }
+                
+                resultsDiv.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Permission test failed:', error);
+                resultsDiv.innerHTML = '<div class="error">❌ Permission test failed: ' + error.message + '</div>';
+            }
+        }
+        
+        async function tryAnonymousAccess() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p>🔄 Trying anonymous access...</p>';
+            
+            try {
+                // Create anonymous session
+                try {
+                    await account.createAnonymousSession();
+                } catch (e) {
+                    console.log('Anonymous session error:', e.message);
+                    // Session might already exist, continue
+                }
+                
+                // Test access with anonymous session
+                const response = await databases.listDocuments(
+                    '68f76ee1000e64ca8d05',
+                    '68f25bf4000ba08315b5', // therapists collection
+                    [Query.limit(5)]
+                );
+                
+                let html = '<h3>👤 Anonymous Access Test</h3>';
+                html += '<div class="success">';
+                html += '<strong>✅ Anonymous Access Works!</strong><br>';
+                html += '<strong>Documents Retrieved:</strong> ' + response.documents.length + '<br>';
+                html += '<strong>Total Available:</strong> ' + response.total + '<br>';
+                html += '</div>';
+                
+                html += '<div class="info">';
+                html += '<h4>📋 Sample Data Retrieved:</h4>';
+                response.documents.forEach((doc, index) => {
+                    html += '<strong>Therapist ' + (index + 1) + ':</strong> ' + (doc.name || 'Unnamed') + '<br>';
+                });
+                html += '</div>';
+                
+                html += '<div class="success">';
+                html += '<h4>🔧 Solution</h4>';
+                html += '<p>Anonymous access works! Update your app to create anonymous sessions before making database calls.</p>';
+                html += '</div>';
+                
+                resultsDiv.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Anonymous access failed:', error);
+                resultsDiv.innerHTML = '<div class="error">❌ Anonymous access failed: ' + error.message + '</div>';
+            }
+        }
+        
+        function showPermissionFix() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `
+                <h3>🔧 Permission Fix Solutions</h3>
+                
+                <div class="step">
+                    <h4>Solution 1: Add Anonymous Session (Quick Fix)</h4>
+                    <p>Add this code before making database calls:</p>
+                    <pre>
+// In your main App.tsx or service files
+import { account } from './lib/appwriteService';
+
+// Create anonymous session for public data access
+try {
+    await account.createAnonymousSession();
+    console.log('✅ Anonymous session created');
+} catch (error) {
+    console.log('Session might already exist:', error.message);
+}
+                    </pre>
+                </div>
+                
+                <div class="step">
+                    <h4>Solution 2: Update Collection Permissions in Appwrite Console</h4>
+                    <p>Go to your Appwrite Console:</p>
+                    <ol>
+                        <li>Navigate to Database → Collections</li>
+                        <li>Select each collection (therapists, bookings, etc.)</li>
+                        <li>Go to Settings → Permissions</li>
+                        <li>Add permissions for:</li>
+                        <ul>
+                            <li><strong>Any</strong> - Read permission (for public data)</li>
+                            <li><strong>Users</strong> - Read/Write permissions (for authenticated users)</li>
+                        </ul>
+                    </ol>
+                </div>
+                
+                <div class="step">
+                    <h4>Solution 3: Update bookingExpirationService.ts</h4>
+                    <p>Add anonymous session creation:</p>
+                    <pre>
+export const bookingExpirationService = {
+    async checkExpiredBookings() {
+        try {
+            // Create anonymous session if needed
+            try {
+                await account.createAnonymousSession();
+            } catch (e) {
+                // Session might already exist
+                console.log('Session exists or error:', e.message);
+            }
+            
+            // Continue with existing logic...
+            const expiredBookings = await databases.listDocuments(
+                // ... existing code
+            );
+            
+        } catch (error) {
+            console.error('Error checking expired bookings:', error);
+        }
+    }
+};
+                    </pre>
+                </div>
+                
+                <div class="success">
+                    <h4>✅ Recommended Approach</h4>
+                    <p>Use <strong>Solution 1</strong> (Anonymous Sessions) for immediate fix, then implement <strong>Solution 2</strong> (Collection Permissions) for proper long-term security.</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

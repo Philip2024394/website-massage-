@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ArrowLeft, MapPin, Star, Clock, MessageCircle, Phone, Share2, Heart } from 'lucide-react';
 import { AppDrawer } from '../components/AppDrawer';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
@@ -59,14 +59,11 @@ const ProfileHeader: React.FC<{ onMenuClick: () => void; onBack: () => void }> =
 const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
     therapist,
     onBack,
-    onBook,
     onQuickBookWithChat,
     userLocation,
-    loggedInCustomer,
     onMassageJobsClick,
     onTherapistJobsClick,
     onVillaPortalClick,
-    onTherapistPortalClick,
     onMassagePlacePortalClick,
     onAgentPortalClick,
     onCustomerPortalClick,

@@ -612,6 +612,35 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 places={places}
             />;
             
+        case 'therapistDashboard':
+            console.log('🎯 AppRouter: THERAPIST DASHBOARD CASE TRIGGERED IN MAIN SWITCH!');
+            console.log('🔍 AppRouter: Current loggedInProvider:', loggedInProvider);
+            
+            // Find existing therapist data
+            const existingTherapist = therapists.find(t => 
+                t.id === loggedInProvider?.id || 
+                t.$id === loggedInProvider?.id ||
+                (t as any).documentId === loggedInProvider?.id ||
+                (t as any).therapistId === loggedInProvider?.id
+            );
+            
+            console.log('🎯 AppRouter: Found therapist:', existingTherapist?.name || 'Not found');
+            
+            return <TherapistDashboardPage 
+                onSave={handleSaveTherapist}
+                onLogout={handleProviderLogout}
+                onNavigateToNotifications={handleNavigateToNotifications}
+                onUpdateBookingStatus={handleUpdateBookingStatus}
+                onStatusChange={async (status: AvailabilityStatus) => {
+                    await handleTherapistStatusChange(status as string);
+                }}
+                therapistId={loggedInProvider?.id || ''}
+                existingTherapistData={existingTherapist}
+                bookings={bookings}
+                notifications={notifications.filter(n => n.providerId === loggedInProvider?.id)}
+                t={t.providerDashboard || {}}
+            />;
+
         case 'therapistStatus': 
 
             return loggedInProvider?.type === 'therapist' && <TherapistStatusPage 

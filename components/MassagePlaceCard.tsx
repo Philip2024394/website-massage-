@@ -4,6 +4,24 @@ import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages } fro
 import { getDisplayRating, getDisplayReviewCount, formatRating } from '../utils/ratingUtils';
 import DistanceDisplay from './DistanceDisplay';
 
+// Helper function to check if discount is active and not expired
+const isDiscountActive = (place: Place): boolean => {
+    const placeData = place as any;
+    return (
+        placeData.isDiscountActive && 
+        placeData.discountPercentage && 
+        placeData.discountPercentage > 0 &&
+        placeData.discountEndTime && 
+        new Date(placeData.discountEndTime) > new Date()
+    );
+};
+
+// Helper function for dynamic spacing based on description length
+const getDynamicSpacing = (longDesc: string, mediumDesc: string, shortDesc: string) => {
+    // This is a simple implementation - you can customize based on actual description length
+    return shortDesc; // Default to short spacing for massage places
+};
+
 interface MassagePlaceCardProps {
     place: Place;
     onRate: (place: Place) => void;
@@ -23,6 +41,27 @@ const StarIcon: React.FC<{className?: string}> = ({ className }) => (
         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
     </svg>
 );
+
+// Add CSS animations for discount effects
+const discountStyles = `
+@keyframes discountFade {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+@keyframes priceRimFade {
+    0%, 100% { box-shadow: 0 0 20px rgba(249, 115, 22, 0.6); }
+    50% { box-shadow: 0 0 20px rgba(249, 115, 22, 0.3); }
+}
+`;
+
+// Inject styles if they don't exist
+if (typeof document !== 'undefined' && !document.getElementById('massage-place-discount-styles')) {
+    const styleSheet = document.createElement('style');
+    styleSheet.id = 'massage-place-discount-styles';
+    styleSheet.textContent = discountStyles;
+    document.head.appendChild(styleSheet);
+}
 
 const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({ 
     place, 
@@ -120,8 +159,41 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                     <span className="text-xs text-gray-300">({getDisplayReviewCount(place.reviewCount)})</span>
                 </div>
 
-                {/* Active Discount Badge - Top Right Corner */}
-                {activeDiscount && discountTimeLeft !== 'EXPIRED' && (
+                {/* Discount Badge - Database driven discount */}
+                {isDiscountActive(place) && (
+                    <div className="absolute top-2 right-2 flex flex-col items-end gap-1">
+                        <div 
+                            className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-full px-4 py-2 shadow-lg animate-bounce"
+                            style={{
+                                animation: 'discountFade 2s ease-in-out infinite',
+                                filter: 'drop-shadow(0 0 8px rgba(249, 115, 22, 0.6))'
+                            }}
+                        >
+                            <span className="font-bold text-white text-xl">{(place as any).discountPercentage}% OFF</span>
+                        </div>
+                        <div className="flex items-center gap-1 bg-black/80 backdrop-blur-md rounded-full px-3 py-1 shadow-lg">
+                            <svg className="w-3 h-3 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span className="text-xs text-white font-semibold">
+                                {(() => {
+                                    const endTime = new Date((place as any).discountEndTime);
+                                    const now = new Date();
+                                    const diff = endTime.getTime() - now.getTime();
+                                    
+                                    if (diff <= 0) return 'EXPIRED';
+                                    
+                                    const hours = Math.floor(diff / (1000 * 60 * 60));
+                                    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                                    return `${hours}h ${minutes}m`;
+                                })()}
+                            </span>
+                        </div>
+                    </div>
+                )}
+
+                {/* Active Discount Badge - External discount prop (fallback) */}
+                {!isDiscountActive(place) && activeDiscount && discountTimeLeft !== 'EXPIRED' && (
                     <div className="absolute top-2 right-2 flex flex-col items-end gap-1">
                         <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-full px-4 py-2 shadow-lg animate-pulse">
                             <span className="font-bold text-white text-xl">{activeDiscount.percentage}% OFF</span>
@@ -312,112 +384,86 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                     </div>
                 )}
 
-                {/* Discount Notice - Shows when discount is active */}
-                {(place as any).discountPercentage && (place as any).discountPercentage > 0 && (
-                    <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 px-4 rounded-lg shadow-md mb-2">
-                        <div className="text-center">
-                            <p className="font-bold text-base mb-1 animate-pulse">
-                                🔥 {(place as any).discountPercentage}% OFF - PRICES ARE DISCOUNTED! 🔥
-                            </p>
-                            <p className="text-xs font-semibold">
-                                The prices shown below are FINAL DISCOUNTED PRICES - this is what you'll pay!
-                            </p>
-                        </div>
-                    </div>
-                )}
-
-                {/* Pricing */}
-                <div className="grid grid-cols-3 gap-2 text-center text-sm">
-                    {/* 60 min pricing */}
-                    <div className={`bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative transition-all duration-500 ${
-                        ((place as any).discountPercentage && (place as any).discountPercentage > 0) || (activeDiscount && discountTimeLeft !== 'EXPIRED')
-                            ? 'shadow-orange-500/60 shadow-xl ring-4 ring-orange-400/40 bg-gradient-to-br from-orange-50 to-orange-100 animate-pulse border-orange-300' 
-                            : ''
-                    }`}>
-                        <p className="text-gray-600">60 min</p>
-                        {(place as any).discountPercentage && (place as any).discountPercentage > 0 ? (
-                            <>
-                                <p className="font-bold text-gray-800">
-                                    Rp {Math.round(Number(pricing["60"]) * (1 - (place as any).discountPercentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
-                                </p>
-                                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-10 h-10 flex items-center justify-center shadow-lg animate-bounce">
-                                    -{(place as any).discountPercentage}%
-                                </span>
-                            </>
-                        ) : activeDiscount && discountTimeLeft !== 'EXPIRED' ? (
-                            <>
-                                <p className="font-bold text-gray-800">
-                                    Rp {Math.round(Number(pricing["60"]) * (1 - activeDiscount.percentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
-                                </p>
-                                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-10 h-10 flex items-center justify-center shadow-lg animate-bounce">
-                                    -{activeDiscount.percentage}%
-                                </span>
-                            </>
-                        ) : (
-                            <p className="font-bold text-gray-800">Rp {Number(pricing["60"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
-                        )}
-                    </div>
-                    
-                    {/* 90 min pricing */}
-                    <div className={`bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative transition-all duration-500 ${
-                        ((place as any).discountPercentage && (place as any).discountPercentage > 0) || (activeDiscount && discountTimeLeft !== 'EXPIRED')
-                            ? 'shadow-orange-500/60 shadow-xl ring-4 ring-orange-400/40 bg-gradient-to-br from-orange-50 to-orange-100 animate-pulse border-orange-300' 
-                            : ''
-                    }`}>
-                        <p className="text-gray-600">90 min</p>
-                        {(place as any).discountPercentage && (place as any).discountPercentage > 0 ? (
-                            <>
-                                <p className="font-bold text-gray-800">
-                                    Rp {Math.round(Number(pricing["90"]) * (1 - (place as any).discountPercentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
-                                </p>
-                                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-10 h-10 flex items-center justify-center shadow-lg animate-bounce">
-                                    -{(place as any).discountPercentage}%
-                                </span>
-                            </>
-                        ) : activeDiscount && discountTimeLeft !== 'EXPIRED' ? (
-                            <>
-                                <p className="font-bold text-gray-800">
-                                    Rp {Math.round(Number(pricing["90"]) * (1 - activeDiscount.percentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
-                                </p>
-                                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-10 h-10 flex items-center justify-center shadow-lg animate-bounce">
-                                    -{activeDiscount.percentage}%
-                                </span>
-                            </>
-                        ) : (
-                            <p className="font-bold text-gray-800">Rp {Number(pricing["90"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
-                        )}
-                    </div>
-                    
-                    {/* 120 min pricing */}
-                    <div className={`bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative transition-all duration-500 ${
-                        ((place as any).discountPercentage && (place as any).discountPercentage > 0) || (activeDiscount && discountTimeLeft !== 'EXPIRED')
-                            ? 'shadow-orange-500/60 shadow-xl ring-4 ring-orange-400/40 bg-gradient-to-br from-orange-50 to-orange-100 animate-pulse border-orange-300' 
-                            : ''
-                    }`}>
-                        <p className="text-gray-600">120 min</p>
-                        {(place as any).discountPercentage && (place as any).discountPercentage > 0 ? (
-                            <>
-                                <p className="font-bold text-gray-800">
-                                    Rp {Math.round(Number(pricing["120"]) * (1 - (place as any).discountPercentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
-                                </p>
-                                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-10 h-10 flex items-center justify-center shadow-lg animate-bounce">
-                                    -{(place as any).discountPercentage}%
-                                </span>
-                            </>
-                        ) : activeDiscount && discountTimeLeft !== 'EXPIRED' ? (
-                            <>
-                                <p className="font-bold text-gray-800">
-                                    Rp {Math.round(Number(pricing["120"]) * (1 - activeDiscount.percentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
-                                </p>
-                                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-10 h-10 flex items-center justify-center shadow-lg animate-bounce">
-                                    -{activeDiscount.percentage}%
-                                </span>
-                            </>
-                        ) : (
-                            <p className="font-bold text-gray-800">Rp {Number(pricing["120"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
-                        )}
-                    </div>
+            {/* Discounted Prices Header */}
+            {isDiscountActive(place) && (
+                <div className={`text-center mb-1 ${getDynamicSpacing('mt-3', 'mt-2', 'mt-1')}`}>
+                    <p className="text-black font-semibold text-sm flex items-center justify-center gap-1">
+                        🔥 Discounted Price's Displayed
+                    </p>
                 </div>
+            )}
+
+            {/* Pricing */}
+            <div className="grid grid-cols-3 gap-2 text-center text-sm mt-1">
+                {/* 60 min pricing */}
+                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-300 min-h-[60px] flex flex-col justify-center ${
+                    isDiscountActive(place) ? 'bg-gradient-to-br from-orange-50 to-orange-100 border-orange-300' : 'bg-gray-50 border-gray-200'
+                }`} 
+                style={isDiscountActive(place) ? {
+                    animation: 'priceRimFade 3s ease-in-out infinite',
+                    boxShadow: '0 0 20px rgba(249, 115, 22, 0.6)'
+                } : {}}>
+                    <p className="text-gray-600 text-xs">60 min</p>
+                    {isDiscountActive(place) ? (
+                        <>
+                            <p className="font-bold text-gray-800 text-sm line-through opacity-60">
+                                Rp {Number(pricing["60"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
+                            </p>
+                            <p className="font-bold text-orange-600 text-lg">
+                                Rp {Math.round(Number(pricing["60"]) * (1 - (place as any).discountPercentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
+                            </p>
+                        </>
+                    ) : (
+                        <p className="font-bold text-gray-800 text-lg">Rp {Number(pricing["60"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
+                    )}
+                </div>
+                    
+                {/* 90 min pricing */}
+                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-300 min-h-[60px] flex flex-col justify-center ${
+                    isDiscountActive(place) ? 'bg-gradient-to-br from-orange-50 to-orange-100 border-orange-300' : 'bg-gray-50 border-gray-200'
+                }`} 
+                style={isDiscountActive(place) ? {
+                    animation: 'priceRimFade 3s ease-in-out infinite',
+                    boxShadow: '0 0 20px rgba(249, 115, 22, 0.6)'
+                } : {}}>
+                    <p className="text-gray-600 text-xs">90 min</p>
+                    {isDiscountActive(place) ? (
+                        <>
+                            <p className="font-bold text-gray-800 text-sm line-through opacity-60">
+                                Rp {Number(pricing["90"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
+                            </p>
+                            <p className="font-bold text-orange-600 text-lg">
+                                Rp {Math.round(Number(pricing["90"]) * (1 - (place as any).discountPercentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
+                            </p>
+                        </>
+                    ) : (
+                        <p className="font-bold text-gray-800 text-lg">Rp {Number(pricing["90"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
+                    )}
+                </div>
+                    
+                {/* 120 min pricing */}
+                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-300 min-h-[60px] flex flex-col justify-center ${
+                    isDiscountActive(place) ? 'bg-gradient-to-br from-orange-50 to-orange-100 border-orange-300' : 'bg-gray-50 border-gray-200'
+                }`} 
+                style={isDiscountActive(place) ? {
+                    animation: 'priceRimFade 3s ease-in-out infinite',
+                    boxShadow: '0 0 20px rgba(249, 115, 22, 0.6)'
+                } : {}}>
+                    <p className="text-gray-600 text-xs">120 min</p>
+                    {isDiscountActive(place) ? (
+                        <>
+                            <p className="font-bold text-gray-800 text-sm line-through opacity-60">
+                                Rp {Number(pricing["120"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
+                            </p>
+                            <p className="font-bold text-orange-600 text-lg">
+                                Rp {Math.round(Number(pricing["120"]) * (1 - (place as any).discountPercentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
+                            </p>
+                        </>
+                    ) : (
+                        <p className="font-bold text-gray-800 text-lg">Rp {Number(pricing["120"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
+                    )}
+                </div>
+            </div>
 
                 {/* Action Button */}
                 <button

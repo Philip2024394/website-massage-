@@ -53,16 +53,39 @@ const getDisplayStatus = (therapist: Therapist): AvailabilityStatus => {
 
 // Helper function to check if discount is currently active
 const isDiscountActive = (therapist: Therapist): boolean => {
-    return !!(
+    const hasDiscountData = !!(
         therapist.discountPercentage && 
         therapist.discountPercentage > 0 && 
         therapist.discountEndTime &&
-        (() => {
-            const now = new Date();
-            const endTime = new Date(therapist.discountEndTime);
-            return !isNaN(endTime.getTime()) && endTime > now;
-        })()
+        therapist.isDiscountActive === true // Check the boolean flag
     );
+    
+    if (!hasDiscountData) return false;
+    
+    // Check if discount hasn't expired
+    const now = new Date();
+    const endTime = therapist.discountEndTime ? new Date(therapist.discountEndTime) : null;
+    const notExpired = endTime && !isNaN(endTime.getTime()) && endTime > now;
+    
+    const result = Boolean(hasDiscountData && notExpired);
+    
+    // Debug logging for phil10 specifically
+    if (therapist.name === 'phil10' || (therapist as any).$id === '6912d611003551067831') {
+        console.log('🔍 DISCOUNT DEBUG - isDiscountActive check:', {
+            therapistId: therapist.$id || therapist.id,
+            therapistName: therapist.name,
+            discountPercentage: therapist.discountPercentage,
+            discountEndTime: therapist.discountEndTime,
+            isDiscountActiveFlag: therapist.isDiscountActive,
+            hasDiscountData,
+            notExpired,
+            finalResult: result,
+            currentTime: now.toISOString(),
+            endTimeObj: endTime ? endTime.toISOString() : null
+        });
+    }
+    
+    return result;
 };
 
 const WhatsAppIcon: React.FC<{className?: string}> = ({ className }) => (
@@ -113,6 +136,20 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     const [isOvertime, setIsOvertime] = useState(false);
     const [discountTimeLeft, setDiscountTimeLeft] = useState<string>('');
     
+    // Helper function to calculate dynamic spacing based on description length
+    const getDynamicSpacing = (longSpacing: string, mediumSpacing: string, shortSpacing: string) => {
+        const description = therapist.description || 
+            `Certified massage therapist with ${therapist.yearsOfExperience || 5}+ years experience. Specialized in therapeutic and relaxation techniques. Available for home, hotel, and villa services. Professional, licensed, and highly rated by clients for exceptional service quality.`;
+        const descriptionLength = description.length;
+        
+        // If description is short (less than 200 chars), use minimum spacing  
+        if (descriptionLength < 200) return shortSpacing;
+        // If description is medium (200-300 chars), use reduced spacing
+        if (descriptionLength < 300) return mediumSpacing;
+        // If description is long (300+ chars), use standard spacing
+        return longSpacing;
+    };
+
     // Detect language from translations object
     const currentLanguage: 'en' | 'id' = _t?.schedule === 'Schedule' ? 'en' : 'id';
     
@@ -388,27 +425,42 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         transform: scale(1.02);
                     }
                 }
-                @keyframes priceGlow {
-                    0%, 100% { background: rgba(251, 146, 60, 0.1); }
-                    50% { background: rgba(239, 68, 68, 0.2); }
+
+                @keyframes discountFade {
+                    0%, 100% { 
+                        opacity: 1;
+                    }
+                    50% { 
+                        opacity: 0.3;
+                    }
                 }
+
+                .discount-fade {
+                    background: linear-gradient(to right, rgb(249, 115, 22), rgb(234, 88, 12));
+                    animation: discountFade 2s ease-in-out infinite;
+                }
+
+                @keyframes priceRimFade {
+                    0%, 100% { 
+                        border-color: rgb(251, 146, 60);
+                        box-shadow: 0 0 0 2px rgba(251, 146, 60, 0.3), 0 4px 6px -1px rgba(251, 146, 60, 0.5);
+                    }
+                    50% { 
+                        border-color: rgba(251, 146, 60, 0.3);
+                        box-shadow: 0 0 0 2px rgba(251, 146, 60, 0.1), 0 4px 6px -1px rgba(251, 146, 60, 0.2);
+                    }
+                }
+
+                .price-rim-fade {
+                    animation: priceRimFade 2s ease-in-out infinite;
+                }
+
             `}</style>
             
-            <div className={`bg-white rounded-xl shadow-md overflow-visible relative transition-all duration-300 ${
-                isDiscountActive(therapist) 
-                    ? 'ring-4 ring-red-400/50 shadow-2xl shadow-red-500/40' 
-                    : ''
-            }`}
-                style={isDiscountActive(therapist) ? {
-                    animation: 'cardFlash 3s ease-in-out infinite'
-                } : {}}>
+            <div className="bg-white rounded-xl shadow-md overflow-visible relative transition-all duration-300">
                 
                 {/* Main Image Banner */}
-                <div className={`h-48 w-full bg-gradient-to-r from-orange-400 to-orange-600 overflow-visible relative rounded-t-xl transition-all duration-500 ${
-                    isDiscountActive(therapist) 
-                        ? 'shadow-2xl shadow-red-500/60 ring-2 ring-red-400/60' 
-                        : ''
-                }`}>
+                <div className="h-48 w-full bg-gradient-to-r from-orange-400 to-orange-600 overflow-visible relative rounded-t-xl">
                 <img 
                     src={displayImage} 
                     alt={`${therapist.name} cover`} 
@@ -427,52 +479,38 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     }}
                 />
 
-                {/* 🎯 DISCOUNT BADGE ON MAIN IMAGE - Only show when discount is active and not expired */}
+                {/* 🎯 ENHANCED DISCOUNT BADGE - Larger orange badge in top right corner with glow effect */}
                 {isDiscountActive(therapist) && (
-                    <div className="absolute top-4 right-4 z-30">
+                    <div className="absolute top-3 right-3 z-30 flex flex-col items-end gap-2">
+                        {/* Enhanced Orange Discount Badge with Subtle Fade Effect */}
                         <div className="relative">
-                            {/* Glow Effect Background */}
-                            <div className="absolute -inset-2 bg-gradient-to-r from-red-500 via-pink-500 to-red-600 rounded-full blur-lg opacity-75 animate-pulse"></div>
-                            
-                            {/* Main Discount Badge */}
-                            <div className="relative bg-gradient-to-r from-red-500 to-red-600 text-white font-bold text-lg px-4 py-2 rounded-full shadow-2xl border-2 border-white flex items-center gap-1 animate-bounce">
-                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 17.5 9.134a1 1 0 010 1.732L14.146 12.8l-1.179 4.456a1 1 0 01-1.934 0L9.854 12.8 6.5 10.866a1 1 0 010-1.732L9.854 7.2l1.179-4.456A1 1 0 0112 2z" clipRule="evenodd"/>
-                                </svg>
+                            {/* Main badge with subtle fade animation */}
+                            <div className="relative text-white font-bold text-lg px-5 py-2 rounded-full shadow-lg discount-fade">
                                 {therapist.discountPercentage}% OFF
                             </div>
-                            
-                            {/* Sparkle Effects */}
-                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-ping"></div>
-                            <div className="absolute -bottom-1 -left-1 w-2 h-2 bg-white rounded-full animate-pulse"></div>
                         </div>
-                    </div>
-                )}
-
-                {/* 🎯 LIVE DISCOUNT COUNTDOWN TIMER - Only show when discount is active and not expired */}
-                {isDiscountActive(therapist) && (
-                    <div className="absolute top-4 left-4 z-30">
-                        <div className="bg-gradient-to-r from-red-600 to-orange-600 text-white text-xs px-3 py-2 rounded-lg font-mono shadow-lg border border-white/30 animate-pulse">
-                            <div className="flex items-center space-x-1">
-                                <div className="w-2 h-2 bg-yellow-400 rounded-full animate-ping"></div>
-                                <span className="font-bold">
-                                    ⏰ {(() => {
-                                        if (!therapist.discountEndTime) return 'EXPIRED';
-                                        const now = new Date();
-                                        const endTime = new Date(therapist.discountEndTime);
-                                        const timeLeft = endTime.getTime() - now.getTime();
-                                        if (timeLeft <= 0) return 'EXPIRED';
-                                        
-                                        const hours = Math.floor(timeLeft / (1000 * 60 * 60));
-                                        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-                                        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-                                        
-                                        if (hours > 0) return `${hours}h ${minutes}m`;
-                                        if (minutes > 0) return `${minutes}m ${seconds}s`;
-                                        return `${seconds}s`;
-                                    })()}
-                                </span>
-                            </div>
+                        
+                        {/* Countdown Timer with Red Clock Icon */}
+                        <div className="bg-black/80 text-white text-xs px-3 py-1 rounded-lg font-mono shadow-lg flex items-center gap-1">
+                            {/* Red Clock Icon */}
+                            <svg className="w-3 h-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            {(() => {
+                                if (!therapist.discountEndTime) return 'EXPIRED';
+                                const now = new Date();
+                                const endTime = new Date(therapist.discountEndTime);
+                                const timeLeft = endTime.getTime() - now.getTime();
+                                if (timeLeft <= 0) return 'EXPIRED';
+                                
+                                const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+                                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                                
+                                if (hours > 0) return `${hours}h ${minutes}m`;
+                                if (minutes > 0) return `${minutes}m ${seconds}s`;
+                                return `${seconds}s`;
+                            })()}
                         </div>
                     </div>
                 )}
@@ -544,20 +582,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     <span className="text-xs text-gray-300">({getDisplayReviewCount(therapist.reviewCount)})</span>
                 </div>
 
-                {/* Active Discount Badge - Top Right Corner */}
-                {activeDiscount && discountTimeLeft !== 'EXPIRED' && (
-                    <div className="absolute top-2 right-2 flex flex-col items-end gap-1">
-                        <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-full px-4 py-2 shadow-lg animate-pulse">
-                            <span className="font-bold text-white text-xl">{activeDiscount.percentage}% OFF</span>
-                        </div>
-                        <div className="flex items-center gap-1 bg-black/80 backdrop-blur-md rounded-full px-3 py-1 shadow-lg">
-                            <svg className="w-3 h-3 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span className="text-xs text-white font-semibold">{discountTimeLeft}</span>
-                        </div>
-                    </div>
-                )}
+
                 
 
 
@@ -699,8 +724,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     </div>
                 </div>
 
-            {/* Massage Specializations - Above languages section - Moved down for bio space */}
-            <div className="mt-6 border-t border-gray-100 pt-4">
+            {/* Massage Specializations - Above languages section - Dynamic spacing based on description length */}
+            <div className={`border-t border-gray-100 pt-4 ${getDynamicSpacing('mt-6', 'mt-4', 'mt-2')}`}>
                 <div className="mb-2">
                     <h4 className="text-xs font-semibold text-gray-700">
                         {_t.home?.therapistCard?.experiencedArea || 'Massage Specializations'}
@@ -735,7 +760,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 console.log('🌐 TherapistCard Debug - Is Array?:', Array.isArray(languages));
                 
                 return languages && Array.isArray(languages) && languages.length > 0 && (
-                    <div className="mt-4">
+                    <div className={`${getDynamicSpacing('mt-4', 'mt-3', 'mt-2')}`}>
                         <div className="flex justify-between items-center mb-2">
                             <h4 className="text-xs font-semibold text-gray-700">Languages</h4>
                             {therapist.yearsOfExperience && (
@@ -801,24 +826,20 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             })()}
 
             {/* Discount Notice - Shows when discount is active and not expired */}
+            {/* Discounted Prices Header */}
             {isDiscountActive(therapist) && (
-                <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white py-2 px-3 rounded-lg shadow-md my-4">
-                    <div className="text-center">
-                        <p className="font-bold text-sm mb-0.5 animate-pulse">
-                            🔥 {therapist.discountPercentage}% OFF! 🔥
-                        </p>
-                        <p className="text-xs">
-                            Final prices shown below!
-                        </p>
-                    </div>
+                <div className={`text-center mb-1 ${getDynamicSpacing('mt-3', 'mt-2', 'mt-1')}`}>
+                    <p className="text-black font-semibold text-sm flex items-center justify-center gap-1">
+                        🔥 Discounted Price's Displayed
+                    </p>
                 </div>
             )}
 
-            <div className="grid grid-cols-3 gap-2 text-center text-sm mt-4">
+            <div className="grid grid-cols-3 gap-2 text-center text-sm mt-1">
                 {/* 60 min pricing */}
-                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 min-h-[60px] flex flex-col justify-center ${
+                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-300 min-h-[60px] flex flex-col justify-center ${
                     isDiscountActive(therapist)
-                        ? 'bg-gradient-to-br from-red-50 to-pink-50 border-red-300 shadow-red-500/60 shadow-2xl ring-4 ring-red-400/40 animate-pulse priceGlow' 
+                        ? 'bg-red-50 border-orange-300 shadow-orange-400/50 ring-2 ring-orange-400/30 price-rim-fade' 
                         : 'bg-gray-100 border-gray-200'
                 }`}>
                     <p className="text-gray-600 text-xs mb-1">60 min</p>
@@ -828,10 +849,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                             <p className="font-bold text-gray-800 text-sm leading-tight">
                                 Rp {formatPrice(Math.round(Number(pricing["60"]) * (1 - (therapist.discountPercentage || 0) / 100)))}
                             </p>
-                            {/* Discount badge to show they're getting a deal */}
-                            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-lg notification-badge animate-bounce">
-                                -{therapist.discountPercentage || 0}%
-                            </span>
+
                         </>
                     ) : (
                         <p className="font-bold text-gray-800 text-sm leading-tight">
@@ -841,21 +859,16 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 </div>
                 
                 {/* 90 min pricing */}
-                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 min-h-[60px] flex flex-col justify-center ${
+                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-300 min-h-[60px] flex flex-col justify-center ${
                     isDiscountActive(therapist)
-                        ? 'bg-gradient-to-br from-red-50 to-pink-50 border-red-300 shadow-red-500/60 shadow-2xl ring-4 ring-red-400/40 animate-pulse priceGlow' 
+                        ? 'bg-red-50 border-orange-300 shadow-orange-400/50 ring-2 ring-orange-400/30 price-rim-fade' 
                         : 'bg-gray-100 border-gray-200'
                 }`}>
                     <p className="text-gray-600 text-xs mb-1">90 min</p>
                     {isDiscountActive(therapist) ? (
-                        <>
-                            <p className="font-bold text-gray-800 text-sm leading-tight">
-                                Rp {formatPrice(Math.round(Number(pricing["90"]) * (1 - (therapist.discountPercentage || 0) / 100)))}
-                            </p>
-                            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-lg animate-bounce">
-                                -{therapist.discountPercentage || 0}%
-                            </span>
-                        </>
+                        <p className="font-bold text-gray-800 text-sm leading-tight">
+                            Rp {formatPrice(Math.round(Number(pricing["90"]) * (1 - (therapist.discountPercentage || 0) / 100)))}
+                        </p>
                     ) : (
                         <p className="font-bold text-gray-800 text-sm leading-tight">
                             Rp {formatPrice(Number(pricing["90"]))}
@@ -864,21 +877,16 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 </div>
                 
                 {/* 120 min pricing */}
-                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 min-h-[60px] flex flex-col justify-center ${
+                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-300 min-h-[60px] flex flex-col justify-center ${
                     isDiscountActive(therapist)
-                        ? 'bg-gradient-to-br from-red-50 to-pink-50 border-red-300 shadow-red-500/60 shadow-2xl ring-4 ring-red-400/40 animate-pulse priceGlow' 
+                        ? 'bg-red-50 border-orange-300 shadow-orange-400/50 ring-2 ring-orange-400/30 price-rim-fade' 
                         : 'bg-gray-100 border-gray-200'
                 }`}>
                     <p className="text-gray-600 text-xs mb-1">120 min</p>
                     {isDiscountActive(therapist) ? (
-                        <>
-                            <p className="font-bold text-gray-800 text-sm leading-tight">
-                                Rp {formatPrice(Math.round(Number(pricing["120"]) * (1 - (therapist.discountPercentage || 0) / 100)))}
-                            </p>
-                            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-lg animate-bounce">
-                                -{therapist.discountPercentage || 0}%
-                            </span>
-                        </>
+                        <p className="font-bold text-gray-800 text-sm leading-tight">
+                            Rp {formatPrice(Math.round(Number(pricing["120"]) * (1 - (therapist.discountPercentage || 0) / 100)))}
+                        </p>
                     ) : (
                         <p className="font-bold text-gray-800 text-sm leading-tight">
                             Rp {formatPrice(Number(pricing["120"]))}
@@ -887,7 +895,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 </div>
             </div>
 
-            <div className="flex gap-2 mt-2">
+            <div className={`flex gap-2 ${getDynamicSpacing('mt-2', 'mt-1', 'mt-1')}`}>
                 <button
                     onClick={() => {
                         console.log('🟢 Pesan button clicked - using booking confirmation flow with customer details');
@@ -916,7 +924,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     className="w-1/2 flex items-center justify-center gap-1.5 bg-green-500 text-white font-bold py-2.5 px-3 rounded-lg hover:bg-green-600 transition-colors duration-300"
                 >
                     <WhatsAppIcon className="w-4 h-4"/>
-                    <span className="text-sm">{_t.home?.therapistCard?.orderNow || 'Pesan'}</span>
+                    <span className="text-sm">Whats App</span>
                 </button>
                  <button 
                     onClick={() => {
@@ -1000,46 +1008,15 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             {/* Refer Friend Modal */}
             {showReferModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4" onClick={() => setShowReferModal(false)}>
-                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-[90vw] max-h-[85vh] sm:max-w-xs md:max-w-sm p-3 sm:p-4 animate-fadeIn overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-[90vw] max-h-[85vh] sm:max-w-xs md:max-w-sm p-3 sm:p-4 overflow-y-auto" onClick={(e) => e.stopPropagation()}>
                         <div className="text-center">
-                            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 overflow-hidden relative">
-                                {/* Main coin image */}
+                            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3">
+                                {/* Main coin image - Increased by 20% */}
                                 <img 
                                     src="https://ik.imagekit.io/7grri5v7d/INDASTREET_coins_new-removebg-preview.png?updatedAt=1762338892035"
                                     alt="IndaStreet Coins"
-                                    className="w-12 h-12 sm:w-16 sm:h-16 object-contain z-10 relative"
+                                    className="w-14 h-14 sm:w-20 sm:h-20 object-contain"
                                 />
-                                
-                                {/* Falling coins animation */}
-                                {[...Array(6)].map((_, i) => (
-                                    <img
-                                        key={i}
-                                        src="https://ik.imagekit.io/7grri5v7d/INDASTREET_coins_new-removebg-preview.png?updatedAt=1762338892035"
-                                        alt=""
-                                        className={`absolute w-4 h-4 opacity-60 animate-coin-fall-${i + 1}`}
-                                        style={{
-                                            left: `${15 + (i * 12)}%`,
-                                            animationDelay: `${i * 0.3}s`,
-                                            animationDuration: '2s',
-                                            animationIterationCount: 'infinite'
-                                        }}
-                                    />
-                                ))}
-                                
-                                {/* Accumulated coins at bottom */}
-                                {[...Array(4)].map((_, i) => (
-                                    <img
-                                        key={`bottom-${i}`}
-                                        src="https://ik.imagekit.io/7grri5v7d/INDASTREET_coins_new-removebg-preview.png?updatedAt=1762338892035"
-                                        alt=""
-                                        className="absolute w-3 h-3 opacity-40 animate-pulse"
-                                        style={{
-                                            bottom: '8px',
-                                            left: `${20 + (i * 15)}%`,
-                                            animationDelay: `${i * 0.5}s`
-                                        }}
-                                    />
-                                ))}
                             </div>
                             
                             <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-1 sm:mb-2">Refer a Friend</h3>
@@ -1156,37 +1133,18 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             {/* Login Required Modal */}
             {showLoginRequiredModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setShowLoginRequiredModal(false)}>
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-fadeIn" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-5 animate-fadeIn" onClick={(e) => e.stopPropagation()}>
                         <div className="text-center">
-                            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <svg className="w-8 h-8 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <svg className="w-6 h-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                 </svg>
                             </div>
                             
-                            <h3 className="text-2xl font-bold text-gray-900 mb-2">Login Required</h3>
-                            <p className="text-gray-600 mb-4">You must be logged into your account to leave a review.</p>
+                            <h3 className="text-lg font-bold text-gray-900 mb-2">Login Required</h3>
+                            <p className="text-sm text-gray-600 mb-4">You must be logged into a registered account to leave a review.</p>
                             
-                            <div className="bg-blue-50 rounded-xl p-4 mb-6 text-left">
-                                <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
-                                    <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                                    </svg>
-                                    Review Verification Process:
-                                </h4>
-                                <ul className="text-sm text-gray-700 space-y-2 ml-7">
-                                    <li className="flex items-start gap-2">
-                                        <span className="text-orange-500">✓</span>
-                                        <span>All reviews are verified by our admin team before posting live</span>
-                                    </li>
-                                    <li className="flex items-start gap-2">
-                                        <span className="text-orange-500">✓</span>
-                                        <span>This ensures authentic, helpful reviews for our community</span>
-                                    </li>
-                                </ul>
-                            </div>
-                            
-                            <div className="space-y-3">
+                            <div className="space-y-2">
                                 <button
                                     onClick={() => {
                                         setShowLoginRequiredModal(false);
@@ -1194,13 +1152,13 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                             onShowRegisterPrompt();
                                         }
                                     }}
-                                    className="w-full px-6 py-3 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 transition-colors"
+                                    className="w-full px-4 py-2 bg-orange-600 text-white font-medium rounded-lg hover:bg-orange-700 transition-colors text-sm"
                                 >
                                     Login / Sign Up
                                 </button>
                                 <button
                                     onClick={() => setShowLoginRequiredModal(false)}
-                                    className="w-full px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors"
+                                    className="w-full px-4 py-2 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition-colors text-sm"
                                 >
                                     Close
                                 </button>
