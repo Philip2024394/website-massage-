@@ -4,6 +4,7 @@ import { saveSessionCache } from '../lib/sessionManager';
 import { checkRateLimit, handleAppwriteError, resetRateLimit } from '../lib/rateLimitUtils';
 import { trackDailySignIn } from '../lib/coinHooks';
 import { LogIn, UserPlus } from 'lucide-react';
+import PasswordInput from '../components/PasswordInput';
 
 interface MassagePlaceLoginPageProps {
     onSuccess: (placeId: string) => void;
@@ -196,15 +197,10 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
                     </div>
 
                     <div>
-                        <label htmlFor="password" className="block text-sm font-medium text-white/90 mb-2">
-                            Password
-                        </label>
-                        <input
-                            id="password"
-                            type="password"
+                        <PasswordInput
                             value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
+                            onChange={setPassword}
+                            label="Password"
                             placeholder="••••••••"
                             required
                             minLength={8}

@@ -8,6 +8,7 @@ import MapPinIcon from '../components/icons/MapPinIcon';
 import DocumentTextIcon from '../components/icons/DocumentTextIcon';
 import { LogIn, UserPlus } from 'lucide-react';
 import PageNumberBadge from '../components/PageNumberBadge';
+import PasswordInput from '../components/PasswordInput';
 
 const loginOptions = [
   { id: 'user', label: 'User', icon: UserSolidIcon },
@@ -189,13 +190,10 @@ const UnifiedLoginPage: React.FC = () => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-white/90 mb-2">Password</label>
-            <input
-              type="password"
-              name="password"
-              className="w-full bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg p-3 focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
+            <PasswordInput
               value={form.password}
-              onChange={handleInputChange}
+              onChange={(value) => setForm({ ...form, password: value })}
+              label="Password"
               placeholder="••••••••"
               required
             />

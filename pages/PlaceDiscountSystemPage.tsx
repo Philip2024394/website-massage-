@@ -26,7 +26,19 @@ const PlaceDiscountSystemPage: React.FC<PlaceDiscountSystemPageProps> = ({
             setDiscountDuration(place.discountDuration || 6);
             setDiscountEndTime(place.discountEndTime || '');
             setIsDiscountActive(place.isDiscountActive || false);
-            setPricing(place.pricing || { 60: 0, 90: 0, 120: 0 });
+            
+            // Parse pricing from JSON string
+            let parsedPricing = { 60: 0, 90: 0, 120: 0 };
+            if (place.pricing) {
+                try {
+                    parsedPricing = typeof place.pricing === 'string' 
+                        ? JSON.parse(place.pricing) 
+                        : place.pricing;
+                } catch (e) {
+                    console.warn('Failed to parse place pricing:', e);
+                }
+            }
+            setPricing(parsedPricing);
         }
     }, [place]);
 

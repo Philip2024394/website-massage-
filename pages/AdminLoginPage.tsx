@@ -3,6 +3,7 @@ import { adminAuth } from '../lib/auth';
 import { saveSessionCache } from '../lib/sessionManager';
 import { checkRateLimit, handleAppwriteError, resetRateLimit, resetAllRateLimits } from '../lib/rateLimitUtils';
 import PageNumberBadge from '../components/PageNumberBadge';
+import PasswordInput from '../components/PasswordInput';
 
 interface AdminLoginPageProps {
     onAdminLogin: () => void;
@@ -238,17 +239,15 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin: _onAdminL
                         />
                     </div>
                     <div>
-                        <label htmlFor="password" className="block text-sm font-medium text-white/90 mb-2">{t.prompt}</label>
-                        <input 
-                            id="password"
-                            type="password" 
-                            value={password} 
-                            onChange={e => setPassword(e.target.value)}
-                            className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
-                            placeholder="Enter password"
-                            onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-                            required
-                        />
+                        <div onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}>
+                            <PasswordInput
+                                value={password}
+                                onChange={setPassword}
+                                label={t.prompt || "Password"}
+                                placeholder="Enter password"
+                                required
+                            />
+                        </div>
                     </div>
                     <button
                         onClick={handleSubmit}

@@ -345,6 +345,11 @@ export interface Place {
     galleryImages?: Array<{ imageUrl: string; caption: string }>;
     profilePicture?: string; // Logo/profile image
     additionalServices?: string[]; // Selected additional services/amenities
+    
+    // Discount system fields
+    discountDuration?: number; // Duration in hours for discount period
+    discountEndTime?: string; // ISO string for when discount ends
+    isDiscountActive?: boolean; // Whether discount is currently active
 }
 
 export interface User {

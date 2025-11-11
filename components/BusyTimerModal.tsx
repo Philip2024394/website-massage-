@@ -28,49 +28,49 @@ const BusyTimerModal: React.FC<BusyTimerModalProps> = ({ isOpen, onClose, onConf
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4">
+            <div className="bg-white rounded-2xl p-4 sm:p-6 w-full max-w-sm sm:max-w-md shadow-2xl mx-2 sm:mx-4">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-yellow-100 rounded-xl flex items-center justify-center">
-                            <Clock className="w-5 h-5 text-yellow-600" />
+                <div className="flex items-center justify-between mb-4 sm:mb-6">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-100 rounded-xl flex items-center justify-center">
+                            <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
                         </div>
                         <div>
-                            <h3 className="text-lg font-bold text-gray-900">Set Busy Duration</h3>
-                            <p className="text-sm text-gray-600">How long will you be busy?</p>
+                            <h3 className="text-base sm:text-lg font-bold text-gray-900">Set Busy Duration</h3>
+                            <p className="text-xs sm:text-sm text-gray-600">How long will you be busy?</p>
                         </div>
                     </div>
                     <button 
                         onClick={onClose}
-                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                        className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors"
                     >
-                        <X className="w-5 h-5 text-gray-500" />
+                        <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
                     </button>
                 </div>
 
                 {/* Time Options */}
-                <div className="space-y-3 mb-6">
+                <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
                     {timeOptions.map((option) => (
                         <button
                             key={option.minutes}
                             onClick={() => setSelectedMinutes(option.minutes)}
-                            className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
+                            className={`w-full p-3 sm:p-4 rounded-xl border-2 text-left transition-all ${
                                 selectedMinutes === option.minutes
-                                    ? 'border-yellow-300 bg-yellow-50 shadow-md'
-                                    : 'border-gray-200 bg-white hover:border-yellow-200 hover:bg-yellow-50'
+                                    ? 'border-orange-300 bg-orange-50 shadow-md'
+                                    : 'border-gray-200 bg-white hover:border-orange-200 hover:bg-orange-50'
                             }`}
                         >
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="font-semibold text-gray-900">{option.display}</p>
-                                    <p className="text-sm text-gray-600">
+                                    <p className="text-sm sm:text-base font-semibold text-gray-900">{option.display}</p>
+                                    <p className="text-xs sm:text-sm text-gray-600">
                                         Total: {Math.floor(option.minutes / 60)}h {option.minutes % 60}m
                                     </p>
                                 </div>
                                 <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
                                     selectedMinutes === option.minutes
-                                        ? 'border-yellow-500 bg-yellow-500'
+                                        ? 'border-orange-500 bg-orange-500'
                                         : 'border-gray-300'
                                 }`}>
                                     {selectedMinutes === option.minutes && (
@@ -83,19 +83,19 @@ const BusyTimerModal: React.FC<BusyTimerModalProps> = ({ isOpen, onClose, onConf
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex gap-3">
+                <div className="flex gap-2 sm:gap-3">
                     <button
                         onClick={onClose}
-                        className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
+                        className="flex-1 px-3 py-2.5 sm:px-4 sm:py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors text-sm sm:text-base"
                     >
                         Cancel
                     </button>
                     <button
                         onClick={handleConfirm}
                         disabled={!selectedMinutes}
-                        className={`flex-1 px-4 py-3 font-semibold rounded-xl transition-colors ${
+                        className={`flex-1 px-3 py-2.5 sm:px-4 sm:py-3 font-semibold rounded-xl transition-colors text-sm sm:text-base ${
                             selectedMinutes
-                                ? 'bg-yellow-500 text-white hover:bg-yellow-600'
+                                ? 'bg-orange-500 text-white hover:bg-orange-600 shadow-lg'
                                 : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                         }`}
                     >

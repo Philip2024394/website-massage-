@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useBackground } from '../../../shared/hooks/useBackground';
+import PasswordInput from '../../../../components/PasswordInput';
 
 interface AdminLoginProps {
   onLogin: (credentials: { username: string; password: string }) => void;
@@ -56,16 +57,13 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-white/90 mb-2">
-                Password
-              </label>
-              <input
-                type="password"
+              <PasswordInput
                 value={credentials.password}
-                onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
-                className="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-md text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent backdrop-blur-sm"
+                onChange={(value: string) => setCredentials({ ...credentials, password: value })}
+                label="Password"
                 placeholder="indostreet2024"
                 required
+                className="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-md text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent backdrop-blur-sm"
               />
             </div>
 

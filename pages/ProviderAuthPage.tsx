@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { therapistService, placeService } from '../lib/appwriteService';
 import { LogIn, UserPlus } from 'lucide-react';
+import PasswordInput from '../components/PasswordInput';
 
 
 interface ProviderAuthPageProps {
@@ -176,14 +177,12 @@ const ProviderAuthPage: React.FC<ProviderAuthPageProps> = ({ mode, providerType,
                             />
                         </div>
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-white/90 mb-2">{t.passwordLabel}</label>
-                            <input
-                                id="password"
-                                type="password"
+                            <PasswordInput
                                 value={password}
-                                onChange={e => setPassword(e.target.value)}
-                                className="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-md text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent backdrop-blur-sm"
+                                onChange={setPassword}
+                                label={t.passwordLabel || "Password"}
                                 placeholder="password123"
+                                className="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-md text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent backdrop-blur-sm"
                             />
                         </div>
 

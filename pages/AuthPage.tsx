@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import HomeIcon from '../components/icons/HomeIcon';
+import PasswordInput from '../components/PasswordInput';
 
 
 interface AuthPageProps {
@@ -89,15 +90,13 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t }) => {
                                                                                     />
                                                                                 </div>
                                                                                 <div>
-                                                                                    <label htmlFor="password" className="block text-sm font-medium text-white/90 mb-2">{t.passwordLabel}</label>
-                                                                                    <input 
-                                                                                            id="password" 
-                                                                                            type="password" 
-                                                                                            value={password} 
-                                                                                            onChange={e => setPassword(e.target.value)} 
-                                                                                            className="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-md text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent backdrop-blur-sm" 
-                                                                                            placeholder="password123" 
-                                                                                            required 
+                                                                                    <PasswordInput
+                                                                                        value={password}
+                                                                                        onChange={setPassword}
+                                                                                        label={t.passwordLabel || "Password"}
+                                                                                        placeholder="password123"
+                                                                                        required
+                                                                                        className="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-md text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent backdrop-blur-sm"
                                                                                     />
                                                                                 </div>
                                                                             </div>
@@ -116,15 +115,13 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t }) => {
                                                             />
                                                         </div>
                                                         <div>
-                                                            <label htmlFor="password" className="block text-sm font-medium text-white/90 mb-2">{t.passwordLabel}</label>
-                                                            <input 
-                                                                    id="password" 
-                                                                    type="password" 
-                                                                    value={password} 
-                                                                    onChange={e => setPassword(e.target.value)} 
-                                                                    className="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-md text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent backdrop-blur-sm" 
-                                                                    placeholder="password123" 
-                                                                    required 
+                                                            <PasswordInput
+                                                                value={password}
+                                                                onChange={setPassword}
+                                                                label={t.passwordLabel || "Password"}
+                                                                placeholder="password123"
+                                                                required
+                                                                className="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-md text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent backdrop-blur-sm"
                                                             />
                                                         </div>
                                                     </>

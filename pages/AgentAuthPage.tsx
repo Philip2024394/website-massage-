@@ -4,6 +4,7 @@ import { saveSessionCache } from '../lib/sessionManager';
 import { checkRateLimit, handleAppwriteError, resetRateLimit } from '../lib/rateLimitUtils';
 import { LogIn, UserPlus } from 'lucide-react';
 import LocationPopup from '../components/LocationPopup';
+import PasswordInput from '../components/PasswordInput';
 
 interface AgentAuthPageProps {
     onRegister: (name: string, email: string) => Promise<{ success: boolean, message: string }>;
@@ -337,19 +338,14 @@ const AgentAuthPage: React.FC<AgentAuthPageProps> = ({ onRegister, onLogin, onBa
                         />
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-white/90 mb-2">
-                            Password
-                        </label>
-                        <input
-                            type="password"
+                    <div onKeyDown={(e) => e.key === 'Enter' && handleSubmit}>
+                        <PasswordInput
                             value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
+                            onChange={setPassword}
+                            label="Password"
                             placeholder="Enter your password"
                             required
                             minLength={8}
-                            onKeyDown={(e) => e.key === 'Enter' && handleSubmit}
                         />
                     </div>
 
