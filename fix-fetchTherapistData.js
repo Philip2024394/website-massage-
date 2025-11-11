@@ -123,7 +123,7 @@ const fetchTherapistData = useCallback(async () => {
             
             // Set status
             const therapistStatus = existingTherapist.status || existingTherapist.availability || 'Offline';
-            setStatus(therapistStatus as AvailabilityStatus);
+            setStatus(therapistStatus);
             
             setDataLoaded(true);
             console.log('✅ All therapist data loaded successfully');

@@ -490,7 +490,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ onSave,
                                             }}
                                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                         >
-                                            <option value={AvailabilityStatus.Online}>Online</option>
+                                            <option value={AvailabilityStatus.Available}>Available</option>
                                             <option value={AvailabilityStatus.Busy}>Busy</option>
                                             <option value={AvailabilityStatus.Offline}>Offline</option>
                                         </select>

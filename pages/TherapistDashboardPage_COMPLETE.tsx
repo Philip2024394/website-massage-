@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { Therapist, Pricing, Booking, Notification } from '../types';
 import type { Page } from '../types/pageTypes';
 import { AvailabilityStatus, BookingStatus, HotelVillaServiceStatus } from '../types';
-import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages, stringifyPricing, stringifyCoordinates, stringifyMassageTypes, stringifyAnalytics } from '../utils/appwriteHelpers';
+import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages, stringifyPricing, stringifyCoordinates, stringifyMassageTypes, stringifyLanguages, stringifyAnalytics } from '../utils/appwriteHelpers';
 import { therapistService, notificationService } from '../lib/appwriteService';
 import { soundNotificationService } from '../utils/soundNotificationService';
 import { getInitialRatingData } from '../utils/ratingUtils';
@@ -310,7 +310,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
             profilePicture,
             whatsappNumber,
             yearsOfExperience,
-            massageTypes,
+            massageTypes: stringifyMassageTypes(massageTypes),
             languages,
             pricing: stringifyPricing(pricing),
             hotelVillaPricing: stringifyPricing(hotelVillaPricing),
@@ -321,10 +321,19 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
             licenseNumber,
             discountPercentage,
             discountDuration,
-            discountEndTime: discountEndTime?.toISOString() || null,
+            discountEndTime: discountEndTime?.toISOString() || undefined,
             isDiscountActive,
             distance: 0, // Add required field
-            analytics: stringifyAnalytics({}) // Add required field
+            analytics: stringifyAnalytics({
+                impressions: 0,
+                views: 0,
+                profileViews: 0,
+                whatsapp_clicks: 0,
+                whatsappClicks: 0,
+                phone_clicks: 0,
+                directions_clicks: 0,
+                bookings: 0
+            }) // Add required field
         };
 
         try {
@@ -379,13 +388,13 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                 <button
                                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                                     className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                        status === AvailabilityStatus.Online ? 'bg-green-100 text-green-800 hover:bg-green-200' :
+                                        status === AvailabilityStatus.Available ? 'bg-green-100 text-green-800 hover:bg-green-200' :
                                         status === AvailabilityStatus.Busy ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' :
                                         'bg-gray-100 text-gray-800 hover:bg-gray-200'
                                     }`}
                                 >
                                     <span className={`w-2 h-2 rounded-full ${
-                                        status === AvailabilityStatus.Online ? 'bg-green-500' :
+                                        status === AvailabilityStatus.Available ? 'bg-green-500' :
                                         status === AvailabilityStatus.Busy ? 'bg-yellow-500' :
                                         'bg-gray-500'
                                     }`} />
@@ -474,7 +483,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                             }}
                                                             className={`p-4 rounded-xl border-2 text-center font-medium transition-all ${
                                                                 status === statusOption
-                                                                    ? statusOption === AvailabilityStatus.Online 
+                                                                    ? statusOption === AvailabilityStatus.Available 
                                                                         ? 'bg-green-100 border-green-300 text-green-800'
                                                                         : statusOption === AvailabilityStatus.Busy
                                                                         ? 'bg-yellow-100 border-yellow-300 text-yellow-800'
@@ -483,7 +492,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                             }`}
                                                         >
                                                             <div className={`w-4 h-4 rounded-full mx-auto mb-2 ${
-                                                                statusOption === AvailabilityStatus.Online ? 'bg-green-500' :
+                                                                statusOption === AvailabilityStatus.Available ? 'bg-green-500' :
                                                                 statusOption === AvailabilityStatus.Busy ? 'bg-yellow-500' :
                                                                 'bg-gray-500'
                                                             }`} />
