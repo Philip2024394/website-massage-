@@ -24,8 +24,6 @@ interface TherapistProfileFormProps {
     pricing: any;
     hotelVillaPricing: any;
     useSamePricing: boolean;
-    isLicensed: boolean;
-    licenseNumber: string;
     
     // Website fields for Partners directory
     websiteUrl?: string;
@@ -45,7 +43,6 @@ interface TherapistProfileFormProps {
     setPricing: (value: any) => void;
     setHotelVillaPricing: (value: any) => void;
     setUseSamePricing: (value: boolean) => void;
-    setLicenseNumber: (value: string) => void;
     
     // Website setters
     setWebsiteUrl?: (value: string) => void;
@@ -78,10 +75,10 @@ interface TherapistProfileFormProps {
 export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
     profilePicture, name, yearsOfExperience, description, whatsappNumber,
     massageTypes, languages, location, coordinates, pricing, hotelVillaPricing,
-    useSamePricing, isLicensed, licenseNumber,
+    useSamePricing,
     setProfilePicture, setName, setYearsOfExperience, setDescription, setWhatsappNumber,
     setMassageTypes, setLanguages, setLocation, setPricing,
-    setHotelVillaPricing, setUseSamePricing, setLicenseNumber,
+    setHotelVillaPricing, setUseSamePricing,
     showImageRequirementModal, setShowImageRequirementModal, pendingImageUrl, setPendingImageUrl,
     therapistId, t, locationInputRef, mapsApiLoaded, setToast,
     handleSave, handleGoLive, handleSetLocation,
@@ -158,78 +155,157 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
 
     const handleLanguageChange = (langCode: string) => {
         if (languages.includes(langCode)) {
+            // Remove language if already selected
             setLanguages(languages.filter(l => l !== langCode));
         } else {
-            setLanguages([...languages, langCode]);
+            // Add language only if less than 3 are selected
+            if (languages.length < 3) {
+                setLanguages([...languages, langCode]);
+            }
+            // Silently ignore if trying to select more than 3
         }
     };
 
     const formatPriceDisplay = (price: number): string => {
         if (price === 0) return '';
-        // Convert stored price (in thousands) to display format with 'k'
+        // Convert stored price (in thousands) to display format with 'K' (uppercase)
         const priceInK = Math.floor(price / 1000);
-        return priceInK > 0 ? `${priceInK}k` : '';
+        return priceInK > 0 ? `${priceInK}K` : '';
     };
 
     const handlePriceChange = (duration: string, value: string) => {
-        // Accept both formats: "350" or "350k"
-        // Remove 'k' suffix if present, keep only digits
-        let cleanValue = value.replace(/[^\d]/g, '');
+        console.log('🔧 Price input changed:', { duration, value, length: value.length });
+
+        // Handle empty string or backspace to completely clear the field
+        if (value === '' || value === null || value === undefined) {
+            console.log('📝 Clearing price field completely');
+            setInputValues(prev => ({
+                ...prev,
+                regular: { ...prev.regular, [duration]: '' }
+            }));
+            setPricing({ ...pricing, [duration]: 0 });
+            if (useSamePricing) {
+                setHotelVillaPricing({ ...hotelVillaPricing, [duration]: 0 });
+            }
+            return;
+        }
+
+        // Remove 'K' or 'k' suffix and any non-digit characters
+        let cleanValue = value.replace(/[kK]/g, '').replace(/[^\d]/g, '');
+        console.log('🧹 Cleaned value:', cleanValue);
         
-        // Allow up to 3 digits maximum
+        // If only zeros or empty after cleaning, clear the field
+        if (cleanValue === '' || cleanValue === '0' || cleanValue === '00' || cleanValue === '000') {
+            console.log('🗑️ Detected zero/empty input, clearing field');
+            setInputValues(prev => ({
+                ...prev,
+                regular: { ...prev.regular, [duration]: '' }
+            }));
+            setPricing({ ...pricing, [duration]: 0 });
+            if (useSamePricing) {
+                setHotelVillaPricing({ ...hotelVillaPricing, [duration]: 0 });
+            }
+            return;
+        }
+        
+        // Limit to 3 digits maximum
         if (cleanValue.length > 3) {
             cleanValue = cleanValue.substring(0, 3);
         }
         
-        // Always display with 'k' suffix if digits are entered
-        const displayValue = cleanValue ? `${cleanValue}k` : '';
+        // Convert to number and validate
+        const numericValue = parseInt(cleanValue, 10);
+        if (isNaN(numericValue) || numericValue === 0) {
+            console.log('🚫 Invalid numeric value, clearing');
+            setInputValues(prev => ({
+                ...prev,
+                regular: { ...prev.regular, [duration]: '' }
+            }));
+            setPricing({ ...pricing, [duration]: 0 });
+            if (useSamePricing) {
+                setHotelVillaPricing({ ...hotelVillaPricing, [duration]: 0 });
+            }
+            return;
+        }
         
-        // Update local input state immediately for real-time display
+        // Display with 'K' suffix when valid digits are present
+        const displayValue = `${cleanValue}K`;
+        console.log('✅ Valid input, displaying:', displayValue);
+        
+        // Update display immediately
         setInputValues(prev => ({
             ...prev,
             regular: { ...prev.regular, [duration]: displayValue }
         }));
         
-        // Save to pricing if user has entered 1-3 digits (more flexible)
-        if (cleanValue && cleanValue.length >= 1 && cleanValue.length <= 3) {
-            // Convert to actual price (multiply by 1000) and save
-            const numericValue = parseInt(cleanValue, 10) * 1000 || 0;
-            setPricing({ ...pricing, [duration]: numericValue });
-            
-            if (useSamePricing) {
-                setHotelVillaPricing({ ...hotelVillaPricing, [duration]: numericValue });
-            }
+        // Save the price (multiply by 1000 for storage)
+        const storedValue = numericValue * 1000;
+        setPricing({ ...pricing, [duration]: storedValue });
+        
+        if (useSamePricing) {
+            setHotelVillaPricing({ ...hotelVillaPricing, [duration]: storedValue });
         }
     };
 
     const handleHotelVillaPriceChange = (duration: string, value: string) => {
-        // Remove any non-digit characters - only allow digits
-        let cleanValue = value.replace(/[^\d]/g, '');
+        console.log('🏨 Hotel/Villa price input changed:', { duration, value, length: value.length });
+
+        // Handle empty string or backspace to completely clear the field
+        if (value === '' || value === null || value === undefined) {
+            console.log('📝 Clearing hotel/villa price field completely');
+            setInputValues(prev => ({
+                ...prev,
+                hotel: { ...prev.hotel, [duration]: '' }
+            }));
+            setHotelVillaPricing({ ...hotelVillaPricing, [duration]: 0 });
+            return;
+        }
+
+        // Remove 'K' or 'k' suffix and any non-digit characters
+        let cleanValue = value.replace(/[kK]/g, '').replace(/[^\d]/g, '');
+        console.log('🧹 Cleaned hotel/villa value:', cleanValue);
         
-        // 🔥 STRICT LIMIT: Only allow 3 digits max
+        // If only zeros or empty after cleaning, clear the field
+        if (cleanValue === '' || cleanValue === '0' || cleanValue === '00' || cleanValue === '000') {
+            console.log('🗑️ Detected zero/empty hotel input, clearing field');
+            setInputValues(prev => ({
+                ...prev,
+                hotel: { ...prev.hotel, [duration]: '' }
+            }));
+            setHotelVillaPricing({ ...hotelVillaPricing, [duration]: 0 });
+            return;
+        }
+        
+        // Limit to 3 digits maximum
         if (cleanValue.length > 3) {
             cleanValue = cleanValue.substring(0, 3);
         }
         
-        // Auto-add 'k' for display if user entered digits
-        const displayValue = cleanValue ? `${cleanValue}k` : '';
+        // Convert to number and validate
+        const numericValue = parseInt(cleanValue, 10);
+        if (isNaN(numericValue) || numericValue === 0) {
+            console.log('🚫 Invalid hotel numeric value, clearing');
+            setInputValues(prev => ({
+                ...prev,
+                hotel: { ...prev.hotel, [duration]: '' }
+            }));
+            setHotelVillaPricing({ ...hotelVillaPricing, [duration]: 0 });
+            return;
+        }
         
-        // Update local input state immediately for real-time display
+        // Display with 'K' suffix when valid digits are present
+        const displayValue = `${cleanValue}K`;
+        console.log('✅ Valid hotel input, displaying:', displayValue);
+        
+        // Update display immediately
         setInputValues(prev => ({
             ...prev,
             hotel: { ...prev.hotel, [duration]: displayValue }
         }));
         
-        // Save to pricing if user has entered valid digits
-        if (cleanValue && cleanValue.length >= 1 && cleanValue.length <= 3) {
-            // Convert to actual price (multiply by 1000)
-            const numericValue = parseInt(cleanValue, 10) * 1000 || 0;
-            const maxPrice = Math.floor(pricing[duration] * 1.2);
-            
-            if (numericValue <= maxPrice || pricing[duration] === 0) {
-                setHotelVillaPricing({ ...hotelVillaPricing, [duration]: numericValue });
-            }
-        }
+        // Save the price (multiply by 1000 for storage)
+        const storedValue = numericValue * 1000;
+        setHotelVillaPricing({ ...hotelVillaPricing, [duration]: storedValue });
     };
 
     const handleUseSamePricingChange = (checked: boolean) => {
@@ -490,18 +566,7 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                         <p className="font-semibold">🏆 Achievement Badge:</p>
                         <p className="mt-1">Badge is automatically applied when criteria are met. No membership duration requirements - earned through performance and customer satisfaction!</p>
                     </div>
-                    {isLicensed && (
-                        <div className="mt-3 pt-3 border-t border-green-200">
-                            <label className="block text-xs font-medium text-green-700 mb-1">License Number (Optional)</label>
-                            <input
-                                type="text"
-                                value={licenseNumber}
-                                onChange={e => setLicenseNumber(e.target.value)}
-                                placeholder="Enter your license number"
-                                className="block w-full px-3 py-2 bg-white border border-green-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-gray-900 text-sm"
-                            />
-                        </div>
-                    )}
+
                 </div>
             </div>
 
@@ -559,7 +624,12 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
 
             {/* Languages Selection */}
             <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Languages You Speak</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Languages You Speak 
+                    <span className="text-xs text-gray-500 ml-2">
+                        (Select up to 3 languages - {languages.length}/3 selected)
+                    </span>
+                </label>
                 <div className="mt-2 p-3 bg-white border border-gray-200 rounded-lg">
                     <div className="grid grid-cols-2 gap-x-4 gap-y-2">
                         {[
@@ -572,26 +642,34 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                             { code: 'fr', flag: '🇫🇷', name: 'French' },
                             { code: 'de', flag: '🇩🇪', name: 'German' },
                             { code: 'es', flag: '🇪🇸', name: 'Spanish' }
-                        ].map(lang => (
-                            <button
-                                key={lang.code}
-                                type="button"
-                                onClick={() => handleLanguageChange(lang.code)}
-                                className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all ${
-                                    languages.includes(lang.code)
-                                        ? 'bg-blue-50 border-blue-500 text-blue-900'
-                                        : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300'
-                                }`}
-                            >
-                                <span className="text-lg">{lang.flag}</span>
-                                <span className="text-sm font-medium">{lang.name}</span>
-                                {languages.includes(lang.code) && (
-                                    <svg className="w-4 h-4 ml-auto text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                    </svg>
-                                )}
-                            </button>
-                        ))}
+                        ].map(lang => {
+                            const isSelected = languages.includes(lang.code);
+                            const isDisabled = !isSelected && languages.length >= 3;
+                            
+                            return (
+                                <button
+                                    key={lang.code}
+                                    type="button"
+                                    onClick={() => handleLanguageChange(lang.code)}
+                                    disabled={isDisabled}
+                                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all ${
+                                        isSelected
+                                            ? 'bg-blue-50 border-blue-500 text-blue-900'
+                                            : isDisabled
+                                            ? 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed'
+                                            : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300'
+                                    }`}
+                                >
+                                    <span className="text-lg">{lang.flag}</span>
+                                    <span className="text-sm font-medium">{lang.name}</span>
+                                    {isSelected && (
+                                        <svg className="w-4 h-4 ml-auto text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                        </svg>
+                                    )}
+                                </button>
+                            );
+                        })}
                     </div>
                 </div>
             </div>

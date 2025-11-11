@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🖼️ Profile Picture Upload Diagnostic</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@16.0.2/dist/umd/sdk.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            min-height: 100vh; 
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container { 
+            max-width: 800px; 
+            width: 100%;
+            background: white; 
+            border-radius: 20px; 
+            padding: 40px; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        h1 { 
+            color: #333; 
+            margin-bottom: 30px; 
+            font-size: 2.2rem;
+            text-align: center;
+        }
+        .success { 
+            background: #e8f5e8; 
+            border: 2px solid #4caf50; 
+            padding: 20px; 
+            border-radius: 10px; 
+            margin: 20px 0; 
+            color: #2e7d32;
+        }
+        .error { 
+            background: #ffebee; 
+            border: 2px solid #f44336; 
+            padding: 20px; 
+            border-radius: 10px; 
+            margin: 20px 0; 
+            color: #c62828;
+        }
+        .info { 
+            background: #e3f2fd; 
+            border: 2px solid #2196f3; 
+            padding: 20px; 
+            border-radius: 10px; 
+            margin: 20px 0; 
+            color: #1565c0;
+        }
+        .warning {
+            background: #fff3e0;
+            border: 2px solid #ff9800;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            color: #e65100;
+        }
+        button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .test-section {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .test-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        input[type="file"] {
+            margin: 10px 0;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            width: 100%;
+        }
+        .log {
+            background: #f1f3f4;
+            border: 1px solid #dadce0;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🖼️ Profile Picture Upload Diagnostic</h1>
+        
+        <div class="info">
+            <strong>🎯 Purpose:</strong> Test and diagnose profile picture upload and saving functionality<br><br>
+            <strong>🔍 This tool will help identify:</strong><br>
+            • Image upload to Appwrite Storage issues<br>
+            • Profile picture saving to database problems<br>
+            • Image display and persistence bugs<br>
+            • Configuration and permission errors
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">1. 📤 Image Upload Test</div>
+            <p>Test uploading an image to Appwrite Storage directly:</p>
+            <input type="file" id="imageInput" accept="image/*">
+            <button onclick="testImageUpload()">🚀 Test Upload</button>
+            <div id="uploadResults"></div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">2. 🔧 Configuration Check</div>
+            <button onclick="checkConfig()">🔍 Check Appwrite Config</button>
+            <div id="configResults"></div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">3. 💾 Database Update Test</div>
+            <button onclick="testDatabaseUpdate()">🧪 Test Profile Picture Save</button>
+            <div id="dbResults"></div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">4. 🔄 End-to-End Flow Test</div>
+            <button onclick="testFullFlow()">🎯 Complete Flow Test</button>
+            <div id="flowResults"></div>
+        </div>
+
+        <div id="logs" class="log" style="display: none;"></div>
+        
+        <button onclick="window.open('http://localhost:3000', '_blank')" style="font-size: 18px; padding: 20px 40px;">
+            🚀 Open App to Test Live
+        </button>
+    </div>
+
+    <script>
+        // Initialize Appwrite
+        const { Client, Databases, Storage, ID } = Appwrite;
+        const client = new Client();
+        client
+            .setEndpoint('https://syd.cloud.appwrite.io/v1')
+            .setProject('68f23b11000d25eb3664');
+
+        const storage = new Storage(client);
+        const databases = new Databases(client);
+
+        function log(message, type = 'info') {
+            const logsDiv = document.getElementById('logs');
+            logsDiv.style.display = 'block';
+            const timestamp = new Date().toLocaleTimeString();
+            logsDiv.textContent += `[${timestamp}] ${message}\n`;
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+            console.log(message);
+        }
+
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="${type}">${message}</div>`;
+        }
+
+        async function checkConfig() {
+            try {
+                log('🔍 Checking Appwrite configuration...');
+                
+                const config = {
+                    endpoint: 'https://syd.cloud.appwrite.io/v1',
+                    projectId: '68f23b11000d25eb3664',
+                    bucketId: '68f76bdd002387590584',
+                    databaseId: '68f23b11001c632c9c77',
+                    therapistsCollectionId: 'therapists_collection_id'
+                };
+
+                showResult('configResults', `
+                    <strong>✅ Configuration Status</strong><br><br>
+                    <strong>Endpoint:</strong> ${config.endpoint}<br>
+                    <strong>Project ID:</strong> ${config.projectId}<br>
+                    <strong>Bucket ID:</strong> ${config.bucketId}<br>
+                    <strong>Database ID:</strong> ${config.databaseId}<br>
+                    <strong>Collection:</strong> ${config.therapistsCollectionId}<br><br>
+                    <strong>🎯 Next:</strong> Test if these IDs are accessible
+                `, 'success');
+
+                log('✅ Configuration check complete');
+                
+            } catch (error) {
+                log(`❌ Config check failed: ${error.message}`);
+                showResult('configResults', `❌ Configuration check failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testImageUpload() {
+            const fileInput = document.getElementById('imageInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showResult('uploadResults', '⚠️ Please select an image file first', 'warning');
+                return;
+            }
+
+            try {
+                log(`📤 Starting image upload test for: ${file.name}`);
+                log(`📊 File size: ${file.size} bytes, Type: ${file.type}`);
+
+                // Upload to Appwrite Storage
+                const response = await storage.createFile(
+                    '68f76bdd002387590584', // bucket ID
+                    ID.unique(),
+                    file
+                );
+
+                log(`✅ Upload successful! File ID: ${response.$id}`);
+
+                // Generate URL
+                const fileUrl = `https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/${response.$id}/view?project=68f23b11000d25eb3664`;
+                
+                showResult('uploadResults', `
+                    <strong>✅ Upload Successful!</strong><br><br>
+                    <strong>File ID:</strong> ${response.$id}<br>
+                    <strong>File Size:</strong> ${response.sizeOriginal} bytes<br>
+                    <strong>Generated URL:</strong><br>
+                    <a href="${fileUrl}" target="_blank">${fileUrl}</a><br><br>
+                    <img src="${fileUrl}" style="max-width: 200px; max-height: 200px; border-radius: 10px; border: 2px solid #ddd;">
+                `, 'success');
+
+                log(`🔗 Image URL: ${fileUrl}`);
+
+            } catch (error) {
+                log(`❌ Upload failed: ${error.message}`);
+                showResult('uploadResults', `❌ Upload failed: ${error.message}<br><br>
+                    <strong>Possible causes:</strong><br>
+                    • Storage bucket permissions<br>
+                    • File size limits<br>
+                    • Network connectivity<br>
+                    • Invalid file type`, 'error');
+            }
+        }
+
+        async function testDatabaseUpdate() {
+            try {
+                log('💾 Testing database update functionality...');
+
+                // Test URL (using a known working image URL)
+                const testImageUrl = 'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4181001758526d84/view?project=68f23b11000d25eb3664';
+
+                // Try to get therapist data first
+                const response = await databases.listDocuments(
+                    '68f23b11001c632c9c77',
+                    'therapists_collection_id',
+                    []
+                );
+
+                log(`📋 Found ${response.documents.length} therapist profiles`);
+
+                if (response.documents.length > 0) {
+                    const therapist = response.documents[0];
+                    log(`🎯 Testing update on therapist: ${therapist.name || therapist.$id}`);
+
+                    // Update profile picture
+                    const updateResult = await databases.updateDocument(
+                        '68f23b11001c632c9c77',
+                        'therapists_collection_id',
+                        therapist.$id,
+                        {
+                            profilePicture: testImageUrl
+                        }
+                    );
+
+                    showResult('dbResults', `
+                        <strong>✅ Database Update Successful!</strong><br><br>
+                        <strong>Updated Therapist:</strong> ${therapist.name || 'ID: ' + therapist.$id}<br>
+                        <strong>New Profile Picture:</strong> Set successfully<br>
+                        <strong>Update Time:</strong> ${new Date(updateResult.$updatedAt).toLocaleString()}<br><br>
+                        <strong>🎯 Profile picture should now persist correctly</strong>
+                    `, 'success');
+
+                    log('✅ Database update successful');
+                } else {
+                    showResult('dbResults', `⚠️ No therapist profiles found to test with.<br><br>
+                        Please create a therapist profile first, then test the image upload.`, 'warning');
+                }
+
+            } catch (error) {
+                log(`❌ Database update failed: ${error.message}`);
+                showResult('dbResults', `❌ Database update failed: ${error.message}<br><br>
+                    <strong>Possible causes:</strong><br>
+                    • Collection permissions<br>
+                    • Invalid document ID<br>
+                    • Network connectivity<br>
+                    • Authentication required`, 'error');
+            }
+        }
+
+        async function testFullFlow() {
+            const fileInput = document.getElementById('imageInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showResult('flowResults', '⚠️ Please select an image file for the complete flow test', 'warning');
+                return;
+            }
+
+            try {
+                log('🎯 Starting complete profile picture flow test...');
+
+                // Step 1: Upload image
+                log('Step 1: Uploading image to storage...');
+                const uploadResponse = await storage.createFile(
+                    '68f76bdd002387590584',
+                    ID.unique(),
+                    file
+                );
+
+                const imageUrl = `https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/${uploadResponse.$id}/view?project=68f23b11000d25eb3664`;
+                log(`✅ Upload complete: ${imageUrl}`);
+
+                // Step 2: Update database
+                log('Step 2: Updating therapist profile...');
+                const therapistsResponse = await databases.listDocuments(
+                    '68f23b11001c632c9c77',
+                    'therapists_collection_id',
+                    []
+                );
+
+                if (therapistsResponse.documents.length > 0) {
+                    const therapist = therapistsResponse.documents[0];
+                    
+                    const updateResult = await databases.updateDocument(
+                        '68f23b11001c632c9c77',
+                        'therapists_collection_id',
+                        therapist.$id,
+                        {
+                            profilePicture: imageUrl
+                        }
+                    );
+
+                    log('✅ Database update complete');
+
+                    // Step 3: Verify persistence
+                    log('Step 3: Verifying persistence...');
+                    const verifyResult = await databases.getDocument(
+                        '68f23b11001c632c9c77',
+                        'therapists_collection_id',
+                        therapist.$id
+                    );
+
+                    const savedCorrectly = verifyResult.profilePicture === imageUrl;
+
+                    showResult('flowResults', `
+                        <strong>${savedCorrectly ? '✅' : '❌'} Complete Flow Test Results</strong><br><br>
+                        <strong>1. Image Upload:</strong> ✅ Success<br>
+                        <strong>2. Database Update:</strong> ✅ Success<br>
+                        <strong>3. Persistence Check:</strong> ${savedCorrectly ? '✅' : '❌'} ${savedCorrectly ? 'Success' : 'Failed'}<br><br>
+                        <strong>Final Image URL:</strong><br>
+                        ${verifyResult.profilePicture || 'Not saved'}<br><br>
+                        <img src="${imageUrl}" style="max-width: 150px; max-height: 150px; border-radius: 50%; border: 3px solid #4CAF50;">
+                    `, savedCorrectly ? 'success' : 'error');
+
+                } else {
+                    showResult('flowResults', '⚠️ No therapist profiles found for complete test', 'warning');
+                }
+
+            } catch (error) {
+                log(`❌ Complete flow test failed: ${error.message}`);
+                showResult('flowResults', `❌ Flow test failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-run basic checks
+        window.addEventListener('load', () => {
+            setTimeout(checkConfig, 1000);
+        });
+    </script>
+</body>
+</html>

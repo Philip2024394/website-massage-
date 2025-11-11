@@ -6,6 +6,7 @@ import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages, stri
 import { therapistService, notificationService } from '../lib/appwriteService';
 import { soundNotificationService } from '../utils/soundNotificationService';
 import { getInitialRatingData } from '../utils/ratingUtils';
+import { MASSAGE_TYPES_CATEGORIZED } from '../constants/rootConstants';
 import { LogOut, Activity, Menu, Calendar, TrendingUp, Bell } from 'lucide-react';
 import { ColoredProfileIcon, ColoredCalendarIcon, ColoredAnalyticsIcon, ColoredHotelIcon, ColoredTagIcon, ColoredCrownIcon, ColoredDocumentIcon, ColoredGlobeIcon, ColoredHistoryIcon, ColoredCoinsIcon, ColoredBellIcon } from '../components/ColoredIcons';
 import { useTranslations } from '../lib/useTranslations';
@@ -153,9 +154,9 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
     const [isDiscountActive, setIsDiscountActive] = useState(false);
     const [location, setLocation] = useState('');
     const [coordinates, setCoordinates] = useState({ lat: 0, lng: 0 });
+    const [serviceRadius, setServiceRadius] = useState<number>(50); // 50km default radius
     const [status, setStatus] = useState<AvailabilityStatus>(AvailabilityStatus.Offline);
-    const [isLicensed, setIsLicensed] = useState(false);
-    const [licenseNumber, setLicenseNumber] = useState('');
+
     const [activeTab, setActiveTab] = useState('status'); // Default to status page
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -282,8 +283,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                 setWhatsappNumber(existingTherapist.whatsappNumber || '');
                 setYearsOfExperience(existingTherapist.yearsOfExperience || 0);
                 setLocation(existingTherapist.location || '');
-                setIsLicensed(existingTherapist.isLicensed || false);
-                setLicenseNumber(existingTherapist.licenseNumber || '');
+
                 
                 // Parse complex fields safely with detailed logging
                 console.log('🔄 Parsing complex fields:');
@@ -301,6 +301,10 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                     console.log('  - Coordinates: not set, using default');
                     setCoordinates({ lat: 0, lng: 0 });
                 }
+                
+                // Load service radius (default to 50km)
+                setServiceRadius(existingTherapist.serviceRadius || 50);
+                console.log('  - Service Radius:', existingTherapist.serviceRadius || 50, 'km');
                 
                 if (existingTherapist.pricing) {
                     try {
@@ -408,8 +412,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                 setMassageTypes([]);
                 setLanguages([]);
                 setStatus(AvailabilityStatus.Offline);
-                setIsLicensed(false);
-                setLicenseNumber('');
+
                 setDiscountPercentage(0);
                 setDiscountDuration(0);
                 setDiscountEndTime(null);
@@ -489,9 +492,8 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
             hotelVillaPricing: stringifyPricing(hotelVillaPricing),
             location,
             coordinates: stringifyCoordinates(coordinates),
+            serviceRadius,
             status,
-            isLicensed,
-            licenseNumber,
             discountPercentage,
             discountDuration,
             discountEndTime: discountEndTime?.toISOString() || undefined,
@@ -526,27 +528,38 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
     }, [
         name, description, profilePicture, whatsappNumber, yearsOfExperience,
         massageTypes, languages, pricing, hotelVillaPricing, location,
-        coordinates, status, isLicensed, licenseNumber, discountPercentage,
+        coordinates, serviceRadius, status, discountPercentage,
         discountDuration, discountEndTime, isDiscountActive, onSave
     ]);
 
     // Handle busy timer confirmation
-    const handleBusyTimerConfirm = useCallback((minutes: number) => {
-        const busyEndTime = new Date();
-        busyEndTime.setMinutes(busyEndTime.getMinutes() + minutes);
-        
-        setBusyUntil(busyEndTime);
-        setStatus(AvailabilityStatus.Busy);
-        handleSave(); // Save the new status and busy time
-        
-        if (onStatusChange) onStatusChange(AvailabilityStatus.Busy);
-        
-        setToast({ 
-            message: `You are now busy for ${minutes} minutes`, 
-            type: 'success' 
-        });
-        setTimeout(() => setToast(null), 3000);
-    }, [handleSave, onStatusChange]);
+    const handleBusyTimerConfirm = useCallback(async (minutes: number) => {
+        try {
+            const busyEndTime = new Date();
+            busyEndTime.setMinutes(busyEndTime.getMinutes() + minutes);
+            
+            setBusyUntil(busyEndTime);
+            setStatus(AvailabilityStatus.Busy);
+            
+            // Only call onStatusChange - don't mix with handleSave
+            if (onStatusChange) {
+                await onStatusChange(AvailabilityStatus.Busy);
+            }
+            
+            setToast({ 
+                message: `You are now busy for ${minutes} minutes`, 
+                type: 'success' 
+            });
+            setTimeout(() => setToast(null), 3000);
+        } catch (error) {
+            console.error('Error setting busy status:', error);
+            setToast({ 
+                message: 'Failed to set busy status', 
+                type: 'error' 
+            });
+            setTimeout(() => setToast(null), 3000);
+        }
+    }, [onStatusChange]);
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -673,11 +686,19 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                                 {/* Available Button */}
                                                 <button
-                                                    onClick={() => {
-                                                        setStatus(AvailabilityStatus.Available);
-                                                        // Save status change to update therapist card
-                                                        handleSave();
-                                                        if (onStatusChange) onStatusChange(AvailabilityStatus.Available);
+                                                    onClick={async () => {
+                                                        try {
+                                                            setStatus(AvailabilityStatus.Available);
+                                                            if (onStatusChange) {
+                                                                await onStatusChange(AvailabilityStatus.Available);
+                                                            }
+                                                            setToast({ message: 'Status updated to Available!', type: 'success' });
+                                                            setTimeout(() => setToast(null), 3000);
+                                                        } catch (error) {
+                                                            console.error('Status change failed:', error);
+                                                            setToast({ message: 'Failed to update status', type: 'error' });
+                                                            setTimeout(() => setToast(null), 3000);
+                                                        }
                                                     }}
                                                     className={`p-6 rounded-2xl border-3 text-center font-bold transition-all transform hover:scale-105 ${
                                                         status === AvailabilityStatus.Available
@@ -714,11 +735,19 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
 
                                                 {/* Offline Button */}
                                                 <button
-                                                    onClick={() => {
-                                                        setStatus(AvailabilityStatus.Offline);
-                                                        // Save status change to update therapist card
-                                                        handleSave();
-                                                        if (onStatusChange) onStatusChange(AvailabilityStatus.Offline);
+                                                    onClick={async () => {
+                                                        try {
+                                                            setStatus(AvailabilityStatus.Offline);
+                                                            if (onStatusChange) {
+                                                                await onStatusChange(AvailabilityStatus.Offline);
+                                                            }
+                                                            setToast({ message: 'Status updated to Offline!', type: 'success' });
+                                                            setTimeout(() => setToast(null), 3000);
+                                                        } catch (error) {
+                                                            console.error('Status change failed:', error);
+                                                            setToast({ message: 'Failed to update status', type: 'error' });
+                                                            setTimeout(() => setToast(null), 3000);
+                                                        }
                                                     }}
                                                     className={`p-6 rounded-2xl border-3 text-center font-bold transition-all transform hover:scale-105 ${
                                                         status === AvailabilityStatus.Offline
@@ -961,25 +990,53 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                             )}
                                                         </div>
                                                         <button 
-                                                            onClick={() => {
+                                                            onClick={async () => {
                                                                 const input = document.createElement('input');
                                                                 input.type = 'file';
                                                                 input.accept = 'image/*';
-                                                                input.onchange = (e: any) => {
+                                                                input.onchange = async (e: any) => {
                                                                     const file = e.target.files[0];
                                                                     if (file) {
-                                                                        const reader = new FileReader();
-                                                                        reader.onload = (e) => {
-                                                                            setProfilePicture(e.target?.result as string);
-                                                                        };
-                                                                        reader.readAsDataURL(file);
+                                                                        try {
+                                                                            setIsSaving(true);
+                                                                            const reader = new FileReader();
+                                                                            reader.onload = async (e) => {
+                                                                                try {
+                                                                                    const base64Image = e.target?.result as string;
+                                                                                    console.log('📤 Uploading profile image...');
+                                                                                    
+                                                                                    // Upload to Appwrite Storage and get URL
+                                                                                    const { imageUploadService } = await import('../lib/appwriteService');
+                                                                                    const imageUrl = await imageUploadService.uploadProfileImage(base64Image);
+                                                                                    
+                                                                                    console.log('✅ Image uploaded successfully:', imageUrl);
+                                                                                    setProfilePicture(imageUrl);
+                                                                                    
+                                                                                    setToast({ message: '✅ Profile picture uploaded successfully!', type: 'success' });
+                                                                                    setTimeout(() => setToast(null), 3000);
+                                                                                } catch (error) {
+                                                                                    console.error('❌ Error uploading image:', error);
+                                                                                    setToast({ message: `❌ Error uploading image: ${error instanceof Error ? error.message : 'Unknown error'}`, type: 'error' });
+                                                                                    setTimeout(() => setToast(null), 5000);
+                                                                                } finally {
+                                                                                    setIsSaving(false);
+                                                                                }
+                                                                            };
+                                                                            reader.readAsDataURL(file);
+                                                                        } catch (error) {
+                                                                            console.error('❌ Error reading file:', error);
+                                                                            setToast({ message: '❌ Error reading file. Please try again.', type: 'error' });
+                                                                            setTimeout(() => setToast(null), 5000);
+                                                                            setIsSaving(false);
+                                                                        }
                                                                     }
                                                                 };
                                                                 input.click();
                                                             }}
-                                                            className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                                                            className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50"
+                                                            disabled={isSaving}
                                                         >
-                                                            {profilePicture ? 'Change Photo' : 'Upload Photo'}
+                                                            {isSaving ? '⏳ Uploading...' : (profilePicture ? 'Change Photo' : 'Upload Photo')}
                                                         </button>
                                                     </div>
                                                 </div>
@@ -1016,103 +1073,431 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                     {/* Years of Experience */}
                                                     <div>
                                                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                            Years of Experience
+                                                            Professional Experience *
                                                         </label>
-                                                        <input
-                                                            type="number"
-                                                            value={yearsOfExperience}
-                                                            onChange={(e) => setYearsOfExperience(parseInt(e.target.value) || 0)}
-                                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                                            min="0"
-                                                            max="50"
-                                                        />
+                                                        <div className="relative">
+                                                            <input
+                                                                type="number"
+                                                                value={yearsOfExperience}
+                                                                onChange={(e) => setYearsOfExperience(parseInt(e.target.value) || 0)}
+                                                                className="w-full px-4 py-3 pr-16 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                                                min="0"
+                                                                max="50"
+                                                                placeholder="Enter years"
+                                                            />
+                                                            <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">
+                                                                {yearsOfExperience === 1 ? 'year' : 'years'}
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-xs text-gray-500 mt-1">
+                                                            How many years have you been practicing massage therapy professionally?
+                                                        </p>
+                                                        {yearsOfExperience > 0 && (
+                                                            <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-lg">
+                                                                <p className="text-sm text-green-700">
+                                                                    <strong>{yearsOfExperience} {yearsOfExperience === 1 ? 'year' : 'years'}</strong> of professional experience
+                                                                    {yearsOfExperience >= 10 && " - Expert level therapist! 🌟"}
+                                                                    {yearsOfExperience >= 5 && yearsOfExperience < 10 && " - Experienced therapist! 👍"}
+                                                                    {yearsOfExperience < 5 && yearsOfExperience > 0 && " - Growing your expertise! 💪"}
+                                                                </p>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            {/* Description */}
+                                            {/* Professional Description */}
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                    Professional Description *
+                                                    Professional Description * 
+                                                    <span className="text-orange-600 font-semibold">(Max 350 characters)</span>
                                                 </label>
+                                                
+                                                {/* Character Counter */}
+                                                <div className="mb-2 text-right">
+                                                    <span className={`text-sm ${
+                                                        description.length > 350 ? 'text-red-600 font-bold' : 
+                                                        description.length > 300 ? 'text-orange-600' : 'text-gray-500'
+                                                    }`}>
+                                                        {description.length}/350 characters
+                                                    </span>
+                                                </div>
+                                                
                                                 <textarea
                                                     value={description}
-                                                    onChange={(e) => setDescription(e.target.value)}
+                                                    onChange={(e) => {
+                                                        if (e.target.value.length <= 350) {
+                                                            setDescription(e.target.value);
+                                                        }
+                                                    }}
                                                     rows={4}
-                                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                                    placeholder="Tell clients about your services, expertise, and experience..."
+                                                    maxLength={350}
+                                                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-all ${
+                                                        description.length > 350 
+                                                            ? 'border-red-300 focus:ring-red-500 focus:border-red-500 bg-red-50' 
+                                                            : description.length > 300
+                                                                ? 'border-orange-300 focus:ring-orange-500 focus:border-orange-500 bg-orange-50'
+                                                                : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'
+                                                    }`}
+                                                    placeholder="Tell clients about your services, expertise, and experience... (max 350 characters including spaces)"
                                                 />
+                                                
+                                                {/* Character limit warning */}
+                                                {description.length > 300 && (
+                                                    <div className={`mt-2 p-2 rounded-lg text-sm ${
+                                                        description.length > 350 
+                                                            ? 'bg-red-100 text-red-700' 
+                                                            : 'bg-orange-100 text-orange-700'
+                                                    }`}>
+                                                        {description.length > 350 
+                                                            ? '⚠️ Description exceeds 350 characters. Please shorten it.' 
+                                                            : '⚠️ Approaching character limit. Consider being more concise.'
+                                                        }
+                                                    </div>
+                                                )}
                                             </div>
 
-                                            {/* Location */}
-                                            <div>
+                                            {/* Service Location with GPS and Radius */}
+                                            <div className="space-y-4">
                                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                    Service Location *
+                                                    Service Location & Coverage Area *
                                                 </label>
-                                                <input
-                                                    type="text"
-                                                    value={location}
-                                                    onChange={(e) => setLocation(e.target.value)}
-                                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                                    placeholder="e.g., Seminyak, Bali"
-                                                />
-                                            </div>
-
-                                            {/* Massage Types */}
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                    Massage Specialties
-                                                </label>
-                                                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                                    {['Swedish', 'Deep Tissue', 'Hot Stone', 'Thai Massage', 'Aromatherapy', 'Sports Massage', 'Couples Massage', 'Prenatal', 'Reflexology'].map((type) => (
-                                                        <label key={type} className="flex items-center space-x-2 cursor-pointer">
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={massageTypes.includes(type)}
-                                                                onChange={(e) => {
-                                                                    if (e.target.checked) {
-                                                                        setMassageTypes([...massageTypes, type]);
+                                                
+                                                {/* Current Location Display */}
+                                                <div className="bg-gradient-to-r from-blue-50 to-orange-50 p-4 rounded-lg border border-orange-200">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex-1">
+                                                            <p className="text-sm font-medium text-gray-700 mb-1">Current Base Location:</p>
+                                                            <p className="text-lg font-semibold text-gray-900">
+                                                                {location || 'Location not set'}
+                                                            </p>
+                                                            {coordinates.lat !== 0 && coordinates.lng !== 0 && (
+                                                                <p className="text-xs text-gray-500 mt-1">
+                                                                    📍 GPS: {coordinates.lat.toFixed(4)}, {coordinates.lng.toFixed(4)}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                        <button
+                                                            onClick={async () => {
+                                                                try {
+                                                                    setIsSaving(true);
+                                                                    console.log('🎯 Getting current location...');
+                                                                    
+                                                                    if ('geolocation' in navigator) {
+                                                                        navigator.geolocation.getCurrentPosition(
+                                                                            async (position) => {
+                                                                                const { latitude, longitude } = position.coords;
+                                                                                console.log('📍 GPS Coordinates:', { lat: latitude, lng: longitude });
+                                                                                
+                                                                                // Update coordinates
+                                                                                setCoordinates({ lat: latitude, lng: longitude });
+                                                                                
+                                                                                // Reverse geocode to get address
+                                                                                try {
+                                                                                    // For now, just set coordinates - later can add reverse geocoding
+                                                                                    const locationName = `GPS Location (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`;
+                                                                                    setLocation(locationName);
+                                                                                    
+                                                                                    setToast({ 
+                                                                                        message: '✅ Location set successfully from GPS!', 
+                                                                                        type: 'success' 
+                                                                                    });
+                                                                                    setTimeout(() => setToast(null), 3000);
+                                                                                } catch (error) {
+                                                                                    console.error('Error getting location name:', error);
+                                                                                    const locationName = `GPS Location (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`;
+                                                                                    setLocation(locationName);
+                                                                                    
+                                                                                    setToast({ 
+                                                                                        message: '✅ GPS location set!', 
+                                                                                        type: 'success' 
+                                                                                    });
+                                                                                    setTimeout(() => setToast(null), 3000);
+                                                                                }
+                                                                                setIsSaving(false);
+                                                                            },
+                                                                            (error) => {
+                                                                                console.error('❌ Error getting location:', error);
+                                                                                setToast({ 
+                                                                                    message: '❌ Could not access location. Please enable location permissions.', 
+                                                                                    type: 'error' 
+                                                                                });
+                                                                                setTimeout(() => setToast(null), 5000);
+                                                                                setIsSaving(false);
+                                                                            },
+                                                                            {
+                                                                                enableHighAccuracy: true,
+                                                                                timeout: 10000,
+                                                                                maximumAge: 0
+                                                                            }
+                                                                        );
                                                                     } else {
-                                                                        setMassageTypes(massageTypes.filter(t => t !== type));
+                                                                        throw new Error('Geolocation is not supported by this browser');
                                                                     }
-                                                                }}
-                                                                className="rounded border-gray-300 text-orange-600 shadow-sm focus:border-orange-300 focus:ring focus:ring-orange-200"
-                                                            />
-                                                            <span className="text-sm text-gray-700">{type}</span>
-                                                        </label>
-                                                    ))}
+                                                                } catch (error) {
+                                                                    console.error('❌ Geolocation error:', error);
+                                                                    setToast({ 
+                                                                        message: '❌ Location access not available on this device', 
+                                                                        type: 'error' 
+                                                                    });
+                                                                    setTimeout(() => setToast(null), 5000);
+                                                                    setIsSaving(false);
+                                                                }
+                                                            }}
+                                                            className={`px-6 py-3 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-sm ${
+                                                                location && coordinates.lat !== 0 
+                                                                    ? 'bg-green-500 hover:bg-green-600 text-white' 
+                                                                    : 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white animate-pulse'
+                                                            }`}
+                                                            disabled={isSaving}
+                                                        >
+                                                            {isSaving ? (
+                                                                <div className="flex items-center space-x-2">
+                                                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                                                    <span>Getting GPS...</span>
+                                                                </div>
+                                                            ) : location && coordinates.lat !== 0 ? (
+                                                                <div className="flex items-center space-x-2">
+                                                                    <span>✓</span>
+                                                                    <span>Update Location</span>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="flex items-center space-x-2">
+                                                                    <span>📱</span>
+                                                                    <span>Set Location from Device</span>
+                                                                </div>
+                                                            )}
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                {/* Service Radius */}
+                                                <div className="bg-gradient-to-r from-green-50 to-blue-50 p-4 rounded-lg border border-green-200">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex-1">
+                                                            <p className="text-sm font-medium text-gray-700 mb-1">Service Coverage Radius:</p>
+                                                            <p className="text-2xl font-bold text-green-600">
+                                                                Up to 50 KM
+                                                            </p>
+                                                            <p className="text-xs text-gray-500 mt-1">
+                                                                You can provide services within 50km from your base location
+                                                            </p>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                                                                50km
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Manual Location Input (Fallback) */}
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-600 mb-2">
+                                                        Or enter location manually:
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        value={location}
+                                                        onChange={(e) => setLocation(e.target.value)}
+                                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                                        placeholder="e.g., Seminyak, Bali, Indonesia"
+                                                    />
                                                 </div>
                                             </div>
 
-                                            {/* Languages */}
+                                            {/* Massage Specialties with Categories */}
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                    Languages Spoken
+                                                <label className="block text-sm font-medium text-gray-700 mb-3">
+                                                    Massage Specialties 
+                                                    <span className="text-orange-600 font-semibold">(Select max 5)</span>
                                                 </label>
+                                                
+                                                {/* Selection Counter */}
+                                                <div className="mb-4 p-3 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg border border-orange-200">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-sm font-medium text-gray-700">
+                                                            Selected: {massageTypes.length}/5
+                                                        </span>
+                                                        {massageTypes.length >= 5 && (
+                                                            <span className="text-xs text-orange-600 font-semibold">
+                                                                Maximum reached
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <div className="mt-2">
+                                                        <div className="w-full bg-gray-200 rounded-full h-2">
+                                                            <div 
+                                                                className={`h-2 rounded-full transition-all duration-300 ${
+                                                                    massageTypes.length >= 5 ? 'bg-orange-500' : 'bg-blue-500'
+                                                                }`}
+                                                                style={{ width: `${(massageTypes.length / 5) * 100}%` }}
+                                                            ></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Categorized Massage Types */}
+                                                <div className="space-y-6">
+                                                    {MASSAGE_TYPES_CATEGORIZED.map((category, categoryIndex) => (
+                                                        <div key={categoryIndex} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                                                            <h4 className="font-semibold text-gray-800 mb-3 text-sm uppercase tracking-wide">
+                                                                {category.category}
+                                                            </h4>
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                                                {category.types.map((type) => (
+                                                                    <label 
+                                                                        key={type} 
+                                                                        className={`flex items-center space-x-2 cursor-pointer p-2 rounded-lg border transition-all ${
+                                                                            massageTypes.includes(type)
+                                                                                ? 'bg-orange-50 border-orange-300 text-orange-700'
+                                                                                : massageTypes.length >= 5
+                                                                                    ? 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed'
+                                                                                    : 'bg-white border-gray-200 hover:bg-gray-50 text-gray-700'
+                                                                        }`}
+                                                                    >
+                                                                        <input
+                                                                            type="checkbox"
+                                                                            checked={massageTypes.includes(type)}
+                                                                            onChange={(e) => {
+                                                                                if (e.target.checked) {
+                                                                                    if (massageTypes.length < 5) {
+                                                                                        setMassageTypes([...massageTypes, type]);
+                                                                                    }
+                                                                                } else {
+                                                                                    setMassageTypes(massageTypes.filter(t => t !== type));
+                                                                                }
+                                                                            }}
+                                                                            disabled={!massageTypes.includes(type) && massageTypes.length >= 5}
+                                                                            className="rounded border-gray-300 text-orange-600 shadow-sm focus:border-orange-300 focus:ring focus:ring-orange-200 disabled:opacity-50"
+                                                                        />
+                                                                        <span className="text-sm font-medium">{type}</span>
+                                                                    </label>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+
+                                                {/* Selected Specialties Preview */}
+                                                {massageTypes.length > 0 && (
+                                                    <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                                        <p className="text-sm font-medium text-green-700 mb-2">
+                                                            Your Selected Specialties:
+                                                        </p>
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {massageTypes.map((type, index) => (
+                                                                <span 
+                                                                    key={index}
+                                                                    className="inline-flex items-center px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full"
+                                                                >
+                                                                    {type}
+                                                                    <button
+                                                                        onClick={() => setMassageTypes(massageTypes.filter(t => t !== type))}
+                                                                        className="ml-1 text-green-600 hover:text-green-800 text-xs"
+                                                                    >
+                                                                        ×
+                                                                    </button>
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Languages Spoken */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-3">
+                                                    Languages Spoken 
+                                                    <span className="text-blue-600 font-semibold">(Select max 3)</span>
+                                                </label>
+                                                
+                                                {/* Language Selection Counter */}
+                                                <div className="mb-4 p-3 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg border border-blue-200">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-sm font-medium text-gray-700">
+                                                            Selected: {languages.length}/3
+                                                        </span>
+                                                        {languages.length >= 3 && (
+                                                            <span className="text-xs text-blue-600 font-semibold">
+                                                                Maximum reached
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <div className="mt-2">
+                                                        <div className="w-full bg-gray-200 rounded-full h-2">
+                                                            <div 
+                                                                className={`h-2 rounded-full transition-all duration-300 ${
+                                                                    languages.length >= 3 ? 'bg-blue-500' : 'bg-green-500'
+                                                                }`}
+                                                                style={{ width: `${(languages.length / 3) * 100}%` }}
+                                                            ></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Language Options */}
                                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                                     {['English', 'Indonesian', 'Mandarin', 'Japanese', 'Korean', 'Russian', 'French', 'German'].map((language) => (
-                                                        <label key={language} className="flex items-center space-x-2 cursor-pointer">
+                                                        <label 
+                                                            key={language} 
+                                                            className={`flex items-center space-x-2 cursor-pointer p-3 rounded-lg border transition-all ${
+                                                                languages.includes(language)
+                                                                    ? 'bg-blue-50 border-blue-300 text-blue-700'
+                                                                    : languages.length >= 3
+                                                                        ? 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed'
+                                                                        : 'bg-white border-gray-200 hover:bg-gray-50 text-gray-700'
+                                                            }`}
+                                                        >
                                                             <input
                                                                 type="checkbox"
                                                                 checked={languages.includes(language)}
                                                                 onChange={(e) => {
                                                                     if (e.target.checked) {
-                                                                        setLanguages([...languages, language]);
+                                                                        if (languages.length < 3) {
+                                                                            setLanguages([...languages, language]);
+                                                                        }
                                                                     } else {
                                                                         setLanguages(languages.filter(l => l !== language));
                                                                     }
                                                                 }}
-                                                                className="rounded border-gray-300 text-orange-600 shadow-sm focus:border-orange-300 focus:ring focus:ring-orange-200"
+                                                                disabled={!languages.includes(language) && languages.length >= 3}
+                                                                className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 disabled:opacity-50"
                                                             />
-                                                            <span className="text-sm text-gray-700">{language}</span>
+                                                            <span className="text-sm font-medium">{language}</span>
                                                         </label>
                                                     ))}
                                                 </div>
+
+                                                {/* Selected Languages Preview */}
+                                                {languages.length > 0 && (
+                                                    <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                                        <p className="text-sm font-medium text-blue-700 mb-2">
+                                                            Languages you speak:
+                                                        </p>
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {languages.map((language, index) => (
+                                                                <span 
+                                                                    key={index}
+                                                                    className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full"
+                                                                >
+                                                                    {language}
+                                                                    <button
+                                                                        onClick={() => setLanguages(languages.filter(l => l !== language))}
+                                                                        className="ml-1 text-blue-600 hover:text-blue-800 text-xs"
+                                                                    >
+                                                                        ×
+                                                                    </button>
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
 
                                             {/* Pricing */}
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-4">
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">
                                                     Service Pricing (IDR)
                                                     {isDiscountActive && (
                                                         <span className="ml-2 px-2 py-1 bg-orange-500 text-white text-xs rounded-full font-bold">
@@ -1120,6 +1505,26 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                         </span>
                                                     )}
                                                 </label>
+                                                
+                                                {/* 100% Income Notice */}
+                                                <div className="mb-4 p-3 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg">
+                                                    <div className="flex items-start space-x-3">
+                                                        <div className="flex-shrink-0">
+                                                            <svg className="w-5 h-5 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                                                            </svg>
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <p className="text-sm font-semibold text-green-800">
+                                                                💰 100% Your Income
+                                                            </p>
+                                                            <p className="text-sm text-green-700 mt-1">
+                                                                These prices are for <strong>direct bookings from the home page</strong>. You keep <strong>100% of the income</strong> - no commission deducted!
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
                                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                                     {[60, 90, 120].map((duration) => {
                                                         const originalPrice = (pricing as any)[duration] || 0;
@@ -1173,50 +1578,152 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                 </div>
                                             </div>
 
-                                            {/* Certification */}
-                                            <div>
-                                                <div className="flex items-center space-x-3 mb-4">
-                                                    <input
-                                                        type="checkbox"
-                                                        id="isLicensed"
-                                                        checked={isLicensed}
-                                                        onChange={(e) => setIsLicensed(e.target.checked)}
-                                                        className="rounded border-gray-300 text-orange-600 shadow-sm focus:border-orange-300 focus:ring focus:ring-orange-200"
-                                                    />
-                                                    <label htmlFor="isLicensed" className="text-sm font-medium text-gray-700">
-                                                        I have professional certification/license
-                                                    </label>
-                                                </div>
-                                                {isLicensed && (
-                                                    <input
-                                                        type="text"
-                                                        value={licenseNumber}
-                                                        onChange={(e) => setLicenseNumber(e.target.value)}
-                                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                                        placeholder="License/Certification Number"
-                                                    />
-                                                )}
-                                            </div>
+                                            {/* Hotel & Villa Live Menu Pricing */}
+                                            <div className="mt-8">
+                                                <div className="bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 rounded-xl p-6">
+                                                    <div className="flex items-center mb-4">
+                                                        <div className="p-2 bg-purple-500 rounded-lg mr-3">
+                                                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                                            </svg>
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <h3 className="text-xl font-bold text-purple-800">
+                                                                Hotel & Villa Live Menu Pricing
+                                                            </h3>
+                                                            <p className="text-sm text-purple-600 mt-1">
+                                                                Set your prices for hotel and villa services
+                                                            </p>
+                                                        </div>
+                                                    </div>
 
-                                            {/* Data Source Info */}
-                                            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                                                <h3 className="font-semibold text-blue-800 mb-2">📊 Data Connection Status</h3>
-                                                <div className="text-sm text-blue-700 space-y-1">
-                                                    <p><strong>Therapist ID:</strong> {therapistId}</p>
-                                                    <p><strong>Data Source:</strong> {therapist ? 'Appwrite Database' : 'New Profile'}</p>
-                                                    <p><strong>Profile Status:</strong> {therapist ? '✅ Connected' : '⚠️ Not Found'}</p>
-                                                    {therapist && (
-                                                        <p><strong>Document ID:</strong> {therapist.$id || 'N/A'}</p>
+                                                    {/* Commission Notice */}
+                                                    <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                                        <div className="flex items-start space-x-3">
+                                                            <div className="flex-shrink-0">
+                                                                <svg className="w-5 h-5 text-yellow-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.99-.833-2.732 0L3.732 16c-.77.833.19 2.5 1.732 2.5z" />
+                                                                </svg>
+                                                            </div>
+                                                            <div className="flex-1">
+                                                                <p className="text-sm font-semibold text-yellow-800">
+                                                                    ⚠️ Commission Information - Hotel & Villa Only
+                                                                </p>
+                                                                <p className="text-sm text-yellow-700 mt-1">
+                                                                    <strong>20% commission</strong> will be deducted from your earnings for hotel and villa bookings. This covers platform fees, payment processing, and hotel/villa partnership costs.
+                                                                </p>
+                                                                <p className="text-xs text-yellow-600 mt-2 font-medium">
+                                                                    Example: If you charge IDR 500K, you'll receive IDR 400K after commission.
+                                                                </p>
+                                                                <p className="text-xs text-green-700 mt-2 font-bold bg-green-100 px-2 py-1 rounded">
+                                                                    💡 Remember: Your regular home page prices above are 100% commission-free!
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Hotel Villa Pricing Grid */}
+                                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                        {[60, 90, 120].map((duration) => {
+                                                            const price = (hotelVillaPricing as any)[duration] || 0;
+                                                            const commission = Math.round(price * 0.2);
+                                                            const netEarnings = price - commission;
+                                                            
+                                                            return (
+                                                                <div key={duration} className="relative">
+                                                                    <div className="bg-white border-2 border-purple-200 rounded-lg p-4 hover:shadow-lg transition-all">
+                                                                        <label className="block text-sm font-bold text-purple-700 mb-2 text-center">
+                                                                            {duration} Minutes
+                                                                        </label>
+                                                                        
+                                                                        {/* Price Input */}
+                                                                        <div className="relative mb-3">
+                                                                            <input
+                                                                                type="number"
+                                                                                value={price || ''}
+                                                                                onChange={(e) => {
+                                                                                    const value = e.target.value;
+                                                                                    if (value === '' || (parseInt(value) >= 0 && value.length <= 3)) {
+                                                                                        setHotelVillaPricing({
+                                                                                            ...hotelVillaPricing,
+                                                                                            [duration]: value === '' ? 0 : parseInt(value)
+                                                                                        });
+                                                                                    }
+                                                                                }}
+                                                                                onKeyDown={(e) => {
+                                                                                    // Allow backspace to clear the field completely
+                                                                                    if (e.key === 'Backspace' && (e.target as HTMLInputElement).value === '0') {
+                                                                                        setHotelVillaPricing({
+                                                                                            ...hotelVillaPricing,
+                                                                                            [duration]: 0
+                                                                                        });
+                                                                                    }
+                                                                                }}
+                                                                                placeholder="000"
+                                                                                min="0"
+                                                                                max="999"
+                                                                                className="w-full px-3 py-3 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-center text-lg font-bold bg-purple-50"
+                                                                            />
+                                                                            <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-600 font-bold text-lg">
+                                                                                K
+                                                                            </span>
+                                                                        </div>
+
+                                                                        {/* Commission Breakdown */}
+                                                                        {price > 0 && (
+                                                                            <div className="space-y-2 text-xs">
+                                                                                <div className="flex justify-between items-center">
+                                                                                    <span className="text-gray-600">Total Price:</span>
+                                                                                    <span className="font-bold text-purple-700">IDR {price.toLocaleString()}K</span>
+                                                                                </div>
+                                                                                <div className="flex justify-between items-center">
+                                                                                    <span className="text-red-600">Commission (20%):</span>
+                                                                                    <span className="font-bold text-red-600">-IDR {commission.toLocaleString()}K</span>
+                                                                                </div>
+                                                                                <div className="border-t border-purple-200 pt-2">
+                                                                                    <div className="flex justify-between items-center">
+                                                                                        <span className="text-green-700 font-semibold">Your Earnings:</span>
+                                                                                        <span className="font-bold text-green-700 text-sm">IDR {netEarnings.toLocaleString()}K</span>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+
+                                                    {/* Summary Card */}
+                                                    {((hotelVillaPricing as any)[60] > 0 || (hotelVillaPricing as any)[90] > 0 || (hotelVillaPricing as any)[120] > 0) && (
+                                                        <div className="mt-6 p-4 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg">
+                                                            <h4 className="text-sm font-bold text-green-700 mb-3">
+                                                                Hotel & Villa Pricing Summary
+                                                            </h4>
+                                                            <div className="grid grid-cols-3 gap-4 text-center">
+                                                                {[60, 90, 120].map((duration) => {
+                                                                    const price = (hotelVillaPricing as any)[duration];
+                                                                    const earnings = Math.round(price * 0.8);
+                                                                    return price > 0 ? (
+                                                                        <div key={duration} className="bg-white p-3 rounded-lg border border-green-200">
+                                                                            <p className="text-xs font-medium text-gray-600">{duration} min</p>
+                                                                            <p className="text-lg font-bold text-green-600">IDR {earnings}K</p>
+                                                                            <p className="text-xs text-gray-500">You earn</p>
+                                                                        </div>
+                                                                    ) : null;
+                                                                })}
+                                                            </div>
+                                                        </div>
                                                     )}
                                                 </div>
                                             </div>
 
                                             {/* Action Buttons */}
-                                            <div className="flex flex-col sm:flex-row gap-4 pt-6">
+                                            <div className="flex justify-center pt-6">
                                                 <button
                                                     onClick={handleSave}
                                                     disabled={isSaving}
-                                                    className="flex-1 bg-orange-500 text-white py-3 px-6 rounded-lg font-medium hover:bg-orange-600 transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                                                    className="bg-orange-500 text-white py-3 px-8 rounded-lg font-medium hover:bg-orange-600 transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                                                 >
                                                     {isSaving ? (
                                                         <>
@@ -1226,12 +1733,6 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                     ) : (
                                                         'Save Profile'
                                                     )}
-                                                </button>
-                                                <button
-                                                    onClick={fetchTherapistData}
-                                                    className="flex-1 bg-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                                                >
-                                                    Refresh Data
                                                 </button>
                                             </div>
                                         </div>

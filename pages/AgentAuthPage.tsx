@@ -3,6 +3,7 @@ import { account, databases, DATABASE_ID, COLLECTIONS, ID } from '../lib/appwrit
 import { saveSessionCache } from '../lib/sessionManager';
 import { checkRateLimit, handleAppwriteError, resetRateLimit } from '../lib/rateLimitUtils';
 import { LogIn, UserPlus } from 'lucide-react';
+import LocationPopup from '../components/LocationPopup';
 
 interface AgentAuthPageProps {
     onRegister: (name: string, email: string) => Promise<{ success: boolean, message: string }>;
@@ -23,6 +24,8 @@ const AgentAuthPage: React.FC<AgentAuthPageProps> = ({ onRegister, onLogin, onBa
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showLocationPopup, setShowLocationPopup] = useState(false);
+    const [loginSuccess, setLoginSuccess] = useState(false);
 
     // Make rate limit reset functions available in browser console for testing
     React.useEffect(() => {
@@ -184,12 +187,18 @@ const AgentAuthPage: React.FC<AgentAuthPageProps> = ({ onRegister, onLogin, onBa
                 
                 console.log('✅ Agent login successful');
                 
+                // Show location popup on successful login
+                setLoginSuccess(true);
+                setShowLocationPopup(true);
+                setLoading(false);
+                
                 // Call the onLogin prop for any additional logic
                 const result = await onLogin(email);
                 if (!result.success) {
                     console.warn('⚠️ onLogin callback failed:', result.message);
                     // Continue anyway since the core authentication succeeded
                 }
+                return; // Don't set loading to false here since we're showing popup
             }
         } catch (err: any) {
             console.error('Agent authentication error:', err);
@@ -207,6 +216,42 @@ const AgentAuthPage: React.FC<AgentAuthPageProps> = ({ onRegister, onLogin, onBa
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleLocationSet = async (location: { lat: number; lng: number; address: string }) => {
+        try {
+            // Update the agent's location in Appwrite
+            const user = await account.get();
+            const response = await databases.listDocuments(
+                DATABASE_ID,
+                COLLECTIONS.AGENTS,
+                []
+            );
+            
+            const agent = response.documents.find((a: any) => a.agentId === user.$id);
+            
+            if (agent) {
+                await databases.updateDocument(
+                    DATABASE_ID,
+                    COLLECTIONS.AGENTS,
+                    agent.$id,
+                    {
+                        location: location.address,
+                        coordinates: { lat: location.lat, lng: location.lng },
+                        lastLocationUpdate: new Date().toISOString()
+                    }
+                );
+                console.log('✅ Agent location updated successfully');
+            }
+        } catch (error) {
+            console.error('❌ Failed to update agent location:', error);
+        } finally {
+            setShowLocationPopup(false);
+        }
+    };
+
+    const handleLocationSkip = () => {
+        setShowLocationPopup(false);
     };
 
     return (
@@ -329,6 +374,13 @@ const AgentAuthPage: React.FC<AgentAuthPageProps> = ({ onRegister, onLogin, onBa
                     </button>
                 </form>
             </div>
+
+            {/* Location Popup */}
+            <LocationPopup
+                isOpen={showLocationPopup}
+                onLocationSet={handleLocationSet}
+                onSkip={handleLocationSkip}
+            />
         </div>
     );
 };

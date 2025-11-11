@@ -378,21 +378,38 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 {/* Profile Image - 50% on banner, 50% on card overlay */}
                 <div className="absolute top-36 left-4 z-20">
                     <div className="w-24 h-24 bg-white rounded-full p-1 shadow-xl relative">
-                        <img 
-                            className="w-full h-full rounded-full object-cover aspect-square" 
-                            src={(therapist as any).profilePicture || getRandomTherapistImage(therapist.id.toString())} 
-                            alt={`${therapist.name} profile`} 
-                            onError={(e) => {
-                                const profileImageUrl = (therapist as any).profilePicture || getRandomTherapistImage(therapist.id.toString());
-                                console.error('👤 Profile image failed to load:', profileImageUrl);
-                                // Fallback to a working profile placeholder
-                                (e.target as HTMLImageElement).src = 'https://via.placeholder.com/150/FFB366/FFFFFF?text=' + encodeURIComponent(therapist.name.charAt(0));
+                        {(therapist as any).profilePicture && (therapist as any).profilePicture.includes('appwrite.io') ? (
+                            <img 
+                                className="w-full h-full rounded-full object-cover aspect-square" 
+                                src={(therapist as any).profilePicture} 
+                                alt={`${therapist.name} profile`} 
+                                onError={(e) => {
+                                    console.error('👤 Profile image failed to load:', (therapist as any).profilePicture);
+                                    // Replace with placeholder that matches the design
+                                    const imgElement = e.target as HTMLImageElement;
+                                    imgElement.style.display = 'none';
+                                    const placeholder = imgElement.parentElement?.querySelector('.profile-placeholder') as HTMLElement;
+                                    if (placeholder) {
+                                        placeholder.style.display = 'flex';
+                                    }
+                                }}
+                                onLoad={() => {
+                                    console.log('✅ Profile image loaded successfully:', (therapist as any).profilePicture);
+                                }}
+                            />
+                        ) : null}
+                        
+                        {/* Placeholder for therapists without profile pictures */}
+                        <div 
+                            className="w-full h-full rounded-full bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center text-orange-600"
+                            style={{ 
+                                display: (therapist as any).profilePicture && (therapist as any).profilePicture.includes('appwrite.io') ? 'none' : 'flex',
+                                fontSize: '1.5rem',
+                                fontWeight: 'bold'
                             }}
-                            onLoad={() => {
-                                const profileImageUrl = (therapist as any).profilePicture || getRandomTherapistImage(therapist.id.toString());
-                                console.log('✅ Profile image loaded successfully:', profileImageUrl);
-                            }}
-                        />
+                        >
+                            {therapist.name ? therapist.name.charAt(0).toUpperCase() : '👤'}
+                        </div>
                         
                         {/* Qualified Therapist Badge - Small Icon on Profile Image Edge */}
                         {((() => {
