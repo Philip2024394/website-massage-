@@ -43,6 +43,43 @@ const AnalyticsCard: React.FC<{ title: string; value: number; description: strin
     </div>
 );
 
+const BusyCountdown: React.FC<{ busyUntil: Date }> = ({ busyUntil }) => {
+    const [timeLeft, setTimeLeft] = useState<string>('');
+
+    useEffect(() => {
+        const updateCountdown = () => {
+            const now = new Date();
+            const timeDiff = busyUntil.getTime() - now.getTime();
+
+            if (timeDiff <= 0) {
+                setTimeLeft('Available now');
+                return;
+            }
+
+            const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+            const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+
+            if (hours > 0) {
+                setTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
+            } else {
+                setTimeLeft(`${minutes}m ${seconds}s`);
+            }
+        };
+
+        updateCountdown();
+        const interval = setInterval(updateCountdown, 1000);
+
+        return () => clearInterval(interval);
+    }, [busyUntil]);
+
+    return (
+        <span className="ml-2 px-2 py-1 bg-yellow-500 text-white text-xs rounded-full font-bold animate-pulse">
+            ⏱️ {timeLeft}
+        </span>
+    );
+};
+
 const BookingCard: React.FC<{ booking: Booking; onUpdateStatus: (id: number, status: BookingStatus) => void; t: any }> = ({ booking, onUpdateStatus, t }) => {
     const isPending = booking.status === BookingStatus.Pending;
     const isUpcoming = new Date(booking.startTime) > new Date();
@@ -126,6 +163,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
     const [showNotifications, setShowNotifications] = useState(false);
     const [showBusyTimerModal, setShowBusyTimerModal] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [busyUntil, setBusyUntil] = useState<Date | null>(null);
 
     const dropdownRef = useRef<HTMLDivElement>(null);
     const sideDrawerRef = useRef<HTMLDivElement>(null);
@@ -146,6 +184,15 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
             // 🎯 PRIORITY 1: Use existingTherapistData from AppRouter (best source)
             if (existingTherapistData) {
                 console.log('✅ Using existingTherapistData from AppRouter (live home data)');
+                console.log('📊 Existing therapist data preview:', {
+                    id: existingTherapistData.$id,
+                    name: existingTherapistData.name,
+                    email: existingTherapistData.email,
+                    hasDescription: !!existingTherapistData.description,
+                    hasWhatsApp: !!existingTherapistData.whatsappNumber,
+                    hasPricing: !!existingTherapistData.pricing,
+                    hasLocation: !!existingTherapistData.location
+                });
                 existingTherapist = existingTherapistData;
             } else {
                 // 🎯 PRIORITY 2: Try direct document lookup by therapistId 
@@ -197,13 +244,38 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                         console.error('❌ Email lookup failed:', emailError);
                     }
                 }
+
+                // 🎯 PRIORITY 4: Try phil4 specific lookup if this is phil4
+                if (!existingTherapist && (
+                    therapistId.toString().includes('phil') || 
+                    therapistId === 'phil4' || 
+                    therapistId === '6911bfa1003cdb9a26c2'
+                )) {
+                    try {
+                        console.log('🔍 Special case: Trying phil4 document ID lookup...');
+                        existingTherapist = await therapistService.getById('6911bfa1003cdb9a26c2');
+                        if (existingTherapist) {
+                            console.log('✅ Found phil4 by document ID:', existingTherapist.name);
+                        }
+                    } catch (phil4Error) {
+                        console.log('⚠️ Phil4 document lookup failed:', phil4Error);
+                    }
+                }
             }
             
             if (existingTherapist) {
                 console.log('✅ Successfully loaded therapist data:', existingTherapist.name);
+                console.log('🔍 Populating form fields with data...');
                 setTherapist(existingTherapist);
                 
-                // Populate all form fields
+                // Populate all form fields with better logging
+                console.log('📝 Setting basic fields:');
+                console.log('  - Name:', existingTherapist.name || '(empty)');
+                console.log('  - Description length:', (existingTherapist.description || '').length);
+                console.log('  - WhatsApp:', existingTherapist.whatsappNumber || '(empty)');
+                console.log('  - Years Experience:', existingTherapist.yearsOfExperience || 0);
+                console.log('  - Location:', existingTherapist.location || '(empty)');
+                
                 setName(existingTherapist.name || '');
                 setDescription(existingTherapist.description || '');
                 setProfilePicture(existingTherapist.profilePicture || '');
@@ -213,28 +285,77 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                 setIsLicensed(existingTherapist.isLicensed || false);
                 setLicenseNumber(existingTherapist.licenseNumber || '');
                 
-                // Parse complex fields safely
+                // Parse complex fields safely with detailed logging
+                console.log('🔄 Parsing complex fields:');
+                
                 if (existingTherapist.coordinates) {
-                    const coords = parseCoordinates(existingTherapist.coordinates);
-                    setCoordinates(coords);
+                    try {
+                        const coords = parseCoordinates(existingTherapist.coordinates);
+                        console.log('  - Coordinates:', coords);
+                        setCoordinates(coords);
+                    } catch (error) {
+                        console.error('❌ Error parsing coordinates:', error);
+                        setCoordinates({ lat: 0, lng: 0 });
+                    }
+                } else {
+                    console.log('  - Coordinates: not set, using default');
+                    setCoordinates({ lat: 0, lng: 0 });
                 }
                 
                 if (existingTherapist.pricing) {
-                    const pricingData = parsePricing(existingTherapist.pricing);
-                    setPricing(pricingData);
+                    try {
+                        const pricingData = parsePricing(existingTherapist.pricing);
+                        console.log('  - Pricing:', pricingData);
+                        setPricing(pricingData);
+                    } catch (error) {
+                        console.error('❌ Error parsing pricing:', error);
+                        setPricing({ 60: 0, 90: 0, 120: 0 });
+                    }
+                } else {
+                    console.log('  - Pricing: not set, using default');
+                    setPricing({ 60: 0, 90: 0, 120: 0 });
                 }
                 
                 if (existingTherapist.hotelVillaPricing) {
-                    const hotelPricingData = parsePricing(existingTherapist.hotelVillaPricing);
-                    setHotelVillaPricing(hotelPricingData);
+                    try {
+                        const hotelPricingData = parsePricing(existingTherapist.hotelVillaPricing);
+                        console.log('  - Hotel pricing:', hotelPricingData);
+                        setHotelVillaPricing(hotelPricingData);
+                    } catch (error) {
+                        console.error('❌ Error parsing hotel pricing:', error);
+                        setHotelVillaPricing({ 60: 0, 90: 0, 120: 0 });
+                    }
+                } else {
+                    console.log('  - Hotel pricing: not set, using default');
+                    setHotelVillaPricing({ 60: 0, 90: 0, 120: 0 });
                 }
                 
                 if (existingTherapist.massageTypes) {
-                    setMassageTypes(parseMassageTypes(existingTherapist.massageTypes));
+                    try {
+                        const massageTypesData = parseMassageTypes(existingTherapist.massageTypes);
+                        console.log('  - Massage types:', massageTypesData);
+                        setMassageTypes(massageTypesData);
+                    } catch (error) {
+                        console.error('❌ Error parsing massage types:', error);
+                        setMassageTypes([]);
+                    }
+                } else {
+                    console.log('  - Massage types: not set, using empty array');
+                    setMassageTypes([]);
                 }
                 
                 if (existingTherapist.languages) {
-                    setLanguages(parseLanguages(existingTherapist.languages));
+                    try {
+                        const languagesData = parseLanguages(existingTherapist.languages);
+                        console.log('  - Languages:', languagesData);
+                        setLanguages(languagesData);
+                    } catch (error) {
+                        console.error('❌ Error parsing languages:', error);
+                        setLanguages([]);
+                    }
+                } else {
+                    console.log('  - Languages: not set, using empty array');
+                    setLanguages([]);
                 }
                 
                 // Handle discount system fields
@@ -252,6 +373,22 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                 
                 // Set availability status
                 setStatus(existingTherapist.status || AvailabilityStatus.Offline);
+                
+                // Handle busy timer
+                if (existingTherapist.busyUntil) {
+                    const busyEndTime = new Date(existingTherapist.busyUntil);
+                    if (busyEndTime > new Date()) {
+                        setBusyUntil(busyEndTime);
+                    } else {
+                        // Busy time has expired, reset status to available
+                        setBusyUntil(null);
+                        if (existingTherapist.status === AvailabilityStatus.Busy) {
+                            setStatus(AvailabilityStatus.Available);
+                        }
+                    }
+                } else {
+                    setBusyUntil(null);
+                }
                 
                 setDataLoaded(true);
             } else {
@@ -277,6 +414,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                 setDiscountDuration(0);
                 setDiscountEndTime(null);
                 setIsDiscountActive(false);
+                setBusyUntil(null);
                 
                 setDataLoaded(false);
             }
@@ -291,10 +429,13 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
         fetchTherapistData();
     }, [fetchTherapistData]);
 
-    // Auto-check discount expiration
+    // Auto-check discount expiration and busy timer
     useEffect(() => {
-        const checkDiscountExpiration = () => {
-            if (isDiscountActive && discountEndTime && new Date() >= discountEndTime) {
+        const checkTimers = () => {
+            const now = new Date();
+            
+            // Check discount expiration
+            if (isDiscountActive && discountEndTime && now >= discountEndTime) {
                 setIsDiscountActive(false);
                 setDiscountEndTime(null);
                 setToast({ 
@@ -303,11 +444,24 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                 });
                 setTimeout(() => setToast(null), 3000);
             }
+            
+            // Check busy timer expiration
+            if (busyUntil && now >= busyUntil && status === AvailabilityStatus.Busy) {
+                setStatus(AvailabilityStatus.Available);
+                setBusyUntil(null);
+                // Status change will trigger a save through onStatusChange
+                if (onStatusChange) onStatusChange(AvailabilityStatus.Available);
+                setToast({ 
+                    message: 'You are now available again!', 
+                    type: 'success' 
+                });
+                setTimeout(() => setToast(null), 3000);
+            }
         };
 
-        const interval = setInterval(checkDiscountExpiration, 60000); // Check every minute
+        const interval = setInterval(checkTimers, 1000); // Check every second for busy timer accuracy
         return () => clearInterval(interval);
-    }, [isDiscountActive, discountEndTime]);
+    }, [isDiscountActive, discountEndTime, busyUntil, status, onStatusChange]);
 
     // Menu items for navigation
     const menuItems = [
@@ -354,7 +508,8 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                 bookings: 0
             }),
             massageTypes: stringifyMassageTypes(massageTypes),
-            languages: stringifyLanguages(languages)
+            languages: stringifyLanguages(languages),
+            busyUntil: busyUntil?.toISOString() || undefined
         };
 
         try {
@@ -374,6 +529,24 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
         coordinates, status, isLicensed, licenseNumber, discountPercentage,
         discountDuration, discountEndTime, isDiscountActive, onSave
     ]);
+
+    // Handle busy timer confirmation
+    const handleBusyTimerConfirm = useCallback((minutes: number) => {
+        const busyEndTime = new Date();
+        busyEndTime.setMinutes(busyEndTime.getMinutes() + minutes);
+        
+        setBusyUntil(busyEndTime);
+        setStatus(AvailabilityStatus.Busy);
+        handleSave(); // Save the new status and busy time
+        
+        if (onStatusChange) onStatusChange(AvailabilityStatus.Busy);
+        
+        setToast({ 
+            message: `You are now busy for ${minutes} minutes`, 
+            type: 'success' 
+        });
+        setTimeout(() => setToast(null), 3000);
+    }, [handleSave, onStatusChange]);
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -523,10 +696,6 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                 {/* Busy Button */}
                                                 <button
                                                     onClick={() => {
-                                                        setStatus(AvailabilityStatus.Busy);
-                                                        // Save status change to update therapist card
-                                                        handleSave();
-                                                        if (onStatusChange) onStatusChange(AvailabilityStatus.Busy);
                                                         setShowBusyTimerModal(true);
                                                     }}
                                                     className={`p-6 rounded-2xl border-3 text-center font-bold transition-all transform hover:scale-105 ${
@@ -685,7 +854,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                             </div>
                                         )}
 
-                                        {/* Current Status Display */}
+                                        {/* Current Status Display with Countdown */}
                                         <div className="mt-8 p-4 bg-gray-50 border border-gray-200 rounded-xl text-center">
                                             <p className="text-sm text-gray-600 mb-2">Current Status:</p>
                                             <div className="flex items-center justify-center space-x-2">
@@ -695,6 +864,12 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                     'bg-gray-500'
                                                 }`} />
                                                 <span className="font-bold text-lg">{status.toUpperCase()}</span>
+                                                
+                                                {/* Busy Countdown Timer */}
+                                                {status === AvailabilityStatus.Busy && busyUntil && (
+                                                    <BusyCountdown busyUntil={busyUntil} />
+                                                )}
+                                                
                                                 {isDiscountActive && (
                                                     <span className="ml-2 px-2 py-1 bg-orange-500 text-white text-xs rounded-full font-bold">
                                                         {discountPercentage}% OFF
@@ -1315,6 +1490,14 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                     <p>{toast.message}</p>
                 </div>
             )}
+
+            {/* Busy Timer Modal */}
+            <BusyTimerModal
+                isOpen={showBusyTimerModal}
+                onClose={() => setShowBusyTimerModal(false)}
+                onConfirm={handleBusyTimerConfirm}
+                t={t}
+            />
 
             <Footer t={t} />
         </div>
