@@ -1,0 +1,22 @@
+{
+  "projectId": "YOUR_PROJECT_ID",
+  "functions": [],
+  "collections": [],
+  "buckets": [],
+  "teams": [],
+  "databases": [],
+  "hosting": {
+    "rules": [
+      {
+        "source": "/api/**",
+        "target": "/api/index.js",
+        "type": "rewrite"
+      },
+      {
+        "source": "/**",
+        "target": "/index.html",
+        "type": "rewrite"
+      }
+    ]
+  }
+}
