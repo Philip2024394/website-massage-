@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Languages Display Debug</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .debug-section {
+            padding: 30px;
+        }
+        .issue-card {
+            background: #f8d7da;
+            border: 2px solid #f5c6cb;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        .test-card {
+            background: #d1ecf1;
+            border: 2px solid #bee5eb;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        .fix-card {
+            background: #d4edda;
+            border: 2px solid #c3e6cb;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        .code-block {
+            background: #f1f3f4;
+            border: 1px solid #dadce0;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .test-button {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            width: 100%;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+        .test-button:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+        .result-display {
+            background: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            display: none;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .step-list {
+            margin: 15px 0;
+            padding-left: 20px;
+        }
+        .step-list li {
+            margin: 8px 0;
+            line-height: 1.5;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌐 Languages Display Debug Tool</h1>
+            <p>Investigating why selected languages don't appear on live cards</p>
+        </div>
+
+        <div class="debug-section">
+            <div class="issue-card">
+                <h3>🚨 Reported Problem</h3>
+                <p><strong>Issue:</strong> Languages selected in therapist dashboard are not displaying on live therapist cards.</p>
+                
+                <h4>🔍 Symptoms:</h4>
+                <ul class="step-list">
+                    <li>✅ Languages can be selected in therapist dashboard</li>
+                    <li>✅ Blue preview tags appear in dashboard</li>
+                    <li>❌ Languages don't show on home page therapist cards</li>
+                    <li>❓ Data may not be saving or parsing correctly</li>
+                </ul>
+            </div>
+
+            <div class="test-card">
+                <h3>🔬 Debugging Steps</h3>
+                
+                <h4>1. Check Data Flow:</h4>
+                <div class="code-block">
+Dashboard Selection → stringifyLanguages() → Database → parseLanguages() → Card Display
+                </div>
+
+                <h4>2. Verify Functions:</h4>
+                <ul class="step-list">
+                    <li><span class="highlight">stringifyLanguages()</span> - Converts array to string for storage</li>
+                    <li><span class="highlight">parseLanguages()</span> - Converts string back to array for display</li>
+                    <li><span class="highlight">TherapistCard</span> - Renders languages with flags</li>
+                </ul>
+
+                <h4>3. Check Database Storage:</h4>
+                <div class="code-block">
+// Dashboard saves:
+languages: stringifyLanguages(languages)
+
+// Card reads:
+const languages = therapist.languages 
+    ? (typeof therapist.languages === 'string' 
+        ? parseLanguages(therapist.languages) 
+        : therapist.languages)
+    : [];
+                </div>
+            </div>
+
+            <div class="fix-card">
+                <h3>🧪 Testing Procedure</h3>
+                
+                <h4>Step-by-Step Debug Test:</h4>
+                <ol class="step-list">
+                    <li><strong>Go to Therapist Dashboard:</strong> <code>http://localhost:3005/</code></li>
+                    <li><strong>Select Languages:</strong> Choose 2-3 languages and verify blue tags appear</li>
+                    <li><strong>Save Profile:</strong> Click save and check for success message</li>
+                    <li><strong>Open Console:</strong> Press F12 to see debug logs</li>
+                    <li><strong>Check Home Page:</strong> Go to home and look for languages on cards</li>
+                    <li><strong>Inspect Data:</strong> Use browser dev tools to check therapist data</li>
+                </ol>
+
+                <button class="test-button" onclick="runLanguageTest()">
+                    🔍 Run Language Display Test
+                </button>
+                <div id="test-result" class="result-display"></div>
+            </div>
+
+            <div class="test-card">
+                <h3>🔧 Potential Fixes</h3>
+                
+                <h4>1. Check parseLanguages Function:</h4>
+                <div class="code-block">
+// Make sure parseLanguages handles different formats:
+export const parseLanguages = (languages: string | string[]): string[] => {
+    if (Array.isArray(languages)) return languages;
+    if (!languages) return [];
+    try {
+        return JSON.parse(languages);
+    } catch {
+        return languages.split(',').map(l => l.trim());
+    }
+};
+                </div>
+
+                <h4>2. Add Debug Logging:</h4>
+                <div class="code-block">
+// In TherapistCard component:
+console.log('Raw therapist.languages:', therapist.languages);
+console.log('Parsed languages:', languages);
+console.log('Languages length:', languages.length);
+                </div>
+
+                <h4>3. Verify Data Structure:</h4>
+                <div class="code-block">
+// Check if therapist object has languages field:
+console.log('Full therapist object:', therapist);
+console.log('Languages field exists:', 'languages' in therapist);
+console.log('Languages value type:', typeof therapist.languages);
+                </div>
+            </div>
+
+            <div class="issue-card">
+                <h3>🎯 Expected vs Actual</h3>
+                
+                <h4>✅ Expected Behavior:</h4>
+                <ul class="step-list">
+                    <li>Select languages in dashboard → Blue tags appear</li>
+                    <li>Save profile → Success message shown</li>
+                    <li>Home page cards → Languages with flags visible</li>
+                    <li>Example: 🇬🇧 EN 🇮🇩 ID 🇨🇳 ZH</li>
+                </ul>
+
+                <h4>❌ Actual Behavior:</h4>
+                <ul class="step-list">
+                    <li>Select languages → ✅ Blue tags appear</li>
+                    <li>Save profile → ✅ Success message</li>
+                    <li>Home page cards → ❌ No languages section visible</li>
+                    <li>Languages section missing entirely</li>
+                </ul>
+
+                <button class="test-button" onclick="openDashboardAndHome()">
+                    🚀 Open Dashboard & Home to Compare
+                </button>
+            </div>
+
+            <div class="fix-card">
+                <h3>📋 Investigation Checklist</h3>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <h4>Dashboard Side:</h4>
+                        <ul class="step-list">
+                            <li>☐ Languages can be selected</li>
+                            <li>☐ Blue preview tags appear</li>
+                            <li>☐ Save button works</li>
+                            <li>☐ Success message shown</li>
+                            <li>☐ Console shows save data</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Card Display Side:</h4>
+                        <ul class="step-list">
+                            <li>☐ Home page loads therapist cards</li>
+                            <li>☐ Cards show other data (name, rating)</li>
+                            <li>☐ Languages section appears</li>
+                            <li>☐ Flag badges are visible</li>
+                            <li>☐ Console shows parsed data</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function runLanguageTest() {
+            const result = document.getElementById('test-result');
+            result.style.display = 'block';
+            result.innerHTML = '<strong>🔍 Running Language Display Test...</strong><br><br>';
+            
+            setTimeout(() => {
+                result.innerHTML += '📋 <strong>Test Instructions:</strong><br>';
+                result.innerHTML += '1. Open therapist dashboard in new tab<br>';
+                result.innerHTML += '2. Go to Languages section and select 2-3 languages<br>';
+                result.innerHTML += '3. Verify blue preview tags appear below selection<br>';
+                result.innerHTML += '4. Click Save Profile and wait for success message<br>';
+                result.innerHTML += '5. Open home page in another tab<br>';
+                result.innerHTML += '6. Look for therapist cards and check for languages section<br><br>';
+                
+                result.innerHTML += '🔍 <strong>What to Look For:</strong><br>';
+                result.innerHTML += '• Languages section with "Languages" header<br>';
+                result.innerHTML += '• Flag badges like 🇬🇧 EN, 🇮🇩 ID, 🇨🇳 ZH<br>';
+                result.innerHTML += '• Years of experience on same row<br>';
+                result.innerHTML += '• Section appears between specializations and pricing<br><br>';
+                
+                result.innerHTML += '📊 <strong>Debug Tips:</strong><br>';
+                result.innerHTML += '• Press F12 to open developer console<br>';
+                result.innerHTML += '• Look for console.log messages about languages<br>';
+                result.innerHTML += '• Check if therapist data includes languages field<br>';
+                result.innerHTML += '• Verify parseLanguages is working correctly<br><br>';
+                
+                result.innerHTML += '<strong>🎯 Ready for manual testing!</strong>';
+            }, 1000);
+        }
+
+        function openDashboardAndHome() {
+            window.open('http://localhost:3005/', '_blank');
+            setTimeout(() => {
+                alert('First test the dashboard (select languages & save), then navigate to home page to check if languages appear on cards');
+            }, 1000);
+        }
+
+        // Auto-log debug info
+        console.log('🌐 Languages Display Debugger Ready');
+        console.log('🎯 Issue: Languages selected in dashboard not showing on live cards');
+        console.log('🔍 Check: stringifyLanguages → database → parseLanguages → display');
+        console.log('🧪 Test at: http://localhost:3005/');
+    </script>
+</body>
+</html>

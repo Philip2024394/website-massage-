@@ -639,6 +639,15 @@ const HomePage: React.FC<HomePageProps> = ({
                             .filter((t: any) => t.isLive === true) // Only show activated therapists
                             .filter((t: any) => selectedMassageType === 'all' || (t.massageTypes && t.massageTypes.includes(selectedMassageType)))
                             .map((therapist: any, index: number) => {
+                                // 🌐 Debug: Check therapist data passed to TherapistCard
+                                console.log('🏠 HomePage passing to TherapistCard:', {
+                                    id: therapist.$id || therapist.id,
+                                    name: therapist.name,
+                                    languages: therapist.languages,
+                                    languagesParsed: therapist.languages ? JSON.parse(therapist.languages || '[]') : [],
+                                    allFields: Object.keys(therapist)
+                                });
+                                
                                 // Mock discount data - show all 4 discount levels (20%, 15%, 10%, 5%) on first 4 therapists
                                 const hasDiscount = index < 4;
                                 const mockDiscount = hasDiscount ? {

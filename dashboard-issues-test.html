@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Issues Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+        }
+        .issue { background: #fff3cd; border-color: #ffeaa7; }
+        .fix { background: #d4edda; border-color: #c3e6cb; }
+        .test { background: #cce5ff; border-color: #99ccff; }
+        h1 { color: #333; text-align: center; }
+        h2 { color: #e74c3c; }
+        h3 { color: #3498db; }
+        .status { padding: 5px 10px; border-radius: 5px; font-weight: bold; }
+        .pending { background: #ffeaa7; color: #856404; }
+        .success { background: #d4edda; color: #155724; }
+        .fail { background: #f8d7da; color: #721c24; }
+        code { background: #f1f2f6; padding: 2px 6px; border-radius: 3px; }
+        ul { margin: 10px 0; padding-left: 20px; }
+        li { margin: 5px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Therapist Dashboard Issues Test</h1>
+        
+        <div class="test-section issue">
+            <h2>🔍 Issues to Fix:</h2>
+            <ol>
+                <li><strong>Price fields won't allow deleting zeros</strong> - Should be able to clear completely</li>
+                <li><strong>Massage types selections not removing</strong> - Green tags should disappear when unchecked</li>
+                <li><strong>Languages selections not removing</strong> - Blue tags should disappear when unchecked</li>
+                <li><strong>Therapist cards inconsistent design</strong> - All cards should match Tata's layout</li>
+            </ol>
+        </div>
+
+        <div class="test-section test">
+            <h3>🧪 Test Instructions:</h3>
+            
+            <h4>1. Price Fields Test:</h4>
+            <ul>
+                <li>Go to <strong>Service Pricing (IDR)</strong> section</li>
+                <li>Enter a price (e.g., 250) in any field</li>
+                <li>Try to delete all numbers including zeros</li>
+                <li>✅ <strong>Expected:</strong> Should be able to clear completely</li>
+                <li>❌ <strong>Current Issue:</strong> Cannot delete zeros, field stays at 0</li>
+            </ul>
+            
+            <h4>2. Hotel & Villa Pricing Test:</h4>
+            <ul>
+                <li>Go to <strong>Hotel & Villa Live Menu Pricing</strong> section</li>
+                <li>Enter prices in the 3-digit K format</li>
+                <li>Try to clear fields completely</li>
+                <li>✅ <strong>Expected:</strong> Should allow complete clearing</li>
+            </ul>
+            
+            <h4>3. Massage Types Test:</h4>
+            <ul>
+                <li>Go to massage specializations section</li>
+                <li>Check 3-4 massage types (should appear in green preview)</li>
+                <li>Uncheck some of the selected types</li>
+                <li>✅ <strong>Expected:</strong> Green tags should disappear immediately</li>
+                <li>❌ <strong>Possible Issue:</strong> Tags remain even after unchecking</li>
+            </ul>
+            
+            <h4>4. Languages Test:</h4>
+            <ul>
+                <li>Go to <strong>Languages Spoken</strong> section</li>
+                <li>Select 2-3 languages (should appear in blue preview)</li>
+                <li>Uncheck some selected languages</li>
+                <li>✅ <strong>Expected:</strong> Blue tags should disappear immediately</li>
+                <li>❌ <strong>Possible Issue:</strong> Tags remain even after unchecking</li>
+            </ul>
+            
+            <h4>5. Therapist Cards Consistency Test:</h4>
+            <ul>
+                <li>Go to home page: <code>http://localhost:3004/</code></li>
+                <li>Look for Tata's therapist card (reference design)</li>
+                <li>Compare with other therapist cards</li>
+                <li>✅ <strong>Expected:</strong> All cards should have same layout, colors, spacing</li>
+                <li>❌ <strong>Possible Issue:</strong> Cards have different designs or layouts</li>
+            </ul>
+        </div>
+
+        <div class="test-section fix">
+            <h3>🔧 Fixes to Implement:</h3>
+            
+            <h4>1. Price Input Fix:</h4>
+            <ul>
+                <li>Change <code>type="number"</code> to <code>type="text"</code> for better control</li>
+                <li>Allow value to be empty string instead of forcing 0</li>
+                <li>Remove restrictions on deleting zeros</li>
+            </ul>
+            
+            <h4>2. Selection Removal Fix:</h4>
+            <ul>
+                <li>Ensure state updates immediately when checkboxes are unchecked</li>
+                <li>Verify filter logic removes items correctly from arrays</li>
+                <li>Check for any UI lag or state synchronization issues</li>
+            </ul>
+            
+            <h4>3. Card Consistency Fix:</h4>
+            <ul>
+                <li>Review TherapistCard component for layout variations</li>
+                <li>Ensure consistent CSS classes and styling</li>
+                <li>Match Tata card design exactly across all cards</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3>🎯 Testing Results:</h3>
+            <p>After implementing fixes, test each issue:</p>
+            
+            <div style="margin: 15px 0;">
+                <strong>Price Deletion:</strong> <span class="status pending">Test Pending</span><br>
+                <em>Can delete all numbers including zeros from price fields</em>
+            </div>
+            
+            <div style="margin: 15px 0;">
+                <strong>Massage Types:</strong> <span class="status pending">Test Pending</span><br>
+                <em>Green tags disappear when unchecking massage types</em>
+            </div>
+            
+            <div style="margin: 15px 0;">
+                <strong>Languages:</strong> <span class="status pending">Test Pending</span><br>
+                <em>Blue tags disappear when unchecking languages</em>
+            </div>
+            
+            <div style="margin: 15px 0;">
+                <strong>Card Consistency:</strong> <span class="status pending">Test Pending</span><br>
+                <em>All therapist cards match Tata's design layout</em>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🚀 Quick Test Links:</h3>
+            <ul>
+                <li><a href="http://localhost:3004/" target="_blank">🏠 Home Page (Check Therapist Cards)</a></li>
+                <li><a href="http://localhost:3004/" target="_blank">👨‍⚕️ Therapist Dashboard (Test Pricing & Selections)</a></li>
+            </ul>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+            <strong>📋 Test Status: Ready for Implementation</strong><br>
+            <em>Fix the 4 issues above and verify each one works correctly</em>
+        </div>
+    </div>
+</body>
+</html>

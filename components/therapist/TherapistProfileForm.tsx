@@ -250,24 +250,13 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
     const handleHotelVillaPriceChange = (duration: string, value: string) => {
         console.log('🏨 Hotel/Villa price input changed:', { duration, value, length: value.length });
 
-        // Handle empty string or backspace to completely clear the field
-        if (value === '' || value === null || value === undefined) {
-            console.log('📝 Clearing hotel/villa price field completely');
-            setInputValues(prev => ({
-                ...prev,
-                hotel: { ...prev.hotel, [duration]: '' }
-            }));
-            setHotelVillaPricing({ ...hotelVillaPricing, [duration]: 0 });
-            return;
-        }
-
         // Remove 'K' or 'k' suffix and any non-digit characters
         let cleanValue = value.replace(/[kK]/g, '').replace(/[^\d]/g, '');
         console.log('🧹 Cleaned hotel/villa value:', cleanValue);
         
-        // If only zeros or empty after cleaning, clear the field
-        if (cleanValue === '' || cleanValue === '0' || cleanValue === '00' || cleanValue === '000') {
-            console.log('🗑️ Detected zero/empty hotel input, clearing field');
+        // Handle empty input - allow clearing
+        if (cleanValue === '') {
+            console.log('📝 Clearing hotel/villa price field completely');
             setInputValues(prev => ({
                 ...prev,
                 hotel: { ...prev.hotel, [duration]: '' }
@@ -281,20 +270,11 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
             cleanValue = cleanValue.substring(0, 3);
         }
         
-        // Convert to number and validate
+        // Convert to number
         const numericValue = parseInt(cleanValue, 10);
-        if (isNaN(numericValue) || numericValue === 0) {
-            console.log('🚫 Invalid hotel numeric value, clearing');
-            setInputValues(prev => ({
-                ...prev,
-                hotel: { ...prev.hotel, [duration]: '' }
-            }));
-            setHotelVillaPricing({ ...hotelVillaPricing, [duration]: 0 });
-            return;
-        }
         
-        // Display with 'K' suffix when valid digits are present
-        const displayValue = `${cleanValue}K`;
+        // Display with 'K' suffix when there's a value
+        const displayValue = `${cleanValue.padStart(3, '0')}K`;
         console.log('✅ Valid hotel input, displaying:', displayValue);
         
         // Update display immediately
@@ -846,17 +826,17 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
             {/* Hotel/Villa Special Pricing Section */}
             <div className="border-t border-gray-200 pt-4">
                 <div className="mb-3">
-                    <h3 className="text-sm sm:text-md font-medium text-gray-800">Hotel/Villa Live Menu Pricing</h3>
-                    <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <h3 className="text-sm sm:text-md font-medium text-orange-800">Hotel/Villa Live Menu Pricing</h3>
+                    <div className="mt-2 p-3 bg-orange-50 border border-orange-200 rounded-lg">
                         <div className="flex items-start gap-2">
-                            <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
+                            <div className="w-4 h-4 bg-orange-500 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
                                 <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
                                     <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                                 </svg>
                             </div>
                             <div>
-                                <p className="text-xs text-blue-800 font-semibold mb-1">Commission Structure</p>
-                                <p className="text-xs text-blue-700 leading-relaxed">
+                                <p className="text-xs text-orange-800 font-semibold mb-1">Commission Structure</p>
+                                <p className="text-xs text-orange-700 leading-relaxed">
                                     Hotels and villas receive a <span className="font-semibold">20% commission</span> for each guest room service massage booking. The prices you set here already include this 20% commission, so you'll receive 80% of the displayed amount.
                                 </p>
                             </div>
@@ -878,14 +858,14 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                            <input 
                                type="text" 
                                value={inputValues.hotel["60"]} 
-                               onChange={e => handleHotelVillaPriceChange("60", e.target.value)} 
-                               placeholder="250" 
+                               onChange={e => handleHotelVillaPriceChange("60", e.target.value)}
+                               placeholder="000K" 
                                maxLength={4}
-                               pattern="[0-9]{1,3}k?"
-                               title="Enter 1-3 digits with optional 'k' (e.g., 250 or 250k)"
+                               pattern="[0-9]{3}K"
+                               title="Enter 3 digits with K (e.g., 250K) - can be cleared completely"
                                disabled={useSamePricing}
-                               className={`block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 border border-gray-300 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm ${
-                                   useSamePricing ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
+                               className={`block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 border border-orange-300 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 ${
+                                   useSamePricing ? 'bg-gray-100 cursor-not-allowed' : 'bg-orange-50'
                                }`}
                            />
                         </div>
@@ -895,7 +875,7 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                             </p>
                         )}
                         {!useSamePricing && pricing["60"] === 0 && (
-                            <p className="text-xs text-gray-400 mt-1">Enter digits with optional 'k' (e.g., 250 or 250k)</p>
+                            <p className="text-xs text-orange-500 mt-1">Always displays 3 digits with K (e.g., 250K)</p>
                         )}
                     </div>
                     <div>
@@ -905,14 +885,14 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                            <input 
                                type="text" 
                                value={inputValues.hotel["90"]} 
-                               onChange={e => handleHotelVillaPriceChange("90", e.target.value)} 
-                               placeholder="350" 
+                               onChange={e => handleHotelVillaPriceChange("90", e.target.value)}
+                               placeholder="000K" 
                                maxLength={4}
-                               pattern="[0-9]{1,3}k?"
-                               title="Enter 1-3 digits with optional 'k' (e.g., 350 or 350k)"
+                               pattern="[0-9]{3}K"
+                               title="Enter 3 digits with K (e.g., 350K) - can be cleared completely"
                                disabled={useSamePricing}
-                               className={`block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 border border-gray-300 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm ${
-                                   useSamePricing ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
+                               className={`block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 border border-orange-300 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 ${
+                                   useSamePricing ? 'bg-gray-100 cursor-not-allowed' : 'bg-orange-50'
                                }`}
                            />
                         </div>
@@ -922,7 +902,7 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                             </p>
                         )}
                         {!useSamePricing && pricing["90"] === 0 && (
-                            <p className="text-xs text-gray-400 mt-1">Enter digits with optional 'k' (e.g., 350 or 350k)</p>
+                            <p className="text-xs text-orange-500 mt-1">Always displays 3 digits with K (e.g., 350K)</p>
                         )}
                     </div>
                      <div>
@@ -932,14 +912,14 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                            <input 
                                type="text" 
                                value={inputValues.hotel["120"]} 
-                               onChange={e => handleHotelVillaPriceChange("120", e.target.value)} 
-                               placeholder="450" 
+                               onChange={e => handleHotelVillaPriceChange("120", e.target.value)}
+                               placeholder="000K" 
                                maxLength={4}
-                               pattern="[0-9]{1,3}k?"
-                               title="Enter 1-3 digits with optional 'k' (e.g., 450 or 450k)"
+                               pattern="[0-9]{3}K"
+                               title="Enter 3 digits with K (e.g., 450K) - can be cleared completely"
                                disabled={useSamePricing}
-                               className={`block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 border border-gray-300 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm ${
-                                   useSamePricing ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
+                               className={`block w-full pl-6 sm:pl-9 pr-1 sm:pr-2 py-2 sm:py-3 border border-orange-300 rounded-md shadow-sm text-gray-900 text-xs sm:text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 ${
+                                   useSamePricing ? 'bg-gray-100 cursor-not-allowed' : 'bg-orange-50'
                                }`}
                            />
                         </div>
@@ -949,7 +929,7 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                             </p>
                         )}
                         {!useSamePricing && pricing["120"] === 0 && (
-                            <p className="text-xs text-gray-400 mt-1">Enter digits with optional 'k' (e.g., 450 or 450k)</p>
+                            <p className="text-xs text-orange-500 mt-1">Always displays 3 digits with K (e.g., 450K)</p>
                         )}
                     </div>
                 </div>

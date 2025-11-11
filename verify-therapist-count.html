@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Appwrite Therapist Count Verification</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@16.0.2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin: 10px 0; }
+        .therapist-item { border: 1px solid #e0e0e0; padding: 12px; margin: 8px 0; border-radius: 6px; background: #f9f9f9; }
+        .success { color: #4CAF50; font-weight: bold; }
+        .info { color: #2196F3; font-weight: bold; }
+        .debug { font-family: monospace; font-size: 12px; color: #666; background: #f0f0f0; padding: 8px; margin: 5px 0; border-radius: 4px; }
+        button { background: #2196F3; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; margin: 5px; font-size: 16px; }
+        button:hover { background: #1976D2; }
+        .loading { text-align: center; padding: 20px; color: #666; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Appwrite Therapist Database Verification</h1>
+    <p>Confirming the exact number of therapist records in your Appwrite database.</p>
+    
+    <div class="container">
+        <button onclick="countTherapists()">🔄 Count Therapists in Appwrite</button>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        // Appwrite Configuration
+        const CONFIG = {
+            endpoint: 'https://syd.cloud.appwrite.io/v1',
+            projectId: '68f23b11000d25eb3664',
+            databaseId: '68f76ee1000e64ca8d05',
+            therapistsCollection: 'therapists_collection_id'
+        };
+
+        // Initialize Appwrite
+        const { Client, Databases, Account } = Appwrite;
+        const client = new Client()
+            .setEndpoint(CONFIG.endpoint)
+            .setProject(CONFIG.projectId);
+        const databases = new Databases(client);
+        const account = new Account(client);
+
+        async function countTherapists() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="loading">🔄 Counting therapists in Appwrite database...</div>';
+            
+            try {
+                // Create anonymous session first
+                try {
+                    await account.createAnonymousSession();
+                } catch (e) {
+                    console.log('Session already exists or error:', e.message);
+                }
+                
+                console.log('📡 Fetching all therapist documents from Appwrite...');
+                const response = await databases.listDocuments(
+                    CONFIG.databaseId,
+                    CONFIG.therapistsCollection,
+                    []
+                );
+                
+                const therapists = response.documents;
+                console.log(`✅ Raw response: ${therapists.length} documents found`);
+                
+                let html = `
+                    <div class="success">✅ Appwrite Database Confirmation</div>
+                    <div class="debug">
+                        <strong>Collection:</strong> ${CONFIG.therapistsCollection}<br>
+                        <strong>Database ID:</strong> ${CONFIG.databaseId}<br>
+                        <strong>Total Records Found:</strong> <span class="info">${therapists.length}</span>
+                    </div>
+                `;
+                
+                if (therapists.length === 0) {
+                    html += '<div style="color: #f44336; font-weight: bold;">❌ No therapist records found in database!</div>';
+                } else {
+                    html += '<h3>📋 All Therapist Records:</h3>';
+                    
+                    therapists.forEach((therapist, index) => {
+                        html += `
+                            <div class="therapist-item">
+                                <strong>#${index + 1}: ${therapist.name || 'Unnamed'}</strong><br>
+                                <small>ID: ${therapist.$id}</small><br>
+                                <small>Email: ${therapist.email || 'N/A'}</small><br>
+                                <small>Status: ${therapist.status || 'N/A'}</small><br>
+                                <small>Live: ${therapist.isLive ? 'Yes' : 'No'}</small>
+                            </div>
+                        `;
+                    });
+                    
+                    // Count live therapists
+                    const liveTherapists = therapists.filter(t => t.isLive === true);
+                    
+                    html += `
+                        <div class="debug">
+                            <strong>📊 Summary:</strong><br>
+                            Total Therapists: <span class="info">${therapists.length}</span><br>
+                            Live Therapists: <span class="success">${liveTherapists.length}</span><br>
+                            Offline Therapists: ${therapists.length - liveTherapists.length}
+                        </div>
+                    `;
+                    
+                    if (therapists.length === 3) {
+                        html += '<div class="success">✅ CONFIRMED: Exactly 3 therapist records in Appwrite database matches what you see on homepage!</div>';
+                    } else {
+                        html += `<div style="color: #ff9800; font-weight: bold;">⚠️ Found ${therapists.length} records in database, but you mentioned seeing 3 cards on homepage.</div>`;
+                    }
+                }
+                
+                resultsDiv.innerHTML = html;
+                
+            } catch (error) {
+                console.error('❌ Error counting therapists:', error);
+                resultsDiv.innerHTML = `<div style="color: #f44336; font-weight: bold;">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        // Auto-count on page load
+        window.addEventListener('load', () => {
+            console.log('🚀 Therapist counter ready!');
+            countTherapists();
+        });
+    </script>
+</body>
+</html>

@@ -432,10 +432,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
             {/* Refer Friend Modal */}
             {showReferModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4" onClick={() => setShowReferModal(false)}>
-                    <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-[95vw] max-h-[90vh] sm:max-w-sm md:max-w-md p-3 sm:p-4 md:p-5 animate-fadeIn overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4" onClick={() => setShowReferModal(false)}>
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-[90vw] max-h-[85vh] sm:max-w-xs md:max-w-sm p-3 sm:p-4 animate-fadeIn overflow-y-auto" onClick={(e) => e.stopPropagation()}>
                         <div className="text-center">
-                            <div className="w-24 h-24 sm:w-32 sm:h-32 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 overflow-hidden relative">
+                            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 overflow-hidden relative">
                                 {/* Main coin image */}
                                 <img 
                                     src="https://ik.imagekit.io/7grri5v7d/INDASTREET_coins_new-removebg-preview.png?updatedAt=1762338892035"
@@ -475,8 +475,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                                 ))}
                             </div>
                             
-                            <h3 className="text-2xl font-bold text-gray-900 mb-2">Refer a Friend</h3>
-                            <p className="text-gray-600 mb-6">Share IndaStreet with friends and earn coins! 🎁</p>
+                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-1 sm:mb-2">Refer a Friend</h3>
+                            <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">Share IndaStreet with friends and earn coins! 🎁</p>
                             
                             <div className="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl p-4 mb-6">
                                 <div className="flex items-center justify-center gap-2 mb-2">

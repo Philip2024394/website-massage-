@@ -44,6 +44,64 @@ const AnalyticsCard: React.FC<{ title: string; value: number; description: strin
     </div>
 );
 
+const LiveDiscountCountdown: React.FC<{ 
+    endTime: Date; 
+    percentage: number; 
+    onExpire: () => void; 
+}> = ({ endTime, percentage, onExpire }) => {
+    const [timeLeft, setTimeLeft] = useState<string>('');
+    const [isExpired, setIsExpired] = useState(false);
+
+    useEffect(() => {
+        const updateCountdown = () => {
+            const now = new Date().getTime();
+            const distance = endTime.getTime() - now;
+
+            if (distance < 0) {
+                setIsExpired(true);
+                setTimeLeft('EXPIRED');
+                onExpire();
+                return;
+            }
+
+            const hours = Math.floor(distance / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            setTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
+        };
+
+        updateCountdown();
+        const timer = setInterval(updateCountdown, 1000);
+        return () => clearInterval(timer);
+    }, [endTime, onExpire]);
+
+    if (isExpired) return null;
+
+    return (
+        <div className="mt-4 p-4 bg-gradient-to-r from-green-50 to-orange-50 border-2 border-green-300 rounded-xl animate-pulse">
+            <div className="text-center">
+                <div className="flex items-center justify-center space-x-2 mb-2">
+                    <div className="w-3 h-3 bg-green-500 rounded-full animate-ping"></div>
+                    <p className="text-lg font-bold text-green-800">
+                        🎊 {percentage}% Discount LIVE!
+                    </p>
+                    <div className="w-3 h-3 bg-orange-500 rounded-full animate-ping"></div>
+                </div>
+                <div className="bg-white px-4 py-2 rounded-lg border border-gray-200 shadow-sm">
+                    <p className="text-sm text-gray-600">Time Remaining:</p>
+                    <p className="text-xl font-mono font-bold text-orange-600">
+                        ⏰ {timeLeft}
+                    </p>
+                </div>
+                <p className="text-xs text-green-600 mt-2">
+                    Your pricing containers are flashing to attract customers!
+                </p>
+            </div>
+        </div>
+    );
+};
+
 const BusyCountdown: React.FC<{ busyUntil: Date }> = ({ busyUntil }) => {
     const [timeLeft, setTimeLeft] = useState<string>('');
 
@@ -350,7 +408,10 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                 
                 if (existingTherapist.languages) {
                     try {
+                        console.log('🌐 Dashboard Debug - Raw languages from DB:', existingTherapist.languages);
+                        console.log('🌐 Dashboard Debug - Languages type from DB:', typeof existingTherapist.languages);
                         const languagesData = parseLanguages(existingTherapist.languages);
+                        console.log('🌐 Dashboard Debug - Parsed languages data:', languagesData);
                         console.log('  - Languages:', languagesData);
                         setLanguages(languagesData);
                     } catch (error) {
@@ -514,6 +575,10 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
             busyUntil: busyUntil?.toISOString() || undefined
         };
 
+        console.log('🌐 Dashboard Debug - Languages before save:', languages);
+        console.log('🌐 Dashboard Debug - Stringified languages:', stringifyLanguages(languages));
+        console.log('🌐 Dashboard Debug - Full therapist data being saved:', therapistData);
+        
         try {
             await onSave(therapistData as any);
             setToast({ message: 'Profile updated successfully!', type: 'success' });
@@ -563,6 +628,30 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
 
     return (
         <div className="min-h-screen bg-gray-50">
+            {/* CSS Animations for Discount Effects */}
+            <style>{`
+                @keyframes flash {
+                    0%, 100% { 
+                        box-shadow: 0 0 20px rgba(251, 146, 60, 0.8), 0 0 40px rgba(251, 146, 60, 0.4); 
+                        transform: scale(1);
+                    }
+                    50% { 
+                        box-shadow: 0 0 30px rgba(239, 68, 68, 0.9), 0 0 60px rgba(239, 68, 68, 0.5);
+                        transform: scale(1.02);
+                    }
+                }
+                @keyframes glow {
+                    0% { 
+                        border-color: rgba(251, 146, 60, 0.7);
+                        background: linear-gradient(45deg, rgba(251, 146, 60, 0.1), rgba(239, 68, 68, 0.1));
+                    }
+                    100% { 
+                        border-color: rgba(239, 68, 68, 0.8);
+                        background: linear-gradient(45deg, rgba(239, 68, 68, 0.15), rgba(251, 146, 60, 0.15));
+                    }
+                }
+            `}</style>
+            
             {/* Header - Same as Home Page */}
             <header className="bg-white p-4 shadow-md sticky top-0 z-[9997]">
                 <div className="flex justify-between items-center">
@@ -841,41 +930,75 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                             </div>
                                                             
                                                             <button
-                                                                onClick={() => {
+                                                                onClick={async () => {
                                                                     const endTime = new Date();
                                                                     endTime.setHours(endTime.getHours() + discountDuration);
                                                                     setDiscountEndTime(endTime);
                                                                     setIsDiscountActive(true);
-                                                                    // Save immediately to update therapist card
-                                                                    handleSave();
-                                                                    setToast({ 
-                                                                        message: `${discountPercentage}% discount activated for ${discountDuration} hours!`, 
-                                                                        type: 'success' 
-                                                                    });
-                                                                    setTimeout(() => setToast(null), 4000);
+                                                                    
+                                                                    // Auto-save immediately to update therapist card
+                                                                    try {
+                                                                        await handleSave();
+                                                                        
+                                                                        setToast({ 
+                                                                            message: `🎉 ${discountPercentage}% discount activated for ${discountDuration} hours! Your profile is now flashing to attract customers!`, 
+                                                                            type: 'success' 
+                                                                        });
+                                                                        setTimeout(() => setToast(null), 5000);
+
+                                                                        // Start countdown timer that will auto-deactivate when expired
+                                                                        const checkExpiration = setInterval(() => {
+                                                                            if (new Date() >= endTime) {
+                                                                                setIsDiscountActive(false);
+                                                                                setDiscountEndTime(null);
+                                                                                setDiscountPercentage(0);
+                                                                                setDiscountDuration(0);
+                                                                                handleSave(); // Auto-save when expired
+                                                                                clearInterval(checkExpiration);
+                                                                                
+                                                                                setToast({ 
+                                                                                    message: '⏰ Discount promotion has expired and been automatically deactivated.', 
+                                                                                    type: 'warning' 
+                                                                                });
+                                                                                setTimeout(() => setToast(null), 4000);
+                                                                            }
+                                                                        }, 1000);
+                                                                    } catch (error) {
+                                                                        setToast({ 
+                                                                            message: '❌ Failed to activate discount. Please try again.', 
+                                                                            type: 'error' 
+                                                                        });
+                                                                        setTimeout(() => setToast(null), 4000);
+                                                                    }
                                                                 }}
                                                                 disabled={isDiscountActive}
-                                                                className={`w-full py-3 px-6 rounded-xl font-bold transition-all ${
+                                                                className={`w-full py-3 px-6 rounded-xl font-bold transition-all transform ${
                                                                     isDiscountActive
                                                                         ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                                                        : 'bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:from-orange-600 hover:to-amber-600 shadow-lg hover:shadow-xl'
+                                                                        : 'bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:from-orange-600 hover:to-amber-600 shadow-lg hover:shadow-xl hover:scale-105'
                                                                 }`}
                                                             >
-                                                                {isDiscountActive ? '✅ Discount Active' : '🚀 Activate Discount'}
+                                                                {isDiscountActive ? '✅ Discount Active' : '🚀 Auto-Activate Discount'}
                                                             </button>
 
-                                                            {/* Active Discount Info */}
+                                                            {/* Active Discount Info with Live Countdown */}
                                                             {isDiscountActive && discountEndTime && (
-                                                                <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                                                                    <div className="text-center">
-                                                                        <p className="text-sm font-medium text-green-800">
-                                                                            🎊 Discount is live on your profile!
-                                                                        </p>
-                                                                        <p className="text-xs text-green-600 mt-1">
-                                                                            Expires: {discountEndTime.toLocaleString()}
-                                                                        </p>
-                                                                    </div>
-                                                                </div>
+                                                                <LiveDiscountCountdown 
+                                                                    endTime={discountEndTime}
+                                                                    percentage={discountPercentage}
+                                                                    onExpire={() => {
+                                                                        setIsDiscountActive(false);
+                                                                        setDiscountEndTime(null);
+                                                                        setDiscountPercentage(0);
+                                                                        setDiscountDuration(0);
+                                                                        handleSave();
+                                                                        setToast({ 
+                                                                            message: '⏰ Discount promotion expired automatically!', 
+                                                                            type: 'warning' 
+                                                                        });
+                                                                        setTimeout(() => setToast(null), 4000);
+                                                                    }}
+                                                                />
                                                             )}
                                                         </div>
                                                     )}
@@ -961,6 +1084,51 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                 description="Total reviews"
                                             />
                                         </div>
+
+                                        {/* Coin Rewards Section */}
+                                        {onNavigate && (
+                                            <div className="mt-8 space-y-4">
+                                                <h3 className="text-lg font-semibold text-gray-900 mb-4">💰 Coin Rewards</h3>
+                                                
+                                                {/* Coin History Button */}
+                                                <button
+                                                    onClick={() => onNavigate('coin-history')}
+                                                    className="w-full flex items-center justify-between p-4 bg-white rounded-xl shadow-md hover:shadow-lg transition-all border-2 border-orange-200 hover:border-orange-400"
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center text-white text-2xl">
+                                                            📊
+                                                        </div>
+                                                        <div className="text-left">
+                                                            <h3 className="font-bold text-gray-900">Coin History</h3>
+                                                            <p className="text-sm text-gray-600">View transactions & expiration</p>
+                                                        </div>
+                                                    </div>
+                                                    <svg className="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                                    </svg>
+                                                </button>
+
+                                                {/* Coin Shop Button */}
+                                                <button
+                                                    onClick={() => onNavigate('coin-shop')}
+                                                    className="w-full flex items-center justify-between p-4 bg-white rounded-xl shadow-md hover:shadow-lg transition-all border-2 border-yellow-200 hover:border-yellow-400"
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center text-white text-2xl">
+                                                            🪙
+                                                        </div>
+                                                        <div className="text-left">
+                                                            <h3 className="font-bold text-gray-900">Coin Rewards Shop</h3>
+                                                            <p className="text-sm text-gray-600">Redeem coins for rewards & cash out</p>
+                                                        </div>
+                                                    </div>
+                                                    <svg className="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
 
@@ -1360,12 +1528,17 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                                             type="checkbox"
                                                                             checked={massageTypes.includes(type)}
                                                                             onChange={(e) => {
+                                                                                console.log('Massage type checkbox changed:', type, 'checked:', e.target.checked, 'current types:', massageTypes);
                                                                                 if (e.target.checked) {
                                                                                     if (massageTypes.length < 5) {
-                                                                                        setMassageTypes([...massageTypes, type]);
+                                                                                        const newTypes = [...massageTypes, type];
+                                                                                        console.log('Adding massage type, new state:', newTypes);
+                                                                                        setMassageTypes(newTypes);
                                                                                     }
                                                                                 } else {
-                                                                                    setMassageTypes(massageTypes.filter(t => t !== type));
+                                                                                    const newTypes = massageTypes.filter(t => t !== type);
+                                                                                    console.log('Removing massage type, new state:', newTypes);
+                                                                                    setMassageTypes(newTypes);
                                                                                 }
                                                                             }}
                                                                             disabled={!massageTypes.includes(type) && massageTypes.length >= 5}
@@ -1386,9 +1559,9 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                             Your Selected Specialties:
                                                         </p>
                                                         <div className="flex flex-wrap gap-2">
-                                                            {massageTypes.map((type, index) => (
+                                                            {massageTypes.map((type) => (
                                                                 <span 
-                                                                    key={index}
+                                                                    key={type}
                                                                     className="inline-flex items-center px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full"
                                                                 >
                                                                     {type}
@@ -1453,12 +1626,17 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                                 type="checkbox"
                                                                 checked={languages.includes(language)}
                                                                 onChange={(e) => {
+                                                                    console.log('Language checkbox changed:', language, 'checked:', e.target.checked, 'current languages:', languages);
                                                                     if (e.target.checked) {
                                                                         if (languages.length < 3) {
-                                                                            setLanguages([...languages, language]);
+                                                                            const newLanguages = [...languages, language];
+                                                                            console.log('Adding language, new state:', newLanguages);
+                                                                            setLanguages(newLanguages);
                                                                         }
                                                                     } else {
-                                                                        setLanguages(languages.filter(l => l !== language));
+                                                                        const newLanguages = languages.filter(l => l !== language);
+                                                                        console.log('Removing language, new state:', newLanguages);
+                                                                        setLanguages(newLanguages);
                                                                     }
                                                                 }}
                                                                 disabled={!languages.includes(language) && languages.length >= 3}
@@ -1476,9 +1654,9 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                             Languages you speak:
                                                         </p>
                                                         <div className="flex flex-wrap gap-2">
-                                                            {languages.map((language, index) => (
+                                                            {languages.map((language) => (
                                                                 <span 
-                                                                    key={index}
+                                                                    key={language}
                                                                     className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full"
                                                                 >
                                                                     {language}
@@ -1533,22 +1711,32 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                             : originalPrice;
                                                         
                                                         return (
-                                                            <div key={duration} className={`relative ${
+                                                            <div key={duration} className={`relative transition-all duration-500 ${
                                                                 isDiscountActive 
-                                                                    ? 'ring-2 ring-orange-300 ring-opacity-50 shadow-lg shadow-orange-200/50 animate-pulse' 
-                                                                    : ''
-                                                            }`}>
+                                                                    ? 'ring-4 ring-orange-400 ring-opacity-70 shadow-2xl shadow-orange-300/60 animate-bounce transform hover:scale-105' 
+                                                                    : 'hover:shadow-md'
+                                                            }`}
+                                                                style={isDiscountActive ? {
+                                                                    animation: 'flash 2s ease-in-out infinite, glow 3s ease-in-out infinite alternate'
+                                                                } : {}}>
+                                                                {/* Flashing overlay when discount is active */}
+                                                                {isDiscountActive && (
+                                                                    <div className="absolute inset-0 bg-gradient-to-r from-orange-400/20 to-red-400/20 rounded-lg animate-pulse pointer-events-none"></div>
+                                                                )}
                                                                 <label className="block text-xs font-medium text-gray-600 mb-1">
                                                                     {duration} Minutes
                                                                 </label>
                                                                 <div className="relative">
                                                                     <input
-                                                                        type="number"
-                                                                        value={originalPrice}
-                                                                        onChange={(e) => setPricing({
-                                                                            ...pricing,
-                                                                            [duration]: parseInt(e.target.value) || 0
-                                                                        })}
+                                                                        type="text"
+                                                                        value={originalPrice > 0 ? originalPrice.toString() : ''}
+                                                                        onChange={(e) => {
+                                                                            const numericValue = e.target.value.replace(/[^0-9]/g, '');
+                                                                            setPricing({
+                                                                                ...pricing,
+                                                                                [duration]: numericValue ? parseInt(numericValue) : 0
+                                                                            });
+                                                                        }}
                                                                         className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 ${
                                                                             isDiscountActive 
                                                                                 ? 'border-orange-300 bg-orange-50' 
@@ -1580,18 +1768,18 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
 
                                             {/* Hotel & Villa Live Menu Pricing */}
                                             <div className="mt-8">
-                                                <div className="bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 rounded-xl p-6">
+                                                <div className="bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200 rounded-xl p-6">
                                                     <div className="flex items-center mb-4">
-                                                        <div className="p-2 bg-purple-500 rounded-lg mr-3">
+                                                        <div className="p-2 bg-orange-500 rounded-lg mr-3">
                                                             <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                                             </svg>
                                                         </div>
                                                         <div className="flex-1">
-                                                            <h3 className="text-xl font-bold text-purple-800">
+                                                            <h3 className="text-xl font-bold text-orange-800">
                                                                 Hotel & Villa Live Menu Pricing
                                                             </h3>
-                                                            <p className="text-sm text-purple-600 mt-1">
+                                                            <p className="text-sm text-orange-600 mt-1">
                                                                 Set your prices for hotel and villa services
                                                             </p>
                                                         </div>
@@ -1613,7 +1801,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                                     <strong>20% commission</strong> will be deducted from your earnings for hotel and villa bookings. This covers platform fees, payment processing, and hotel/villa partnership costs.
                                                                 </p>
                                                                 <p className="text-xs text-yellow-600 mt-2 font-medium">
-                                                                    Example: If you charge IDR 500K, you'll receive IDR 400K after commission.
+                                                                    Example: If you charge IDR 250K, you'll receive IDR 200K after commission.
                                                                 </p>
                                                                 <p className="text-xs text-green-700 mt-2 font-bold bg-green-100 px-2 py-1 rounded">
                                                                     💡 Remember: Your regular home page prices above are 100% commission-free!
@@ -1626,95 +1814,50 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                                         {[60, 90, 120].map((duration) => {
                                                             const price = (hotelVillaPricing as any)[duration] || 0;
-                                                            const commission = Math.round(price * 0.2);
-                                                            const netEarnings = price - commission;
                                                             
                                                             return (
                                                                 <div key={duration} className="relative">
-                                                                    <div className="bg-white border-2 border-purple-200 rounded-lg p-4 hover:shadow-lg transition-all">
-                                                                        <label className="block text-sm font-bold text-purple-700 mb-2 text-center">
+                                                                    <div className="bg-white border-2 border-orange-200 rounded-lg p-4 hover:shadow-lg transition-all">
+                                                                        <label className="block text-sm font-bold text-orange-700 mb-2 text-center">
                                                                             {duration} Minutes
                                                                         </label>
                                                                         
                                                                         {/* Price Input */}
                                                                         <div className="relative mb-3">
                                                                             <input
-                                                                                type="number"
-                                                                                value={price || ''}
+                                                                                type="text"
+                                                                                value={price.toString()}
                                                                                 onChange={(e) => {
-                                                                                    const value = e.target.value;
-                                                                                    if (value === '' || (parseInt(value) >= 0 && value.length <= 3)) {
-                                                                                        setHotelVillaPricing({
-                                                                                            ...hotelVillaPricing,
-                                                                                            [duration]: value === '' ? 0 : parseInt(value)
-                                                                                        });
-                                                                                    }
-                                                                                }}
-                                                                                onKeyDown={(e) => {
-                                                                                    // Allow backspace to clear the field completely
-                                                                                    if (e.key === 'Backspace' && (e.target as HTMLInputElement).value === '0') {
+                                                                                    const value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+                                                                                    if (value === '') {
+                                                                                        // Allow complete clearing
                                                                                         setHotelVillaPricing({
                                                                                             ...hotelVillaPricing,
                                                                                             [duration]: 0
                                                                                         });
+                                                                                    } else if (value.length <= 3) {
+                                                                                        const numValue = parseInt(value);
+                                                                                        setHotelVillaPricing({
+                                                                                            ...hotelVillaPricing,
+                                                                                            [duration]: numValue
+                                                                                        });
                                                                                     }
                                                                                 }}
                                                                                 placeholder="000"
-                                                                                min="0"
-                                                                                max="999"
-                                                                                className="w-full px-3 py-3 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-center text-lg font-bold bg-purple-50"
+                                                                                maxLength={3}
+                                                                                className="w-full px-3 py-3 border border-orange-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-center text-lg font-bold bg-orange-50"
                                                                             />
-                                                                            <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-600 font-bold text-lg">
+                                                                            <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-orange-600 font-bold text-lg">
                                                                                 K
                                                                             </span>
                                                                         </div>
-
-                                                                        {/* Commission Breakdown */}
-                                                                        {price > 0 && (
-                                                                            <div className="space-y-2 text-xs">
-                                                                                <div className="flex justify-between items-center">
-                                                                                    <span className="text-gray-600">Total Price:</span>
-                                                                                    <span className="font-bold text-purple-700">IDR {price.toLocaleString()}K</span>
-                                                                                </div>
-                                                                                <div className="flex justify-between items-center">
-                                                                                    <span className="text-red-600">Commission (20%):</span>
-                                                                                    <span className="font-bold text-red-600">-IDR {commission.toLocaleString()}K</span>
-                                                                                </div>
-                                                                                <div className="border-t border-purple-200 pt-2">
-                                                                                    <div className="flex justify-between items-center">
-                                                                                        <span className="text-green-700 font-semibold">Your Earnings:</span>
-                                                                                        <span className="font-bold text-green-700 text-sm">IDR {netEarnings.toLocaleString()}K</span>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                        )}
                                                                     </div>
                                                                 </div>
                                                             );
                                                         })}
                                                     </div>
 
-                                                    {/* Summary Card */}
-                                                    {((hotelVillaPricing as any)[60] > 0 || (hotelVillaPricing as any)[90] > 0 || (hotelVillaPricing as any)[120] > 0) && (
-                                                        <div className="mt-6 p-4 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg">
-                                                            <h4 className="text-sm font-bold text-green-700 mb-3">
-                                                                Hotel & Villa Pricing Summary
-                                                            </h4>
-                                                            <div className="grid grid-cols-3 gap-4 text-center">
-                                                                {[60, 90, 120].map((duration) => {
-                                                                    const price = (hotelVillaPricing as any)[duration];
-                                                                    const earnings = Math.round(price * 0.8);
-                                                                    return price > 0 ? (
-                                                                        <div key={duration} className="bg-white p-3 rounded-lg border border-green-200">
-                                                                            <p className="text-xs font-medium text-gray-600">{duration} min</p>
-                                                                            <p className="text-lg font-bold text-green-600">IDR {earnings}K</p>
-                                                                            <p className="text-xs text-gray-500">You earn</p>
-                                                                        </div>
-                                                                    ) : null;
-                                                                })}
-                                                            </div>
-                                                        </div>
-                                                    )}
+
                                                 </div>
                                             </div>
 
@@ -1892,6 +2035,47 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                     </div>
                                                 </div>
                                             </div>
+
+                                            {/* Coin Rewards Menu Items */}
+                                            {onNavigate && (
+                                                <>
+                                                    <button
+                                                        onClick={() => {
+                                                            setIsSideDrawerOpen(false);
+                                                            onNavigate('coin-history');
+                                                        }}
+                                                        className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-orange-500 group transform hover:scale-105"
+                                                    >
+                                                        <div className="p-2 bg-gradient-to-br from-orange-400 to-orange-600 rounded-lg">
+                                                            <ColoredHistoryIcon className="w-5 h-5 text-white" />
+                                                        </div>
+                                                        <div className="flex-grow">
+                                                            <p className="font-semibold text-gray-800 group-hover:text-orange-600 transition-colors">
+                                                                Coin History
+                                                            </p>
+                                                            <p className="text-xs text-gray-500">View transactions & rewards</p>
+                                                        </div>
+                                                    </button>
+                                                    
+                                                    <button
+                                                        onClick={() => {
+                                                            setIsSideDrawerOpen(false);
+                                                            onNavigate('coin-shop');
+                                                        }}
+                                                        className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-yellow-500 group transform hover:scale-105"
+                                                    >
+                                                        <div className="p-2 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg">
+                                                            <ColoredCoinsIcon className="w-5 h-5 text-white" />
+                                                        </div>
+                                                        <div className="flex-grow">
+                                                            <p className="font-semibold text-gray-800 group-hover:text-yellow-600 transition-colors">
+                                                                Coin Shop
+                                                            </p>
+                                                            <p className="text-xs text-gray-500">Redeem coins & cash out</p>
+                                                        </div>
+                                                    </button>
+                                                </>
+                                            )}
 
                                             {/* Logout Button */}
                                             <button 
