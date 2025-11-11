@@ -119,7 +119,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
     const [status, setStatus] = useState<AvailabilityStatus>(AvailabilityStatus.Offline);
     const [isLicensed, setIsLicensed] = useState(false);
     const [licenseNumber, setLicenseNumber] = useState('');
-    const [activeTab, setActiveTab] = useState('status');
+    const [activeTab, setActiveTab] = useState('status'); // Default to status page
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
@@ -291,9 +291,27 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
         fetchTherapistData();
     }, [fetchTherapistData]);
 
+    // Auto-check discount expiration
+    useEffect(() => {
+        const checkDiscountExpiration = () => {
+            if (isDiscountActive && discountEndTime && new Date() >= discountEndTime) {
+                setIsDiscountActive(false);
+                setDiscountEndTime(null);
+                setToast({ 
+                    message: 'Your discount promotion has expired', 
+                    type: 'warning' 
+                });
+                setTimeout(() => setToast(null), 3000);
+            }
+        };
+
+        const interval = setInterval(checkDiscountExpiration, 60000); // Check every minute
+        return () => clearInterval(interval);
+    }, [isDiscountActive, discountEndTime]);
+
     // Menu items for navigation
     const menuItems = [
-        { id: 'status', label: t.onlineStatus || 'Online Status', icon: <Activity className="w-5 h-5" />, coloredIcon: <ColoredAnalyticsIcon /> },
+        { id: 'status', label: t.availabilityStatus || 'Availability Status', icon: <Activity className="w-5 h-5" />, coloredIcon: <ColoredAnalyticsIcon /> },
         { id: 'bookings', label: t.bookings || 'Bookings', icon: <Calendar className="w-5 h-5" />, coloredIcon: <ColoredCalendarIcon /> },
         { id: 'profile', label: t.profile || 'Profile', icon: <ColoredProfileIcon />, coloredIcon: <ColoredProfileIcon /> },
         { id: 'analytics', label: t.analytics || 'Analytics', icon: <TrendingUp className="w-5 h-5" />, coloredIcon: <ColoredAnalyticsIcon /> },
@@ -373,7 +391,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                 <Menu className="w-6 h-6" />
                             </button>
                             <h1 className="text-xl lg:text-2xl font-bold text-gray-900">
-                                {t.therapistDashboard || 'Therapist Dashboard'}
+                                {activeTab === 'status' ? (t.availabilityStatus || 'Availability Status') : (t.therapistDashboard || 'Therapist Dashboard')}
                             </h1>
                         </div>
 
@@ -453,74 +471,227 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                         ) : (
                             <>
                                 {activeTab === 'status' && (
-                                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                                        <h2 className="text-xl font-bold text-gray-900 mb-6">{t.onlineStatus || 'Online Status'}</h2>
-                                        
-                                        {/* Debug Info */}
-                                        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                                            <h3 className="font-semibold text-blue-800 mb-2">🔧 ID Mismatch Fix Status</h3>
-                                            <p className="text-sm text-blue-700">
-                                                Therapist ID: <code className="bg-blue-100 px-1 rounded">{therapistId}</code> | 
-                                                Data Loaded: <span className="font-medium">{therapist ? '✅ Yes' : '❌ No'}</span>
-                                            </p>
+                                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+                                        <div className="text-center mb-8">
+                                            <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back!</h2>
+                                            <p className="text-lg text-gray-600">Set your availability status to start receiving bookings</p>
                                         </div>
 
-                                        {therapist ? (
-                                            <div className="space-y-6">
-                                                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                                                    <h3 className="font-semibold text-green-800 mb-2">✅ Profile Loaded Successfully</h3>
-                                                    <div className="text-sm text-green-700 grid grid-cols-2 gap-2">
-                                                        <div><strong>Name:</strong> {therapist.name || 'Not set'}</div>
-                                                        <div><strong>Email:</strong> {therapist.email || 'Not set'}</div>
-                                                        <div><strong>WhatsApp:</strong> {therapist.whatsappNumber || 'Not set'}</div>
-                                                        <div><strong>Location:</strong> {therapist.location || 'Not set'}</div>
+                                        {therapist && (
+                                            <div className="mb-8 p-4 bg-gradient-to-r from-blue-50 to-orange-50 border border-blue-200 rounded-xl">
+                                                <div className="flex items-center justify-center space-x-4">
+                                                    <div className="flex-shrink-0">
+                                                        {therapist.profilePicture ? (
+                                                            <img src={therapist.profilePicture} alt="Profile" className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-lg" />
+                                                        ) : (
+                                                            <div className="w-16 h-16 rounded-full bg-orange-200 flex items-center justify-center">
+                                                                <span className="text-orange-600 text-xl font-bold">{therapist.name?.charAt(0) || 'T'}</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className="text-center">
+                                                        <h3 className="text-xl font-bold text-gray-800">{therapist.name || 'Therapist'}</h3>
+                                                        <p className="text-sm text-gray-600">{therapist.location || 'Location not set'}</p>
+                                                        <p className="text-xs text-blue-600 font-medium">Active Profile</p>
                                                     </div>
                                                 </div>
-
-                                                {/* Status Controls */}
-                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                                    {Object.values(AvailabilityStatus).map((statusOption) => (
-                                                        <button
-                                                            key={statusOption}
-                                                            onClick={() => {
-                                                                setStatus(statusOption);
-                                                                if (onStatusChange) onStatusChange(statusOption);
-                                                                if (statusOption === AvailabilityStatus.Busy) {
-                                                                    setShowBusyTimerModal(true);
-                                                                }
-                                                            }}
-                                                            className={`p-4 rounded-xl border-2 text-center font-medium transition-all ${
-                                                                status === statusOption
-                                                                    ? statusOption === AvailabilityStatus.Available 
-                                                                        ? 'bg-green-100 border-green-300 text-green-800'
-                                                                        : statusOption === AvailabilityStatus.Busy
-                                                                        ? 'bg-yellow-100 border-yellow-300 text-yellow-800'
-                                                                        : 'bg-gray-100 border-gray-300 text-gray-800'
-                                                                    : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
-                                                            }`}
-                                                        >
-                                                            <div className={`w-4 h-4 rounded-full mx-auto mb-2 ${
-                                                                statusOption === AvailabilityStatus.Available ? 'bg-green-500' :
-                                                                statusOption === AvailabilityStatus.Busy ? 'bg-yellow-500' :
-                                                                'bg-gray-500'
-                                                            }`} />
-                                                            {statusOption}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <div className="p-6 bg-yellow-50 border border-yellow-200 rounded-lg text-center">
-                                                <h3 className="text-lg font-semibold text-yellow-800 mb-2">⚠️ No Profile Found</h3>
-                                                <p className="text-yellow-700 mb-4">Please complete your profile setup first.</p>
-                                                <button
-                                                    onClick={() => setActiveTab('profile')}
-                                                    className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
-                                                >
-                                                    Setup Profile
-                                                </button>
                                             </div>
                                         )}
+
+                                        {/* Status Control Buttons */}
+                                        <div className="mb-8">
+                                            <h3 className="text-xl font-semibold text-gray-800 mb-6 text-center">Choose Your Availability Status</h3>
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                                {/* Available Button */}
+                                                <button
+                                                    onClick={() => {
+                                                        setStatus(AvailabilityStatus.Available);
+                                                        if (onStatusChange) onStatusChange(AvailabilityStatus.Available);
+                                                    }}
+                                                    className={`p-6 rounded-2xl border-3 text-center font-bold transition-all transform hover:scale-105 ${
+                                                        status === AvailabilityStatus.Available
+                                                            ? 'bg-green-100 border-green-400 text-green-800 shadow-lg'
+                                                            : 'bg-white border-gray-200 text-gray-700 hover:bg-green-50 hover:border-green-200'
+                                                    }`}
+                                                >
+                                                    <div className={`w-8 h-8 rounded-full mx-auto mb-3 ${
+                                                        status === AvailabilityStatus.Available ? 'bg-green-500' : 'bg-gray-300'
+                                                    }`} />
+                                                    <div className="text-2xl mb-2">✅</div>
+                                                    <div className="text-lg font-bold">AVAILABLE</div>
+                                                    <div className="text-sm mt-2">Ready to accept bookings</div>
+                                                </button>
+
+                                                {/* Busy Button */}
+                                                <button
+                                                    onClick={() => {
+                                                        setStatus(AvailabilityStatus.Busy);
+                                                        if (onStatusChange) onStatusChange(AvailabilityStatus.Busy);
+                                                        setShowBusyTimerModal(true);
+                                                    }}
+                                                    className={`p-6 rounded-2xl border-3 text-center font-bold transition-all transform hover:scale-105 ${
+                                                        status === AvailabilityStatus.Busy
+                                                            ? 'bg-yellow-100 border-yellow-400 text-yellow-800 shadow-lg'
+                                                            : 'bg-white border-gray-200 text-gray-700 hover:bg-yellow-50 hover:border-yellow-200'
+                                                    }`}
+                                                >
+                                                    <div className={`w-8 h-8 rounded-full mx-auto mb-3 ${
+                                                        status === AvailabilityStatus.Busy ? 'bg-yellow-500' : 'bg-gray-300'
+                                                    }`} />
+                                                    <div className="text-2xl mb-2">⏳</div>
+                                                    <div className="text-lg font-bold">BUSY</div>
+                                                    <div className="text-sm mt-2">Currently with client</div>
+                                                </button>
+
+                                                {/* Offline Button */}
+                                                <button
+                                                    onClick={() => {
+                                                        setStatus(AvailabilityStatus.Offline);
+                                                        if (onStatusChange) onStatusChange(AvailabilityStatus.Offline);
+                                                    }}
+                                                    className={`p-6 rounded-2xl border-3 text-center font-bold transition-all transform hover:scale-105 ${
+                                                        status === AvailabilityStatus.Offline
+                                                            ? 'bg-gray-100 border-gray-400 text-gray-800 shadow-lg'
+                                                            : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
+                                                    }`}
+                                                >
+                                                    <div className={`w-8 h-8 rounded-full mx-auto mb-3 ${
+                                                        status === AvailabilityStatus.Offline ? 'bg-gray-500' : 'bg-gray-300'
+                                                    }`} />
+                                                    <div className="text-2xl mb-2">⛔</div>
+                                                    <div className="text-lg font-bold">OFFLINE</div>
+                                                    <div className="text-sm mt-2">Not accepting bookings</div>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {/* Discount System - Only visible when Offline */}
+                                        {status === AvailabilityStatus.Offline && (
+                                            <div className="mt-8 p-6 bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-2xl">
+                                                <div className="text-center mb-6">
+                                                    <h3 className="text-xl font-bold text-purple-800 mb-2">🎉 Boost Your Bookings!</h3>
+                                                    <p className="text-purple-600">Run a discount promotion to attract more clients when you're back online</p>
+                                                </div>
+
+                                                <div className="space-y-6">
+                                                    {/* Discount Percentage Selection */}
+                                                    <div>
+                                                        <label className="block text-sm font-semibold text-purple-700 mb-3">Choose Discount Percentage:</label>
+                                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                                            {[5, 10, 15, 20].map((percent) => (
+                                                                <button
+                                                                    key={percent}
+                                                                    onClick={() => setDiscountPercentage(percent)}
+                                                                    className={`p-4 rounded-xl border-2 text-center font-bold transition-all ${
+                                                                        discountPercentage === percent
+                                                                            ? 'bg-purple-100 border-purple-400 text-purple-800 shadow-md'
+                                                                            : 'bg-white border-gray-200 text-gray-700 hover:bg-purple-50 hover:border-purple-200'
+                                                                    }`}
+                                                                >
+                                                                    <div className="text-2xl font-bold">{percent}%</div>
+                                                                    <div className="text-xs">OFF</div>
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Time Duration Selection */}
+                                                    <div>
+                                                        <label className="block text-sm font-semibold text-purple-700 mb-3">Choose Duration:</label>
+                                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                                            {[
+                                                                { hours: 4, label: '4 Hours' },
+                                                                { hours: 8, label: '8 Hours' },
+                                                                { hours: 12, label: '12 Hours' },
+                                                                { hours: 24, label: '24 Hours' }
+                                                            ].map((option) => (
+                                                                <button
+                                                                    key={option.hours}
+                                                                    onClick={() => setDiscountDuration(option.hours)}
+                                                                    className={`p-4 rounded-xl border-2 text-center font-medium transition-all ${
+                                                                        discountDuration === option.hours
+                                                                            ? 'bg-pink-100 border-pink-400 text-pink-800 shadow-md'
+                                                                            : 'bg-white border-gray-200 text-gray-700 hover:bg-pink-50 hover:border-pink-200'
+                                                                    }`}
+                                                                >
+                                                                    <div className="text-lg font-bold">{option.label}</div>
+                                                                    <div className="text-xs text-gray-500">Duration</div>
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Discount Preview & Activation */}
+                                                    {discountPercentage > 0 && discountDuration > 0 && (
+                                                        <div className="p-4 bg-white border-2 border-orange-200 rounded-xl">
+                                                            <div className="text-center mb-4">
+                                                                <div className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-full font-bold">
+                                                                    <span className="text-lg">🔥</span>
+                                                                    <span>{discountPercentage}% OFF</span>
+                                                                </div>
+                                                                <p className="text-sm text-gray-600 mt-2">
+                                                                    This discount badge will appear on your profile card for {discountDuration} hours
+                                                                </p>
+                                                            </div>
+                                                            
+                                                            <button
+                                                                onClick={() => {
+                                                                    const endTime = new Date();
+                                                                    endTime.setHours(endTime.getHours() + discountDuration);
+                                                                    setDiscountEndTime(endTime);
+                                                                    setIsDiscountActive(true);
+                                                                    setToast({ 
+                                                                        message: `${discountPercentage}% discount activated for ${discountDuration} hours!`, 
+                                                                        type: 'success' 
+                                                                    });
+                                                                    setTimeout(() => setToast(null), 4000);
+                                                                }}
+                                                                disabled={isDiscountActive}
+                                                                className={`w-full py-3 px-6 rounded-xl font-bold transition-all ${
+                                                                    isDiscountActive
+                                                                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                                                        : 'bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 shadow-lg hover:shadow-xl'
+                                                                }`}
+                                                            >
+                                                                {isDiscountActive ? '✅ Discount Active' : '🚀 Activate Discount'}
+                                                            </button>
+
+                                                            {/* Active Discount Info */}
+                                                            {isDiscountActive && discountEndTime && (
+                                                                <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                                                    <div className="text-center">
+                                                                        <p className="text-sm font-medium text-green-800">
+                                                                            🎊 Discount is live on your profile!
+                                                                        </p>
+                                                                        <p className="text-xs text-green-600 mt-1">
+                                                                            Expires: {discountEndTime.toLocaleString()}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Current Status Display */}
+                                        <div className="mt-8 p-4 bg-gray-50 border border-gray-200 rounded-xl text-center">
+                                            <p className="text-sm text-gray-600 mb-2">Current Status:</p>
+                                            <div className="flex items-center justify-center space-x-2">
+                                                <div className={`w-3 h-3 rounded-full ${
+                                                    status === AvailabilityStatus.Available ? 'bg-green-500' :
+                                                    status === AvailabilityStatus.Busy ? 'bg-yellow-500' :
+                                                    'bg-gray-500'
+                                                }`} />
+                                                <span className="font-bold text-lg">{status.toUpperCase()}</span>
+                                                {isDiscountActive && (
+                                                    <span className="ml-2 px-2 py-1 bg-orange-500 text-white text-xs rounded-full font-bold">
+                                                        {discountPercentage}% OFF
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
                                 )}
 
