@@ -55,6 +55,8 @@ export default defineConfig({
     target: 'es2020', // Ensure compatibility with Node.js environments
     chunkSizeWarningLimit: 1000, // Increase limit to reduce warnings
     rollupOptions: {
+      // Force Rollup to use JavaScript fallback instead of native binaries
+      external: [],
       input: {
         main: path.resolve(__dirname, 'index.html')
       },
