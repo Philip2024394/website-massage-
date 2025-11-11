@@ -639,12 +639,19 @@ const HomePage: React.FC<HomePageProps> = ({
                             .filter((t: any) => t.isLive === true) // Only show activated therapists
                             .filter((t: any) => selectedMassageType === 'all' || (t.massageTypes && t.massageTypes.includes(selectedMassageType)))
                             .map((therapist: any, index: number) => {
-                                // 🌐 Debug: Check therapist data passed to TherapistCard
+                                // 🌐 Enhanced Debug: Comprehensive therapist data analysis
                                 console.log('🏠 HomePage passing to TherapistCard:', {
                                     id: therapist.$id || therapist.id,
                                     name: therapist.name,
                                     languages: therapist.languages,
+                                    languagesType: typeof therapist.languages,
+                                    languagesLength: therapist.languages ? therapist.languages.length : 0,
+                                    languagesEmpty: therapist.languages === '',
+                                    languagesNull: therapist.languages === null,
+                                    languagesUndefined: therapist.languages === undefined,
                                     languagesParsed: therapist.languages ? JSON.parse(therapist.languages || '[]') : [],
+                                    isLive: therapist.isLive,
+                                    massageTypes: therapist.massageTypes,
                                     allFields: Object.keys(therapist)
                                 });
                                 

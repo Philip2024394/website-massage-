@@ -1,7 +1,6 @@
 
 import React from 'react';
 import Button from '../components/Button';
-import Footer from '../components/Footer';
 
 const WhatsAppIcon: React.FC<{className?: string}> = ({ className }) => (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -262,7 +261,7 @@ const AgentPage: React.FC<AgentPageProps> = ({ onBack, onNavigateToAgentAuth, t:
                     </div>
                 </div>
 
-                {/* WhatsApp CTA remains as a smaller inline button above footer */}
+                {/* WhatsApp CTA */}
                 <div className="p-4 pb-20 max-w-md mx-auto mt-6">
                     <Button
                         onClick={handleWhatsAppClick}
@@ -272,8 +271,6 @@ const AgentPage: React.FC<AgentPageProps> = ({ onBack, onNavigateToAgentAuth, t:
                         <span>Contact Us on WhatsApp</span>
                     </Button>
                 </div>
-
-            <Footer onHomeClick={onBack} t={{}} />
 
             <style>{`\n                @keyframes float {\n                    0%, 100% { transform: translateY(0); }\n                    50% { transform: translateY(-5px); }\n                }\n                .animate-float {\n                    animation: float 2s ease-in-out infinite;\n                }\n            `}</style>
         </div>

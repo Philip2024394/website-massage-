@@ -534,6 +534,7 @@ export const therapistService = {
             if (data.price90 !== undefined) mappedData.price90 = String(data.price90);
             if (data.price120 !== undefined) mappedData.price120 = String(data.price120);
             if (data.massageTypes) mappedData.massageTypes = data.massageTypes;
+            if (data.languages) mappedData.languages = data.languages;
             if (data.coordinates) mappedData.coordinates = data.coordinates;
             if (data.isLive !== undefined) mappedData.isLive = data.isLive;
             if (data.hourlyRate) mappedData.hourlyRate = data.hourlyRate;

@@ -13,6 +13,7 @@ declare global {
       hotelVillaId?: string;
       hotelVillaName?: string;
       hotelVillaType?: 'hotel' | 'villa';
+      isImmediateBooking?: boolean; // For immediate bookings via green "Pesan" button
     }) => void;
   }
 }
@@ -34,6 +35,7 @@ interface ScheduleBookingPopupProps {
   hotelVillaId?: string;
   hotelVillaName?: string;
   hotelVillaType?: 'hotel' | 'villa';
+  isImmediateBooking?: boolean; // Skip time selection for immediate bookings
 }
 
 const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
@@ -45,7 +47,8 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
   profilePicture,
   hotelVillaId,
   hotelVillaName,
-  hotelVillaType
+  hotelVillaType,
+  isImmediateBooking = false
 }) => {
   const [step, setStep] = useState<'duration' | 'time' | 'details' | 'confirming'>('duration');
   const [selectedDuration, setSelectedDuration] = useState<60 | 90 | 120 | null>(null);
@@ -168,13 +171,18 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
   }, [step, selectedDuration]);
 
   const handleCreateBooking = async () => {
-    if (!selectedDuration || !selectedTime || !customerName || !customerWhatsApp) return;
+    // For immediate bookings, we don't need time selection
+    if (!isImmediateBooking && (!selectedDuration || !selectedTime)) return;
+    if (!customerName || !customerWhatsApp) return;
 
     try {
       setIsCreating(true);
 
+      // For immediate bookings, use current time; for scheduled, use selected time
       const scheduledTime = new Date();
-      scheduledTime.setHours(selectedTime.hour, selectedTime.minute, 0, 0);
+      if (!isImmediateBooking && selectedTime) {
+        scheduledTime.setHours(selectedTime.hour, selectedTime.minute, 0, 0);
+      }
       
       const responseDeadline = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
 
@@ -188,6 +196,10 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
         bookingId = `booking_${Date.now()}`;
       }
 
+      // For immediate bookings, use default 60-minute duration if none selected
+      const finalDuration = selectedDuration || (isImmediateBooking ? 60 : 0);
+      const finalPrice = durations.find(d => d.minutes === finalDuration)?.price || 0;
+
       // Complete booking data with all required and optional attributes
       const bookingData: any = {
         bookingId, // Required - unique identifier
@@ -197,8 +209,8 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
         providerId: therapistId, // Required - maps to therapistId
         providerName: therapistName, // Required - maps to therapistName
         providerType: therapistType, // Required - maps to therapistType
-        duration: selectedDuration, // Required
-        price: durations.find(d => d.minutes === selectedDuration)?.price || 0, // Required
+        duration: finalDuration, // Required
+        price: finalPrice, // Required
         status: 'pending', // Required
         createdAt: new Date().toISOString(), // Required
         bookingDate: new Date().toISOString(), // Required - your schema needs this
@@ -207,7 +219,8 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
         startTime: scheduledTime.toISOString(), // Your schema uses startTime
         customerName, // Optional - customer's name
         userName: customerName, // Map to your userName field
-        bookingType: 'scheduled', // Optional - booking type
+        customerWhatsApp, // Store customer WhatsApp
+        bookingType: isImmediateBooking ? 'immediate' : 'scheduled', // Optional - booking type
         service: 'massage', // Required in your schema
         // Include hotel/villa details if booking from venue
         ...(hotelVillaId && { hotelVillaId }),
@@ -248,16 +261,35 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
 
       console.log('✅ Booking created successfully:', booking);
 
+      // Play MP3 notification sound for therapist notification
+      try {
+        const audio = new Audio('/sounds/booking-notification.mp3');
+        audio.volume = 0.8;
+        await audio.play();
+        console.log('🔊 Booking notification sound played');
+      } catch (error) {
+        console.warn('⚠️ Could not play booking notification sound:', error);
+      }
+
       // Send WhatsApp notification to therapist
       const acceptUrl = `${window.location.origin}/accept-booking/${booking.$id}`;
       
       // Enhanced WhatsApp message with hotel/villa details
-      let message = `📅 SCHEDULED BOOKING REQUEST - INDASTREET\n\n`;
+      let message = isImmediateBooking 
+        ? `🎯 IMMEDIATE BOOKING REQUEST - INDASTREET\n\n`
+        : `📅 SCHEDULED BOOKING REQUEST - INDASTREET\n\n`;
       message += `👤 Customer: ${customerName}\n`;
       message += `📱 WhatsApp: ${customerWhatsApp}\n`;
-      message += `⏰ Scheduled Time: ${selectedTime.label}\n`;
-      message += `💼 Service: ${selectedDuration} min Professional Massage\n`;
-      message += `💰 Price: $${bookingData.price}\n\n`;
+      
+      if (isImmediateBooking) {
+        message += `⏰ Requested: ASAP (${new Date().toLocaleString()})\n`;
+        message += `💼 Service: ${finalDuration} min Professional Massage (flexible)\n`;
+      } else {
+        message += `⏰ Scheduled Time: ${selectedTime?.label || 'TBD'}\n`;
+        message += `💼 Service: ${finalDuration} min Professional Massage\n`;
+      }
+      
+      message += `💰 Price: $${finalPrice}\n\n`;
       
       if (hotelVillaId && roomNumber) {
         message += `🏨 ${hotelVillaType === 'hotel' ? 'HOTEL' : 'VILLA'} BOOKING\n`;
@@ -281,8 +313,8 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
         window.openBookingStatusTracker({
           bookingId: booking.$id,
           therapistName,
-          duration: selectedDuration,
-          price: bookingData.price,
+          duration: finalDuration,
+          price: finalPrice,
           responseDeadline
         });
       } else {
@@ -290,10 +322,11 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
       }
 
       setStep('confirming');
+      // Give users more time to read the confirmation message
       setTimeout(() => {
         onClose();
         resetForm();
-      }, 2000);
+      }, 6000);
 
     } catch (error: any) {
       console.error('❌ Error creating scheduled booking:', error);
@@ -339,7 +372,9 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
                 </div>
               )}
               <div>
-                <h2 className="text-xl font-bold text-white">Schedule Booking</h2>
+                <h2 className="text-xl font-bold text-white">
+                  {isImmediateBooking ? '🟢 Book Now' : '📅 Schedule Booking'}
+                </h2>
                 <p className="text-orange-100 text-xs">Indastreet • {therapistName}</p>
               </div>
             </div>
@@ -359,7 +394,20 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
                   key={option.minutes}
                   onClick={() => {
                     setSelectedDuration(option.minutes as 60 | 90 | 120);
-                    setStep('time');
+                    // For immediate bookings, skip time selection and go to details
+                    if (isImmediateBooking) {
+                      // Set current time as selected time for immediate booking
+                      const now = new Date();
+                      setSelectedTime({
+                        hour: now.getHours(),
+                        minute: now.getMinutes(),
+                        label: 'Now',
+                        available: true
+                      });
+                      setStep('details');
+                    } else {
+                      setStep('time');
+                    }
                   }}
                   className="w-full p-3 rounded-xl border-2 border-gray-200 hover:border-orange-500 hover:bg-orange-50 transition-all"
                 >
@@ -503,9 +551,12 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
 
               <div className="bg-orange-50 border-l-4 border-orange-500 p-3 rounded">
                 <p className="text-xs text-orange-800">
-                  <strong>15-Minute Confirmation</strong>
+                  <strong>{isImmediateBooking ? 'Immediate Booking' : '15-Minute Confirmation'}</strong>
                   <br />
-                  The {therapistType} has 15 minutes to confirm. If they don't respond, your booking will be sent to other available {therapistType === 'therapist' ? 'therapists' : 'massage places'}.
+                  {isImmediateBooking 
+                    ? `You'll be connected directly with ${therapistName} to discuss availability and pricing.`
+                    : `The ${therapistType} has 15 minutes to confirm. If they don't respond, your booking will be sent to other available ${therapistType === 'therapist' ? 'therapists' : 'massage places'}.`
+                  }
                 </p>
               </div>
 
@@ -518,22 +569,46 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
                     : 'bg-gray-300 cursor-not-allowed'
                 }`}
               >
-                {isCreating ? 'Creating Booking...' : 'Confirm Booking'}
+                {isCreating ? 'Creating...' : isImmediateBooking ? 'Contact Therapist' : 'Confirm Booking'}
               </button>
             </div>
           )}
 
           {/* Step 4: Confirming */}
           {step === 'confirming' && (
-            <div className="text-center py-6">
-              <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-7 h-7 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="text-center py-6 px-4">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-2">Booking Sent!</h3>
-              <p className="text-gray-600">
-                Waiting for {therapistName} to confirm...
+              <h3 className="text-xl font-bold text-gray-800 mb-3">
+                {isImmediateBooking ? 'Contact Request Sent!' : 'Booking Request Sent!'}
+              </h3>
+              <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-lg mb-4">
+                <p className="text-sm text-blue-800 leading-relaxed">
+                  <strong>📱 {therapistName} has been notified via WhatsApp</strong>
+                  <br />
+                  {isImmediateBooking 
+                    ? 'They have 15 minutes to accept your immediate booking request.'
+                    : 'They have 15 minutes to confirm your scheduled booking request.'
+                  }
+                </p>
+              </div>
+              <div className="bg-orange-50 border-l-4 border-orange-400 p-4 rounded-lg mb-4">
+                <p className="text-xs text-orange-800 leading-relaxed">
+                  <strong>⏰ What happens next:</strong>
+                  <br />
+                  • You'll receive a WhatsApp message when {therapistName} {isImmediateBooking ? 'accepts' : 'confirms'}
+                  <br />
+                  {isImmediateBooking 
+                    ? `• When accepted, ${therapistName} will be marked as BUSY`
+                    : `• If no response in 15 minutes, we'll find another available ${therapistType}`
+                  }
+                </p>
+              </div>
+              <p className="text-sm text-gray-600">
+                Your booking status is being tracked. You can close this window.
               </p>
             </div>
           )}

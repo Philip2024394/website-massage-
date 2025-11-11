@@ -44,6 +44,47 @@ const AnalyticsCard: React.FC<{ title: string; value: number; description: strin
     </div>
 );
 
+const ActivatedDiscountButton: React.FC<{ 
+    endTime: Date; 
+    percentage: number; 
+    onExpire: () => void; 
+}> = ({ endTime, percentage, onExpire }) => {
+    const [timeLeft, setTimeLeft] = useState<string>('');
+
+    useEffect(() => {
+        const updateCountdown = () => {
+            const now = new Date().getTime();
+            const distance = endTime.getTime() - now;
+
+            if (distance < 0) {
+                onExpire();
+                return;
+            }
+
+            const hours = Math.floor(distance / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            
+            if (hours > 0) {
+                setTimeLeft(`${hours}h ${minutes}m`);
+            } else {
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                setTimeLeft(`${minutes}m ${seconds}s`);
+            }
+        };
+
+        updateCountdown();
+        const timer = setInterval(updateCountdown, 1000);
+        return () => clearInterval(timer);
+    }, [endTime, onExpire]);
+
+    return (
+        <div className="flex flex-col items-center">
+            <span className="text-lg">✅ Activated</span>
+            <span className="text-sm font-mono opacity-90">⏰ {timeLeft}</span>
+        </div>
+    );
+};
+
 const LiveDiscountCountdown: React.FC<{ 
     endTime: Date; 
     percentage: number; 
@@ -210,6 +251,10 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
     const [discountDuration, setDiscountDuration] = useState<number>(0);
     const [discountEndTime, setDiscountEndTime] = useState<Date | null>(null);
     const [isDiscountActive, setIsDiscountActive] = useState(false);
+    
+    // Separate state for UI selections (these persist during user interaction)
+    const [selectedDiscountPercentage, setSelectedDiscountPercentage] = useState<number>(0);
+    const [selectedDiscountDuration, setSelectedDiscountDuration] = useState<number>(0);
     const [location, setLocation] = useState('');
     const [coordinates, setCoordinates] = useState({ lat: 0, lng: 0 });
     const [serviceRadius, setServiceRadius] = useState<number>(50); // 50km default radius
@@ -431,9 +476,16 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                     const endTime = new Date(existingTherapist.discountEndTime);
                     setDiscountEndTime(endTime);
                     setIsDiscountActive(endTime > new Date());
+                    
+                    // If there's an active discount, also set the selected values
+                    if (endTime > new Date()) {
+                        setSelectedDiscountPercentage(existingTherapist.discountPercentage || 0);
+                        setSelectedDiscountDuration(existingTherapist.discountDuration || 0);
+                    }
                 } else {
                     setDiscountEndTime(null);
                     setIsDiscountActive(false);
+                    // Don't reset selected values if no active discount - preserve user selections
                 }
                 
                 // Set availability status
@@ -854,12 +906,11 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                             </div>
                                         </div>
 
-                                        {/* Discount System - Only visible when Offline */}
-                                        {status === AvailabilityStatus.Offline && (
-                                            <div className="mt-8 p-6 bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200 rounded-2xl">
+                                        {/* Discount System - Available at all times */}
+                                        <div className="mt-8 p-6 bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200 rounded-2xl">
                                                 <div className="text-center mb-6">
                                                     <h3 className="text-xl font-bold text-orange-800 mb-2">🎉 Boost Your Bookings!</h3>
-                                                    <p className="text-orange-600">Run a discount promotion to attract more clients when you're back online</p>
+                                                    <p className="text-orange-600">Run a discount promotion to attract more clients and increase your visibility</p>
                                                 </div>
 
                                                 <div className="space-y-6">
@@ -871,14 +922,14 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                                 <button
                                                                     key={percent}
                                                                     onClick={() => {
-                                                                        setDiscountPercentage(percent);
+                                                                        setSelectedDiscountPercentage(percent);
                                                                         // Update therapist data immediately for live preview
                                                                         if (onStatusChange) {
                                                                             onStatusChange(status);
                                                                         }
                                                                     }}
                                                                     className={`p-4 rounded-xl border-2 text-center font-bold transition-all ${
-                                                                        discountPercentage === percent
+                                                                        selectedDiscountPercentage === percent
                                                                             ? 'bg-orange-100 border-orange-400 text-orange-800 shadow-md'
                                                                             : 'bg-white border-gray-200 text-gray-700 hover:bg-orange-50 hover:border-orange-200'
                                                                     }`}
@@ -902,9 +953,9 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                             ].map((option) => (
                                                                 <button
                                                                     key={option.hours}
-                                                                    onClick={() => setDiscountDuration(option.hours)}
+                                                                    onClick={() => setSelectedDiscountDuration(option.hours)}
                                                                     className={`p-4 rounded-xl border-2 text-center font-medium transition-all ${
-                                                                        discountDuration === option.hours
+                                                                        selectedDiscountDuration === option.hours
                                                                             ? 'bg-amber-100 border-amber-400 text-amber-800 shadow-md'
                                                                             : 'bg-white border-gray-200 text-gray-700 hover:bg-amber-50 hover:border-amber-200'
                                                                     }`}
@@ -917,22 +968,26 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                     </div>
 
                                                     {/* Discount Preview & Activation */}
-                                                    {discountPercentage > 0 && discountDuration > 0 && (
+                                                    {selectedDiscountPercentage > 0 && selectedDiscountDuration > 0 && (
                                                         <div className="p-4 bg-white border-2 border-orange-200 rounded-xl">
                                                             <div className="text-center mb-4">
                                                                 <div className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-full font-bold">
                                                                     <span className="text-lg">🔥</span>
-                                                                    <span>{discountPercentage}% OFF</span>
+                                                                    <span>{selectedDiscountPercentage}% OFF</span>
                                                                 </div>
                                                                 <p className="text-sm text-gray-600 mt-2">
-                                                                    This discount badge will appear on your profile card for {discountDuration} hours
+                                                                    This discount badge will appear on your profile card for {selectedDiscountDuration} hours
                                                                 </p>
                                                             </div>
                                                             
                                                             <button
                                                                 onClick={async () => {
                                                                     const endTime = new Date();
-                                                                    endTime.setHours(endTime.getHours() + discountDuration);
+                                                                    endTime.setHours(endTime.getHours() + selectedDiscountDuration);
+                                                                    
+                                                                    // Set active discount values from selected values
+                                                                    setDiscountPercentage(selectedDiscountPercentage);
+                                                                    setDiscountDuration(selectedDiscountDuration);
                                                                     setDiscountEndTime(endTime);
                                                                     setIsDiscountActive(true);
                                                                     
@@ -941,7 +996,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                                         await handleSave();
                                                                         
                                                                         setToast({ 
-                                                                            message: `🎉 ${discountPercentage}% discount activated for ${discountDuration} hours! Your profile is now flashing to attract customers!`, 
+                                                                            message: `🎉 ${selectedDiscountPercentage}% discount activated for ${selectedDiscountDuration} hours! Your profile is now flashing to attract customers!`, 
                                                                             type: 'success' 
                                                                         });
                                                                         setTimeout(() => setToast(null), 5000);
@@ -953,6 +1008,9 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                                                 setDiscountEndTime(null);
                                                                                 setDiscountPercentage(0);
                                                                                 setDiscountDuration(0);
+                                                                                // Also reset selected values when expired
+                                                                                setSelectedDiscountPercentage(0);
+                                                                                setSelectedDiscountDuration(0);
                                                                                 handleSave(); // Auto-save when expired
                                                                                 clearInterval(checkExpiration);
                                                                                 
@@ -974,11 +1032,30 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                                 disabled={isDiscountActive}
                                                                 className={`w-full py-3 px-6 rounded-xl font-bold transition-all transform ${
                                                                     isDiscountActive
-                                                                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                                                        ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg animate-pulse'
                                                                         : 'bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:from-orange-600 hover:to-amber-600 shadow-lg hover:shadow-xl hover:scale-105'
                                                                 }`}
                                                             >
-                                                                {isDiscountActive ? '✅ Discount Active' : '🚀 Auto-Activate Discount'}
+                                                                {isDiscountActive && discountEndTime ? (
+                                                                    <ActivatedDiscountButton 
+                                                                        endTime={discountEndTime}
+                                                                        percentage={discountPercentage}
+                                                                        onExpire={() => {
+                                                                            setIsDiscountActive(false);
+                                                                            setDiscountEndTime(null);
+                                                                            setDiscountPercentage(0);
+                                                                            setDiscountDuration(0);
+                                                                            setSelectedDiscountPercentage(0);
+                                                                            setSelectedDiscountDuration(0);
+                                                                            handleSave();
+                                                                            setToast({ 
+                                                                                message: '⏰ Discount promotion expired automatically!', 
+                                                                                type: 'warning' 
+                                                                            });
+                                                                            setTimeout(() => setToast(null), 4000);
+                                                                        }}
+                                                                    />
+                                                                ) : '🚀 Auto-Activate Discount'}
                                                             </button>
 
                                                             {/* Active Discount Info with Live Countdown */}
@@ -991,6 +1068,9 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                                         setDiscountEndTime(null);
                                                                         setDiscountPercentage(0);
                                                                         setDiscountDuration(0);
+                                                                        // Also reset selected values when expired
+                                                                        setSelectedDiscountPercentage(0);
+                                                                        setSelectedDiscountDuration(0);
                                                                         handleSave();
                                                                         setToast({ 
                                                                             message: '⏰ Discount promotion expired automatically!', 
@@ -1004,7 +1084,6 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                     )}
                                                 </div>
                                             </div>
-                                        )}
 
                                         {/* Current Status Display with Countdown */}
                                         <div className="mt-8 p-4 bg-gray-50 border border-gray-200 rounded-xl text-center">
@@ -1528,17 +1607,25 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                                             type="checkbox"
                                                                             checked={massageTypes.includes(type)}
                                                                             onChange={(e) => {
-                                                                                console.log('Massage type checkbox changed:', type, 'checked:', e.target.checked, 'current types:', massageTypes);
+                                                                                console.log('💆 Massage type checkbox changed:', type, 'checked:', e.target.checked, 'current types:', massageTypes);
                                                                                 if (e.target.checked) {
-                                                                                    if (massageTypes.length < 5) {
-                                                                                        const newTypes = [...massageTypes, type];
-                                                                                        console.log('Adding massage type, new state:', newTypes);
-                                                                                        setMassageTypes(newTypes);
-                                                                                    }
+                                                                                    // Use functional state update to prevent race conditions
+                                                                                    setMassageTypes(prevTypes => {
+                                                                                        if (prevTypes.length < 5 && !prevTypes.includes(type)) {
+                                                                                            const newTypes = [...prevTypes, type];
+                                                                                            console.log('💆 Adding massage type, new state:', newTypes);
+                                                                                            return newTypes;
+                                                                                        }
+                                                                                        console.log('💆 Cannot add - limit reached or already exists');
+                                                                                        return prevTypes;
+                                                                                    });
                                                                                 } else {
-                                                                                    const newTypes = massageTypes.filter(t => t !== type);
-                                                                                    console.log('Removing massage type, new state:', newTypes);
-                                                                                    setMassageTypes(newTypes);
+                                                                                    // Use functional state update for removal
+                                                                                    setMassageTypes(prevTypes => {
+                                                                                        const newTypes = prevTypes.filter(t => t !== type);
+                                                                                        console.log('💆 Removing massage type, new state:', newTypes);
+                                                                                        return newTypes;
+                                                                                    });
                                                                                 }
                                                                             }}
                                                                             disabled={!massageTypes.includes(type) && massageTypes.length >= 5}
@@ -1566,7 +1653,14 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                                 >
                                                                     {type}
                                                                     <button
-                                                                        onClick={() => setMassageTypes(massageTypes.filter(t => t !== type))}
+                                                                        onClick={() => {
+                                                                            console.log('💆 Remove button clicked for:', type);
+                                                                            setMassageTypes(prevTypes => {
+                                                                                const newTypes = prevTypes.filter(t => t !== type);
+                                                                                console.log('💆 Preview remove - new state:', newTypes);
+                                                                                return newTypes;
+                                                                            });
+                                                                        }}
                                                                         className="ml-1 text-green-600 hover:text-green-800 text-xs"
                                                                     >
                                                                         ×

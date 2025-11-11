@@ -253,11 +253,11 @@ const renderDashboardPages = (page: Page, props: AppRouterProps) => {
         case 'hotelVillaMenu':
             return <HotelVillaMenuPage 
                 venueId={venueMenuId || ''} 
-                onBack={() => setPage('home')}
+                venueName="Live Menu"
+                venueType="hotel"
+                therapists={[]} // Empty for this context
+                places={[]} // Empty for this context
                 setPage={setPage}
-                logo={hotelVillaLogo || ''}
-                onNavigate={setPage}
-                t={t}
             />;
         default:
             return null;
@@ -1135,6 +1135,11 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     if (isHotelLoggedIn) return 'Hotel';
                     if (isVillaLoggedIn) return 'Villa';
                     return 'Venue';
+                })()}
+                venueType={(() => {
+                    if (isHotelLoggedIn) return 'hotel';
+                    if (isVillaLoggedIn) return 'villa';
+                    return 'hotel'; // Default fallback
                 })()}
                 therapists={therapists}
                 places={places}

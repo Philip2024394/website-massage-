@@ -70,12 +70,47 @@ export const stringifyMassageTypes = (massageTypes: string[]): string => {
 };
 
 // Languages helpers
-export const parseLanguages = (languagesString: string): string[] => {
-  try {
-    return JSON.parse(languagesString);
-  } catch {
+export const parseLanguages = (languagesString: string | string[] | null | undefined): string[] => {
+  // Handle null, undefined, or empty values
+  if (!languagesString) {
+    console.log('🌐 parseLanguages: No input, returning empty array');
     return [];
   }
+  
+  // If it's already an array, return it
+  if (Array.isArray(languagesString)) {
+    console.log('🌐 parseLanguages: Input is already array:', languagesString);
+    return languagesString;
+  }
+  
+  // If it's a string, try to parse it
+  if (typeof languagesString === 'string') {
+    // Handle empty string
+    if (languagesString.trim() === '') {
+      console.log('🌐 parseLanguages: Empty string, returning empty array');
+      return [];
+    }
+    
+    try {
+      const parsed = JSON.parse(languagesString);
+      if (Array.isArray(parsed)) {
+        console.log('🌐 parseLanguages: Successfully parsed JSON array:', parsed);
+        return parsed;
+      } else {
+        console.warn('🌐 parseLanguages: Parsed JSON is not array:', parsed);
+        return [];
+      }
+    } catch (error) {
+      console.warn('🌐 parseLanguages: JSON parse failed, trying comma split:', error);
+      // Fallback: try splitting by comma (in case it's comma-separated)
+      const splitResult = languagesString.split(',').map(l => l.trim()).filter(l => l.length > 0);
+      console.log('🌐 parseLanguages: Comma split result:', splitResult);
+      return splitResult;
+    }
+  }
+  
+  console.warn('🌐 parseLanguages: Unexpected input type:', typeof languagesString, languagesString);
+  return [];
 };
 
 export const stringifyLanguages = (languages: string[]): string => {

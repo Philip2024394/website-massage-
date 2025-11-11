@@ -197,20 +197,17 @@ const LiveMenuDemo: React.FC = () => {
                     
                     <HotelVillaMenuPage
                         venueId="demo-hotel-001"
-                        logo="https://ik.imagekit.io/7grri5v7d/indostreet%20app%20icon.png"
+                        venueName="Demo Hotel & Villa"
+                        venueType="hotel" 
                         therapists={mockTherapists}
                         places={mockPlaces}
                         language="en"
                         onBook={handleBooking}
-                        onBack={() => console.log('Back clicked')}
-                        onNavigate={(page) => console.log('Navigate to:', page)}
-                        venueName="Demo Hotel & Villa"
                         onBookingSubmit={async (bookingData: any) => {
                             console.log('Demo booking submitted:', bookingData);
                             // In demo mode, just log the booking data
                             return Promise.resolve();
                         }}
-                        t={mockTranslations}
                     />
                 </div>
             </div>

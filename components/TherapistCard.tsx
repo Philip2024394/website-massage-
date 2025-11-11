@@ -51,6 +51,20 @@ const getDisplayStatus = (therapist: Therapist): AvailabilityStatus => {
     return therapist.status || AvailabilityStatus.Offline;
 };
 
+// Helper function to check if discount is currently active
+const isDiscountActive = (therapist: Therapist): boolean => {
+    return !!(
+        therapist.discountPercentage && 
+        therapist.discountPercentage > 0 && 
+        therapist.discountEndTime &&
+        (() => {
+            const now = new Date();
+            const endTime = new Date(therapist.discountEndTime);
+            return !isNaN(endTime.getTime()) && endTime > now;
+        })()
+    );
+};
+
 const WhatsAppIcon: React.FC<{className?: string}> = ({ className }) => (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
         <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99 0-3.903-.52-5.614-1.486L.057 24zM6.591 17.419c.404.652.812 1.272 1.242 1.85 1.58 2.116 3.663 3.22 5.953 3.218 5.55-.006 10.038-4.488 10.043-10.038.005-5.55-4.488-10.038-10.038-10.043-5.55.005-10.038 4.488-10.043 10.038.002 2.13.642 4.148 1.822 5.898l-1.03 3.766 3.844-1.025z"/>
@@ -306,6 +320,57 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         }
     };
 
+    // Handle confirmed booking - called after BookingConfirmationPopup
+    const handleConfirmedBooking = () => {
+        console.log('✅ Booking confirmed - sending WhatsApp message and opening chat');
+        
+        // Send notification to therapist
+        const therapistIdNum = typeof therapist.id === 'string' ? parseInt(therapist.id) : therapist.id;
+        if (loggedInProviderId !== therapistIdNum) {
+            notificationService.createWhatsAppContactNotification(
+                therapistIdNum,
+                therapist.name
+            ).catch(err => console.log('Notification failed:', err));
+        }
+
+        // Play booking confirmation sound
+        try {
+            const audio = new Audio('/sounds/success-notification.mp3');
+            audio.volume = 0.3;
+            audio.play().catch(err => console.log('Sound play failed:', err));
+        } catch (error) {
+            console.log('Could not play confirmation sound:', error);
+        }
+
+        // Increment analytics
+        onIncrementAnalytics('whatsapp_clicks');
+        
+        // Create structured WhatsApp message with booking details
+        const currentTime = new Date().toLocaleString();
+        const message = `🎯 BOOKING REQUEST - INDASTREET
+
+👤 Customer: [Customer will provide name in chat]
+📱 Contact: [Customer WhatsApp]
+⏰ Requested Time: ${currentTime}
+💼 Service: Professional Massage
+🏆 Provider: ${therapist.name}
+⭐ Rating: ${formatRating(getDisplayRating(therapist.rating, therapist.reviewCount))}/5
+
+💬 NEXT STEP: Customer will confirm details in this chat.
+
+📞 INDASTREET SUPPORT: +62-XXX-XXXX`;
+
+        // Open WhatsApp with structured message
+        window.open(`https://wa.me/${therapist.whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank');
+        
+        // Open chat window for real-time communication
+        if (onQuickBookWithChat) {
+            setTimeout(() => {
+                onQuickBookWithChat(therapist);
+            }, 500);
+        }
+    };
+
     // Removed handleConfirmBusyContact - chat system deactivated
 
 
@@ -330,17 +395,17 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             `}</style>
             
             <div className={`bg-white rounded-xl shadow-md overflow-visible relative transition-all duration-300 ${
-                (therapist.discountPercentage && therapist.discountPercentage > 0) 
+                isDiscountActive(therapist) 
                     ? 'ring-4 ring-red-400/50 shadow-2xl shadow-red-500/40' 
                     : ''
             }`}
-                style={(therapist.discountPercentage && therapist.discountPercentage > 0) ? {
+                style={isDiscountActive(therapist) ? {
                     animation: 'cardFlash 3s ease-in-out infinite'
                 } : {}}>
                 
                 {/* Main Image Banner */}
                 <div className={`h-48 w-full bg-gradient-to-r from-orange-400 to-orange-600 overflow-visible relative rounded-t-xl transition-all duration-500 ${
-                    (therapist.discountPercentage && therapist.discountPercentage > 0) 
+                    isDiscountActive(therapist) 
                         ? 'shadow-2xl shadow-red-500/60 ring-2 ring-red-400/60' 
                         : ''
                 }`}>
@@ -348,7 +413,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     src={displayImage} 
                     alt={`${therapist.name} cover`} 
                     className={`w-full h-full object-cover transition-all duration-500 ${
-                        (therapist.discountPercentage && therapist.discountPercentage > 0) 
+                        isDiscountActive(therapist) 
                             ? 'brightness-110 contrast-110 saturate-110' 
                             : ''
                     }`}
@@ -362,8 +427,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     }}
                 />
 
-                {/* 🎯 DISCOUNT BADGE ON MAIN IMAGE */}
-                {therapist.discountPercentage && therapist.discountPercentage > 0 && (
+                {/* 🎯 DISCOUNT BADGE ON MAIN IMAGE - Only show when discount is active and not expired */}
+                {isDiscountActive(therapist) && (
                     <div className="absolute top-4 right-4 z-30">
                         <div className="relative">
                             {/* Glow Effect Background */}
@@ -384,14 +449,15 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     </div>
                 )}
 
-                {/* 🎯 LIVE DISCOUNT COUNTDOWN TIMER */}
-                {therapist.discountPercentage && therapist.discountPercentage > 0 && therapist.discountEndTime && (
+                {/* 🎯 LIVE DISCOUNT COUNTDOWN TIMER - Only show when discount is active and not expired */}
+                {isDiscountActive(therapist) && (
                     <div className="absolute top-4 left-4 z-30">
                         <div className="bg-gradient-to-r from-red-600 to-orange-600 text-white text-xs px-3 py-2 rounded-lg font-mono shadow-lg border border-white/30 animate-pulse">
                             <div className="flex items-center space-x-1">
                                 <div className="w-2 h-2 bg-yellow-400 rounded-full animate-ping"></div>
                                 <span className="font-bold">
                                     ⏰ {(() => {
+                                        if (!therapist.discountEndTime) return 'EXPIRED';
                                         const now = new Date();
                                         const endTime = new Date(therapist.discountEndTime);
                                         const timeLeft = endTime.getTime() - now.getTime();
@@ -734,8 +800,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 );
             })()}
 
-            {/* Discount Notice - Shows when discount is active */}
-            {therapist.discountPercentage && therapist.discountPercentage > 0 && (
+            {/* Discount Notice - Shows when discount is active and not expired */}
+            {isDiscountActive(therapist) && (
                 <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white py-2 px-3 rounded-lg shadow-md my-4">
                     <div className="text-center">
                         <p className="font-bold text-sm mb-0.5 animate-pulse">
@@ -751,20 +817,20 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             <div className="grid grid-cols-3 gap-2 text-center text-sm mt-4">
                 {/* 60 min pricing */}
                 <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 min-h-[60px] flex flex-col justify-center ${
-                    (therapist.discountPercentage && therapist.discountPercentage > 0)
+                    isDiscountActive(therapist)
                         ? 'bg-gradient-to-br from-red-50 to-pink-50 border-red-300 shadow-red-500/60 shadow-2xl ring-4 ring-red-400/40 animate-pulse priceGlow' 
                         : 'bg-gray-100 border-gray-200'
                 }`}>
                     <p className="text-gray-600 text-xs mb-1">60 min</p>
-                    {therapist.discountPercentage && therapist.discountPercentage > 0 ? (
+                    {isDiscountActive(therapist) ? (
                         <>
                             {/* Discounted price - what customer will actually pay */}
                             <p className="font-bold text-gray-800 text-sm leading-tight">
-                                Rp {formatPrice(Math.round(Number(pricing["60"]) * (1 - therapist.discountPercentage / 100)))}
+                                Rp {formatPrice(Math.round(Number(pricing["60"]) * (1 - (therapist.discountPercentage || 0) / 100)))}
                             </p>
                             {/* Discount badge to show they're getting a deal */}
                             <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-lg notification-badge animate-bounce">
-                                -{therapist.discountPercentage}%
+                                -{therapist.discountPercentage || 0}%
                             </span>
                         </>
                     ) : (
@@ -776,18 +842,18 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 
                 {/* 90 min pricing */}
                 <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 min-h-[60px] flex flex-col justify-center ${
-                    (therapist.discountPercentage && therapist.discountPercentage > 0)
+                    isDiscountActive(therapist)
                         ? 'bg-gradient-to-br from-red-50 to-pink-50 border-red-300 shadow-red-500/60 shadow-2xl ring-4 ring-red-400/40 animate-pulse priceGlow' 
                         : 'bg-gray-100 border-gray-200'
                 }`}>
                     <p className="text-gray-600 text-xs mb-1">90 min</p>
-                    {therapist.discountPercentage && therapist.discountPercentage > 0 ? (
+                    {isDiscountActive(therapist) ? (
                         <>
                             <p className="font-bold text-gray-800 text-sm leading-tight">
-                                Rp {formatPrice(Math.round(Number(pricing["90"]) * (1 - therapist.discountPercentage / 100)))}
+                                Rp {formatPrice(Math.round(Number(pricing["90"]) * (1 - (therapist.discountPercentage || 0) / 100)))}
                             </p>
                             <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-lg animate-bounce">
-                                -{therapist.discountPercentage}%
+                                -{therapist.discountPercentage || 0}%
                             </span>
                         </>
                     ) : (
@@ -799,18 +865,18 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 
                 {/* 120 min pricing */}
                 <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 min-h-[60px] flex flex-col justify-center ${
-                    (therapist.discountPercentage && therapist.discountPercentage > 0)
+                    isDiscountActive(therapist)
                         ? 'bg-gradient-to-br from-red-50 to-pink-50 border-red-300 shadow-red-500/60 shadow-2xl ring-4 ring-red-400/40 animate-pulse priceGlow' 
                         : 'bg-gray-100 border-gray-200'
                 }`}>
                     <p className="text-gray-600 text-xs mb-1">120 min</p>
-                    {therapist.discountPercentage && therapist.discountPercentage > 0 ? (
+                    {isDiscountActive(therapist) ? (
                         <>
                             <p className="font-bold text-gray-800 text-sm leading-tight">
-                                Rp {formatPrice(Math.round(Number(pricing["120"]) * (1 - therapist.discountPercentage / 100)))}
+                                Rp {formatPrice(Math.round(Number(pricing["120"]) * (1 - (therapist.discountPercentage || 0) / 100)))}
                             </p>
                             <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-lg animate-bounce">
-                                -{therapist.discountPercentage}%
+                                -{therapist.discountPercentage || 0}%
                             </span>
                         </>
                     ) : (
@@ -823,7 +889,30 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
 
             <div className="flex gap-2 mt-2">
                 <button
-                    onClick={openWhatsApp}
+                    onClick={() => {
+                        console.log('🟢 Pesan button clicked - using booking confirmation flow with customer details');
+                        // Check if customer is logged in first
+                        if (!isCustomerLoggedIn) {
+                            onShowRegisterPrompt?.();
+                            return;
+                        }
+                        
+                        // Open booking popup to collect customer details (name, WhatsApp, duration preference)
+                        const openScheduleBookingPopup = (window as any).openScheduleBookingPopup;
+                        if (openScheduleBookingPopup) {
+                            openScheduleBookingPopup({
+                                therapistId: typeof therapist.id === 'string' ? therapist.id : therapist.id?.toString(),
+                                therapistName: therapist.name,
+                                therapistType: 'therapist',
+                                profilePicture: therapist.profilePicture || therapist.mainImage,
+                                isImmediateBooking: true // Flag to indicate this is immediate booking, not scheduled
+                            });
+                        } else {
+                            console.warn('⚠️ Schedule booking popup not available - falling back to direct WhatsApp');
+                            // Fallback to original behavior if popup not available
+                            openWhatsApp();
+                        }
+                    }}
                     className="w-1/2 flex items-center justify-center gap-1.5 bg-green-500 text-white font-bold py-2.5 px-3 rounded-lg hover:bg-green-600 transition-colors duration-300"
                 >
                     <WhatsAppIcon className="w-4 h-4"/>
@@ -839,7 +928,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                             openScheduleBookingPopup({
                                 therapistId: typeof therapist.id === 'string' ? therapist.id : therapist.id?.toString(),
                                 therapistName: therapist.name,
-                                therapistType: 'therapist'
+                                therapistType: 'therapist',
+                                profilePicture: therapist.profilePicture || therapist.mainImage
                             });
                         } else {
                             console.error('Schedule booking popup not available');
@@ -1126,7 +1216,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 onClose={() => setShowBookingConfirmation(false)}
                 onOpenChat={() => {
                 setShowBookingConfirmation(false);
-                onQuickBookWithChat?.(therapist);
+                handleConfirmedBooking();
             }}
             providerName={therapist.name}
             language={currentLanguage}

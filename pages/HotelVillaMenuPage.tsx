@@ -4,7 +4,7 @@ import { HotelVillaServiceStatus } from '../types';
 import type { Page } from '../types/pageTypes';
 import PlaceCard from '../components/PlaceCard';
 import TherapistCard from '../components/TherapistCard';
-import HotelVillaGuestBookingPage from './HotelVillaGuestBookingPage';
+import ScheduleBookingPopup from '../components/ScheduleBookingPopup';
 import { getRandomTherapistImageRandom } from '../utils/therapistImageUtils';
 import { useTranslations } from '../lib/useTranslations';
 import type { LanguageCode } from '../services/autoTranslationService';
@@ -12,6 +12,7 @@ import type { LanguageCode } from '../services/autoTranslationService';
 interface HotelVillaMenuPageProps {
     venueId: string;
     venueName: string;
+    venueType?: 'hotel' | 'villa'; // Add venue type for proper booking flow
     therapists: Therapist[];
     places: Place[];
     language?: string;
@@ -23,6 +24,7 @@ interface HotelVillaMenuPageProps {
 const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({ 
     venueId,
     venueName,
+    venueType = 'hotel', // Default to hotel if not specified
     therapists, 
     places,
     language: propLanguage = 'en',
@@ -118,38 +120,7 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
         setShowBookingModal(true);
     };
 
-    // Handle booking submission with notification
-    const handleBookingSubmit = async (bookingData: Partial<Booking>) => {
-        try {
-            // Play notification sound for booking submission
-            const audio = new Audio('/booking-notification.mp3');
-            audio.volume = 0.7;
-            audio.play().catch(e => console.log('Audio play failed:', e));
-
-            // Include hotel/villa information in booking data
-            const completeBookingData = {
-                ...bookingData,
-                hotelVillaId: Number.parseInt(venueId),
-                hotelVillaName: venueName,
-                providerId: typeof selectedProvider?.id === 'string' ? Number.parseInt(selectedProvider.id) : selectedProvider?.id,
-                providerType: selectedProviderType,
-            };
-
-            // Call the booking submission handler
-            if (onBookingSubmit) {
-                await onBookingSubmit(completeBookingData);
-            } else if (onBook && selectedProvider) {
-                // Fallback to legacy onBook handler
-                onBook(selectedProvider, selectedProviderType);
-            }
-
-            // Close the booking modal
-            setShowBookingModal(false);
-            setSelectedProvider(null);
-        } catch (error) {
-            console.error('Booking submission error:', error);
-        }
-    };
+    // Note: Booking submission now handled by ScheduleBookingPopup with accept links and status management
 
     useEffect(() => {
         // Minimal loading simulation
@@ -279,24 +250,22 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
                 </div>
             )}
 
-            {/* Booking Modal */}
+            {/* Enhanced Booking Modal with Accept Links */}
             {showBookingModal && selectedProvider && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden m-4">
-                        <HotelVillaGuestBookingPage
-                            provider={selectedProvider}
-                            providerType={selectedProviderType}
-                            hotelVillaId={Number.parseInt(venueId)}
-                            hotelVillaName={venueName}
-                            selectedLanguage={currentLanguage as LanguageCode}
-                            onBookingSubmit={handleBookingSubmit}
-                            onBack={() => {
-                                setShowBookingModal(false);
-                                setSelectedProvider(null);
-                            }}
-                        />
-                    </div>
-                </div>
+                <ScheduleBookingPopup
+                    isOpen={showBookingModal}
+                    onClose={() => {
+                        setShowBookingModal(false);
+                        setSelectedProvider(null);
+                    }}
+                    therapistId={selectedProvider.id?.toString() || ''}
+                    therapistName={selectedProvider.name}
+                    therapistType={selectedProviderType}
+                    profilePicture={selectedProvider.profilePicture || selectedProvider.mainImage}
+                    hotelVillaId={venueId}
+                    hotelVillaName={venueName}
+                    hotelVillaType={venueType}
+                />
             )}
         </div>
     );
