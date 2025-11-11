@@ -37,7 +37,9 @@
     "mobile",
     "vite.config.ts",
     "*-backup.*",
-    "*-new.*"
+    "*-new.*",
+    "*.full.tsx",
+    "*_COMPLETE.tsx"
   ],
   "references": [
     { "path": "./tsconfig.node.json" }
