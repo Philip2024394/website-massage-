@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Search, Calendar, ShoppingBag, User } from 'lucide-react';
+import { Home, Calendar, ShoppingBag, User, Bell } from 'lucide-react';
 
 interface GlobalFooterProps {
     currentPage: string;
@@ -20,6 +20,7 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
     const isActive = (buttonType: string) => {
         const homePages = ['home', 'landing'];
         const searchPages = ['search', 'therapists', 'places', 'massageTypes'];
+        const notificationPages = ['notifications'];
         const shopPages = ['coin-shop', 'shop', 'membership'];
         const profilePages = ['profile', 'customerDashboard', 'therapistDashboard', 'hotelDashboard', 'villaDashboard', 'agentDashboard', 'adminDashboard'];
 
@@ -28,6 +29,8 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
                 return homePages.includes(currentPage);
             case 'search':
                 return searchPages.includes(currentPage);
+            case 'notifications':
+                return notificationPages.includes(currentPage);
             case 'shop':
                 return shopPages.includes(currentPage);
             case 'profile':
@@ -43,7 +46,17 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
         return active ? 'text-orange-600' : 'text-gray-500';
     };
 
-    // Navigation items configuration
+    // Navigation items configuration - Always show notifications instead of search
+    const getSecondButton = () => {
+        return {
+            key: 'notifications',
+            icon: <Bell className={`w-6 h-6 ${getColor('notifications')}`} />,
+            label: 'Notifications',
+            onClick: () => onNavigate('notifications'),
+            badgeCount: unreadNotifications
+        };
+    };
+
     const navigationItems = [
         {
             key: 'home',
@@ -52,13 +65,7 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
             onClick: () => onNavigate('home'),
             badgeCount: 0
         },
-        {
-            key: 'search',
-            icon: <Search className={`w-6 h-6 ${getColor('search')}`} />,
-            label: 'Search',
-            onClick: () => onNavigate('therapists'),
-            badgeCount: 0
-        },
+        getSecondButton(),
         {
             key: 'shop',
             icon: <ShoppingBag className={`w-6 h-6 ${getColor('shop')}`} />,
