@@ -10,6 +10,7 @@ import BookingStatusTracker from './components/BookingStatusTracker';
 import ScheduleBookingPopup from './components/ScheduleBookingPopup';
 import { useState, useEffect } from 'react';
 import { bookingExpirationService } from './services/bookingExpirationService';
+import { cleanupLocalStorage } from './utils/localStorageCleanup';
 // Temporarily removed: import { useSimpleLanguage } from './context/SimpleLanguageContext';
 // Temporarily removed: import SimpleLanguageSelector from './components/SimpleLanguageSelector';
 
@@ -55,6 +56,9 @@ const App = () => {
 
     // Start booking expiration service on mount
     useEffect(() => {
+        // Clean up any corrupted localStorage data
+        cleanupLocalStorage();
+        
         // 🔧 FIX: Initialize Appwrite SDK and make it globally available
         const initializeAppwriteSession = async () => {
             try {
