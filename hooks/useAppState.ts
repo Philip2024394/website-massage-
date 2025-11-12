@@ -65,16 +65,9 @@ export const useAppState = () => {
         return 'home';
       }
       
-      // TEMPORARY FIX: Skip landing page and go directly to home
-      // Set default language and location to bypass landing page
-      console.log('� BYPASS: Skipping landing page, setting defaults and going to home');
-      localStorage.setItem('app_language', 'id');
-      localStorage.setItem('user_location', JSON.stringify({
-        lat: -8.4095,
-        lng: 115.1889,
-        name: 'Bali, Indonesia'
-      }));
-      return 'home';
+      // Show landing page for first-time users
+      console.log('🎨 New user detected, showing landing page');
+      return 'landing';
     } catch {
       console.log('⚠️ URL parameter parsing failed, defaulting to landing page');
       return 'landing';

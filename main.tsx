@@ -2,6 +2,9 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import ErrorBoundary from './components/ErrorBoundary';
 import './index.css';
+// Import additional CSS files
+import './styles/device-specific.css';
+import './src/styles/mobile-animations.css';
 // Ensure critical CSS is loaded
 import './critical.css';
 
