@@ -26,12 +26,21 @@ export const useDataFetching = () => {
                 setTimeout(() => reject(new Error('Fetch timeout')), APP_CONFIG.DATA_FETCH_TIMEOUT)
             );
             
-            const dataFetch = Promise.all([
-                therapistService.getTherapists(),
-                placeService.getPlaces()
-            ]);
+            // Fetch therapists first (this should work)
+            console.log('🔄 Fetching therapists data...');
+            const therapistsData = await therapistService.getTherapists();
+            console.log('✅ Therapists data received:', therapistsData?.length || 0);
             
-            const [therapistsData, placesData] = await Promise.race([dataFetch, timeout]) as any;
+            // Try to fetch places, but handle gracefully if collection is empty
+            let placesData: Place[] = [];
+            try {
+                console.log('🔄 Attempting to fetch places data...');
+                placesData = await placeService.getPlaces();
+                console.log('✅ Places data received:', placesData?.length || 0);
+            } catch (placeError) {
+                console.warn('⚠️ Places collection not available (this is OK):', placeError);
+                placesData = []; // Continue with empty places array
+            }
             
             // Initialize review data for new accounts
             const therapistsWithReviews = (therapistsData || []).map((therapist: Therapist) => 

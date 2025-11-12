@@ -3,19 +3,19 @@ export const APPWRITE_CONFIG = {
     endpoint: 'https://syd.cloud.appwrite.io/v1',
     projectId: '68f23b11000d25eb3664',
     
-    // Database ID from your Appwrite project
-    databaseId: '68f76ee1000e64ca8d05',
+    // Database ID from your Appwrite project  
+    databaseId: '672b0d7b00249d81e129',
     
     // Collection IDs from your Appwrite database  
     collections: {
         admins: 'admin_messages',
         therapists: 'therapists_collection_id', // Correct collection ID - WORKING
-        places: '', // DISABLED: Collection not found (causes 404 errors)
-        agents: '', // DISABLED: Collection not found (causes 404 errors)
-        bookings: '', // DISABLED: Collection not found (causes 404 errors)
-        reviews: '', // DISABLED: Collection not found (causes 404 errors)
-        notifications: '', // DISABLED: Collection not found (causes 404 errors)
-        users: '', // DISABLED: Collection not found (causes 404 errors)
+        places: 'places', // FIXED: Using correct collection ID
+        agents: 'agents', // ENABLED: Using correct collection ID
+        bookings: 'bookings', // ENABLED: Using correct collection ID  
+        reviews: 'reviews', // ENABLED: Using correct collection ID
+        notifications: 'notifications', // ENABLED: Using correct collection ID
+        users: 'users', // ENABLED: Using correct collection ID
         // Keep the rest as-is
         agentVisits: 'agent_visits_collection_id',
         hotelBookings: 'hotel_bookings',
