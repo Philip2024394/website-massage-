@@ -12,21 +12,21 @@ export const storage = new Storage(client);
 
 export { client, ID, Permission, Role };
 
-// Database and Collection IDs - UPDATED WITH CORRECT IDs
-export const DATABASE_ID = '672b0d7b00249d81e129';
+// Database and Collection IDs - REVERTED TO PRODUCTION DATABASE
+export const DATABASE_ID = '68f76ee1000e64ca8d05';
 export const COLLECTIONS = {
     THERAPISTS: 'therapists_collection_id',
-    PLACES: 'places',
-    USERS: 'users', 
-    AGENTS: 'agents',
-    BOOKINGS: 'bookings',
-    REVIEWS: 'reviews',
-    ANALYTICS: 'analytics',
+    PLACES: 'places_collection_id',
+    USERS: 'users_collection_id', 
+    AGENTS: 'agents_collection_id',
+    BOOKINGS: 'bookings_collection_id',
+    REVIEWS: 'reviews_collection_id',
+    ANALYTICS: 'analytics_collection_id',
     ANALYTICS_EVENTS: 'Analytics Events',
     ADMINS: 'admin_messages',
     HOTELS: 'hotels_collection_id',
     VILLAS: 'villas_collection_id',
-    NOTIFICATIONS: 'notifications',
+    NOTIFICATIONS: 'notifications_collection_id',
     MASSAGE_TYPES: 'massage_types_collection_id',
     MEMBERSHIP_PRICING: 'membership_pricing_collection_id',
     CUSTOM_LINKS: 'custom_links_collection_id',
