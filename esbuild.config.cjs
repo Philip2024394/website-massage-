@@ -59,9 +59,19 @@ async function buildApp() {
     // Copy and process index.html
     console.log('Processing index.html...')
     const indexHtml = fs.readFileSync('index.html', 'utf8')
+    
+    // Find generated CSS files
+    const cssFiles = fs.readdirSync('dist').filter(file => file.endsWith('.css'))
+    console.log('Found CSS files:', cssFiles)
+    
+    // Create CSS link tags
+    const cssLinks = cssFiles.map(file => `<link rel="stylesheet" href="/${file}">`).join('\n    ')
+    
     const processedHtml = indexHtml
       .replace('/index.tsx?v=20241031100500', '/index.js')
       .replace('type="module" src="/index.tsx?v=20241031100500"', 'type="module" src="/index.js"')
+      .replace('</head>', `    ${cssLinks}\n</head>`)
+    
     fs.writeFileSync('dist/index.html', processedHtml)
     
     // Copy any static assets
