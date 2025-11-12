@@ -56,17 +56,8 @@ export const useAppState = () => {
         return 'rewardBannersTest';
       }
       
-      // Check if user has already entered the app (has user location and language set)
-      const hasUserLocation = localStorage.getItem('user_location');
-      const hasLanguage = localStorage.getItem('app_language');
-      
-      if (hasUserLocation && hasLanguage) {
-        console.log('🏠 User has already entered app, going to home page');
-        return 'home';
-      }
-      
-      // Show landing page for first-time users
-      console.log('🎨 New user detected, showing landing page');
+      // Always show landing page first (users can navigate from there)
+      console.log('� Always showing landing page first for all users');
       return 'landing';
     } catch {
       console.log('⚠️ URL parameter parsing failed, defaulting to landing page');

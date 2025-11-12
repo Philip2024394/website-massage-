@@ -12,7 +12,7 @@ const PageNumberBadge: React.FC<PageNumberBadgeProps> = ({
     pageNumber, 
     pageName, 
     isLocked: propIsLocked,
-    showNumbers = true // Default to show in development
+    showNumbers = false // Default to hidden in production
 }) => {
     console.log(`PageNumberBadge RENDERING: Page ${pageNumber}, showNumbers: ${showNumbers}`);
     const [actualIsLocked, setActualIsLocked] = useState(propIsLocked || false);
