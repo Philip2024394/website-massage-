@@ -23,7 +23,7 @@ const AgentPage: React.FC<AgentPageProps> = ({ onBack, onNavigateToAgentAuth, t:
         audio.volume = 0.3;
         audio.play().catch(err => console.log('Sound play failed:', err));
         
-        const number = contactNumber;
+        const number = '6281392000050';
         const message = encodeURIComponent('Hi! I would like more information about becoming an IndaStreet Agent for Massage Therapists and Massage Places');
         window.open(`https://wa.me/${number}?text=${message}`, '_blank');
     };
@@ -78,12 +78,9 @@ const AgentPage: React.FC<AgentPageProps> = ({ onBack, onNavigateToAgentAuth, t:
                         As an IndaStreet Agent, you'll represent Indonesia's most trusted premium wellness platform, 
                         connecting professional massage therapists and spas with customers who value quality and convenience.
                     </p>
-                    <button 
-                        onClick={onNavigateToAgentAuth}
-                        className="inline-block bg-white text-orange-600 px-6 py-2 rounded-full font-semibold hover:bg-gray-100 transition-colors cursor-pointer"
-                    >
-                        Join the Elite Network
-                    </button>
+                    <div className="inline-block bg-gray-300 text-gray-600 px-6 py-2 rounded-full font-semibold cursor-not-allowed">
+                        Contact Us via WhatsApp Below
+                    </div>
                 </div>
 
                 {/* Income Benefits */}
@@ -235,31 +232,18 @@ const AgentPage: React.FC<AgentPageProps> = ({ onBack, onNavigateToAgentAuth, t:
                 </div>
 
                 {/* Call to Action Banner */}
-                <div 
-                    onClick={onNavigateToAgentAuth}
-                    className="bg-gradient-to-r from-gray-900 to-gray-800 text-white p-8 rounded-2xl text-center shadow-2xl cursor-pointer hover:shadow-3xl transform hover:scale-105 transition-all duration-300"
-                >
+                <div className="bg-gradient-to-r from-gray-900 to-gray-800 text-white p-8 rounded-2xl text-center shadow-2xl">
                     <h3 className="text-2xl md:text-3xl font-bold mb-4">Ready to Start Your Journey?</h3>
                     <p className="text-gray-300 mb-6 max-w-2xl mx-auto text-lg leading-relaxed">
                         Join the exclusive IndaStreet Agent program today and start building your independent business 
                         with unlimited earning potential across Indonesia
                     </p>
-                    <div className="inline-block bg-orange-500 text-white px-6 py-3 rounded-full text-base font-bold animate-pulse shadow-lg">
-                        ⚡ Apply Now ⚡
+                    <div className="inline-block bg-gray-600 text-gray-300 px-6 py-3 rounded-full text-base font-bold shadow-lg">
+                        📱 Contact Us via WhatsApp Below
                     </div>
-                    <p className="text-gray-400 text-sm mt-4">Click here to create your agent account</p>
+                    <p className="text-gray-400 text-sm mt-4">Use the WhatsApp button below to get started</p>
                 </div>
             </main>
-
-                {/* Create Account CTA (explicit button at end) */}
-                <div className="pt-8">
-                    <div className="max-w-md mx-auto">
-                        <Button onClick={onNavigateToAgentAuth} className="w-full bg-orange-500 text-white py-3 rounded-full font-bold">
-                            Create Account (Agent)
-                        </Button>
-                        <p className="text-center text-xs text-gray-500 mt-2">Log in or create your agent account</p>
-                    </div>
-                </div>
 
                 {/* WhatsApp CTA */}
                 <div className="p-4 pb-20 max-w-md mx-auto mt-6">

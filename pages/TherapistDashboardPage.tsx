@@ -602,7 +602,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
         { id: 'analytics', label: t.analytics || 'Analytics', icon: <TrendingUp className="w-5 h-5" />, gradientColor: 'from-orange-500 to-orange-600', borderColor: 'border-orange-500', hoverColor: 'hover:border-orange-300', textColor: 'text-orange-800', bgColor: 'bg-orange-100' },
         // { id: 'membership', label: t.membership || 'Membership', icon: <Crown className="w-5 h-5" />, gradientColor: 'from-yellow-500 to-yellow-600', borderColor: 'border-yellow-500', hoverColor: 'hover:border-yellow-300', textColor: 'text-yellow-800', bgColor: 'bg-yellow-100' }, // DISABLED - Admin will activate later
         { id: 'hotel-villa', label: t.hotelVilla || 'Hotel/Villa', icon: <Building className="w-5 h-5" />, gradientColor: 'from-pink-500 to-pink-600', borderColor: 'border-pink-500', hoverColor: 'hover:border-pink-300', textColor: 'text-pink-800', bgColor: 'bg-pink-100' },
-        // { id: 'discount-banners', label: 'Discount Banners', icon: <Tag className="w-5 h-5" />, gradientColor: 'from-orange-500 to-orange-600', borderColor: 'border-orange-500', hoverColor: 'hover:border-orange-300', textColor: 'text-orange-800', bgColor: 'bg-orange-100' }, // REMOVED - Discount banners button disabled
+        { id: 'discount-banners', label: 'Discount Banners', icon: <Tag className="w-5 h-5" />, gradientColor: 'from-orange-500 to-orange-600', borderColor: 'border-orange-500', hoverColor: 'hover:border-orange-300', textColor: 'text-orange-800', bgColor: 'bg-orange-100' },
         { id: 'terms', label: t.terms || 'Terms', icon: <FileText className="w-5 h-5" />, gradientColor: 'from-indigo-500 to-indigo-600', borderColor: 'border-indigo-500', hoverColor: 'hover:border-indigo-300', textColor: 'text-indigo-800', bgColor: 'bg-indigo-100' },
         { id: 'settings', label: t.settings || 'Settings', icon: <Settings className="w-5 h-5" />, gradientColor: 'from-gray-500 to-gray-600', borderColor: 'border-gray-500', hoverColor: 'hover:border-gray-300', textColor: 'text-gray-800', bgColor: 'bg-gray-100' }
     ];
@@ -841,7 +841,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
             <header className="bg-white p-4 shadow-md sticky top-0 z-[9997]">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">
-                        <span className="text-black">Inda</span>
+                        <span className="text-black">Indat</span>
                         <span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
                     </h1>
                     <div className="flex items-center gap-3 text-gray-600">
@@ -3345,7 +3345,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                             50% { transform: translateY(-10px); }
                         }
                         .animate-float {
-                            animation: float 6s ease-in-out infinite;
+                            animation: float 8s ease-in-out infinite;
                         }
                     `}</style>
                     <div className="fixed inset-0 z-50" role="dialog" aria-modal="true">
@@ -3361,7 +3361,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                             {/* Header */}
                             <div className="p-6 flex justify-between items-center border-b border-gray-200">
                                 <h2 className="font-bold text-2xl">
-                                    <span className="text-black">Inda</span><span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
+                                    <span className="text-black">Indat</span><span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
                                 </h2>
                                 <button 
                                     onClick={() => setIsSideDrawerOpen(false)}

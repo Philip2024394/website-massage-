@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build --config vite.config.deployment.ts",
+    "build": "npm install --omit=optional && tsc && cross-env ROLLUP_NO_NATIVE=1 vite build --config vite.config.deployment.ts",
     "build:local": "cross-env ROLLUP_NO_NATIVE=1 tsc && vite build",
     "build:production": "echo '⚠️  REMINDER: Did you increment CACHE_VERSION in service-worker.js?' && npm run build",
     "preview": "vite preview",

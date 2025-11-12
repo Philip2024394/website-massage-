@@ -2,6 +2,9 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 
+// Force Rollup to use JavaScript fallback instead of native binaries
+process.env.ROLLUP_NO_NATIVE = '1'
+
 // Deployment configuration optimized for Appwrite
 export default defineConfig({
   plugins: [react()],
@@ -25,21 +28,13 @@ export default defineConfig({
     minify: 'esbuild', // Use esbuild instead of Rollup for minification
     target: 'es2020',
     chunkSizeWarningLimit: 3000, // Increase limit for deployment
-    // Minimal rollup config to avoid native binary issues
+    // Force Rollup to use JavaScript fallback
     rollupOptions: {
+      // Explicitly disable native binary usage
+      external: [],
       output: {
-        // Simple chunking strategy
-        manualChunks: (id) => {
-          if (id.includes('node_modules')) {
-            return 'vendor';
-          }
-          if (id.includes('pages/')) {
-            return 'pages';
-          }
-          if (id.includes('components/')) {
-            return 'components';
-          }
-        },
+        // Simple chunking strategy to avoid complex Rollup features
+        manualChunks: undefined, // Disable manual chunks to simplify build
       },
     },
   },
