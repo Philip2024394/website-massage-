@@ -176,7 +176,7 @@
             const bugAnalysis = document.getElementById('bug-analysis');
             let html = '<h3>⚛️ React State Management Analysis</h3>';
             
-            html += \`
+            html += `
                 <div class="info">
                     <h4>🔍 State Management Patterns to Check:</h4>
                     <ol>
@@ -229,7 +229,7 @@ const handleActivate = async () => {
 };
                     </pre>
                 </div>
-            \`;
+            `;
             
             bugAnalysis.innerHTML = html;
             logScan('SUCCESS', 'State management scan completed');
@@ -241,7 +241,7 @@ const handleActivate = async () => {
             const bugAnalysis = document.getElementById('bug-analysis');
             let html = '<h3>💾 Database Synchronization Analysis</h3>';
             
-            html += \`
+            html += `
                 <div class="error">
                     <h4>🚨 Database Sync Issues:</h4>
                     
@@ -280,7 +280,7 @@ const handleActivate = async () => {
                     <p>In our previous session, we identified and fixed the critical issue where discount fields were missing from the handler mapping in <code>useProviderAgentHandlers.ts</code>.</p>
                     <p><strong>The bug might be elsewhere in the chain...</strong></p>
                 </div>
-            \`;
+            `;
             
             bugAnalysis.innerHTML = html;
             logScan('SUCCESS', 'Database sync scan completed');
@@ -292,7 +292,7 @@ const handleActivate = async () => {
             const bugAnalysis = document.getElementById('bug-analysis');
             let html = '<h3>⏰ Timer Conflicts Analysis</h3>';
             
-            html += \`
+            html += `
                 <div class="error">
                     <h4>🚨 Timer-Related Bugs (High Probability)</h4>
                     <p><strong>The 3-second duration strongly suggests a timer issue!</strong></p>
@@ -348,7 +348,7 @@ const handleActivate = async () => {
 };
                     </pre>
                 </div>
-            \`;
+            `;
             
             bugAnalysis.innerHTML = html;
             logScan('SUCCESS', 'Timer conflicts scan completed');
@@ -360,7 +360,7 @@ const handleActivate = async () => {
             const bugAnalysis = document.getElementById('bug-analysis');
             let html = '<h3>🔄 Data Flow Analysis</h3>';
             
-            html += \`
+            html += `
                 <div class="info">
                     <h4>📊 Complete Data Flow Chain:</h4>
                     <ol>
@@ -410,7 +410,7 @@ const handleActivate = async () => {
                         <li><strong>Component State:</strong> Add debug logging to track state changes</li>
                     </ol>
                 </div>
-            \`;
+            `;
             
             bugAnalysis.innerHTML = html;
             logScan('SUCCESS', 'Data flow scan completed');
@@ -432,7 +432,7 @@ const handleActivate = async () => {
             
             // Final analysis
             const bugAnalysis = document.getElementById('bug-analysis');
-            bugAnalysis.innerHTML += \`
+            bugAnalysis.innerHTML += `
                 <div class="error">
                     <h3>🎯 Bug Scan Summary - TOP SUSPECTS</h3>
                     
@@ -450,7 +450,7 @@ const handleActivate = async () => {
                         <li><strong>Test actual database save</strong> to confirm data persistence</li>
                     </ol>
                 </div>
-            \`;
+            `;
             
             logScan('SUCCESS', 'Full bug scan completed - check analysis above');
         }

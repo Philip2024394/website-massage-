@@ -22,8 +22,8 @@ const CustomCheckbox: React.FC<CustomCheckboxProps> = ({ label, checked, onChang
                 disabled 
                     ? 'border-gray-200 bg-gray-50' 
                     : checked 
-                        ? 'bg-brand-green border-brand-green' 
-                        : 'border-gray-300 peer-checked:bg-brand-green peer-checked:border-brand-green'
+                        ? 'bg-green-500 border-green-500' 
+                        : 'border-gray-300 peer-checked:bg-green-500 peer-checked:border-green-500'
             }`}></div>
             <svg className={`absolute w-3 h-3 text-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transition-opacity ${
                 checked && !disabled ? 'opacity-100' : 'opacity-0'

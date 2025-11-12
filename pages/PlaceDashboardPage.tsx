@@ -520,6 +520,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         const filteredGallery = safeGalleryImages.filter(img => img && img.imageUrl && img.imageUrl.trim() !== '');
         
         onSave({
+            placeId: placeId, // Add missing required field
             name,
             description,
             mainImage,

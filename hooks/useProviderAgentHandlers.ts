@@ -541,6 +541,7 @@ export const useProviderAgentHandlers = ({
                         savedDoc = await placeService.create({
                             ...updateData,
                             id: loggedInProvider.id,
+                            placeId: loggedInProvider.id, // Add missing required field
                             isLive: true, // 🔄 CHANGED: Now goes live immediately
                             rating: 0,
                             // reviewCount: 0, // Removed - not in collection schema
@@ -559,6 +560,7 @@ export const useProviderAgentHandlers = ({
                 savedDoc = await placeService.create({
                     ...updateData,
                     id: loggedInProvider.id,
+                    placeId: loggedInProvider.id, // Add missing required field
                     isLive: true, // 🔄 CHANGED: Now goes live immediately
                     rating: 0,
                     // reviewCount: 0, // Removed - not in collection schema
