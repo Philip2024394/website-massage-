@@ -44,11 +44,11 @@ export const useDataFetching = () => {
             
             // Initialize review data for new accounts
             const therapistsWithReviews = (therapistsData || []).map((therapist: Therapist) => 
-                reviewService.initializeProvider(therapist)
+                reviewService.initializeProvider(therapist) as Therapist
             );
             
             const placesWithReviews = (placesData || []).map((place: Place) => 
-                reviewService.initializeProvider(place)
+                reviewService.initializeProvider(place) as Place
             );
             
             return {
