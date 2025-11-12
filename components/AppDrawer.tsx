@@ -248,6 +248,21 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                     </div>
                                 </button>
 
+                                <button 
+                                    onClick={() => handleItemClick(() => onNavigate?.('website-management'))}
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-purple-500 group transform hover:scale-105"
+                                >
+                                    <div className="p-2 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg">
+                                        <Building className="w-5 h-5 text-white" />
+                                    </div>
+                                    <div className="flex-grow">
+                                        <p className="font-semibold text-gray-800 group-hover:text-purple-600 transition-colors">
+                                            Website Management
+                                        </p>
+                                        <p className="text-xs text-gray-500">Apply for partnership</p>
+                                    </div>
+                                </button>
+
                                 {onCustomerPortalClick && (
                                     <button 
                                         onClick={() => handleItemClick(onCustomerPortalClick)}

@@ -125,17 +125,76 @@ const TherapistTermsPage: React.FC = () => {
                 </div>
             </section>
 
-            {/* Payment & Fees */}
+            {/* Payment & Commission Structure */}
             <section className="mb-6 sm:mb-8">
                 <h2 className="text-xl sm:text-2xl font-semibold text-orange-600 mb-3 sm:mb-4 flex items-center gap-2">
-                    <span>💰</span> <span className="break-words">Payment & Fees</span>
+                    <span>💰</span> <span className="break-words">Payment & Commission Structure</span>
                 </h2>
-                <div className="bg-blue-50 border-l-4 border-blue-500 p-3 sm:p-4 pb-20">
+                <div className="space-y-4">
+                    <div className="bg-green-50 border-l-4 border-green-500 p-3 sm:p-4">
+                        <p className="font-semibold mb-2 text-green-800">Hotel & Villa Commission System</p>
+                        <ul className="list-disc list-inside space-y-2 text-gray-700 text-xs sm:text-sm break-words">
+                            <li><strong>Hotels don't pay therapists directly</strong> - Hotels receive 15% to 20% commission from their live menu set prices</li>
+                            <li>Commission percentage is displayed to you before accepting each booking</li>
+                            <li>Prices quoted from hotels and villas include their live menu commission percentage</li>
+                            <li>Payment must be made after each massage session before your account can be active for available status online</li>
+                        </ul>
+                    </div>
+                    
+                    <div className="bg-blue-50 border-l-4 border-blue-500 p-3 sm:p-4">
+                        <p className="font-semibold mb-2 text-blue-800">Payment Methods & Responsibility</p>
+                        <ul className="list-disc list-inside space-y-2 text-gray-700 text-xs sm:text-sm break-words">
+                            <li>Payment is either cash or bank transfer</li>
+                            <li>Screenshot can be requested for proof of payment</li>
+                            <li>We advise checking your account before leaving the massage area or client</li>
+                            <li><strong>All therapists are fully responsible for their own government fees or taxes</strong></li>
+                            <li>IndaStreet is strictly a massage hub for premium service</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            {/* Professional Standards & Safety */}
+            <section className="mb-6 sm:mb-8">
+                <h2 className="text-xl sm:text-2xl font-semibold text-orange-600 mb-3 sm:mb-4 flex items-center gap-2">
+                    <span>🛡️</span> <span className="break-words">Professional Standards & Safety</span>
+                </h2>
+                <div className="space-y-4">
+                    <div className="bg-yellow-50 border-l-4 border-yellow-500 p-3 sm:p-4">
+                        <p className="font-semibold mb-2 text-yellow-800">Experience & Accuracy Requirements</p>
+                        <ul className="list-disc list-inside space-y-2 text-gray-700 text-xs sm:text-sm break-words">
+                            <li>You must state your experience correctly on the live site</li>
+                            <li>Comply with all safety standards at all times</li>
+                            <li>Maintain professional integrity and honesty in all interactions</li>
+                        </ul>
+                    </div>
+                    
+                    <div className="bg-red-50 border-l-4 border-red-500 p-3 sm:p-4">
+                        <p className="font-semibold mb-2 text-red-800">Cancellation Rights & Safety Protocols</p>
+                        <ul className="list-disc list-inside space-y-2 text-gray-700 text-xs sm:text-sm break-words">
+                            <li><strong>If you feel unsure about any booking or upon arrival, you have full rights to cancel immediately without reason</strong></li>
+                            <li>Your account will not be affected by safety-related cancellations</li>
+                            <li>Reason must be stated to IndaStreet team for review</li>
+                            <li>IndaStreet strongly advises canceling massage therapy if customer has influence of alcohol</li>
+                            <li>Cancel if more than one person is in the massage room</li>
+                            <li>Cancel if any requests outside of massage therapy are made</li>
+                            <li>Cancel if client is not properly covered at waist area during session</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            {/* Hotel & Villa Support */}
+            <section className="mb-6 sm:mb-8">
+                <h2 className="text-xl sm:text-2xl font-semibold text-orange-600 mb-3 sm:mb-4 flex items-center gap-2">
+                    <span>🏨</span> <span className="break-words">Hotel & Villa Support</span>
+                </h2>
+                <div className="bg-green-50 border-l-4 border-green-500 p-3 sm:p-4">
                     <ul className="list-disc list-inside space-y-2 text-gray-700 text-xs sm:text-sm break-words">
-                        <li>You receive payments directly from clients via WhatsApp/cash arrangements</li>
-                        <li>IndoStreet membership fees are separate from client payments</li>
-                        <li>You set your own pricing for services (60min, 90min, 120min sessions)</li>
-                        <li>All prices displayed must be accurate and honored for bookings</li>
+                        <li>In event of any issue with hotel or villa guests, you have full support from hotel/villa staff</li>
+                        <li>Hotel and villa staff are fully aware of your booking through their account control system</li>
+                        <li>Contact hotel/villa staff immediately if you encounter any problems or safety concerns</li>
+                        <li>All partner venues are briefed on our professional massage service standards</li>
                     </ul>
                 </div>
             </section>

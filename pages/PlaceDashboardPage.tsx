@@ -2024,19 +2024,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                 <span className="font-medium">Terms & Conditions</span>
                             </button>
 
-                            {/* Website Management Menu Item */}
-                            {onNavigate && (
-                                <button
-                                    onClick={() => {
-                                        setIsSideDrawerOpen(false);
-                                        onNavigate('website-management');
-                                    }}
-                                    className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-indigo-50 transition-colors border-l-4 border-transparent hover:border-indigo-500"
-                                >
-                                    <ColoredGlobeIcon className="w-6 h-6" />
-                                    <span className="font-medium">Website Management</span>
-                                </button>
-                            )}
+
 
                             {/* Coin Rewards Menu Items */}
                             {onNavigate && (

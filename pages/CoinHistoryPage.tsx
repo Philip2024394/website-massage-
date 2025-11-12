@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { TrendingUp, Clock, Gift, Calendar, AlertCircle, Award, ShoppingBag, CheckCircle } from 'lucide-react';
 import { coinService, CoinTransaction, CoinBalance } from '../lib/coinService';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
+import { AppDrawer } from '../components/AppDrawer';
 
 interface CoinHistoryPageProps {
     userId?: string;
@@ -10,16 +11,20 @@ interface CoinHistoryPageProps {
     onOpenMenu?: () => void;
     onBack?: () => void;
     t?: any;
+    isFromTherapistDashboard?: boolean;
 }
 
 const CoinHistoryPage: React.FC<CoinHistoryPageProps> = ({ 
     userId = '12345', 
     totalCoins: propTotalCoins,
     onNavigate,
-    onOpenMenu
+    onOpenMenu,
+    onBack,
+    isFromTherapistDashboard = false
 }) => {
     const [transactions, setTransactions] = useState<CoinTransaction[]>([]);
     const [filterType, setFilterType] = useState<'all' | 'earn' | 'spend' | 'expire'>('all');
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [coinBalance, setCoinBalance] = useState<CoinBalance>({
         total: 0,
         active: 0,
@@ -126,14 +131,43 @@ const CoinHistoryPage: React.FC<CoinHistoryPageProps> = ({
             {/* Header - HomePage Style */}
             <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
                 <div className="flex justify-between items-center">
-                    <h1 className="text-2xl font-bold text-gray-800">
-                        <span className="text-black">Inda</span>
-                        <span className="text-orange-500">
-                            <span className="inline-block animate-float">S</span>treet
-                        </span>
-                    </h1>
+                    <div className="flex items-center gap-3">
+                        {onBack && (
+                            <button 
+                                onClick={onBack} 
+                                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                title="Back"
+                            >
+                                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </button>
+                        )}
+                        <h1 className="text-2xl font-bold text-gray-800">
+                            <span className="text-black">Inda</span>
+                            <span className="text-orange-500">
+                                <span className="inline-block animate-float">S</span>treet
+                            </span>
+                        </h1>
+                    </div>
                     <div className="flex items-center gap-3 text-gray-600">
-                        <button onClick={onOpenMenu} title="Menu">
+                        <button 
+                            onClick={() => {
+                                console.log('🍔 CoinHistory burger menu clicked! isFromTherapistDashboard:', isFromTherapistDashboard);
+                                if (isFromTherapistDashboard) {
+                                    // Navigate back to therapist dashboard where drawer is available
+                                    if (onNavigate) {
+                                        onNavigate('therapistDashboard');
+                                    } else if (onBack) {
+                                        onBack();
+                                    }
+                                } else {
+                                    // Use generic drawer for standalone access
+                                    setIsMenuOpen(true);
+                                }
+                            }} 
+                            title={isFromTherapistDashboard ? "Back to Dashboard" : "Menu"}
+                        >
                             <BurgerMenuIcon className="w-6 h-6" />
                         </button>
                     </div>
@@ -322,6 +356,18 @@ const CoinHistoryPage: React.FC<CoinHistoryPageProps> = ({
                     animation: float 2s ease-in-out infinite;
                 }
             `}</style>
+
+            {/* Global App Drawer - Same as HomePage */}
+            {isMenuOpen && (
+                <AppDrawer
+                    isOpen={isMenuOpen}
+                    onClose={() => {
+                        console.log('🍔 CoinHistory AppDrawer onClose called');
+                        setIsMenuOpen(false);
+                    }}
+                    onNavigate={onNavigate}
+                />
+            )}
         </div>
     );
 };

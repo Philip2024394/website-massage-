@@ -26,12 +26,16 @@ interface CoinShopPageProps {
     onTherapistJobsClick?: () => void;
     onOpenMenu?: () => void; // Function to open the HomePage drawer
     t?: any;
+    isFromTherapistDashboard?: boolean;
 }
 
 const CoinShopPage: React.FC<CoinShopPageProps> = ({ 
+    onNavigate,
+    onBack,
     currentUser,
     onSetUserLocation,
-    t
+    t,
+    isFromTherapistDashboard = false
 }) => {
     const [shopItems, setShopItems] = useState<ShopItem[]>([]);
     const [userCoins, setUserCoins] = useState<UserCoins | null>(null);
@@ -273,7 +277,23 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
                         </span>
                     </h1>
                     <div className="flex items-center gap-3 text-gray-600">
-                        <button onClick={() => setIsDrawerOpen(true)} title="Menu">
+                        <button 
+                            onClick={() => {
+                                console.log('🍔 CoinShop burger menu clicked! isFromTherapistDashboard:', isFromTherapistDashboard);
+                                if (isFromTherapistDashboard) {
+                                    // Navigate back to therapist dashboard where drawer is available
+                                    if (onNavigate) {
+                                        onNavigate('therapistDashboard');
+                                    } else if (onBack) {
+                                        onBack();
+                                    }
+                                } else {
+                                    // Use generic drawer for standalone access
+                                    setIsDrawerOpen(true);
+                                }
+                            }} 
+                            title={isFromTherapistDashboard ? "Back to Dashboard" : "Menu"}
+                        >
                             <BurgerMenuIcon className="w-6 h-6" />
                         </button>
                     </div>

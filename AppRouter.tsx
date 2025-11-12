@@ -1200,7 +1200,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             
         case 'coin-shop': 
             {/* CoinShop navigation callback - type handled via interface */}
-            return <CoinShopPage onBack={handleBackToHome} onNavigate={(page: string) => setPage(page as Page)} t={t} />;
+            return <CoinShopPage onBack={handleBackToHome} onNavigate={(page: string) => setPage(page as Page)} isFromTherapistDashboard={true} t={t} />;
             
         case 'adminShopManagement': 
             return isAdminLoggedIn && <AdminShopManagementPage onBack={() => setPage('adminDashboard')} t={t} /> || null;
@@ -1212,7 +1212,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return <ReferralPage onBack={handleBackToHome} t={t} user={loggedInCustomer || {}} />;
             
         case 'coinHistory': 
-            return <CoinHistoryPage onBack={handleBackToHome} t={t} />;
+            return <CoinHistoryPage onBack={handleBackToHome} onNavigate={(page: string) => setPage(page as Page)} isFromTherapistDashboard={true} t={t} />;
             
         case 'coinSystemTest': 
             return <CoinSystemTestPage onBack={handleBackToHome} t={t} />;
