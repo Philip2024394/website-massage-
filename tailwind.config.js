@@ -5,6 +5,46 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
     "./pages/**/*.{js,ts,jsx,tsx}",
     "./components/**/*.{js,ts,jsx,tsx}",
+    "./main.tsx",
+    "./App.tsx",
+  ],
+  safelist: [
+    // Critical layout classes that should never be purged
+    'flex',
+    'flex-col',
+    'flex-row',
+    'items-center',
+    'justify-center',
+    'justify-between',
+    'text-center',
+    'text-left',
+    'text-right',
+    // Critical sizing classes
+    'w-6',
+    'h-6',
+    'w-8',
+    'h-8',
+    'w-12',
+    'h-12',
+    // Critical spacing
+    'p-4',
+    'm-4',
+    'mb-4',
+    'mt-4',
+    // Critical colors
+    'bg-white',
+    'bg-gray-100',
+    'bg-blue-500',
+    'text-white',
+    'text-gray-900',
+    // Border radius
+    'rounded',
+    'rounded-lg',
+    // Brand colors
+    'bg-brand-green',
+    'border-brand-green',
+    'bg-green-500',
+    'border-green-500',
   ],
   theme: {
     extend: {

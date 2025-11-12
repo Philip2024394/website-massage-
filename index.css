@@ -1,8 +1,9 @@
-@import './styles/device-specific.css';
-@import './src/styles/mobile-animations.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@import './styles/device-specific.css';
+@import './src/styles/mobile-animations.css';
 
 /* Prevent horizontal scrolling but allow vertical content scrolling */
 html, body {
