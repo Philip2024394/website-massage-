@@ -12,7 +12,7 @@ async function buildApp() {
     execSync('npx tsc --noEmit', { stdio: 'inherit' })
     
     await esbuild.build({
-      entryPoints: ['main.tsx'],
+      entryPoints: ['index.tsx'],
       bundle: true,
       outdir: 'dist',
       format: 'esm',
@@ -59,7 +59,9 @@ async function buildApp() {
     // Copy and process index.html
     console.log('Processing index.html...')
     const indexHtml = fs.readFileSync('index.html', 'utf8')
-    const processedHtml = indexHtml.replace('/src/main.tsx', '/main.js')
+    const processedHtml = indexHtml
+      .replace('/index.tsx?v=20241031100500', '/index.js')
+      .replace('type="module" src="/index.tsx?v=20241031100500"', 'type="module" src="/index.js"')
     fs.writeFileSync('dist/index.html', processedHtml)
     
     // Copy any static assets
