@@ -1,6 +1,6 @@
 {
   "framework": "vite",
-  "buildCommand": "ROLLUP_NO_NATIVE=1 npm run build",
+  "buildCommand": "npm run build:local",
   "env": {
     "ROLLUP_NO_NATIVE": "1"
   }
