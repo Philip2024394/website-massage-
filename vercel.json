@@ -1,5 +1,5 @@
 {
-  "buildCommand": "export ROLLUP_NO_NATIVE=1 && npm run build",
+  "buildCommand": "chmod +x build.sh && ./build.sh",
   "framework": "vite",
   "env": {
     "ROLLUP_NO_NATIVE": "1"
