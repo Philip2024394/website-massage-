@@ -1,10 +1,10 @@
+// Set environment variables at the very beginning
+process.env.ROLLUP_NO_NATIVE = '1'
+process.env.ROLLUP_NO_WASM = '1'
+
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
-
-// Aggressively disable all native binary usage
-process.env.ROLLUP_NO_NATIVE = '1'
-process.env.ROLLUP_NO_WASM = '1'
 
 export default defineConfig({
   plugins: [react()],

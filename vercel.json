@@ -1,7 +1,9 @@
 {
+  "framework": null,
   "buildCommand": "npm run build:vercel",
+  "outputDirectory": "dist",
+  "installCommand": "npm ci --omit=optional",
   "env": {
-    "ROLLUP_NO_NATIVE": "1",
-    "ROLLUP_NO_WASM": "1"
+    "ROLLUP_NO_NATIVE": "1"
   }
 }
