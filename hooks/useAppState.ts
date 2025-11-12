@@ -7,7 +7,14 @@ import type { Page, Language, LoggedInProvider, LoggedInUser } from '../types/pa
 const getFromLocalStorage = (key: string, defaultValue: any = null) => {
   try {
     const item = localStorage.getItem(key);
-    return item ? JSON.parse(item) : defaultValue;
+    if (!item) return defaultValue;
+    
+    // Special handling for simple string values that aren't JSON
+    if (key === 'app_language' && (item === 'en' || item === 'id')) {
+      return item;
+    }
+    
+    return JSON.parse(item);
   } catch (_error) {
     console.error(`Error reading ${key} from localStorage:`, _error);
     return defaultValue;
