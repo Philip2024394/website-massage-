@@ -1,0 +1,17 @@
+/* Quick fix for any unwanted top-right elements */
+.debug-text,
+.console-output,
+[style*="position: fixed"][style*="top: 0"][style*="right: 0"]:not(.drawer):not(.panel):not(.modal) {
+  display: none !important;
+}
+
+/* Hide any text nodes that might be floating */
+body > div:not(#root):not([class]):not([id]) {
+  display: none !important;
+}
+
+/* Ensure no elements are accidentally positioned outside the main container */
+* {
+  max-width: 100vw;
+  overflow-wrap: break-word;
+}
