@@ -7,7 +7,7 @@ export const APP_CONFIG = {
     APPWRITE: {
         ENDPOINT: 'https://syd.cloud.appwrite.io/v1',
         PROJECT_ID: '68f23b11000d25eb3664',
-        DATABASE_ID: '68f23b11000d25eb3664'
+        DATABASE_ID: '68f76ee1000e64ca8d05'
     },
     
     // App settings
