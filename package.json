@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "cross-env ROLLUP_NO_NATIVE=1 tsc && vite build --config vite.config.deployment.ts",
     "build:local": "cross-env ROLLUP_NO_NATIVE=1 tsc && vite build",
-    "build:vercel": "cross-env ROLLUP_NO_NATIVE=1 npm run build:vite",
+    "build:vercel": "node esbuild.config.cjs",
     "build:vite": "tsc && vite build --config vite.config.simple.ts",
     "build:production": "echo '⚠️  REMINDER: Did you increment CACHE_VERSION in service-worker.js?' && npm run build",
     "preview": "vite preview",
