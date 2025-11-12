@@ -1,7 +1,8 @@
 {
-  "buildCommand": "chmod +x build.sh && ./build.sh",
+  "buildCommand": "npm install --legacy-peer-deps && npm run build:vercel",
   "framework": "vite",
   "env": {
-    "ROLLUP_NO_NATIVE": "1"
+    "ROLLUP_NO_NATIVE": "1",
+    "NODE_OPTIONS": "--max-old-space-size=4096"
   }
 }
