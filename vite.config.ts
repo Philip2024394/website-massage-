@@ -2,6 +2,9 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 
+// Force Rollup to use JavaScript fallback instead of native binaries
+process.env.ROLLUP_NO_NATIVE = '1'
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
@@ -50,12 +53,11 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    sourcemap: false, // Disable for production builds
     minify: 'esbuild',
-    target: 'es2020', // Ensure compatibility with Node.js environments
-    chunkSizeWarningLimit: 1000, // Increase limit to reduce warnings
+    target: 'es2020',
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
-      // Force Rollup to use JavaScript fallback instead of native binaries
       external: [],
       input: {
         main: path.resolve(__dirname, 'index.html')
