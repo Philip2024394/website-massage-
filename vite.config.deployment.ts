@@ -4,6 +4,9 @@ import path from 'path'
 
 // Force Rollup to use JavaScript fallback instead of native binaries
 process.env.ROLLUP_NO_NATIVE = '1'
+// Additional environment variables to force JS fallback
+process.env.ROLLUP_NO_WASM = '1'
+process.env.NODE_OPTIONS = '--max-old-space-size=4096'
 
 // Deployment configuration optimized for Appwrite
 export default defineConfig({

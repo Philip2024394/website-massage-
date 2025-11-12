@@ -1,6 +1,6 @@
 {
+  "buildCommand": "export ROLLUP_NO_NATIVE=1 && npm run build",
   "framework": "vite",
-  "buildCommand": "npm run build",
   "env": {
     "ROLLUP_NO_NATIVE": "1"
   }
