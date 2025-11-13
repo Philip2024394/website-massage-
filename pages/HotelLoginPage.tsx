@@ -131,16 +131,6 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) =>
                         <span className="text-black">Inda</span><span className="text-orange-500">street</span>
                     </h1>
                     <div className="flex items-center gap-3 text-gray-600">
-                        <button 
-                            onClick={onBack}
-                            className="p-2 hover:bg-gray-50 rounded-full transition-colors" 
-                            title="Back to Home"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                            </svg>
-                        </button>
-
                         <button onClick={() => setIsMenuOpen(true)} title="Menu">
                             <BurgerMenuIcon className="w-6 h-6" />
                         </button>
@@ -170,21 +160,21 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) =>
 
             {/* Main Content with Background */}
             <main 
-                className="flex-1 flex items-center justify-center p-4 overflow-hidden relative bg-cover bg-center bg-no-repeat"
+                className="flex-1 flex items-center justify-center px-4 py-2 overflow-hidden relative bg-cover bg-center bg-no-repeat min-h-0"
                 style={{
                     backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/hotel%20image.png?updatedAt=1763051035257)'
                 }}
             >
-                <div className="max-w-md w-full relative z-10">
+                <div className="max-w-md w-full relative z-10 max-h-full overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                     {/* Header */}
-                    <div className="text-center mb-8">
-                        <h2 className="text-3xl font-bold mb-2 text-gray-800 drop-shadow-lg">Hotel</h2>
+                    <div className="text-center mb-4 sm:mb-6">
+                        <h2 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2 text-gray-800 drop-shadow-lg">Hotel</h2>
                         <p className="text-gray-700 text-sm drop-shadow">Manage your massage services and bookings</p>
                     </div>
 
-                    <div className="mb-6 min-h-[60px] flex items-center">
+                    <div className="mb-3 sm:mb-4 min-h-[50px] flex items-center">
                         {error && (
-                            <div className={`w-full p-3 rounded-lg ${
+                            <div className={`w-full p-2 sm:p-3 rounded-lg text-sm ${
                                 error.includes('✅') 
                                     ? 'bg-green-50 text-green-700 border border-green-200' 
                                     : 'bg-red-50 text-red-700 border border-red-200'
@@ -195,7 +185,7 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) =>
                     </div>
 
                     {/* Tab Navigation */}
-                    <div className="flex mb-6 bg-white/95 backdrop-blur-sm rounded-lg p-1 border border-white/20 shadow-lg">
+                    <div className="flex mb-4 sm:mb-6 bg-white/95 backdrop-blur-sm rounded-lg p-1 border border-white/20 shadow-lg">
                         <button
                             onClick={() => {
                                 setIsSignUp(false);
@@ -221,7 +211,7 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) =>
                     </div>
 
                     {/* Forms */}
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
                         <div>
                             <label className="block text-sm font-medium text-gray-800 mb-2 drop-shadow">
                                 Email Address
@@ -284,7 +274,20 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) =>
                 </div>
             </main>
             
-
+            {/* Hide scrollbars */}
+            <style>{`
+                .max-w-md::-webkit-scrollbar {
+                    display: none;
+                }
+                @media (max-height: 600px) {
+                    .space-y-4 > * + * {
+                        margin-top: 0.75rem;
+                    }
+                    .space-y-6 > * + * {
+                        margin-top: 1rem;
+                    }
+                }
+            `}</style>
         </div>
     );
 };
