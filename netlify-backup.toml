@@ -1,0 +1,13 @@
+# Netlify Build Configuration Backup
+# If pnpm build fails, uncomment this section and comment out the pnpm version
+
+# [build]
+#   publish = "dist"  
+#   command = "npm ci && npm run build:netlify"
+
+# [build.environment]
+#   ROLLUP_NO_NATIVE = "1"
+#   ROLLUP_NO_WASM = "1"
+#   NODE_VERSION = "22"
+#   NODE_OPTIONS = "--max-old-space-size=4096"
+#   NETLIFY_BUILD_DEBUG = "true"

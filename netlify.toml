@@ -3,14 +3,14 @@
 
 [build]
   publish = "dist"
-  command = "pnpm install --frozen-lockfile && pnpm run build"
+  command = "npm install -g pnpm@10.22.0 && pnpm install --frozen-lockfile && pnpm run build:netlify"
 
 [build.environment]
   ROLLUP_NO_NATIVE = "1"
   ROLLUP_NO_WASM = "1"
-  PNPM_VERSION = "10.22.0"
   NODE_VERSION = "22"
   NODE_OPTIONS = "--max-old-space-size=4096"
+  NETLIFY_BUILD_DEBUG = "true"
 
 # Cache-Control Headers for optimal performance and cache-busting
 [[headers]]
