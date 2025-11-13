@@ -79,19 +79,37 @@ async function buildApp() {
       const publicFiles = fs.readdirSync('public', { withFileTypes: true })
       for (const file of publicFiles) {
         if (file.name === 'index.html') continue // Skip index.html - we already processed it
-        
+
         const sourcePath = path.join('public', file.name)
         const destPath = path.join('dist', file.name)
-        
-        if (file.isDirectory()) {
-          // Copy directory
-          const { execSync } = require('child_process')
-          execSync(`cp -r "${sourcePath}" "${destPath}" 2>/dev/null || xcopy /E /I /Y "${sourcePath}" "${destPath}\\" 2>nul || true`, { stdio: 'inherit' })
-        } else {
-          // Copy file
-          fs.copyFileSync(sourcePath, destPath)
+
+        try {
+          if (file.isDirectory()) {
+            // Prefer Node's built-in recursive copy (Node 16+). This avoids shell quoting issues on CI.
+            if (fs.cpSync) {
+              fs.mkdirSync(destPath, { recursive: true })
+              fs.cpSync(sourcePath, destPath, { recursive: true })
+            } else {
+              // Fallback to platform-specific commands when fs.cpSync is unavailable
+              const { execSync } = require('child_process')
+              if (process.platform === 'win32') {
+                // xcopy on Windows (dest folder must end with a backslash)
+                execSync(`xcopy /E /I /Y "${sourcePath}" "${destPath}\\"`, { stdio: 'inherit' })
+              } else {
+                // cp on POSIX
+                execSync(`cp -r "${sourcePath}" "${destPath}"`, { stdio: 'inherit' })
+              }
+            }
+          } else {
+            // Ensure parent folder exists
+            fs.mkdirSync(path.dirname(destPath), { recursive: true })
+            fs.copyFileSync(sourcePath, destPath)
+          }
+          console.log(file.name)
+        } catch (err) {
+          // Log and continue - keep build resilient
+          console.warn(`Could not copy ${file.name}:`, err && err.message ? err.message : err)
         }
-        console.log(file.name)
       }
     }
     
