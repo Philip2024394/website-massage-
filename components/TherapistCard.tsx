@@ -1040,7 +1040,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                 <div className="flex gap-1">
                                     <input 
                                         type="text" 
-                                        value="https://indastreet.com/ref/USER123" 
+                                        value="https://www.indastreetmassage.com/ref/USER123" 
                                         readOnly 
                                         className="flex-1 px-2 py-1.5 sm:py-2 border border-gray-300 rounded-lg bg-gray-50 text-xs"
                                         placeholder="Your referral link"
@@ -1049,7 +1049,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                     />
                                     <button
                                         onClick={() => {
-                                            navigator.clipboard.writeText('https://indastreet.com/ref/USER123');
+                                            navigator.clipboard.writeText('https://www.indastreetmassage.com/ref/USER123');
                                             alert('Link copied to clipboard!');
                                         }}
                                         className="px-3 py-1.5 sm:py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-semibold text-xs whitespace-nowrap"
@@ -1064,7 +1064,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                 <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
                                     <button
                                         onClick={() => {
-                                            window.open(`https://wa.me/?text=${encodeURIComponent('Check out IndaStreet - Book amazing massages! https://indastreet.com/ref/USER123')}`, '_blank');
+                                            window.open(`https://wa.me/?text=${encodeURIComponent('Check out IndaStreet - Book amazing massages! https://www.indastreetmassage.com/ref/USER123')}`, '_blank');
                                         }}
                                         className="flex flex-col items-center gap-1 p-1.5 sm:p-2 rounded-lg transition-all hover:scale-105"
                                     >
@@ -1077,7 +1077,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                     </button>
                                     <button
                                         onClick={() => {
-                                            window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://indastreet.com/ref/USER123')}`, '_blank');
+                                            window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://www.indastreetmassage.com/ref/USER123')}`, '_blank');
                                         }}
                                         className="flex flex-col items-center gap-1 p-1.5 sm:p-2 rounded-lg transition-all hover:scale-105"
                                     >
@@ -1090,7 +1090,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                     </button>
                                     <button
                                         onClick={() => {
-                                            navigator.clipboard.writeText('Check out IndaStreet - Book amazing massages! https://indastreet.com/ref/USER123');
+                                            navigator.clipboard.writeText('Check out IndaStreet - Book amazing massages! https://www.indastreetmassage.com/ref/USER123');
                                             alert('Instagram message copied! Open Instagram and paste to share.');
                                         }}
                                         className="flex flex-col items-center gap-1 p-1.5 sm:p-2 rounded-lg transition-all hover:scale-105"
@@ -1104,7 +1104,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                     </button>
                                     <button
                                         onClick={() => {
-                                            navigator.clipboard.writeText('Check out IndaStreet - Book amazing massages! https://indastreet.com/ref/USER123');
+                                            navigator.clipboard.writeText('Check out IndaStreet - Book amazing massages! https://www.indastreetmassage.com/ref/USER123');
                                             alert('TikTok message copied! Open TikTok and paste to share.');
                                         }}
                                         className="flex flex-col items-center gap-1 p-1.5 sm:p-2 rounded-lg transition-all hover:scale-105"

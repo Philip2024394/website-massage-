@@ -1,5 +1,5 @@
 # IndaStreet - Massage Services Bali
-# https://indastreet.com/robots.txt
+# https://www.indastreetmassage.com/robots.txt
 
 User-agent: *
 Allow: /
@@ -8,7 +8,7 @@ Disallow: /dashboard
 Disallow: /api/
 
 # Sitemaps
-Sitemap: https://indastreet.com/sitemap.xml
+Sitemap: https://www.indastreetmassage.com/sitemap.xml
 
 # Crawl-delay for polite bots
 Crawl-delay: 1

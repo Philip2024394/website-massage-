@@ -122,8 +122,8 @@ class ErrorBoundary extends Component<Props, State> {
 
                         <p className="text-sm text-gray-500 mt-6">
                             If this problem persists, please contact support at{' '}
-                            <a href="mailto:support@indastreet.com" className="text-orange-500 hover:underline">
-                                support@indastreet.com
+                            <a href="mailto:support@indastreetmassage.com" className="text-orange-500 hover:underline">
+                                support@indastreetmassage.com
                             </a>
                         </p>
                     </div>

@@ -229,7 +229,7 @@ const ContactUsPage: React.FC<ContactUsPageProps> = ({
                                 <div className="relative z-10">
                                     <h3 className="text-xl font-bold text-purple-600 mb-3">🤝 Partnership Inquiries</h3>
                                     <p className="text-gray-700 mb-4">
-                                        Interested in partnering with IndaStreet? Email us at partnerships@indastreet.com
+                                        Interested in partnering with IndaStreet? Email us at partnerships@indastreetmassage.com
                                     </p>
                                     <button 
                                         onClick={() => onNavigate('partnership-inquiries')}
@@ -250,7 +250,7 @@ const ContactUsPage: React.FC<ContactUsPageProps> = ({
                                 <div className="relative z-10">
                                     <h3 className="text-xl font-bold text-orange-600 mb-3">📰 Press & Media</h3>
                                     <p className="text-gray-700 mb-4">
-                                        Media inquiries and press kit requests: press@indastreet.com
+                                        Media inquiries and press kit requests: press@indastreetmassage.com
                                     </p>
                                     <button 
                                         onClick={() => onNavigate('press-media')}
@@ -271,7 +271,7 @@ const ContactUsPage: React.FC<ContactUsPageProps> = ({
                                 <div className="relative z-10">
                                     <h3 className="text-xl font-bold text-green-600 mb-3">💼 Career Opportunities</h3>
                                     <p className="text-gray-700 mb-4">
-                                        Join our growing team! View open positions at careers@indastreet.com
+                                        Join our growing team! View open positions at careers@indastreetmassage.com
                                     </p>
                                     <button 
                                         onClick={() => onNavigate('career-opportunities')}

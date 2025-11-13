@@ -18,6 +18,7 @@ import HotelBookingModal from '../components/hotel/PropertyBookingModal';
 import HotelAnalyticsSection from '../components/hotel/PropertyAnalyticsSection';
 import DashboardHeader from '../components/DashboardHeader';
 import { safeDownload } from '../utils/domSafeHelpers';
+import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 
 // External component: DiscountCard
 const DiscountCard: React.FC<{ 
@@ -698,20 +699,36 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
 
     // Navigation items for sidebar
     const navItems = [
-        { id: 'analytics', icon: BarChart3, label: t('dashboard.analytics'), color: 'blue', description: 'View performance metrics' },
-        { id: 'discounts', icon: Percent, label: t('dashboard.discounts'), color: 'green', description: 'Manage special offers' },
-        { id: 'menu', icon: ClipboardList, label: t('dashboard.menu'), badge: providers.length, color: 'indigo', description: 'Service providers' },
-        { id: 'feedback', icon: MessageSquare, label: t('dashboard.feedback'), color: 'yellow', description: 'Customer reviews' },
-        { id: 'concierge', icon: Users, label: t('dashboard.concierge'), color: 'teal', description: 'Guest services' },
-        { id: 'commissions', icon: DollarSign, label: t('dashboard.commissions'), color: 'orange', description: 'Payment tracking' },
-        { id: 'notifications', icon: BellRing, label: t('dashboard.notifications'), color: 'red', description: 'System alerts' },
-        { id: 'services-settings', icon: Settings, label: t('dashboard.services'), color: 'gray', description: 'Configure services' },
+        { id: 'analytics', icon: BarChart3, label: 'Analytics', color: 'blue', description: 'View performance metrics' },
+        { id: 'discounts', icon: Percent, label: 'Discounts', color: 'green', description: 'Manage special offers' },
+        { id: 'menu', icon: ClipboardList, label: 'Menu', badge: providers.length, color: 'indigo', description: 'Service providers' },
+        { id: 'feedback', icon: MessageSquare, label: 'Feedback', color: 'yellow', description: 'Customer reviews' },
+        { id: 'concierge', icon: Users, label: 'Concierge', color: 'teal', description: 'Guest services' },
+        { id: 'commissions', icon: DollarSign, label: 'Commissions', color: 'orange', description: 'Payment tracking' },
+        { id: 'notifications', icon: BellRing, label: 'Notifications', color: 'red', description: 'System alerts' },
+        { id: 'services-settings', icon: Settings, label: 'Services', color: 'gray', description: 'Configure services' },
     ];
 
     return (
         <div className="h-screen bg-gray-50 flex flex-col">
-            {/* Global Header */}
-            <DashboardHeader onMenuClick={() => updateState({ isSideDrawerOpen: true })} t={t} />
+            {/* Global Header - IndaStreet Brand */}
+            <header className="bg-white p-4 shadow-md sticky top-0 z-[9997]">
+                <div className="flex justify-between items-center">
+                    <h1 className="text-2xl font-bold text-gray-800">
+                        {/* Brand: Inda (black) + street (orange) */}
+                        <span className="text-black">Inda</span><span className="text-orange-500">street</span>
+                    </h1>
+                    <div className="flex items-center gap-3 text-gray-600">
+                        <button 
+                            onClick={() => updateState({ isSideDrawerOpen: true })} 
+                            title="Menu" 
+                            style={{ zIndex: 9999, position: 'relative' }}
+                        >
+                           <BurgerMenuIcon className="w-6 h-6" />
+                        </button>
+                    </div>
+                </div>
+            </header>
 
             {/* Side Drawer */}
             {state.isSideDrawerOpen && (
@@ -800,7 +817,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
                         <div className="p-4 bg-gray-50 border-t">
                             <button onClick={onLogout} className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-gradient-to-br from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-xl transition-all transform hover:scale-105 shadow-sm hover:shadow-md">
                                 <LogOut className="w-5 h-5" />
-                                <span className="font-medium">{t('dashboard.logout')}</span>
+                                <span className="font-medium">Logout</span>
                             </button>
                         </div>
                     </div>
