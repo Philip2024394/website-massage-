@@ -16,6 +16,7 @@ export type Page =
     | 'therapistStatus' 
     | 'therapistDashboard'
     | 'therapistProfile' // 🎯 NEW: Customer-facing therapist profile page 
+    | 'profile' // 🎯 NEW: Guest profile page for non-registered users
     | 'placeDashboard' 
     | 'agent' 
     | 'agentAuth' 

@@ -83,6 +83,7 @@ import CoinHistoryPage from './pages/CoinHistoryPage';
 import CoinSystemTestPage from './pages/CoinSystemTestPage';
 import WebsiteManagementPage from './pages/WebsiteManagementPage';
 import TodaysDiscountsPage from './pages/TodaysDiscountsPage';
+import GuestProfilePage from './pages/GuestProfilePage'; // 🎯 NEW: Guest profile for non-registered users
 import { APP_CONFIG } from './config/appConfig';
 
 /*
@@ -588,6 +589,13 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 therapists={therapists}
                 places={places}
             /> || null;
+
+        case 'profile': // 🎯 NEW: Guest profile page for non-registered users
+            return <GuestProfilePage 
+                onBack={handleBackToHome}
+                onRegisterClick={handleNavigateToRegistrationChoice} // 🎯 Opens registration drawer
+                t={t?.profile || t}
+            />;
             
         case 'detail': 
             return selectedPlace && <PlaceDetailPage 

@@ -70,6 +70,9 @@ export const useFooterNavigation = ({
             setPage('agentDashboard');
         } else if (loggedInCustomer) {
             setPage('customerDashboard');
+        } else {
+            // 🎯 NEW: Show guest profile page for unregistered users
+            setPage('profile');
         }
     };
 

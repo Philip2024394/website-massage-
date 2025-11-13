@@ -2,6 +2,7 @@ import React from 'react';
 
 interface GuestProfilePageProps {
     onBack: () => void;
+    onRegisterClick?: () => void; // 🎯 NEW: Function to open registration drawer/page
     t: any;
 }
 
@@ -17,7 +18,7 @@ const ArrowIcon = ({ className = 'w-6 h-6' }) => (
     </svg>
 );
 
-const GuestProfilePage: React.FC<GuestProfilePageProps> = ({ onBack }) => {
+const GuestProfilePage: React.FC<GuestProfilePageProps> = ({ onBack, onRegisterClick }) => {
     return (
         <div className="min-h-screen bg-gray-50 pb-16">
             {/* Header */}
@@ -63,7 +64,7 @@ const GuestProfilePage: React.FC<GuestProfilePageProps> = ({ onBack }) => {
                                     1
                                 </span>
                                 <p className="text-gray-700">
-                                    <span className="font-semibold">Select the icon in the top right corner</span> of the header
+                                    <span className="font-semibold">Click the "Register Now" button below</span> for quick access
                                 </p>
                             </div>
                             
@@ -72,7 +73,7 @@ const GuestProfilePage: React.FC<GuestProfilePageProps> = ({ onBack }) => {
                                     2
                                 </span>
                                 <p className="text-gray-700">
-                                    <span className="font-semibold">Choose from the displayed buttons</span> to create your account
+                                    <span className="font-semibold">Or select the menu icon in the top right corner</span> of any page
                                 </p>
                             </div>
                             
@@ -81,18 +82,34 @@ const GuestProfilePage: React.FC<GuestProfilePageProps> = ({ onBack }) => {
                                     3
                                 </span>
                                 <p className="text-gray-700">
-                                    <span className="font-semibold">Complete the registration</span> and start enjoying all features
+                                    <span className="font-semibold">Choose your account type</span> and complete the registration
                                 </p>
                             </div>
                         </div>
                     </div>
                     
+                    {/* Register Now Button - Primary action */}
+                    {onRegisterClick && (
+                        <button
+                            onClick={onRegisterClick}
+                            className="w-full max-w-xs bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-4 rounded-xl font-bold hover:from-orange-600 hover:to-orange-700 transition-all duration-300 transform hover:scale-105 shadow-lg mb-4 flex items-center justify-center gap-3"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            <span>Register Now</span>
+                        </button>
+                    )}
+                    
+                    {/* Go Back Button - Secondary action */}
                     <button
                         onClick={onBack}
-                        className="w-full max-w-xs bg-orange-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-orange-600 transition-colors flex items-center justify-center gap-2"
+                        className="w-full max-w-xs bg-gray-100 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 border"
                     >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
                         <span>Go Back to Home</span>
-                        <ArrowIcon className="w-5 h-5" />
                     </button>
                     
                     <div className="mt-12 bg-white rounded-lg shadow-sm p-6 max-w-sm mx-auto">
