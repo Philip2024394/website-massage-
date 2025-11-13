@@ -97,7 +97,11 @@
     "@rollup/rollup-darwin-arm64": "^4.22.0",
     "@rollup/rollup-darwin-x64": "^4.22.0",
     "@rollup/rollup-linux-x64-musl": "^4.22.0",
-    "@rollup/rollup-win32-x64-msvc": "^4.22.0"
+    "@rollup/rollup-win32-x64-msvc": "^4.22.0",
+    "@esbuild/linux-x64": "0.25.11",
+    "@esbuild/darwin-x64": "0.25.11",
+    "@esbuild/darwin-arm64": "0.25.11",
+    "@esbuild/win32-x64": "0.25.11"
   },
   "keywords": [
     "massage",
