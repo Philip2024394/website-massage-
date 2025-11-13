@@ -121,7 +121,7 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) =>
     };
 
     return (
-        <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
+        <div className="h-screen bg-gray-50 flex flex-col overflow-hidden fixed inset-0">
             <PageNumberBadge pageNumber={2} pageName="HotelLoginPage" isLocked={false} />
             
             {/* Global Header */}
@@ -168,34 +168,44 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) =>
                 />
             </React19SafeWrapper>
 
-            {/* Main Content */}
-            <main className="flex-1 flex items-center justify-center p-4 overflow-hidden">
-                <div className="max-w-md w-full">
+            {/* Main Content with Background */}
+            <main 
+                className="flex-1 flex items-center justify-center p-4 overflow-hidden relative bg-cover bg-center bg-no-repeat"
+                style={{
+                    backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/hotel%20image.png?updatedAt=1763051035257)'
+                }}
+            >
+                {/* Background overlay */}
+                <div className="absolute inset-0 bg-black/40"></div>
+                
+                <div className="max-w-md w-full relative z-10">
                     {/* Header */}
                     <div className="text-center mb-8">
-                        <h2 className="text-3xl font-bold mb-2 text-orange-500">Hotel</h2>
-                        <p className="text-gray-700 text-sm">Manage your massage services and bookings</p>
+                        <h2 className="text-3xl font-bold mb-2 text-white">Hotel</h2>
+                        <p className="text-white/90 text-sm">Manage your massage services and bookings</p>
                     </div>
 
-                    {error && (
-                        <div className={`mb-6 p-3 rounded-lg ${
-                            error.includes('✅') 
-                                ? 'bg-green-50 text-green-700 border border-green-200' 
-                                : 'bg-red-50 text-red-700 border border-red-200'
-                        }`}>
-                            {error}
-                        </div>
-                    )}
+                    <div className="mb-6 min-h-[60px] flex items-center">
+                        {error && (
+                            <div className={`w-full p-3 rounded-lg ${
+                                error.includes('✅') 
+                                    ? 'bg-green-50 text-green-700 border border-green-200' 
+                                    : 'bg-red-50 text-red-700 border border-red-200'
+                            }`}>
+                                {error}
+                            </div>
+                        )}
+                    </div>
 
                     {/* Tab Navigation */}
-                    <div className="flex mb-6 bg-white rounded-lg p-1 border border-gray-200 shadow-sm">
+                    <div className="flex mb-6 bg-white/95 backdrop-blur-sm rounded-lg p-1 border border-white/20 shadow-lg">
                         <button
                             onClick={() => {
                                 setIsSignUp(false);
                                 setError(''); // Clear error when switching modes
                             }}
                             className={`flex-1 py-3 px-4 rounded-lg transition-all font-medium ${
-                                !isSignUp ? 'bg-orange-500 text-white shadow-sm' : 'text-gray-600 hover:text-orange-500 hover:bg-orange-50'
+                                !isSignUp ? 'bg-orange-500 text-white shadow-sm' : 'text-gray-700 hover:text-orange-500 hover:bg-orange-50/80'
                             }`}
                         >
                             Sign In
@@ -206,7 +216,7 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) =>
                                 setError(''); // Clear error when switching modes
                             }}
                             className={`flex-1 py-3 px-4 rounded-lg transition-all font-medium ${
-                                isSignUp ? 'bg-orange-500 text-white shadow-sm' : 'text-gray-600 hover:text-orange-500 hover:bg-orange-50'
+                                isSignUp ? 'bg-orange-500 text-white shadow-sm' : 'text-gray-700 hover:text-orange-500 hover:bg-orange-50/80'
                             }`}
                         >
                             Create Account
@@ -216,7 +226,7 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) =>
                     {/* Forms */}
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-white mb-2">
                                 Email Address
                             </label>
                             <div className="relative">
@@ -226,14 +236,14 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) =>
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     placeholder="Enter your email"
-                                    className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400 transition-all bg-white text-gray-900 placeholder-gray-500 shadow-sm"
+                                    className="w-full pl-12 pr-4 py-3 rounded-xl border border-white/20 focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400 transition-all bg-white/95 backdrop-blur-sm text-gray-900 placeholder-gray-500 shadow-lg"
                                     required
                                 />
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-white mb-2">
                                 Password
                             </label>
                             <div className="relative">
@@ -243,7 +253,7 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) =>
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder={isSignUp ? "Create a password (min 8 characters)" : "Enter your password"}
-                                    className="w-full pl-12 pr-12 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400 transition-all bg-white text-gray-900 placeholder-gray-500 shadow-sm"
+                                    className="w-full pl-12 pr-12 py-3 rounded-xl border border-white/20 focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400 transition-all bg-white/95 backdrop-blur-sm text-gray-900 placeholder-gray-500 shadow-lg"
                                     required
                                 />
                                 <button
@@ -259,7 +269,7 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) =>
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full py-4 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full py-4 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-xl hover:shadow-2xl backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {loading ? (
                                 <div className="flex items-center justify-center">
@@ -276,6 +286,8 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) =>
                     </form>
                 </div>
             </main>
+            
+
         </div>
     );
 };
