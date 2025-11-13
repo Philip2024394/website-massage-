@@ -10,8 +10,8 @@
 
 [build]
   publish = "dist"
-  # Simplified command - Netlify auto-activates pnpm from packageManager field
-  command = "pnpm install && pnpm run build:netlify"
+  # Explicit pnpm setup with fallback - auto-activates from packageManager field
+  command = "which pnpm || (corepack enable && corepack prepare pnpm@10.21.0 --activate) && pnpm install && pnpm run build:netlify"
 
 [build.environment]
   ROLLUP_NO_NATIVE = "1"
