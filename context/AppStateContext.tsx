@@ -135,13 +135,22 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
     const setPage = useCallback((newPage: string) => {
         console.log('📍 setPage called:', newPage, 'Current page:', page);
         
+        // Prevent infinite loops by checking if we're already on that page
+        if (newPage === page) {
+            console.log('📍 Already on page:', newPage, 'skipping...');
+            return;
+        }
+        
         // Sync page state with URL hash (except for landing page)
         if (newPage !== 'landing') {
+            console.log('📍 Setting hash to:', `#${newPage}`);
             window.location.hash = `#${newPage}`;
         } else {
+            console.log('📍 Clearing hash for landing page');
             window.location.hash = '';
         }
         
+        console.log('📍 Updating page state to:', newPage);
         _setPage(newPage);
     }, [page]);
 
