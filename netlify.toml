@@ -1,14 +1,11 @@
-# NUCLEAR OPTION: Ultra-simple Netlify config
-# This removes ALL complexity and uses basic, reliable approaches
-# Same app quality - different deployment method
+# SUPER NUCLEAR OPTION: Use Netlify defaults + minimal config
+# Let Netlify use its default Node version (avoids download issues)
 
 [build]
   publish = "dist"
-  command = "npm ci && npm run build:simple"
+  command = "npm install --legacy-peer-deps && npm run build:simple"
 
-[build.environment]
-  NODE_VERSION = "18.19.0"
-  NPM_FLAGS = "--legacy-peer-deps"
+# No environment section - use Netlify defaults
 
 # Cache-Control Headers for optimal performance and cache-busting
 [[headers]]
