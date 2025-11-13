@@ -3,7 +3,7 @@ import { villaAuth } from '../lib/auth';
 import { saveSessionCache } from '../lib/sessionManager';
 import { checkRateLimit, handleAppwriteError, resetRateLimit } from '../lib/rateLimitUtils';
 import { trackDailySignIn } from '../lib/coinHooks';
-import { LogIn, UserPlus, Eye, EyeOff } from 'lucide-react';
+import { LogIn, UserPlus, Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import PasswordInput from '../components/PasswordInput';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { AppDrawer } from '../components/AppDrawer';
@@ -13,7 +13,7 @@ import PageNumberBadge from '../components/PageNumberBadge';
 interface VillaLoginPageProps {
     onSuccess: (villaId: string) => void;
     onBack: () => void;
-    t: any;
+    t: (key: string, params?: Record<string, any>) => string; // Translation function type
 }
 
 const HomeIcon: React.FC<{className?: string}> = ({ className }) => (
@@ -59,7 +59,7 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onSuccess, onBack }) =>
                 return;
             }
 
-            // Check rate limit
+            // Rate limiting
             const operation = isSignUp ? 'villa-signup' : 'villa-login';
             const maxAttempts = isSignUp ? 3 : 5;
             const windowMs = isSignUp ? 600000 : 300000; // 10 min for signup, 5 min for login
@@ -99,7 +99,7 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onSuccess, onBack }) =>
                     // Track daily sign-in for coin rewards (only for login, not signup)
                     if (!isSignUp) {
                         try {
-                            await trackDailySignIn(response.userId);
+                            await trackDailySignIn(response.userId, 1, 'villa');
                         } catch (coinError) {
                             console.warn('Daily sign-in tracking failed:', coinError);
                         }
@@ -111,16 +111,17 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onSuccess, onBack }) =>
                     throw new Error(response.error || 'Sign in failed');
                 }
             }
-        } catch (err: any) {
-            console.error(`Villa ${isSignUp ? 'signup' : 'login'} error:`, err);
-            setError(handleAppwriteError(err, isSignUp ? 'signup' : 'login'));
+        } catch (err: unknown) {
+            const error = err as Error;
+            console.error(`Villa ${isSignUp ? 'signup' : 'login'} error:`, error);
+            setError(handleAppwriteError(error, isSignUp ? 'signup' : 'login'));
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
+        <div className="h-screen bg-gray-50 flex flex-col overflow-hidden fixed inset-0">
             <PageNumberBadge pageNumber={3} pageName="VillaLoginPage" isLocked={false} />
             
             {/* Global Header */}
@@ -130,16 +131,6 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onSuccess, onBack }) =>
                         <span className="text-black">Inda</span><span className="text-orange-500">street</span>
                     </h1>
                     <div className="flex items-center gap-3 text-gray-600">
-                        <button 
-                            onClick={onBack}
-                            className="p-2 hover:bg-gray-50 rounded-full transition-colors" 
-                            title="Back to Home"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                            </svg>
-                        </button>
-
                         <button onClick={() => setIsMenuOpen(true)} title="Menu">
                             <BurgerMenuIcon className="w-6 h-6" />
                         </button>
@@ -167,34 +158,41 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onSuccess, onBack }) =>
                 />
             </React19SafeWrapper>
 
-            {/* Main Content */}
-            <main className="flex-1 flex items-center justify-center p-4 overflow-hidden">
-                <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
-                    {/* Header */}
-                    <div className="text-center mb-8">
-                        <h2 className="text-3xl font-bold mb-2 text-gray-800">Villa Portal</h2>
-                        <p className="text-gray-600 text-sm">Manage your villa services and bookings</p>
+            {/* Main Content with Background */}
+            <main 
+                className="flex-1 flex items-start justify-center px-4 py-2 overflow-hidden relative bg-cover bg-center bg-no-repeat min-h-0"
+                style={{
+                    backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/villa%20image.png?updatedAt=1763052495068)'
+                }}
+            >
+                <div className="max-w-md w-full relative z-10 max-h-full overflow-y-auto pt-4 sm:pt-6" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                    {/* Header - Positioned right under header area */}
+                    <div className="text-center mb-4 sm:mb-6">
+                        <h2 className="text-4xl sm:text-5xl font-bold mb-2 sm:mb-3 text-gray-800 drop-shadow-lg">Villa</h2>
+                        <p className="text-gray-600 text-xs sm:text-sm drop-shadow">Manage your massage services and bookings</p>
                     </div>
 
-                    {error && (
-                        <div className={`mb-6 p-3 rounded-lg ${
-                            error.includes('✅') 
-                                ? 'bg-green-50 text-green-700 border border-green-200' 
-                                : 'bg-red-50 text-red-700 border border-red-200'
-                        }`}>
-                            {error}
-                        </div>
-                    )}
+                    <div className="mb-3 sm:mb-4 min-h-[50px] flex items-center">
+                        {error && (
+                            <div className={`w-full p-2 sm:p-3 rounded-lg text-sm ${
+                                error.includes('✅') 
+                                    ? 'bg-green-50 text-green-700 border border-green-200' 
+                                    : 'bg-red-50 text-red-700 border border-red-200'
+                            }`}>
+                                {error}
+                            </div>
+                        )}
+                    </div>
 
                     {/* Tab Navigation */}
-                    <div className="flex mb-6 bg-gray-100 rounded-lg p-1 border border-gray-200">
+                    <div className="flex mb-4 sm:mb-6 bg-white/95 backdrop-blur-sm rounded-lg p-1 border border-white/20 shadow-lg">
                         <button
                             onClick={() => {
                                 setIsSignUp(false);
                                 setError(''); // Clear error when switching modes
                             }}
                             className={`flex-1 py-3 px-4 rounded-lg transition-all font-medium ${
-                                !isSignUp ? 'bg-white text-orange-600 shadow-sm' : 'text-gray-600 hover:text-gray-800'
+                                !isSignUp ? 'bg-orange-500 text-white shadow-sm' : 'text-gray-700 hover:text-orange-500 hover:bg-orange-50/80'
                             }`}
                         >
                             Sign In
@@ -205,7 +203,7 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onSuccess, onBack }) =>
                                 setError(''); // Clear error when switching modes
                             }}
                             className={`flex-1 py-3 px-4 rounded-lg transition-all font-medium ${
-                                isSignUp ? 'bg-white text-orange-600 shadow-sm' : 'text-gray-600 hover:text-gray-800'
+                                isSignUp ? 'bg-orange-500 text-white shadow-sm' : 'text-gray-700 hover:text-orange-500 hover:bg-orange-50/80'
                             }`}
                         >
                             Create Account
@@ -213,38 +211,42 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onSuccess, onBack }) =>
                     </div>
 
                     {/* Forms */}
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gray-800 mb-2 drop-shadow">
                                 Email Address
                             </label>
-                            <input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="Enter your email"
-                                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all bg-white text-gray-700"
-                                required
-                            />
+                            <div className="relative">
+                                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-orange-500 w-5 h-5 z-10" />
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="Enter your email"
+                                    className="w-full pl-12 pr-4 py-3 rounded-xl border border-white/20 focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400 transition-all bg-white/95 backdrop-blur-sm text-gray-900 placeholder-gray-500 shadow-lg"
+                                    required
+                                />
+                            </div>
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gray-800 mb-2 drop-shadow">
                                 Password
                             </label>
                             <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-orange-500 w-5 h-5 z-10" />
                                 <input
                                     type={showPassword ? 'text' : 'password'}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder={isSignUp ? "Create a password (min 8 characters)" : "Enter your password"}
-                                    className="w-full pl-4 pr-12 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all bg-white text-gray-700"
+                                    className="w-full pl-12 pr-12 py-3 rounded-xl border border-white/20 focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400 transition-all bg-white/95 backdrop-blur-sm text-gray-900 placeholder-gray-500 shadow-lg"
                                     required
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-orange-500 hover:text-orange-400 transition-colors z-10"
                                 >
                                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                 </button>
@@ -254,7 +256,7 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onSuccess, onBack }) =>
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full py-4 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full py-4 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-xl hover:shadow-2xl backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {loading ? (
                                 <div className="flex items-center justify-center">
@@ -271,6 +273,21 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onSuccess, onBack }) =>
                     </form>
                 </div>
             </main>
+            
+            {/* Hide scrollbars */}
+            <style>{`
+                .max-w-md::-webkit-scrollbar {
+                    display: none;
+                }
+                @media (max-height: 600px) {
+                    .space-y-4 > * + * {
+                        margin-top: 0.75rem;
+                    }
+                    .space-y-6 > * + * {
+                        margin-top: 1rem;
+                    }
+                }
+            `}</style>
         </div>
     );
 };

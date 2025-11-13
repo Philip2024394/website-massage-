@@ -16,6 +16,7 @@ import PushNotificationSettings from '../components/PushNotificationSettings';
 import HotelVillaServicesSettingsPage from './HotelVillaServicesSettingsPage';
 import HotelBookingModal from '../components/hotel/PropertyBookingModal';
 import HotelAnalyticsSection from '../components/hotel/PropertyAnalyticsSection';
+import DashboardHeader from '../components/DashboardHeader';
 import { safeDownload } from '../utils/domSafeHelpers';
 
 // External component: DiscountCard
@@ -88,7 +89,8 @@ interface HotelDashboardPageProps {
     therapists?: Therapist[];
     places?: Place[];
     hotelId?: string;
-    initialTab?: 'analytics' | 'discounts' | 'profile' | 'menu' | 'feedback' | 'concierge' | 'commissions' | 'notifications' | 'membership' | 'services-settings';
+    initialTab?: 'analytics' | 'discounts' | 'menu' | 'feedback' | 'concierge' | 'commissions' | 'notifications' | 'services-settings';
+    setPage?: (page: any) => void;
 }
 
 const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ 
@@ -96,7 +98,8 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
     therapists = [], 
     places = [], 
     hotelId = '1', 
-    initialTab = 'analytics' 
+    initialTab = 'analytics',
+    setPage
 }) => {
     const { t } = useTranslations();
     
@@ -126,6 +129,8 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
     const [analytics, setAnalytics] = useState<any>(null);
     const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(true);
     const [hotelDocumentId, setHotelDocumentId] = useState<string | null>(null);
+    const [commissionRecords, setCommissionRecords] = useState<any[]>([]);
+    const [isLoadingCommissions, setIsLoadingCommissions] = useState(false);
 
     const updateState = useCallback((updates: Partial<typeof state>) => {
         setState(prev => ({ ...prev, ...updates }));
@@ -201,10 +206,34 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
                 new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
                 new Date().toISOString()
             ).then(setAnalytics).catch(console.error).finally(() => setIsLoadingAnalytics(false));
+        } else if (state.activeTab === 'commissions') {
+            loadCommissionRecords();
         }
     }, [state.activeTab]);
 
+    const loadCommissionRecords = async () => {
+        setIsLoadingCommissions(true);
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId, 
+                APPWRITE_CONFIG.collections.commissionRecords,
+                [
+                    // Filter by hotel ID to show only this hotel's commissions
+                    `hotelVillaId=${hotelId}`
+                ]
+            );
+            setCommissionRecords(response.documents);
+            console.log(`📊 Loaded ${response.documents.length} commission records for hotel ${hotelId}`);
+        } catch (error) {
+            console.error('Error loading commission records:', error);
+            setCommissionRecords([]);
+        } finally {
+            setIsLoadingCommissions(false);
+        }
+    };
+
     useEffect(() => {
+        // 🔑 CRITICAL: QR code must include specific hotel ID for commission tracking
         const qrLink = `${globalThis.location.origin}/hotel/${hotelId}/menu`;
         updateState({ qrLink });
         
@@ -253,21 +282,87 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
         try {
             const bookingId = `BK${Date.now().toString().slice(-8)}`;
             const bookingTime = new Date().toLocaleString();
+            const serviceAmount = state.selectedProvider.pricing[state.selectedDuration];
+            const commissionRate = 15; // 15% commission rate
+            const commissionAmount = Math.round(serviceAmount * (commissionRate / 100));
             
-            await databases.createDocument(APPWRITE_CONFIG.databaseId, APPWRITE_CONFIG.collections.hotelBookings, ID.unique(), {
-                bookingId, therapistId: String(state.selectedProvider.id), therapistName: state.selectedProvider.name,
-                userId: '1', hotelId: '1', hotelName: state.hotelName || 'Hotel', hotelLocation: state.hotelAddress,
-                guestName: state.guestName, roomNumber: state.roomNumber, duration: state.selectedDuration,
-                price: state.selectedProvider.pricing[state.selectedDuration], bookingTime,
-                bookingDateTime: new Date().toISOString(), status: 'pending', createdAt: new Date().toISOString()
+            // 🔑 CRITICAL: Create booking with correct hotel ID for commission tracking
+            const bookingDoc = await databases.createDocument(APPWRITE_CONFIG.databaseId, APPWRITE_CONFIG.collections.hotelBookings, ID.unique(), {
+                bookingId, 
+                therapistId: String(state.selectedProvider.id), 
+                therapistName: state.selectedProvider.name,
+                userId: '1', 
+                hotelId: hotelId, // 🎯 Use actual hotel ID from props
+                hotelName: state.hotelName || 'Hotel', 
+                hotelLocation: state.hotelAddress,
+                guestName: state.guestName, 
+                roomNumber: state.roomNumber, 
+                duration: state.selectedDuration,
+                price: serviceAmount, 
+                bookingTime,
+                bookingDateTime: new Date().toISOString(), 
+                status: 'pending', 
+                createdAt: new Date().toISOString()
+            });
+
+            // 🔑 CRITICAL: Create commission record for tracking
+            await databases.createDocument(APPWRITE_CONFIG.databaseId, APPWRITE_CONFIG.collections.commissionRecords, ID.unique(), {
+                hotelVillaId: parseInt(hotelId),
+                bookingId: bookingDoc.$id,
+                providerId: parseInt(String(state.selectedProvider.id)),
+                providerType: state.selectedProvider.type,
+                providerName: state.selectedProvider.name,
+                serviceAmount: serviceAmount,
+                commissionRate: commissionRate,
+                commissionAmount: commissionAmount,
+                status: 'pending', // CommissionPaymentStatus.Pending
+                bookingDate: new Date().toISOString(),
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
             });
             
             updateState({ bookingConfirmed: true, bookingId, bookingTime });
+            console.log(`✅ Booking created with commission tracking - Hotel: ${hotelId}, Commission: ${commissionAmount}`);
         } catch (_error) {
             console.error('Booking error:', _error);
             alert('Booking failed. Please try again.');
         } finally {
             updateState({ isProcessing: false });
+        }
+    };
+
+    // 🔑 CRITICAL: Commission management functions
+    const handleCommissionAction = async (recordId: string, action: 'verify' | 'reject', rejectionReason?: string) => {
+        try {
+            const updateData: any = {
+                updatedAt: new Date().toISOString(),
+                verifiedBy: parseInt(hotelId), // Hotel ID who is verifying
+                verifiedAt: new Date().toISOString()
+            };
+
+            if (action === 'verify') {
+                updateData.status = 'verified';
+                console.log(`✅ Verifying commission record ${recordId}`);
+            } else {
+                updateData.status = 'rejected';
+                updateData.rejectionReason = rejectionReason || 'No reason provided';
+                console.log(`❌ Rejecting commission record ${recordId}: ${rejectionReason}`);
+            }
+
+            await databases.updateDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.commissionRecords,
+                recordId,
+                updateData
+            );
+
+            // Reload commission records to reflect changes
+            await loadCommissionRecords();
+            
+            alert(action === 'verify' ? '✅ Commission verified successfully!' : '❌ Commission rejected successfully!');
+        } catch (error) {
+            console.error(`Error ${action}ing commission:`, error);
+            alert(`Failed to ${action} commission. Please try again.`);
         }
     };
 
@@ -308,121 +403,6 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
                                 </p>
                             </div>
                         )}
-                    </div>
-                );
-
-            case 'profile':
-                return (
-                    <div className="space-y-6">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-                                <Building className="w-5 h-5 text-orange-600" />
-                            </div>
-                            <h2 className="text-2xl font-bold text-gray-900">{t('dashboard.profile')}</h2>
-                        </div>
-                        
-                        {/* Banner and Profile Image */}
-                        <div className="relative">
-                            <input type="file" accept="image/*" onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                    const reader = new FileReader();
-                                    reader.onloadend = () => updateState({ mainImage: reader.result as string });
-                                    reader.readAsDataURL(file);
-                                }
-                            }} className="hidden" id="hotel-banner" />
-                            <label htmlFor="hotel-banner" className="block w-full h-48 cursor-pointer relative overflow-hidden rounded-xl border-2 border-dashed border-gray-300 hover:border-orange-500 bg-gray-50 hover:bg-orange-50 transition-all group">
-                                {state.mainImage ? (
-                                    <>
-                                        <img src={state.mainImage} alt="Banner" className="w-full h-full object-cover" />
-                                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all flex items-center justify-center">
-                                            <span className="text-white opacity-0 group-hover:opacity-100 font-medium">Click to change banner</span>
-                                        </div>
-                                    </>
-                                ) : (
-                                    <div className="flex flex-col items-center justify-center h-full">
-                                        <ImageIcon className="h-12 w-12 text-gray-400 mb-3" />
-                                        <p className="text-sm font-medium text-gray-700">Upload Banner Image</p>
-                                    </div>
-                                )}
-                            </label>
-                            
-                            <div className="absolute top-32 left-6 z-10">
-                                <input type="file" accept="image/*" onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) {
-                                        const reader = new FileReader();
-                                        reader.onloadend = () => updateState({ profileImage: reader.result as string });
-                                        reader.readAsDataURL(file);
-                                    }
-                                }} className="hidden" id="hotel-profile" />
-                                <label htmlFor="hotel-profile" className="block w-24 h-24 rounded-full border-4 border-white shadow-lg cursor-pointer bg-white overflow-hidden hover:ring-4 hover:ring-orange-500 hover:ring-opacity-50 transition-all">
-                                    {state.profileImage ? (
-                                        <img src={state.profileImage} alt="Logo" className="w-full h-full object-cover" />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                                            <User className="w-10 h-10 text-gray-400" />
-                                        </div>
-                                    )}
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <div className="mt-20"></div>
-                        
-                        <div className="space-y-4">
-                            <div>
-                                <label htmlFor="hotel-name" className="flex items-center gap-2 text-sm font-medium text-gray-400 mb-2">
-                                    <Building className="w-4 h-4" />Hotel Name
-                                </label>
-                                <input 
-                                    id="hotel-name"
-                                    className="w-full p-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500" 
-                                    placeholder="Your Hotel Name"
-                                    value={state.hotelName}
-                                    onChange={(e) => updateState({ hotelName: e.target.value })}
-                                />
-                            </div>
-                            
-                            <div>
-                                <label htmlFor="hotel-address" className="flex items-center gap-2 text-sm font-medium text-gray-400 mb-2">
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    </svg>Address
-                                </label>
-                                <textarea 
-                                    id="hotel-address"
-                                    className="w-full p-4 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 min-h-[100px] resize-none"
-                                    placeholder="Your Address / Location"
-                                    value={state.hotelAddress}
-                                    onChange={(e) => updateState({ hotelAddress: e.target.value })}
-                                />
-                            </div>
-                            
-                            <div>
-                                <label htmlFor="hotel-phone" className="flex items-center gap-2 text-sm font-medium text-gray-400 mb-2">
-                                    <Phone className="w-4 h-4" />Contact Phone
-                                </label>
-                                <input 
-                                    id="hotel-phone"
-                                    className="w-full p-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                    placeholder="Your Phone Number"
-                                    value={state.hotelPhone}
-                                    onChange={(e) => updateState({ hotelPhone: e.target.value })}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="flex justify-end pt-4 border-t">
-                            <button 
-                                onClick={handleSaveAndPreview}
-                                disabled={state.isProcessing}
-                                className="bg-orange-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-orange-600 transition-all shadow-md disabled:opacity-50"
-                            >
-                                {state.isProcessing ? 'Saving...' : t('dashboard.savePreviewMenu')}
-                            </button>
-                        </div>
                     </div>
                 );
 
@@ -518,35 +498,167 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
             case 'commissions':
                 return (
                     <div className="space-y-6">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-                                <svg className="w-5 h-5 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                                    <DollarSign className="w-5 h-5 text-orange-600" />
+                                </div>
+                                <div>
+                                    <h2 className="text-2xl font-bold text-gray-900">Commissions</h2>
+                                    <p className="text-sm text-gray-500">Hotel ID: {hotelId} • QR Code Connected</p>
+                                </div>
                             </div>
-                            <h2 className="text-2xl font-bold text-gray-900">{t('dashboard.commissions')}</h2>
+                            <button 
+                                onClick={() => loadCommissionRecords()} 
+                                className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg transition-colors"
+                                disabled={isLoadingCommissions}
+                            >
+                                {isLoadingCommissions ? 'Loading...' : 'Refresh'}
+                            </button>
                         </div>
-                        <div className="text-center py-20">
-                            <h3 className="text-xl font-semibold text-gray-800">Commission Management</h3>
-                            <p className="text-gray-500 mt-2">Track earnings and commissions from bookings.</p>
-                        </div>
-                    </div>
-                );
 
-            case 'membership':
-                return (
-                    <div className="space-y-6">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-                                <svg className="w-5 h-5 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                                </svg>
+                        {/* Commission Summary Cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div className="bg-white p-4 rounded-xl border shadow-sm">
+                                <div className="text-xs text-gray-500 mb-1">Total Commissions</div>
+                                <div className="text-2xl font-bold text-orange-600">
+                                    Rp {commissionRecords.reduce((sum, record) => sum + (record.commissionAmount || 0), 0).toLocaleString()}
+                                </div>
                             </div>
-                            <h2 className="text-2xl font-bold text-gray-900">{t('dashboard.membership')}</h2>
+                            <div className="bg-white p-4 rounded-xl border shadow-sm">
+                                <div className="text-xs text-gray-500 mb-1">Pending</div>
+                                <div className="text-2xl font-bold text-yellow-600">
+                                    {commissionRecords.filter(r => r.status === 'pending' || r.status === 'awaiting_verification').length}
+                                </div>
+                            </div>
+                            <div className="bg-white p-4 rounded-xl border shadow-sm">
+                                <div className="text-xs text-gray-500 mb-1">Verified</div>
+                                <div className="text-2xl font-bold text-green-600">
+                                    {commissionRecords.filter(r => r.status === 'verified').length}
+                                </div>
+                            </div>
+                            <div className="bg-white p-4 rounded-xl border shadow-sm">
+                                <div className="text-xs text-gray-500 mb-1">Rejected</div>
+                                <div className="text-2xl font-bold text-red-600">
+                                    {commissionRecords.filter(r => r.status === 'rejected').length}
+                                </div>
+                            </div>
                         </div>
-                        <div className="text-center py-20">
-                            <h3 className="text-xl font-semibold text-gray-800">Membership Program</h3>
-                            <p className="text-gray-500 mt-2">Manage hotel guest membership benefits and rewards.</p>
+
+                        {/* Commission Records Table */}
+                        <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+                            <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                                <h3 className="font-semibold text-gray-800">Commission Records</h3>
+                                <p className="text-xs text-gray-500">Bookings made through your QR code: {state.qrLink}</p>
+                            </div>
+                            
+                            {isLoadingCommissions ? (
+                                <div className="p-8 text-center">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-4"></div>
+                                    <p className="text-gray-500">Loading commission records...</p>
+                                </div>
+                            ) : commissionRecords.length === 0 ? (
+                                <div className="p-8 text-center">
+                                    <DollarSign className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                                    <h4 className="font-semibold text-gray-800 mb-2">No Commission Records Yet</h4>
+                                    <p className="text-gray-500 text-sm">Commission records will appear here when guests book services through your QR code.</p>
+                                </div>
+                            ) : (
+                                <div className="overflow-x-auto">
+                                    <table className="w-full">
+                                        <thead className="bg-gray-50 border-b border-gray-200">
+                                            <tr>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Commission</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-gray-200">
+                                            {commissionRecords.map((record) => (
+                                                <tr key={record.$id} className="hover:bg-gray-50">
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <div>
+                                                            <div className="text-sm font-medium text-gray-900">{record.providerName}</div>
+                                                            <div className="text-xs text-gray-500 capitalize">{record.providerType}</div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                        Rp {record.serviceAmount?.toLocaleString()}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <div className="text-sm font-medium text-orange-600">Rp {record.commissionAmount?.toLocaleString()}</div>
+                                                        <div className="text-xs text-gray-500">{record.commissionRate}%</div>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                                            record.status === 'verified' ? 'bg-green-100 text-green-800' :
+                                                            record.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                                            record.status === 'awaiting_verification' ? 'bg-blue-100 text-blue-800' :
+                                                            record.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                                            'bg-gray-100 text-gray-800'
+                                                        }`}>
+                                                            {record.status}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                        {new Date(record.bookingDate).toLocaleDateString()}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                                        {record.status === 'awaiting_verification' && (
+                                                            <div className="flex gap-2">
+                                                                <button
+                                                                    onClick={() => handleCommissionAction(record.$id, 'verify')}
+                                                                    className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs transition-colors"
+                                                                >
+                                                                    ✓ Accept
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => {
+                                                                        const reason = prompt('Rejection reason (optional):');
+                                                                        if (reason !== null) { // User didn't cancel
+                                                                            handleCommissionAction(record.$id, 'reject', reason);
+                                                                        }
+                                                                    }}
+                                                                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs transition-colors"
+                                                                >
+                                                                    ✗ Reject
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                        {record.status === 'verified' && (
+                                                            <span className="text-green-600 text-xs font-medium">✓ Confirmed</span>
+                                                        )}
+                                                        {record.status === 'rejected' && (
+                                                            <span className="text-red-600 text-xs font-medium">✗ Rejected</span>
+                                                        )}
+                                                        {record.status === 'pending' && (
+                                                            <span className="text-yellow-600 text-xs font-medium">⏳ Pending</span>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                            <div className="flex items-start gap-3">
+                                <div className="w-5 h-5 text-blue-600 mt-0.5">ℹ️</div>
+                                <div className="text-sm">
+                                    <p className="font-medium text-blue-900 mb-1">How Commission Tracking Works:</p>
+                                    <ul className="text-blue-800 space-y-1 text-xs">
+                                        <li>• When guests scan your QR code and book services, commission records are automatically created</li>
+                                        <li>• Therapists/Places upload payment proof after completing services</li>
+                                        <li>• You can accept or reject commission payments based on proof verification</li>
+                                        <li>• Each hotel/villa has its own unique QR code for accurate commission tracking</li>
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 );
@@ -588,33 +700,18 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
     const navItems = [
         { id: 'analytics', icon: BarChart3, label: t('dashboard.analytics'), color: 'blue', description: 'View performance metrics' },
         { id: 'discounts', icon: Percent, label: t('dashboard.discounts'), color: 'green', description: 'Manage special offers' },
-        { id: 'profile', icon: Hotel, label: t('dashboard.profile'), color: 'orange', description: 'Hotel information' },
         { id: 'menu', icon: ClipboardList, label: t('dashboard.menu'), badge: providers.length, color: 'indigo', description: 'Service providers' },
         { id: 'feedback', icon: MessageSquare, label: t('dashboard.feedback'), color: 'yellow', description: 'Customer reviews' },
         { id: 'concierge', icon: Users, label: t('dashboard.concierge'), color: 'teal', description: 'Guest services' },
-        { id: 'commissions', icon: DollarSign, label: t('dashboard.commissions'), color: 'emerald', description: 'Payment tracking' },
+        { id: 'commissions', icon: DollarSign, label: t('dashboard.commissions'), color: 'orange', description: 'Payment tracking' },
         { id: 'notifications', icon: BellRing, label: t('dashboard.notifications'), color: 'red', description: 'System alerts' },
-        { id: 'membership', icon: Package, label: t('dashboard.membership'), color: 'purple', description: 'Subscription plans' },
         { id: 'services-settings', icon: Settings, label: t('dashboard.services'), color: 'gray', description: 'Configure services' },
     ];
 
     return (
         <div className="h-screen bg-gray-50 flex flex-col">
-            {/* Header */}
-            <header className="bg-white shadow-sm px-4 py-3 z-30 flex-shrink-0">
-                <div className="flex items-center justify-between max-w-[430px] sm:max-w-5xl mx-auto">
-                    <h1 className="text-xl font-bold text-gray-800">
-                        <span className="text-black">Inda</span><span className="text-orange-500">street</span> Hotel
-                    </h1>
-                    <button 
-                        onClick={() => updateState({ isSideDrawerOpen: true })} 
-                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                        aria-label="Open side menu"
-                    >
-                        <Menu className="w-5 h-5 text-orange-500" />
-                    </button>
-                </div>
-            </header>
+            {/* Global Header */}
+            <DashboardHeader onMenuClick={() => updateState({ isSideDrawerOpen: true })} t={t} />
 
             {/* Side Drawer */}
             {state.isSideDrawerOpen && (
@@ -629,8 +726,8 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
                     />
                     <div className="fixed top-0 right-0 h-full w-80 bg-gradient-to-br from-white via-gray-50 to-gray-100 shadow-2xl z-50 flex flex-col">
                         <div className="p-6 flex justify-between items-center border-b border-gray-200">
-                            <h2 className="font-bold text-2xl">
-                                <span className="text-black">Hotel</span><span className="text-orange-500">Menu</span>
+                            <h2 className="font-bold text-2xl text-gray-800">
+                                Hotel Menu
                             </h2>
                             <button 
                                 onClick={() => updateState({ isSideDrawerOpen: false })} 
@@ -663,7 +760,14 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
                                     return (
                                         <button
                                             key={item.id}
-                                            onClick={() => updateState({ activeTab: item.id, isSideDrawerOpen: false })}
+                                            onClick={() => {
+                                                if (item.id === 'menu' && setPage) {
+                                                    // Navigate to live menu page instead of showing menu tab
+                                                    setPage('hotelVillaMenu');
+                                                } else {
+                                                    updateState({ activeTab: item.id, isSideDrawerOpen: false });
+                                                }
+                                            }}
                                             className={`flex items-center gap-4 w-full text-left p-4 rounded-xl transition-all border-l-4 group transform hover:scale-105 ${
                                                 state.activeTab === item.id 
                                                     ? `${borderClass} bg-gradient-to-r from-gray-50 to-white shadow-lg` 
@@ -714,7 +818,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
             <footer className="bg-white border-t border-gray-200 z-20 mt-auto">
                 <div className="px-4 py-3 max-w-[430px] sm:max-w-5xl mx-auto">
                     <p className="text-xs text-gray-500 text-center">
-                        &copy; 2025 <span className="text-black font-semibold">Inda</span><span className="text-orange-500 font-semibold">street</span> Hotel Dashboard
+                        &copy; 2025 Hotel Dashboard
                     </p>
                 </div>
             </footer>
@@ -758,11 +862,30 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
                                             Download QR Code
                                         </button>
                                         <div className="grid grid-cols-2 gap-2">
-                                            <button onClick={() => { navigator.clipboard.writeText(state.qrLink); alert('Link copied!'); }} className="bg-gray-100 text-gray-800 py-2 rounded-lg">Copy Link</button>
-                                            <button onClick={() => {
-                                                const whatsappMessage = `Check out our wellness menu: ${state.qrLink}`;
-                                                globalThis.open(`https://wa.me/?text=${encodeURIComponent(whatsappMessage)}`, '_blank');
-                                            }} className="bg-green-500 text-white py-2 rounded-lg">WhatsApp</button>
+                                            <button onClick={() => { navigator.clipboard.writeText(state.qrLink); alert('Link copied!'); }} className="bg-gray-100 text-gray-800 py-2 rounded-lg text-sm">Copy Link</button>
+                                            <button onClick={() => window.print()} className="bg-blue-600 text-white py-2 rounded-lg text-sm">Print QR</button>
+                                        </div>
+                                        <div className="mt-3">
+                                            <p className="text-xs text-gray-500 mb-2">Share on Social Media:</p>
+                                            <div className="grid grid-cols-4 gap-2">
+                                                <button onClick={() => {
+                                                    const whatsappMessage = `Check out our wellness menu: ${state.qrLink}`;
+                                                    globalThis.open(`https://wa.me/?text=${encodeURIComponent(whatsappMessage)}`, '_blank');
+                                                }} className="bg-green-500 text-white py-2 rounded-lg text-xs">WhatsApp</button>
+                                                <button onClick={() => {
+                                                    const text = `Check out this amazing wellness menu!`;
+                                                    globalThis.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(state.qrLink)}&quote=${encodeURIComponent(text)}`, '_blank');
+                                                }} className="bg-blue-600 text-white py-2 rounded-lg text-xs">Facebook</button>
+                                                <button onClick={() => {
+                                                    const text = `Check out this wellness menu: ${state.qrLink}`;
+                                                    globalThis.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
+                                                }} className="bg-sky-500 text-white py-2 rounded-lg text-xs">Twitter</button>
+                                                <button onClick={() => {
+                                                    const subject = 'Wellness Menu';
+                                                    const body = `Check out our wellness menu: ${state.qrLink}`;
+                                                    globalThis.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
+                                                }} className="bg-gray-600 text-white py-2 rounded-lg text-xs">Email</button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

@@ -600,7 +600,7 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
             <header className="bg-white shadow-sm px-4 py-3 z-30 flex-shrink-0">
                 <div className="flex items-center justify-between max-w-[430px] sm:max-w-5xl mx-auto">
                     <h1 className="text-xl font-bold text-gray-800">
-                        <span className="text-black">Inda</span><span className="text-orange-500">street</span> Villa
+                        Villa Dashboard
                     </h1>
                     <button 
                         onClick={() => updateState({ isSideDrawerOpen: true })} 
@@ -674,7 +674,7 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
             <footer className="bg-white border-t border-gray-200 z-20 mt-auto">
                 <div className="px-4 py-3 max-w-[430px] sm:max-w-5xl mx-auto">
                     <p className="text-xs text-gray-500 text-center">
-                        &copy; 2025 <span className="text-black font-semibold">Inda</span><span className="text-orange-500 font-semibold">street</span> Villa Dashboard
+                        &copy; 2025 Villa Dashboard
                     </p>
                 </div>
             </footer>
@@ -718,11 +718,30 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
                                             Download QR Code
                                         </button>
                                         <div className="grid grid-cols-2 gap-2">
-                                            <button onClick={() => { navigator.clipboard.writeText(state.qrLink); alert('Link copied!'); }} className="bg-gray-100 text-gray-800 py-2 rounded-lg">Copy Link</button>
-                                            <button onClick={() => {
-                                                const whatsappMessage = `Check out our wellness menu: ${state.qrLink}`;
-                                                globalThis.open(`https://wa.me/?text=${encodeURIComponent(whatsappMessage)}`, '_blank');
-                                            }} className="bg-green-500 text-white py-2 rounded-lg">WhatsApp</button>
+                                            <button onClick={() => { navigator.clipboard.writeText(state.qrLink); alert('Link copied!'); }} className="bg-gray-100 text-gray-800 py-2 rounded-lg text-sm">Copy Link</button>
+                                            <button onClick={() => window.print()} className="bg-blue-600 text-white py-2 rounded-lg text-sm">Print QR</button>
+                                        </div>
+                                        <div className="mt-3">
+                                            <p className="text-xs text-gray-500 mb-2">Share on Social Media:</p>
+                                            <div className="grid grid-cols-4 gap-2">
+                                                <button onClick={() => {
+                                                    const whatsappMessage = `Check out our wellness menu: ${state.qrLink}`;
+                                                    globalThis.open(`https://wa.me/?text=${encodeURIComponent(whatsappMessage)}`, '_blank');
+                                                }} className="bg-green-500 text-white py-2 rounded-lg text-xs">WhatsApp</button>
+                                                <button onClick={() => {
+                                                    const text = `Check out this amazing wellness menu!`;
+                                                    globalThis.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(state.qrLink)}&quote=${encodeURIComponent(text)}`, '_blank');
+                                                }} className="bg-blue-600 text-white py-2 rounded-lg text-xs">Facebook</button>
+                                                <button onClick={() => {
+                                                    const text = `Check out this wellness menu: ${state.qrLink}`;
+                                                    globalThis.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
+                                                }} className="bg-sky-500 text-white py-2 rounded-lg text-xs">Twitter</button>
+                                                <button onClick={() => {
+                                                    const subject = 'Wellness Menu';
+                                                    const body = `Check out our wellness menu: ${state.qrLink}`;
+                                                    globalThis.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
+                                                }} className="bg-gray-600 text-white py-2 rounded-lg text-xs">Email</button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

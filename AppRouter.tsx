@@ -227,7 +227,10 @@ const renderDashboardPages = (page: Page, props: AppRouterProps) => {
         case 'hotelDashboard':
             return <HotelDashboardPage 
                 onLogout={handleHotelLogout}
-                setPage={setPage}
+                therapists={therapists}
+                places={places}
+                hotelId={user?.id || '1'}
+                setPage={(page: Page) => setPage(page)}
             />;
         case 'villaDashboard':
             return <VillaDashboardPage 
@@ -1003,7 +1006,13 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             
         case 'hotelDashboard': 
  
-            return isHotelLoggedIn && <HotelDashboardPage onLogout={handleHotelLogout} /> || null;
+            return isHotelLoggedIn && <HotelDashboardPage 
+                onLogout={handleHotelLogout} 
+                therapists={therapists}
+                places={places}
+                hotelId={user?.id || '1'}
+                setPage={(page: Page) => setPage(page)}
+            /> || null;
             
         case 'villaDashboard': 
  

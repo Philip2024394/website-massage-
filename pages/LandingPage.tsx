@@ -124,6 +124,13 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
         
         console.log('🔘 Enter button clicked!');
         console.log('Selected language:', selectedLanguage);
+        console.log('onEnterApp function available:', !!onEnterApp);
+        
+        // Ensure we have the required function
+        if (!onEnterApp) {
+            console.error('❌ onEnterApp function is not provided!');
+            return;
+        }
         
         // Get comprehensive device information
         const deviceInfo = deviceService.getDeviceInfo();
@@ -156,7 +163,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
             console.log('🚀 Current selectedLanguage state:', selectedLanguage);
             console.log('🚀 Current localStorage language:', localStorage.getItem('app_language'));
             
-            onEnterApp(selectedLanguage, userLocation);
+            // Call the function immediately
+            await onEnterApp(selectedLanguage, userLocation);
             console.log('✅ onEnterApp called successfully with language:', selectedLanguage);
             
         } catch (error) {
@@ -170,9 +178,17 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
             };
             
             console.log('📍 Using fallback location:', defaultLocation);
-            onEnterApp(selectedLanguage, defaultLocation);
+            try {
+                await onEnterApp(selectedLanguage, defaultLocation);
+                console.log('✅ onEnterApp called successfully with fallback location');
+            } catch (enterError) {
+                console.error('❌ Failed to call onEnterApp:', enterError);
+            }
         } finally {
-            setIsDetectingLocation(false);
+            // Ensure button is always re-enabled, even if there's an error
+            setTimeout(() => {
+                setIsDetectingLocation(false);
+            }, 100);
         }
     };
 
@@ -292,13 +308,17 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
                             console.log('Event:', e);
                             console.log('Dropdown open?', isDropdownOpen);
                             
-                            // Close dropdown if open (don't block navigation)
+                            // Prevent event bubbling to avoid conflicts
+                            e.preventDefault();
+                            e.stopPropagation();
+                            
+                            // Close dropdown if open but don't let it interfere with navigation
                             if (isDropdownOpen) {
                                 console.log('⚠️ Dropdown is open, closing it...');
                                 setIsDropdownOpen(false);
                             }
                             
-                            // Always proceed with navigation immediately
+                            // Always proceed with navigation regardless of dropdown state
                             console.log('🚀 Proceeding with handleEnterApp...');
                             handleEnterApp();
                         }}

@@ -1,11 +1,12 @@
 import React from 'react';
 
 interface DashboardHeaderProps {
-  onLogout: () => void;
+  onLogout?: () => void;
+  onMenuClick?: () => void;
   t?: (key: string) => string;
 }
 
-const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onLogout, t }) => {
+const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onLogout, onMenuClick, t }) => {
   const translate = (key: string): string => {
     if (t) {
       const result = t(key);
@@ -24,20 +25,20 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onLogout, t }) => {
 
   return (
   <header className="flex items-center justify-between px-6 py-4 bg-white shadow-sm border-b">
-    <div className="text-2xl font-bold tracking-tight">
-      <span className="text-black">Indo</span>
-      <span className="text-orange-500">Street</span>
+    <div className="text-2xl font-bold tracking-tight text-gray-800">
+      Dashboard
     </div>
-    <button 
-      onClick={onLogout} 
-      className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors" 
-      title={translate('home.menu.logout')}
-    >
-      <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v1" />
-      </svg>
-      <span className="text-black font-medium text-sm">{translate('home.menu.logout')}</span>
-    </button>
+    {onMenuClick && (
+      <button 
+        onClick={onMenuClick} 
+        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+        aria-label="Open menu"
+      >
+        <svg className="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+    )}
   </header>
   );
 };
