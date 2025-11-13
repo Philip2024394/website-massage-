@@ -116,7 +116,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                     animation: float 6s ease-in-out infinite;
                 }
             `}</style>
-            <div className="fixed inset-0 z-50" role="dialog" aria-modal="true">
+            <div className="fixed inset-0 z-[9998]" role="dialog" aria-modal="true">
             {/* Backdrop */}
             <div 
                 className="absolute inset-0 bg-black bg-opacity-50 transition-opacity" 

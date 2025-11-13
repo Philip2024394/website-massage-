@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { User, UserLocation, Agent, Place, Therapist, Analytics, UserCoins } from '../types';
-import LocationModal from '../components/LocationModal';
 import TherapistCard from '../components/TherapistCard';
+import OrangeLocationModal from '../components/OrangeLocationModal';
 import MassagePlaceCard from '../components/MassagePlaceCard';
 import RatingModal from '../components/RatingModal';
 import { MASSAGE_TYPES_CATEGORIZED } from '../constants/rootConstants';
@@ -129,17 +129,7 @@ const HomePage: React.FC<HomePageProps> = ({
         t = {
             home: homeTranslations,
             detail: {},
-            locationModal: {
-                title: t('locationModal.title'),
-                prompt: t('locationModal.prompt'),
-                placeholder: t('locationModal.placeholder'),
-                detectingLocation: t('locationModal.detectingLocation') || 'Mendeteksi lokasi Anda...',
-                useCurrentLocationButton: t('locationModal.useCurrentLocationButton'),
-                searchLocation: t('locationModal.searchLocation') || 'Cari Lokasi',
-                confirmButton: t('locationModal.confirmButton'),
-                locationError: t('locationModal.locationError') || 'Tidak dapat mendeteksi lokasi',
-                selectLocation: t('locationModal.selectLocation') || 'Silakan pilih lokasi'
-            },
+
             common: {}
         };
         console.log('✅ Converted function-based translations to object structure for HomePage');
@@ -200,8 +190,8 @@ const HomePage: React.FC<HomePageProps> = ({
     }
 
     const [activeTab, setActiveTab] = useState('home');
-    const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
     const [selectedMassageType, setSelectedMassageType] = useState(propSelectedMassageType || 'all');
     const [, setCustomLinks] = useState<any[]>([]);
     const [showRatingModal, setShowRatingModal] = useState(false);
@@ -270,17 +260,61 @@ const HomePage: React.FC<HomePageProps> = ({
         }
     };
 
-    // Auto-open location modal ONLY for regular customers (not for therapists, places, or admin) - React 19 safe
+    // Function to show custom orange location modal
+    const handleLocationRequest = () => {
+        console.log('📍 Showing custom orange location modal...');
+        setIsLocationModalOpen(true);
+    };
+
+    // Function to handle when user allows location in custom modal
+    const handleLocationAllow = async () => {
+        setIsLocationModalOpen(false);
+        try {
+            console.log('📍 User allowed location, requesting via browser API...');
+            const location = await getCustomerLocation();
+            
+            console.log('✅ Location detected:', location);
+            
+            // Update the app's user location
+            if (onSetUserLocation) {
+                onSetUserLocation({
+                    address: 'Current location',
+                    lat: location.lat,
+                    lng: location.lng
+                });
+            }
+            
+            // Update auto-detected location state
+            setAutoDetectedLocation(location);
+            
+        } catch (error) {
+            console.log('❌ Location detection failed:', error);
+            // Show a user-friendly error message
+            alert('Unable to detect location. Please enable location permissions in your browser and try again.');
+        }
+    };
+
+    // Function to handle when user denies location in custom modal
+    const handleLocationDeny = () => {
+        console.log('📍 User denied location access');
+        setIsLocationModalOpen(false);
+        // App continues with default location (Jakarta, Indonesia)
+    };
+
+    // Show custom location modal for new users
     useEffect(() => {
         try {
-            // Don't show location modal if user is a provider, agent, or customer
-            if (!loggedInProvider && !_loggedInAgent && !loggedInCustomer) {
-                setIsLocationModalOpen(true);
+            // Show location modal for regular users (not providers/agents/customers) who don't have location set
+            if (!loggedInProvider && !_loggedInAgent && !loggedInCustomer && !userLocation && !autoDetectedLocation) {
+                // Small delay for better UX
+                setTimeout(() => {
+                    setIsLocationModalOpen(true);
+                }, 1000);
             }
         } catch (error) {
             console.warn('HomePage location modal effect warning (safe to ignore in React 19):', error);
         }
-    }, [loggedInProvider, _loggedInAgent, loggedInCustomer]);
+    }, [loggedInProvider, _loggedInAgent, loggedInCustomer, userLocation, autoDetectedLocation]);
 
     // Automatic location detection (seamless, no UI)
     useEffect(() => {
@@ -457,11 +491,11 @@ const HomePage: React.FC<HomePageProps> = ({
                         <span className="text-black">Inda</span><span className="text-orange-500">street</span>
                     </h1>
                     <div className="flex items-center gap-3 text-gray-600">
-                        {/* Location Reset Button - Red Color */}
+                        {/* Location Update Button - Orange Color */}
                         <button 
-                            onClick={() => setIsLocationModalOpen(true)} 
-                            className="p-2 hover:bg-red-50 rounded-full transition-colors text-red-500" 
-                            title="Reset Location"
+                            onClick={handleLocationRequest} 
+                            className="p-2 hover:bg-orange-50 rounded-full transition-colors text-orange-500" 
+                            title="Update Location"
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -777,16 +811,15 @@ const HomePage: React.FC<HomePageProps> = ({
 
                 {/* ...existing code for therapists/places rendering, modals, etc. should follow here... */}
             </main>
-            {isLocationModalOpen && (
-                <LocationModal
-                    onConfirm={(location) => {
-                        onSetUserLocation(location);
-                        setIsLocationModalOpen(false);
-                    }}
-                    onClose={() => setIsLocationModalOpen(false)}
-                    t={t.locationModal}
-                />
-            )}
+            
+            {/* Custom Orange Location Modal */}
+            <OrangeLocationModal
+                isVisible={isLocationModalOpen}
+                onAllow={handleLocationAllow}
+                onDeny={handleLocationDeny}
+                language='id'
+            />
+            
             {/* Rating modal removed for design mock */}
 
             {/* Footer */}

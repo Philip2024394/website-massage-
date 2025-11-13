@@ -3,12 +3,12 @@ import Button from '../components/Button';
 import PasswordInput from '../components/PasswordInput';
 import { therapistAuth } from '../lib/auth';
 import { trackDailySignIn } from '../lib/coinHooks';
-import { LogIn, UserPlus, Mail, Search, Eye, EyeOff, ChevronLeft } from 'lucide-react';
+import { LogIn, UserPlus, Mail, Eye, EyeOff, ChevronLeft } from 'lucide-react';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { AppDrawer } from '../components/AppDrawer';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
 import PageNumberBadge from '../components/PageNumberBadge';
-import { COUNTRIES } from '../countries';
+
 
 interface TherapistLoginPageProps {
     onSuccess: (therapistId: string) => void;
@@ -16,12 +16,10 @@ interface TherapistLoginPageProps {
 }
 
 const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({ onSuccess, onBack }) => {
-    const [viewMode, setViewMode] = useState<'selectCountry' | 'login' | 'register'>('selectCountry');
-    const [selectedCountry, setSelectedCountry] = useState<any>(null);
+    const [viewMode, setViewMode] = useState<'login' | 'register'>('login');
     const [phoneNumber, setPhoneNumber] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -33,30 +31,8 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({ onSuccess, onBa
         password: ''
     });
 
-    // Add flag emojis to countries
-    const countriesWithFlags = COUNTRIES.map(country => ({
-        ...country,
-        flag: getCountryFlag(country.code),
-        dialCode: country.dial_code
-    }));
-
-    const filteredCountries = countriesWithFlags.filter(country =>
-        country.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    // Function to get country flag emoji
-    function getCountryFlag(countryCode: string) {
-        const codePoints = countryCode
-            .toUpperCase()
-            .split('')
-            .map(char => 127397 + char.charCodeAt(0));
-        return String.fromCodePoint(...codePoints);
-    }
-
-    const handleCountrySelect = (country: any) => {
-        setSelectedCountry(country);
-        setViewMode('login');
-    };
+    // Set Indonesia as default country
+    const selectedCountry = { name: "Indonesia", code: "ID", dial_code: "+62", flag: "🇮🇩" };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -190,53 +166,12 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({ onSuccess, onBa
                     )}
 
                     {/* Current View */}
-                    {viewMode === 'selectCountry' && (
-                        <div>
-                            <h3 className="text-xl font-semibold mb-4 text-center text-gray-700">
-                                Select Your Country
-                            </h3>
-                            <div className="mb-6">
-                                <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                                    <input
-                                        type="text"
-                                        placeholder="Search countries..."
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all bg-white text-gray-700"
-                                    />
-                                </div>
-                            </div>
-                            <div className="max-h-60 overflow-y-auto space-y-2">
-                                {filteredCountries.map((country) => (
-                                    <button
-                                        key={country.code}
-                                        onClick={() => handleCountrySelect(country)}
-                                        className="w-full text-left p-4 rounded-lg hover:bg-orange-50 hover:shadow-md border border-gray-200 transition-all text-gray-700 bg-white"
-                                    >
-                                        <div className="flex items-center">
-                                            <span className="text-xl mr-3">{country.flag}</span>
-                                            <span className="font-medium">{country.name}</span>
-                                        </div>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
                     {viewMode === 'login' && (
                         <div>
                             <div className="mb-6">
-                                <button
-                                    onClick={() => setViewMode('selectCountry')}
-                                    className="flex items-center text-orange-600 hover:text-orange-700 transition-colors mb-4 group"
-                                >
-                                    <ChevronLeft className="w-5 h-5 mr-1 group-hover:-translate-x-1 transition-transform" />
-                                    Change Country
-                                </button>
                                 <div className="flex items-center justify-center mb-4 p-3 bg-orange-50 rounded-xl border border-orange-200">
-                                    <span className="text-2xl mr-3">{selectedCountry?.flag}</span>
-                                    <span className="font-semibold text-gray-700">{selectedCountry?.name}</span>
+                                    <span className="text-2xl mr-3">{selectedCountry.flag}</span>
+                                    <span className="font-semibold text-gray-700">{selectedCountry.name}</span>
                                 </div>
                             </div>
 
@@ -359,7 +294,7 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({ onSuccess, onBa
                                     </label>
                                     <div className="flex rounded-xl border border-gray-300 focus-within:ring-2 focus-within:ring-orange-500/20 focus-within:border-orange-500 transition-all bg-white">
                                         <div className="flex items-center px-3 border-r border-gray-300 bg-gray-50 rounded-l-xl">
-                                            <span className="text-sm text-gray-600">{selectedCountry?.dialCode}</span>
+                                            <span className="text-sm text-gray-600">{selectedCountry.dial_code}</span>
                                         </div>
                                         <input
                                             type="tel"
