@@ -160,14 +160,14 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) =>
 
             {/* Main Content with Background */}
             <main 
-                className="flex-1 flex items-center justify-center px-4 py-2 overflow-hidden relative bg-cover bg-center bg-no-repeat min-h-0"
+                className="flex-1 flex items-start justify-center px-4 py-2 overflow-hidden relative bg-cover bg-center bg-no-repeat min-h-0"
                 style={{
-                    backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/hotel%20image.png?updatedAt=1763051035257)'
+                    backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/hotel%20image.png?updatedAt=1763051969427)'
                 }}
             >
-                <div className="max-w-md w-full relative z-10 max-h-full overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                    {/* Header - Moved higher up with larger text */}
-                    <div className="text-center mb-6 sm:mb-8 pt-2 sm:pt-4">
+                <div className="max-w-md w-full relative z-10 max-h-full overflow-y-auto pt-4 sm:pt-6" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                    {/* Header - Positioned right under header area */}
+                    <div className="text-center mb-4 sm:mb-6">
                         <h2 className="text-4xl sm:text-5xl font-bold mb-2 sm:mb-3 text-gray-800 drop-shadow-lg">Hotel</h2>
                         <p className="text-gray-600 text-xs sm:text-sm drop-shadow">Manage your massage services and bookings</p>
                     </div>

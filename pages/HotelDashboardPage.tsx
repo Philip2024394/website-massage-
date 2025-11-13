@@ -1,5 +1,9 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
-import { Building, Image as ImageIcon, LogOut, Menu, Phone, QrCode, Star, Tag, User, X, Bell } from 'lucide-react';
+import { 
+    Building, Image as ImageIcon, LogOut, Menu, Phone, QrCode, Star, Tag, User, X, Bell,
+    BarChart3, Percent, Hotel, ClipboardList, MessageSquare, Users, 
+    DollarSign, BellRing, Package, Settings
+} from 'lucide-react';
 import { Therapist, Place, HotelVillaServiceStatus } from '../types';
 import { parsePricing } from '../utils/appwriteHelpers';
 import { getAllTherapistImages } from '../utils/therapistImageUtils';
@@ -582,16 +586,16 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
 
     // Navigation items for sidebar
     const navItems = [
-        { id: 'analytics', icon: '📊', label: t('dashboard.analytics') },
-        { id: 'discounts', icon: '🏷️', label: t('dashboard.discounts') },
-        { id: 'profile', icon: '🏢', label: t('dashboard.profile') },
-        { id: 'menu', icon: '📋', label: t('dashboard.menu'), badge: providers.length },
-        { id: 'feedback', icon: '⭐', label: t('dashboard.feedback') },
-        { id: 'concierge', icon: '👥', label: t('dashboard.concierge') },
-        { id: 'commissions', icon: '💰', label: t('dashboard.commissions') },
-        { id: 'notifications', icon: '🔔', label: t('dashboard.notifications') },
-        { id: 'membership', icon: '📦', label: t('dashboard.membership') },
-        { id: 'services-settings', icon: '⚙️', label: t('dashboard.services') },
+        { id: 'analytics', icon: BarChart3, label: t('dashboard.analytics'), color: 'blue', description: 'View performance metrics' },
+        { id: 'discounts', icon: Percent, label: t('dashboard.discounts'), color: 'green', description: 'Manage special offers' },
+        { id: 'profile', icon: Hotel, label: t('dashboard.profile'), color: 'orange', description: 'Hotel information' },
+        { id: 'menu', icon: ClipboardList, label: t('dashboard.menu'), badge: providers.length, color: 'indigo', description: 'Service providers' },
+        { id: 'feedback', icon: MessageSquare, label: t('dashboard.feedback'), color: 'yellow', description: 'Customer reviews' },
+        { id: 'concierge', icon: Users, label: t('dashboard.concierge'), color: 'teal', description: 'Guest services' },
+        { id: 'commissions', icon: DollarSign, label: t('dashboard.commissions'), color: 'emerald', description: 'Payment tracking' },
+        { id: 'notifications', icon: BellRing, label: t('dashboard.notifications'), color: 'red', description: 'System alerts' },
+        { id: 'membership', icon: Package, label: t('dashboard.membership'), color: 'purple', description: 'Subscription plans' },
+        { id: 'services-settings', icon: Settings, label: t('dashboard.services'), color: 'gray', description: 'Configure services' },
     ];
 
     return (
@@ -623,38 +627,74 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
                         tabIndex={0}
                         aria-label="Close side menu"
                     />
-                    <div className="fixed top-0 right-0 h-full w-80 bg-white shadow-2xl z-50">
-                        <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4 flex justify-between items-center">
-                            <h2 className="text-xl font-bold text-white">Hotel Menu</h2>
+                    <div className="fixed top-0 right-0 h-full w-80 bg-gradient-to-br from-white via-gray-50 to-gray-100 shadow-2xl z-50 flex flex-col">
+                        <div className="p-6 flex justify-between items-center border-b border-gray-200">
+                            <h2 className="font-bold text-2xl">
+                                <span className="text-black">Hotel</span><span className="text-orange-500">Menu</span>
+                            </h2>
                             <button 
                                 onClick={() => updateState({ isSideDrawerOpen: false })} 
-                                className="text-white hover:bg-orange-600 rounded-lg p-2"
+                                className="p-2 hover:bg-gray-200 rounded-full transition-colors"
                                 aria-label="Close side menu"
                             >
-                                <X className="w-5 h-5" />
+                                <X className="w-6 h-6 text-gray-600" />
                             </button>
                         </div>
-                        <nav className="p-4 space-y-2">
-                            {navItems.map((item) => (
-                                <button
-                                    key={item.id}
-                                    onClick={() => updateState({ activeTab: item.id, isSideDrawerOpen: false })}
-                                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                                        state.activeTab === item.id ? 'bg-orange-500 text-white' : 'text-gray-700 hover:bg-gray-100'
-                                    }`}
-                                >
-                                    <span className="text-xl">{item.icon}</span>
-                                    <span className="font-medium">{item.label}</span>
-                                    {item.badge && item.badge > 0 && (
-                                        <span className="ml-auto bg-orange-500 text-white text-xs rounded-full px-2.5 py-0.5 font-bold">
-                                            {item.badge}
-                                        </span>
-                                    )}
-                                </button>
-                            ))}
+                        <nav className="flex-grow overflow-y-auto p-4">
+                            <div className="space-y-2">
+                                {navItems.map((item) => {
+                                    const IconComponent = item.icon;
+                                    const colorClasses = {
+                                        blue: 'border-blue-500 group-hover:text-blue-600 bg-gradient-to-br from-blue-500 to-blue-600',
+                                        green: 'border-green-500 group-hover:text-green-600 bg-gradient-to-br from-green-500 to-green-600',
+                                        orange: 'border-orange-500 group-hover:text-orange-600 bg-gradient-to-br from-orange-500 to-orange-600',
+                                        indigo: 'border-indigo-500 group-hover:text-indigo-600 bg-gradient-to-br from-indigo-500 to-indigo-600',
+                                        yellow: 'border-yellow-500 group-hover:text-yellow-600 bg-gradient-to-br from-yellow-500 to-yellow-600',
+                                        teal: 'border-teal-500 group-hover:text-teal-600 bg-gradient-to-br from-teal-500 to-teal-600',
+                                        emerald: 'border-emerald-500 group-hover:text-emerald-600 bg-gradient-to-br from-emerald-500 to-emerald-600',
+                                        red: 'border-red-500 group-hover:text-red-600 bg-gradient-to-br from-red-500 to-red-600',
+                                        purple: 'border-purple-500 group-hover:text-purple-600 bg-gradient-to-br from-purple-500 to-purple-600',
+                                        gray: 'border-gray-500 group-hover:text-gray-600 bg-gradient-to-br from-gray-500 to-gray-600'
+                                    }[item.color] || 'border-gray-500 group-hover:text-gray-600 bg-gradient-to-br from-gray-500 to-gray-600';
+                                    
+                                    const [borderClass, hoverTextClass, gradientClass] = colorClasses.split(' group-hover:');
+                                    const [textHoverClass, bgGradientClass] = (hoverTextClass || '').split(' bg-gradient-to-br ');
+                                    
+                                    return (
+                                        <button
+                                            key={item.id}
+                                            onClick={() => updateState({ activeTab: item.id, isSideDrawerOpen: false })}
+                                            className={`flex items-center gap-4 w-full text-left p-4 rounded-xl transition-all border-l-4 group transform hover:scale-105 ${
+                                                state.activeTab === item.id 
+                                                    ? `${borderClass} bg-gradient-to-r from-gray-50 to-white shadow-lg` 
+                                                    : `${borderClass} bg-white shadow-sm hover:shadow-md`
+                                            }`}
+                                        >
+                                            <div className={`p-2 rounded-lg bg-gradient-to-br ${bgGradientClass ? `from-${item.color}-500 to-${item.color}-600` : 'from-gray-500 to-gray-600'}`}>
+                                                <IconComponent className="w-5 h-5 text-white" />
+                                            </div>
+                                            <div className="flex-grow">
+                                                <p className={`font-semibold transition-colors ${
+                                                    state.activeTab === item.id 
+                                                        ? `text-${item.color}-600` 
+                                                        : `text-gray-800 group-hover:text-${item.color}-600`
+                                                }`}>
+                                                    {item.label}
+                                                </p>
+                                                <p className="text-xs text-gray-500">{item.description}</p>
+                                            </div>
+                                            {item.badge && item.badge > 0 && (
+                                                <span className={`ml-auto text-white text-xs rounded-full px-2.5 py-0.5 font-bold bg-gradient-to-br from-${item.color}-500 to-${item.color}-600`}>
+                                                    {item.badge}
+                                                </span>
+                                            )}
+                                        </button>
+                                    );
+                                })}
+                            </div>
                         </nav>
-                        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gray-50 border-t">
-                            <button onClick={onLogout} className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">
+                        <div className="p-4 bg-gray-50 border-t">
+                            <button onClick={onLogout} className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-gradient-to-br from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-xl transition-all transform hover:scale-105 shadow-sm hover:shadow-md">
                                 <LogOut className="w-5 h-5" />
                                 <span className="font-medium">{t('dashboard.logout')}</span>
                             </button>
