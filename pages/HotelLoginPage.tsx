@@ -175,14 +175,11 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) =>
                     backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/hotel%20image.png?updatedAt=1763051035257)'
                 }}
             >
-                {/* Background overlay */}
-                <div className="absolute inset-0 bg-black/40"></div>
-                
                 <div className="max-w-md w-full relative z-10">
                     {/* Header */}
                     <div className="text-center mb-8">
-                        <h2 className="text-3xl font-bold mb-2 text-white">Hotel</h2>
-                        <p className="text-white/90 text-sm">Manage your massage services and bookings</p>
+                        <h2 className="text-3xl font-bold mb-2 text-gray-800 drop-shadow-lg">Hotel</h2>
+                        <p className="text-gray-700 text-sm drop-shadow">Manage your massage services and bookings</p>
                     </div>
 
                     <div className="mb-6 min-h-[60px] flex items-center">
@@ -226,7 +223,7 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) =>
                     {/* Forms */}
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
-                            <label className="block text-sm font-medium text-white mb-2">
+                            <label className="block text-sm font-medium text-gray-800 mb-2 drop-shadow">
                                 Email Address
                             </label>
                             <div className="relative">
@@ -243,7 +240,7 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) =>
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-white mb-2">
+                            <label className="block text-sm font-medium text-gray-800 mb-2 drop-shadow">
                                 Password
                             </label>
                             <div className="relative">
