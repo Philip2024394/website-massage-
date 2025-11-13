@@ -175,11 +175,10 @@ export const useNavigation = ({
         console.log('🚀 localStorage before enter:', localStorage.getItem('app_language'));
         
         try {
+            console.log('🚀 Starting app entry process...');
+            
             // Set flag to start fresh (prevent session restore)
             sessionStorage.setItem('start_fresh', 'true');
-            
-            // Clear any previous page session to allow fresh navigation
-            sessionStorage.removeItem('current_page');
             
             // Clear all dashboard sessions when entering from landing page
             setIsAdminLoggedIn(false);
@@ -190,21 +189,25 @@ export const useNavigation = ({
             setImpersonatedAgent(null);
             setLoggedInCustomer(null);
             
-            // Clear session storage with small delay to prevent DOM conflicts
-            await new Promise(resolve => setTimeout(resolve, 100));
-            await logout();
-            
-            // Set new state with delay to ensure DOM cleanup
-            await new Promise(resolve => setTimeout(resolve, 50));
-            console.log('🚀 About to set language to:', lang);
+            // Set user preferences immediately (no delays)
+            console.log('🚀 Setting language to:', lang);
             setLanguage(lang);
+            
+            console.log('🚀 Setting user location to:', location);
             setUserLocation(location);
             localStorage.setItem('user_location', JSON.stringify(location));
-            console.log('🚀 About to navigate to home page');
+            
+            // Navigate to home page immediately
+            console.log('🚀 Navigating to home page');
             setPage('home');
+            
+            // Clean up session in background (non-blocking)
+            logout().catch(error => console.warn('Background logout failed:', error));
+            
+            console.log('✅ App entry completed successfully');
         } catch (error) {
-            console.warn('Navigation error during app entry:', error);
-            // Fallback navigation even if logout fails
+            console.error('❌ Navigation error during app entry:', error);
+            // Ensure navigation happens even if other operations fail
             setLanguage(lang);
             setUserLocation(location);
             localStorage.setItem('user_location', JSON.stringify(location));

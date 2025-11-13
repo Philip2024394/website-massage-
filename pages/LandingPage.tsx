@@ -116,6 +116,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
     }, []);
 
     const handleEnterApp = async () => {
+        // Prevent multiple rapid clicks
+        if (isDetectingLocation) {
+            console.log('🚫 Enter button already processing - ignoring duplicate click');
+            return;
+        }
+        
         console.log('🔘 Enter button clicked!');
         console.log('Selected language:', selectedLanguage);
         

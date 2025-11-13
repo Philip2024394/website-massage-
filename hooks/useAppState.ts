@@ -56,25 +56,9 @@ export const useAppState = () => {
         return 'rewardBannersTest';
       }
       
-      // Check if this is a page refresh (performance navigation timing)
-      const navigationEntries = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[];
-      const isPageRefresh = navigationEntries.length > 0 && navigationEntries[0].type === 'reload';
-      
-      if (isPageRefresh) {
-        console.log('🔄 Page refresh detected - clearing session and showing landing page');
-        sessionStorage.removeItem('current_page');
-        return 'landing';
-      }
-      
-      // Check if user is in an active navigation session (component re-render)
-      const currentPage = sessionStorage.getItem('current_page');
-      if (currentPage && currentPage !== 'landing') {
-        console.log('🚀 Component re-render - restoring active session page:', currentPage);
-        return currentPage as Page;
-      }
-      
-      // Always show landing page for new sessions
-      console.log('🌊 New session - showing landing page');
+      // Always show landing page for fresh page loads
+      // (Session restoration is handled in the useState initializer above)
+      console.log('🌊 Fresh page load - showing landing page');
       return 'landing';
     } catch {
       console.log('⚠️ URL parameter parsing failed, defaulting to landing page');
@@ -89,21 +73,40 @@ export const useAppState = () => {
     setToLocalStorage('app_user', newUser);
   };
 
+  // Use a ref to prevent re-initialization on component re-renders
   const [page, _setPage] = useState<Page>(() => {
-    // Only use getInitialPage on first mount, not on re-renders
+    // Check for active navigation session first
+    const activeNavigation = sessionStorage.getItem('current_page');
+    if (activeNavigation && activeNavigation !== 'landing') {
+      console.log('🚀 MOUNTING: Restoring active navigation:', activeNavigation);
+      return activeNavigation as Page;
+    }
+    
+    // Use getInitialPage only for fresh mounts
     const initialPage = getInitialPage();
-    console.log('🚀 INITIAL PAGE DETERMINATION:', initialPage);
+    console.log('🚀 MOUNTING: Fresh initialization:', initialPage);
     return initialPage;
   });
+  
   const setPage = (newPage: Page) => {
-    console.log('📍 Page change request:', newPage);
-    console.log('📍 Current page before change:', page);
-    _setPage(newPage);
-    console.log('📍 setPage called - should trigger re-render with:', newPage);
+    console.log('📍 Page change request:', newPage, '(from:', page, ')');
     
-    // Store current page to prevent reset on re-render (except for refresh behavior)
+    // Prevent unnecessary state updates
+    if (page === newPage) {
+      console.log('📍 Page already set to:', newPage, '- skipping update');
+      return;
+    }
+    
+    _setPage(newPage);
+    console.log('📍 Page state updated to:', newPage);
+    
+    // Store current page for session persistence
     if (newPage !== 'landing') {
       sessionStorage.setItem('current_page', newPage);
+      console.log('📍 Session page stored:', newPage);
+    } else {
+      sessionStorage.removeItem('current_page');
+      console.log('📍 Session page cleared (back to landing)');
     }
   };
   
