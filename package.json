@@ -3,6 +3,7 @@
   "version": "2.0.0",
   "description": "Modular massage booking platform with separate apps for each user type",
   "type": "module",
+  "packageManager": "pnpm@10.21.0",
   "scripts": {
     "dev": "vite",
     "build": "cross-env ROLLUP_NO_NATIVE=1 tsc && vite build --config vite.config.deployment.js",

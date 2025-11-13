@@ -1,73 +1,10 @@
-# SUPER NUCLEAR OPTION: Use Netlify defaults + minimal config
-# Let Netlify use its default Node version (avoids download issues)
-
+# ABSOLUTE MINIMUM CONFIG
 [build]
   publish = "dist"
-  command = "npm install --legacy-peer-deps && npm run build:simple"
+  command = "corepack enable pnpm && pnpm install && pnpm run build:simple"
 
-# No environment section - use Netlify defaults
-
-# Cache-Control Headers for optimal performance and cache-busting
-[[headers]]
-  # index.html - Always fetch fresh (no cache)
-  for = "/index.html"
-  [headers.values]
-    Cache-Control = "no-cache, no-store, must-revalidate"
-    Pragma = "no-cache"
-    Expires = "0"
-    X-Content-Type-Options = "nosniff"
-    X-Frame-Options = "DENY"
-    X-XSS-Protection = "1; mode=block"
-
-[[headers]]
-  # service-worker.js - Never cache service worker
-  for = "/service-worker.js"
-  [headers.values]
-    Cache-Control = "no-cache, no-store, must-revalidate"
-    Pragma = "no-cache"
-    Expires = "0"
-
-[[headers]]
-  # Assets with hash - Cache forever (immutable)
-  for = "/assets/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  # Fonts - Cache for 1 year
-  for = "/*.woff2"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-    Access-Control-Allow-Origin = "*"
-
-[[headers]]
-  # Images - Cache for 1 week
-  for = "/*.png"
-  [headers.values]
-    Cache-Control = "public, max-age=604800"
-
-[[headers]]
-  for = "/*.jpg"
-  [headers.values]
-    Cache-Control = "public, max-age=604800"
-
-[[headers]]
-  for = "/*.svg"
-  [headers.values]
-    Cache-Control = "public, max-age=604800"
-
-# Redirect rules for SPA
+# SPA redirect
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-
-# Security headers
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Content-Type-Options = "nosniff"
-    X-Frame-Options = "DENY"
-    X-XSS-Protection = "1; mode=block"
-    Referrer-Policy = "strict-origin-when-cross-origin"
-    Permissions-Policy = "geolocation=(self), microphone=(), camera=()"
