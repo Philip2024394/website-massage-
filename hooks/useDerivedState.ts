@@ -42,7 +42,7 @@ export const useDerivedState = ({
     );
 
     const pagesWithoutFooter: Page[] = [
-        'landing', 'adminDashboard'
+        'landing', 'adminDashboard', 'hotelVillaMenu'
     ];
     const showFooter = !pagesWithoutFooter.includes(page) && !(page === 'chatList' && activeChatRoom);
 

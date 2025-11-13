@@ -18,6 +18,7 @@ interface HotelVillaMenuPageProps {
     _onBook?: (provider: Therapist | Place, type: 'therapist' | 'place') => void;
     _onBookingSubmit?: (bookingData: Partial<Booking>) => Promise<void>;
     setPage?: (page: Page) => void;
+    onBackToDashboard?: () => void; // New prop for back to dashboard functionality
 }
 
 const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({ 
@@ -28,7 +29,8 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
     places,
     language: propLanguage = 'en',
     _onBook,
-    _onBookingSubmit
+    _onBookingSubmit,
+    onBackToDashboard
 }) => {
     const [activeTab, setActiveTab] = useState<'therapists' | 'places'>('therapists');
     const [loading, setLoading] = useState(true);
@@ -168,6 +170,19 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
                 >
                     <div className="absolute inset-0 bg-black/40"></div>
                     
+                    {/* Circular Back to Dashboard Button */}
+                    {onBackToDashboard && (
+                        <button
+                            onClick={onBackToDashboard}
+                            className="absolute top-6 left-6 z-20 w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-all duration-300 hover:scale-110 shadow-lg"
+                            title="Back to Dashboard"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </button>
+                    )}
+                    
                     <div className="relative z-10 flex flex-col items-center justify-center min-h-screen p-4 text-center">
                         <div className="mb-8">
                             <h1 className="text-5xl md:text-6xl font-bold text-white mb-2">
@@ -191,7 +206,20 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
                     </div>
                 </div>
             ) : (
-                <div className="min-h-screen bg-gray-50">
+                <div className="min-h-screen bg-gray-50 relative">
+                    {/* Circular Back to Dashboard Button for Menu View */}
+                    {onBackToDashboard && (
+                        <button
+                            onClick={onBackToDashboard}
+                            className="fixed top-6 left-6 z-50 w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center text-white hover:bg-orange-600 transition-all duration-300 hover:scale-110 shadow-lg"
+                            title="Back to Dashboard"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </button>
+                    )}
+
                     <div className="bg-white shadow-sm border-b">
                         <div className="flex items-center justify-between p-4">
                             <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-orange-500 shadow-lg flex-shrink-0">

@@ -280,6 +280,16 @@ const renderDashboardPages = (page: Page, props: AppRouterProps) => {
                 therapists={therapists} // Pass actual therapists data
                 places={places} // Pass actual places data
                 setPage={setPage}
+                onBackToDashboard={() => {
+                    // Navigate back to appropriate dashboard
+                    if (isHotelLoggedIn) {
+                        setPage('hotelDashboard');
+                    } else if (isVillaLoggedIn) {
+                        setPage('villaDashboard');
+                    } else {
+                        setPage('home'); // Fallback to home
+                    }
+                }}
             />;
         default:
             return null;
@@ -1281,6 +1291,16 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     } catch (_error) {
                         console.error('Booking submission failed:', _error);
                         throw _error;
+                    }
+                }}
+                onBackToDashboard={() => {
+                    // Navigate back to appropriate dashboard
+                    if (isHotelLoggedIn) {
+                        setPage('hotelDashboard');
+                    } else if (isVillaLoggedIn) {
+                        setPage('villaDashboard');
+                    } else {
+                        setPage('home'); // Fallback to home
                     }
                 }}
             />;
