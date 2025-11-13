@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import type { Place, Therapist, Booking, Notification, AdminMessage, UserLocation, ChatRoom } from '../types';
 
 type Language = 'en' | 'id';
@@ -98,7 +98,17 @@ interface AppStateProviderProps {
 }
 
 export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) => {
-    const [page, _setPage] = useState<string>('landing');
+    // Initialize page from URL hash or default to 'landing'
+    const getInitialPage = () => {
+        const hash = window.location.hash.replace('#', '');
+        if (hash && hash !== 'landing') {
+            console.log('🔗 Initializing page from URL hash:', hash);
+            return hash;
+        }
+        return 'landing';
+    };
+    
+    const [page, _setPage] = useState<string>(getInitialPage());
     const [language, setLanguage] = useState<Language>('en');
     const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
     const [selectedMassageType, setSelectedMassageType] = useState<string>('all');
@@ -121,10 +131,33 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
     const [isChatWindowVisible, setIsChatWindowVisible] = useState(false);
     const appContactNumber = '6281392000050';
 
-    // Wrapper to log all page changes
+    // Wrapper to log all page changes and sync with URL hash
     const setPage = useCallback((newPage: string) => {
         console.log('📍 setPage called:', newPage, 'Current page:', page);
+        
+        // Sync page state with URL hash (except for landing page)
+        if (newPage !== 'landing') {
+            window.location.hash = `#${newPage}`;
+        } else {
+            window.location.hash = '';
+        }
+        
         _setPage(newPage);
+    }, [page]);
+
+    // Listen for hash changes to handle browser back/forward buttons
+    useEffect(() => {
+        const handleHashChange = () => {
+            const hash = window.location.hash.replace('#', '');
+            const newPage = hash || 'landing';
+            if (newPage !== page) {
+                console.log('🔗 Hash changed, updating page to:', newPage);
+                _setPage(newPage);
+            }
+        };
+
+        window.addEventListener('hashchange', handleHashChange);
+        return () => window.removeEventListener('hashchange', handleHashChange);
     }, [page]);
 
     const value: AppStateContextType = {
