@@ -82,7 +82,7 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
                 <div className="absolute inset-0 bg-black/20"></div>
                 <div className="max-w-6xl mx-auto px-4 relative z-10 text-center">
                     <h1 className="text-6xl font-bold mb-6 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
-                        <span className="text-white">Inda</span><span className="text-orange-400">Street</span>
+                        <span className="text-white">Indas</span><span className="text-orange-400">treet</span>
                     </h1>
                     <p className="text-xl text-white max-w-3xl mx-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
                         Indonesia's First Comprehensive Wellness Marketplace Connecting Therapists, Hotels, and Employers
@@ -95,7 +95,7 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
                 <div className="grid md:grid-cols-2 gap-12 items-center mb-20">
                     <div>
                         <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                            Our Inda<span className="text-orange-500">Street</span> Mission
+                            Our Indas<span className="text-orange-500">treet</span> Mission
                         </h2>
                         <p className="text-lg text-gray-700 mb-4">
                             We're igniting the future for Indonesia's youth. IndaStreet is the SuperApp that puts everything at your fingertips: from sizzling food delivery and seamless rides to unforgettable local destinations, exciting motor rentals, and genuine connections through dating.
@@ -146,7 +146,7 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
                 {/* About Us Story Section */}
                 <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 mb-20">
                     <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                        Inda<span className="text-orange-500">Street</span> Team
+                        Indas<span className="text-orange-500">treet</span> Team
                     </h2>
                     <div className="prose prose-lg max-w-none text-gray-700 space-y-6">
                         <p className="text-2xl font-bold text-orange-600">

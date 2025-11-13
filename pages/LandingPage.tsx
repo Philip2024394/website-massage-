@@ -192,7 +192,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
             />
             <div className="relative z-10 flex-grow flex flex-col items-center justify-center bg-black bg-opacity-50 text-white px-4 text-center w-full h-full">
                 <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
-                    <span className="text-white">Inda</span><span className="text-orange-400">Street</span>
+                    <span className="text-white">Indas</span><span className="text-orange-400">treet</span>
                 </h1>
                 <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold text-white mb-6">
                     Massage Hub
