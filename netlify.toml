@@ -1,18 +1,18 @@
 # Netlify Configuration for IndaStreet Massage Platform
 # This file configures the build process for Netlify deployment
+# 
+# If pnpm fails, replace the command with: npm ci && npm run build
 
 [build]
   publish = "dist"
-  # Use Corepack to ensure pnpm version, then build (avoids EEXIST error)
-  command = "corepack enable && corepack prepare pnpm@10.22.0 --activate && pnpm install && pnpm run build"
-  
-  # Alternative commands if Corepack fails:
-  # Simple pnpm: command = "pnpm install && pnpm run build"
-  # Npm fallback: command = "npm ci && npm run build"
+  # Simplified command to avoid truncation issues
+  command = "pnpm install && pnpm run build"
 
 [build.environment]
   ROLLUP_NO_NATIVE = "1"
   ROLLUP_NO_WASM = "1"
+  NODE_VERSION = "22"
+  PNPM_VERSION = "10.22.0"
   NODE_VERSION = "22"
   NODE_OPTIONS = "--max-old-space-size=4096"
   NETLIFY_BUILD_DEBUG = "true"

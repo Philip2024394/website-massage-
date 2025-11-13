@@ -24,8 +24,9 @@
 
 **Updated Command**: 
 ```bash
-corepack enable && corepack prepare pnpm@10.22.0 --activate && pnpm install && pnpm run build
+pnpm install && pnpm run build
 ```
+*(pnpm version controlled via environment variables)*
 
 This allows pnpm to handle dependency resolution more flexibly while maintaining reproducibility.
 
@@ -76,6 +77,27 @@ corepack enable && corepack prepare pnpm@10.22.0 --activate && pnpm install && p
 - ✅ **Version Control**: Still ensures pnpm@10.22.0 specifically  
 - ✅ **Corepack Native**: Leverages Node.js built-in package manager
 - ✅ **Faster Builds**: No global installation overhead
+
+## 🔧 **Command Truncation Fix**
+
+**Issue**: Build command truncated to `--activa}` instead of `--activate`
+**Root Cause**: Long build commands can be truncated or corrupted by Netlify
+
+### **Solution Applied**:
+```bash
+# NEW: Simplified command
+pnpm install && pnpm run build
+
+# Environment variables handle version control:
+PNMP_VERSION = "10.22.0"
+NODE_VERSION = "22"
+```
+
+### **Benefits**:
+- ✅ **No Truncation**: Short, simple command
+- ✅ **Version Control**: Via environment variables  
+- ✅ **Reliable**: Uses Netlify's default pnpm setup
+- ✅ **Fallback Ready**: Easy to switch to npm if needed
 
 ## Required Environment Variables
 These are automatically set via `netlify.toml`:
