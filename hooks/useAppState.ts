@@ -56,8 +56,17 @@ export const useAppState = () => {
         return 'rewardBannersTest';
       }
       
-      // Always show landing page first (users can navigate from there)
-      console.log('� Always showing landing page first for all users');
+      // ✅ NEW: Check if user has already entered the app
+      const hasUserLocation = localStorage.getItem('user_location') || localStorage.getItem('app_user_location');
+      const hasLanguage = localStorage.getItem('app_language');
+      
+      if (hasUserLocation && hasLanguage) {
+        console.log('🏠 User has already entered app, going to home page');
+        return 'home';
+      }
+      
+      // Default to landing page for first-time users only
+      console.log('👋 First-time user, showing landing page');
       return 'landing';
     } catch {
       console.log('⚠️ URL parameter parsing failed, defaulting to landing page');
