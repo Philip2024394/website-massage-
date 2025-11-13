@@ -404,7 +404,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
             >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
                     <h1 className="text-2xl font-bold sm:text-4xl lg:text-5xl xl:text-6xl drop-shadow-lg">
-                        <span className="text-black">Indas</span><span className="text-orange-500">treet</span>
+                        <span className="text-black">Inda</span><span className="text-orange-500">street</span>
                         <span className="text-black text-xl sm:text-3xl lg:text-4xl xl:text-5xl ml-2">Partners</span>
                     </h1>
                     <p className="mt-3 sm:mt-4 text-sm sm:text-lg lg:text-xl text-white max-w-3xl mx-auto drop-shadow-md px-4">

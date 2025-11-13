@@ -453,7 +453,8 @@ const HomePage: React.FC<HomePageProps> = ({
             <header className="bg-white p-4 shadow-md sticky top-0 z-[9997]">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">
-                        <span className="text-black">Indas</span><span className="text-orange-500">treet</span>
+                        {/* Brand: Inda (black) + street (orange) */}
+                        <span className="text-black">Inda</span><span className="text-orange-500">street</span>
                     </h1>
                     <div className="flex items-center gap-3 text-gray-600">
                         {/* Location Reset Button - Red Color */}
@@ -792,7 +793,7 @@ const HomePage: React.FC<HomePageProps> = ({
             <footer className="bg-white border-t border-gray-200 mt-8 py-4">
                 <div className="px-4 py-3 max-w-[430px] sm:max-w-5xl mx-auto">
                     <p className="text-xs text-gray-500 text-center">
-                        &copy; 2025 <span className="text-black font-semibold">Indas</span><span className="text-orange-500 font-semibold">treet</span> Massage Platform
+                        &copy; 2025 <span className="text-black font-semibold">Inda</span><span className="text-orange-500 font-semibold">street</span> Massage Platform
                     </p>
                 </div>
             </footer>

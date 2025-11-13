@@ -218,7 +218,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
             <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">
-                        <span className="text-black">Indas</span><span className="text-orange-500">treet</span>
+                        <span className="text-black">Inda</span><span className="text-orange-500">street</span>
                     </h1>
                     <div className="flex items-center gap-3">
                         <button

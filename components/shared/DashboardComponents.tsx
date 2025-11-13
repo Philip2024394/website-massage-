@@ -240,7 +240,7 @@ export const DashboardFooter: React.FC<{
             <div className="px-4 py-3 max-w-[430px] sm:max-w-5xl mx-auto">
                 <div className="flex items-center justify-center">
                     <p className="text-xs text-gray-500 text-center">
-                        &copy; 2025 <span className="text-black font-semibold">Indas</span><span className="text-orange-500 font-semibold">treet</span> {type === 'hotel' ? 'Hotel' : 'Villa'} Dashboard
+                        &copy; 2025 <span className="text-black font-semibold">Inda</span><span className="text-orange-500 font-semibold">street</span> {type === 'hotel' ? 'Hotel' : 'Villa'} Dashboard
                     </p>
                 </div>
             </div>
