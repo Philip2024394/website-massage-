@@ -202,8 +202,7 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, 
 
       {/* Main Content */}
       <main className="flex-1 flex items-center justify-center p-4 overflow-hidden">
-        {/* Login Container */}
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
+        <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-2">
             <span className="text-black">Inda</span>
@@ -212,19 +211,19 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, 
           <p className="text-gray-600 font-medium">Customer Account</p>
         </div>
 
-        <div className="flex mb-6 bg-gray-100 rounded-lg p-1 border border-gray-200">
+        <div className="flex mb-6 bg-white rounded-lg p-1 border border-gray-200 shadow-sm">
           <button
             onClick={() => setMode('login')}
-            className={`flex-1 py-2 px-4 rounded-md transition-all ${
-              mode === 'login' ? 'bg-orange-500 shadow-lg text-white font-semibold' : 'text-gray-600 hover:bg-gray-50'
+            className={`flex-1 py-3 px-4 rounded-lg transition-all font-medium ${
+              mode === 'login' ? 'bg-orange-500 text-white shadow-sm' : 'text-gray-600 hover:text-orange-500 hover:bg-orange-50'
             }`}
           >
             Sign In
           </button>
           <button
             onClick={() => setMode('register')}
-            className={`flex-1 py-2 px-4 rounded-md transition-all ${
-              mode === 'register' ? 'bg-orange-500 shadow-lg text-white font-semibold' : 'text-gray-600 hover:bg-gray-50'
+            className={`flex-1 py-3 px-4 rounded-lg transition-all font-medium ${
+              mode === 'register' ? 'bg-orange-500 text-white shadow-sm' : 'text-gray-600 hover:text-orange-500 hover:bg-orange-50'
             }`}
           >
             Create Account
@@ -249,7 +248,7 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, 
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-white border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
+                className="w-full bg-white border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all text-gray-900 placeholder-gray-500 shadow-sm"
                 placeholder="your@email.com"
                 required
               />
@@ -264,7 +263,7 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, 
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-white border border-gray-300 rounded-lg p-3 pr-12 focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
+                  className="w-full bg-white border border-gray-300 rounded-xl p-3 pr-12 focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all text-gray-900 placeholder-gray-500 shadow-sm"
                   placeholder="••••••••"
                   required
                 />
@@ -281,7 +280,7 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 shadow-lg transition-all mt-6 disabled:opacity-50"
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white py-4 rounded-xl font-semibold flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02] mt-6 disabled:opacity-50"
             >
               {isLoading ? (
                 '⏳ Logging in...'
@@ -304,7 +303,7 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, 
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-white border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
+                className="w-full bg-white border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all text-gray-900 placeholder-gray-500 shadow-sm"
                 placeholder="your@email.com"
                 required
               />
@@ -319,7 +318,7 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, 
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-white border border-gray-300 rounded-lg p-3 pr-12 focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
+                  className="w-full bg-white border border-gray-300 rounded-xl p-3 pr-12 focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all text-gray-900 placeholder-gray-500 shadow-sm"
                   placeholder="Minimum 8 characters"
                   required
                   minLength={8}
@@ -343,7 +342,7 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, 
                   type={showConfirmPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full bg-white border border-gray-300 rounded-lg p-3 pr-12 focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
+                  className="w-full bg-white border border-gray-300 rounded-xl p-3 pr-12 focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all text-gray-900 placeholder-gray-500 shadow-sm"
                   placeholder="Re-enter password"
                   required
                 />
@@ -361,7 +360,7 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, 
               type="submit"
               disabled={isLoading}
               onClick={() => console.log('🖱️ Button clicked directly!')}
-              className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 shadow-lg transition-all mt-6 disabled:opacity-50"
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white py-4 rounded-xl font-semibold flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02] mt-6 disabled:opacity-50"
             >
               {isLoading ? (
                 '⏳ Creating Account...'
@@ -377,7 +376,7 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, 
 
         {/* Benefits Section */}
         {mode === 'register' && (
-          <div className="mt-6 bg-gray-50 rounded-xl p-4 border border-gray-200">
+          <div className="mt-6 bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
             <h3 className="font-bold text-gray-800 mb-2">🎁 Member Benefits:</h3>
             <ul className="text-sm text-gray-600 space-y-1">
               <li>✅ Book appointments with calendar</li>

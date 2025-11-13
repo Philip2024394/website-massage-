@@ -86,7 +86,10 @@ const RegisterPromptPopup: React.FC<RegisterPromptPopupProps> = ({
                         {/* Buttons */}
                         <div className="relative flex gap-3 p-4 bg-gradient-to-br from-orange-50/90 to-yellow-50/90 backdrop-blur-sm">
                             <button
-                                onClick={onRegister}
+                                onClick={() => {
+                                    onRegister(); // Navigate to customer auth page
+                                    onClose(); // Close the popup
+                                }}
                                 className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold py-4 px-6 rounded-xl hover:from-orange-600 hover:to-orange-700 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
                             >
                                 {t.registerButton}
