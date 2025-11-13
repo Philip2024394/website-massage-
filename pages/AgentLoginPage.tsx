@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 import Button from '../components/Button';
 import PasswordInput from '../components/PasswordInput';
 import { agentAuth } from '../lib/auth';
-import { LogIn, UserPlus } from 'lucide-react';
+import { LogIn, UserPlus, Eye, EyeOff } from 'lucide-react';
+import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
+import { AppDrawer } from '../components/AppDrawer';
+import { React19SafeWrapper } from '../components/React19SafeWrapper';
+import PageNumberBadge from '../components/PageNumberBadge';
 
 interface AgentLoginPageProps {
     onSuccess: (agentId: string) => void;
@@ -10,18 +14,14 @@ interface AgentLoginPageProps {
     t: any;
 }
 
-const HomeIcon: React.FC<{className?: string}> = ({ className }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-    </svg>
-);
-
 const AgentLoginPage: React.FC<AgentLoginPageProps> = ({ onSuccess, onBack, t: _t }) => {
     const [isSignUp, setIsSignUp] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -56,106 +56,173 @@ const AgentLoginPage: React.FC<AgentLoginPageProps> = ({ onSuccess, onBack, t: _
     };
 
     return (
-        <div 
-            className="min-h-screen h-screen w-full flex items-center justify-center p-4 overflow-hidden fixed inset-0 z-50"
-            style={{
-                backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/garden%20forest.png?updatedAt=1761334454082)',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat'
-            }}
-        >
-            {/* Overlay for better readability */}
-            <div className="absolute inset-0 bg-black/40 z-10"></div>
-
-            {/* Home Button */}
-            <button
-                onClick={onBack}
-                className="fixed top-6 left-6 w-12 h-12 bg-orange-500 hover:bg-orange-600 rounded-full shadow-lg flex items-center justify-center transition-all z-30 border border-orange-400"
-                aria-label="Go to home"
-            >
-                <HomeIcon className="w-6 h-6 text-white" />
-            </button>
-
-            {/* Glass Effect Login Container */}
-            <div className="max-w-md w-full bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-8 relative z-20 border border-white/20">
-                <div className="text-center mb-8">
-                    <h1 className="text-4xl font-bold mb-2">
-                        <span className="text-white">Inda</span>
-                        <span className="text-orange-400">Street</span>
+        <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
+            <PageNumberBadge pageNumber={7} pageName="AgentLoginPage" isLocked={false} />
+            
+            {/* Global Header */}
+            <header className="bg-white p-4 shadow-md z-[9997] flex-shrink-0">
+                <div className="flex justify-between items-center">
+                    <h1 className="text-2xl font-bold text-gray-800">
+                        <span className="text-black">Inda</span><span className="text-orange-500">street</span>
                     </h1>
-                    <p className="text-white/90 font-medium">Agent Account</p>
-                </div>
+                    <div className="flex items-center gap-3 text-gray-600">
+                        <button 
+                            onClick={onBack}
+                            className="p-2 hover:bg-gray-50 rounded-full transition-colors" 
+                            title="Back to Home"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                            </svg>
+                        </button>
 
-                <div className="flex mb-6 bg-white/10 backdrop-blur-sm rounded-lg p-1 border border-white/20">
-                    <button
-                        onClick={() => setIsSignUp(false)}
-                        className={`flex-1 py-2 px-4 rounded-md transition-all ${
-                            !isSignUp ? 'bg-orange-500 shadow-lg text-white font-semibold' : 'text-white/90 hover:bg-white/5'
-                        }`}
-                    >
-                        Sign In
-                    </button>
-                    <button
-                        onClick={() => setIsSignUp(true)}
-                        className={`flex-1 py-2 px-4 rounded-md transition-all ${
-                            isSignUp ? 'bg-orange-500 shadow-lg text-white font-semibold' : 'text-white/90 hover:bg-white/5'
-                        }`}
-                    >
-                        Create Account
-                    </button>
-                </div>
-
-                {error && (
-                    <div className={`mb-4 p-3 rounded-lg backdrop-blur-sm ${error.includes('✅') || error.includes('created') ? 'bg-green-500/20 text-green-100 border border-green-400/30' : 'bg-red-500/20 text-red-100 border border-red-400/30'}`}>
-                        {error}
+                        <button onClick={() => setIsMenuOpen(true)} title="Menu">
+                            <BurgerMenuIcon className="w-6 h-6" />
+                        </button>
                     </div>
-                )}
+                </div>
+            </header>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-white/90 mb-2">
-                            Email
-                        </label>
-                        <input
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
-                            placeholder="agent@indastreet.com"
-                            required
-                        />
+            {/* Global App Drawer */}
+            <React19SafeWrapper condition={isMenuOpen}>
+                <AppDrawer
+                    isOpen={isMenuOpen}
+                    onClose={() => setIsMenuOpen(false)}
+                    onMassageJobsClick={() => {}}
+                    onHotelPortalClick={() => {}}
+                    onVillaPortalClick={() => {}}
+                    onTherapistPortalClick={() => {}}
+                    onMassagePlacePortalClick={() => {}}
+                    onAgentPortalClick={() => {}}
+                    onCustomerPortalClick={() => {}}
+                    onAdminPortalClick={() => {}}
+                    onTermsClick={() => {}}
+                    onPrivacyClick={() => {}}
+                    therapists={[]}
+                    places={[]}
+                />
+            </React19SafeWrapper>
+
+            {/* Main Content */}
+            <main className="flex-1 flex items-center justify-center p-4 overflow-hidden">
+                <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
+                    {/* Header */}
+                    <div className="text-center mb-8">
+                        <h2 className="text-3xl font-bold mb-2 text-gray-800">Agent Portal</h2>
+                        <p className="text-gray-600 text-sm">Access your agent dashboard and commissions</p>
+                        <div className="w-16 h-1 bg-blue-500 rounded-full mx-auto mt-3"></div>
                     </div>
 
-                    <PasswordInput
-                        value={password}
-                        onChange={setPassword}
-                        placeholder="Enter your password"
-                        required
-                        minLength={8}
-                    />
+                    {error && (
+                        <div className={`mb-6 p-3 rounded-lg ${
+                            error.includes('✅') 
+                                ? 'bg-green-50 text-green-700 border border-green-200' 
+                                : 'bg-red-50 text-red-700 border border-red-200'
+                        }`}>
+                            {error}
+                        </div>
+                    )}
 
-                    <Button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 mt-6 shadow-lg flex items-center justify-center gap-2"
-                    >
-                        {loading ? (
-                            <span key="loading">Processing...</span>
-                        ) : isSignUp ? (
-                            <span key="signup" className="flex items-center gap-2">
-                                <UserPlus className="w-5 h-5" />
-                                Create Account
-                            </span>
-                        ) : (
-                            <span key="signin" className="flex items-center gap-2">
-                                <LogIn className="w-5 h-5" />
-                                Sign In
-                            </span>
+                    {/* Tab Navigation */}
+                    <div className="flex mb-6 bg-gray-100 rounded-lg p-1 border border-gray-200">
+                        <button
+                            onClick={() => {
+                                setIsSignUp(false);
+                                setError(''); // Clear error when switching modes
+                            }}
+                            className={`flex-1 py-3 px-4 rounded-lg transition-all font-medium ${
+                                !isSignUp ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-800'
+                            }`}
+                        >
+                            Sign In
+                        </button>
+                        <button
+                            onClick={() => {
+                                setIsSignUp(true);
+                                setError(''); // Clear error when switching modes
+                            }}
+                            className={`flex-1 py-3 px-4 rounded-lg transition-all font-medium ${
+                                isSignUp ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-800'
+                            }`}
+                        >
+                            Create Account
+                        </button>
+                    </div>
+
+                    {/* Forms */}
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Email Address
+                            </label>
+                            <input
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="Enter your email"
+                                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white text-gray-700"
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Password
+                            </label>
+                            <div className="relative">
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder={isSignUp ? "Create a password (min 8 characters)" : "Enter your password"}
+                                    className="w-full pl-4 pr-12 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white text-gray-700"
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                >
+                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                </button>
+                            </div>
+                        </div>
+
+                        {isSignUp && (
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                                <div className="flex items-start">
+                                    <svg className="w-5 h-5 text-blue-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                    </svg>
+                                    <div className="ml-3">
+                                        <p className="text-sm text-blue-700">
+                                            <span className="font-medium">Agent Program:</span> Join our network of service agents and start earning commissions on bookings.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
                         )}
-                    </Button>
-                </form>
-            </div>
+
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full py-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {loading ? (
+                                <div className="flex items-center justify-center">
+                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
+                                    {isSignUp ? 'Creating Account...' : 'Signing In...'}
+                                </div>
+                            ) : (
+                                <div className="flex items-center justify-center">
+                                    {isSignUp ? <UserPlus className="w-5 h-5 mr-2" /> : <LogIn className="w-5 h-5 mr-2" />}
+                                    {isSignUp ? 'Create Agent Account' : 'Agent Sign In'}
+                                </div>
+                            )}
+                        </button>
+                    </form>
+                </div>
+            </main>
         </div>
     );
 };

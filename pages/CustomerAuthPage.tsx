@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { authService, userService } from '../lib/appwriteService';
 import { LogIn, UserPlus } from 'lucide-react';
+import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
+import { AppDrawer } from '../components/AppDrawer';
+import { React19SafeWrapper } from '../components/React19SafeWrapper';
 import PageNumberBadge from '../components/PageNumberBadge';
 
 interface CustomerAuthPageProps {
@@ -13,6 +16,7 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, 
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   
   // Form fields
   const [email, setEmail] = useState('');
@@ -144,45 +148,75 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, 
   };
 
   return (
-    <div 
-      className="min-h-screen flex items-center justify-center p-4 relative"
-      style={{
-        backgroundImage: "url('https://ik.imagekit.io/7grri5v7d/massage%20image%208.png?updatedAt=1760187222991')",
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
-      }}
-    >
+    <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
       <PageNumberBadge pageNumber={61} pageName="CustomerAuth" isLocked={false} />
-      {/* Overlay for better readability */}
-      <div className="absolute inset-0 bg-black/40"></div>
+      
+      {/* Global Header */}
+      <header className="bg-white p-4 shadow-md z-[9997] flex-shrink-0">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-gray-800">
+            {/* Brand: Inda (black) + street (orange) */}
+            <span className="text-black">Inda</span><span className="text-orange-500">street</span>
+          </h1>
+          <div className="flex items-center gap-3 text-gray-600">
+            {/* Back to Home Button */}
+            <button 
+              onClick={onBack}
+              className="p-2 hover:bg-gray-50 rounded-full transition-colors" 
+              title="Back to Home"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+            </button>
 
-      {/* Home Button */}
-      <button
-        onClick={onBack}
-        className="fixed top-6 left-6 w-12 h-12 bg-orange-500 hover:bg-orange-600 rounded-full shadow-lg flex items-center justify-center transition-all z-20 border border-orange-400"
-        aria-label="Go to home"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-        </svg>
-      </button>
+            <button onClick={() => {
+              console.log('🍔 Burger menu clicked! Current isMenuOpen:', isMenuOpen);
+              setIsMenuOpen(true);
+            }} title="Menu" style={{ zIndex: 9999, position: 'relative' }}>
+              <BurgerMenuIcon className="w-6 h-6" />
+            </button>
+          </div>
+        </div>
+      </header>
 
-      {/* Glass Effect Login Container */}
-      <div className="max-w-md w-full bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-8 relative z-10 border border-white/20 my-4">
+      {/* Global App Drawer */}
+      <React19SafeWrapper condition={isMenuOpen}>
+        <AppDrawer
+          isOpen={isMenuOpen}
+          onClose={() => setIsMenuOpen(false)}
+          onMassageJobsClick={() => {}}
+          onHotelPortalClick={() => {}}
+          onVillaPortalClick={() => {}}
+          onTherapistPortalClick={() => {}}
+          onMassagePlacePortalClick={() => {}}
+          onAgentPortalClick={() => {}}
+          onCustomerPortalClick={() => {}}
+          onAdminPortalClick={() => {}}
+          onTermsClick={() => {}}
+          onPrivacyClick={() => {}}
+          therapists={[]}
+          places={[]}
+        />
+      </React19SafeWrapper>
+
+      {/* Main Content */}
+      <main className="flex-1 flex items-center justify-center p-4 overflow-hidden">
+        {/* Login Container */}
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-2">
-            <span className="text-white">Inda</span>
-            <span className="text-orange-400">Street</span>
+            <span className="text-black">Inda</span>
+            <span className="text-orange-500">Street</span>
           </h1>
-          <p className="text-white/90 font-medium">Customer Account</p>
+          <p className="text-gray-600 font-medium">Customer Account</p>
         </div>
 
-        <div className="flex mb-6 bg-white/10 backdrop-blur-sm rounded-lg p-1 border border-white/20">
+        <div className="flex mb-6 bg-gray-100 rounded-lg p-1 border border-gray-200">
           <button
             onClick={() => setMode('login')}
             className={`flex-1 py-2 px-4 rounded-md transition-all ${
-              mode === 'login' ? 'bg-orange-500 shadow-lg text-white font-semibold' : 'text-white/90 hover:bg-white/5'
+              mode === 'login' ? 'bg-orange-500 shadow-lg text-white font-semibold' : 'text-gray-600 hover:bg-gray-50'
             }`}
           >
             Sign In
@@ -190,7 +224,7 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, 
           <button
             onClick={() => setMode('register')}
             className={`flex-1 py-2 px-4 rounded-md transition-all ${
-              mode === 'register' ? 'bg-orange-500 shadow-lg text-white font-semibold' : 'text-white/90 hover:bg-white/5'
+              mode === 'register' ? 'bg-orange-500 shadow-lg text-white font-semibold' : 'text-gray-600 hover:bg-gray-50'
             }`}
           >
             Create Account
@@ -199,7 +233,7 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, 
 
         {/* Error Message */}
         {error && (
-          <div className="mb-4 p-3 rounded-lg backdrop-blur-sm bg-red-500/20 text-red-100 border border-red-400/30">
+          <div className="mb-4 p-3 rounded-lg bg-red-50 text-red-600 border border-red-200">
             {error}
           </div>
         )}
@@ -208,21 +242,21 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, 
         {mode === 'login' ? (
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-white/90 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Email
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg p-3 focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
+                className="w-full bg-white border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
                 placeholder="your@email.com"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-white/90 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Password
               </label>
               <div className="relative">
@@ -230,7 +264,7 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, 
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg p-3 pr-12 focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
+                  className="w-full bg-white border border-gray-300 rounded-lg p-3 pr-12 focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
                   placeholder="••••••••"
                   required
                 />
@@ -263,29 +297,29 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, 
           /* Register Form */
           <form onSubmit={handleRegister} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-white/90 mb-2">
-                Email <span className="text-red-400">*</span>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Email <span className="text-red-500">*</span>
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg p-3 focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
+                className="w-full bg-white border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
                 placeholder="your@email.com"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-white/90 mb-2">
-                Password <span className="text-red-400">*</span>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Password <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg p-3 pr-12 focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
+                  className="w-full bg-white border border-gray-300 rounded-lg p-3 pr-12 focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
                   placeholder="Minimum 8 characters"
                   required
                   minLength={8}
@@ -301,15 +335,15 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, 
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-white/90 mb-2">
-                Confirm Password <span className="text-red-400">*</span>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Confirm Password <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <input
                   type={showConfirmPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg p-3 pr-12 focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
+                  className="w-full bg-white border border-gray-300 rounded-lg p-3 pr-12 focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
                   placeholder="Re-enter password"
                   required
                 />
@@ -343,9 +377,9 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, 
 
         {/* Benefits Section */}
         {mode === 'register' && (
-          <div className="mt-6 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-            <h3 className="font-bold text-white mb-2">🎁 Member Benefits:</h3>
-            <ul className="text-sm text-white/90 space-y-1">
+          <div className="mt-6 bg-gray-50 rounded-xl p-4 border border-gray-200">
+            <h3 className="font-bold text-gray-800 mb-2">🎁 Member Benefits:</h3>
+            <ul className="text-sm text-gray-600 space-y-1">
               <li>✅ Book appointments with calendar</li>
               <li>✅ Track your booking history</li>
               <li>✅ Save favorite therapists</li>
@@ -354,9 +388,8 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, 
             </ul>
           </div>
         )}
-      </div>
-
-
+        </div>
+      </main>
     </div>
   );
 };

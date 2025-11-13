@@ -42,8 +42,7 @@ export const useDerivedState = ({
     );
 
     const pagesWithoutFooter: Page[] = [
-        'landing', 'adminLogin', 'adminDashboard', 'customerAuth', 'therapistLogin', 
-        'hotelLogin', 'villaLogin', 'massagePlaceLogin', 'unifiedLogin', 'providerAuth', 'agentAuth'
+        'landing', 'adminDashboard'
     ];
     const showFooter = !pagesWithoutFooter.includes(page) && !(page === 'chatList' && activeChatRoom);
 

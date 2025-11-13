@@ -3,8 +3,12 @@ import { villaAuth } from '../lib/auth';
 import { saveSessionCache } from '../lib/sessionManager';
 import { checkRateLimit, handleAppwriteError, resetRateLimit } from '../lib/rateLimitUtils';
 import { trackDailySignIn } from '../lib/coinHooks';
-import { LogIn, UserPlus } from 'lucide-react';
+import { LogIn, UserPlus, Eye, EyeOff } from 'lucide-react';
 import PasswordInput from '../components/PasswordInput';
+import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
+import { AppDrawer } from '../components/AppDrawer';
+import { React19SafeWrapper } from '../components/React19SafeWrapper';
+import PageNumberBadge from '../components/PageNumberBadge';
 
 interface VillaLoginPageProps {
     onSuccess: (villaId: string) => void;
@@ -24,6 +28,8 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onSuccess, onBack }) =>
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     // Make rate limit reset functions available in browser console for testing
     React.useEffect(() => {
@@ -114,120 +120,157 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onSuccess, onBack }) =>
     };
 
     return (
-        <div 
-            className="min-h-screen h-screen w-full flex items-center justify-center p-4 overflow-hidden fixed inset-0 z-50"
-            style={{
-                backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/garden%20forest.png?updatedAt=1761334454082)',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat'
-            }}
-        >
-            {/* Overlay for better readability */}
-            <div className="absolute inset-0 bg-black/40 z-10"></div>
-
-            {/* Home Button */}
-            <button
-                onClick={onBack}
-                className="fixed top-6 left-6 w-12 h-12 bg-orange-500 hover:bg-orange-600 rounded-full shadow-lg flex items-center justify-center transition-all z-30 border border-orange-400"
-                aria-label="Go to home"
-            >
-                <HomeIcon className="w-6 h-6 text-white" />
-            </button>
-
-            {/* Glass Effect Login Container */}
-            <div className="max-w-md w-full bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-8 relative z-20 border border-white/20">
-                <div className="text-center mb-8">
-                    <h1 className="text-4xl font-bold mb-2">
-                        <span className="text-white">Inda</span>
-                        <span className="text-orange-400">Street</span>
+        <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
+            <PageNumberBadge pageNumber={3} pageName="VillaLoginPage" isLocked={false} />
+            
+            {/* Global Header */}
+            <header className="bg-white p-4 shadow-md z-[9997] flex-shrink-0">
+                <div className="flex justify-between items-center">
+                    <h1 className="text-2xl font-bold text-gray-800">
+                        <span className="text-black">Inda</span><span className="text-orange-500">street</span>
                     </h1>
-                    <p className="text-white/90 font-medium">Villa Account</p>
+                    <div className="flex items-center gap-3 text-gray-600">
+                        <button 
+                            onClick={onBack}
+                            className="p-2 hover:bg-gray-50 rounded-full transition-colors" 
+                            title="Back to Home"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                            </svg>
+                        </button>
+
+                        <button onClick={() => setIsMenuOpen(true)} title="Menu">
+                            <BurgerMenuIcon className="w-6 h-6" />
+                        </button>
+                    </div>
                 </div>
+            </header>
 
-                <div className="flex mb-6 bg-white/10 backdrop-blur-sm rounded-lg p-1 border border-white/20">
-                    <button
-                        onClick={() => {
-                            setIsSignUp(false);
-                            setError(''); // Clear error when switching modes
-                        }}
-                        className={`flex-1 py-2 px-4 rounded-md transition-all ${
-                            !isSignUp ? 'bg-orange-500 shadow-lg text-white font-semibold' : 'text-white/90 hover:bg-white/5'
-                        }`}
-                    >
-                        Sign In
-                    </button>
-                    <button
-                        onClick={() => {
-                            setIsSignUp(true);
-                            setError(''); // Clear error when switching modes
-                        }}
-                        className={`flex-1 py-2 px-4 rounded-md transition-all ${
-                            isSignUp ? 'bg-orange-500 shadow-lg text-white font-semibold' : 'text-white/90 hover:bg-white/5'
-                        }`}
-                    >
-                        Create Account
-                    </button>
+            {/* Global App Drawer */}
+            <React19SafeWrapper condition={isMenuOpen}>
+                <AppDrawer
+                    isOpen={isMenuOpen}
+                    onClose={() => setIsMenuOpen(false)}
+                    onMassageJobsClick={() => {}}
+                    onHotelPortalClick={() => {}}
+                    onVillaPortalClick={() => {}}
+                    onTherapistPortalClick={() => {}}
+                    onMassagePlacePortalClick={() => {}}
+                    onAgentPortalClick={() => {}}
+                    onCustomerPortalClick={() => {}}
+                    onAdminPortalClick={() => {}}
+                    onTermsClick={() => {}}
+                    onPrivacyClick={() => {}}
+                    therapists={[]}
+                    places={[]}
+                />
+            </React19SafeWrapper>
+
+            {/* Main Content */}
+            <main className="flex-1 flex items-center justify-center p-4 overflow-hidden">
+                <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
+                    {/* Header */}
+                    <div className="text-center mb-8">
+                        <h2 className="text-3xl font-bold mb-2 text-gray-800">Villa Portal</h2>
+                        <p className="text-gray-600 text-sm">Manage your villa services and bookings</p>
+                    </div>
+
+                    {error && (
+                        <div className={`mb-6 p-3 rounded-lg ${
+                            error.includes('✅') 
+                                ? 'bg-green-50 text-green-700 border border-green-200' 
+                                : 'bg-red-50 text-red-700 border border-red-200'
+                        }`}>
+                            {error}
+                        </div>
+                    )}
+
+                    {/* Tab Navigation */}
+                    <div className="flex mb-6 bg-gray-100 rounded-lg p-1 border border-gray-200">
+                        <button
+                            onClick={() => {
+                                setIsSignUp(false);
+                                setError(''); // Clear error when switching modes
+                            }}
+                            className={`flex-1 py-3 px-4 rounded-lg transition-all font-medium ${
+                                !isSignUp ? 'bg-white text-orange-600 shadow-sm' : 'text-gray-600 hover:text-gray-800'
+                            }`}
+                        >
+                            Sign In
+                        </button>
+                        <button
+                            onClick={() => {
+                                setIsSignUp(true);
+                                setError(''); // Clear error when switching modes
+                            }}
+                            className={`flex-1 py-3 px-4 rounded-lg transition-all font-medium ${
+                                isSignUp ? 'bg-white text-orange-600 shadow-sm' : 'text-gray-600 hover:text-gray-800'
+                            }`}
+                        >
+                            Create Account
+                        </button>
+                    </div>
+
+                    {/* Forms */}
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Email Address
+                            </label>
+                            <input
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="Enter your email"
+                                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all bg-white text-gray-700"
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Password
+                            </label>
+                            <div className="relative">
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder={isSignUp ? "Create a password (min 8 characters)" : "Enter your password"}
+                                    className="w-full pl-4 pr-12 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all bg-white text-gray-700"
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                >
+                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                </button>
+                            </div>
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full py-4 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {loading ? (
+                                <div className="flex items-center justify-center">
+                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
+                                    {isSignUp ? 'Creating Account...' : 'Signing In...'}
+                                </div>
+                            ) : (
+                                <div className="flex items-center justify-center">
+                                    {isSignUp ? <UserPlus className="w-5 h-5 mr-2" /> : <LogIn className="w-5 h-5 mr-2" />}
+                                    {isSignUp ? 'Create Villa Account' : 'Sign In to Villa'}
+                                </div>
+                            )}
+                        </button>
+                    </form>
                 </div>
-
-                {error && (
-                    <div className={`mb-4 p-3 rounded-lg backdrop-blur-sm border ${
-                        error.includes('created') || error.includes('Switched to Sign In mode')
-                            ? 'bg-blue-500/20 text-blue-100 border-blue-400/30' 
-                            : 'bg-red-500/20 text-red-100 border-red-400/30'
-                    }`}>
-                        {error}
-                    </div>
-                )}
-
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-white/90 mb-2">
-                            Email
-                        </label>
-                        <input
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
-                            placeholder="villa@example.com"
-                            required
-                            onKeyDown={(e) => e.key === 'Enter' && handleSubmit}
-                        />
-                    </div>
-
-                    <div onKeyDown={(e) => e.key === 'Enter' && handleSubmit}>
-                        <PasswordInput
-                            value={password}
-                            onChange={setPassword}
-                            label="Password"
-                            placeholder="Enter your password"
-                            required
-                            minLength={8}
-                        />
-                    </div>
-
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 px-4 mt-6 shadow-lg rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium flex items-center justify-center gap-2"
-                    >
-                        {loading ? (
-                            'Processing...'
-                        ) : isSignUp ? (
-                            <>
-                                <UserPlus className="w-5 h-5" />
-                                Create Account
-                            </>
-                        ) : (
-                            <>
-                                <LogIn className="w-5 h-5" />
-                                Sign In
-                            </>
-                        )}
-                    </button>
-                </form>
-            </div>
+            </main>
         </div>
     );
 };
