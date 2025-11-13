@@ -992,7 +992,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                             <p className="text-gray-600 mb-6 text-sm leading-relaxed">
                                 This therapist is currently booked and unavailable. Please try booking another available therapist or check back later.
                             </p>
-                            <p className="text-sm font-semibold text-orange-600 mb-6">- <span className="text-black">Inda</span>Street Admin</p>
+                            <p className="text-sm font-semibold text-orange-600 mb-6">- <span className="text-black">Indas</span><span className="text-orange-500">treet</span> Admin</p>
                             
                             <button
                                 onClick={() => setShowBusyModal(false)}

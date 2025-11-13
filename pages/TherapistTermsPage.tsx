@@ -4,7 +4,7 @@ const TherapistTermsPage: React.FC = () => {
     return (
         <div className="max-w-4xl mx-auto p-4 pb-20 sm:p-6 bg-white rounded-lg shadow-lg">
             <div className="mb-6">
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2"><span className="text-black">Inda</span>Street Therapist Terms of Service</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2"><span className="text-black">Indas</span><span className="text-orange-500">treet</span> Therapist Terms of Service</h1>
                 <p className="text-xs sm:text-sm text-gray-500">Last Updated: October 2025</p>
             </div>
 
@@ -79,11 +79,11 @@ const TherapistTermsPage: React.FC = () => {
                 <div className="bg-yellow-50 border-l-4 border-yellow-500 p-3 sm:p-4 pb-20">
                     <p className="font-semibold mb-3 text-gray-900 text-sm sm:text-base">Self-Employed Status</p>
                     <ul className="list-disc list-inside space-y-2 text-gray-700 text-xs sm:text-sm break-words">
-                        <li><strong>Independent Contractor:</strong> You work as a self-employed, independent contractor, NOT as an employee of <span className="text-black">Inda</span>Street</li>
+                        <li><strong>Independent Contractor:</strong> You work as a self-employed, independent contractor, NOT as an employee of <span className="text-black">Indas</span><span className="text-orange-500">treet</span></li>
                         <li><strong>Tax Obligations:</strong> All government taxes, fees, and financial obligations are YOUR sole responsibility</li>
                         <li><strong>Business Registration:</strong> You are responsible for any required business licenses or permits in your jurisdiction</li>
                         <li><strong>Income Reporting:</strong> You must report all income to relevant tax authorities as required by law</li>
-                        <li><strong>Insurance:</strong> <span className="text-black">Inda</span>Street does not provide insurance coverage; you are responsible for your own liability insurance</li>
+                        <li><strong>Insurance:</strong> <span className="text-black">Indas</span><span className="text-orange-500">treet</span> does not provide insurance coverage; you are responsible for your own liability insurance</li>
                         <li><strong>No Employment Benefits:</strong> As an independent contractor, you are not entitled to employee benefits</li>
                     </ul>
                 </div>
@@ -98,8 +98,8 @@ const TherapistTermsPage: React.FC = () => {
                     <p className="font-semibold mb-3 text-gray-900 text-sm sm:text-base">Right to Refuse Service</p>
                     <ul className="list-disc list-inside space-y-2 text-gray-700 text-xs sm:text-sm break-words">
                         <li><strong>Safety First:</strong> You have the absolute right to cancel ANY booking if you feel uncomfortable or unsafe</li>
-                        <li><strong>No Penalties:</strong> Cancelling for safety reasons will NOT affect your status or standing with <span className="text-black">Inda</span>Street</li>
-                        <li><strong>Immediate Support:</strong> Contact <span className="text-black">Inda</span>Street admin immediately if you encounter any issues</li>
+                        <li><strong>No Penalties:</strong> Cancelling for safety reasons will NOT affect your status or standing with <span className="text-black">Indas</span><span className="text-orange-500">treet</span></li>
+                        <li><strong>Immediate Support:</strong> Contact <span className="text-black">Indas</span><span className="text-orange-500">treet</span> admin immediately if you encounter any issues</li>
                         <li><strong>Professional Environment:</strong> You have the right to work in a safe, respectful environment</li>
                         <li><strong>Harassment Policy:</strong> Zero tolerance for client harassment or inappropriate behavior</li>
                     </ul>

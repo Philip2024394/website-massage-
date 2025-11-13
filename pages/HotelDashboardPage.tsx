@@ -600,7 +600,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
             <header className="bg-white shadow-sm px-4 py-3 z-30 flex-shrink-0">
                 <div className="flex items-center justify-between max-w-[430px] sm:max-w-5xl mx-auto">
                     <h1 className="text-xl font-bold text-gray-800">
-                        <span className="text-black">Inda</span><span className="text-orange-500">Street</span> Hotel
+                        <span className="text-black">Indas</span><span className="text-orange-500">treet</span> Hotel
                     </h1>
                     <button 
                         onClick={() => updateState({ isSideDrawerOpen: true })} 
@@ -674,7 +674,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
             <footer className="bg-white border-t border-gray-200 z-20 mt-auto">
                 <div className="px-4 py-3 max-w-[430px] sm:max-w-5xl mx-auto">
                     <p className="text-xs text-gray-500 text-center">
-                        &copy; 2025 <span className="text-black font-semibold">Inda</span><span className="text-orange-500 font-semibold">Street</span> Hotel Dashboard
+                        &copy; 2025 <span className="text-black font-semibold">Indas</span><span className="text-orange-500 font-semibold">treet</span> Hotel Dashboard
                     </p>
                 </div>
             </footer>
