@@ -267,10 +267,18 @@ const renderDashboardPages = (page: Page, props: AppRouterProps) => {
         case 'hotelVillaMenu':
             return <HotelVillaMenuPage 
                 venueId={venueMenuId || ''} 
-                venueName="Live Menu"
-                venueType="hotel"
-                therapists={[]} // Empty for this context
-                places={[]} // Empty for this context
+                venueName={(() => {
+                    if (isHotelLoggedIn) return 'Hotel';
+                    if (isVillaLoggedIn) return 'Villa';
+                    return 'Live Menu';
+                })()}
+                venueType={(() => {
+                    if (isHotelLoggedIn) return 'hotel';
+                    if (isVillaLoggedIn) return 'villa';
+                    return 'hotel'; // Default fallback
+                })()}
+                therapists={therapists} // Pass actual therapists data
+                places={places} // Pass actual places data
                 setPage={setPage}
             />;
         default:
@@ -937,7 +945,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'massageTypes': 
  
             return <MassageTypesPage 
-                onBack={handleBackToHome} 
+                _onBack={handleBackToHome} 
                 onNavigate={(page: Page) => setPage(page)} 
                 t={t.massageTypes}
                 // AppDrawer props - same as HomePage
@@ -1265,9 +1273,9 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 })()}
                 therapists={therapists}
                 places={places}
-                onBook={handleNavigateToBooking}
+                _onBook={handleNavigateToBooking}
                 setPage={setPage}
-                onBookingSubmit={async (bookingData: any) => {
+                _onBookingSubmit={async (bookingData: any) => {
                     try {
                         await handleCreateBooking(bookingData);
                     } catch (_error) {
