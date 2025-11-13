@@ -56,8 +56,25 @@ export const useAppState = () => {
         return 'rewardBannersTest';
       }
       
-      // Always show landing page first - but allow navigation after that
-      console.log('🌊 Showing landing page (allows navigation after Enter App)');
+      // Check if this is a page refresh (performance navigation timing)
+      const navigationEntries = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[];
+      const isPageRefresh = navigationEntries.length > 0 && navigationEntries[0].type === 'reload';
+      
+      if (isPageRefresh) {
+        console.log('🔄 Page refresh detected - clearing session and showing landing page');
+        sessionStorage.removeItem('current_page');
+        return 'landing';
+      }
+      
+      // Check if user is in an active navigation session (component re-render)
+      const currentPage = sessionStorage.getItem('current_page');
+      if (currentPage && currentPage !== 'landing') {
+        console.log('🚀 Component re-render - restoring active session page:', currentPage);
+        return currentPage as Page;
+      }
+      
+      // Always show landing page for new sessions
+      console.log('🌊 New session - showing landing page');
       return 'landing';
     } catch {
       console.log('⚠️ URL parameter parsing failed, defaulting to landing page');
@@ -72,12 +89,22 @@ export const useAppState = () => {
     setToLocalStorage('app_user', newUser);
   };
 
-  const [page, _setPage] = useState<Page>(getInitialPage()); // Start with URL-aware page detection
+  const [page, _setPage] = useState<Page>(() => {
+    // Only use getInitialPage on first mount, not on re-renders
+    const initialPage = getInitialPage();
+    console.log('🚀 INITIAL PAGE DETERMINATION:', initialPage);
+    return initialPage;
+  });
   const setPage = (newPage: Page) => {
     console.log('📍 Page change request:', newPage);
     console.log('📍 Current page before change:', page);
     _setPage(newPage);
     console.log('📍 setPage called - should trigger re-render with:', newPage);
+    
+    // Store current page to prevent reset on re-render (except for refresh behavior)
+    if (newPage !== 'landing') {
+      sessionStorage.setItem('current_page', newPage);
+    }
   };
   
   // Location and preferences - with localStorage persistence

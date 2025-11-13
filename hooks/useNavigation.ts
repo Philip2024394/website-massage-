@@ -178,6 +178,9 @@ export const useNavigation = ({
             // Set flag to start fresh (prevent session restore)
             sessionStorage.setItem('start_fresh', 'true');
             
+            // Clear any previous page session to allow fresh navigation
+            sessionStorage.removeItem('current_page');
+            
             // Clear all dashboard sessions when entering from landing page
             setIsAdminLoggedIn(false);
             setIsHotelLoggedIn(false);
