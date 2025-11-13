@@ -29,6 +29,35 @@ npm install -g pnpm@10.22.0 && pnpm install && pnpm run build:netlify
 
 This allows pnpm to handle dependency resolution more flexibly while maintaining reproducibility.
 
+## 🚨 **Critical Build Command Fix**
+
+**Issue**: Netlify showing build command typo: `pnpm run b}` instead of `pnpm run build`
+**Root Cause**: Build command corruption in Netlify dashboard or cached configuration
+
+### **Immediate Solutions**:
+
+1. **Check Netlify Dashboard**:
+   - Go to Site settings → Build & deploy → Build settings
+   - Verify build command shows: `npm install -g pnpm@10.22.0 && pnpm install && pnpm run build`
+   - If corrupted, manually edit and save
+
+2. **Clear Netlify Cache**:
+   - Click "Clear cache and deploy site" for fresh build
+
+3. **Alternative Commands** (if issues persist):
+   ```bash
+   # Option 1: Simple npm fallback
+   npm ci && npm run build
+   
+   # Option 2: Let Netlify handle pnpm
+   pnpm install && pnpm run build
+   ```
+
+### **Verification**:
+- ✅ `build` script exists in package.json
+- ✅ netlify.toml contains correct command
+- ✅ All build scripts tested locally
+
 ## Required Environment Variables
 These are automatically set via `netlify.toml`:
 

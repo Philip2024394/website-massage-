@@ -1,9 +1,14 @@
-# Netlify Configuration
-# Place this file in the root of your repository
+# Netlify Configuration for IndaStreet Massage Platform
+# This file configures the build process for Netlify deployment
 
 [build]
   publish = "dist"
-  command = "npm install -g pnpm@10.22.0 && pnpm install && pnpm run build:netlify"
+  # Primary build command with explicit pnpm installation
+  command = "npm install -g pnpm@10.22.0 && pnpm install && pnpm run build"
+  
+  # Alternative commands (uncomment if primary fails):
+  # For npm fallback: command = "npm ci && npm run build"
+  # For simplified pnpm: command = "pnpm install && pnpm run build"
 
 [build.environment]
   ROLLUP_NO_NATIVE = "1"
