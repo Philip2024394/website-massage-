@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 CORS Fix - Step by Step Solution</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #ff4757 0%, #ff6b7a 100%);
+            color: white;
+            line-height: 1.6;
+        }
+        .fix-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        .critical { border-left: 5px solid #ff4757; }
+        .solution { border-left: 5px solid #2ed573; }
+        .warning { border-left: 5px solid #ffa502; }
+        .info { border-left: 5px solid #3742fa; }
+        
+        .step-box {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .step-number {
+            background: #2ed573;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            font-size: 18px;
+        }
+        
+        button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 15px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        button:hover { 
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        code {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+        }
+        
+        .url-box {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 14px;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+        
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+        .checklist li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .checklist li:before {
+            content: "☐ ";
+            font-weight: bold;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 CORS Fix - "Failed to fetch" Solution</h1>
+    
+    <div class="fix-card critical">
+        <h2>🚨 Current Issue: CORS Still Blocked</h2>
+        <p><strong>Error:</strong> "Failed to fetch" when testing CORS</p>
+        <p><strong>Cause:</strong> Platform configuration incomplete or needs additional setup</p>
+        <p><strong>Status:</strong> Your production site can't make API calls to Appwrite</p>
+    </div>
+
+    <div class="fix-card solution">
+        <h2>🎯 IMMEDIATE SOLUTION - Multiple Platform Approach</h2>
+        
+        <div class="step-box">
+            <div style="display: flex; align-items: center;">
+                <span class="step-number">1</span>
+                <div>
+                    <h3>Open Sydney Appwrite Console</h3>
+                    <div class="url-box">https://syd.cloud.appwrite.io/console</div>
+                    <button onclick="window.open('https://syd.cloud.appwrite.io/console', '_blank')">
+                        🌏 Open Sydney Console
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="step-box">
+            <div style="display: flex; align-items: center;">
+                <span class="step-number">2</span>
+                <div>
+                    <h3>Navigate to Your Project</h3>
+                    <p><strong>Project ID:</strong> <code>68f23b11000d25eb3664</code></p>
+                    <p><strong>Project Name:</strong> "indastreetmassage"</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="step-box">
+            <div style="display: flex; align-items: center;">
+                <span class="step-number">3</span>
+                <div>
+                    <h3>Add MULTIPLE Platform Entries</h3>
+                    <p>Go to <strong>Settings</strong> → <strong>Platforms</strong> and add these:</p>
+                    
+                    <h4>Platform 1: Main Production</h4>
+                    <ul>
+                        <li><strong>Type:</strong> Web</li>
+                        <li><strong>Name:</strong> production-main</li>
+                        <li><strong>Hostname:</strong> <code>massagewebsiteindastreet.vercel.app</code></li>
+                    </ul>
+                    
+                    <h4>Platform 2: Wildcard Vercel</h4>
+                    <ul>
+                        <li><strong>Type:</strong> Web</li>
+                        <li><strong>Name:</strong> vercel-wildcard</li>
+                        <li><strong>Hostname:</strong> <code>*.vercel.app</code></li>
+                    </ul>
+                    
+                    <h4>Platform 3: Development</h4>
+                    <ul>
+                        <li><strong>Type:</strong> Web</li>
+                        <li><strong>Name:</strong> localhost-dev</li>
+                        <li><strong>Hostname:</strong> <code>localhost</code></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="step-box">
+            <div style="display: flex; align-items: center;">
+                <span class="step-number">4</span>
+                <div>
+                    <h3>Alternative: Delete & Recreate</h3>
+                    <p>If existing platform isn't working:</p>
+                    <ol>
+                        <li>Delete the existing "production-website" platform</li>
+                        <li>Create a new one with exact same settings</li>
+                        <li>Wait 5-10 minutes for global propagation</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="fix-card warning">
+        <h2>⚡ Quick Alternative - Try Different Approach</h2>
+        
+        <h3>Option A: Use Global Appwrite Console</h3>
+        <button onclick="window.open('https://cloud.appwrite.io/console', '_blank')">
+            🌐 Try Global Console
+        </button>
+        <p>Sometimes the global console works better than regional ones.</p>
+        
+        <h3>Option B: Check Current Platform Status</h3>
+        <button onclick="checkPlatformStatus()">🔍 Check Platform Status</button>
+        <p>Let's verify what's currently configured.</p>
+    </div>
+
+    <div class="fix-card info">
+        <h2>📋 Checklist - Verify Each Step</h2>
+        <ul class="checklist">
+            <li>Opened Sydney Appwrite Console</li>
+            <li>Found project 68f23b11000d25eb3664</li>
+            <li>Went to Settings → Platforms</li>
+            <li>Added platform with exact hostname: massagewebsiteindastreet.vercel.app</li>
+            <li>Saved configuration</li>
+            <li>Waited 5+ minutes for propagation</li>
+            <li>Tested production site again</li>
+        </ul>
+    </div>
+
+    <div class="fix-card solution">
+        <h2>🧪 Test After Configuration</h2>
+        <button onclick="testCORSAgain()">🔄 Test CORS Again</button>
+        <button onclick="testProductionSite()">🚀 Test Production Site</button>
+        <button onclick="testWithIncognito()">🕵️ Test in Incognito Mode</button>
+        
+        <div id="test-results" style="display: none; margin-top: 20px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 8px;">
+            <h4>Test Results:</h4>
+            <div id="test-log"></div>
+        </div>
+    </div>
+
+    <script>
+        let testResults = [];
+        
+        function addTestResult(message, status = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            testResults.push(`[${timestamp}] ${message}`);
+            
+            const resultsDiv = document.getElementById('test-results');
+            const logDiv = document.getElementById('test-log');
+            
+            resultsDiv.style.display = 'block';
+            logDiv.innerHTML = testResults.join('<br>');
+        }
+        
+        async function testCORSAgain() {
+            addTestResult('🔄 Testing CORS connectivity again...');
+            
+            try {
+                const response = await fetch('https://syd.cloud.appwrite.io/v1/health', {
+                    method: 'GET',
+                    headers: {
+                        'Origin': 'https://massagewebsiteindastreet.vercel.app'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    addTestResult('✅ SUCCESS! CORS is now working!');
+                    addTestResult(`Health response: ${JSON.stringify(data).substring(0, 100)}...`);
+                } else {
+                    addTestResult(`❌ CORS still blocked: ${response.status} ${response.statusText}`);
+                }
+            } catch (error) {
+                addTestResult(`❌ CORS test failed: ${error.message}`);
+                if (error.message.includes('Failed to fetch')) {
+                    addTestResult('ℹ️ Platform configuration may need more time to propagate globally.');
+                }
+            }
+        }
+        
+        function testProductionSite() {
+            addTestResult('🚀 Opening production site for testing...');
+            window.open('https://massagewebsiteindastreet.vercel.app', '_blank');
+            
+            setTimeout(() => {
+                const result = confirm('How does your production site look now?\n\n✅ Click OK if it loads and works properly\n❌ Click Cancel if still showing errors');
+                
+                if (result) {
+                    addTestResult('🎉 SUCCESS! Production site is now working!');
+                } else {
+                    addTestResult('❌ Still having issues. May need to wait longer for propagation.');
+                }
+            }, 3000);
+        }
+        
+        function testWithIncognito() {
+            addTestResult('🕵️ Please open an incognito/private window and test your production site.');
+            addTestResult('This bypasses browser cache and gives a fresh test.');
+            alert('Testing Instructions:\n\n1. Open incognito/private browser window\n2. Go to: https://massagewebsiteindastreet.vercel.app\n3. Check if CORS errors persist\n4. Report results');
+        }
+        
+        function checkPlatformStatus() {
+            addTestResult('🔍 To check platform status:');
+            addTestResult('1. Go to Sydney Appwrite Console');
+            addTestResult('2. Find your project settings');
+            addTestResult('3. Check Platforms section');
+            addTestResult('4. Verify hostname is exact: massagewebsiteindastreet.vercel.app');
+            
+            alert('Platform Status Check:\n\nGo to Sydney Console → Your Project → Settings → Platforms\n\nVerify the hostname matches exactly:\nmassagewebsiteindastreet.vercel.app\n\n(No https://, no www, no trailing slash)');
+        }
+        
+        // Auto-run initial guidance
+        window.onload = function() {
+            setTimeout(() => {
+                alert('🔧 CORS Fix Strategy:\n\n1. Add MULTIPLE platform entries in Sydney console\n2. Use wildcard *.vercel.app for broader coverage\n3. Wait 5-10 minutes for global propagation\n4. Test with fresh incognito window\n\nClick the buttons to get started!');
+            }, 1000);
+        };
+    </script>
+</body>
+</html>
