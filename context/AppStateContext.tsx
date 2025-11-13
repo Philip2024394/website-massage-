@@ -141,17 +141,19 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
             return;
         }
         
-        // Sync page state with URL hash (except for landing page)
-        if (newPage !== 'landing') {
-            console.log('📍 Setting hash to:', `#${newPage}`);
-            window.location.hash = `#${newPage}`;
-        } else {
-            console.log('📍 Clearing hash for landing page');
-            window.location.hash = '';
-        }
-        
         console.log('📍 Updating page state to:', newPage);
         _setPage(newPage);
+        
+        // Sync page state with URL hash AFTER state update to prevent conflicts
+        setTimeout(() => {
+            if (newPage !== 'landing') {
+                console.log('📍 Setting hash to:', `#${newPage}`);
+                window.location.hash = `#${newPage}`;
+            } else {
+                console.log('📍 Clearing hash for landing page');
+                window.location.hash = '';
+            }
+        }, 0);
     }, [page]);
 
     // Listen for hash changes to handle browser back/forward buttons
