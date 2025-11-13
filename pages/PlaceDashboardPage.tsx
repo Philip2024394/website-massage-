@@ -34,7 +34,6 @@ import {
     ColoredTagIcon, 
     ColoredCrownIcon, 
     ColoredDocumentIcon, 
-    ColoredGlobeIcon, 
     ColoredHistoryIcon, 
     ColoredCoinsIcon 
 } from '../components/ColoredIcons';

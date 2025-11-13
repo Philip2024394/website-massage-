@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import type { Therapist, Pricing, Booking, Notification } from '../types';
 import type { Page } from '../types/pageTypes';
 import { AvailabilityStatus, BookingStatus } from '../types';
 import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages, stringifyPricing, stringifyCoordinates, stringifyMassageTypes, stringifyLanguages, stringifyAnalytics } from '../utils/appwriteHelpers';
 import { therapistService } from '../lib/appwriteService';
 import { MASSAGE_TYPES_CATEGORIZED } from '../constants/rootConstants';
-import { LogOut, Activity, Calendar, TrendingUp, Bell, User, Crown, Building, FileText, Settings, Phone, X, HelpCircle, BookOpen, Tag, Share2, Download, Star } from 'lucide-react';
-import { ColoredProfileIcon, ColoredCalendarIcon, ColoredAnalyticsIcon, ColoredHotelIcon, ColoredCrownIcon, ColoredDocumentIcon, ColoredGlobeIcon, ColoredHistoryIcon, ColoredCoinsIcon, ColoredTagIcon } from '../components/ColoredIcons';
-import { useTranslations } from '../lib/useTranslations';
+import { LogOut, Activity, Calendar, TrendingUp, Bell, User, Crown, Building, FileText, Settings, Phone, X, Tag, Share2, Download, Star } from 'lucide-react';
+import { ColoredHistoryIcon, ColoredCoinsIcon } from '../components/ColoredIcons';
+
 
 import Footer from '../components/Footer';
 import BusyTimerModal from '../components/BusyTimerModal';
@@ -40,7 +40,7 @@ const ActivatedDiscountButton: React.FC<{
     endTime: Date; 
     percentage: number; 
     onExpire: () => void; 
-}> = ({ endTime, percentage, onExpire }) => {
+}> = ({ endTime, percentage: _percentage, onExpire }) => {
     const [timeLeft, setTimeLeft] = useState<string>('');
 
     useEffect(() => {
@@ -227,7 +227,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
     const [isLoading, setIsLoading] = useState(false); // Start with false for debugging
 
     const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
+    const [email] = useState('');
     const [description, setDescription] = useState('');
     const [profilePicture, setProfilePicture] = useState('');
     const [whatsappNumber, setWhatsappNumber] = useState('');
@@ -722,7 +722,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
             setShowChangePasswordModal(false);
             setNewPassword('');
             setConfirmPassword('');
-        } catch (error) {
+        } catch (_error) {
             setToast({ message: 'Failed to update password', type: 'error' });
             setTimeout(() => setToast(null), 3000);
         }
@@ -744,7 +744,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
             setTimeout(() => setToast(null), 3000);
             setShowUpdatePhoneModal(false);
             setNewWhatsAppNumber('');
-        } catch (error) {
+        } catch (_error) {
             setToast({ message: 'Failed to update WhatsApp number', type: 'error' });
             setTimeout(() => setToast(null), 3000);
         }
@@ -785,7 +785,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
 
             setToast({ message: 'Data exported successfully!', type: 'success' });
             setTimeout(() => setToast(null), 3000);
-        } catch (error) {
+        } catch (_error) {
             setToast({ message: 'Failed to export data', type: 'error' });
             setTimeout(() => setToast(null), 3000);
         }
@@ -805,7 +805,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
             setTimeout(() => setToast(null), 5000);
             setShowDeleteAccountModal(false);
             setDeleteConfirmText('');
-        } catch (error) {
+        } catch (_error) {
             setToast({ message: 'Failed to delete account', type: 'error' });
             setTimeout(() => setToast(null), 3000);
         }
@@ -1192,7 +1192,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                         try {
                                                             const session = await account.get();
                                                             console.log('✅ Authenticated session found:', session.email || 'anonymous');
-                                                        } catch (authError) {
+                                                        } catch (_authError) {
                                                             console.log('🔓 No session found, creating anonymous session for save...');
                                                             await account.createAnonymousSession();
                                                             console.log('✅ Anonymous session created for discount save');
@@ -3578,7 +3578,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                 <BusyTimerModal
                     isOpen={showBusyTimerModal}
                     onClose={() => setShowBusyTimerModal(false)}
-                    onConfirm={(duration) => {
+                    onConfirm={(_duration) => {
                         setShowBusyTimerModal(false);
                         // Handle busy timer logic here
                     }}

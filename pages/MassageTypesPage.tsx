@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { MASSAGE_TYPES_CATEGORIZED, getMassageTypeImage, getMassageTypeDetails } from '../constants';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
-import CloseIcon from '../components/icons/CloseIcon';
+
 import { Page } from '../types/pageTypes';
 import { AppDrawer } from '../components/AppDrawer';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
 
 interface MassageTypesPageProps {
-    onBack: () => void;
+    _onBack?: () => void;
     onNavigate?: (page: Page) => void;
     onFindTherapists?: (massageType: string) => void;
     onFindPlaces?: (massageType: string) => void;
@@ -59,7 +59,7 @@ interface MassageType {
 }
 
 const MassageTypesPage: React.FC<MassageTypesPageProps> = ({ 
-    onBack, 
+    _onBack, 
     onNavigate,
     onFindTherapists, 
     onFindPlaces, 

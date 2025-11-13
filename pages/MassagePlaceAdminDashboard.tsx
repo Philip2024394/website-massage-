@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { Place, Pricing, Booking, Notification } from '../types';
 import type { Page } from '../types/pageTypes';
 import { BookingStatus, HotelVillaServiceStatus } from '../types';
-import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages } from '../utils/appwriteHelpers';
+import { parsePricing, parseCoordinates } from '../utils/appwriteHelpers';
 import { placeService } from '../lib/appwriteService';
 import { User, Calendar, TrendingUp, Hotel, FileCheck, LogOut, Bell, Tag, Menu, Crown, Coins, History } from 'lucide-react';
 import { useTranslations } from '../lib/useTranslations';
@@ -565,8 +565,6 @@ const MassagePlaceAdminDashboard: React.FC<MassagePlaceAdminDashboardProps> = ({
                             pricing={pricing}
                             hotelVillaPricing={hotelVillaPricing}
                             useSamePricing={useSamePricing}
-                            isLicensed={isLicensed}
-                            licenseNumber=""
                             
                             // Setters
                             setProfilePicture={setProfilePicture}
@@ -581,7 +579,6 @@ const MassagePlaceAdminDashboard: React.FC<MassagePlaceAdminDashboardProps> = ({
                             setPricing={setPricing}
                             setHotelVillaPricing={setHotelVillaPricing}
                             setUseSamePricing={setUseSamePricing}
-                            setLicenseNumber={() => {}}
                             
                             // Modal state
                             showImageRequirementModal={false}

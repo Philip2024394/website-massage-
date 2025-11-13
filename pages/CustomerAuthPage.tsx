@@ -169,7 +169,7 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, 
       </button>
 
       {/* Glass Effect Login Container */}
-      <div className="max-w-md w-full bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-8 relative z-10 border border-white/20">
+      <div className="max-w-md w-full bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-8 relative z-10 border border-white/20 my-4">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-2">
             <span className="text-white">Inda</span>

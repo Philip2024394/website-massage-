@@ -7,7 +7,6 @@ import TherapistCard from '../components/TherapistCard';
 import ScheduleBookingPopup from '../components/ScheduleBookingPopup';
 import { getRandomTherapistImageRandom } from '../utils/therapistImageUtils';
 import { useTranslations } from '../lib/useTranslations';
-import type { LanguageCode } from '../services/autoTranslationService';
 
 interface HotelVillaMenuPageProps {
     venueId: string;
@@ -16,8 +15,8 @@ interface HotelVillaMenuPageProps {
     therapists: Therapist[];
     places: Place[];
     language?: string;
-    onBook?: (provider: Therapist | Place, type: 'therapist' | 'place') => void;
-    onBookingSubmit?: (bookingData: Partial<Booking>) => Promise<void>;
+    _onBook?: (provider: Therapist | Place, type: 'therapist' | 'place') => void;
+    _onBookingSubmit?: (bookingData: Partial<Booking>) => Promise<void>;
     setPage?: (page: Page) => void;
 }
 
@@ -28,8 +27,8 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
     therapists, 
     places,
     language: propLanguage = 'en',
-    onBook,
-    onBookingSubmit
+    _onBook,
+    _onBookingSubmit
 }) => {
     const [activeTab, setActiveTab] = useState<'therapists' | 'places'>('therapists');
     const [loading, setLoading] = useState(true);

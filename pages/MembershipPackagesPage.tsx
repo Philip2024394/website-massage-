@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Crown, Star, Check, Upload, Copy, AlertCircle, CreditCard, Building, Calendar, TrendingUp, Shield, Zap, Gift } from 'lucide-react';
+import React, { useState } from 'react';
+import { Crown, Star, Check, Upload, Copy, AlertCircle, CreditCard, Building, TrendingUp, Shield, Gift } from 'lucide-react';
 
 interface MembershipPackagesPageProps {
     onNavigateBack: () => void;
