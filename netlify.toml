@@ -16,8 +16,9 @@
 [build.environment]
   ROLLUP_NO_NATIVE = "1"
   ROLLUP_NO_WASM = "1"
-  NODE_VERSION = "20"
+  NODE_VERSION = "20.19.5"
   NODE_OPTIONS = "--max-old-space-size=4096"
+  NETLIFY_BUILD_DEBUG = "true"
   NETLIFY_BUILD_DEBUG = "true"
 
 # Cache-Control Headers for optimal performance and cache-busting
