@@ -170,11 +170,11 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) =>
 
             {/* Main Content */}
             <main className="flex-1 flex items-center justify-center p-4 overflow-hidden">
-                <div className="max-w-md w-full bg-black backdrop-blur-lg rounded-2xl shadow-2xl p-8 border-2 border-orange-500/60">
+                <div className="max-w-md w-full">
                     {/* Header */}
                     <div className="text-center mb-8">
                         <h2 className="text-3xl font-bold mb-2 text-orange-500">Hotel</h2>
-                        <p className="text-gray-200 text-sm">Manage your massage services and bookings</p>
+                        <p className="text-gray-700 text-sm">Manage your massage services and bookings</p>
                     </div>
 
                     {error && (
@@ -188,14 +188,14 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) =>
                     )}
 
                     {/* Tab Navigation */}
-                    <div className="flex mb-6 bg-white/10 backdrop-blur-sm rounded-lg p-1 border border-white/20">
+                    <div className="flex mb-6 bg-white rounded-lg p-1 border border-gray-200 shadow-sm">
                         <button
                             onClick={() => {
                                 setIsSignUp(false);
                                 setError(''); // Clear error when switching modes
                             }}
                             className={`flex-1 py-3 px-4 rounded-lg transition-all font-medium ${
-                                !isSignUp ? 'bg-gradient-to-r from-orange-500/80 to-orange-600/80 text-white shadow-sm backdrop-blur-sm border border-orange-400/30' : 'text-gray-300 hover:text-white hover:bg-white/5'
+                                !isSignUp ? 'bg-orange-500 text-white shadow-sm' : 'text-gray-600 hover:text-orange-500 hover:bg-orange-50'
                             }`}
                         >
                             Sign In
@@ -206,7 +206,7 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) =>
                                 setError(''); // Clear error when switching modes
                             }}
                             className={`flex-1 py-3 px-4 rounded-lg transition-all font-medium ${
-                                isSignUp ? 'bg-gradient-to-r from-orange-500/80 to-orange-600/80 text-white shadow-sm backdrop-blur-sm border border-orange-400/30' : 'text-gray-300 hover:text-white hover:bg-white/5'
+                                isSignUp ? 'bg-orange-500 text-white shadow-sm' : 'text-gray-600 hover:text-orange-500 hover:bg-orange-50'
                             }`}
                         >
                             Create Account
@@ -216,7 +216,7 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) =>
                     {/* Forms */}
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
-                            <label className="block text-sm font-medium text-gray-200 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Email Address
                             </label>
                             <div className="relative">
@@ -226,14 +226,14 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) =>
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     placeholder="Enter your email"
-                                    className="w-full pl-12 pr-4 py-3 rounded-xl border border-white/20 focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400 transition-all bg-white/10 backdrop-blur-sm text-white placeholder-gray-300"
+                                    className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400 transition-all bg-white text-gray-900 placeholder-gray-500 shadow-sm"
                                     required
                                 />
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-200 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Password
                             </label>
                             <div className="relative">
@@ -243,7 +243,7 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) =>
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder={isSignUp ? "Create a password (min 8 characters)" : "Enter your password"}
-                                    className="w-full pl-12 pr-12 py-3 rounded-xl border border-white/20 focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400 transition-all bg-white/10 backdrop-blur-sm text-white placeholder-gray-300"
+                                    className="w-full pl-12 pr-12 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400 transition-all bg-white text-gray-900 placeholder-gray-500 shadow-sm"
                                     required
                                 />
                                 <button
@@ -259,7 +259,7 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) =>
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full py-4 bg-gradient-to-r from-orange-500/80 to-orange-600/80 hover:from-orange-600/90 hover:to-orange-700/90 text-white font-semibold rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl backdrop-blur-sm border border-orange-400/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full py-4 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {loading ? (
                                 <div className="flex items-center justify-center">
