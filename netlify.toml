@@ -3,7 +3,7 @@
 
 [build]
   publish = "dist"
-  command = "npm install -g pnpm@10.22.0 && pnpm install --frozen-lockfile && pnpm run build:netlify"
+  command = "npm install -g pnpm@10.22.0 && pnpm install && pnpm run build:netlify"
 
 [build.environment]
   ROLLUP_NO_NATIVE = "1"

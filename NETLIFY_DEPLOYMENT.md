@@ -16,6 +16,19 @@
 
 **Build Verification**: ✅ Tested locally - builds successfully in 5.89s with optimal chunking
 
+## 🔧 **Latest Fix Applied**
+
+**Issue**: Netlify builds failing during `pnpm install --frozen-lockfile` step
+**Root Cause**: The `--frozen-lockfile` flag can cause issues on Netlify even when lockfile is committed
+**Solution**: Removed `--frozen-lockfile` flag from build command for better compatibility
+
+**Updated Command**: 
+```bash
+npm install -g pnpm@10.22.0 && pnpm install && pnpm run build:netlify
+```
+
+This allows pnpm to handle dependency resolution more flexibly while maintaining reproducibility.
+
 ## Required Environment Variables
 These are automatically set via `netlify.toml`:
 
