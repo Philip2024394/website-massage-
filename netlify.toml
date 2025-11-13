@@ -5,6 +5,9 @@
   publish = "dist"
   command = "npm run build"
 
+[build.environment]
+  ROLLUP_NO_NATIVE = "1"
+
 # Cache-Control Headers for optimal performance and cache-busting
 [[headers]]
   # index.html - Always fetch fresh (no cache)
