@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "cross-env ROLLUP_NO_NATIVE=1 tsc && vite build --config vite.config.deployment.ts",
+    "build": "cross-env ROLLUP_NO_NATIVE=1 tsc && vite build --config vite.config.deployment.js",
     "build:local": "cross-env ROLLUP_NO_NATIVE=1 tsc && vite build",
     "build:vercel": "node esbuild.config.cjs",
     "build:vite": "tsc && vite build --config vite.config.simple.ts",
