@@ -1,0 +1,13 @@
+# Ultra-simple Netlify config - minimal approach
+[build]
+  publish = "dist"
+  command = "npm ci && npm run build"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+# Just SPA redirect
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

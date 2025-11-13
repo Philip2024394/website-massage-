@@ -1,7 +1,7 @@
 # ABSOLUTE MINIMUM CONFIG
 [build]
-  publish = "dist"
-  command = "corepack enable pnpm && pnpm install && pnpm run build:simple"
+  publish = "dist"  
+  command = "corepack enable pnpm && pnpm i && pnpm bs"
 
 # SPA redirect
 [[redirects]]
