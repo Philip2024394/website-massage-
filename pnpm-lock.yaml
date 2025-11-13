@@ -72,6 +72,12 @@ importers:
         specifier: ^4.4.0
         version: 4.5.7(@types/react@19.2.4)(react@19.2.0)
     devDependencies:
+      '@esbuild/linux-arm64':
+        specifier: 0.25.11
+        version: 0.25.11
+      '@esbuild/linux-x64':
+        specifier: 0.25.11
+        version: 0.25.11
       '@eslint/js':
         specifier: ^9.39.1
         version: 9.39.1
@@ -149,9 +155,6 @@ importers:
         specifier: 0.25.11
         version: 0.25.11
       '@esbuild/darwin-x64':
-        specifier: 0.25.11
-        version: 0.25.11
-      '@esbuild/linux-x64':
         specifier: 0.25.11
         version: 0.25.11
       '@esbuild/win32-x64':
@@ -2793,8 +2796,7 @@ snapshots:
   '@esbuild/linux-arm64@0.21.5':
     optional: true
 
-  '@esbuild/linux-arm64@0.25.11':
-    optional: true
+  '@esbuild/linux-arm64@0.25.11': {}
 
   '@esbuild/linux-arm@0.21.5':
     optional: true
@@ -2841,8 +2843,7 @@ snapshots:
   '@esbuild/linux-x64@0.21.5':
     optional: true
 
-  '@esbuild/linux-x64@0.25.11':
-    optional: true
+  '@esbuild/linux-x64@0.25.11': {}
 
   '@esbuild/netbsd-arm64@0.25.11':
     optional: true
