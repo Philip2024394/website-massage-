@@ -1,12 +1,24 @@
 # Netlify Build Settings
 
-## Required Environment Variables
-Set these in your Netlify dashboard under Site settings > Environment variables:
+## ✅ Rollup Native Binary Issue Fixed
 
-### Required for Build
-- `ROLLUP_NO_NATIVE` = `1`
-- `PNPM_VERSION` = `10.22.0`
-- `NODE_VERSION` = `22`
+**Issue**: Netlify builds were failing with `MODULE_NOT_FOUND` errors for optional Rollup native binaries.
+
+**Solution Applied**:
+1. ✅ Added `ROLLUP_NO_NATIVE = "1"` and `ROLLUP_NO_WASM = "1"` to `netlify.toml`
+2. ✅ Added Linux-specific rollup package (`@rollup/rollup-linux-x64-gnu`) as dev dependency
+3. ✅ Optimized build command with `--frozen-lockfile` flag
+4. ✅ Added memory optimization with `NODE_OPTIONS = "--max-old-space-size=4096"`
+
+## Required Environment Variables
+These are automatically set via `netlify.toml`:
+
+### Build Environment (Auto-configured)
+- `ROLLUP_NO_NATIVE` = `"1"` ✅
+- `ROLLUP_NO_WASM` = `"1"` ✅  
+- `PNPM_VERSION` = `"10.22.0"` ✅
+- `NODE_VERSION` = `"22"` ✅
+- `NODE_OPTIONS` = `"--max-old-space-size=4096"` ✅
 
 ### Appwrite Configuration (Required)
 - `VITE_APPWRITE_ENDPOINT` = `https://syd.cloud.appwrite.io/v1`

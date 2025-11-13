@@ -3,11 +3,14 @@
 
 [build]
   publish = "dist"
-  command = "pnpm install && pnpm run build"
+  command = "pnpm install --frozen-lockfile && pnpm run build"
 
 [build.environment]
   ROLLUP_NO_NATIVE = "1"
+  ROLLUP_NO_WASM = "1"
   PNPM_VERSION = "10.22.0"
+  NODE_VERSION = "22"
+  NODE_OPTIONS = "--max-old-space-size=4096"
 
 # Cache-Control Headers for optimal performance and cache-busting
 [[headers]]

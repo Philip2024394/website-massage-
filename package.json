@@ -50,6 +50,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@rollup/rollup-linux-x64-gnu": "^4.22.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^16.0.0",
     "@types/qrcode": "^1.5.6",
@@ -92,7 +93,6 @@
   "optionalDependencies": {
     "@rollup/rollup-darwin-arm64": "^4.22.0",
     "@rollup/rollup-darwin-x64": "^4.22.0",
-    "@rollup/rollup-linux-x64-gnu": "^4.22.0",
     "@rollup/rollup-linux-x64-musl": "^4.22.0",
     "@rollup/rollup-win32-x64-msvc": "^4.22.0"
   },
