@@ -31,8 +31,11 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
         // Check localStorage, default to English for consistency
         try {
             const storedLanguage = localStorage.getItem('app_language');
-            return (storedLanguage === 'id' || storedLanguage === 'en') ? storedLanguage as Language : 'en';
+            const initialLang = (storedLanguage === 'id' || storedLanguage === 'en') ? storedLanguage as Language : 'en';
+            console.log('🔍 LandingPage: Initial language from localStorage:', storedLanguage, '→', initialLang);
+            return initialLang;
         } catch {
+            console.log('🔍 LandingPage: localStorage error, defaulting to English');
             return 'en';
         }
     });
@@ -143,10 +146,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
             const userLocation = await locationService.requestLocationWithFallback();
             
             console.log('✅ Location detected:', userLocation);
-            console.log('Calling onEnterApp with:', selectedLanguage, userLocation);
+            console.log('🚀 About to call onEnterApp with language:', selectedLanguage, 'and location:', userLocation);
+            console.log('🚀 Current selectedLanguage state:', selectedLanguage);
+            console.log('🚀 Current localStorage language:', localStorage.getItem('app_language'));
             
             onEnterApp(selectedLanguage, userLocation);
-            console.log('✅ onEnterApp called successfully');
+            console.log('✅ onEnterApp called successfully with language:', selectedLanguage);
             
         } catch (error) {
             console.error('❌ Failed to get location:', error);
@@ -229,15 +234,17 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
                                         <button
                                             key={lang.code}
                                             onClick={() => {
-                                                console.log('Language selected:', lang.name);
+                                                console.log('🌐 Language selected in dropdown:', lang.name, '→', lang.code);
+                                                console.log('🌐 Previous selectedLanguage was:', selectedLanguage);
                                                 const newLanguage = lang.code as Language;
                                                 setSelectedLanguage(newLanguage);
                                                 
                                                 // Save to localStorage for persistence
                                                 try {
                                                     localStorage.setItem('app_language', newLanguage);
+                                                    console.log('🌐 ✅ Saved to localStorage:', newLanguage);
                                                 } catch (error) {
-                                                    console.warn('Failed to save language to localStorage:', error);
+                                                    console.warn('❌ Failed to save language to localStorage:', error);
                                                 }
                                                 
                                                 // Activate VS Code Google Translate for selected language
@@ -245,8 +252,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
                                                 
                                                 // Also call the parent's language select handler
                                                 if (onLanguageSelect) {
-                                                    console.log('🌐 Calling onLanguageSelect with:', newLanguage);
+                                                    console.log('🌐 ✅ Calling parent onLanguageSelect with:', newLanguage);
                                                     onLanguageSelect(newLanguage);
+                                                } else {
+                                                    console.warn('🌐 ❌ No onLanguageSelect prop provided!');
                                                 }
                                                 
                                                 setIsDropdownOpen(false);

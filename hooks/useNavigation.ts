@@ -171,6 +171,9 @@ export const useNavigation = ({
     }, [setLanguage]);
 
     const handleEnterApp = useCallback(async (lang: Language, location: UserLocation) => {
+        console.log('🚀 handleEnterApp called with language:', lang, 'location:', location);
+        console.log('🚀 localStorage before enter:', localStorage.getItem('app_language'));
+        
         try {
             // Set flag to start fresh (prevent session restore)
             sessionStorage.setItem('start_fresh', 'true');
@@ -190,9 +193,11 @@ export const useNavigation = ({
             
             // Set new state with delay to ensure DOM cleanup
             await new Promise(resolve => setTimeout(resolve, 50));
+            console.log('🚀 About to set language to:', lang);
             setLanguage(lang);
             setUserLocation(location);
             localStorage.setItem('user_location', JSON.stringify(location));
+            console.log('🚀 About to navigate to home page');
             setPage('home');
         } catch (error) {
             console.warn('Navigation error during app entry:', error);

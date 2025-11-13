@@ -87,10 +87,17 @@ export const useAppState = () => {
     setToLocalStorage('app_selected_place', place);
   };
 
-  const [language, _setLanguage] = useState<Language>(() => getFromLocalStorage('app_language', 'en'));
+  const [language, _setLanguage] = useState<Language>(() => {
+    const storedLang = getFromLocalStorage('app_language', 'en');
+    console.log('🌐 useAppState: Initial language from localStorage:', storedLang);
+    return storedLang;
+  });
   const setLanguage = (lang: Language) => {
+    console.log('🌐 useAppState: setLanguage called with:', lang);
+    console.log('🌐 useAppState: Current language before change:', language);
     _setLanguage(lang);
     setToLocalStorage('app_language', lang);
+    console.log('🌐 useAppState: Language state updated to:', lang);
   };
 
   const [userLocation, _setUserLocation] = useState<UserLocation | null>(() => getFromLocalStorage('app_user_location'));
