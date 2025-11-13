@@ -1,24 +1,14 @@
-# Netlify Configuration for IndaStreet Massage Platform
-# This file configures the build process for Netlify deployment
-# 
-# AUTOMATIC PNPM DETECTION via packageManager field in package.json
-# Netlify will auto-detect pnpm@10.21.0 and activate it automatically
-# 
-# FALLBACK OPTIONS IF BUILD STILL FAILS:
-# Option 1: npm ci && npm run build:npm
-# Option 2: npm install && npm run build:netlify
+# NUCLEAR OPTION: Ultra-simple Netlify config
+# This removes ALL complexity and uses basic, reliable approaches
+# Same app quality - different deployment method
 
 [build]
   publish = "dist"
-  # Shorter command to avoid truncation - relies on packageManager field
-  command = "corepack enable && pnpm install && pnpm run build:netlify"
+  command = "npm ci && npm run build:simple"
 
 [build.environment]
-  ROLLUP_NO_NATIVE = "1"
-  ROLLUP_NO_WASM = "1"
-  NODE_VERSION = "20.19.5"
-  NODE_OPTIONS = "--max-old-space-size=4096"
-  NETLIFY_BUILD_DEBUG = "true"
+  NODE_VERSION = "18.19.0"
+  NPM_FLAGS = "--legacy-peer-deps"
 
 # Cache-Control Headers for optimal performance and cache-busting
 [[headers]]
