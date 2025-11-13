@@ -69,15 +69,30 @@ async function buildApp() {
     
     const processedHtml = indexHtml
       .replace('/index.tsx?v=20241031100500', '/index.js')
-      .replace('type="module" src="/index.tsx?v=20241031100500"', 'type="module" src="/index.js"')
+      .replace('src="/index.tsx?v=20241031100500"', 'src="/index.js"')
       .replace('</head>', `    ${cssLinks}\n</head>`)
     
     fs.writeFileSync('dist/index.html', processedHtml)
     
-    // Copy any static assets
+    // Copy any static assets EXCEPT index.html (we already processed it)
     if (fs.existsSync('public')) {
-      const { execSync } = require('child_process')
-      execSync('cp -r public/* dist/ 2>/dev/null || xcopy /E /I /Y public\\* dist\\ 2>nul || true', { stdio: 'inherit' })
+      const publicFiles = fs.readdirSync('public', { withFileTypes: true })
+      for (const file of publicFiles) {
+        if (file.name === 'index.html') continue // Skip index.html - we already processed it
+        
+        const sourcePath = path.join('public', file.name)
+        const destPath = path.join('dist', file.name)
+        
+        if (file.isDirectory()) {
+          // Copy directory
+          const { execSync } = require('child_process')
+          execSync(`cp -r "${sourcePath}" "${destPath}" 2>/dev/null || xcopy /E /I /Y "${sourcePath}" "${destPath}\\" 2>nul || true`, { stdio: 'inherit' })
+        } else {
+          // Copy file
+          fs.copyFileSync(sourcePath, destPath)
+        }
+        console.log(file.name)
+      }
     }
     
     console.log('✅ ESBuild completed successfully! No Rollup native binaries needed.')
