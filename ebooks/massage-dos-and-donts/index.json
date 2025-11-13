@@ -1,0 +1,75 @@
+{
+  "ebook": {
+    "id": "massage-dos-donts-guide",
+    "title": "Massage Do's and Don'ts: A Complete Guide",
+    "subtitle": "Professional Guidelines for Safe and Effective Massage Therapy",
+    "author": "IndaStreet Massage Academy",
+    "description": "Comprehensive guide covering essential massage therapy guidelines, safety protocols, professional ethics, and best practices for both therapists and clients.",
+    "pages": 24,
+    "coinPrice": 75,
+    "category": "Professional Training",
+    "difficulty": "Beginner to Intermediate",
+    "estimatedReadTime": "45 minutes",
+    "keywords": ["massage therapy", "professional massage", "massage safety", "massage ethics", "massage techniques", "therapeutic massage"],
+    "seoDescription": "Learn professional massage therapy do's and don'ts with this comprehensive guide covering safety, ethics, techniques, and best practices for massage therapists and clients.",
+    "chapters": [
+      {
+        "id": 1,
+        "title": "Introduction to Professional Massage Therapy",
+        "pages": 2,
+        "seoSlug": "professional-massage-therapy-introduction"
+      },
+      {
+        "id": 2,
+        "title": "Essential Safety Do's and Don'ts",
+        "pages": 3,
+        "seoSlug": "massage-safety-guidelines-dos-donts"
+      },
+      {
+        "id": 3,
+        "title": "Professional Ethics and Boundaries",
+        "pages": 3,
+        "seoSlug": "massage-therapy-ethics-professional-boundaries"
+      },
+      {
+        "id": 4,
+        "title": "Hygiene and Sanitation Standards",
+        "pages": 2,
+        "seoSlug": "massage-hygiene-sanitation-standards"
+      },
+      {
+        "id": 5,
+        "title": "Client Communication Best Practices",
+        "pages": 3,
+        "seoSlug": "massage-client-communication-best-practices"
+      },
+      {
+        "id": 6,
+        "title": "Technique Do's and Don'ts",
+        "pages": 4,
+        "seoSlug": "massage-technique-guidelines-dos-donts"
+      },
+      {
+        "id": 7,
+        "title": "Special Considerations and Contraindications",
+        "pages": 3,
+        "seoSlug": "massage-contraindications-special-considerations"
+      },
+      {
+        "id": 8,
+        "title": "Business and Legal Guidelines",
+        "pages": 2,
+        "seoSlug": "massage-business-legal-guidelines"
+      },
+      {
+        "id": 9,
+        "title": "Self-Care for Massage Therapists",
+        "pages": 2,
+        "seoSlug": "massage-therapist-self-care-guidelines"
+      }
+    ],
+    "publishDate": "2025-11-14",
+    "lastUpdated": "2025-11-14",
+    "version": "1.0"
+  }
+}
