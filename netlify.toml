@@ -13,7 +13,6 @@
   ROLLUP_NO_WASM = "1"
   NODE_VERSION = "22"
   PNPM_VERSION = "10.22.0"
-  NODE_VERSION = "22"
   NODE_OPTIONS = "--max-old-space-size=4096"
   NETLIFY_BUILD_DEBUG = "true"
 
