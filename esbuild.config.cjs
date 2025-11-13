@@ -58,7 +58,7 @@ async function buildApp() {
     
     // Copy and process index.html
     console.log('Processing index.html...')
-    const indexHtml = fs.readFileSync('index.html', 'utf8')
+    const indexHtml = fs.readFileSync('public/index.html', 'utf8')
     
     // Find generated CSS files
     const cssFiles = fs.readdirSync('dist').filter(file => file.endsWith('.css'))
