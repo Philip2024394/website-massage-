@@ -867,11 +867,71 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             </div>;
             
         case 'notifications': 
+            // Check if user is logged in - if not, show guest notification message
+            if (!user && !loggedInProvider && !loggedInCustomer && !isAdminLoggedIn) {
+                return (
+                    <div className="min-h-screen bg-gray-50 pb-16">
+                        {/* Header */}
+                        <div className="bg-white border-b border-gray-200 px-4 py-4 flex items-center">
+                            <button onClick={handleBackToHome} className="mr-4">
+                                <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </button>
+                            <h1 className="text-xl font-bold text-gray-900">Notifications</h1>
+                        </div>
+
+                        {/* Guest Message */}
+                        <div className="flex flex-col items-center justify-center px-6 py-20 text-center">
+                            <div className="w-24 h-24 mb-6 rounded-full bg-orange-100 flex items-center justify-center">
+                                <svg className="w-12 h-12 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                                </svg>
+                            </div>
+                            
+                            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                                Sign In Required
+                            </h2>
+                            
+                            <p className="text-gray-600 mb-8 max-w-sm">
+                                To receive and view notifications, you need to create an account or sign in.
+                            </p>
+                            
+                            <div className="space-y-4 w-full max-w-xs">
+                                <button
+                                    onClick={handleNavigateToRegistrationChoice}
+                                    className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-orange-600 hover:to-orange-700 transition-all duration-300 shadow-lg"
+                                >
+                                    Create Account
+                                </button>
+                                
+                                <button
+                                    onClick={() => setPage('unifiedLogin')}
+                                    className="w-full bg-white text-gray-700 px-6 py-3 rounded-lg font-semibold border border-gray-300 hover:bg-gray-50 transition-colors"
+                                >
+                                    Sign In
+                                </button>
+                            </div>
+                            
+                            <div className="mt-8 bg-blue-50 rounded-lg p-4 max-w-sm">
+                                <h3 className="font-semibold text-blue-900 mb-2">With an account, you'll get:</h3>
+                                <ul className="text-sm text-blue-700 space-y-1 text-left">
+                                    <li>• Booking confirmations & updates</li>
+                                    <li>• Special offers & promotions</li>
+                                    <li>• Therapist availability alerts</li>
+                                    <li>• Payment & loyalty updates</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+            
             return <NotificationsPage 
-                notifications={notifications}
+                notifications={notifications || []}
                 onMarkAsRead={handleMarkNotificationAsRead}
                 onBack={handleBackToHome}
-                t={t.notifications}
+                t={t?.notifications || { title: 'Notifications', noNotifications: 'No notifications yet', markAsRead: 'Mark as read' }}
             />;
             
         case 'massageTypes': 
