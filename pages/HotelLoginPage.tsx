@@ -166,10 +166,10 @@ const HotelLoginPage: React.FC<HotelLoginPageProps> = ({ onSuccess, onBack }) =>
                 }}
             >
                 <div className="max-w-md w-full relative z-10 max-h-full overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                    {/* Header */}
-                    <div className="text-center mb-4 sm:mb-6">
-                        <h2 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2 text-gray-800 drop-shadow-lg">Hotel</h2>
-                        <p className="text-gray-700 text-sm drop-shadow">Manage your massage services and bookings</p>
+                    {/* Header - Moved higher up with larger text */}
+                    <div className="text-center mb-6 sm:mb-8 pt-2 sm:pt-4">
+                        <h2 className="text-4xl sm:text-5xl font-bold mb-2 sm:mb-3 text-gray-800 drop-shadow-lg">Hotel</h2>
+                        <p className="text-gray-600 text-xs sm:text-sm drop-shadow">Manage your massage services and bookings</p>
                     </div>
 
                     <div className="mb-3 sm:mb-4 min-h-[50px] flex items-center">
