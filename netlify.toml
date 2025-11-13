@@ -3,10 +3,11 @@
 
 [build]
   publish = "dist"
-  command = "npm run build"
+  command = "pnpm install && pnpm run build"
 
 [build.environment]
   ROLLUP_NO_NATIVE = "1"
+  PNPM_VERSION = "10.22.0"
 
 # Cache-Control Headers for optimal performance and cache-busting
 [[headers]]
