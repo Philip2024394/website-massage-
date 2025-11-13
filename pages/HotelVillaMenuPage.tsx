@@ -170,19 +170,6 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
                 >
                     <div className="absolute inset-0 bg-black/40"></div>
                     
-                    {/* Circular Back to Dashboard Button */}
-                    {onBackToDashboard && (
-                        <button
-                            onClick={onBackToDashboard}
-                            className="absolute top-6 left-6 z-20 w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-all duration-300 hover:scale-110 shadow-lg"
-                            title="Back to Dashboard"
-                        >
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                            </svg>
-                        </button>
-                    )}
-                    
                     <div className="relative z-10 flex flex-col items-center justify-center min-h-screen p-4 text-center">
                         <div className="mb-8">
                             <h1 className="text-5xl md:text-6xl font-bold text-white mb-2">
@@ -204,14 +191,12 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
                             View Live Menu
                         </button>
                     </div>
-                </div>
-            ) : (
-                <div className="min-h-screen bg-gray-50 relative">
-                    {/* Circular Back to Dashboard Button for Menu View */}
+
+                    {/* Circular Back to Dashboard Button - Bottom Position for Landing */}
                     {onBackToDashboard && (
                         <button
                             onClick={onBackToDashboard}
-                            className="fixed top-6 left-6 z-50 w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center text-white hover:bg-orange-600 transition-all duration-300 hover:scale-110 shadow-lg"
+                            className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-20 w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-all duration-300 hover:scale-110 shadow-lg"
                             title="Back to Dashboard"
                         >
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -219,6 +204,9 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
                             </svg>
                         </button>
                     )}
+                </div>
+            ) : (
+                <div className="min-h-screen bg-gray-50 relative">
 
                     <div className="bg-white shadow-sm border-b">
                         <div className="flex items-center justify-between p-4">
@@ -251,7 +239,7 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
                                         : 'text-gray-600'
                                 }`}
                             >
-                                Room Service ({liveTherapists.length})
+                                Room Service
                             </button>
                             <button
                                 onClick={() => setActiveTab('places')}
@@ -261,7 +249,7 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
                                         : 'text-gray-600'
                                 }`}
                             >
-                                Massage Places ({livePlaces.length})
+                                Massage Places
                             </button>
                         </div>
                         <div className="text-center pb-4">
@@ -274,6 +262,19 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
                     <div className="p-4 pb-20">
                         {activeTab === 'therapists' ? renderTherapistContent() : renderPlaceContent()}
                     </div>
+
+                    {/* Circular Back to Dashboard Button - Bottom Position */}
+                    {onBackToDashboard && (
+                        <button
+                            onClick={onBackToDashboard}
+                            className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 w-14 h-14 bg-orange-500 rounded-full flex items-center justify-center text-white hover:bg-orange-600 transition-all duration-300 hover:scale-110 shadow-lg"
+                            title="Back to Dashboard"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </button>
+                    )}
                 </div>
             )}
 
