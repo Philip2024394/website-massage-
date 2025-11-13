@@ -592,6 +592,20 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onBack={handleBackToHome}
                 onRegisterClick={handleNavigateToRegistrationChoice} // 🎯 Opens registration drawer
                 t={t?.profile || t}
+                // AppDrawer navigation props
+                onMassageJobsClick={() => setPage('massageJobs')}
+                onHotelPortalClick={handleNavigateToHotelLogin}
+                onVillaPortalClick={handleNavigateToVillaLogin}
+                onTherapistPortalClick={handleNavigateToTherapistLogin}
+                onMassagePlacePortalClick={handleNavigateToMassagePlaceLogin}
+                onAgentPortalClick={() => setPage('agent')}
+                onCustomerPortalClick={handleNavigateToCustomerDashboard}
+                onAdminPortalClick={handleNavigateToAdminLogin}
+                onNavigate={(page: string) => setPage(page as Page)}
+                onTermsClick={handleNavigateToServiceTerms}
+                onPrivacyClick={handleNavigateToPrivacyPolicy}
+                therapists={therapists}
+                places={places}
             />;
             
         case 'detail': 

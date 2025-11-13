@@ -1,9 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { AppDrawer } from '../components/AppDrawer';
 
 interface GuestProfilePageProps {
     onBack: () => void;
     onRegisterClick?: () => void; // 🎯 NEW: Function to open registration drawer/page
     t: any;
+    // AppDrawer navigation props (optional - will use defaults if not provided)
+    onMassageJobsClick?: () => void;
+    onHotelPortalClick?: () => void;
+    onVillaPortalClick?: () => void;
+    onTherapistPortalClick?: () => void;
+    onMassagePlacePortalClick?: () => void;
+    onAgentPortalClick?: () => void;
+    onCustomerPortalClick?: () => void;
+    onAdminPortalClick?: () => void;
+    onNavigate?: (page: string) => void;
+    onTermsClick?: () => void;
+    onPrivacyClick?: () => void;
+    therapists?: any[];
+    places?: any[];
 }
 
 const UserIcon = ({ className = 'w-16 h-16' }) => (
@@ -18,18 +33,72 @@ const ArrowIcon = ({ className = 'w-6 h-6' }) => (
     </svg>
 );
 
-const GuestProfilePage: React.FC<GuestProfilePageProps> = ({ onBack, onRegisterClick }) => {
+const BurgerMenuIcon = ({ className = 'w-6 h-6' }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+);
+
+const GuestProfilePage: React.FC<GuestProfilePageProps> = ({ 
+    onBack, 
+    onRegisterClick,
+    t,
+    onMassageJobsClick,
+    onHotelPortalClick,
+    onVillaPortalClick,
+    onTherapistPortalClick,
+    onMassagePlacePortalClick,
+    onAgentPortalClick,
+    onCustomerPortalClick,
+    onAdminPortalClick,
+    onNavigate,
+    onTermsClick,
+    onPrivacyClick,
+    therapists = [],
+    places = []
+}) => {
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
     return (
         <div className="min-h-screen bg-gray-50 pb-16">
-            {/* Header */}
-            <div className="bg-white border-b border-gray-200 px-4 py-4 flex items-center">
-                <button onClick={onBack} className="mr-4">
-                    <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                </button>
-                <h1 className="text-xl font-bold text-gray-900">Profile</h1>
-            </div>
+            {/* Header with Brand and Burger Menu */}
+            <header className="bg-white shadow-sm px-4 py-4 sticky top-0 z-20">
+                <div className="flex justify-between items-center">
+                    {/* Brand Name */}
+                    <h1 className="text-xl sm:text-2xl font-bold">
+                        <span className="text-black">Inda</span>
+                        <span className="text-orange-500">Street</span>
+                    </h1>
+                    
+                    {/* Burger Menu */}
+                    <button 
+                        onClick={() => setIsMenuOpen(true)} 
+                        title="Menu"
+                        className="text-orange-500 hover:text-orange-600 transition-colors p-2 hover:bg-gray-100 rounded-lg"
+                    >
+                        <BurgerMenuIcon className="w-6 h-6" />
+                    </button>
+                </div>
+            </header>
+            
+            {/* AppDrawer */}
+            <AppDrawer
+                isOpen={isMenuOpen}
+                onClose={() => setIsMenuOpen(false)}
+                onMassageJobsClick={onMassageJobsClick}
+                onHotelPortalClick={onHotelPortalClick}
+                onVillaPortalClick={onVillaPortalClick}
+                onTherapistPortalClick={onTherapistPortalClick}
+                onMassagePlacePortalClick={onMassagePlacePortalClick}
+                onAgentPortalClick={onAgentPortalClick}
+                onCustomerPortalClick={onCustomerPortalClick}
+                onAdminPortalClick={onAdminPortalClick}
+                onNavigate={onNavigate}
+                onTermsClick={onTermsClick}
+                onPrivacyClick={onPrivacyClick}
+                therapists={therapists}
+                places={places}
+                t={t}
+            />
 
             {/* Content */}
             <div className="flex flex-col items-center justify-center px-6 py-20">
