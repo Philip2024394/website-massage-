@@ -56,8 +56,8 @@ export const useAppState = () => {
         return 'rewardBannersTest';
       }
       
-      // Always show landing page first (users can navigate from there)
-      console.log('� Always showing landing page first for all users');
+      // Always show landing page first - but allow navigation after that
+      console.log('🌊 Showing landing page (allows navigation after Enter App)');
       return 'landing';
     } catch {
       console.log('⚠️ URL parameter parsing failed, defaulting to landing page');
@@ -74,8 +74,10 @@ export const useAppState = () => {
 
   const [page, _setPage] = useState<Page>(getInitialPage()); // Start with URL-aware page detection
   const setPage = (newPage: Page) => {
-    console.log('📍 Page change:', newPage);
+    console.log('📍 Page change request:', newPage);
+    console.log('📍 Current page before change:', page);
     _setPage(newPage);
+    console.log('📍 setPage called - should trigger re-render with:', newPage);
   };
   
   // Location and preferences - with localStorage persistence
