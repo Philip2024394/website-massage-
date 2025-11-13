@@ -2,19 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Prevent horizontal scrolling but allow vertical content scrolling */
+/* 📱 FULL-SCREEN PWA: Complete viewport coverage */
 html, body {
   height: 100%;
   width: 100%;
   overflow-x: hidden; /* Prevent horizontal scroll only */
   margin: 0;
   padding: 0;
+  /* Handle PWA safe areas for notch devices */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 #root {
   height: 100vh;
+  /* Use dynamic viewport height for mobile browsers */
+  height: 100dvh;
   width: 100vw;
   overflow-x: hidden; /* Prevent horizontal scroll in root */
+  /* Ensure full coverage on PWA */
+  min-height: -webkit-fill-available;
+  min-height: 100vh;
 }
 
 /* Satellite Ring Effect for Status Dots */
@@ -48,4 +58,24 @@ html, body {
   border-radius: 50%;
   animation: satellite-ring 2s ease-out infinite;
   border: 2px solid currentColor;
+}
+
+/* 📱 PWA FULL-SCREEN: Additional support for hiding browser UI */
+@media (display-mode: fullscreen) {
+  body {
+    background: #ffffff;
+  }
+}
+
+@media (display-mode: standalone) {
+  body {
+    background: #ffffff;
+  }
+}
+
+/* Handle status bar on iOS PWA */
+@supports (-webkit-touch-callout: none) {
+  .ios-pwa-padding {
+    padding-top: 44px; /* Status bar height */
+  }
 }

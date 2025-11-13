@@ -2,14 +2,19 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
     
     <!-- � PWA MANIFEST: Critical for background notifications -->
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#f97316" />
+    
+    <!-- 📱 FULL-SCREEN PWA: Hide browser UI completely -->
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-touch-fullscreen" content="yes" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msapplication-tap-highlight" content="no" />
     <meta name="apple-mobile-web-app-title" content="IndaStreet" />
     <link rel="apple-touch-icon" href="/icon-192.png" />
     
@@ -215,23 +220,36 @@
     <!-- CACHE BUSTER: 2024-10-31-10:05:00 -->
     <script type="module" src="/index.tsx?v=20241031100500"></script>
     <script>
-        // COMPLETELY DISABLE SERVICE WORKER
+        // 📱 PWA SERVICE WORKER: Enable for full-screen app experience
         if ('serviceWorker' in navigator) {
-            // Unregister ALL service workers
-            navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                for(let registration of registrations) {
-                    registration.unregister();
-                }
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                        console.log('✅ PWA Service Worker registered:', registration.scope);
+                        
+                        // Enable install prompt for "Add to Home Screen"
+                        let deferredPrompt;
+                        window.addEventListener('beforeinstallprompt', (e) => {
+                            e.preventDefault();
+                            deferredPrompt = e;
+                            console.log('📱 PWA install prompt ready');
+                        });
+                        
+                        // Auto-show install prompt after 3 seconds if available
+                        setTimeout(() => {
+                            if (deferredPrompt) {
+                                deferredPrompt.prompt();
+                                deferredPrompt.userChoice.then((choiceResult) => {
+                                    console.log('PWA install choice:', choiceResult.outcome);
+                                    deferredPrompt = null;
+                                });
+                            }
+                        }, 3000);
+                    })
+                    .catch(function(error) {
+                        console.log('❌ PWA Service Worker registration failed:', error);
+                    });
             });
-            
-            // Clear all caches
-            if ('caches' in window) {
-                caches.keys().then(function(names) {
-                    for (let name of names) {
-                        caches.delete(name);
-                    }
-                });
-            }
         }
     </script>
 </body>

@@ -1,9 +1,10 @@
 {
-  "name": "IndaStreet Massage Platform",
-  "short_name": "IndaStreet",
+  "name": "Inda Street Massage Platform",
+  "short_name": "Inda Street",
   "description": "Professional massage booking platform with instant notifications",
   "start_url": "/",
-  "display": "standalone",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone", "minimal-ui"],
   "background_color": "#ffffff",
   "theme_color": "#f97316",
   "orientation": "portrait-primary",
