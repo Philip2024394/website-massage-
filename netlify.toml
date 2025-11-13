@@ -1,12 +1,13 @@
 # Netlify Configuration for IndaStreet Massage Platform
 # This file configures the build process for Netlify deployment
 # 
-# If pnpm fails, replace the command with: npm ci && npm run build
+# Primary: pnpm (preferred for performance)
+# Fallback: If pnpm fails, replace command with: npm ci && npm run build:npm
 
 [build]
   publish = "dist"
-  # Simplified command to avoid truncation issues
-  command = "pnpm install && pnpm run build"
+  # Use Netlify-optimized build script with better chunking
+  command = "pnpm install && pnpm run build:netlify"
 
 [build.environment]
   ROLLUP_NO_NATIVE = "1"
