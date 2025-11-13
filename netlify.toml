@@ -3,12 +3,12 @@
 
 [build]
   publish = "dist"
-  # Primary build command with explicit pnpm installation
-  command = "npm install -g pnpm@10.22.0 && pnpm install && pnpm run build"
+  # Use Corepack to ensure pnpm version, then build (avoids EEXIST error)
+  command = "corepack enable && corepack prepare pnpm@10.22.0 --activate && pnpm install && pnpm run build"
   
-  # Alternative commands (uncomment if primary fails):
-  # For npm fallback: command = "npm ci && npm run build"
-  # For simplified pnpm: command = "pnpm install && pnpm run build"
+  # Alternative commands if Corepack fails:
+  # Simple pnpm: command = "pnpm install && pnpm run build"
+  # Npm fallback: command = "npm ci && npm run build"
 
 [build.environment]
   ROLLUP_NO_NATIVE = "1"

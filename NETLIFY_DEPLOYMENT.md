@@ -24,7 +24,7 @@
 
 **Updated Command**: 
 ```bash
-npm install -g pnpm@10.22.0 && pnpm install && pnpm run build:netlify
+corepack enable && corepack prepare pnpm@10.22.0 --activate && pnpm install && pnpm run build
 ```
 
 This allows pnpm to handle dependency resolution more flexibly while maintaining reproducibility.
@@ -57,6 +57,25 @@ This allows pnpm to handle dependency resolution more flexibly while maintaining
 - ✅ `build` script exists in package.json
 - ✅ netlify.toml contains correct command
 - ✅ All build scripts tested locally
+
+## 🔥 **EEXIST Error Fix Applied**
+
+**Issue**: `npm error EEXIST: file already exists /opt/buildhome/.nvm/versions/node/v22.21.1/bin/pnpm`
+**Root Cause**: Netlify already has pnpm installed via Corepack, npm install -g conflicts
+
+### **Solution Applied**:
+```bash
+# NEW: Use Corepack instead of npm global install
+corepack enable && corepack prepare pnpm@10.22.0 --activate && pnpm install && pnpm run build
+
+# OLD (caused EEXIST): npm install -g pnpm@10.22.0 && pnpm install && pnpm run build
+```
+
+### **Benefits**:
+- ✅ **No Conflicts**: Uses Netlify's existing pnpm infrastructure
+- ✅ **Version Control**: Still ensures pnpm@10.22.0 specifically  
+- ✅ **Corepack Native**: Leverages Node.js built-in package manager
+- ✅ **Faster Builds**: No global installation overhead
 
 ## Required Environment Variables
 These are automatically set via `netlify.toml`:
