@@ -500,10 +500,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'landing': 
             return <LandingPage 
                 onLanguageSelect={handleLanguageSelect} 
-                onEnterApp={(lang: Language, location: UserLocation) => {
-                    // Use setTimeout to ensure navigation happens after current render cycle
-                    setTimeout(() => handleEnterApp(lang, location), 0);
-                }} 
+                onEnterApp={handleEnterApp} 
             />;
             
         case 'unifiedLogin': 

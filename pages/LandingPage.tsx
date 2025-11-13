@@ -291,10 +291,15 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
                             console.log('🔘 Enter button CLICKED event triggered!');
                             console.log('Event:', e);
                             console.log('Dropdown open?', isDropdownOpen);
+                            
+                            // Close dropdown if open (don't block navigation)
                             if (isDropdownOpen) {
-                                console.log('⚠️ Dropdown is still open! Closing it first...');
+                                console.log('⚠️ Dropdown is open, closing it...');
                                 setIsDropdownOpen(false);
                             }
+                            
+                            // Always proceed with navigation immediately
+                            console.log('🚀 Proceeding with handleEnterApp...');
                             handleEnterApp();
                         }}
                         variant="primary"
