@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Star, MapPin, Clock, Calendar, Globe, ShieldCheck } from 'lucide-react';
+import { Star, MapPin, Clock, Calendar, ShieldCheck } from 'lucide-react';
 
 // Helper function to check if discount is active and not expired
 const isDiscountActive = (place: Place): boolean => {

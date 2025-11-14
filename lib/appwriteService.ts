@@ -243,7 +243,7 @@ export const customLinksService = {
 // Appwrite service - Real implementation
 import { Client, Databases, Account, Query, Storage, ID, Permission, Role } from 'appwrite';
 import { APPWRITE_CONFIG } from './appwrite.config';
-import { rateLimitedDb, retryWithBackoff } from './rateLimitService';
+import { rateLimitedDb } from './rateLimitService';
 import type { AgentVisit } from '../types';
 
 
@@ -610,7 +610,7 @@ export const therapistService = {
             }
             
             // Remove Appwrite metadata fields
-            const { $id, $createdAt, $updatedAt, $permissions, $databaseId, $collectionId, ...cleanMappedData } = mappedData;
+            const { $id: _$id, $createdAt: _$createdAt, $updatedAt: _$updatedAt, $permissions: _$permissions, $databaseId: _$databaseId, $collectionId, ...cleanMappedData } = mappedData;
             
             console.log('📋 Final mapped data for Appwrite schema (with all required fields):', cleanMappedData);
             console.log('🔍 Status/Availability values being sent:', {

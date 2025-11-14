@@ -90,7 +90,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
     userLocation, 
     loggedInCustomer,
     onMassageJobsClick,
-    onTherapistJobsClick,
+    onTherapistJobsClick: _onTherapistJobsClick,
 
     onVillaPortalClick,
     onTherapistPortalClick: _onTherapistPortalClick,

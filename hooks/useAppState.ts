@@ -56,10 +56,10 @@ export const useAppState = () => {
         return 'rewardBannersTest';
       }
       
-      // Always show landing page for fresh page loads
+      // Temporarily show home page directly for testing
       // (Session restoration is handled in the useState initializer above)
-      console.log('🌊 Fresh page load - showing landing page');
-      return 'landing';
+      console.log('🧪 TEST: Fresh page load - showing home page directly');
+      return 'home';
     } catch {
       console.log('⚠️ URL parameter parsing failed, defaulting to landing page');
       return 'landing';

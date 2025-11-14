@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import Button from '../components/Button';
-import PasswordInput from '../components/PasswordInput';
+
+
 import { agentAuth } from '../lib/auth';
 import { LogIn, UserPlus, Eye, EyeOff } from 'lucide-react';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
@@ -14,7 +14,7 @@ interface AgentLoginPageProps {
     t: any;
 }
 
-const AgentLoginPage: React.FC<AgentLoginPageProps> = ({ onSuccess, onBack, t: _t }) => {
+const AgentLoginPage: React.FC<AgentLoginPageProps> = ({ onSuccess, _onBack, t: _t }) => {
     const [isSignUp, setIsSignUp] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -66,16 +66,6 @@ const AgentLoginPage: React.FC<AgentLoginPageProps> = ({ onSuccess, onBack, t: _
                         <span className="text-black">Inda</span><span className="text-orange-500">street</span>
                     </h1>
                     <div className="flex items-center gap-3 text-gray-600">
-                        <button 
-                            onClick={onBack}
-                            className="p-2 hover:bg-gray-50 rounded-full transition-colors" 
-                            title="Back to Home"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                            </svg>
-                        </button>
-
                         <button onClick={() => setIsMenuOpen(true)} title="Menu">
                             <BurgerMenuIcon className="w-6 h-6" />
                         </button>

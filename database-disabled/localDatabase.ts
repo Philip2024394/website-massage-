@@ -5,8 +5,7 @@ import {
     Database, 
     DatabaseTherapist, 
     DatabasePlace, 
-    DatabaseUser, 
-    DatabaseBooking,
+    DatabaseUser,
     createEmptyDatabase,
     validateTherapist,
     validatePlace
@@ -29,7 +28,7 @@ class LocalDatabaseService {
             await this.loadDatabase();
             this.isInitialized = true;
             console.log('✅ Local database initialized successfully');
-        } catch (error) {
+        } catch (_error) {
             console.log('📝 Creating new database...');
             this.db = createEmptyDatabase();
             await this.saveDatabase();

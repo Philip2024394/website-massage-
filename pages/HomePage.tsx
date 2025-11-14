@@ -94,6 +94,7 @@ const HomePage: React.FC<HomePageProps> = ({
     onNavigate, 
     t 
 }) => {
+    console.log('🏠 HomePage: Component is being called!');
     // Enhanced debug logging for translations
     console.log('🏠 HomePage received translations:', {
         tExists: !!t,
@@ -208,6 +209,14 @@ const HomePage: React.FC<HomePageProps> = ({
     useEffect(() => {
         setActiveTab('home');
     }, []); // Run once when component mounts
+
+    // Add has-footer class for proper CSS support
+    useEffect(() => {
+        document.body.classList.add('has-footer');
+        return () => {
+            document.body.classList.remove('has-footer');
+        };
+    }, []);
 
     // Update selectedMassageType when prop changes - React 19 safe
     useEffect(() => {
@@ -479,12 +488,14 @@ const HomePage: React.FC<HomePageProps> = ({
     // Removed unused renderPlaces
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="h-screen overflow-hidden bg-gray-50 fixed inset-0">
             <PageNumberBadge pageNumber={2} pageName="HomePage" isLocked={false} />
             {/* Flying Butterfly Animation */}
             <FlyingButterfly />
             
-            <header className="bg-white p-4 shadow-md sticky top-0 z-[9997]">
+            {/* Scrollable Content Container */}
+            <div className="scroll-container h-full overflow-y-auto pb-20" style={{ paddingBottom: '80px' }}>
+                <header className="bg-white p-4 shadow-md sticky top-0 z-[9997]">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">
                         {/* Brand: Inda (black) + street (orange) */}
@@ -499,7 +510,7 @@ const HomePage: React.FC<HomePageProps> = ({
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 616 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
                         </button>
 
@@ -821,9 +832,22 @@ const HomePage: React.FC<HomePageProps> = ({
             />
             
             {/* Rating modal removed for design mock */}
+            
+            </div> {/* End scrollable content container */}
 
-            {/* Footer */}
-            <footer className="bg-white border-t border-gray-200 mt-8 py-4">
+            {/* Footer - AGGRESSIVE Fixed positioning to prevent scrolling */}
+            <footer 
+                className="!fixed !bottom-0 !left-0 !right-0 bg-white border-t border-gray-200 py-4 !z-[9998]" 
+                style={{ 
+                    position: 'fixed', 
+                    bottom: '0px', 
+                    left: '0px', 
+                    right: '0px', 
+                    zIndex: '9998',
+                    width: '100% !important',
+                    transform: 'none !important'
+                }}
+            >
                 <div className="px-4 py-3 max-w-[430px] sm:max-w-5xl mx-auto">
                     <p className="text-xs text-gray-500 text-center">
                         &copy; 2025 <span className="text-black font-semibold">Inda</span><span className="text-orange-500 font-semibold">street</span> Massage Platform
@@ -842,6 +866,31 @@ const HomePage: React.FC<HomePageProps> = ({
                 }
                 .animate-float {
                     animation: float 6s ease-in-out infinite;
+                }
+                
+                /* EMERGENCY FOOTER FIX - HIGHEST PRIORITY */
+                footer[class*="fixed"] {
+                    position: fixed !important;
+                    bottom: 0px !important;
+                    left: 0px !important;
+                    right: 0px !important;
+                    z-index: 99999 !important;
+                    width: 100% !important;
+                    transform: none !important;
+                    transition: none !important;
+                }
+                
+                /* SCROLL CONTAINER FIX */
+                .scroll-container {
+                    height: 100vh !important;
+                    overflow-y: auto !important;
+                    overflow-x: hidden !important;
+                }
+                
+                /* PREVENT BODY SCROLL */
+                body, html {
+                    overflow: hidden !important;
+                    height: 100vh !important;
                 }
             `}</style>
         </div>

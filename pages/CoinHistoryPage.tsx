@@ -9,11 +9,15 @@ interface CoinHistoryPageProps {
     totalCoins?: number;
     onNavigate?: (page: string) => void;
     onOpenMenu?: () => void;
+    _onOpenMenu?: () => void;
     onBack?: () => void;
     t?: any;
     isFromTherapistDashboard?: boolean;
+    _isFromTherapistDashboard?: boolean;
     isFromHotelDashboard?: boolean;
+    _isFromHotelDashboard?: boolean;
     isFromVillaDashboard?: boolean;
+    _isFromVillaDashboard?: boolean;
     dashboardType?: 'hotel' | 'villa' | 'therapist' | 'standalone';
 }
 
@@ -21,11 +25,11 @@ const CoinHistoryPage: React.FC<CoinHistoryPageProps> = ({
     userId = '12345', 
     totalCoins: propTotalCoins,
     onNavigate,
-    onOpenMenu,
+    _onOpenMenu,
     onBack,
-    isFromTherapistDashboard = false,
-    isFromHotelDashboard = false,
-    isFromVillaDashboard = false,
+    _isFromTherapistDashboard = false,
+    _isFromHotelDashboard = false,
+    _isFromVillaDashboard = false,
     dashboardType = 'standalone'
 }) => {
     const [transactions, setTransactions] = useState<CoinTransaction[]>([]);

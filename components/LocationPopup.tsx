@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import MapPinIcon from './icons/MapPinIcon';
 import Button from './Button';
 
@@ -54,7 +54,7 @@ const LocationPopup: React.FC<LocationPopupProps> = ({ isOpen, onLocationSet, on
                         lng: longitude,
                         address: address
                     });
-                } catch (err) {
+                } catch (__err) {
                     // Fallback to coordinates if geocoding fails
                     const address = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
                     setCurrentLocation(address);

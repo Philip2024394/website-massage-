@@ -40,7 +40,7 @@ const SupportIcon = ({ className = 'w-6 h-6' }) => (
 const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({ 
     notifications, 
     onMarkAsRead, 
-    onBack, 
+    onBack: _onBack, 
     t, 
     userRole,
     dashboardType = 'standalone'

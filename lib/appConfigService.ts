@@ -80,10 +80,9 @@ export const appConfigService = {
                 []
             );
 
-            let result;
             if (response.documents.length > 0) {
                 // Update existing config
-                result = await databases.updateDocument(
+                await databases.updateDocument(
                     APPWRITE_CONFIG.databaseId,
                     APPWRITE_CONFIG.collections.appConfig,
                     response.documents[0].$id,
@@ -91,7 +90,7 @@ export const appConfigService = {
                 );
             } else {
                 // Create new config
-                result = await databases.createDocument(
+                await databases.createDocument(
                     APPWRITE_CONFIG.databaseId,
                     APPWRITE_CONFIG.collections.appConfig,
                     ID.unique(),
@@ -116,7 +115,7 @@ export const appConfigService = {
      */
     async createDefaultConfig(): Promise<AppConfig> {
         try {
-            const result = await databases.createDocument(
+            await databases.createDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.appConfig,
                 ID.unique(),

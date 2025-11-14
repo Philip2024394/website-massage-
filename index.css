@@ -1,9 +1,26 @@
+/* Footer fixes - must come before Tailwind */
+@import url('./footer-fix.css');
+
+/* EMERGENCY FOOTER OVERRIDE - HIGHEST SPECIFICITY */
+footer, 
+.HomePage footer,
+[class*="HomePage"] footer,
+div footer,
+footer[class*="fixed"] {
+  position: fixed !important;
+  bottom: 0px !important;
+  left: 0px !important;
+  right: 0px !important;
+  z-index: 99999 !important;
+  width: 100vw !important;
+  transform: none !important;
+  transition: none !important;
+  display: block !important;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Footer fixes */
-@import url('./footer-fix.css');
 
 /* 📱 FULL-SCREEN PWA: Complete viewport coverage */
 html, body {

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { PAGE_REGISTRY } from '../config/pageRegistry';
 
 interface PageNumberBadgeProps {
     pageNumber: number;

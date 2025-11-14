@@ -6,7 +6,7 @@ interface QuickSupportPageProps {
 
 const QuickSupportPage: React.FC<QuickSupportPageProps> = ({ onNavigate }) => {
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 pb-32">
             {/* Header */}
             <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
                 <div className="flex justify-between items-center">
@@ -157,8 +157,8 @@ const QuickSupportPage: React.FC<QuickSupportPageProps> = ({ onNavigate }) => {
                 </div>
             </main>
 
-            {/* Footer */}
-            <footer className="bg-white border-t border-gray-200 py-6">
+            {/* Footer - Fixed positioning */}
+            <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-6 z-50">
                 <div className="px-4">
                     <div className="flex justify-center gap-2 mb-3">
                         <button 

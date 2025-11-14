@@ -139,7 +139,7 @@ const App = () => {
     }, [language]);
     
     // Get translations using the actual language state - ALWAYS call this hook
-    const { t } = useTranslations(language);
+    const { t: __t } = useTranslations(language);
 
     // Use the actual language handler from hooks
     const handleLanguageSelect = async (lang: 'en' | 'id') => {
@@ -236,7 +236,6 @@ const App = () => {
             <div className={state.isFullScreen ? "flex-grow" : "flex-grow pb-16"}>
                 <AppRouter
                     page={state.page}
-                    t={t}
                     isLoading={state.isLoading}
 
                     loggedInProvider={state.loggedInProvider}

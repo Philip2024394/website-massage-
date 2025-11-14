@@ -1,27 +1,12 @@
 import React from 'react';
 
 interface DashboardHeaderProps {
-  onLogout?: () => void;
+  _onLogout?: () => void;
   onMenuClick?: () => void;
   t?: (key: string) => string;
 }
 
-const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onLogout, onMenuClick, t }) => {
-  const translate = (key: string): string => {
-    if (t) {
-      const result = t(key);
-      if (result !== key) return result;
-    }
-    
-    // Fallback translations
-    const fallbacks: Record<string, string> = {
-      'home.menu.logout': 'Logout',
-      'adminDashboard.logout': 'Logout',
-      'providerDashboard.logoutButton': 'Logout',
-    };
-    
-    return fallbacks[key] || 'Logout';
-  };
+const DashboardHeader: React.FC<DashboardHeaderProps> = ({ _onLogout, onMenuClick, t: _t }) => {
 
   return (
   <header className="flex items-center justify-between px-6 py-4 bg-white shadow-sm border-b">

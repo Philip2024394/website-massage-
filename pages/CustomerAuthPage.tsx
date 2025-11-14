@@ -10,9 +10,10 @@ interface CustomerAuthPageProps {
   onSuccess: (user: any, isNewUser?: boolean) => void;
   onBack: () => void;
   userLocation: { address: string; lat: number; lng: number; } | null;
+  _userLocation?: { address: string; lat: number; lng: number; } | null;
 }
 
-const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, userLocation }) => {
+const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, _userLocation }) => {
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');

@@ -8,7 +8,7 @@ interface BusyTimerModalProps {
     t: any;
 }
 
-const BusyTimerModal: React.FC<BusyTimerModalProps> = ({ isOpen, onClose, onConfirm, t }) => {
+const BusyTimerModal: React.FC<BusyTimerModalProps> = ({ isOpen, onClose, onConfirm, t: _t }) => {
     const [selectedMinutes, setSelectedMinutes] = useState<number | null>(null);
     
     if (!isOpen) return null;

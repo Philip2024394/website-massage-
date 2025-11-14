@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { Place, Analytics } from '../types';
-import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages } from '../utils/appwriteHelpers';
+import { parsePricing, parseCoordinates } from '../utils/appwriteHelpers';
 import { getDisplayRating, getDisplayReviewCount, formatRating } from '../utils/ratingUtils';
 import DistanceDisplay from './DistanceDisplay';
 

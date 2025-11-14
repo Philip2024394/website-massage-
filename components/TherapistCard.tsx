@@ -134,7 +134,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     const [showBookingConfirmation, setShowBookingConfirmation] = useState(false);
     const [countdown, setCountdown] = useState<string>('');
     const [isOvertime, setIsOvertime] = useState(false);
-    const [discountTimeLeft, setDiscountTimeLeft] = useState<string>('');
+    const [_discountTimeLeft, _setDiscountTimeLeft] = useState<string>('');
     
     // Helper function to calculate dynamic spacing based on description length
     const getDynamicSpacing = (longSpacing: string, mediumSpacing: string, shortSpacing: string) => {
@@ -162,7 +162,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             const distance = activeDiscount.expiresAt.getTime() - now;
             
             if (distance < 0) {
-                setDiscountTimeLeft('EXPIRED');
+                _setDiscountTimeLeft('EXPIRED');
                 clearInterval(interval);
                 return;
             }
@@ -171,7 +171,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
             
-            setDiscountTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
+            _setDiscountTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
         }, 1000);
         
         return () => clearInterval(interval);

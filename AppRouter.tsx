@@ -19,7 +19,7 @@ import TherapistDashboardPage from './pages/TherapistDashboardPage';
 import TherapistProfilePage from './pages/TherapistProfilePage'; // 🎯 NEW: Customer-facing therapist profile
 import TherapistStatusPage from './pages/TherapistStatusPage';
 import PlaceDashboardPage from './pages/PlaceDashboardPage';
-import PlaceDiscountSystemPage from './pages/PlaceDiscountSystemPage';
+
 import AgentPage from './pages/AgentPage';
 import AgentAuthPage from './pages/AgentAuthPage';
 import AgentDashboardPage from './pages/AgentDashboardPage';
@@ -173,7 +173,6 @@ interface AppRouterProps {
 
 
     setSelectedJobId: (id: string | null) => void;
-    t: any;
 }
 
 export const AppRouter: React.FC<AppRouterProps> = (props) => {
@@ -206,7 +205,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         handleEnterApp,
         handleSetUserLocation,
         handleSetSelectedPlace,
-        handleSetSelectedTherapist, // 🎯 NEW: Handler for selecting therapist
+        // _handleSetSelectedTherapist, // 🎯 NEW: Handler for selecting therapist (unused)
         handleLogout,
         handleNavigateToTherapistLogin,
         handleNavigateToRegistrationChoice,
@@ -215,7 +214,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         handleChatWithBusyTherapist,
         handleShowRegisterPromptForChat,
         handleIncrementAnalytics,
-        handleNavigateToHotelLogin,
+        // _handleNavigateToHotelLogin, // unused
         handleNavigateToVillaLogin,
         handleNavigateToMassagePlaceLogin,
         handleNavigateToAdminLogin,
@@ -251,9 +250,27 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         handleNavigateToAgentAuth,
         setPage,
         setLoggedInProvider,
-        setSelectedJobId,
-        t
+        setSelectedJobId
     } = props;
+    
+    // Placeholder for translation function - to be removed when proper i18n is implemented
+    const t = (key: string) => {
+        // Basic fallback translations for essential keys
+        const fallbacks: Record<string, string> = {
+            'home.homeServiceTab': 'Home Service',
+            'home.massagePlacesTab': 'Massage Places',
+            'home.loading': 'Loading...',
+            'home.loginSignUp': 'Login / Sign Up',
+            'home.locationLabel': 'Location',
+            'home.selectLocation': 'Select Location',
+            'home.setLocation': 'Set Location',
+            'home.nearbyTherapists': 'Nearby Therapists',
+            'home.nearbyMassagePlaces': 'Nearby Massage Places',
+            'home.noTherapists': 'No therapists found in this area',
+            'home.noMassagePlaces': 'No massage places found in this area',
+        };
+        return fallbacks[key] || key;
+    };
 
     // 🚀 OPTIMIZATION: Common handlers to reduce repetition
     const navToMassageJobs = () => setPage('massageJobs');
@@ -268,10 +285,10 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         <Component onBack={navToBlog} onNavigate={commonNavigateHandler} t={t} />
     );
     
-    // Helper for content pages with handleBackToHome pattern
-    const renderContentPage = (Component: any) => (
-        <Component onBack={handleBackToHome} setPage={setPage} t={t} />
-    );
+    // Helper for content pages with handleBackToHome pattern (unused)
+    // const _renderContentPage = (Component: any) => (
+    //     <Component onBack={handleBackToHome} setPage={setPage} />
+    // );
     
     // Helper for "Coming Soon" pages
     const renderComingSoon = (title: string) => (
@@ -388,20 +405,20 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         
         // Clear all auth states to prevent contamination
         clearAllAuthStates({
-            setIsHotelLoggedIn: (value: boolean) => {
+            setIsHotelLoggedIn: (_value: boolean) => {
                 props.handleHotelLogout?.();
             },
-            setIsVillaLoggedIn: (value: boolean) => {
+            setIsVillaLoggedIn: (_value: boolean) => {
                 props.handleVillaLogout?.();
             },
-            setIsAdminLoggedIn: (value: boolean) => {
+            setIsAdminLoggedIn: (_value: boolean) => {
                 props.handleAdminLogout?.();
             },
             setLoggedInProvider,
-            setLoggedInAgent: (agent: any) => {
+            setLoggedInAgent: (_agent: any) => {
                 props.handleAgentLogout?.();
             },
-            setLoggedInCustomer: (customer: any) => {
+            setLoggedInCustomer: (_customer: any) => {
                 props.handleCustomerLogout?.();
             }
         });
@@ -449,6 +466,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             />;
             
         case 'home':
+            console.log('🏠 AppRouter: Rendering HomePage component');
             return <HomePage 
                 user={user} 
                 loggedInAgent={loggedInAgent}
@@ -567,6 +585,52 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 therapists={therapists}
                 places={places}
             />;
+
+        case 'therapistLogin': 
+            return <TherapistLoginPage 
+                onSuccess={(therapistId) => {
+                    console.log('🚀 AppRouter: TherapistLogin onSuccess called with ID:', therapistId);
+                    setLoggedInProvider({ id: therapistId, type: 'therapist' });
+                    setPage('therapistDashboard');
+                }} 
+                onBack={handleBackToHome} 
+            />;
+
+        case 'therapistDashboard': {
+            console.log('🎯 AppRouter: THERAPIST DASHBOARD CASE TRIGGERED!');
+            console.log('🔍 AppRouter: Current loggedInProvider:', loggedInProvider);
+            
+            // Find therapist by document ID (now passed from login)
+            const existingTherapist = therapists.find(t => 
+                t.id === loggedInProvider?.id || 
+                t.$id === loggedInProvider?.id ||
+                String(t.id) === String(loggedInProvider?.id) ||
+                String(t.$id) === String(loggedInProvider?.id)
+            );
+            
+            console.log('🎯 AppRouter: Found therapist:', !!existingTherapist, existingTherapist?.name);
+            
+            if (loggedInProvider?.type === 'therapist') {
+                return <TherapistDashboardPage 
+                    therapistId={loggedInProvider.id}
+                    existingTherapistData={existingTherapist}
+                    onSave={(data) => {
+                        console.log('TherapistDashboard onSave called:', data);
+                        // Handle save functionality here if needed
+                    }}
+                    onLogout={handleProviderLogout}
+                    onNavigateToNotifications={() => setPage('notifications')}
+                    onNavigate={setPage}
+                    onUpdateBookingStatus={(bookingId, status) => {
+                        console.log('Update booking status:', bookingId, status);
+                        // Handle booking status update here
+                    }}
+                    bookings={bookings}
+                    notifications={notifications || []}
+                />;
+            }
+            return null;
+        }
 
         case 'therapistStatus':
             return loggedInProvider?.type === 'therapist' && <TherapistStatusPage 
@@ -744,7 +808,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 </div>
             );
             
-        case 'notifications':
+        case 'notifications': {
             if (!user && !loggedInProvider && !loggedInCustomer && !isAdminLoggedIn) {
                 return renderGuestNotifications();
             }
@@ -784,6 +848,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 userRole={userRole}
                 dashboardType={notificationsDashboardType}
             />;
+        }
             
         case 'massageTypes':
             return <MassageTypesPage _onBack={handleBackToHome} onNavigate={setPage} {...portalHandlers} onPrivacyClick={() => setPage('privacy')} therapists={therapists} places={places} t={t.massageTypes} />;
@@ -996,7 +1061,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 }}
             />;
             
-        case 'coin-shop': 
+        case 'coin-shop': {
             // 🛡️ SECURITY: Detect which dashboard type is accessing coin shop
             const coinShopDashboardType = (() => {
                 if (isHotelLoggedIn) return 'hotel';
@@ -1018,6 +1083,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 dashboardType={coinShopDashboardType}
                 t={t} 
             />;
+        }
             
         case 'adminShopManagement': 
             return isAdminLoggedIn && <AdminShopManagementPage onBack={() => setPage('adminDashboard')} t={t} /> || null;
@@ -1028,7 +1094,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'referral': 
             return <ReferralPage onBack={handleBackToHome} t={t} user={loggedInCustomer || {}} />;
             
-        case 'coinHistory': 
+        case 'coinHistory': {
             // 🛡️ SECURITY: Pass correct user ID based on who's logged in
             const currentUserId = (() => {
                 if (isHotelLoggedIn && user?.id) return user.id;
@@ -1062,6 +1128,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 dashboardType={dashboardType}
                 t={t} 
             />;
+        }
             
         case 'coinSystemTest': 
             return <CoinSystemTestPage onBack={handleBackToHome} t={t} />;

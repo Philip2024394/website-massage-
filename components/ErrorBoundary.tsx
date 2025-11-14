@@ -50,11 +50,13 @@ class ErrorBoundary extends Component<Props, State> {
                 name: error?.name
             });
             
-            // INSTANT auto-recovery from DOM errors - no delay needed
-            this.setState({
-                hasError: false,
-                error: null
-            });
+            // Schedule auto-recovery to prevent infinite loops
+            setTimeout(() => {
+                this.setState({
+                    hasError: false,
+                    error: null
+                });
+            }, 100);
             return; // Don't process DOM errors further
         } else {
             console.error('ErrorBoundary caught non-DOM error:', error, errorInfo);

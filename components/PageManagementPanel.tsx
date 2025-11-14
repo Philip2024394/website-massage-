@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { PAGE_REGISTRY, getPageInfo, getLockedPages, getUnlockedPages } from '../config/pageRegistry';
+import React, { useState } from 'react';
+import { getLockedPages, getUnlockedPages, PAGE_REGISTRY } from '../config/pageRegistry';
 
 interface PageManagementPanelProps {
     onLockPage: (pageNumber: number) => void;

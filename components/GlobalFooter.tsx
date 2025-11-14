@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Calendar, ShoppingBag, User, Bell } from 'lucide-react';
+import { Home, ShoppingBag, User, Bell } from 'lucide-react';
 
 interface GlobalFooterProps {
     currentPage: string;
@@ -14,7 +14,7 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
     onNavigate,
     userRole,
     unreadNotifications = 0,
-    hasNewBookings = false
+    hasNewBookings: _hasNewBookings = false
 }) => {
     // Helper function to determine if a button is active
     const isActive = (buttonType: string) => {

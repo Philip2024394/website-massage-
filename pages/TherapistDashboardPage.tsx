@@ -5,7 +5,7 @@ import { AvailabilityStatus, BookingStatus } from '../types';
 import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages, stringifyPricing, stringifyCoordinates, stringifyMassageTypes, stringifyLanguages, stringifyAnalytics } from '../utils/appwriteHelpers';
 import { therapistService } from '../lib/appwriteService';
 import { MASSAGE_TYPES_CATEGORIZED } from '../constants/rootConstants';
-import { LogOut, Activity, Calendar, TrendingUp, Bell, User, Crown, Building, FileText, Settings, Phone, X, Tag, Share2, Download, Star } from 'lucide-react';
+import { LogOut, Activity, Calendar, TrendingUp, Bell, User, Crown, Building, FileText, Settings, Phone, X, Tag, Share2, Download, Star, CreditCard } from 'lucide-react';
 import { ColoredHistoryIcon, ColoredCoinsIcon } from '../components/ColoredIcons';
 import { AnalyticsCard, ActivatedDiscountButton, LiveDiscountCountdown, BookingCard, BusyCountdownTimer } from '../components/therapist-dashboard';
 
@@ -26,7 +26,7 @@ interface TherapistDashboardPageProps {
     existingTherapistData?: Therapist;
     bookings?: Booking[];
     notifications: Notification[];
-    t: any;
+    t?: any;
 }
 
 
@@ -98,6 +98,15 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
     const [confirmPassword, setConfirmPassword] = useState('');
     const [newWhatsAppNumber, setNewWhatsAppNumber] = useState('');
     const [deleteConfirmText, setDeleteConfirmText] = useState('');
+    
+    // Bank Details State
+    const [bankName, setBankName] = useState('');
+    const [bankAccountNumber, setBankAccountNumber] = useState('');
+    const [bankAccountName, setBankAccountName] = useState('');
+    const [mobilePaymentNumber, setMobilePaymentNumber] = useState('');
+    const [mobilePaymentType, setMobilePaymentType] = useState('GoPay');
+    const [preferredPaymentMethod, setPreferredPaymentMethod] = useState<'bank_transfer' | 'cash' | 'mobile_payment'>('bank_transfer');
+    const [paymentInstructions, setPaymentInstructions] = useState('');
     
     const fetchTherapistData = useCallback(async () => {
         setIsLoading(true);
@@ -213,6 +222,15 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                 setWhatsappNumber(existingTherapist.whatsappNumber || '');
                 setYearsOfExperience(existingTherapist.yearsOfExperience || 0);
                 setLocation(existingTherapist.location || '');
+
+                // Load bank details
+                setBankName(existingTherapist.bankName || '');
+                setBankAccountNumber(existingTherapist.bankAccountNumber || '');
+                setBankAccountName(existingTherapist.bankAccountName || '');
+                setMobilePaymentNumber(existingTherapist.mobilePaymentNumber || '');
+                setMobilePaymentType(existingTherapist.mobilePaymentType || 'GoPay');
+                setPreferredPaymentMethod(existingTherapist.preferredPaymentMethod || 'bank_transfer');
+                setPaymentInstructions(existingTherapist.paymentInstructions || '');
 
                 
                 // Parse complex fields safely with detailed logging
@@ -426,11 +444,13 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
     // Menu items for navigation - Updated to match home drawer style with Lucide React icons
     const menuItems = [
         { id: 'status', label: t.availabilityStatus || 'Availability Status', icon: <Activity className="w-5 h-5" />, gradientColor: 'from-green-500 to-green-600', borderColor: 'border-green-500', hoverColor: 'hover:border-green-300', textColor: 'text-green-800', bgColor: 'bg-green-100' },
+        { id: 'notifications', label: 'Notifications', icon: <Bell className="w-5 h-5" />, gradientColor: 'from-red-500 to-red-600', borderColor: 'border-red-500', hoverColor: 'hover:border-red-300', textColor: 'text-red-800', bgColor: 'bg-red-100', badge: notifications.length > 0 ? (notifications.length > 9 ? '9+' : notifications.length.toString()) : null },
         { id: 'bookings', label: t.bookings || 'Bookings', icon: <Calendar className="w-5 h-5" />, gradientColor: 'from-blue-500 to-blue-600', borderColor: 'border-blue-500', hoverColor: 'hover:border-blue-300', textColor: 'text-blue-800', bgColor: 'bg-blue-100' },
-        { id: 'profile', label: t.profile || 'Profile', icon: <User className="w-5 h-5" />, gradientColor: 'from-purple-500 to-purple-600', borderColor: 'border-purple-500', hoverColor: 'hover:border-purple-300', textColor: 'text-purple-800', bgColor: 'bg-purple-100' },
+        { id: 'profile', label: t.profile || 'Profile', icon: <User className="w-5 h-5" />, gradientColor: 'from-orange-500 to-orange-600', borderColor: 'border-orange-500', hoverColor: 'hover:border-orange-300', textColor: 'text-orange-800', bgColor: 'bg-orange-100' },
         { id: 'analytics', label: t.analytics || 'Analytics', icon: <TrendingUp className="w-5 h-5" />, gradientColor: 'from-orange-500 to-orange-600', borderColor: 'border-orange-500', hoverColor: 'hover:border-orange-300', textColor: 'text-orange-800', bgColor: 'bg-orange-100' },
         { id: 'membership', label: t.membership || 'Membership', icon: <Crown className="w-5 h-5" />, gradientColor: 'from-yellow-500 to-yellow-600', borderColor: 'border-yellow-500', hoverColor: 'hover:border-yellow-300', textColor: 'text-yellow-800', bgColor: 'bg-yellow-100' },
         { id: 'hotel-villa', label: t.hotelVilla || 'Hotel/Villa', icon: <Building className="w-5 h-5" />, gradientColor: 'from-pink-500 to-pink-600', borderColor: 'border-pink-500', hoverColor: 'hover:border-pink-300', textColor: 'text-pink-800', bgColor: 'bg-pink-100' },
+        { id: 'bank-details', label: 'Bank Details', icon: <CreditCard className="w-5 h-5" />, gradientColor: 'from-green-500 to-green-600', borderColor: 'border-green-500', hoverColor: 'hover:border-green-300', textColor: 'text-green-800', bgColor: 'bg-green-100' },
         { id: 'discount-banners', label: 'Discount Banners', icon: <Tag className="w-5 h-5" />, gradientColor: 'from-orange-500 to-orange-600', borderColor: 'border-orange-500', hoverColor: 'hover:border-orange-300', textColor: 'text-orange-800', bgColor: 'bg-orange-100' },
         { id: 'terms', label: t.terms || 'Terms', icon: <FileText className="w-5 h-5" />, gradientColor: 'from-indigo-500 to-indigo-600', borderColor: 'border-indigo-500', hoverColor: 'hover:border-indigo-300', textColor: 'text-indigo-800', bgColor: 'bg-indigo-100' },
         { id: 'settings', label: t.settings || 'Settings', icon: <Settings className="w-5 h-5" />, gradientColor: 'from-gray-500 to-gray-600', borderColor: 'border-gray-500', hoverColor: 'hover:border-gray-300', textColor: 'text-gray-800', bgColor: 'bg-gray-100' }
@@ -469,6 +489,14 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
             }),
             massageTypes: stringifyMassageTypes(massageTypes),
             languages: stringifyLanguages(languages),
+            // Bank Details
+            bankName,
+            bankAccountNumber,
+            bankAccountName,
+            mobilePaymentNumber,
+            mobilePaymentType,
+            preferredPaymentMethod,
+            paymentInstructions,
             busyUntil: busyUntil?.toISOString() || undefined
         };
 
@@ -551,7 +579,8 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
             setShowChangePasswordModal(false);
             setNewPassword('');
             setConfirmPassword('');
-        } catch (_error) {
+        } catch (error) {
+            console.error('Password update error:', error);
             setToast({ message: 'Failed to update password', type: 'error' });
             setTimeout(() => setToast(null), 3000);
         }
@@ -573,7 +602,8 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
             setTimeout(() => setToast(null), 3000);
             setShowUpdatePhoneModal(false);
             setNewWhatsAppNumber('');
-        } catch (_error) {
+        } catch (error) {
+            console.error('WhatsApp update error:', error);
             setToast({ message: 'Failed to update WhatsApp number', type: 'error' });
             setTimeout(() => setToast(null), 3000);
         }
@@ -614,7 +644,8 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
 
             setToast({ message: 'Data exported successfully!', type: 'success' });
             setTimeout(() => setToast(null), 3000);
-        } catch (_error) {
+        } catch (error) {
+            console.error('Export error:', error);
             setToast({ message: 'Failed to export data', type: 'error' });
             setTimeout(() => setToast(null), 3000);
         }
@@ -634,15 +665,16 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
             setTimeout(() => setToast(null), 5000);
             setShowDeleteAccountModal(false);
             setDeleteConfirmText('');
-        } catch (_error) {
+        } catch (error) {
+            console.error('Delete account error:', error);
             setToast({ message: 'Failed to delete account', type: 'error' });
             setTimeout(() => setToast(null), 3000);
         }
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* CSS Animations for Discount Effects */}
+        <div className="h-screen overflow-hidden bg-gray-50 fixed inset-0">
+            {/* CSS Animations for Discount Effects + Scroll Container Fix */}
             <style>{`
                 @keyframes flash {
                     0%, 100% { 
@@ -662,9 +694,36 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                         background: linear-gradient(45deg, rgba(239, 68, 68, 0.15), rgba(251, 146, 60, 0.15));
                     }
                 }
+                
+                /* EMERGENCY FOOTER FIX - HIGHEST PRIORITY */
+                footer[class*="fixed"] {
+                    position: fixed !important;
+                    bottom: 0px !important;
+                    left: 0px !important;
+                    right: 0px !important;
+                    z-index: 99999 !important;
+                    width: 100% !important;
+                    transform: none !important;
+                    transition: none !important;
+                }
+                
+                /* SCROLL CONTAINER FIX */
+                .scroll-container {
+                    height: 100vh !important;
+                    overflow-y: auto !important;
+                    overflow-x: hidden !important;
+                }
+                
+                /* PREVENT BODY SCROLL */
+                body, html {
+                    overflow: hidden !important;
+                    height: 100vh !important;
+                }
             `}</style>
             
-            {/* Dashboard-Specific Header */}
+            {/* Scrollable Content Container */}
+            <div className="scroll-container h-full overflow-y-auto pb-20" style={{ paddingBottom: '80px' }}>
+                {/* Dashboard-Specific Header */}
             <header className="bg-white p-4 shadow-md sticky top-0 z-[9997]">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
@@ -672,22 +731,6 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                         <span>Therapist Dashboard</span>
                     </h1>
                     <div className="flex items-center gap-3 text-gray-600">
-                        {/* Notifications */}
-                        <button 
-                            onClick={() => setShowNotifications(true)}
-                            className="p-2 hover:bg-gray-100 rounded-full transition-colors relative" 
-                            title="Notifications"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                            </svg>
-                            {notifications.length > 0 && (
-                                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                                    {notifications.length > 9 ? '9+' : notifications.length}
-                                </span>
-                            )}
-                        </button>
-                        
                         {/* Status Badge */}
                         <button 
                             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -725,27 +768,32 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                 </div>
             </header>
 
-            {/* Main Content Container - Same as Home Page */}
-            <div className="max-w-6xl mx-auto px-4 py-6">
-                <div className="flex flex-col lg:flex-row gap-6">
-                    {/* Side Navigation - Desktop - Hidden on Mobile like Home Page */}
-                    <div className="hidden lg:block w-64 space-y-2">
+            {/* Main Content Container - Compact Version */}
+            <div className="max-w-6xl mx-auto px-4 py-3">
+                <div className="flex flex-col lg:flex-row gap-4">
+                    {/* Side Navigation - Desktop - Compact */}
+                    <div className="hidden lg:block w-56 space-y-1">
                         {menuItems.map((item) => (
                             <button
                                 key={item.id}
-                                onClick={() => setActiveTab(item.id)}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all border-l-4 ${item.borderColor} ${
+                                onClick={() => item.id === 'notifications' ? setShowNotifications(true) : setActiveTab(item.id)}
+                                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left transition-all border-l-3 ${item.borderColor} relative ${
                                     activeTab === item.id
                                         ? `${item.bgColor} ${item.textColor} shadow-sm`
                                         : 'bg-white text-gray-700 hover:bg-gray-50'
                                 }`}
                             >
-                                <div className={`p-2 bg-gradient-to-br ${item.gradientColor} rounded-lg`}>
+                                <div className={`p-1.5 bg-gradient-to-br ${item.gradientColor} rounded-md`}>
                                     {React.cloneElement(item.icon, { 
-                                        className: "w-4 h-4 text-white"
+                                        className: "w-3.5 h-3.5 text-white"
                                     })}
                                 </div>
                                 <span className="font-medium">{item.label}</span>
+                                {item.badge && (
+                                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                                        {item.badge}
+                                    </span>
+                                )}
                             </button>
                         ))}
                     </div>
@@ -760,27 +808,27 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                         ) : (
                             <>
                                 {activeTab === 'status' && (
-                                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-                                        <div className="text-center mb-8">
-                                            <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back!</h2>
-                                            <p className="text-lg text-gray-600">Set your availability status to start receiving bookings</p>
+                                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                                        <div className="text-center mb-4">
+                                            <h2 className="text-2xl font-bold text-gray-900 mb-1">Welcome Back!</h2>
+                                            <p className="text-sm text-gray-600">Set your availability status to start receiving bookings</p>
                                         </div>
 
                                         {therapist && (
-                                            <div className="mb-8 p-4 bg-gradient-to-r from-blue-50 to-orange-50 border border-blue-200 rounded-xl">
-                                                <div className="flex items-center justify-center space-x-4">
+                                            <div className="mb-4 p-3 bg-gradient-to-r from-blue-50 to-orange-50 border border-blue-200 rounded-lg">
+                                                <div className="flex items-center justify-center space-x-3">
                                                     <div className="flex-shrink-0">
                                                         {therapist.profilePicture ? (
-                                                            <img src={therapist.profilePicture} alt="Profile" className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-lg" />
+                                                            <img src={therapist.profilePicture} alt="Profile" className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-lg" />
                                                         ) : (
-                                                            <div className="w-16 h-16 rounded-full bg-orange-200 flex items-center justify-center">
-                                                                <span className="text-orange-600 text-xl font-bold">{therapist.name?.charAt(0) || 'T'}</span>
+                                                            <div className="w-12 h-12 rounded-full bg-orange-200 flex items-center justify-center">
+                                                                <span className="text-orange-600 text-lg font-bold">{therapist.name?.charAt(0) || 'T'}</span>
                                                             </div>
                                                         )}
                                                     </div>
                                                     <div className="text-center">
-                                                        <h3 className="text-xl font-bold text-gray-800">{therapist.name || 'Therapist'}</h3>
-                                                        <p className="text-sm text-gray-600">{therapist.location || 'Location not set'}</p>
+                                                        <h3 className="text-lg font-bold text-gray-800">{therapist.name || 'Therapist'}</h3>
+                                                        <p className="text-xs text-gray-600">{therapist.location || 'Location not set'}</p>
                                                         <p className="text-xs text-blue-600 font-medium">Active Profile</p>
                                                     </div>
                                                 </div>
@@ -788,9 +836,9 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                         )}
 
                                         {/* Status Control Buttons */}
-                                        <div className="mb-8">
-                                            <h3 className="text-xl font-semibold text-gray-800 mb-6 text-center">Choose Your Availability Status</h3>
-                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div className="mb-4">
+                                            <h3 className="text-lg font-semibold text-gray-800 mb-3 text-center">Choose Your Availability Status</h3>
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                                 {/* Available Button */}
                                                 <button
                                                     onClick={async () => {
@@ -887,7 +935,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                     <p className="text-orange-600">Run a discount promotion to attract more clients and increase your visibility</p>
                                                 </div>
 
-                                                <div className="space-y-6">
+                                                <div className="space-y-4">
                                                     {/* Discount Percentage Selection */}
                                                     <div>
                                                         <label className="block text-sm font-semibold text-orange-700 mb-3">Choose Discount Percentage:</label>
@@ -1019,8 +1067,8 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                         try {
                                                             const session = await account.get();
                                                             console.log('✅ Authenticated session found:', session.email || 'anonymous');
-                                                        } catch (_authError) {
-                                                            console.log('🔓 No session found, creating anonymous session for save...');
+                                                        } catch (authError) {
+                                                            console.log('🔓 No session found, creating anonymous session for save...', authError);
                                                             await account.createAnonymousSession();
                                                             console.log('✅ Anonymous session created for discount save');
                                                         }
@@ -1288,7 +1336,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                                         <h2 className="text-xl font-bold text-gray-900 mb-6">{t.analytics || 'Analytics'}</h2>
                                         
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                             <AnalyticsCard
                                                 title="Total Bookings"
                                                 value={bookings?.length || 0}
@@ -1359,29 +1407,13 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                 )}
 
                                 {activeTab === 'profile' && (
-                                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                                        {/* Professional Header */}
-                                        <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-6">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center flex-shrink-0">
-                                                    <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                                                    </svg>
-                                                </div>
-                                                <div>
-                                                    <h2 className="text-2xl font-bold text-white">{t.profile || 'Profile'}</h2>
-                                                    <p className="text-orange-100 text-sm">Manage your professional therapist profile</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        {/* Profile Content */}
+                                    <div className="space-y-8">
                                         <div className="p-6 space-y-8">
                                             {/* Profile Picture & Basic Info */}
-                                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                                                 <div className="lg:col-span-1">
-                                                    <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-6 text-center border border-orange-200">
-                                                        <div className="relative inline-block mb-4">
+                                                    <div className="text-center">
+                                                        <div className="inline-block mb-4">
                                                             {profilePicture ? (
                                                                 <img 
                                                                     src={profilePicture} 
@@ -1395,278 +1427,145 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                                     </svg>
                                                                 </div>
                                                             )}
-                                                            <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white cursor-pointer hover:bg-orange-600 transition-colors shadow-lg">
-                                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                                                </svg>
-                                                            </div>
                                                         </div>
-                                                        <button 
-                                                            onClick={async () => {
-                                                                const input = document.createElement('input');
-                                                                input.type = 'file';
-                                                                input.accept = 'image/*';
-                                                                input.onchange = async (e: any) => {
-                                                                    const file = e.target.files[0];
-                                                                    if (file) {
-                                                                        try {
-                                                                            setIsSaving(true);
-                                                                            const reader = new FileReader();
-                                                                            reader.onload = async (e) => {
-                                                                                try {
-                                                                                    const base64Image = e.target?.result as string;
-                                                                                    console.log('📤 Uploading profile image...');
-                                                                                    
-                                                                                    // Upload to Appwrite Storage and get URL
-                                                                                    const { imageUploadService } = await import('../lib/appwriteService');
-                                                                                    const imageUrl = await imageUploadService.uploadProfileImage(base64Image);
-                                                                                    
-                                                                                    console.log('✅ Image uploaded successfully:', imageUrl);
-                                                                                    setProfilePicture(imageUrl);
-                                                                                    
-                                                                                    setToast({ message: '✅ Profile picture uploaded successfully!', type: 'success' });
-                                                                                    setTimeout(() => setToast(null), 3000);
-                                                                                } catch (error) {
-                                                                                    console.error('❌ Error uploading image:', error);
-                                                                                    setToast({ message: `❌ Error uploading image: ${error instanceof Error ? error.message : 'Unknown error'}`, type: 'error' });
-                                                                                    setTimeout(() => setToast(null), 5000);
-                                                                                } finally {
-                                                                                    setIsSaving(false);
-                                                                                }
-                                                                            };
-                                                                            reader.readAsDataURL(file);
-                                                                        } catch (error) {
-                                                                            console.error('❌ Error reading file:', error);
-                                                                            setToast({ message: '❌ Error reading file. Please try again.', type: 'error' });
-                                                                            setTimeout(() => setToast(null), 5000);
-                                                                            setIsSaving(false);
-                                                                        }
-                                                                    }
-                                                                };
-                                                                input.click();
-                                                            }}
-                                                            className="w-full px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all duration-200 font-semibold disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                                                            disabled={isSaving}
-                                                        >
-                                                            {isSaving ? (
-                                                                <div className="flex items-center justify-center space-x-2">
-                                                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                                                    <span>Uploading...</span>
-                                                                </div>
-                                                            ) : (
-                                                                <div className="flex items-center justify-center space-x-2">
-                                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                                    </svg>
-                                                                    <span>{profilePicture ? 'Change Photo' : 'Upload Photo'}</span>
-                                                                </div>
-                                                            )}
-                                                        </button>
-                                                        {profilePicture && (
-                                                            <div className="mt-3 text-xs text-gray-600 bg-white/50 rounded-lg p-2">
-                                                                <div className="flex items-center gap-1 justify-center">
-                                                                    <svg className="w-3 h-3 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                                                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                                                    </svg>
-                                                                    <span>Profile photo set</span>
-                                                                </div>
-                                                            </div>
-                                                        )}
                                                     </div>
                                                 </div>
                                                 
-                                                <div className="lg:col-span-2 space-y-6">
-                                                    {/* Name */}
+                                                <div className="lg:col-span-2 space-y-4">
+                                                    {/* Essential Info Container: Name, WhatsApp & Experience */}
                                                     <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-                                                        <label className="flex items-center gap-2 text-sm font-medium text-gray-900 mb-3">
-                                                            <div className="w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center">
-                                                                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4z"/>
-                                                                </svg>
-                                                            </div>
-                                                            Full Name <span className="text-red-500">*</span>
-                                                        </label>
-                                                        <div className="relative">
-                                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                                <svg className="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-                                                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                                                                </svg>
-                                                            </div>
-                                                            <input
-                                                                type="text"
-                                                                value={name}
-                                                                onChange={(e) => setName(e.target.value)}
-                                                                className="w-full pl-10 pr-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:bg-white transition-all"
-                                                                placeholder="Enter your professional name"
-                                                            />
+                                                        <div className="mb-4">
+                                                            <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-3">
+                                                                <div className="w-6 h-6 bg-gradient-to-r from-orange-500 to-blue-500 rounded-full flex items-center justify-center">
+                                                                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                                                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                                                    </svg>
+                                                                </div>
+                                                                Essential Information
+                                                            </h3>
                                                         </div>
-                                                    </div>
-
-                                                    {/* WhatsApp Number */}
-                                                    <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-                                                        <label className="flex items-center gap-2 text-sm font-medium text-gray-900 mb-3">
-                                                            <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-                                                                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                                                                </svg>
-                                                            </div>
-                                                            WhatsApp Number <span className="text-red-500">*</span>
-                                                        </label>
-                                                        <div className="relative">
-                                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                                <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                                                                </svg>
-                                                            </div>
-                                                            <span className="absolute inset-y-0 left-10 pl-2 flex items-center text-gray-500 text-sm pointer-events-none">+62</span>
-                                                            <input
-                                                                type="tel"
-                                                                value={whatsappNumber}
-                                                                onChange={(e) => setWhatsappNumber(e.target.value)}
-                                                                className="w-full pl-20 pr-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:bg-white transition-all"
-                                                                placeholder="812 3456 7890"
-                                                            />
-                                                        </div>
-                                                        <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
-                                                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                                                            </svg>
-                                                            Customers will contact you via WhatsApp for bookings
-                                                        </p>
-                                                    </div>
-
-                                                    {/* Years of Experience */}
-                                                    <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-                                                        <label className="flex items-center gap-2 text-sm font-medium text-gray-900 mb-3">
-                                                            <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                                                                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                                                                </svg>
-                                                            </div>
-                                                            Professional Experience <span className="text-red-500">*</span>
-                                                        </label>
-                                                        <div className="relative">
-                                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                                <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                                </svg>
-                                                            </div>
-                                                            <input
-                                                                type="number"
-                                                                value={yearsOfExperience}
-                                                                onChange={(e) => setYearsOfExperience(parseInt(e.target.value) || 0)}
-                                                                className="w-full pl-10 pr-16 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:bg-white transition-all"
-                                                                min="0"
-                                                                max="50"
-                                                                placeholder="0"
-                                                            />
-                                                            <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium text-sm">
-                                                                {yearsOfExperience === 1 ? 'year' : 'years'}
-                                                            </span>
-                                                        </div>
-                                                        {yearsOfExperience > 0 && (
-                                                            <div className="mt-3 p-3 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg">
-                                                                <div className="flex items-center gap-2">
-                                                                    <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
-                                                                        <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                        
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                            {/* Name */}
+                                                            <div>
+                                                                <label className="block text-sm font-medium text-gray-900 mb-2">
+                                                                    Full Name <span className="text-red-500">*</span>
+                                                                </label>
+                                                                <div className="relative">
+                                                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                                        <svg className="h-4 w-4 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                                                                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                                                                         </svg>
                                                                     </div>
-                                                                    <p className="text-sm text-green-700 font-medium">
-                                                                        <strong>{yearsOfExperience} {yearsOfExperience === 1 ? 'year' : 'years'}</strong> of professional experience
-                                                                        {yearsOfExperience >= 10 && " - Expert level therapist! 🌟"}
-                                                                        {yearsOfExperience >= 5 && yearsOfExperience < 10 && " - Experienced therapist! 👍"}
-                                                                        {yearsOfExperience < 5 && yearsOfExperience > 0 && " - Growing your expertise! 💪"}
-                                                                    </p>
+                                                                    <input
+                                                                        type="text"
+                                                                        value={name}
+                                                                        onChange={(e) => setName(e.target.value)}
+                                                                        className="w-full pl-10 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:bg-white transition-all text-sm"
+                                                                        placeholder="Your full name"
+                                                                    />
                                                                 </div>
                                                             </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
 
-                                            {/* Professional Description */}
-                                            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-                                                <label className="flex items-center gap-2 text-sm font-medium text-gray-900 mb-3">
-                                                    <div className="w-5 h-5 bg-purple-500 rounded-full flex items-center justify-center">
-                                                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                        </svg>
-                                                    </div>
-                                                    Professional Description <span className="text-red-500">*</span>
-                                                    <span className="ml-auto text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full">Max 350 characters</span>
-                                                </label>
-                                                
-                                                {/* Character Counter */}
-                                                <div className="mb-3 flex justify-between items-center">
-                                                    <div className="text-xs text-gray-600">
-                                                        Tell clients about your expertise, specialties, and experience
-                                                    </div>
-                                                    <span className={`text-sm font-medium px-2 py-1 rounded-full ${
-                                                        description.length > 350 ? 'bg-red-100 text-red-600' : 
-                                                        description.length > 300 ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-600'
-                                                    }`}>
-                                                        {description.length}/350
-                                                    </span>
-                                                </div>
-                                                
-                                                <div className="relative">
-                                                    <div className="absolute top-3.5 left-3 pointer-events-none">
-                                                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                        </svg>
-                                                    </div>
-                                                    <textarea
-                                                        value={description}
-                                                        onChange={(e) => {
-                                                            if (e.target.value.length <= 350) {
-                                                                setDescription(e.target.value);
-                                                            }
-                                                        }}
-                                                        rows={4}
-                                                        maxLength={350}
-                                                        className={`w-full pl-10 pr-4 py-3 bg-gray-50 border-2 rounded-xl focus:outline-none focus:ring-2 focus:bg-white transition-all resize-none ${
-                                                            description.length > 350 
-                                                                ? 'border-red-300 focus:ring-red-500 focus:border-red-500 bg-red-50' 
-                                                                : description.length > 300
-                                                                    ? 'border-orange-300 focus:ring-orange-500 focus:border-orange-500 bg-orange-50'
-                                                                    : 'border-gray-200 focus:ring-orange-500 focus:border-orange-500'
-                                                        }`}
-                                                        placeholder="Share your massage expertise, years of experience, specializations, and what makes your service unique..."
-                                                    />
-                                                </div>
-                                                
-                                                {/* Progress bar */}
-                                                <div className="mt-3">
-                                                    <div className="w-full bg-gray-200 rounded-full h-2">
-                                                        <div 
-                                                            className={`h-2 rounded-full transition-all duration-300 ${
-                                                                description.length > 350 ? 'bg-red-500' :
-                                                                description.length > 300 ? 'bg-orange-500' : 'bg-green-500'
-                                                            }`}
-                                                            style={{ width: `${Math.min((description.length / 350) * 100, 100)}%` }}
-                                                        />
-                                                    </div>
-                                                </div>
+                                                            {/* WhatsApp Number */}
+                                                            <div>
+                                                                <label className="block text-sm font-medium text-gray-900 mb-2">
+                                                                    WhatsApp Number <span className="text-red-500">*</span>
+                                                                </label>
+                                                                <div className="relative">
+                                                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                                        <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                                                        </svg>
+                                                                    </div>
+                                                                    <span className="absolute inset-y-0 left-8 pl-2 flex items-center text-gray-500 text-xs pointer-events-none">+62</span>
+                                                                    <input
+                                                                        type="tel"
+                                                                        value={whatsappNumber}
+                                                                        onChange={(e) => setWhatsappNumber(e.target.value)}
+                                                                        className="w-full pl-16 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:bg-white transition-all text-sm"
+                                                                        placeholder="812 3456 7890"
+                                                                    />
+                                                                </div>
+                                                            </div>
 
-                                                {/* Character limit warning */}
-                                                {description.length > 300 && (
-                                                    <div className={`mt-3 p-3 rounded-lg text-sm flex items-start gap-2 ${
-                                                        description.length > 350 
-                                                            ? 'bg-red-50 text-red-700 border border-red-200' 
-                                                            : 'bg-orange-50 text-orange-700 border border-orange-200'
-                                                    }`}>
-                                                        <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                                        </svg>
-                                                        <div>
-                                                            {description.length > 350 
-                                                                ? 'Description exceeds character limit. Please shorten your text.' 
-                                                                : 'Approaching character limit. Consider being more concise.'
-                                                            }
+                                                            {/* Years of Experience */}
+                                                            <div>
+                                                                <label className="block text-sm font-medium text-gray-900 mb-2">
+                                                                    Experience <span className="text-red-500">*</span>
+                                                                </label>
+                                                                <div className="relative">
+                                                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                                        <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                                        </svg>
+                                                                    </div>
+                                                                    <input
+                                                                        type="number"
+                                                                        min="0"
+                                                                        max="50"
+                                                                        value={yearsOfExperience}
+                                                                        onChange={(e) => setYearsOfExperience(parseInt(e.target.value) || 0)}
+                                                                        className="w-full pl-10 pr-12 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all text-sm"
+                                                                        placeholder="0"
+                                                                    />
+                                                                    <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 text-xs pointer-events-none">
+                                                                        {yearsOfExperience === 1 ? 'year' : 'years'}
+                                                                    </span>
+                                                                </div>
+                                                                {yearsOfExperience > 0 && (
+                                                                    <p className="mt-1 text-xs text-blue-600 font-medium">
+                                                                        {yearsOfExperience >= 10 && "Expert level! 🌟"}
+                                                                        {yearsOfExperience >= 5 && yearsOfExperience < 10 && "Experienced! 👍"}
+                                                                    </p>
+                                                                )}
+                                                            </div>
+
+                                                            {/* Professional Description */}
+                                                            <div>
+                                                                <label className="block text-sm font-medium text-gray-900 mb-2">
+                                                                    Description <span className="text-red-500">*</span>
+                                                                </label>
+                                                                <div className="relative">
+                                                                    <div className="absolute top-3 left-3 pointer-events-none">
+                                                                        <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                                        </svg>
+                                                                    </div>
+                                                                    <textarea
+                                                                        value={description}
+                                                                        onChange={(e) => {
+                                                                            if (e.target.value.length <= 350) {
+                                                                                setDescription(e.target.value);
+                                                                            }
+                                                                        }}
+                                                                        rows={6}
+                                                                        className="w-full pl-10 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:bg-white transition-all text-sm resize-none"
+                                                                        placeholder="Describe your expertise and specialties..."
+                                                                    />
+                                                                </div>
+                                                                <div className="flex justify-between items-center mt-1">
+                                                                    <p className="text-xs text-gray-500">Tell clients about your expertise</p>
+                                                                    <span className={`text-xs font-medium ${
+                                                                        description.length > 350 ? 'text-red-600' : 
+                                                                        description.length > 300 ? 'text-orange-600' : 'text-gray-500'
+                                                                    }`}>
+                                                                        {description.length}/350
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div className="mt-3 p-2 bg-gray-50 rounded-lg">
+                                                            <p className="text-xs text-gray-600 flex items-center gap-1">
+                                                                <svg className="w-3 h-3 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                                                                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                                                </svg>
+                                                                This information will be displayed on your public profile and helps customers find you
+                                                            </p>
                                                         </div>
                                                     </div>
-                                                )}
+                                                </div>
                                             </div>
 
                                             {/* Service Location with GPS and Radius */}
@@ -1839,15 +1738,15 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                                 <span className="text-sm font-medium text-green-700">Service Coverage Radius:</span>
                                                             </div>
                                                             <p className="text-2xl font-bold text-green-600">
-                                                                Up to 50 KM
+                                                                Up to 15 KM
                                                             </p>
                                                             <p className="text-xs text-gray-600 mt-1 bg-white/50 rounded px-2 py-1">
-                                                                You can provide services within 50km from your base location
+                                                                You can provide services within 15km from your base location
                                                             </p>
                                                         </div>
                                                         <div className="text-right">
                                                             <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                                                                50km
+                                                                15km
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1885,76 +1784,34 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                 </div>
                                             </div>
 
-                                            {/* Massage Specialties with Categories */}
-                                            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-                                                <label className="flex items-center gap-2 text-sm font-medium text-gray-900 mb-4">
-                                                    <div className="w-5 h-5 bg-purple-500 rounded-full flex items-center justify-center">
-                                                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17v4a2 2 0 002 2h4M13 13h3a2 2 0 012 2v1M13 13l-2-2" />
-                                                        </svg>
-                                                    </div>
-                                                    Massage Specialties <span className="text-red-500">*</span>
-                                                    <span className="ml-auto text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">Max 5 selections</span>
-                                                </label>
-                                                
-                                                {/* Selection Counter */}
-                                                <div className="mb-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200">
-                                                    <div className="flex items-center justify-between mb-3">
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
-                                                                <span className="text-white text-xs font-bold">{massageTypes.length}</span>
-                                                            </div>
-                                                            <span className="text-sm font-medium text-purple-700">
-                                                                Selected Specialties: {massageTypes.length} of 5
-                                                            </span>
+                                            {/* Massage Specialties */}
+                                            <div className="space-y-4">
+                                                <div className="text-center">
+                                                    <h3 className="flex items-center justify-center gap-2 text-xl font-bold text-gray-900 mb-2">
+                                                        <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
+                                                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17v4a2 2 0 002 2h4M13 13h3a2 2 0 012 2v1M13 13l-2-2" />
+                                                            </svg>
                                                         </div>
-                                                        {massageTypes.length >= 5 && (
-                                                            <span className="text-xs text-purple-600 font-semibold bg-white px-2 py-1 rounded-full">
-                                                                Maximum reached
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    <div className="relative">
-                                                        <div className="w-full bg-purple-200 rounded-full h-3">
-                                                            <div 
-                                                                className={`h-3 rounded-full transition-all duration-500 ${
-                                                                    massageTypes.length >= 5 ? 'bg-gradient-to-r from-purple-500 to-pink-500' : 'bg-gradient-to-r from-blue-500 to-purple-500'
-                                                                }`}
-                                                                style={{ width: `${(massageTypes.length / 5) * 100}%` }}
-                                                            />
-                                                        </div>
-                                                        <div className="absolute inset-0 flex justify-center items-center">
-                                                            <span className="text-xs font-medium text-white drop-shadow">
-                                                                {Math.round((massageTypes.length / 5) * 100)}%
-                                                            </span>
-                                                        </div>
-                                                    </div>
+                                                        Massage Specialties
+                                                    </h3>
+                                                    <p className="text-sm text-gray-600 mb-4">Select up to 5 specialties you offer</p>
                                                 </div>
-
-                                                {/* Categorized Massage Types */}
-                                                <div className="space-y-4">
-                                                    {MASSAGE_TYPES_CATEGORIZED.map((category, categoryIndex) => (
-                                                        <div key={categoryIndex} className="bg-gradient-to-r from-gray-50 to-white border-2 border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-all">
-                                                            <div className="flex items-center gap-3 mb-4">
-                                                                <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                                                                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                                                                    </svg>
-                                                                </div>
-                                                                <h4 className="font-bold text-gray-800 text-sm uppercase tracking-wide">
-                                                                    {category.category}
+                                                
+                                                <div className="space-y-6">
+                                                        {MASSAGE_TYPES_CATEGORIZED.map((category, categoryIndex) => (
+                                                            <div key={categoryIndex}>
+                                                                <h4 className="font-semibold text-gray-800 text-sm mb-3 flex items-center gap-2">
+                                                                    <div className="w-4 h-4 bg-gradient-to-br from-orange-500 to-red-500 rounded-full"></div>
+                                                                    {category.category.replace(' Massages', '').replace('Massages', 'Techniques')}
                                                                 </h4>
-                                                                <div className="ml-auto text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded-full">
-                                                                    {category.types.filter(type => massageTypes.includes(type)).length} selected
-                                                                </div>
-                                                            </div>
-                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                                                                 {category.types.map((type) => (
                                                                     <label 
                                                                         key={type} 
                                                                         className={`flex items-center space-x-3 cursor-pointer p-3 rounded-xl border-2 transition-all duration-200 hover:shadow-md ${
                                                                             massageTypes.includes(type)
-                                                                                ? 'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-300 text-purple-700 shadow-md transform scale-105'
+                                                                                ? 'bg-gradient-to-r from-orange-50 to-red-50 border-orange-300 text-orange-700 shadow-md transform scale-105'
                                                                                 : massageTypes.length >= 5
                                                                                     ? 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed opacity-50'
                                                                                     : 'bg-white border-gray-200 hover:bg-gradient-to-r hover:from-gray-50 hover:to-white text-gray-700 hover:border-gray-300'
@@ -1987,10 +1844,10 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                                                     }
                                                                                 }}
                                                                                 disabled={!massageTypes.includes(type) && massageTypes.length >= 5}
-                                                                                className={`w-5 h-5 rounded-lg border-2 shadow-sm focus:ring-2 focus:ring-purple-200 transition-all ${
+                                                                                className={`w-5 h-5 rounded-lg border-2 shadow-sm focus:ring-2 focus:ring-orange-200 transition-all ${
                                                                                     massageTypes.includes(type) 
-                                                                                        ? 'bg-purple-500 border-purple-500 text-white' 
-                                                                                        : 'border-gray-300 bg-white hover:border-purple-300'
+                                                                                        ? 'bg-orange-500 border-orange-500 text-white' 
+                                                                                        : 'border-gray-300 bg-white hover:border-orange-300'
                                                                                 } disabled:opacity-50`}
                                                                             />
                                                                             {massageTypes.includes(type) && (
@@ -2000,9 +1857,9 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                                             )}
                                                                         </div>
                                                                         <div className="flex-1">
-                                                                            <span className="text-sm font-medium">{type}</span>
+                                                                            <span className="text-sm font-medium">{type.replace(' Massage', '')}</span>
                                                                             {massageTypes.includes(type) && (
-                                                                                <div className="text-xs text-purple-600 flex items-center gap-1 mt-0.5">
+                                                                                <div className="text-xs text-orange-600 flex items-center gap-1 mt-0.5">
                                                                                     <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                                                                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                                                                     </svg>
@@ -2012,103 +1869,38 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                                         </div>
                                                                     </label>
                                                                 ))}
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    ))}
+                                                        ))}
+                                                    </div>
                                                 </div>
 
-                                                {/* Selected Specialties Preview */}
-                                                {massageTypes.length > 0 && (
-                                                    <div className="mt-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-xl">
-                                                        <div className="flex items-center gap-2 mb-3">
-                                                            <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
-                                                                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                                                </svg>
-                                                            </div>
-                                                            <p className="text-sm font-bold text-purple-700">
-                                                                Your Selected Specialties ({massageTypes.length}/5):
-                                                            </p>
-                                                        </div>
-                                                        <div className="flex flex-wrap gap-2">
-                                                            {massageTypes.map((type) => (
-                                                                <span 
-                                                                    key={type}
-                                                                    className="inline-flex items-center px-3 py-2 bg-gradient-to-r from-purple-100 to-pink-100 border border-purple-300 text-purple-800 text-sm font-medium rounded-full hover:from-purple-200 hover:to-pink-200 transition-all duration-200"
-                                                                >
-                                                                    <svg className="w-3 h-3 mr-1 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                                                    </svg>
-                                                                    {type}
-                                                                    <button
-                                                                        onClick={() => {
-                                                                            console.log('💆 Remove button clicked for:', type);
-                                                                            setMassageTypes(prevTypes => {
-                                                                                const newTypes = prevTypes.filter(t => t !== type);
-                                                                                console.log('💆 Preview remove - new state:', newTypes);
-                                                                                return newTypes;
-                                                                            });
-                                                                        }}
-                                                                        className="ml-2 w-4 h-4 bg-purple-500 hover:bg-purple-600 text-white rounded-full flex items-center justify-center text-xs transition-colors"
-                                                                        title="Remove specialty"
-                                                                    >
-                                                                        ×
-                                                                    </button>
-                                                                </span>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                )}
+
                                             </div>
 
                                             {/* Languages Spoken */}
-                                            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-                                                <label className="flex items-center gap-2 text-sm font-medium text-gray-900 mb-4">
-                                                    <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                                                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
-                                                        </svg>
-                                                    </div>
-                                                    Languages Spoken <span className="text-red-500">*</span>
-                                                    <span className="ml-auto text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">Max 3 languages</span>
-                                                </label>
-                                                
-                                                {/* Language Selection Counter */}
-                                                <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-200">
-                                                    <div className="flex items-center justify-between mb-3">
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                                                                <span className="text-white text-xs font-bold">{languages.length}</span>
-                                                            </div>
-                                                            <span className="text-sm font-medium text-blue-700">
-                                                                Selected Languages: {languages.length} of 3
-                                                            </span>
+                                            <div className="space-y-4">
+                                                <div className="text-center">
+                                                    <h3 className="flex items-center justify-center gap-2 text-xl font-bold text-gray-900 mb-2">
+                                                        <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
+                                                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                                                            </svg>
                                                         </div>
-                                                        {languages.length >= 3 && (
-                                                            <span className="text-xs text-blue-600 font-semibold bg-white px-2 py-1 rounded-full">
-                                                                Maximum reached
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    <div className="relative">
-                                                        <div className="w-full bg-blue-200 rounded-full h-3">
-                                                            <div 
-                                                                className={`h-3 rounded-full transition-all duration-500 ${
-                                                                    languages.length >= 3 ? 'bg-gradient-to-r from-blue-500 to-cyan-500' : 'bg-gradient-to-r from-green-500 to-blue-500'
-                                                                }`}
-                                                                style={{ width: `${(languages.length / 3) * 100}%` }}
-                                                            />
-                                                        </div>
-                                                        <div className="absolute inset-0 flex justify-center items-center">
-                                                            <span className="text-xs font-medium text-white drop-shadow">
-                                                                {Math.round((languages.length / 3) * 100)}%
-                                                            </span>
-                                                        </div>
+                                                        Languages Spoken
+                                                    </h3>
+                                                    <p className="text-sm text-gray-600 mb-4">Select up to 3 languages</p>
+                                                    <div className="mb-4">
+                                                        <span className="inline-flex items-center gap-2 text-sm font-medium text-orange-700 bg-orange-100 px-3 py-1 rounded-full">
+                                                            <span className="w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center text-white text-xs font-bold">{languages.length}</span>
+                                                            {languages.length} of 3 selected
+                                                        </span>
                                                     </div>
                                                 </div>
-
-                                                {/* Language Options */}
-                                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                                                
+                                                {/* Language Options Container */}
+                                                <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+                                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                                     {[
                                                         { name: 'English', flag: '🇬🇧' },
                                                         { name: 'Indonesian', flag: '🇮🇩' },
@@ -2123,7 +1915,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                             key={lang.name} 
                                                             className={`flex items-center space-x-3 cursor-pointer p-3 rounded-xl border-2 transition-all duration-200 hover:shadow-md ${
                                                                 languages.includes(lang.name)
-                                                                    ? 'bg-gradient-to-r from-blue-50 to-cyan-50 border-blue-300 text-blue-700 shadow-md transform scale-105'
+                                                                    ? 'bg-gradient-to-r from-orange-50 to-red-50 border-orange-300 text-orange-700 shadow-md transform scale-105'
                                                                     : languages.length >= 3
                                                                         ? 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed opacity-50'
                                                                         : 'bg-white border-gray-200 hover:bg-gradient-to-r hover:from-gray-50 hover:to-white text-gray-700 hover:border-gray-300'
@@ -2148,10 +1940,10 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                                         }
                                                                     }}
                                                                     disabled={!languages.includes(lang.name) && languages.length >= 3}
-                                                                    className={`w-5 h-5 rounded-lg border-2 shadow-sm focus:ring-2 focus:ring-blue-200 transition-all ${
+                                                                    className={`w-5 h-5 rounded-lg border-2 shadow-sm focus:ring-2 focus:ring-orange-200 transition-all ${
                                                                         languages.includes(lang.name) 
-                                                                            ? 'bg-blue-500 border-blue-500 text-white' 
-                                                                            : 'border-gray-300 bg-white hover:border-blue-300'
+                                                                            ? 'bg-orange-500 border-orange-500 text-white' 
+                                                                            : 'border-gray-300 bg-white hover:border-orange-300'
                                                                     } disabled:opacity-50`}
                                                                 />
                                                                 {languages.includes(lang.name) && (
@@ -2176,18 +1968,19 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                             </div>
                                                         </label>
                                                     ))}
+                                                    </div>
                                                 </div>
 
                                                 {/* Selected Languages Preview */}
                                                 {languages.length > 0 && (
-                                                    <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-xl">
+                                                    <div className="mt-6 p-4 bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-200 rounded-xl">
                                                         <div className="flex items-center gap-2 mb-3">
-                                                            <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                                                            <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
                                                                 <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                                                                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                                                 </svg>
                                                             </div>
-                                                            <p className="text-sm font-bold text-blue-700">
+                                                            <p className="text-sm font-bold text-orange-700">
                                                                 Languages You Speak ({languages.length}/3):
                                                             </p>
                                                         </div>
@@ -2206,7 +1999,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                                 return (
                                                                     <span 
                                                                         key={language}
-                                                                        className="inline-flex items-center px-3 py-2 bg-gradient-to-r from-blue-100 to-cyan-100 border border-blue-300 text-blue-800 text-sm font-medium rounded-full hover:from-blue-200 hover:to-cyan-200 transition-all duration-200"
+                                                                        className="inline-flex items-center px-3 py-2 bg-gradient-to-r from-orange-100 to-red-100 border border-orange-300 text-orange-800 text-sm font-medium rounded-full hover:from-orange-200 hover:to-red-200 transition-all duration-200"
                                                                     >
                                                                         <span className="mr-2">{(languageFlags as any)[language] || '🌍'}</span>
                                                                         <svg className="w-3 h-3 mr-1 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2215,7 +2008,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                                         {language}
                                                                         <button
                                                                             onClick={() => setLanguages(languages.filter(l => l !== language))}
-                                                                            className="ml-2 w-4 h-4 bg-blue-500 hover:bg-blue-600 text-white rounded-full flex items-center justify-center text-xs transition-colors"
+                                                                            className="ml-2 w-4 h-4 bg-orange-500 hover:bg-orange-600 text-white rounded-full flex items-center justify-center text-xs transition-colors"
                                                                             title="Remove language"
                                                                         >
                                                                             ×
@@ -2229,49 +2022,28 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                             </div>
 
                                             {/* Pricing */}
-                                            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-                                                <label className="flex items-center gap-2 text-sm font-medium text-gray-900 mb-4">
-                                                    <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-                                                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                                                        </svg>
-                                                    </div>
-                                                    Service Pricing (IDR) <span className="text-red-500">*</span>
-                                                    {isDiscountActive && (
-                                                        <span className="ml-auto px-3 py-1 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs rounded-full font-bold">
-                                                            {discountPercentage}% OFF Active
-                                                        </span>
-                                                    )}
-                                                </label>
-                                                <p className="text-xs text-gray-600 mb-4">Enter prices as: 345k for 345,000 or full amount like 400000</p>
-                                                
-                                                {/* 100% Income Notice */}
-                                                <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl">
-                                                    <div className="flex items-start space-x-3">
-                                                        <div className="flex-shrink-0">
-                                                            <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                                                                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                                                                </svg>
-                                                            </div>
+                                            <div className="space-y-4">
+                                                <div className="text-center">
+                                                    <h3 className="flex items-center justify-center gap-2 text-xl font-bold text-gray-900 mb-2">
+                                                        <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                                                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                                                            </svg>
                                                         </div>
-                                                        <div className="flex-1">
-                                                            <div className="flex items-center gap-2 mb-1">
-                                                                <p className="text-sm font-bold text-green-800">
-                                                                    💰 100% Your Income
-                                                                </p>
-                                                                <div className="bg-green-500 text-white px-2 py-0.5 rounded-full text-xs font-bold">
-                                                                    No Commission
-                                                                </div>
-                                                            </div>
-                                                            <p className="text-sm text-green-700">
-                                                                These prices are for <strong>direct bookings from the home page</strong>. You keep <strong>100% of the income</strong> - no commission deducted!
-                                                            </p>
-                                                        </div>
-                                                    </div>
+                                                        Service Pricing (IDR)
+                                                        {isDiscountActive && (
+                                                            <span className="ml-2 px-3 py-1 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs rounded-full font-bold">
+                                                                {discountPercentage}% OFF Active
+                                                            </span>
+                                                        )}
+                                                    </h3>
+                                                    <p className="text-sm text-gray-600 mb-4">Home Page Pricing - 100% Your Income</p>
                                                 </div>
+                                                
+                                                {/* Home Page Pricing Container */}
+                                                <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
 
-                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                                     {[60, 90, 120].map((duration) => {
                                                         const originalPrice = (pricing as any)[duration] || 0;
                                                         const discountedPrice = isDiscountActive 
@@ -2343,100 +2115,60 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                         );
                                                     })}
                                                 </div>
-                                            </div>
-
-                                            {/* Hotel & Villa Live Menu Pricing */}
-                                            <div className="mt-8">
-                                                <div className="bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200 rounded-xl p-6">
-                                                    <div className="flex items-center mb-4">
-                                                        <div className="p-2 bg-orange-500 rounded-lg mr-3">
-                                                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                
+                                                {/* Hotel & Villa Live Menu Pricing */}
+                                                <div className="text-center mt-6 mb-4">
+                                                    <h4 className="flex items-center justify-center gap-2 text-lg font-semibold text-orange-800 mb-2">
+                                                        <div className="w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center">
+                                                            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                                             </svg>
                                                         </div>
-                                                        <div className="flex-1">
-                                                            <h3 className="text-xl font-bold text-orange-800">
-                                                                Hotel & Villa Live Menu Pricing
-                                                            </h3>
-                                                            <p className="text-sm text-orange-600 mt-1">
-                                                                Set your prices for hotel and villa services
-                                                            </p>
-                                                        </div>
-                                                    </div>
+                                                        Hotel & Villa Live Menu Pricing
+                                                    </h4>
+                                                    <p className="text-sm text-gray-600">Set prices for hotel/villa services (20% commission applies)</p>
+                                                </div>
+                                                
+                                                <div className="bg-white rounded-xl border border-orange-200 p-4 shadow-sm">
 
-                                                    {/* Commission Notice */}
-                                                    <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                                                        <div className="flex items-start space-x-3">
-                                                            <div className="flex-shrink-0">
-                                                                <svg className="w-5 h-5 text-yellow-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.99-.833-2.732 0L3.732 16c-.77.833.19 2.5 1.732 2.5z" />
-                                                                </svg>
-                                                            </div>
-                                                            <div className="flex-1">
-                                                                <p className="text-sm font-semibold text-yellow-800">
-                                                                    ⚠️ Commission Information - Hotel & Villa Only
-                                                                </p>
-                                                                <p className="text-sm text-yellow-700 mt-1">
-                                                                    <strong>20% commission</strong> will be deducted from your earnings for hotel and villa bookings. This covers platform fees, payment processing, and hotel/villa partnership costs.
-                                                                </p>
-                                                                <p className="text-xs text-yellow-600 mt-2 font-medium">
-                                                                    Example: If you charge IDR 250K, you'll receive IDR 200K after commission.
-                                                                </p>
-                                                                <p className="text-xs text-green-700 mt-2 font-bold bg-green-100 px-2 py-1 rounded">
-                                                                    💡 Remember: Your regular home page prices above are 100% commission-free!
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Hotel Villa Pricing Grid */}
-                                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                    <div className="grid grid-cols-3 gap-3">
                                                         {[60, 90, 120].map((duration) => {
                                                             const price = (hotelVillaPricing as any)[duration] || 0;
                                                             
                                                             return (
-                                                                <div key={duration} className="relative">
-                                                                    <div className="bg-white border-2 border-orange-200 rounded-lg p-4 hover:shadow-lg transition-all">
-                                                                        <label className="block text-sm font-bold text-orange-700 mb-2 text-center">
-                                                                            {duration} Minutes
-                                                                        </label>
-                                                                        
-                                                                        {/* Price Input */}
-                                                                        <div className="relative mb-3">
-                                                                            <input
-                                                                                type="text"
-                                                                                value={price.toString()}
-                                                                                onChange={(e) => {
-                                                                                    const value = e.target.value.replace(/\D/g, ''); // Remove non-digits
-                                                                                    if (value === '') {
-                                                                                        // Allow complete clearing
-                                                                                        setHotelVillaPricing({
-                                                                                            ...hotelVillaPricing,
-                                                                                            [duration]: 0
-                                                                                        });
-                                                                                    } else if (value.length <= 3) {
-                                                                                        const numValue = parseInt(value);
-                                                                                        setHotelVillaPricing({
-                                                                                            ...hotelVillaPricing,
-                                                                                            [duration]: numValue
-                                                                                        });
-                                                                                    }
-                                                                                }}
-                                                                                placeholder="000"
-                                                                                maxLength={3}
-                                                                                className="w-full px-3 py-3 border border-orange-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-center text-lg font-bold bg-orange-50"
-                                                                            />
-                                                                            <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-orange-600 font-bold text-lg">
-                                                                                K
-                                                                            </span>
-                                                                        </div>
+                                                                <div key={duration} className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-center">
+                                                                    <label className="block text-xs font-semibold text-orange-700 mb-2">
+                                                                        {duration}min
+                                                                    </label>
+                                                                    <div className="relative">
+                                                                        <input
+                                                                            type="text"
+                                                                            value={price.toString()}
+                                                                            onChange={(e) => {
+                                                                                const value = e.target.value.replace(/\D/g, '');
+                                                                                if (value === '') {
+                                                                                    setHotelVillaPricing({
+                                                                                        ...hotelVillaPricing,
+                                                                                        [duration]: 0
+                                                                                    });
+                                                                                } else if (value.length <= 3) {
+                                                                                    const numValue = parseInt(value);
+                                                                                    setHotelVillaPricing({
+                                                                                        ...hotelVillaPricing,
+                                                                                        [duration]: numValue
+                                                                                    });
+                                                                                }
+                                                                            }}
+                                                                            placeholder="000"
+                                                                            maxLength={3}
+                                                                            className="w-full px-2 py-2 border border-orange-300 rounded focus:outline-none focus:ring-1 focus:ring-orange-500 text-center text-sm font-bold bg-white"
+                                                                        />
+                                                                        <span className="absolute right-1 top-1/2 transform -translate-y-1/2 text-orange-600 font-bold text-xs">K</span>
                                                                     </div>
                                                                 </div>
                                                             );
                                                         })}
                                                     </div>
-
-
                                                 </div>
                                             </div>
 
@@ -2560,16 +2292,16 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                 </div>
                                             </div>
                                             
-                                            <div className="bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-200 rounded-lg p-4">
+                                            <div className="bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 rounded-lg p-4">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="p-2 bg-purple-500 rounded-lg">
+                                                    <div className="p-2 bg-orange-500 rounded-lg">
                                                         <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
                                                             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.890-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.785"/>
                                                         </svg>
                                                     </div>
                                                     <div>
-                                                        <p className="text-sm text-purple-600 font-medium">WhatsApp Contacts</p>
-                                                        <p className="text-xl font-bold text-purple-800">34</p>
+                                                        <p className="text-sm text-orange-600 font-medium">WhatsApp Contacts</p>
+                                                        <p className="text-xl font-bold text-orange-800">34</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -2631,9 +2363,9 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                             <p className="text-xs text-green-600">Bookings</p>
                                                             <p className="font-bold text-green-800">7</p>
                                                         </div>
-                                                        <div className="bg-purple-50 rounded-lg p-2">
-                                                            <p className="text-xs text-purple-600">WhatsApp</p>
-                                                            <p className="font-bold text-purple-800">12</p>
+                                                        <div className="bg-orange-50 rounded-lg p-2">
+                                                            <p className="text-xs text-orange-600">WhatsApp</p>
+                                                            <p className="font-bold text-orange-800">12</p>
                                                         </div>
                                                     </div>
                                                     <div className="mt-2 text-center">
@@ -2667,9 +2399,9 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                             <p className="text-xs text-green-600">Bookings</p>
                                                             <p className="font-bold text-green-800">9</p>
                                                         </div>
-                                                        <div className="bg-purple-50 rounded-lg p-2">
-                                                            <p className="text-xs text-purple-600">WhatsApp</p>
-                                                            <p className="font-bold text-purple-800">18</p>
+                                                        <div className="bg-orange-50 rounded-lg p-2">
+                                                            <p className="text-xs text-orange-600">WhatsApp</p>
+                                                            <p className="font-bold text-orange-800">18</p>
                                                         </div>
                                                     </div>
                                                     <div className="mt-2 text-center">
@@ -2682,7 +2414,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                 <div className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                                                     <div className="flex items-center justify-between mb-3">
                                                         <div className="flex items-center gap-3">
-                                                            <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center">
+                                                            <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-lg flex items-center justify-center">
                                                                 <span className="text-white text-xl">🏨</span>
                                                             </div>
                                                             <div>
@@ -2703,9 +2435,9 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                             <p className="text-xs text-green-600">Bookings</p>
                                                             <p className="font-bold text-green-800">2</p>
                                                         </div>
-                                                        <div className="bg-purple-50 rounded-lg p-2">
-                                                            <p className="text-xs text-purple-600">WhatsApp</p>
-                                                            <p className="font-bold text-purple-800">4</p>
+                                                        <div className="bg-orange-50 rounded-lg p-2">
+                                                            <p className="text-xs text-orange-600">WhatsApp</p>
+                                                            <p className="font-bold text-orange-800">4</p>
                                                         </div>
                                                     </div>
                                                     <div className="mt-2 text-center">
@@ -2785,7 +2517,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                 <div className="border border-gray-200 rounded-lg p-4">
                                                     <div className="flex items-center justify-between mb-2">
                                                         <div className="flex items-center gap-3">
-                                                            <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
+                                                            <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
                                                                 <span className="text-white text-xs font-bold">BH</span>
                                                             </div>
                                                             <div>
@@ -2813,23 +2545,6 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-
-                                        {/* Action Buttons */}
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105 shadow-lg">
-                                                <div className="flex items-center justify-center gap-2">
-                                                    <Building className="w-5 h-5" />
-                                                    <span>Find New Partners</span>
-                                                </div>
-                                            </button>
-                                            
-                                            <button className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105 shadow-lg">
-                                                <div className="flex items-center justify-center gap-2">
-                                                    <FileText className="w-5 h-5" />
-                                                    <span>View All Bookings</span>
-                                                </div>
-                                            </button>
                                         </div>
 
                                         {/* Analytics & Performance Panel */}
@@ -2868,12 +2583,188 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                 <p className="text-xs text-gray-600">Bookings</p>
                                             </div>
                                             <div className="bg-white border border-gray-200 rounded-lg p-3 text-center">
-                                                <p className="text-2xl font-bold text-purple-600">34</p>
+                                                <p className="text-2xl font-bold text-orange-600">34</p>
                                                 <p className="text-xs text-gray-600">WhatsApp</p>
                                             </div>
                                             <div className="bg-white border border-gray-200 rounded-lg p-3 text-center">
                                                 <p className="text-lg font-bold text-orange-600">7.3%</p>
                                                 <p className="text-xs text-gray-600">Conversion</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {activeTab === 'bank-details' && (
+                                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                                        <div className="mb-6">
+                                            <h2 className="text-xl font-bold text-gray-900 mb-2">Bank Details</h2>
+                                            <p className="text-gray-600">Manage your bank account information for payments</p>
+                                        </div>
+
+                                        <div className="space-y-6">
+                                            {/* Bank Account Information */}
+                                            <div className="bg-gray-50 rounded-lg p-6">
+                                                <h3 className="text-lg font-semibold text-gray-800 mb-4">Bank Account Information</h3>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                            Bank Name *
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={bankName}
+                                                            onChange={(e) => setBankName(e.target.value)}
+                                                            placeholder="e.g., Bank Central Asia (BCA)"
+                                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                            Account Name *
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={bankAccountName}
+                                                            onChange={(e) => setBankAccountName(e.target.value)}
+                                                            placeholder="Account holder's full name"
+                                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                            Account Number *
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={bankAccountNumber}
+                                                            onChange={(e) => setBankAccountNumber(e.target.value)}
+                                                            placeholder="Enter your bank account number"
+                                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Mobile Payment Information */}
+                                            <div className="bg-gray-50 rounded-lg p-6">
+                                                <h3 className="text-lg font-semibold text-gray-800 mb-4">Mobile Payment (Optional)</h3>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                            Mobile Payment Type
+                                                        </label>
+                                                        <select
+                                                            value={mobilePaymentType}
+                                                            onChange={(e) => setMobilePaymentType(e.target.value)}
+                                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                                                        >
+                                                            <option value="">Select payment type</option>
+                                                            <option value="OVO">OVO</option>
+                                                            <option value="GoPay">GoPay</option>
+                                                            <option value="DANA">DANA</option>
+                                                            <option value="ShopeePay">ShopeePay</option>
+                                                        </select>
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                            Mobile Payment Number
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={mobilePaymentNumber}
+                                                            onChange={(e) => setMobilePaymentNumber(e.target.value)}
+                                                            placeholder="e.g., 081234567890"
+                                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Preferred Payment Method */}
+                                            <div className="bg-gray-50 rounded-lg p-6">
+                                                <h3 className="text-lg font-semibold text-gray-800 mb-4">Preferred Payment Method</h3>
+                                                <div className="space-y-3">
+                                                    <div className="flex items-center">
+                                                        <input
+                                                            type="radio"
+                                                            id="bank-transfer"
+                                                            name="preferred-payment"
+                                                            value="bank_transfer"
+                                                            checked={preferredPaymentMethod === 'bank_transfer'}
+                                                            onChange={(e) => setPreferredPaymentMethod(e.target.value as 'bank_transfer' | 'cash' | 'mobile_payment')}
+                                                            className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
+                                                        />
+                                                        <label htmlFor="bank-transfer" className="ml-2 text-sm text-gray-700">
+                                                            Bank Transfer
+                                                        </label>
+                                                    </div>
+                                                    <div className="flex items-center">
+                                                        <input
+                                                            type="radio"
+                                                            id="mobile-payment"
+                                                            name="preferred-payment"
+                                                            value="mobile_payment"
+                                                            checked={preferredPaymentMethod === 'mobile_payment'}
+                                                            onChange={(e) => setPreferredPaymentMethod(e.target.value as 'bank_transfer' | 'cash' | 'mobile_payment')}
+                                                            className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
+                                                        />
+                                                        <label htmlFor="mobile-payment" className="ml-2 text-sm text-gray-700">
+                                                            Mobile Payment
+                                                        </label>
+                                                    </div>
+                                                    <div className="flex items-center">
+                                                        <input
+                                                            type="radio"
+                                                            id="cash"
+                                                            name="preferred-payment"
+                                                            value="cash"
+                                                            checked={preferredPaymentMethod === 'cash'}
+                                                            onChange={(e) => setPreferredPaymentMethod(e.target.value as 'bank_transfer' | 'cash' | 'mobile_payment')}
+                                                            className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
+                                                        />
+                                                        <label htmlFor="cash" className="ml-2 text-sm text-gray-700">
+                                                            Cash Payment
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Payment Instructions */}
+                                            <div className="bg-gray-50 rounded-lg p-6">
+                                                <h3 className="text-lg font-semibold text-gray-800 mb-4">Payment Instructions (Optional)</h3>
+                                                <textarea
+                                                    value={paymentInstructions}
+                                                    onChange={(e) => setPaymentInstructions(e.target.value)}
+                                                    placeholder="Add any special instructions for customers making payments..."
+                                                    rows={4}
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                                                />
+                                            </div>
+
+                                            {/* Action Buttons */}
+                                            <div className="flex gap-3">
+                                                <button
+                                                    onClick={handleSave}
+                                                    disabled={isSaving}
+                                                    className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                                                >
+                                                    {isSaving ? 'Saving...' : 'Save Bank Details'}
+                                                </button>
+                                            </div>
+
+                                            {/* Information Card */}
+                                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                                <div className="flex items-start gap-3">
+                                                    <div className="flex-shrink-0">
+                                                        <CreditCard className="w-5 h-5 text-blue-500 mt-0.5" />
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="text-sm font-semibold text-blue-800 mb-1">Payment Information</h4>
+                                                        <p className="text-sm text-blue-700">
+                                                            Your bank details will be shown to customers when they choose to pay by bank transfer or mobile payment after booking confirmation. Make sure all information is accurate.
+                                                        </p>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -2890,7 +2781,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                         </div>
 
                                         {/* Discount Banner Grid */}
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                                             
                                             {/* 5% Discount Banner */}
                                             <div className="border border-orange-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
@@ -3056,7 +2947,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                     <p className="text-sm text-gray-600">Post on social media platforms</p>
                                                 </div>
                                                 <div className="text-center">
-                                                    <div className="w-12 h-12 bg-purple-500 rounded-full mx-auto mb-2 flex items-center justify-center">
+                                                    <div className="w-12 h-12 bg-orange-500 rounded-full mx-auto mb-2 flex items-center justify-center">
                                                         <Tag className="w-6 h-6 text-white" />
                                                     </div>
                                                     <h4 className="font-medium text-gray-900 mb-1">Tag</h4>
@@ -3091,7 +2982,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                         </div>
 
                                         {/* Terms Sections */}
-                                        <div className="space-y-6">
+                                        <div className="space-y-4">
                                             {/* Service Requirements */}
                                             <div className="border border-gray-200 rounded-lg p-5">
                                                 <h4 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
@@ -3147,7 +3038,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                             {/* Massage Place Requirements */}
                                             <div className="border border-gray-200 rounded-lg p-5">
                                                 <h4 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                                                    <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
+                                                    <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
                                                         <span className="text-white text-xs font-bold">4</span>
                                                     </div>
                                                     Massage Place Requirements
@@ -3216,7 +3107,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                         <h2 className="text-xl font-bold text-gray-900 mb-6">{t.settings || 'Settings'}</h2>
                                         
                                         {/* Notification Settings */}
-                                        <div className="mb-8">
+                                        <div className="mb-6">
                                             <h3 className="text-lg font-semibold text-gray-800 mb-4">🔔 Notification Settings</h3>
                                             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                                                 <p className="text-sm text-blue-800 font-medium">⚠️ Critical notifications cannot be disabled to ensure optimal service delivery.</p>
@@ -3269,7 +3160,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                         </div>
 
                                         {/* Sound & Alert Settings */}
-                                        <div className="mb-8">
+                                        <div className="mb-6">
                                             <h3 className="text-lg font-semibold text-gray-800 mb-4">🔊 Sound & Alert Settings</h3>
                                             <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
                                                 <p className="text-sm text-green-800 font-medium">⚠️ Sound notifications are mandatory to ensure you never miss important service requests.</p>
@@ -3311,7 +3202,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                         </div>
 
                                         {/* Privacy Settings */}
-                                        <div className="mb-8">
+                                        <div className="mb-6">
                                             <h3 className="text-lg font-semibold text-gray-800 mb-4">🔒 Privacy Settings</h3>
                                             <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-4">
                                                 <p className="text-sm text-orange-800 font-medium">⚠️ Contact and profile settings cannot be disabled to maintain service accessibility.</p>
@@ -3353,7 +3244,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                         </div>
 
                                         {/* Account Settings */}
-                                        <div className="mb-8">
+                                        <div className="mb-6">
                                             <h3 className="text-lg font-semibold text-gray-800 mb-4">⚙️ Account Settings</h3>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <button 
@@ -3384,14 +3275,14 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
 
                                                 <button 
                                                     onClick={handleExportData}
-                                                    className="flex items-center gap-3 p-4 bg-purple-50 border border-purple-200 rounded-lg hover:bg-purple-100 transition-colors"
+                                                    className="flex items-center gap-3 p-4 bg-orange-50 border border-orange-200 rounded-lg hover:bg-orange-100 transition-colors"
                                                 >
-                                                    <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center">
+                                                    <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
                                                         <FileText className="w-5 h-5 text-white" />
                                                     </div>
                                                     <div className="text-left">
-                                                        <h4 className="font-medium text-purple-900">Export Data</h4>
-                                                        <p className="text-sm text-purple-600">Download your account data</p>
+                                                        <h4 className="font-medium text-orange-900">Export Data</h4>
+                                                        <p className="text-sm text-orange-600">Download your account data</p>
                                                     </div>
                                                 </button>
 
@@ -3450,7 +3341,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                             animation: float 8s ease-in-out infinite;
                         }
                     `}</style>
-                    <div className="fixed inset-0 z-[9999]" role="dialog" aria-modal="true">
+                    <div className="fixed inset-0" style={{ zIndex: 999999 }} role="dialog" aria-modal="true">
                         {/* Backdrop */}
                         <div 
                             className="absolute inset-0 bg-black bg-opacity-50 transition-opacity" 
@@ -3458,12 +3349,15 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                         />
                         
                         {/* Drawer Panel - Higher z-index to ensure it appears above footer */}
-                        <div className={`absolute right-0 top-0 bottom-0 w-[70%] sm:w-80 bg-gradient-to-br from-white via-gray-50 to-gray-100 shadow-2xl flex flex-col transform transition-transform ease-in-out duration-300 z-[10000] ${isSideDrawerOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+                        <div 
+                            className={`absolute right-0 top-0 bottom-0 w-[70%] sm:w-80 bg-gradient-to-br from-white via-gray-50 to-gray-100 shadow-2xl flex flex-col transform transition-transform ease-in-out duration-300 ${isSideDrawerOpen ? 'translate-x-0' : 'translate-x-full'}`}
+                            style={{ zIndex: 1000000 }}
+                        >
                             
                             {/* Header */}
                             <div className="p-6 flex justify-between items-center border-b border-gray-200">
                                 <h2 className="font-bold text-2xl">
-                                    <span className="text-black">Indat</span><span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
+                                    <span className="text-black">Inda</span><span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
                                 </h2>
                                 <button 
                                     onClick={() => setIsSideDrawerOpen(false)}
@@ -3490,10 +3384,15 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                 <button 
                                                     key={item.id}
                                                     onClick={() => {
-                                                        setActiveTab(item.id);
-                                                        setIsSideDrawerOpen(false);
+                                                        if (item.id === 'notifications') {
+                                                            setShowNotifications(true);
+                                                            setIsSideDrawerOpen(false);
+                                                        } else {
+                                                            setActiveTab(item.id);
+                                                            setIsSideDrawerOpen(false);
+                                                        }
                                                     }}
-                                                    className={`flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 ${item.borderColor} group transform hover:scale-105`}
+                                                    className={`flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 ${item.borderColor} group transform hover:scale-105 relative`}
                                                 >
                                                     <div className={`p-2 bg-gradient-to-br ${item.gradientColor} rounded-lg`}>
                                                         {React.cloneElement(item.icon, { 
@@ -3506,16 +3405,23 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                         </p>
                                                         <p className="text-xs text-gray-500">
                                                             {item.id === 'status' && 'Manage availability & discounts'}
+                                                            {item.id === 'notifications' && 'View your notifications'}
                                                             {item.id === 'bookings' && 'View & manage appointments'}
                                                             {item.id === 'profile' && 'Edit profile & settings'}
                                                             {item.id === 'analytics' && 'Performance insights'}
                                                             {item.id === 'membership' && 'Subscription plans'}
                                                             {item.id === 'hotel-villa' && 'Partner services'}
+                                                            {item.id === 'bank-details' && 'Manage payment info'}
                                                             {item.id === 'discount-banners' && 'Social media banners'}
                                                             {item.id === 'terms' && 'Legal information'}
                                                             {item.id === 'settings' && 'App preferences'}
                                                         </p>
                                                     </div>
+                                                    {item.badge && (
+                                                        <span className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                                                            {item.badge}
+                                                        </span>
+                                                    )}
                                                 </button>
                                             ))}
                                         </div>
@@ -3660,29 +3566,69 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
 
             {/* Notifications Modal */}
             {showNotifications && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-600 bg-opacity-50">
-                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-96 overflow-hidden">
-                        <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-                            <h3 className="text-lg font-semibold text-gray-900">{t.notifications || 'Notifications'}</h3>
-                            <button
-                                onClick={() => setShowNotifications(false)}
-                                className="p-1 hover:bg-gray-100 rounded"
+                <>
+                    <style>{`
+                        body { overflow: hidden !important; }
+                    `}</style>
+                    <div 
+                        className="fixed inset-0 z-[9999] bg-black bg-opacity-50"
+                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+                    >
+                        <div className="flex items-center justify-center min-h-full p-4">
+                            <div 
+                                className="bg-white rounded-xl shadow-xl w-full max-w-md mx-auto"
+                                style={{ maxHeight: '80vh' }}
+                                onClick={(e) => e.stopPropagation()}
                             >
-                                <Bell className="w-5 h-5 text-gray-600" />
-                            </button>
-                        </div>
-                        <div className="p-4 overflow-y-auto max-h-80">
-                            <div className="p-4">
-                                <p className="text-gray-600">Notifications: {notifications.length}</p>
-                                {notifications.map((notification, index) => (
-                                    <div key={index} className="p-2 border-b border-gray-200">
-                                        {notification.message}
+                                {/* Header - Fixed */}
+                                <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-white rounded-t-xl flex-shrink-0">
+                                    <h3 className="text-lg font-semibold text-gray-900">{t.notifications || 'Notifications'}</h3>
+                                    <button
+                                        onClick={() => setShowNotifications(false)}
+                                        className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                                    >
+                                        <X className="w-5 h-5 text-gray-600" />
+                                    </button>
+                                </div>
+                                
+                                {/* Scrollable Content */}
+                                <div 
+                                    className="overflow-y-auto"
+                                    style={{ 
+                                        maxHeight: 'calc(80vh - 80px)',
+                                        overscrollBehavior: 'contain'
+                                    }}
+                                >
+                                    <div className="p-4">
+                                        <p className="text-gray-600 mb-4">Notifications: {notifications.length}</p>
+                                        {notifications.length > 0 ? (
+                                            <div className="space-y-3">
+                                                {notifications.map((notification, index) => (
+                                                    <div key={index} className="p-3 bg-gray-50 rounded-lg border-l-4 border-blue-500">
+                                                        <p className="text-gray-800">{notification.message}</p>
+                                                        {notification.createdAt && (
+                                                            <p className="text-xs text-gray-500 mt-1">
+                                                                {new Date(notification.createdAt).toLocaleString()}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className="text-center py-8">
+                                                <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                                                    <Bell className="w-8 h-8 text-gray-400" />
+                                                </div>
+                                                <p className="text-gray-500">No notifications yet</p>
+                                                <p className="text-sm text-gray-400 mt-1">You'll receive updates about your bookings here</p>
+                                            </div>
+                                        )}
                                     </div>
-                                ))}
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                </>
             )}
 
             {/* Busy Timer Modal */}
@@ -3881,7 +3827,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                 </div>
             )}
 
-
+            </div>
         </div>
     );
 };

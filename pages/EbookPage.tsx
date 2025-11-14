@@ -17,7 +17,7 @@ export const EbookPage: React.FC<EbookPageProps> = ({ ebookId, title, content, s
     <>
       {/* SEO will be handled by document head - this is the content component */}
 
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 pb-40">
         {/* Header */}
         <header className="bg-white shadow-sm border-b border-gray-200">
           <div className="max-w-4xl mx-auto px-4 py-6">
@@ -54,8 +54,8 @@ export const EbookPage: React.FC<EbookPageProps> = ({ ebookId, title, content, s
               ))}
             </div>
 
-            {/* Footer */}
-            <footer className="mt-12 pt-8 border-t border-gray-200">
+            {/* Footer - Fixed positioning */}
+            <footer className="fixed bottom-0 left-0 right-0 bg-white pt-8 border-t border-gray-200 z-50">
               <div className="bg-orange-50 rounded-lg p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">
                   Continue Your Professional Development

@@ -177,7 +177,7 @@ const LiveMenuDemo: React.FC = () => {
         alert(`Booking ${type}: ${provider.name}`);
     };
 
-    const mockTranslations = {
+    const _mockTranslations = {
         service: "Service",
         date: "Date",
         confirm: "Confirm",

@@ -17,7 +17,7 @@ export interface FooterConfig {
  */
 export const getFooterConfig = (
   currentPage: string,
-  userRole?: string | null
+  _userRole?: string | null
 ): FooterConfig => {
   // Dashboard pages that have their own footers
   const dashboardPages = [
@@ -39,7 +39,7 @@ export const getFooterConfig = (
   ];
 
   // Full screen pages that manage their own layout
-  const fullScreenPages = [
+  const _fullScreenPages = [
     'adminDashboard',
     'therapistDashboard',
     'placeDashboard'
