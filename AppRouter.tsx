@@ -527,6 +527,12 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
     const navToJobUnlockPayment = () => setPage('jobUnlockPayment');
     const navToTherapistJobRegistration = () => setPage('therapistJobRegistration');
     const commonNavigateHandler = (page: string) => setPage(page as Page);
+    const navToBlog = () => setPage('blog');
+    
+    // Helper for blog pages with consistent props
+    const renderBlogPage = (Component: any) => (
+        <Component onBack={navToBlog} onNavigate={commonNavigateHandler} t={t} />
+    );
 
     if (isLoading && page !== 'landing') {
         return <div className="flex justify-center items-center h-screen"><div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand-green"></div></div>;
@@ -1290,90 +1296,65 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         // case 'swedish-massage': 
         //     return <SwedishMassagePage onBack={handleBackToHome} onNavigate={(page: Page) => setPage(page as Page)} t={t} />;
             
-        // case 'hot-stone-massage': 
-        //     return <HotStoneMassagePage onBack={handleBackToHome} onNavigate={(page: Page) => setPage(page as Page)} t={t} />;
+
             
-        // case 'aromatherapy-massage': 
-        //     return <AromatherapyMassagePage onBack={handleBackToHome} onNavigate={(page: Page) => setPage(page as Page)} t={t} />;
-            
-        // case 'thai-massage':\n        //     return <ThaiMassagePage onBack={handleBackToHome} onNavigate={(page: Page) => setPage(page as Page)} t={t} />;
-            
-        // case 'reflexology-massage':\n        //     return <ReflexologyMassagePage onBack={handleBackToHome} onNavigate={(page: Page) => setPage(page as Page)} t={t} />;
-            
-        // case 'shiatsu-massage':\n        //     return <ShiatsuMassagePage onBack={handleBackToHome} onNavigate={(page: Page) => setPage(page as Page)} t={t} />;
-            
-        // case 'sports-massage':\n        //     return <SportsMassagePage onBack={handleBackToHome} onNavigate={(page: Page) => setPage(page as Page)} t={t} />;
-            
-        // case 'pregnancy-massage':\n        //     return <PregnancyMassagePage onBack={handleBackToHome} onNavigate={(page: Page) => setPage(page as Page)} t={t} />;
-            
-        // case 'reviews-testimonials':
-        //     return <ReviewsTestimonialsPage onBack={handleBackToHome} onNavigate={(page: Page) => setPage(page as Page)} t={t} />;
-            
-        case 'press-media': 
- 
-            return <PressMediaPage onNavigate={(page: string) => setPage(page as Page)} />;
+        case 'press-media':
+            return <PressMediaPage onNavigate={commonNavigateHandler} />;
             
         case 'career-opportunities': 
  
-            return <CareerOpportunitiesPage onNavigate={(page: string) => setPage(page as Page)} />;
+            return <CareerOpportunitiesPage onNavigate={commonNavigateHandler} />;
             
         case 'therapist-info': 
  
-            return <TherapistInfoPage onNavigate={(page: string) => setPage(page as Page)} />;
+            return <TherapistInfoPage onNavigate={commonNavigateHandler} />;
             
         case 'hotel-info': 
  
-            return <HotelInfoPage onNavigate={(page: string) => setPage(page as Page)} />;
+            return <HotelInfoPage onNavigate={commonNavigateHandler} />;
             
         case 'employer-info': 
  
-            return <EmployerInfoPage onNavigate={(page: string) => setPage(page as Page)} />;
+            return <EmployerInfoPage onNavigate={commonNavigateHandler} />;
             
-        case 'payment-info': 
- 
-            return <PaymentInfoPage onNavigate={(page: string) => setPage(page as Page)} />;
+        case 'payment-info':
+            return <PaymentInfoPage onNavigate={commonNavigateHandler} />;
             
-        case 'blog-bali-spa-trends-2025' as any: 
- 
-            return <BaliSpaIndustryTrends2025Page onBack={() => setPage('blog')} onNavigate={(page: string) => setPage(page as Page)} t={t} />;
+        case 'blog-bali-spa-trends-2025' as any:
+            return renderBlogPage(BaliSpaIndustryTrends2025Page);
             
-        case 'blog-top-10-massage-techniques' as any: 
- 
-            return <Top10MassageTechniquesPage onBack={() => setPage('blog')} onNavigate={(page: string) => setPage(page as Page)} t={t} />;
+        case 'blog-top-10-massage-techniques' as any:
+            return renderBlogPage(Top10MassageTechniquesPage);
             
-        case 'blog-massage-career-indonesia' as any: 
- 
-            return <MassageCareerIndonesiaPage onBack={() => setPage('blog')} onNavigate={(page: string) => setPage(page as Page)} t={t} />;
+        case 'blog-massage-career-indonesia' as any:
+            return renderBlogPage(MassageCareerIndonesiaPage);
             
-        case 'blog-benefits-regular-massage' as any: 
- 
-            return <BenefitsRegularMassageTherapyPage onBack={() => setPage('blog')} onNavigate={(page: string) => setPage(page as Page)} t={t} />;
+        case 'blog-benefits-regular-massage' as any:
+            return renderBlogPage(BenefitsRegularMassageTherapyPage);
             
-        case 'blog-hiring-massage-therapists' as any: 
- 
-            return <HiringMassageTherapistsGuidePage onBack={() => setPage('blog')} onNavigate={(page: string) => setPage(page as Page)} t={t} />;
+        case 'blog-hiring-massage-therapists' as any:
+            return renderBlogPage(HiringMassageTherapistsGuidePage);
             
-        case 'blog-traditional-balinese-massage' as any: 
- 
-            return <TraditionalBalineseMassagePage onBack={() => setPage('blog')} onNavigate={(page: string) => setPage(page as Page)} t={t} />;
+        case 'blog-traditional-balinese-massage' as any:
+            return renderBlogPage(TraditionalBalineseMassagePage);
             
-        case 'blog-spa-tourism-indonesia': 
-            return <SpaTourismIndonesiaPage onBack={() => setPage('blog')} onNavigate={(page: string) => setPage(page as Page)} t={t} />;
+        case 'blog-spa-tourism-indonesia':
+            return renderBlogPage(SpaTourismIndonesiaPage);
             
-        case 'blog-aromatherapy-massage-oils': 
-            return <AromatherapyMassageOilsPage onBack={() => setPage('blog')} onNavigate={(page: string) => setPage(page as Page)} t={t} />;
+        case 'blog-aromatherapy-massage-oils':
+            return renderBlogPage(AromatherapyMassageOilsPage);
             
-        case 'blog-pricing-guide-therapists': 
-            return <PricingGuideMassageTherapistsPage onBack={() => setPage('blog')} onNavigate={(page: string) => setPage(page as Page)} t={t} />;
+        case 'blog-pricing-guide-therapists':
+            return renderBlogPage(PricingGuideMassageTherapistsPage);
             
-        case 'blog-deep-tissue-vs-swedish': 
-            return <DeepTissueVsSwedishMassagePage onBack={() => setPage('blog')} onNavigate={(page: string) => setPage(page as Page)} t={t} />;
+        case 'blog-deep-tissue-vs-swedish':
+            return renderBlogPage(DeepTissueVsSwedishMassagePage);
             
-        case 'blog-online-presence-therapist': 
-            return <OnlinePresenceMassageTherapistPage onBack={() => setPage('blog')} onNavigate={(page: string) => setPage(page as Page)} t={t} />;
+        case 'blog-online-presence-therapist':
+            return renderBlogPage(OnlinePresenceMassageTherapistPage);
             
-        case 'blog-wellness-tourism-ubud': 
-            return <WellnessTourismUbudPage onBack={() => setPage('blog')} onNavigate={(page: string) => setPage(page as Page)} t={t} />;
+        case 'blog-wellness-tourism-ubud':
+            return renderBlogPage(WellnessTourismUbudPage);
             
         case 'guestAlerts': 
             return <GuestAlertsPage onBack={handleBackToHome} t={t} />;
