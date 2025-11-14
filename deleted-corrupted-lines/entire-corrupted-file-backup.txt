@@ -1,7 +1,0 @@
-// Current corrupted file backed up
-// File was too corrupted to repair with individual replacements
-// Moving entire corrupted file to deleted folder
-
-// Date: November 10, 2025
-// Issue: Multiple try-catch structure problems, missing braces, broken useCallback syntax
-// Solution: Replace entire file with clean minimal version

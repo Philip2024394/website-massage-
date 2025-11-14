@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { 
     Building, Image as ImageIcon, LogOut, Menu, Phone, QrCode, Star, Tag, User, X, Bell,
     BarChart3, Percent, Hotel, ClipboardList, MessageSquare, Users, 
-    DollarSign, BellRing, Package, Settings
+    DollarSign, BellRing, Package
 } from 'lucide-react';
 import { Therapist, Place, HotelVillaServiceStatus } from '../types';
 import { parsePricing } from '../utils/appwriteHelpers';
@@ -13,7 +13,6 @@ import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import QRCodeGenerator from 'qrcode';
 import { useTranslations } from '../lib/useTranslations';
 import PushNotificationSettings from '../components/PushNotificationSettings';
-import HotelVillaServicesSettingsPage from './HotelVillaServicesSettingsPage';
 import HotelBookingModal from '../components/hotel/PropertyBookingModal';
 import HotelAnalyticsSection from '../components/hotel/PropertyAnalyticsSection';
 import DashboardHeader from '../components/DashboardHeader';
@@ -90,7 +89,7 @@ interface HotelDashboardPageProps {
     therapists?: Therapist[];
     places?: Place[];
     hotelId?: string;
-    initialTab?: 'analytics' | 'discounts' | 'menu' | 'feedback' | 'concierge' | 'commissions' | 'notifications' | 'services-settings';
+    initialTab?: 'analytics' | 'discounts' | 'menu' | 'feedback' | 'commissions' | 'notifications';
     setPage?: (page: any) => void;
 }
 
@@ -471,27 +470,11 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
                             <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
                                 <Star className="w-5 h-5 text-orange-600" />
                             </div>
-                            <h2 className="text-2xl font-bold text-gray-900">{t('dashboard.feedback')}</h2>
+                            <h2 className="text-2xl font-bold text-gray-900">Feedback</h2>
                         </div>
                         <div className="text-center py-20">
                             <h3 className="text-xl font-semibold text-gray-800">Guest Feedback</h3>
                             <p className="text-gray-500 mt-2">Guest reviews and feedback will appear here.</p>
-                        </div>
-                    </div>
-                );
-
-            case 'concierge':
-                return (
-                    <div className="space-y-6">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-                                <User className="w-5 h-5 text-orange-600" />
-                            </div>
-                            <h2 className="text-2xl font-bold text-gray-900">{t('dashboard.concierge')}</h2>
-                        </div>
-                        <div className="text-center py-20">
-                            <h3 className="text-xl font-semibold text-gray-800">Concierge Services</h3>
-                            <p className="text-gray-500 mt-2">Manage your concierge team and services.</p>
                         </div>
                     </div>
                 );
@@ -677,16 +660,6 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
                     </div>
                 );
 
-            case 'services-settings':
-                return (
-                    <HotelVillaServicesSettingsPage
-                        type="hotel"
-                        hotelVillaId={hotelId}
-                        onBack={() => updateState({ activeTab: 'analytics' })}
-                        onSave={async (settings) => console.log('Saving hotel settings:', settings)}
-                    />
-                );
-
             default:
                 return (
                     <div className="text-center py-20">
@@ -703,10 +676,8 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
         { id: 'discounts', icon: Percent, label: 'Discounts', color: 'green', description: 'Manage special offers' },
         { id: 'menu', icon: ClipboardList, label: 'Menu', badge: providers.length, color: 'indigo', description: 'Service providers' },
         { id: 'feedback', icon: MessageSquare, label: 'Feedback', color: 'yellow', description: 'Customer reviews' },
-        { id: 'concierge', icon: Users, label: 'Concierge', color: 'teal', description: 'Guest services' },
         { id: 'commissions', icon: DollarSign, label: 'Commissions', color: 'orange', description: 'Payment tracking' },
         { id: 'notifications', icon: BellRing, label: 'Notifications', color: 'red', description: 'System alerts' },
-        { id: 'services-settings', icon: Settings, label: 'Services', color: 'gray', description: 'Configure services' },
     ];
 
     return (

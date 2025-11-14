@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { massageDosAndDontsEbook, generateEbookPDF } from '../utils/ebookUtils';
+import { massageDosAndDontsEbook, generateEbook } from '../utils/ebookUtils_simple';
 
 interface EbookViewerProps {
   ebookId: string;
@@ -12,8 +12,8 @@ export const EbookViewer: React.FC<EbookViewerProps> = ({ ebookId, onClose }) =>
 
   useEffect(() => {
     // Generate the HTML content for the ebook
-    if (ebookId === 'massage-dos-donts-guide') {
-      const pdfContent = generateEbookPDF(massageDosAndDontsEbook);
+    if (ebookId === massageDosAndDontsEbook.id) {
+      const pdfContent = generateEbook(massageDosAndDontsEbook);
       setHtmlContent(pdfContent);
       setLoading(false);
     }

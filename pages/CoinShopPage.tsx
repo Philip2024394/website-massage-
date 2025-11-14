@@ -4,8 +4,6 @@ import { shopItemService, coinService, shopOrderService } from '../lib/appwriteS
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import LocationModal from '../components/LocationModal';
 import { AppDrawer } from '../components/AppDrawer';
-import { EbookViewer } from '../components/EbookViewer';
-import { massageDosAndDontsEbook } from '../utils/ebookUtils';
 
 interface CoinShopPageProps {
     onNavigate: (page: string) => void;
@@ -57,9 +55,6 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
     const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [showFinalConfirmation, setShowFinalConfirmation] = useState(false);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-    const [showEbookViewer, setShowEbookViewer] = useState(false);
-    const [selectedEbookId, setSelectedEbookId] = useState<string | null>(null);
-    const [purchasedEbooks, setPurchasedEbooks] = useState<Set<string>>(new Set());
     
     // Location modal state
     const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
@@ -73,46 +68,12 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
     const loadShopData = async () => {
         try {
             setLoading(true);
+            console.log('Starting loadShopData...');
             
             // Load shop items
             const items = await shopItemService.getActiveItems();
-            
-            // Add ebook as a special item
-            const ebookItem: ShopItem = {
-                $id: massageDosAndDontsEbook.id,
-                name: massageDosAndDontsEbook.title,
-                description: massageDosAndDontsEbook.description,
-                coinPrice: massageDosAndDontsEbook.coinPrice,
-                category: 'wellness' as const,
-                imageUrl: 'data:image/svg+xml;base64,' + btoa(`
-                    <svg width="400" height="600" xmlns="http://www.w3.org/2000/svg">
-                        <defs>
-                            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#e67e22;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#f39c12;stop-opacity:1" />
-                            </linearGradient>
-                        </defs>
-                        <rect width="400" height="600" fill="url(#grad1)"/>
-                        <text x="200" y="100" font-family="Arial, sans-serif" font-size="28" font-weight="bold" text-anchor="middle" fill="white">MASSAGE</text>
-                        <text x="200" y="140" font-family="Arial, sans-serif" font-size="24" font-weight="bold" text-anchor="middle" fill="white">DO's & DON'Ts</text>
-                        <text x="200" y="200" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="white">A Complete Guide</text>
-                        <text x="200" y="240" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="white">Professional Guidelines for</text>
-                        <text x="200" y="260" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="white">Safe & Effective Massage Therapy</text>
-                        <circle cx="200" cy="350" r="60" fill="rgba(255,255,255,0.1)" stroke="white" stroke-width="2"/>
-                        <text x="200" y="360" font-family="Arial, sans-serif" font-size="36" text-anchor="middle" fill="white">📚</text>
-                        <text x="200" y="480" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="white">IndaStreet Massage Academy</text>
-                        <text x="200" y="520" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="white">24 Pages • Professional Training</text>
-                    </svg>
-                `),
-                stockQuantity: 999, // Digital product - unlimited stock
-                isActive: true,
-                createdAt: massageDosAndDontsEbook.publishDate,
-                updatedAt: massageDosAndDontsEbook.publishDate,
-                estimatedDelivery: 'Instant Digital Access',
-                disclaimer: 'Digital ebook for immediate download and viewing'
-            };
-            
-            setShopItems([ebookItem, ...items]);
+            console.log('Loaded shop items:', items.length);
+            setShopItems(items);
 
             // Load user coins if logged in
             if (currentUser?.id) {
@@ -128,6 +89,7 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
             }
         } catch (error) {
             console.error('Error loading shop data:', error);
+            setShopItems([]);
         } finally {
             setLoading(false);
         }
@@ -138,6 +100,7 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
         { id: 'electronics', label: 'Electronics', icon: '📱' },
         { id: 'fashion', label: 'Fashion', icon: '👕' },
         { id: 'wellness', label: 'Wellness', icon: '💆' },
+        { id: 'educational', label: 'Educational', icon: '📚' },
         { id: 'home', label: 'Home', icon: '🏠' },
         { id: 'gift_cards', label: 'Gift Cards', icon: '🎁' },
     ];
@@ -145,6 +108,11 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
     const filteredItems = selectedCategory === 'all' 
         ? shopItems 
         : shopItems.filter(item => item.category === selectedCategory);
+    
+    console.log('Selected category:', selectedCategory);
+    console.log('Total shop items:', shopItems.length);
+    console.log('Filtered items:', filteredItems.length);
+    console.log('Shop items categories:', shopItems.map(item => item.category));
 
     // Pagination
     const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
@@ -166,47 +134,9 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
         }
     };
 
-    // Ebook handling functions
-    const handleEbookPurchase = async (item: ShopItem) => {
-        if (!currentUser || !userCoins || !item.$id) return;
 
-        try {
-            setProcessingItemId(item.$id);
 
-            // Simplified coin deduction - adjust based on your coinService implementation
-            // await coinService.deductCoins(currentUser.id, item.coinPrice, `Purchased ebook: ${item.name}`);
-            
-            // Update local state (simulating purchase for demo)
-            setUserCoins(prev => prev ? { ...prev, totalCoins: prev.totalCoins - item.coinPrice } : null);
-            setPurchasedEbooks(prev => new Set([...prev, item.$id!]));
-            
-            // Show success and open ebook
-            alert(`🎉 Ebook purchased successfully! Opening "${item.name}" now.`);
-            openEbook(item.$id);
 
-        } catch (error) {
-            console.error('Error purchasing ebook:', error);
-            alert('Failed to purchase ebook. Please try again.');
-        } finally {
-            setProcessingItemId(null);
-        }
-    };
-
-    const openEbook = (ebookId: string) => {
-        setSelectedEbookId(ebookId);
-        setShowEbookViewer(true);
-    };
-
-    const handleViewEbook = (item: ShopItem) => {
-        if (!item.$id) return;
-        
-        // Check if user owns the ebook
-        if (purchasedEbooks.has(item.$id)) {
-            openEbook(item.$id);
-        } else {
-            handleCashIn(item);
-        }
-    };
 
     const handleCashIn = (item: ShopItem) => {
         if (!currentUser) {
@@ -222,11 +152,7 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
             return;
         }
 
-        // Handle ebook purchase differently - instant access
-        if (item.$id === massageDosAndDontsEbook.id) {
-            handleEbookPurchase(item);
-            return;
-        }
+
 
         // Show delivery form with celebration for physical items
         setShowDeliveryForm(true);
@@ -542,56 +468,26 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
 
                                     {/* Delivery Time */}
                                     <div className="flex items-center gap-1 mb-3 text-xs text-gray-500">
-                                        {item.$id === massageDosAndDontsEbook.id ? (
-                                            <>
-                                                <span>�</span>
-                                                <span>Instant Digital Access</span>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <span>�🚚</span>
-                                                <span>Delivery: 7-10 days</span>
-                                            </>
-                                        )}
+                                        <>
+                                            <span>🚚</span>
+                                            <span>Delivery: {item.estimatedDelivery || '7-10 days'}</span>
+                                        </>
                                     </div>
 
                                     {/* Action Button */}
-                                    {item.$id === massageDosAndDontsEbook.id ? (
-                                        // Ebook Button
-                                        <button
-                                            onClick={() => handleViewEbook(item)}
-                                            disabled={processingItemId === item.$id}
-                                            className={`w-full py-2.5 rounded-lg font-bold text-sm transition-colors ${
-                                                processingItemId === item.$id
-                                                    ? 'bg-orange-300 text-white cursor-wait'
-                                                    : purchasedEbooks.has(item.$id || '')
-                                                    ? 'bg-green-500 text-white hover:bg-green-600'
-                                                    : 'bg-blue-500 text-white hover:bg-blue-600'
-                                            }`}
-                                        >
-                                            {processingItemId === item.$id 
-                                                ? 'Processing...' 
-                                                : purchasedEbooks.has(item.$id || '')
-                                                ? '📖 Read Ebook'
-                                                : `📚 Buy for ${item.coinPrice} coins`
-                                            }
-                                        </button>
-                                    ) : (
-                                        // Regular Product Button
-                                        <button
-                                            onClick={() => handleCashIn(item)}
-                                            disabled={item.stockQuantity <= 0 || processingItemId === item.$id}
-                                            className={`w-full py-2.5 rounded-lg font-bold text-sm transition-colors ${
-                                                item.stockQuantity <= 0
-                                                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                                    : processingItemId === item.$id
-                                                    ? 'bg-orange-300 text-white cursor-wait'
-                                                    : 'bg-orange-500 text-white hover:bg-orange-600'
-                                            }`}
-                                        >
-                                            {processingItemId === item.$id ? 'Processing...' : 'Cash In'}
-                                        </button>
-                                    )}
+                                    <button
+                                        onClick={() => handleCashIn(item)}
+                                        disabled={item.stockQuantity <= 0 || processingItemId === item.$id}
+                                        className={`w-full py-2.5 rounded-lg font-bold text-sm transition-colors ${
+                                            item.stockQuantity <= 0
+                                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                                : processingItemId === item.$id
+                                                ? 'bg-orange-300 text-white cursor-wait'
+                                                : 'bg-orange-500 text-white hover:bg-orange-600'
+                                        }`}
+                                    >
+                                        {processingItemId === item.$id ? 'Processing...' : 'Cash In'}
+                                    </button>
                                 </div>
                             </div>
                         ))}
@@ -908,16 +804,7 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
             `}</style>
         </div>
 
-        {/* Ebook Viewer Modal */}
-        {showEbookViewer && selectedEbookId && (
-            <EbookViewer
-                ebookId={selectedEbookId}
-                onClose={() => {
-                    setShowEbookViewer(false);
-                    setSelectedEbookId(null);
-                }}
-            />
-        )}
+
         </>
     );
 };

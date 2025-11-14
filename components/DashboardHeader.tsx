@@ -26,7 +26,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onLogout, onMenuClick
   return (
   <header className="flex items-center justify-between px-6 py-4 bg-white shadow-sm border-b">
     <div className="text-2xl font-bold tracking-tight text-gray-800">
-      Dashboard
+      {/* Dashboard title removed as requested */}
     </div>
     {onMenuClick && (
       <button 
