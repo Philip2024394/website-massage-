@@ -8,6 +8,7 @@ import type { Therapist, Place } from '../types';
 import { therapistService, placeService } from '../lib/appwriteService';
 import { reviewService } from '../lib/reviewService';
 import { APP_CONFIG } from '../config/appConfig';
+import { robustCollectionQuery } from '../lib/robustApiWrapper';
 
 export const useDataFetching = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -19,28 +20,23 @@ export const useDataFetching = () => {
         try {
             setIsLoading(true);
             
-
-            
-            // Add timeout to prevent infinite loading
-            const timeout = new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('Fetch timeout')), APP_CONFIG.DATA_FETCH_TIMEOUT)
-            );
-            
             // Fetch therapists first (this should work)
             console.log('🔄 Fetching therapists data...');
-            const therapistsData = await therapistService.getTherapists();
+            const therapistsData = await robustCollectionQuery(
+                () => therapistService.getTherapists(),
+                'therapists',
+                [] as Therapist[]
+            );
             console.log('✅ Therapists data received:', therapistsData?.length || 0);
             
             // Try to fetch places, but handle gracefully if collection is empty
-            let placesData: Place[] = [];
-            try {
-                console.log('🔄 Attempting to fetch places data...');
-                placesData = await placeService.getPlaces();
-                console.log('✅ Places data received:', placesData?.length || 0);
-            } catch (placeError) {
-                console.warn('⚠️ Places collection not available (this is OK):', placeError);
-                placesData = []; // Continue with empty places array
-            }
+            console.log('🔄 Attempting to fetch places data...');
+            const placesData = await robustCollectionQuery(
+                () => placeService.getPlaces(),
+                'places',
+                [] as Place[]
+            );
+            console.log('✅ Places data received:', placesData?.length || 0);
             
             // Initialize review data for new accounts
             const therapistsWithReviews = (therapistsData || []).map((therapist: Therapist) => 

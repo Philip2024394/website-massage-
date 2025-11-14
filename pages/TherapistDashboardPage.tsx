@@ -9,7 +9,7 @@ import { LogOut, Activity, Calendar, TrendingUp, Bell, User, Crown, Building, Fi
 import { ColoredHistoryIcon, ColoredCoinsIcon } from '../components/ColoredIcons';
 
 
-import Footer from '../components/Footer';
+
 import BusyTimerModal from '../components/BusyTimerModal';
 
 
@@ -112,14 +112,14 @@ const LiveDiscountCountdown: React.FC<{
     if (isExpired) return null;
 
     return (
-        <div className="mt-4 p-4 bg-gradient-to-r from-green-50 to-orange-50 border-2 border-green-300 rounded-xl animate-pulse">
+        <div className="mt-4 p-4 bg-gradient-to-r from-green-50 to-orange-50 border-2 border-green-300 rounded-xl">
             <div className="text-center">
                 <div className="flex items-center justify-center space-x-2 mb-2">
-                    <div className="w-3 h-3 bg-green-500 rounded-full animate-ping"></div>
+                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                     <p className="text-lg font-bold text-green-800">
                         🎊 {percentage}% Discount LIVE!
                     </p>
-                    <div className="w-3 h-3 bg-orange-500 rounded-full animate-ping"></div>
+                    <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
                 </div>
                 <div className="bg-white px-4 py-2 rounded-lg border border-gray-200 shadow-sm">
                     <p className="text-sm text-gray-600">Time Remaining:</p>
@@ -166,7 +166,7 @@ const BusyCountdown: React.FC<{ busyUntil: Date }> = ({ busyUntil }) => {
     }, [busyUntil]);
 
     return (
-        <span className="ml-2 px-2 py-1 bg-yellow-500 text-white text-xs rounded-full font-bold animate-pulse">
+        <span className="ml-2 px-2 py-1 bg-yellow-500 text-white text-xs rounded-full font-bold">
             ⏱️ {timeLeft}
         </span>
     );
@@ -304,8 +304,8 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                     if (existingTherapist) {
                         console.log('✅ Found therapist by direct ID lookup:', existingTherapist.name);
                     }
-                } catch (directError) {
-                    console.log('⚠️ Direct ID lookup failed:', directError);
+                } catch (_directError) {
+                    console.log('⚠️ Direct ID lookup failed:', _directError);
                 }
                 
                 // 🎯 PRIORITY 3: Get current user and find by email (fallback)
@@ -342,8 +342,8 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                         } else {
                             console.log('❌ No current user found - authentication may be invalid');
                         }
-                    } catch (emailError) {
-                        console.error('❌ Email lookup failed:', emailError);
+                    } catch (_emailError) {
+                        console.error('❌ Email lookup failed:', _emailError);
                     }
                 }
 
@@ -359,8 +359,8 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                         if (existingTherapist) {
                             console.log('✅ Found phil4 by document ID:', existingTherapist.name);
                         }
-                    } catch (phil4Error) {
-                        console.log('⚠️ Phil4 document lookup failed:', phil4Error);
+                    } catch (_phil4Error) {
+                        console.log('⚠️ Phil4 document lookup failed:', _phil4Error);
                     }
                 }
             }
@@ -600,7 +600,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
         { id: 'bookings', label: t.bookings || 'Bookings', icon: <Calendar className="w-5 h-5" />, gradientColor: 'from-blue-500 to-blue-600', borderColor: 'border-blue-500', hoverColor: 'hover:border-blue-300', textColor: 'text-blue-800', bgColor: 'bg-blue-100' },
         { id: 'profile', label: t.profile || 'Profile', icon: <User className="w-5 h-5" />, gradientColor: 'from-purple-500 to-purple-600', borderColor: 'border-purple-500', hoverColor: 'hover:border-purple-300', textColor: 'text-purple-800', bgColor: 'bg-purple-100' },
         { id: 'analytics', label: t.analytics || 'Analytics', icon: <TrendingUp className="w-5 h-5" />, gradientColor: 'from-orange-500 to-orange-600', borderColor: 'border-orange-500', hoverColor: 'hover:border-orange-300', textColor: 'text-orange-800', bgColor: 'bg-orange-100' },
-        // { id: 'membership', label: t.membership || 'Membership', icon: <Crown className="w-5 h-5" />, gradientColor: 'from-yellow-500 to-yellow-600', borderColor: 'border-yellow-500', hoverColor: 'hover:border-yellow-300', textColor: 'text-yellow-800', bgColor: 'bg-yellow-100' }, // DISABLED - Admin will activate later
+        { id: 'membership', label: t.membership || 'Membership', icon: <Crown className="w-5 h-5" />, gradientColor: 'from-yellow-500 to-yellow-600', borderColor: 'border-yellow-500', hoverColor: 'hover:border-yellow-300', textColor: 'text-yellow-800', bgColor: 'bg-yellow-100' },
         { id: 'hotel-villa', label: t.hotelVilla || 'Hotel/Villa', icon: <Building className="w-5 h-5" />, gradientColor: 'from-pink-500 to-pink-600', borderColor: 'border-pink-500', hoverColor: 'hover:border-pink-300', textColor: 'text-pink-800', bgColor: 'bg-pink-100' },
         { id: 'discount-banners', label: 'Discount Banners', icon: <Tag className="w-5 h-5" />, gradientColor: 'from-orange-500 to-orange-600', borderColor: 'border-orange-500', hoverColor: 'hover:border-orange-300', textColor: 'text-orange-800', bgColor: 'bg-orange-100' },
         { id: 'terms', label: t.terms || 'Terms', icon: <FileText className="w-5 h-5" />, gradientColor: 'from-indigo-500 to-indigo-600', borderColor: 'border-indigo-500', hoverColor: 'hover:border-indigo-300', textColor: 'text-indigo-800', bgColor: 'bg-indigo-100' },
@@ -817,12 +817,10 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
             <style>{`
                 @keyframes flash {
                     0%, 100% { 
-                        box-shadow: 0 0 20px rgba(251, 146, 60, 0.8), 0 0 40px rgba(251, 146, 60, 0.4); 
-                        transform: scale(1);
+                        box-shadow: 0 0 10px rgba(251, 146, 60, 0.3); 
                     }
                     50% { 
-                        box-shadow: 0 0 30px rgba(239, 68, 68, 0.9), 0 0 60px rgba(239, 68, 68, 0.5);
-                        transform: scale(1.02);
+                        box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
                     }
                 }
                 @keyframes glow {
@@ -1287,8 +1285,8 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                                 } else {
                                                                     console.error('❌ Database verification: Discount not saved properly!');
                                                                 }
-                                                            } catch (verifyError) {
-                                                                console.error('❌ Verification failed:', verifyError);
+                                                            } catch (_verifyError) {
+                                                                console.error('❌ Verification failed:', _verifyError);
                                                             }
                                                         }, 1000); // Wait 1 second for database consistency
                                                         
@@ -1350,10 +1348,10 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                                 }}
                                                                 disabled={isDiscountActive}
                                                                 onMouseOver={() => console.log('🔍 BUTTON STATE:', { disabled: isDiscountActive, selectedPercentage: selectedDiscountPercentage, selectedDuration: selectedDiscountDuration })}
-                                                                className={`w-full py-3 px-6 rounded-xl font-bold transition-all transform ${
+                                                                className={`w-full py-3 px-6 rounded-xl font-bold transition-all ${
                                                                     isDiscountActive
-                                                                        ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg animate-pulse'
-                                                                        : 'bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:from-orange-600 hover:to-amber-600 shadow-lg hover:shadow-xl hover:scale-105'
+                                                                        ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg'
+                                                                        : 'bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:from-orange-600 hover:to-amber-600 shadow-lg hover:shadow-xl'
                                                                 }`}
                                                             >
                                                                 {isDiscountActive && discountEndTime ? (
@@ -1532,29 +1530,47 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                 )}
 
                                 {activeTab === 'profile' && (
-                                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                                        <h2 className="text-xl font-bold text-gray-900 mb-6">{t.profile || 'Profile'}</h2>
+                                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                                        {/* Professional Header */}
+                                        <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-6">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center flex-shrink-0">
+                                                    <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                                    </svg>
+                                                </div>
+                                                <div>
+                                                    <h2 className="text-2xl font-bold text-white">{t.profile || 'Profile'}</h2>
+                                                    <p className="text-orange-100 text-sm">Manage your professional therapist profile</p>
+                                                </div>
+                                            </div>
+                                        </div>
                                         
-                                        {/* Profile Form */}
-                                        <div className="space-y-8">
+                                        {/* Profile Content */}
+                                        <div className="p-6 space-y-8">
                                             {/* Profile Picture & Basic Info */}
-                                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                                                 <div className="lg:col-span-1">
-                                                    <div className="flex flex-col items-center space-y-4">
-                                                        <div className="relative">
+                                                    <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-6 text-center border border-orange-200">
+                                                        <div className="relative inline-block mb-4">
                                                             {profilePicture ? (
                                                                 <img 
                                                                     src={profilePicture} 
                                                                     alt="Profile" 
-                                                                    className="w-32 h-32 rounded-full object-cover border-4 border-orange-200"
+                                                                    className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
                                                                 />
                                                             ) : (
-                                                                <div className="w-32 h-32 rounded-full bg-gray-200 border-4 border-gray-300 flex items-center justify-center">
+                                                                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 border-4 border-white shadow-lg flex items-center justify-center">
                                                                     <svg className="w-16 h-16 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
                                                                         <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                                                                     </svg>
                                                                 </div>
                                                             )}
+                                                            <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white cursor-pointer hover:bg-orange-600 transition-colors shadow-lg">
+                                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                                                </svg>
+                                                            </div>
                                                         </div>
                                                         <button 
                                                             onClick={async () => {
@@ -1600,73 +1616,140 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                                 };
                                                                 input.click();
                                                             }}
-                                                            className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50"
+                                                            className="w-full px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all duration-200 font-semibold disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                                                             disabled={isSaving}
                                                         >
-                                                            {isSaving ? '⏳ Uploading...' : (profilePicture ? 'Change Photo' : 'Upload Photo')}
+                                                            {isSaving ? (
+                                                                <div className="flex items-center justify-center space-x-2">
+                                                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                                                    <span>Uploading...</span>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="flex items-center justify-center space-x-2">
+                                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                                    </svg>
+                                                                    <span>{profilePicture ? 'Change Photo' : 'Upload Photo'}</span>
+                                                                </div>
+                                                            )}
                                                         </button>
+                                                        {profilePicture && (
+                                                            <div className="mt-3 text-xs text-gray-600 bg-white/50 rounded-lg p-2">
+                                                                <div className="flex items-center gap-1 justify-center">
+                                                                    <svg className="w-3 h-3 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                                                    </svg>
+                                                                    <span>Profile photo set</span>
+                                                                </div>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </div>
                                                 
                                                 <div className="lg:col-span-2 space-y-6">
                                                     {/* Name */}
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                            Full Name *
+                                                    <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+                                                        <label className="flex items-center gap-2 text-sm font-medium text-gray-900 mb-3">
+                                                            <div className="w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center">
+                                                                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4z"/>
+                                                                </svg>
+                                                            </div>
+                                                            Full Name <span className="text-red-500">*</span>
                                                         </label>
-                                                        <input
-                                                            type="text"
-                                                            value={name}
-                                                            onChange={(e) => setName(e.target.value)}
-                                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                                            placeholder="Enter your full name"
-                                                        />
+                                                        <div className="relative">
+                                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                                <svg className="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                                                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                                                </svg>
+                                                            </div>
+                                                            <input
+                                                                type="text"
+                                                                value={name}
+                                                                onChange={(e) => setName(e.target.value)}
+                                                                className="w-full pl-10 pr-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:bg-white transition-all"
+                                                                placeholder="Enter your professional name"
+                                                            />
+                                                        </div>
                                                     </div>
 
                                                     {/* WhatsApp Number */}
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                            WhatsApp Number *
+                                                    <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+                                                        <label className="flex items-center gap-2 text-sm font-medium text-gray-900 mb-3">
+                                                            <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                                                                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                                                </svg>
+                                                            </div>
+                                                            WhatsApp Number <span className="text-red-500">*</span>
                                                         </label>
-                                                        <input
-                                                            type="tel"
-                                                            value={whatsappNumber}
-                                                            onChange={(e) => setWhatsappNumber(e.target.value)}
-                                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                                            placeholder="e.g., +62 812 3456 7890"
-                                                        />
+                                                        <div className="relative">
+                                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                                <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                                                </svg>
+                                                            </div>
+                                                            <span className="absolute inset-y-0 left-10 pl-2 flex items-center text-gray-500 text-sm pointer-events-none">+62</span>
+                                                            <input
+                                                                type="tel"
+                                                                value={whatsappNumber}
+                                                                onChange={(e) => setWhatsappNumber(e.target.value)}
+                                                                className="w-full pl-20 pr-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:bg-white transition-all"
+                                                                placeholder="812 3456 7890"
+                                                            />
+                                                        </div>
+                                                        <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
+                                                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                                            </svg>
+                                                            Customers will contact you via WhatsApp for bookings
+                                                        </p>
                                                     </div>
 
                                                     {/* Years of Experience */}
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                            Professional Experience *
+                                                    <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+                                                        <label className="flex items-center gap-2 text-sm font-medium text-gray-900 mb-3">
+                                                            <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                                                                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                                                                </svg>
+                                                            </div>
+                                                            Professional Experience <span className="text-red-500">*</span>
                                                         </label>
                                                         <div className="relative">
+                                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                                <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                                </svg>
+                                                            </div>
                                                             <input
                                                                 type="number"
                                                                 value={yearsOfExperience}
                                                                 onChange={(e) => setYearsOfExperience(parseInt(e.target.value) || 0)}
-                                                                className="w-full px-4 py-3 pr-16 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                                                className="w-full pl-10 pr-16 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:bg-white transition-all"
                                                                 min="0"
                                                                 max="50"
-                                                                placeholder="Enter years"
+                                                                placeholder="0"
                                                             />
-                                                            <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">
+                                                            <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium text-sm">
                                                                 {yearsOfExperience === 1 ? 'year' : 'years'}
                                                             </span>
                                                         </div>
-                                                        <p className="text-xs text-gray-500 mt-1">
-                                                            How many years have you been practicing massage therapy professionally?
-                                                        </p>
                                                         {yearsOfExperience > 0 && (
-                                                            <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-lg">
-                                                                <p className="text-sm text-green-700">
-                                                                    <strong>{yearsOfExperience} {yearsOfExperience === 1 ? 'year' : 'years'}</strong> of professional experience
-                                                                    {yearsOfExperience >= 10 && " - Expert level therapist! 🌟"}
-                                                                    {yearsOfExperience >= 5 && yearsOfExperience < 10 && " - Experienced therapist! 👍"}
-                                                                    {yearsOfExperience < 5 && yearsOfExperience > 0 && " - Growing your expertise! 💪"}
-                                                                </p>
+                                                            <div className="mt-3 p-3 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg">
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                                                                        <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                                        </svg>
+                                                                    </div>
+                                                                    <p className="text-sm text-green-700 font-medium">
+                                                                        <strong>{yearsOfExperience} {yearsOfExperience === 1 ? 'year' : 'years'}</strong> of professional experience
+                                                                        {yearsOfExperience >= 10 && " - Expert level therapist! 🌟"}
+                                                                        {yearsOfExperience >= 5 && yearsOfExperience < 10 && " - Experienced therapist! 👍"}
+                                                                        {yearsOfExperience < 5 && yearsOfExperience > 0 && " - Growing your expertise! 💪"}
+                                                                    </p>
+                                                                </div>
                                                             </div>
                                                         )}
                                                     </div>
@@ -1674,74 +1757,148 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                             </div>
 
                                             {/* Professional Description */}
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                    Professional Description * 
-                                                    <span className="text-orange-600 font-semibold">(Max 350 characters)</span>
+                                            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                                                <label className="flex items-center gap-2 text-sm font-medium text-gray-900 mb-3">
+                                                    <div className="w-5 h-5 bg-purple-500 rounded-full flex items-center justify-center">
+                                                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                        </svg>
+                                                    </div>
+                                                    Professional Description <span className="text-red-500">*</span>
+                                                    <span className="ml-auto text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full">Max 350 characters</span>
                                                 </label>
                                                 
                                                 {/* Character Counter */}
-                                                <div className="mb-2 text-right">
-                                                    <span className={`text-sm ${
-                                                        description.length > 350 ? 'text-red-600 font-bold' : 
-                                                        description.length > 300 ? 'text-orange-600' : 'text-gray-500'
+                                                <div className="mb-3 flex justify-between items-center">
+                                                    <div className="text-xs text-gray-600">
+                                                        Tell clients about your expertise, specialties, and experience
+                                                    </div>
+                                                    <span className={`text-sm font-medium px-2 py-1 rounded-full ${
+                                                        description.length > 350 ? 'bg-red-100 text-red-600' : 
+                                                        description.length > 300 ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-600'
                                                     }`}>
-                                                        {description.length}/350 characters
+                                                        {description.length}/350
                                                     </span>
                                                 </div>
                                                 
-                                                <textarea
-                                                    value={description}
-                                                    onChange={(e) => {
-                                                        if (e.target.value.length <= 350) {
-                                                            setDescription(e.target.value);
-                                                        }
-                                                    }}
-                                                    rows={4}
-                                                    maxLength={350}
-                                                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-all ${
-                                                        description.length > 350 
-                                                            ? 'border-red-300 focus:ring-red-500 focus:border-red-500 bg-red-50' 
-                                                            : description.length > 300
-                                                                ? 'border-orange-300 focus:ring-orange-500 focus:border-orange-500 bg-orange-50'
-                                                                : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'
-                                                    }`}
-                                                    placeholder="Tell clients about your services, expertise, and experience... (max 350 characters including spaces)"
-                                                />
+                                                <div className="relative">
+                                                    <div className="absolute top-3.5 left-3 pointer-events-none">
+                                                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                        </svg>
+                                                    </div>
+                                                    <textarea
+                                                        value={description}
+                                                        onChange={(e) => {
+                                                            if (e.target.value.length <= 350) {
+                                                                setDescription(e.target.value);
+                                                            }
+                                                        }}
+                                                        rows={4}
+                                                        maxLength={350}
+                                                        className={`w-full pl-10 pr-4 py-3 bg-gray-50 border-2 rounded-xl focus:outline-none focus:ring-2 focus:bg-white transition-all resize-none ${
+                                                            description.length > 350 
+                                                                ? 'border-red-300 focus:ring-red-500 focus:border-red-500 bg-red-50' 
+                                                                : description.length > 300
+                                                                    ? 'border-orange-300 focus:ring-orange-500 focus:border-orange-500 bg-orange-50'
+                                                                    : 'border-gray-200 focus:ring-orange-500 focus:border-orange-500'
+                                                        }`}
+                                                        placeholder="Share your massage expertise, years of experience, specializations, and what makes your service unique..."
+                                                    />
+                                                </div>
                                                 
+                                                {/* Progress bar */}
+                                                <div className="mt-3">
+                                                    <div className="w-full bg-gray-200 rounded-full h-2">
+                                                        <div 
+                                                            className={`h-2 rounded-full transition-all duration-300 ${
+                                                                description.length > 350 ? 'bg-red-500' :
+                                                                description.length > 300 ? 'bg-orange-500' : 'bg-green-500'
+                                                            }`}
+                                                            style={{ width: `${Math.min((description.length / 350) * 100, 100)}%` }}
+                                                        />
+                                                    </div>
+                                                </div>
+
                                                 {/* Character limit warning */}
                                                 {description.length > 300 && (
-                                                    <div className={`mt-2 p-2 rounded-lg text-sm ${
+                                                    <div className={`mt-3 p-3 rounded-lg text-sm flex items-start gap-2 ${
                                                         description.length > 350 
-                                                            ? 'bg-red-100 text-red-700' 
-                                                            : 'bg-orange-100 text-orange-700'
+                                                            ? 'bg-red-50 text-red-700 border border-red-200' 
+                                                            : 'bg-orange-50 text-orange-700 border border-orange-200'
                                                     }`}>
-                                                        {description.length > 350 
-                                                            ? '⚠️ Description exceeds 350 characters. Please shorten it.' 
-                                                            : '⚠️ Approaching character limit. Consider being more concise.'
-                                                        }
+                                                        <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                                        </svg>
+                                                        <div>
+                                                            {description.length > 350 
+                                                                ? 'Description exceeds character limit. Please shorten your text.' 
+                                                                : 'Approaching character limit. Consider being more concise.'
+                                                            }
+                                                        </div>
                                                     </div>
                                                 )}
                                             </div>
 
                                             {/* Service Location with GPS and Radius */}
-                                            <div className="space-y-4">
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                    Service Location & Coverage Area *
+                                            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                                                <label className="flex items-center gap-2 text-sm font-medium text-gray-900 mb-4">
+                                                    <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                                                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                        </svg>
+                                                    </div>
+                                                    Service Location & Coverage Area <span className="text-red-500">*</span>
                                                 </label>
                                                 
+                                                {/* Coordinates Display */}
+                                                <div className="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-xl">
+                                                    <div className="flex items-center gap-2 text-xs text-gray-600">
+                                                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                        </svg>
+                                                        <span className="font-medium">GPS Coordinates:</span>
+                                                        <span className="font-mono">
+                                                            {coordinates.lat !== 0 || coordinates.lng !== 0 
+                                                                ? `${coordinates.lat.toFixed(6)}, ${coordinates.lng.toFixed(6)}`
+                                                                : 'Not set'
+                                                            }
+                                                        </span>
+                                                        {(coordinates.lat !== 0 || coordinates.lng !== 0) && (
+                                                            <div className="ml-auto flex items-center gap-1">
+                                                                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                                                <span className="text-green-600 font-medium">Live</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                
                                                 {/* Current Location Display */}
-                                                <div className="bg-gradient-to-r from-blue-50 to-orange-50 p-4 rounded-lg border border-orange-200">
+                                                <div className="bg-gradient-to-r from-blue-50 to-green-50 p-4 rounded-xl border border-blue-200 mb-4">
                                                     <div className="flex items-center justify-between">
                                                         <div className="flex-1">
-                                                            <p className="text-sm font-medium text-gray-700 mb-1">Current Base Location:</p>
+                                                            <div className="flex items-center gap-2 mb-2">
+                                                                <svg className="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                                </svg>
+                                                                <span className="text-sm font-medium text-blue-700">Current Base Location:</span>
+                                                                {(coordinates.lat !== 0 || coordinates.lng !== 0) && (
+                                                                    <div className="ml-auto flex items-center gap-1">
+                                                                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                                                        <span className="text-green-600 font-medium text-xs">Live GPS</span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
                                                             <p className="text-lg font-semibold text-gray-900">
                                                                 {location || 'Location not set'}
                                                             </p>
-                                                            {coordinates.lat !== 0 && coordinates.lng !== 0 && (
-                                                                <p className="text-xs text-gray-500 mt-1">
-                                                                    📍 GPS: {coordinates.lat.toFixed(4)}, {coordinates.lng.toFixed(4)}
-                                                                </p>
+                                                            {location && (
+                                                                <div className="flex items-center justify-between text-xs mt-2">
+                                                                    <span className="text-blue-600 bg-white px-2 py-1 rounded-full">
+                                                                        📍 Ready for customer navigation
+                                                                    </span>
+                                                                </div>
                                                             )}
                                                         </div>
                                                         <button
@@ -1811,27 +1968,31 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                                     setIsSaving(false);
                                                                 }
                                                             }}
-                                                            className={`px-6 py-3 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-sm ${
+                                                            className={`px-6 py-4 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 ${
                                                                 location && coordinates.lat !== 0 
-                                                                    ? 'bg-green-500 hover:bg-green-600 text-white' 
-                                                                    : 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white animate-pulse'
+                                                                    ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white' 
+                                                                    : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white'
                                                             }`}
                                                             disabled={isSaving}
                                                         >
                                                             {isSaving ? (
-                                                                <div className="flex items-center space-x-2">
-                                                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                                                <div className="flex items-center justify-center space-x-2">
+                                                                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                                                                     <span>Getting GPS...</span>
                                                                 </div>
                                                             ) : location && coordinates.lat !== 0 ? (
-                                                                <div className="flex items-center space-x-2">
-                                                                    <span>✓</span>
-                                                                    <span>Update Location</span>
+                                                                <div className="flex items-center justify-center space-x-2">
+                                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                                    </svg>
+                                                                    <span>Update GPS Location</span>
                                                                 </div>
                                                             ) : (
-                                                                <div className="flex items-center space-x-2">
-                                                                    <span>📱</span>
-                                                                    <span>Set Location from Device</span>
+                                                                <div className="flex items-center justify-center space-x-2">
+                                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                                    </svg>
+                                                                    <span>Use Device GPS</span>
                                                                 </div>
                                                             )}
                                                         </button>
@@ -1839,19 +2000,24 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                 </div>
 
                                                 {/* Service Radius */}
-                                                <div className="bg-gradient-to-r from-green-50 to-blue-50 p-4 rounded-lg border border-green-200">
+                                                <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200 mb-4">
                                                     <div className="flex items-center justify-between">
                                                         <div className="flex-1">
-                                                            <p className="text-sm font-medium text-gray-700 mb-1">Service Coverage Radius:</p>
+                                                            <div className="flex items-center gap-2 mb-1">
+                                                                <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                                                                </svg>
+                                                                <span className="text-sm font-medium text-green-700">Service Coverage Radius:</span>
+                                                            </div>
                                                             <p className="text-2xl font-bold text-green-600">
                                                                 Up to 50 KM
                                                             </p>
-                                                            <p className="text-xs text-gray-500 mt-1">
+                                                            <p className="text-xs text-gray-600 mt-1 bg-white/50 rounded px-2 py-1">
                                                                 You can provide services within 50km from your base location
                                                             </p>
                                                         </div>
                                                         <div className="text-right">
-                                                            <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                                                            <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
                                                                 50km
                                                             </div>
                                                         </div>
@@ -1859,99 +2025,162 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                 </div>
 
                                                 {/* Manual Location Input (Fallback) */}
-                                                <div>
-                                                    <label className="block text-sm font-medium text-gray-600 mb-2">
-                                                        Or enter location manually:
+                                                <div className="mt-4">
+                                                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                        </svg>
+                                                        Or edit address manually:
                                                     </label>
-                                                    <input
-                                                        type="text"
-                                                        value={location}
-                                                        onChange={(e) => setLocation(e.target.value)}
-                                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                                        placeholder="e.g., Seminyak, Bali, Indonesia"
-                                                    />
+                                                    <div className="relative">
+                                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                            <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                            </svg>
+                                                        </div>
+                                                        <input
+                                                            type="text"
+                                                            value={location}
+                                                            onChange={(e) => setLocation(e.target.value)}
+                                                            className="w-full pl-10 pr-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:bg-white transition-all"
+                                                            placeholder="e.g., Seminyak, Bali, Indonesia"
+                                                        />
+                                                    </div>
+                                                    <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
+                                                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                                        </svg>
+                                                        You can manually edit the address detected by GPS or type your own
+                                                    </p>
                                                 </div>
                                             </div>
 
                                             {/* Massage Specialties with Categories */}
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-3">
-                                                    Massage Specialties 
-                                                    <span className="text-orange-600 font-semibold">(Select max 5)</span>
+                                            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                                                <label className="flex items-center gap-2 text-sm font-medium text-gray-900 mb-4">
+                                                    <div className="w-5 h-5 bg-purple-500 rounded-full flex items-center justify-center">
+                                                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17v4a2 2 0 002 2h4M13 13h3a2 2 0 012 2v1M13 13l-2-2" />
+                                                        </svg>
+                                                    </div>
+                                                    Massage Specialties <span className="text-red-500">*</span>
+                                                    <span className="ml-auto text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">Max 5 selections</span>
                                                 </label>
                                                 
                                                 {/* Selection Counter */}
-                                                <div className="mb-4 p-3 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg border border-orange-200">
-                                                    <div className="flex items-center justify-between">
-                                                        <span className="text-sm font-medium text-gray-700">
-                                                            Selected: {massageTypes.length}/5
-                                                        </span>
+                                                <div className="mb-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200">
+                                                    <div className="flex items-center justify-between mb-3">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
+                                                                <span className="text-white text-xs font-bold">{massageTypes.length}</span>
+                                                            </div>
+                                                            <span className="text-sm font-medium text-purple-700">
+                                                                Selected Specialties: {massageTypes.length} of 5
+                                                            </span>
+                                                        </div>
                                                         {massageTypes.length >= 5 && (
-                                                            <span className="text-xs text-orange-600 font-semibold">
+                                                            <span className="text-xs text-purple-600 font-semibold bg-white px-2 py-1 rounded-full">
                                                                 Maximum reached
                                                             </span>
                                                         )}
                                                     </div>
-                                                    <div className="mt-2">
-                                                        <div className="w-full bg-gray-200 rounded-full h-2">
+                                                    <div className="relative">
+                                                        <div className="w-full bg-purple-200 rounded-full h-3">
                                                             <div 
-                                                                className={`h-2 rounded-full transition-all duration-300 ${
-                                                                    massageTypes.length >= 5 ? 'bg-orange-500' : 'bg-blue-500'
+                                                                className={`h-3 rounded-full transition-all duration-500 ${
+                                                                    massageTypes.length >= 5 ? 'bg-gradient-to-r from-purple-500 to-pink-500' : 'bg-gradient-to-r from-blue-500 to-purple-500'
                                                                 }`}
                                                                 style={{ width: `${(massageTypes.length / 5) * 100}%` }}
-                                                            ></div>
+                                                            />
+                                                        </div>
+                                                        <div className="absolute inset-0 flex justify-center items-center">
+                                                            <span className="text-xs font-medium text-white drop-shadow">
+                                                                {Math.round((massageTypes.length / 5) * 100)}%
+                                                            </span>
                                                         </div>
                                                     </div>
                                                 </div>
 
                                                 {/* Categorized Massage Types */}
-                                                <div className="space-y-6">
+                                                <div className="space-y-4">
                                                     {MASSAGE_TYPES_CATEGORIZED.map((category, categoryIndex) => (
-                                                        <div key={categoryIndex} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-                                                            <h4 className="font-semibold text-gray-800 mb-3 text-sm uppercase tracking-wide">
-                                                                {category.category}
-                                                            </h4>
+                                                        <div key={categoryIndex} className="bg-gradient-to-r from-gray-50 to-white border-2 border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-all">
+                                                            <div className="flex items-center gap-3 mb-4">
+                                                                <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                                                                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                                                    </svg>
+                                                                </div>
+                                                                <h4 className="font-bold text-gray-800 text-sm uppercase tracking-wide">
+                                                                    {category.category}
+                                                                </h4>
+                                                                <div className="ml-auto text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded-full">
+                                                                    {category.types.filter(type => massageTypes.includes(type)).length} selected
+                                                                </div>
+                                                            </div>
                                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                                                 {category.types.map((type) => (
                                                                     <label 
                                                                         key={type} 
-                                                                        className={`flex items-center space-x-2 cursor-pointer p-2 rounded-lg border transition-all ${
+                                                                        className={`flex items-center space-x-3 cursor-pointer p-3 rounded-xl border-2 transition-all duration-200 hover:shadow-md ${
                                                                             massageTypes.includes(type)
-                                                                                ? 'bg-orange-50 border-orange-300 text-orange-700'
+                                                                                ? 'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-300 text-purple-700 shadow-md transform scale-105'
                                                                                 : massageTypes.length >= 5
-                                                                                    ? 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed'
-                                                                                    : 'bg-white border-gray-200 hover:bg-gray-50 text-gray-700'
+                                                                                    ? 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed opacity-50'
+                                                                                    : 'bg-white border-gray-200 hover:bg-gradient-to-r hover:from-gray-50 hover:to-white text-gray-700 hover:border-gray-300'
                                                                         }`}
                                                                     >
-                                                                        <input
-                                                                            type="checkbox"
-                                                                            checked={massageTypes.includes(type)}
-                                                                            onChange={(e) => {
-                                                                                console.log('💆 Massage type checkbox changed:', type, 'checked:', e.target.checked, 'current types:', massageTypes);
-                                                                                if (e.target.checked) {
-                                                                                    // Use functional state update to prevent race conditions
-                                                                                    setMassageTypes(prevTypes => {
-                                                                                        if (prevTypes.length < 5 && !prevTypes.includes(type)) {
-                                                                                            const newTypes = [...prevTypes, type];
-                                                                                            console.log('💆 Adding massage type, new state:', newTypes);
+                                                                        <div className="relative">
+                                                                            <input
+                                                                                type="checkbox"
+                                                                                checked={massageTypes.includes(type)}
+                                                                                onChange={(e) => {
+                                                                                    console.log('💆 Massage type checkbox changed:', type, 'checked:', e.target.checked, 'current types:', massageTypes);
+                                                                                    if (e.target.checked) {
+                                                                                        // Use functional state update to prevent race conditions
+                                                                                        setMassageTypes(prevTypes => {
+                                                                                            if (prevTypes.length < 5 && !prevTypes.includes(type)) {
+                                                                                                const newTypes = [...prevTypes, type];
+                                                                                                console.log('💆 Adding massage type, new state:', newTypes);
+                                                                                                return newTypes;
+                                                                                            }
+                                                                                            console.log('💆 Cannot add - limit reached or already exists');
+                                                                                            return prevTypes;
+                                                                                        });
+                                                                                    } else {
+                                                                                        // Use functional state update for removal
+                                                                                        setMassageTypes(prevTypes => {
+                                                                                            const newTypes = prevTypes.filter(t => t !== type);
+                                                                                            console.log('💆 Removing massage type, new state:', newTypes);
                                                                                             return newTypes;
-                                                                                        }
-                                                                                        console.log('💆 Cannot add - limit reached or already exists');
-                                                                                        return prevTypes;
-                                                                                    });
-                                                                                } else {
-                                                                                    // Use functional state update for removal
-                                                                                    setMassageTypes(prevTypes => {
-                                                                                        const newTypes = prevTypes.filter(t => t !== type);
-                                                                                        console.log('💆 Removing massage type, new state:', newTypes);
-                                                                                        return newTypes;
-                                                                                    });
-                                                                                }
-                                                                            }}
-                                                                            disabled={!massageTypes.includes(type) && massageTypes.length >= 5}
-                                                                            className="rounded border-gray-300 text-orange-600 shadow-sm focus:border-orange-300 focus:ring focus:ring-orange-200 disabled:opacity-50"
-                                                                        />
-                                                                        <span className="text-sm font-medium">{type}</span>
+                                                                                        });
+                                                                                    }
+                                                                                }}
+                                                                                disabled={!massageTypes.includes(type) && massageTypes.length >= 5}
+                                                                                className={`w-5 h-5 rounded-lg border-2 shadow-sm focus:ring-2 focus:ring-purple-200 transition-all ${
+                                                                                    massageTypes.includes(type) 
+                                                                                        ? 'bg-purple-500 border-purple-500 text-white' 
+                                                                                        : 'border-gray-300 bg-white hover:border-purple-300'
+                                                                                } disabled:opacity-50`}
+                                                                            />
+                                                                            {massageTypes.includes(type) && (
+                                                                                <svg className="absolute top-0.5 left-0.5 w-3 h-3 text-white pointer-events-none" fill="currentColor" viewBox="0 0 20 20">
+                                                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                                                </svg>
+                                                                            )}
+                                                                        </div>
+                                                                        <div className="flex-1">
+                                                                            <span className="text-sm font-medium">{type}</span>
+                                                                            {massageTypes.includes(type) && (
+                                                                                <div className="text-xs text-purple-600 flex items-center gap-1 mt-0.5">
+                                                                                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                                                                    </svg>
+                                                                                    Selected
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
                                                                     </label>
                                                                 ))}
                                                             </div>
@@ -1961,16 +2190,26 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
 
                                                 {/* Selected Specialties Preview */}
                                                 {massageTypes.length > 0 && (
-                                                    <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                                                        <p className="text-sm font-medium text-green-700 mb-2">
-                                                            Your Selected Specialties:
-                                                        </p>
+                                                    <div className="mt-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-xl">
+                                                        <div className="flex items-center gap-2 mb-3">
+                                                            <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
+                                                                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                                </svg>
+                                                            </div>
+                                                            <p className="text-sm font-bold text-purple-700">
+                                                                Your Selected Specialties ({massageTypes.length}/5):
+                                                            </p>
+                                                        </div>
                                                         <div className="flex flex-wrap gap-2">
                                                             {massageTypes.map((type) => (
                                                                 <span 
                                                                     key={type}
-                                                                    className="inline-flex items-center px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full"
+                                                                    className="inline-flex items-center px-3 py-2 bg-gradient-to-r from-purple-100 to-pink-100 border border-purple-300 text-purple-800 text-sm font-medium rounded-full hover:from-purple-200 hover:to-pink-200 transition-all duration-200"
                                                                 >
+                                                                    <svg className="w-3 h-3 mr-1 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                                    </svg>
                                                                     {type}
                                                                     <button
                                                                         onClick={() => {
@@ -1981,7 +2220,8 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                                                 return newTypes;
                                                                             });
                                                                         }}
-                                                                        className="ml-1 text-green-600 hover:text-green-800 text-xs"
+                                                                        className="ml-2 w-4 h-4 bg-purple-500 hover:bg-purple-600 text-white rounded-full flex items-center justify-center text-xs transition-colors"
+                                                                        title="Remove specialty"
                                                                     >
                                                                         ×
                                                                     </button>
@@ -1993,131 +2233,216 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                             </div>
 
                                             {/* Languages Spoken */}
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-3">
-                                                    Languages Spoken 
-                                                    <span className="text-blue-600 font-semibold">(Select max 3)</span>
+                                            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                                                <label className="flex items-center gap-2 text-sm font-medium text-gray-900 mb-4">
+                                                    <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                                                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                                                        </svg>
+                                                    </div>
+                                                    Languages Spoken <span className="text-red-500">*</span>
+                                                    <span className="ml-auto text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">Max 3 languages</span>
                                                 </label>
                                                 
                                                 {/* Language Selection Counter */}
-                                                <div className="mb-4 p-3 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg border border-blue-200">
-                                                    <div className="flex items-center justify-between">
-                                                        <span className="text-sm font-medium text-gray-700">
-                                                            Selected: {languages.length}/3
-                                                        </span>
+                                                <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-200">
+                                                    <div className="flex items-center justify-between mb-3">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                                                                <span className="text-white text-xs font-bold">{languages.length}</span>
+                                                            </div>
+                                                            <span className="text-sm font-medium text-blue-700">
+                                                                Selected Languages: {languages.length} of 3
+                                                            </span>
+                                                        </div>
                                                         {languages.length >= 3 && (
-                                                            <span className="text-xs text-blue-600 font-semibold">
+                                                            <span className="text-xs text-blue-600 font-semibold bg-white px-2 py-1 rounded-full">
                                                                 Maximum reached
                                                             </span>
                                                         )}
                                                     </div>
-                                                    <div className="mt-2">
-                                                        <div className="w-full bg-gray-200 rounded-full h-2">
+                                                    <div className="relative">
+                                                        <div className="w-full bg-blue-200 rounded-full h-3">
                                                             <div 
-                                                                className={`h-2 rounded-full transition-all duration-300 ${
-                                                                    languages.length >= 3 ? 'bg-blue-500' : 'bg-green-500'
+                                                                className={`h-3 rounded-full transition-all duration-500 ${
+                                                                    languages.length >= 3 ? 'bg-gradient-to-r from-blue-500 to-cyan-500' : 'bg-gradient-to-r from-green-500 to-blue-500'
                                                                 }`}
                                                                 style={{ width: `${(languages.length / 3) * 100}%` }}
-                                                            ></div>
+                                                            />
+                                                        </div>
+                                                        <div className="absolute inset-0 flex justify-center items-center">
+                                                            <span className="text-xs font-medium text-white drop-shadow">
+                                                                {Math.round((languages.length / 3) * 100)}%
+                                                            </span>
                                                         </div>
                                                     </div>
                                                 </div>
 
                                                 {/* Language Options */}
-                                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                                    {['English', 'Indonesian', 'Mandarin', 'Japanese', 'Korean', 'Russian', 'French', 'German'].map((language) => (
+                                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                                                    {[
+                                                        { name: 'English', flag: '🇬🇧' },
+                                                        { name: 'Indonesian', flag: '🇮🇩' },
+                                                        { name: 'Mandarin', flag: '🇨🇳' },
+                                                        { name: 'Japanese', flag: '🇯🇵' },
+                                                        { name: 'Korean', flag: '🇰🇷' },
+                                                        { name: 'Russian', flag: '🇷🇺' },
+                                                        { name: 'French', flag: '🇫🇷' },
+                                                        { name: 'German', flag: '🇩🇪' }
+                                                    ].map((lang) => (
                                                         <label 
-                                                            key={language} 
-                                                            className={`flex items-center space-x-2 cursor-pointer p-3 rounded-lg border transition-all ${
-                                                                languages.includes(language)
-                                                                    ? 'bg-blue-50 border-blue-300 text-blue-700'
+                                                            key={lang.name} 
+                                                            className={`flex items-center space-x-3 cursor-pointer p-3 rounded-xl border-2 transition-all duration-200 hover:shadow-md ${
+                                                                languages.includes(lang.name)
+                                                                    ? 'bg-gradient-to-r from-blue-50 to-cyan-50 border-blue-300 text-blue-700 shadow-md transform scale-105'
                                                                     : languages.length >= 3
-                                                                        ? 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed'
-                                                                        : 'bg-white border-gray-200 hover:bg-gray-50 text-gray-700'
+                                                                        ? 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed opacity-50'
+                                                                        : 'bg-white border-gray-200 hover:bg-gradient-to-r hover:from-gray-50 hover:to-white text-gray-700 hover:border-gray-300'
                                                             }`}
                                                         >
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={languages.includes(language)}
-                                                                onChange={(e) => {
-                                                                    console.log('Language checkbox changed:', language, 'checked:', e.target.checked, 'current languages:', languages);
-                                                                    if (e.target.checked) {
-                                                                        if (languages.length < 3) {
-                                                                            const newLanguages = [...languages, language];
-                                                                            console.log('Adding language, new state:', newLanguages);
+                                                            <div className="relative">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={languages.includes(lang.name)}
+                                                                    onChange={(e) => {
+                                                                        console.log('Language checkbox changed:', lang.name, 'checked:', e.target.checked, 'current languages:', languages);
+                                                                        if (e.target.checked) {
+                                                                            if (languages.length < 3) {
+                                                                                const newLanguages = [...languages, lang.name];
+                                                                                console.log('Adding language, new state:', newLanguages);
+                                                                                setLanguages(newLanguages);
+                                                                            }
+                                                                        } else {
+                                                                            const newLanguages = languages.filter(l => l !== lang.name);
+                                                                            console.log('Removing language, new state:', newLanguages);
                                                                             setLanguages(newLanguages);
                                                                         }
-                                                                    } else {
-                                                                        const newLanguages = languages.filter(l => l !== language);
-                                                                        console.log('Removing language, new state:', newLanguages);
-                                                                        setLanguages(newLanguages);
-                                                                    }
-                                                                }}
-                                                                disabled={!languages.includes(language) && languages.length >= 3}
-                                                                className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 disabled:opacity-50"
-                                                            />
-                                                            <span className="text-sm font-medium">{language}</span>
+                                                                    }}
+                                                                    disabled={!languages.includes(lang.name) && languages.length >= 3}
+                                                                    className={`w-5 h-5 rounded-lg border-2 shadow-sm focus:ring-2 focus:ring-blue-200 transition-all ${
+                                                                        languages.includes(lang.name) 
+                                                                            ? 'bg-blue-500 border-blue-500 text-white' 
+                                                                            : 'border-gray-300 bg-white hover:border-blue-300'
+                                                                    } disabled:opacity-50`}
+                                                                />
+                                                                {languages.includes(lang.name) && (
+                                                                    <svg className="absolute top-0.5 left-0.5 w-3 h-3 text-white pointer-events-none" fill="currentColor" viewBox="0 0 20 20">
+                                                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                                    </svg>
+                                                                )}
+                                                            </div>
+                                                            <div className="flex-1 flex items-center gap-2">
+                                                                <span className="text-lg">{lang.flag}</span>
+                                                                <div>
+                                                                    <span className="text-sm font-medium">{lang.name}</span>
+                                                                    {languages.includes(lang.name) && (
+                                                                        <div className="text-xs text-blue-600 flex items-center gap-1">
+                                                                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                                                            </svg>
+                                                                            Selected
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
                                                         </label>
                                                     ))}
                                                 </div>
 
                                                 {/* Selected Languages Preview */}
                                                 {languages.length > 0 && (
-                                                    <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                                                        <p className="text-sm font-medium text-blue-700 mb-2">
-                                                            Languages you speak:
-                                                        </p>
+                                                    <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-xl">
+                                                        <div className="flex items-center gap-2 mb-3">
+                                                            <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                                                                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                                </svg>
+                                                            </div>
+                                                            <p className="text-sm font-bold text-blue-700">
+                                                                Languages You Speak ({languages.length}/3):
+                                                            </p>
+                                                        </div>
                                                         <div className="flex flex-wrap gap-2">
-                                                            {languages.map((language) => (
-                                                                <span 
-                                                                    key={language}
-                                                                    className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full"
-                                                                >
-                                                                    {language}
-                                                                    <button
-                                                                        onClick={() => setLanguages(languages.filter(l => l !== language))}
-                                                                        className="ml-1 text-blue-600 hover:text-blue-800 text-xs"
+                                                            {languages.map((language) => {
+                                                                const languageFlags = {
+                                                                    'English': '🇬🇧',
+                                                                    'Indonesian': '🇮🇩',
+                                                                    'Mandarin': '🇨🇳',
+                                                                    'Japanese': '🇯🇵',
+                                                                    'Korean': '🇰🇷',
+                                                                    'Russian': '🇷🇺',
+                                                                    'French': '🇫🇷',
+                                                                    'German': '🇩🇪'
+                                                                };
+                                                                return (
+                                                                    <span 
+                                                                        key={language}
+                                                                        className="inline-flex items-center px-3 py-2 bg-gradient-to-r from-blue-100 to-cyan-100 border border-blue-300 text-blue-800 text-sm font-medium rounded-full hover:from-blue-200 hover:to-cyan-200 transition-all duration-200"
                                                                     >
-                                                                        ×
-                                                                    </button>
-                                                                </span>
-                                                            ))}
+                                                                        <span className="mr-2">{(languageFlags as any)[language] || '🌍'}</span>
+                                                                        <svg className="w-3 h-3 mr-1 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                                        </svg>
+                                                                        {language}
+                                                                        <button
+                                                                            onClick={() => setLanguages(languages.filter(l => l !== language))}
+                                                                            className="ml-2 w-4 h-4 bg-blue-500 hover:bg-blue-600 text-white rounded-full flex items-center justify-center text-xs transition-colors"
+                                                                            title="Remove language"
+                                                                        >
+                                                                            ×
+                                                                        </button>
+                                                                    </span>
+                                                                );
+                                                            })}
                                                         </div>
                                                     </div>
                                                 )}
                                             </div>
 
                                             {/* Pricing */}
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                    Service Pricing (IDR)
+                                            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                                                <label className="flex items-center gap-2 text-sm font-medium text-gray-900 mb-4">
+                                                    <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                                                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                                                        </svg>
+                                                    </div>
+                                                    Service Pricing (IDR) <span className="text-red-500">*</span>
                                                     {isDiscountActive && (
-                                                        <span className="ml-2 px-2 py-1 bg-orange-500 text-white text-xs rounded-full font-bold">
+                                                        <span className="ml-auto px-3 py-1 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs rounded-full font-bold">
                                                             {discountPercentage}% OFF Active
                                                         </span>
                                                     )}
                                                 </label>
+                                                <p className="text-xs text-gray-600 mb-4">Enter prices as: 345k for 345,000 or full amount like 400000</p>
                                                 
                                                 {/* 100% Income Notice */}
-                                                <div className="mb-4 p-3 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg">
+                                                <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl">
                                                     <div className="flex items-start space-x-3">
                                                         <div className="flex-shrink-0">
-                                                            <svg className="w-5 h-5 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                                                            </svg>
+                                                            <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                                                                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                                                                </svg>
+                                                            </div>
                                                         </div>
                                                         <div className="flex-1">
-                                                            <p className="text-sm font-semibold text-green-800">
-                                                                💰 100% Your Income
-                                                            </p>
-                                                            <p className="text-sm text-green-700 mt-1">
+                                                            <div className="flex items-center gap-2 mb-1">
+                                                                <p className="text-sm font-bold text-green-800">
+                                                                    💰 100% Your Income
+                                                                </p>
+                                                                <div className="bg-green-500 text-white px-2 py-0.5 rounded-full text-xs font-bold">
+                                                                    No Commission
+                                                                </div>
+                                                            </div>
+                                                            <p className="text-sm text-green-700">
                                                                 These prices are for <strong>direct bookings from the home page</strong>. You keep <strong>100% of the income</strong> - no commission deducted!
                                                             </p>
                                                         </div>
                                                     </div>
                                                 </div>
 
-                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                                     {[60, 90, 120].map((duration) => {
                                                         const originalPrice = (pricing as any)[duration] || 0;
                                                         const discountedPrice = isDiscountActive 
@@ -2125,22 +2450,25 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                             : originalPrice;
                                                         
                                                         return (
-                                                            <div key={duration} className={`relative transition-all duration-500 ${
+                                                            <div key={duration} className={`bg-gradient-to-br from-gray-50 to-white rounded-xl border-2 p-4 transition-all duration-300 ${
                                                                 isDiscountActive 
-                                                                    ? 'ring-4 ring-orange-400 ring-opacity-70 shadow-2xl shadow-orange-300/60 animate-bounce transform hover:scale-105' 
-                                                                    : 'hover:shadow-md'
-                                                            }`}
-                                                                style={isDiscountActive ? {
-                                                                    animation: 'flash 2s ease-in-out infinite, glow 3s ease-in-out infinite alternate'
-                                                                } : {}}>
-                                                                {/* Flashing overlay when discount is active */}
+                                                                    ? 'border-orange-300 shadow-lg' 
+                                                                    : 'border-gray-200 hover:border-gray-300 hover:shadow-lg'
+                                                            }`}>
+                                                                {/* Static highlight when discount is active */}
                                                                 {isDiscountActive && (
-                                                                    <div className="absolute inset-0 bg-gradient-to-r from-orange-400/20 to-red-400/20 rounded-lg animate-pulse pointer-events-none"></div>
+                                                                    <div className="absolute inset-0 bg-gradient-to-r from-orange-400/5 to-red-400/5 rounded-xl pointer-events-none"></div>
                                                                 )}
-                                                                <label className="block text-xs font-medium text-gray-600 mb-1">
+                                                                <label className="flex items-center gap-2 text-sm font-bold text-gray-800 mb-3">
+                                                                    <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center text-white text-xs">
+                                                                        {duration === 60 ? '1' : duration === 90 ? '1.5' : '2'}h
+                                                                    </div>
                                                                     {duration} Minutes
                                                                 </label>
                                                                 <div className="relative">
+                                                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                                        <span className="text-gray-500 text-sm">Rp</span>
+                                                                    </div>
                                                                     <input
                                                                         type="text"
                                                                         value={originalPrice > 0 ? originalPrice.toString() : ''}
@@ -2151,29 +2479,37 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                                                 [duration]: numericValue ? parseInt(numericValue) : 0
                                                                             });
                                                                         }}
-                                                                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 ${
+                                                                        className={`w-full pl-12 pr-4 py-3 bg-white border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 font-mono text-gray-900 transition-all ${
                                                                             isDiscountActive 
                                                                                 ? 'border-orange-300 bg-orange-50' 
-                                                                                : 'border-gray-300'
+                                                                                : 'border-gray-200'
                                                                         }`}
-                                                                        placeholder="0"
+                                                                        placeholder="250000"
                                                                     />
-                                                                    {isDiscountActive && originalPrice > 0 && (
-                                                                        <div className="mt-2 p-2 bg-orange-100 border border-orange-200 rounded">
-                                                                            <div className="flex justify-between items-center text-sm">
-                                                                                <span className="text-gray-500 line-through">
-                                                                                    IDR {originalPrice.toLocaleString()}
-                                                                                </span>
-                                                                                <span className="text-orange-600 font-bold">
-                                                                                    IDR {discountedPrice.toLocaleString()}
-                                                                                </span>
-                                                                            </div>
-                                                                            <div className="text-xs text-orange-600 font-medium mt-1">
-                                                                                Save IDR {(originalPrice - discountedPrice).toLocaleString()}
-                                                                            </div>
-                                                                        </div>
-                                                                    )}
                                                                 </div>
+                                                                {originalPrice > 0 && (
+                                                                    <p className="text-xs text-gray-500 mt-2 bg-white rounded px-2 py-1">
+                                                                        = Rp {originalPrice.toLocaleString('id-ID')}
+                                                                    </p>
+                                                                )}
+                                                                {isDiscountActive && originalPrice > 0 && (
+                                                                    <div className="mt-3 p-3 bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-lg">
+                                                                        <div className="flex justify-between items-center text-sm mb-1">
+                                                                            <span className="text-gray-500 line-through">
+                                                                                IDR {originalPrice.toLocaleString()}
+                                                                            </span>
+                                                                            <span className="text-orange-600 font-bold">
+                                                                                IDR {discountedPrice.toLocaleString()}
+                                                                            </span>
+                                                                        </div>
+                                                                        <div className="text-xs text-orange-600 font-medium flex items-center gap-1">
+                                                                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                                                <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                                                                            </svg>
+                                                                            Save IDR {(originalPrice - discountedPrice).toLocaleString()}
+                                                                        </div>
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         );
                                                     })}
@@ -2296,7 +2632,71 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                     </div>
                                 )}
 
-                                {/* MEMBERSHIP SECTION TEMPORARILY DISABLED - Admin will activate later */}
+                                {activeTab === 'membership' && (
+                                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                                        <div className="mb-6">
+                                            <h2 className="text-xl font-bold text-gray-900 mb-2">{t.membership || 'Membership & Rewards'}</h2>
+                                            <p className="text-gray-600">Manage your premium membership status and rewards</p>
+                                        </div>
+
+                                        {/* Membership Status Cards */}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                            <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200 rounded-lg p-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2 bg-yellow-500 rounded-lg">
+                                                        <Crown className="w-5 h-5 text-white" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-bold text-yellow-800">Premium Member</p>
+                                                        <p className="text-sm text-yellow-600">Active Status</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg p-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2 bg-green-500 rounded-lg">
+                                                        <Star className="w-5 h-5 text-white" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-bold text-green-800">Reward Points</p>
+                                                        <p className="text-sm text-green-600">1,250 Available</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Membership Benefits */}
+                                        <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                                            <h3 className="font-bold text-gray-900 mb-3">Membership Benefits</h3>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-green-500">✓</span>
+                                                    <span className="text-sm text-gray-700">Priority booking placement</span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-green-500">✓</span>
+                                                    <span className="text-sm text-gray-700">Reduced platform fees</span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-green-500">✓</span>
+                                                    <span className="text-sm text-gray-700">Advanced analytics</span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-green-500">✓</span>
+                                                    <span className="text-sm text-gray-700">Priority customer support</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Upgrade Options */}
+                                        <div className="text-center">
+                                            <button className="bg-yellow-500 text-white py-3 px-6 rounded-lg font-medium hover:bg-yellow-600 transition-colors">
+                                                Upgrade Membership
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
 
                                 {activeTab === 'hotel-villa' && (
                                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -3221,15 +3621,15 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                             animation: float 8s ease-in-out infinite;
                         }
                     `}</style>
-                    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true">
+                    <div className="fixed inset-0 z-[9999]" role="dialog" aria-modal="true">
                         {/* Backdrop */}
                         <div 
                             className="absolute inset-0 bg-black bg-opacity-50 transition-opacity" 
                             onClick={() => setIsSideDrawerOpen(false)}
                         />
                         
-                        {/* Drawer Panel */}
-                        <div className={`absolute right-0 top-0 bottom-0 w-[70%] sm:w-80 bg-gradient-to-br from-white via-gray-50 to-gray-100 shadow-2xl flex flex-col transform transition-transform ease-in-out duration-300 ${isSideDrawerOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+                        {/* Drawer Panel - Higher z-index to ensure it appears above footer */}
+                        <div className={`absolute right-0 top-0 bottom-0 w-[70%] sm:w-80 bg-gradient-to-br from-white via-gray-50 to-gray-100 shadow-2xl flex flex-col transform transition-transform ease-in-out duration-300 z-[10000] ${isSideDrawerOpen ? 'translate-x-0' : 'translate-x-full'}`}>
                             
                             {/* Header */}
                             <div className="p-6 flex justify-between items-center border-b border-gray-200">
@@ -3374,8 +3774,18 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                             {/* Logout Button */}
                                             <button 
                                                 onClick={() => {
-                                                    setIsSideDrawerOpen(false);
-                                                    onLogout();
+                                                    // Show confirmation before logout
+                                                    if (window.confirm('Are you sure you want to logout? You will need to login again to access your dashboard.')) {
+                                                        console.log('🚪 Therapist logout confirmed - clearing session...');
+                                                        setIsSideDrawerOpen(false);
+                                                        
+                                                        // Clear any localStorage data related to therapist session
+                                                        localStorage.removeItem('app_logged_in_provider');
+                                                        localStorage.removeItem('therapist_login_debug');
+                                                        
+                                                        // Call the logout function
+                                                        onLogout();
+                                                    }
                                                 }}
                                                 className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-red-500 group transform hover:scale-105"
                                             >
@@ -3642,7 +4052,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                 </div>
             )}
 
-            <Footer t={t} />
+
         </div>
     );
 };

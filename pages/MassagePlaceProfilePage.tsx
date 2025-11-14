@@ -321,7 +321,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                 isOpen={isMenuOpen}
                 onClose={() => setIsMenuOpen(false)}
                 onMassageJobsClick={onMassageJobsClick}
-                onTherapistPortalClick={onTherapistJobsClick || (() => {})}
+                onTherapistPortalClick={_onTherapistPortalClick || (() => {})}
                 onVillaPortalClick={onVillaPortalClick || (() => {})}
                 onMassagePlacePortalClick={onMassagePlacePortalClick || (() => {})}
                 onAgentPortalClick={onAgentPortalClick || (() => {})}

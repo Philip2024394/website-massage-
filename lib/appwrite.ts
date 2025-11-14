@@ -23,9 +23,9 @@ export const COLLECTIONS = {
     REVIEWS: 'reviews_collection_id',
     ANALYTICS: 'analytics_collection_id',
     ANALYTICS_EVENTS: 'Analytics Events',
-    ADMINS: 'admin_messages',
+    ADMINS: '', // Disabled - collection doesn't exist
     HOTELS: 'hotels_collection_id',
-    VILLAS: 'villas_collection_id',
+    VILLAS: '', // Disabled - collection doesn't exist
     NOTIFICATIONS: 'notifications_collection_id',
     MASSAGE_TYPES: 'massage_types_collection_id',
     MEMBERSHIP_PRICING: 'membership_pricing_collection_id',

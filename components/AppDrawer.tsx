@@ -105,6 +105,8 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
         onClose();
     };
 
+    if (!isOpen) return null;
+
     return (
         <>
             <style>{`
@@ -124,19 +126,19 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
             />
             
             {/* Drawer Panel */}
-            <div className={`absolute right-0 top-0 bottom-0 w-[70%] sm:w-80 bg-gradient-to-br from-white via-gray-50 to-gray-100 shadow-2xl flex flex-col transform transition-transform ease-in-out duration-300 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+            <div className={`absolute right-0 top-0 bottom-0 w-[70%] sm:w-80 bg-white shadow-2xl flex flex-col transform transition-transform ease-in-out duration-300 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
                 
                 {/* Header */}
-                <div className="p-6 flex justify-between items-center border-b border-gray-200">
+                <div className="p-6 flex justify-between items-center border-b border-black">
                     <h2 className="font-bold text-2xl">
-                        <span className="text-black">Inda</span><span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
+                        <span className="text-black">Inda</span><span className="text-black">Street</span>
                     </h2>
                     <button 
                         onClick={onClose}
-                        className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+                        className="p-2 rounded-full transition-colors"
                         aria-label="Close menu"
                     >
-                        <CloseIcon className="w-6 h-6 text-gray-600" />
+                        <CloseIcon className="w-6 h-6 text-black" />
                     </button>
                 </div>
 
@@ -190,13 +192,13 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
 
                                 <button 
                                     onClick={() => handleItemClick(onVillaPortalClick)}
-                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-pink-500 group transform hover:scale-105"
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm transition-all border-l-4 border-black group"
                                 >
-                                    <div className="p-2 bg-gradient-to-br from-pink-500 to-pink-600 rounded-lg">
+                                    <div className="p-2 bg-black rounded-lg">
                                         <Home className="w-5 h-5 text-white" />
                                     </div>
                                     <div className="flex-grow">
-                                        <p className="font-semibold text-gray-800 group-hover:text-pink-600 transition-colors">
+                                        <p className="font-semibold text-black">
                                             {translate('home.menu.villa')}
                                         </p>
                                         <p className="text-xs text-gray-500">{translate('home.menu.villaDesc')}</p>

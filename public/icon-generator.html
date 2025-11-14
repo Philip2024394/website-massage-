@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Icon Generator</title>
+</head>
+<body>
+    <canvas id="canvas" width="512" height="512"></canvas>
+    <script>
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        
+        function createIcon(size) {
+            canvas.width = size;
+            canvas.height = size;
+            
+            // Orange background (theme color from manifest)
+            ctx.fillStyle = "#f97316";
+            ctx.fillRect(0, 0, size, size);
+            
+            // White circle in center
+            ctx.fillStyle = "#ffffff";
+            ctx.beginPath();
+            ctx.arc(size/2, size/2, size*0.3, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Letter "I" for Inda
+            ctx.fillStyle = "#f97316";
+            ctx.font = `bold ${size*0.3}px Arial`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("I", size/2, size/2);
+            
+            // Convert to blob and download
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `icon-${size}.png`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }, "image/png");
+        }
+        
+        // Generate all needed icons
+        const sizes = [72, 96, 128, 192, 384, 512];
+        sizes.forEach((size, index) => {
+            setTimeout(() => createIcon(size), index * 100);
+        });
+    </script>
+</body>
+</html>

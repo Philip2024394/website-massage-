@@ -8,7 +8,7 @@ export const APPWRITE_CONFIG = {
     
     // Collection IDs from your Appwrite database  
     collections: {
-        admins: 'admin_messages',
+        admins: '', // Disabled - collection doesn't exist
         therapists: 'therapists_collection_id', // Correct collection ID - WORKING
         places: 'places_collection_id', // REVERTED: Back to original ID
         agents: 'agents_collection_id', // REVERTED: Back to original ID
@@ -20,6 +20,7 @@ export const APPWRITE_CONFIG = {
         agentVisits: 'agent_visits_collection_id',
         hotelBookings: 'hotel_bookings',
         hotels: 'hotels_collection_id',
+        villas: '', // Disabled - collection doesn't exist
         massageTypes: 'massage_types_collection_id',
         membershipPricing: 'membership_pricing_collection_id',
         imageAssets: 'image_assets',

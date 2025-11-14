@@ -1,6 +1,6 @@
 import { AppLayout } from './components/layout/AppLayout';
 import { AppFooterLayout } from './components/layout/AppFooterLayout';
-import AppRouter from './AppRouter';
+import { AppRouter } from './AppRouter';
 import { useAllHooks } from './hooks/useAllHooks';
 import { useTranslations } from './lib/useTranslations';
 import { vscodeTranslateService } from './lib/vscodeTranslateService';

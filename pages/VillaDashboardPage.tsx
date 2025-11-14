@@ -10,12 +10,12 @@ import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import QRCodeGenerator from 'qrcode';
 import { useTranslations } from '../lib/useTranslations';
 import PushNotificationSettings from '../components/PushNotificationSettings';
-import HotelVillaServicesSettingsPage from './HotelVillaServicesSettingsPage';
+// import HotelVillaServicesSettingsPage from './HotelVillaServicesSettingsPage';
 import HotelVillaBankDetailsPage from './HotelVillaBankDetailsPage';
 import HotelBookingModal from '../components/hotel/PropertyBookingModal';
 import HotelAnalyticsSection from '../components/hotel/PropertyAnalyticsSection';
 import { safeDownload } from '../utils/domSafeHelpers';
-import Footer from '../components/Footer';
+
 
 // External component: DiscountCard
 const DiscountCard: React.FC<{ 
@@ -87,7 +87,7 @@ interface VillaDashboardPageProps {
     therapists?: Therapist[];
     places?: Place[];
     villaId?: string;
-    initialTab?: 'analytics' | 'discounts' | 'profile' | 'menu' | 'feedback' | 'concierge' | 'commissions' | 'notifications' | 'membership' | 'services-settings';
+    initialTab?: 'analytics' | 'discounts' | 'menu' | 'feedback' | 'commissions' | 'notifications';
     setPage?: (page: any) => void;
     onNavigate?: (page: string) => void;
 }
@@ -218,36 +218,36 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
         }).then(url => updateState({ qrCodeDataUrl: url })).catch(console.error);
     }, [villaId]);
 
-    // Handlers
-    const handleSaveAndPreview = async () => {
-        try {
-            updateState({ isProcessing: true });
-            const data = {
-                name: state.villaName || 'Villa',
-                address: state.villaAddress || '',
-                contactNumber: state.villaPhone || '',
-                bannerImage: state.mainImage || '',
-                logoImage: state.profileImage || '',
-                type: 'villa',
-                updatedAt: new Date().toISOString()
-            };
-            
-            if (villaDocumentId) {
-                await databases.updateDocument(APPWRITE_CONFIG.databaseId, APPWRITE_CONFIG.collections.hotels, villaDocumentId, data);
-            } else {
-                const newDoc = await databases.createDocument(APPWRITE_CONFIG.databaseId, APPWRITE_CONFIG.collections.hotels, ID.unique(), {
-                    ...data, villaId, createdAt: new Date().toISOString()
-                });
-                setVillaDocumentId(newDoc.$id);
-            }
-            alert('✅ Profile saved successfully!');
-        } catch (_error) {
-            console.error('Error saving profile:', _error);
-            alert('❌ Error saving profile. Please try again.');
-        } finally {
-            updateState({ isProcessing: false });
-        }
-    };
+    // Handlers (currently unused)
+    // const handleSaveAndPreview = async () => {
+    //     try {
+    //         updateState({ isProcessing: true });
+    //         const data = {
+    //             name: state.villaName || 'Villa',
+    //             address: state.villaAddress || '',
+    //             contactNumber: state.villaPhone || '',
+    //             bannerImage: state.mainImage || '',
+    //             logoImage: state.profileImage || '',
+    //             type: 'villa',
+    //             updatedAt: new Date().toISOString()
+    //         };
+    //         
+    //         if (villaDocumentId) {
+    //             await databases.updateDocument(APPWRITE_CONFIG.databaseId, APPWRITE_CONFIG.collections.hotels, villaDocumentId, data);
+    //         } else {
+    //             const newDoc = await databases.createDocument(APPWRITE_CONFIG.databaseId, APPWRITE_CONFIG.collections.hotels, ID.unique(), {
+    //                 ...data, villaId, createdAt: new Date().toISOString()
+    //             });
+    //             setVillaDocumentId(newDoc.$id);
+    //         }
+    //         alert('✅ Profile saved successfully!');
+    //     } catch (_error) {
+    //         console.error('Error saving profile:', _error);
+    //         alert('❌ Error saving profile. Please try again.');
+    //     } finally {
+    //         updateState({ isProcessing: false });
+    //     }
+    // };
 
     const handleProceedBooking = async () => {
         if (!state.guestName || !state.roomNumber || !state.selectedProvider) return;
@@ -314,120 +314,7 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
                     </div>
                 );
 
-            case 'profile':
-                return (
-                    <div className="space-y-6">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-                                <Building className="w-5 h-5 text-orange-600" />
-                            </div>
-                            <h2 className="text-2xl font-bold text-gray-900">{t('dashboard.profile')}</h2>
-                        </div>
-                        
-                        {/* Banner and Profile Image */}
-                        <div className="relative">
-                            <input type="file" accept="image/*" onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                    const reader = new FileReader();
-                                    reader.onloadend = () => updateState({ mainImage: reader.result as string });
-                                    reader.readAsDataURL(file);
-                                }
-                            }} className="hidden" id="villa-banner" />
-                            <label htmlFor="villa-banner" className="block w-full h-48 cursor-pointer relative overflow-hidden rounded-xl border-2 border-dashed border-gray-300 hover:border-orange-500 bg-gray-50 hover:bg-orange-50 transition-all group">
-                                {state.mainImage ? (
-                                    <>
-                                        <img src={state.mainImage} alt="Banner" className="w-full h-full object-cover" />
-                                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all flex items-center justify-center">
-                                            <span className="text-white opacity-0 group-hover:opacity-100 font-medium">Click to change banner</span>
-                                        </div>
-                                    </>
-                                ) : (
-                                    <div className="flex flex-col items-center justify-center h-full">
-                                        <ImageIcon className="h-12 w-12 text-gray-400 mb-3" />
-                                        <p className="text-sm font-medium text-gray-700">Upload Banner Image</p>
-                                    </div>
-                                )}
-                            </label>
-                            
-                            <div className="absolute top-32 left-6 z-10">
-                                <input type="file" accept="image/*" onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) {
-                                        const reader = new FileReader();
-                                        reader.onloadend = () => updateState({ profileImage: reader.result as string });
-                                        reader.readAsDataURL(file);
-                                    }
-                                }} className="hidden" id="villa-profile" />
-                                <label htmlFor="villa-profile" className="block w-24 h-24 rounded-full border-4 border-white shadow-lg cursor-pointer bg-white overflow-hidden hover:ring-4 hover:ring-orange-500 hover:ring-opacity-50 transition-all">
-                                    {state.profileImage ? (
-                                        <img src={state.profileImage} alt="Logo" className="w-full h-full object-cover" />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                                            <User className="w-10 h-10 text-gray-400" />
-                                        </div>
-                                    )}
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <div className="mt-20"></div>
-                        
-                        <div className="space-y-4">
-                            <div>
-                                <label htmlFor="villa-name" className="flex items-center gap-2 text-sm font-medium text-gray-400 mb-2">
-                                    <Building className="w-4 h-4" />Villa Name
-                                </label>
-                                <input 
-                                    id="villa-name"
-                                    className="w-full p-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500" 
-                                    placeholder="Your Villa Name"
-                                    value={state.villaName}
-                                    onChange={(e) => updateState({ villaName: e.target.value })}
-                                />
-                            </div>
-                            
-                            <div>
-                                <label htmlFor="villa-address" className="flex items-center gap-2 text-sm font-medium text-gray-400 mb-2">
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    </svg>Address
-                                </label>
-                                <textarea 
-                                    id="villa-address"
-                                    className="w-full p-4 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 min-h-[100px] resize-none"
-                                    placeholder="Your Address / Location"
-                                    value={state.villaAddress}
-                                    onChange={(e) => updateState({ villaAddress: e.target.value })}
-                                />
-                            </div>
-                            
-                            <div>
-                                <label htmlFor="villa-phone" className="flex items-center gap-2 text-sm font-medium text-gray-400 mb-2">
-                                    <Phone className="w-4 h-4" />Contact Phone
-                                </label>
-                                <input 
-                                    id="villa-phone"
-                                    className="w-full p-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                    placeholder="Your Phone Number"
-                                    value={state.villaPhone}
-                                    onChange={(e) => updateState({ villaPhone: e.target.value })}
-                                />
-                            </div>
-                        </div>
 
-                        <div className="flex justify-end pt-4 border-t">
-                            <button 
-                                onClick={handleSaveAndPreview}
-                                disabled={state.isProcessing}
-                                className="bg-orange-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-orange-600 transition-all shadow-md disabled:opacity-50"
-                            >
-                                {state.isProcessing ? 'Saving...' : t('dashboard.savePreviewMenu')}
-                            </button>
-                        </div>
-                    </div>
-                );
 
             case 'menu':
                 return (
@@ -701,21 +588,7 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
                     </div>
                 );
 
-            case 'concierge':
-                return (
-                    <div className="space-y-6">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-                                <User className="w-5 h-5 text-orange-600" />
-                            </div>
-                            <h2 className="text-2xl font-bold text-gray-900">{t('dashboard.concierge')}</h2>
-                        </div>
-                        <div className="text-center py-20">
-                            <h3 className="text-xl font-semibold text-gray-800">Concierge Services</h3>
-                            <p className="text-gray-500 mt-2">Manage your concierge team and services.</p>
-                        </div>
-                    </div>
-                );
+
 
             case 'commissions':
                 return (
@@ -735,23 +608,7 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
                     </div>
                 );
 
-            case 'membership':
-                return (
-                    <div className="space-y-6">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-                                <svg className="w-5 h-5 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                                </svg>
-                            </div>
-                            <h2 className="text-2xl font-bold text-gray-900">{t('dashboard.membership')}</h2>
-                        </div>
-                        <div className="text-center py-20">
-                            <h3 className="text-xl font-semibold text-gray-800">Membership Program</h3>
-                            <p className="text-gray-500 mt-2">Manage villa guest membership benefits and rewards.</p>
-                        </div>
-                    </div>
-                );
+
 
             case 'bank-details':
                 return (
@@ -793,15 +650,7 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
                     </div>
                 );
 
-            case 'services-settings':
-                return (
-                    <HotelVillaServicesSettingsPage
-                        type="villa"
-                        hotelVillaId={villaId}
-                        onBack={() => updateState({ activeTab: 'analytics' })}
-                        onSave={async (settings) => console.log('Saving villa settings:', settings)}
-                    />
-                );
+
 
             default:
                 return (
@@ -813,22 +662,18 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
         }
     };
 
-    // Navigation items for sidebar
+    // Navigation items for sidebar - SYNCHRONIZED WITH HOTEL DASHBOARD
     const navItems = [
-        { id: 'analytics', icon: '📊', label: t('dashboard.analytics') },
-        { id: 'discounts', icon: '🏷️', label: t('dashboard.discounts') },
-        { id: 'profile', icon: '🏢', label: t('dashboard.profile') },
-        { id: 'menu', icon: '📋', label: t('dashboard.menu'), badge: providers.length },
-        { id: 'qr-code', icon: '📱', label: 'QR Code' },
-        { id: 'feedback', icon: '⭐', label: t('dashboard.feedback') },
-        { id: 'concierge', icon: '👥', label: t('dashboard.concierge') },
-        { id: 'commissions', icon: '💰', label: t('dashboard.commissions') },
-        { id: 'coin-history', icon: '📊', label: 'Coin History' },
-        { id: 'coin-shop', icon: '🪙', label: 'Coin Shop' },
-        { id: 'bank-details', icon: '🏦', label: 'Bank Details' },
-        { id: 'notifications', icon: '🔔', label: 'Push Settings' },
-        { id: 'membership', icon: '📦', label: t('dashboard.membership') },
-        { id: 'services-settings', icon: '⚙️', label: t('dashboard.services') },
+        { id: 'analytics', icon: BarChart3, label: 'Analytics', color: 'blue', description: 'View performance metrics' },
+        { id: 'discounts', icon: Percent, label: 'Discounts', color: 'green', description: 'Manage special offers' },
+        { id: 'menu', icon: ClipboardList, label: 'Menu', badge: providers.length, color: 'indigo', description: 'Service providers' },
+        { id: 'qr-code', icon: QrCode, label: 'QR Code', color: 'purple', description: 'Share menu with guests' },
+        { id: 'feedback', icon: MessageSquare, label: 'Feedback', color: 'yellow', description: 'Customer reviews' },
+        { id: 'commissions', icon: DollarSign, label: 'Commissions', color: 'orange', description: 'Payment tracking' },
+        { id: 'coin-history', icon: BarChart3, label: 'Coin History', color: 'orange', description: 'View coin balance & transactions' },
+        { id: 'coin-shop', icon: Coins, label: 'Coin Shop', color: 'yellow', description: 'Redeem rewards & cashout' },
+        { id: 'bank-details', icon: CreditCard, label: 'Bank Details', color: 'green', description: 'Payment information' },
+        { id: 'notifications', icon: BellRing, label: 'Push Settings', color: 'red', description: 'Notification preferences' },
     ];
 
     return (
@@ -889,7 +734,7 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
                                         state.activeTab === item.id ? 'bg-orange-500 text-white' : 'text-gray-700 hover:bg-gray-100'
                                     }`}
                                 >
-                                    <span className="text-xl">{item.icon}</span>
+                                    <item.icon className="w-5 h-5" />
                                     <span className="font-medium">{item.label}</span>
                                     {item.badge && item.badge > 0 && (
                                         <span className="ml-auto bg-orange-500 text-white text-xs rounded-full px-2.5 py-0.5 font-bold">
@@ -916,17 +761,7 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
                 </div>
             </main>
 
-            {/* Footer Navigation */}
-            <Footer 
-                userRole="villa"
-                currentPage="dashboard"
-                t={t}
-                onDashboardClick={() => {/* Already on dashboard */}}
-                onNotificationsClick={() => setPage && setPage('notifications')}
-                onChatClick={() => {/* TODO: Add chat functionality */}}
-                onMenuClick={() => {/* TODO: Add menu functionality */}}
-                onHomeClick={() => setPage && setPage('home')}
-            />
+
 
             {/* QR Modal */}
             {state.qrOpen && (

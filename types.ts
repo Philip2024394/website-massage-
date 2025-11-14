@@ -287,6 +287,7 @@ export interface Therapist {
     totalActiveMembershipMonths?: number; // Total months of active membership
     badgeEligible?: boolean; // Whether badge is currently active (considers grace period)
     yearsOfExperience?: number; // Years of professional massage experience
+    age?: number; // Therapist's age
     analytics: AnalyticsString; // JSON string for Appwrite
     agentId?: number;
     hotelVillaServiceStatus?: HotelVillaServiceStatus;

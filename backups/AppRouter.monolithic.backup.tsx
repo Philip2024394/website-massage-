@@ -1585,6 +1585,4 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
     }
 };
 
-export default AppRouter;
-
 

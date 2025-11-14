@@ -442,6 +442,12 @@ class CommissionPaymentService {
                 ? COLLECTIONS.HOTELS 
                 : COLLECTIONS.VILLAS;
 
+            // Check if collection is configured
+            if (!collectionId) {
+                console.warn(`⚠️ ${hotelVillaType} collection not configured - skipping commission calculation`);
+                return {};
+            }
+
             // Fetch hotel/villa document
             const docs = await databases.listDocuments(
                 DATABASE_ID,

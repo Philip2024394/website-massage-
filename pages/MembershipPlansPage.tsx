@@ -129,7 +129,7 @@ const MembershipPlansPage: React.FC<MembershipPlansPageProps> = ({
     };
 
     loadPlans();
-  }, []);
+  }, [defaultPlans]);
 
   const handleSelectPlan = (planId: string) => {
     console.log(`Selected plan: ${planId} for ${userType}`);

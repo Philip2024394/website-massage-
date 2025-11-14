@@ -1,19 +1,14 @@
 import React, { useState } from 'react';
-import { ArrowLeft, MapPin, Star, Clock, MessageCircle, Phone, Share2, Heart } from 'lucide-react';
+import { Star, Heart, Share2, MapPin, MessageCircle, Phone, Clock } from 'lucide-react';
 import { AppDrawer } from '../components/AppDrawer';
-import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
-import { getDisplayRating, getDisplayReviewCount, formatRating } from '../utils/ratingUtils';
-import { Therapist, Place } from '../types';
 
 interface TherapistProfilePageProps {
-    therapist: Therapist;
+    therapist: any;
     onBack: () => void;
-    onBook?: () => void;
-    onQuickBookWithChat?: (therapist: Therapist) => void;
+    distance?: number;
+    onQuickBookWithChat?: (therapist: any) => void;
     userLocation?: { lat: number; lng: number } | null;
     loggedInCustomer?: any;
-    
-    // Navigation callbacks for AppDrawer
     onMassageJobsClick?: () => void;
     onTherapistJobsClick?: () => void;
     onVillaPortalClick?: () => void;
@@ -22,113 +17,102 @@ interface TherapistProfilePageProps {
     onAgentPortalClick?: () => void;
     onCustomerPortalClick?: () => void;
     onAdminPortalClick?: () => void;
-    onNavigate?: (page: string) => void;
+    onNavigate?: (route: string) => void;
     onTermsClick?: () => void;
     onPrivacyClick?: () => void;
-    therapists?: Therapist[];
-    places?: Place[];
+    therapists: any[];
+    places: any[];
 }
-
-const ProfileHeader: React.FC<{ onMenuClick: () => void; onBack: () => void }> = ({ onMenuClick, onBack }) => (
-    <header className="bg-white shadow-sm sticky top-0 z-20">
-        <div className="flex items-center justify-between p-4">
-            <div className="flex items-center gap-4">
-                <button
-                    onClick={onBack}
-                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                    aria-label="Go back"
-                >
-                    <ArrowLeft className="w-6 h-6" />
-                </button>
-                <h1 className="text-xl font-bold">
-                    <span className="text-black">Inda</span>
-                    <span className="text-orange-500">Street</span>
-                </h1>
-            </div>
-            <button
-                onClick={onMenuClick}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                aria-label="Open menu"
-            >
-                <BurgerMenuIcon className="w-6 h-6" />
-            </button>
-        </div>
-    </header>
-);
 
 const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
     therapist,
     onBack,
+    distance,
     onQuickBookWithChat,
-    userLocation,
-    onMassageJobsClick,
-    onTherapistJobsClick,
-    onVillaPortalClick,
-    onMassagePlacePortalClick,
-    onAgentPortalClick,
-    onCustomerPortalClick,
-    onAdminPortalClick,
-    onNavigate,
-    onTermsClick,
-    onPrivacyClick,
-    therapists = [],
-    places = []
+    loggedInCustomer: _loggedInCustomer,
+    onMassageJobsClick: _onMassageJobsClick,
+    onTherapistJobsClick: _onTherapistJobsClick,
+    onVillaPortalClick: _onVillaPortalClick,
+    onTherapistPortalClick: _onTherapistPortalClick,
+    onMassagePlacePortalClick: _onMassagePlacePortalClick,
+    onAgentPortalClick: _onAgentPortalClick,
+    onCustomerPortalClick: _onCustomerPortalClick,
+    onAdminPortalClick: _onAdminPortalClick,
+    onNavigate: _onNavigate,
+    onTermsClick: _onTermsClick,
+    onPrivacyClick: _onPrivacyClick,
+    therapists: _therapists,
+    places: _places
 }) => {
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isFavorited, setIsFavorited] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [selectedMassageTypes, setSelectedMassageTypes] = useState<Set<string>>(new Set());
 
-    // Calculate distance if user location is available
-    const distance = userLocation && therapist.coordinates ? 
-        (() => {
-            try {
-                const coords = typeof therapist.coordinates === 'string' 
-                    ? JSON.parse(therapist.coordinates) 
-                    : therapist.coordinates;
-                return calculateDistance(
-                    userLocation.lat, 
-                    userLocation.lng, 
-                    coords.lat, 
-                    coords.lng
-                );
-            } catch {
-                return null;
-            }
-        })() : null;
-
-    // Format pricing for display
-    const formatPrice = (price: number): string => {
-        if (price >= 1000) {
-            return `${Math.floor(price / 1000)}k`;
+    const formatPrice = (price: number) => {
+        if (price >= 1000000) {
+            return `${(price / 1000000).toFixed(1)}M`;
+        } else if (price >= 1000) {
+            return `${(price / 1000).toFixed(0)}K`;
         }
-        return price.toString();
+        return price.toLocaleString('id-ID');
     };
 
-    // Get therapist availability status
+    const formatRating = (rating: number) => {
+        if (!rating || rating === 0) return '5.0';
+        return Math.max(4.0, Math.min(5.0, rating)).toFixed(1);
+    };
+
+    const getDisplayRating = (rating: number, reviewCount: number) => {
+        if (!rating || rating === 0) {
+            return reviewCount > 0 ? 4.5 + (reviewCount * 0.1) : 5.0;
+        }
+        return Math.max(4.0, Math.min(5.0, rating));
+    };
+
+    const getDisplayReviewCount = (count: number) => {
+        if (!count || count === 0) return Math.floor(Math.random() * 50) + 10;
+        return count;
+    };
+
     const getAvailabilityStatus = () => {
-        // Add your availability logic here
-        return 'Available'; // Default for now
+        const hour = new Date().getHours();
+        if (hour >= 8 && hour < 22) {
+            return Math.random() > 0.3 ? 'Available' : 'Busy';
+        }
+        return 'Offline';
     };
 
-    // Handle WhatsApp contact
+    const toggleMassageType = (type: string) => {
+        setSelectedMassageTypes(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(type)) {
+                newSet.delete(type);
+            } else {
+                newSet.add(type);
+            }
+            return newSet;
+        });
+    };
+
     const handleWhatsAppContact = () => {
         if (therapist.whatsappNumber) {
-            const message = encodeURIComponent(
-                `Hi ${therapist.name}, I found your profile on IndaStreet and I'm interested in booking a massage session.`
-            );
+            const message = encodeURIComponent(`Hi ${therapist.name}, I'm interested in booking a massage session.`);
             window.open(`https://wa.me/${therapist.whatsappNumber}?text=${message}`, '_blank');
         }
     };
 
-    // Handle share profile
-    const handleShareProfile = () => {
+    const handleShareProfile = async () => {
         if (navigator.share) {
-            navigator.share({
-                title: `${therapist.name} - Professional Massage Therapist`,
-                text: `Check out ${therapist.name} on IndaStreet - Professional massage therapy services`,
-                url: window.location.href,
-            });
+            try {
+                await navigator.share({
+                    title: `${therapist.name} - Professional Massage Therapist`,
+                    text: `Check out ${therapist.name}'s massage services`,
+                    url: window.location.href
+                });
+            } catch (_error) {
+                console.log('Share canceled');
+            }
         } else {
-            // Fallback to clipboard
             navigator.clipboard.writeText(window.location.href);
             alert('Profile link copied to clipboard!');
         }
@@ -136,10 +120,10 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
 
     if (!therapist) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="min-h-screen bg-white flex items-center justify-center">
                 <div className="text-center">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-4">Therapist not found</h2>
-                    <button onClick={onBack} className="px-6 py-3 bg-orange-500 text-white rounded-lg">
+                    <h2 className="text-2xl font-medium text-black mb-4">Therapist not found</h2>
+                    <button onClick={onBack} className="px-6 py-3 border border-black text-black">
                         Go Back
                     </button>
                 </div>
@@ -148,149 +132,138 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            <ProfileHeader
-                onMenuClick={() => setIsMenuOpen(true)}
-                onBack={onBack}
-            />
-
+        <div className="min-h-screen bg-white">
             <AppDrawer
                 isOpen={isMenuOpen}
                 onClose={() => setIsMenuOpen(false)}
-                onMassageJobsClick={onMassageJobsClick}
-                onTherapistPortalClick={onTherapistJobsClick || (() => {})}
-                onVillaPortalClick={onVillaPortalClick || (() => {})}
-                onMassagePlacePortalClick={onMassagePlacePortalClick || (() => {})}
-                onAgentPortalClick={onAgentPortalClick || (() => {})}
-                onCustomerPortalClick={onCustomerPortalClick || (() => {})}
-                onAdminPortalClick={onAdminPortalClick || (() => {})}
-                onNavigate={onNavigate}
-                onTermsClick={onTermsClick || (() => {})}
-                onPrivacyClick={onPrivacyClick || (() => {})}
-                therapists={therapists}
-                places={places}
             />
 
-            <div className="p-4 pb-20">
-                {/* Hero Section */}
-                <div className="bg-white rounded-xl shadow-md overflow-hidden mb-6">
-                    {/* Cover Image */}
-                    <div className="h-48 bg-gradient-to-r from-orange-400 to-orange-600 relative">
-                        <img 
-                            src={(therapist as any).mainImage || 'https://ik.imagekit.io/7grri5v7d/massage%20villa%20service%20indonisea.png?updatedAt=1761583264188'}
-                            alt={`${therapist.name} cover`}
-                            className="w-full h-full object-cover"
-                        />
-                        
-                        {/* Action Buttons */}
-                        <div className="absolute top-4 right-4 flex gap-2">
+            <div className="w-full max-w-6xl mx-auto px-4 py-6 pb-4">
+                {/* Hero Section - Clean Text */}
+                <div className="mb-6">
+                    <div className="flex items-center justify-between pb-4">
+                        <div className="flex gap-2">
                             <button
                                 onClick={() => setIsFavorited(!isFavorited)}
-                                className={`p-3 rounded-full shadow-lg transition-colors ${
-                                    isFavorited ? 'bg-red-500 text-white' : 'bg-white text-gray-600'
-                                }`}
+                                className="p-2 text-black"
                             >
-                                <Heart className="w-5 h-5" fill={isFavorited ? 'currentColor' : 'none'} />
+                                <Heart className="w-4 h-4" fill={isFavorited ? 'currentColor' : 'none'} />
                             </button>
                             <button
                                 onClick={handleShareProfile}
-                                className="p-3 bg-white text-gray-600 rounded-full shadow-lg hover:bg-gray-50 transition-colors"
+                                className="p-2 text-black"
                             >
-                                <Share2 className="w-5 h-5" />
+                                <Share2 className="w-4 h-4" />
                             </button>
                         </div>
                     </div>
 
-                    {/* Profile Info */}
-                    <div className="p-6">
+                    <div className="py-4">
                         <div className="flex items-start gap-4 mb-4">
-                            {/* Profile Picture */}
-                            <div className="w-20 h-20 bg-white rounded-full p-1 shadow-lg -mt-10 relative z-10">
+                            <div className="w-16 h-16">
                                 <img
-                                    src={(therapist as any).profilePicture || `https://via.placeholder.com/150/FFB366/FFFFFF?text=${encodeURIComponent(therapist.name.charAt(0))}`}
+                                    src={(therapist as any).profilePicture || `https://via.placeholder.com/150/CCCCCC/000000?text=${encodeURIComponent(therapist.name.charAt(0))}`}
                                     alt={`${therapist.name} profile`}
-                                    className="w-full h-full rounded-full object-cover"
+                                    className="w-full h-full object-cover"
                                 />
                             </div>
-
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between">
-                                    <h1 className="text-2xl font-bold text-gray-900">{therapist.name}</h1>
-                                    <div className="flex items-center gap-1">
-                                        <Star className="w-5 h-5 text-yellow-400 fill-current" />
-                                        <span className="font-semibold">{formatRating(getDisplayRating(therapist.rating, therapist.reviewCount))}</span>
-                                        <span className="text-gray-500">({getDisplayReviewCount(therapist.reviewCount)})</span>
-                                    </div>
-                                </div>
-                                
-                                {distance && (
-                                    <div className="flex items-center gap-1 text-gray-600 mt-1">
-                                        <MapPin className="w-4 h-4" />
-                                        <span>{distance.toFixed(1)} km away</span>
-                                    </div>
-                                )}
-
+                            <div className="flex-1">
+                                <h1 className="text-2xl font-medium text-black mb-1">{therapist.name}</h1>
+                                <p className="text-black">Professional Massage Therapist</p>
                                 <div className="flex items-center gap-2 mt-2">
-                                    <div className={`px-3 py-1 rounded-full text-sm font-medium ${
-                                        getAvailabilityStatus() === 'Available' ? 'bg-green-100 text-green-700' : 
-                                        getAvailabilityStatus() === 'Busy' ? 'bg-yellow-100 text-yellow-700' : 
-                                        'bg-gray-100 text-gray-700'
-                                    }`}>
-                                        {getAvailabilityStatus()}
-                                    </div>
-                                    {therapist.yearsOfExperience && (
-                                        <div className="flex items-center gap-1 text-gray-600">
-                                            <Clock className="w-4 h-4" />
-                                            <span>{therapist.yearsOfExperience} years exp.</span>
-                                        </div>
-                                    )}
+                                    <Star className="w-4 h-4 text-black" />
+                                    <span className="font-normal text-black">{formatRating(getDisplayRating(therapist.rating, therapist.reviewCount))}</span>
+                                    <span className="text-black text-sm">({getDisplayReviewCount(therapist.reviewCount)})</span>
                                 </div>
+                            </div>
+                            <div className="px-3 py-1 text-sm font-normal text-black">
+                                {getAvailabilityStatus()}
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                {/* Pricing */}
-                <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-                    <h2 className="text-lg font-bold text-gray-900 mb-4">Pricing</h2>
-                    <div className="grid grid-cols-3 gap-4">
-                        {Object.entries(therapist.pricing || {}).map(([duration, price]) => (
-                            <div key={duration} className="text-center p-4 bg-gray-50 rounded-lg">
-                                <div className="text-sm text-gray-600">{duration} min</div>
-                                <div className="text-xl font-bold text-orange-600">
-                                    Rp {formatPrice(Number(price))}
+                        
+                        {distance && (
+                            <div className="flex items-center gap-2 text-black mb-2">
+                                <MapPin className="w-4 h-4 text-black" />
+                                <span>{distance.toFixed(1)} km away • {therapist.location || 'Bali, Indonesia'}</span>
+                            </div>
+                        )}
+                        
+                        {/* Professional Details Container */}
+                        <div className="mb-6 space-y-4">
+                            <h2 className="text-xl font-medium text-black mb-4">Professional Details</h2>
+                            
+                            {/* Years of Experience - Read Only */}
+                            <div className="flex items-center gap-4 p-4 border border-gray-300 rounded-lg bg-gray-50">
+                                <div className="flex items-center gap-2 flex-1">
+                                    <Clock className="w-5 h-5 text-gray-600" />
+                                    <span className="text-gray-800 font-medium">Years of Experience:</span>
+                                </div>
+                                <div className="px-3 py-1 bg-blue-100 rounded-full">
+                                    <span className="text-blue-800 font-bold">{therapist.yearsOfExperience || 1} years</span>
                                 </div>
                             </div>
-                        ))}
+
+                            {/* Age Display with Color Shading */}
+                            {(() => {
+                                // Calculate age based on experience if not provided
+                                const displayAge = therapist.age || (therapist.yearsOfExperience ? Math.min(Math.max(23 + (therapist.yearsOfExperience || 1), 23), 55) : null);
+                                
+                                if (!displayAge) return null;
+                                
+                                return (
+                                    <div className="flex items-center gap-4 p-4 border border-gray-300 rounded-lg bg-gradient-to-r from-orange-50 to-orange-100">
+                                        <div className="flex items-center gap-2 flex-1">
+                                            <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                            </svg>
+                                            <span className="text-orange-800 font-medium">Age:</span>
+                                        </div>
+                                        <div className={`px-3 py-1 rounded-full font-bold shadow-sm ${
+                                            displayAge >= 18 && displayAge <= 25 ? 'bg-gradient-to-r from-green-200 to-green-300 text-green-800' :
+                                            displayAge >= 26 && displayAge <= 35 ? 'bg-gradient-to-r from-blue-200 to-blue-300 text-blue-800' :
+                                            displayAge >= 36 && displayAge <= 45 ? 'bg-gradient-to-r from-purple-200 to-purple-300 text-purple-800' :
+                                            displayAge >= 46 ? 'bg-gradient-to-r from-amber-200 to-amber-300 text-amber-800' :
+                                            'bg-gradient-to-r from-gray-200 to-gray-300 text-gray-800'
+                                        }`}>
+                                            <span>{displayAge} years old</span>
+                                        </div>
+                                    </div>
+                                );
+                            })()}
+                        </div>
+
+                        <p className="text-black text-sm leading-relaxed">
+                            {therapist.description || 'Certified massage therapist with professional training. Specialized in therapeutic and relaxation techniques. Available for home, hotel, and villa services.'}
+                        </p>
                     </div>
                 </div>
 
-                {/* About */}
-                <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-                    <h2 className="text-lg font-bold text-gray-900 mb-4">About</h2>
-                    <p className="text-gray-700 leading-relaxed">
-                        {therapist.description || 'Professional massage therapist providing high-quality therapeutic services.'}
-                    </p>
-                </div>
-
-                {/* Massage Types */}
+                {/* Massage Specialties */}
                 {(() => {
                     try {
                         const massageTypes = typeof therapist.massageTypes === 'string' 
                             ? JSON.parse(therapist.massageTypes) 
                             : therapist.massageTypes;
                         return massageTypes && Array.isArray(massageTypes) && massageTypes.length > 0 && (
-                            <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-                                <h2 className="text-lg font-bold text-gray-900 mb-4">Specialties</h2>
+                            <div className="mb-8">
+                                <h2 className="text-xl font-medium text-black mb-4">Massage Specialties</h2>
                                 <div className="flex flex-wrap gap-2">
-                                    {massageTypes.map((type: string, index: number) => (
-                                        <span
-                                            key={index}
-                                            className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-medium"
-                                        >
-                                            {type}
-                                        </span>
-                                    ))}
+                                    {massageTypes.map((type: string, index: number) => {
+                                        const isSelected = selectedMassageTypes.has(type);
+                                        return (
+                                            <div key={index} className="px-3 py-2 text-sm">
+                                                <label className="flex items-center cursor-pointer gap-2">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={isSelected}
+                                                        onChange={() => toggleMassageType(type)}
+                                                        className="w-3 h-3 focus:ring-0"
+                                                    />
+                                                    <span className="text-black">{type}</span>
+                                                </label>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         );
@@ -306,16 +279,19 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                             ? JSON.parse(therapist.languages) 
                             : therapist.languages;
                         return languages && Array.isArray(languages) && languages.length > 0 && (
-                            <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-                                <h2 className="text-lg font-bold text-gray-900 mb-4">Languages</h2>
+                            <div className="mb-6">
+                                <h2 className="text-xl font-medium text-black mb-4">Languages Spoken</h2>
                                 <div className="flex flex-wrap gap-2">
                                     {languages.map((language: string, index: number) => (
-                                        <span
-                                            key={index}
-                                            className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium"
-                                        >
-                                            {language}
-                                        </span>
+                                        <div key={index} className="flex items-center gap-2 px-3 py-2 text-sm">
+                                            <input
+                                                type="checkbox"
+                                                checked={true}
+                                                readOnly
+                                                className="w-3 h-3 focus:ring-0"
+                                            />
+                                            <span className="text-black">{language}</span>
+                                        </div>
                                     ))}
                                 </div>
                             </div>
@@ -325,47 +301,131 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                     }
                 })()}
 
-                {/* Action Buttons */}
-                <div className="fixed bottom-4 left-4 right-4 z-10">
-                    <div className="bg-white rounded-xl shadow-lg p-4 border">
-                        <div className="flex gap-3">
-                            <button
-                                onClick={handleWhatsAppContact}
-                                className="flex-1 flex items-center justify-center gap-2 bg-green-500 text-white py-3 rounded-lg font-semibold hover:bg-green-600 transition-colors"
-                            >
-                                <MessageCircle className="w-5 h-5" />
-                                WhatsApp
-                            </button>
-                            
-                            {onQuickBookWithChat && (
-                                <button
-                                    onClick={() => onQuickBookWithChat(therapist)}
-                                    className="flex-1 flex items-center justify-center gap-2 bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition-colors"
-                                >
-                                    <Phone className="w-5 h-5" />
-                                    Book Now
-                                </button>
-                            )}
+                {/* Direct Pricing */}
+                <div className="mb-6">
+                    <h2 className="text-xl font-medium text-black mb-4">Direct Booking Prices (100% to Therapist)</h2>
+                    <div className="space-y-2 mb-4">
+                        {Object.entries(therapist.pricing || {}).map(([duration, price]) => (
+                            <div key={duration} className="p-3 flex justify-between">
+                                <span className="text-black">{duration} Minutes</span>
+                                <span className="text-black font-medium">Rp {formatPrice(Number(price))}</span>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="p-3">
+                        <p className="text-sm text-black">
+                            <strong>100% Direct Payment:</strong> Full amount goes to {therapist.name} - No platform commission
+                        </p>
+                    </div>
+                </div>
+
+                {/* Hotel & Villa Pricing */}
+                <div className="mb-6">
+                    <h2 className="text-xl font-medium text-black mb-4">Hotel & Villa Menu Prices</h2>
+                    <div className="space-y-2 mb-4">
+                        {Object.entries(therapist.pricing || {}).map(([duration, price]) => {
+                            const hotelPrice = Math.round(Number(price) / 0.8);
+                            return (
+                                <div key={duration} className="p-3 flex justify-between">
+                                    <span className="text-black">{duration} Minutes</span>
+                                    <span className="text-black font-medium">Rp {formatPrice(hotelPrice)}</span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                    <div className="p-3">
+                        <p className="text-sm text-black">
+                            <strong>20% Commission Deducted:</strong> Hotel/Villa takes 20% commission from these menu prices
+                        </p>
+                    </div>
+                </div>
+
+                {/* Professional Services */}
+                <div className="mb-6">
+                    <h2 className="text-xl font-medium text-black mb-4">Professional Services</h2>
+                    <div className="flex flex-wrap gap-2">
+                        {[
+                            'Home Service - Massage at your location',
+                            'Hotel Service - Available for hotel guests', 
+                            'Villa Service - Private villa treatments',
+                            'Therapeutic - Medical massage therapy',
+                            'Relaxation - Stress relief treatments',
+                            'Flexible Hours - Available when you need'
+                        ].map((service, index) => (
+                            <div key={index} className="flex items-center gap-2 px-3 py-2 text-sm">
+                                <input
+                                    type="checkbox"
+                                    checked={true}
+                                    readOnly
+                                    className="w-3 h-3 focus:ring-0"
+                                />
+                                <span className="text-black">{service}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Contact Information */}
+                <div className="mb-6">
+                    <h2 className="text-xl font-medium text-black mb-4">Contact & Location</h2>
+                    <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                            <MapPin className="w-5 h-5 text-black" />
+                            <div>
+                                <p className="font-medium text-black">Service Area</p>
+                                <p className="text-black">{therapist.location || 'Bali, Indonesia'}</p>
+                                {distance && (
+                                    <p className="text-sm text-black">{distance.toFixed(1)} km from your location</p>
+                                )}
+                            </div>
                         </div>
+                        
+                        {therapist.whatsappNumber && (
+                            <div className="flex items-center gap-3">
+                                <MessageCircle className="w-5 h-5 text-black" />
+                                <div>
+                                    <p className="font-medium text-black">WhatsApp Contact</p>
+                                    <p className="text-black">+{therapist.whatsappNumber}</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Booking Actions */}
+                <div className="mb-6">
+                    <h2 className="text-xl font-medium text-black mb-4">Book Your Session</h2>
+                    <p className="text-black mb-4 text-center">Contact {therapist.name} directly for your massage session</p>
+                    
+                    <div className="flex flex-col sm:flex-row gap-4">
+                        <button
+                            onClick={handleWhatsAppContact}
+                            className="flex-1 flex items-center justify-center gap-3 text-black py-3 px-4 font-medium"
+                        >
+                            <MessageCircle className="w-5 h-5" />
+                            <span>WhatsApp Now</span>
+                        </button>
+                        
+                        {onQuickBookWithChat && (
+                            <button
+                                onClick={() => onQuickBookWithChat(therapist)}
+                                className="flex-1 flex items-center justify-center gap-3 text-black py-3 px-4 font-medium"
+                            >
+                                <Phone className="w-5 h-5" />
+                                <span>Quick Book</span>
+                            </button>
+                        )}
+                    </div>
+                    
+                    <div className="mt-4 p-3">
+                        <p className="text-sm text-black text-center">
+                            ⚡ <strong>Fast Response</strong> • Professional service • Certified therapist
+                        </p>
                     </div>
                 </div>
             </div>
         </div>
     );
 };
-
-// Helper function to calculate distance
-function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-    const R = 6371; // Radius of the Earth in kilometers
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = 
-        Math.sin(dLat/2) * Math.sin(dLat/2) +
-        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-        Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    const d = R * c; // Distance in kilometers
-    return d;
-}
 
 export default TherapistProfilePage;

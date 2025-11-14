@@ -63,27 +63,31 @@ async function determineUserType(userId: string, email: string): Promise<Session
     try {
         // Check Admin (with error handling for missing collection)
         try {
-            const admins = await Promise.race([
-                databases.listDocuments(
-                    DATABASE_ID,
-                    COLLECTIONS.ADMINS || 'admins_collection_id',
-                    [Query.equal('email', email)]
-                ),
-                new Promise<any>((_, reject) => 
-                    setTimeout(() => reject(new Error('Admin query timeout')), 3000)
-                )
-            ]);
-            if (admins.documents.length > 0) {
-                const admin = admins.documents[0];
-                return {
-                    type: 'admin',
-                    id: userId,
-                    email,
-                    documentId: admin.$id,
-                    data: admin
-                };
+            if (!COLLECTIONS.ADMINS) {
+                console.log('ℹ️ Admin collection not configured - skipping admin check');
+            } else {
+                const admins = await Promise.race([
+                    databases.listDocuments(
+                        DATABASE_ID,
+                        COLLECTIONS.ADMINS,
+                        [Query.equal('email', email)]
+                    ),
+                    new Promise<any>((_, reject) => 
+                        setTimeout(() => reject(new Error('Admin query timeout')), 3000)
+                    )
+                ]);
+                if (admins.documents.length > 0) {
+                    const admin = admins.documents[0];
+                    return {
+                        type: 'admin',
+                        id: userId,
+                        email,
+                        documentId: admin.$id,
+                        data: admin
+                    };
+                }
             }
-        } catch {
+        } catch (error) {
             console.warn('⚠️ Admin check failed or timeout, skipping');
         }
 
@@ -115,27 +119,31 @@ async function determineUserType(userId: string, email: string): Promise<Session
 
         // Check Villas with timeout
         try {
-            const villas = await Promise.race([
-                databases.listDocuments(
-                    DATABASE_ID,
-                    COLLECTIONS.VILLAS || 'villas',
-                    [Query.equal('email', email)]
-                ),
-                new Promise<any>((_, reject) => 
-                    setTimeout(() => reject(new Error('Villa query timeout')), 3000)
-                )
-            ]);
-            if (villas.documents.length > 0) {
-                const villa = villas.documents[0];
-                return {
-                    type: 'villa',
-                    id: userId,
-                    email,
-                    documentId: villa.$id,
-                    data: villa
-                };
+            if (!COLLECTIONS.VILLAS) {
+                console.log('ℹ️ Villas collection not configured - skipping villas check');
+            } else {
+                const villas = await Promise.race([
+                    databases.listDocuments(
+                        DATABASE_ID,
+                        COLLECTIONS.VILLAS,
+                        [Query.equal('email', email)]
+                    ),
+                    new Promise<any>((_, reject) => 
+                        setTimeout(() => reject(new Error('Villa query timeout')), 3000)
+                    )
+                ]);
+                if (villas.documents.length > 0) {
+                    const villa = villas.documents[0];
+                    return {
+                        type: 'villa',
+                        id: userId,
+                        email,
+                        documentId: villa.$id,
+                        data: villa
+                    };
+                }
             }
-        } catch {
+        } catch (error) {
             console.warn('⚠️ Villa check failed or timeout, skipping');
         }
 

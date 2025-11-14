@@ -9,7 +9,7 @@ import DiscountSharePage from './DiscountSharePage';
 import MembershipPlansPage from './MembershipPlansPage';
 import ImageUpload from '../components/ImageUpload';
 import HotelVillaOptIn from '../components/HotelVillaOptIn';
-import Footer from '../components/Footer';
+
 import { placeService } from '../lib/appwriteService';
 import TherapistTermsPage from './TherapistTermsPage';
 import UserSolidIcon from '../components/icons/UserSolidIcon';
@@ -1116,108 +1116,108 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                 {t?.uploadProfilePicture || "Upload Profile Picture (Circular Logo)"}
                             </label>
                             
-                            {/* Image Requirement Modal - Professional Design */}
+                            {/* Image Requirement Modal - Compact Mobile Design */}
                             {showImageRequirementModal && (
-                                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                                    <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden">
+                                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
+                                    <div className="bg-white rounded-xl max-w-sm sm:max-w-md w-full shadow-2xl overflow-hidden max-h-[85vh] overflow-y-auto">
                                         {/* Header */}
-                                        <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center flex-shrink-0">
-                                                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-3 sm:px-4 py-2 sm:py-3">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-7 h-7 sm:w-8 sm:h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center flex-shrink-0">
+                                                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                                     </svg>
                                                 </div>
                                                 <div>
-                                                    <h3 className="text-xl font-bold text-white">Business Logo Requirements</h3>
-                                                    <p className="text-orange-100 text-sm">Please read carefully before uploading</p>
+                                                    <h3 className="text-sm sm:text-lg font-bold text-white">Logo Requirements</h3>
+                                                    <p className="text-orange-100 text-xs sm:text-sm">Read before uploading</p>
                                                 </div>
                                             </div>
                                         </div>
                                         
                                         {/* Content */}
-                                        <div className="p-6 space-y-4">
+                                        <div className="p-3 sm:p-4 space-y-2 sm:space-y-3">
                                             {/* Important Notice */}
-                                            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                                                <p className="font-semibold text-orange-900 text-sm flex items-center gap-2">
-                                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <div className="bg-orange-50 border border-orange-200 rounded-lg p-2 sm:p-3">
+                                                <p className="font-semibold text-orange-900 text-xs sm:text-sm flex items-center gap-1 sm:gap-2">
+                                                    <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
                                                         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                                                     </svg>
-                                                    Required for Business Profile
+                                                    Required for Profile
                                                 </p>
                                             </div>
                                             
                                             {/* Requirements Section */}
-                                            <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-                                                <p className="font-semibold text-gray-900 text-sm">✓ Your business logo must include:</p>
-                                                <ul className="space-y-2">
-                                                    <li className="flex items-start gap-2 text-sm text-gray-700">
-                                                        <svg className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                            <div className="bg-gray-50 rounded-lg p-2 sm:p-3 space-y-1 sm:space-y-2">
+                                                <p className="font-semibold text-gray-900 text-xs sm:text-sm">✓ Logo requirements:</p>
+                                                <ul className="space-y-1">
+                                                    <li className="flex items-start gap-1 sm:gap-2 text-xs sm:text-sm text-gray-700">
+                                                        <svg className="w-3 h-3 sm:w-4 sm:h-4 text-green-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                                         </svg>
-                                                        <span>Clear, professional business logo or name</span>
+                                                        <span>Clear, professional business logo</span>
                                                     </li>
-                                                    <li className="flex items-start gap-2 text-sm text-gray-700">
-                                                        <svg className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                    <li className="flex items-start gap-1 sm:gap-2 text-xs sm:text-sm text-gray-700">
+                                                        <svg className="w-3 h-3 sm:w-4 sm:h-4 text-green-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                                         </svg>
-                                                        <span>High quality image (min 400x400px)</span>
+                                                        <span>High quality (min 400x400px)</span>
                                                     </li>
-                                                    <li className="flex items-start gap-2 text-sm text-gray-700">
-                                                        <svg className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                    <li className="flex items-start gap-1 sm:gap-2 text-xs sm:text-sm text-gray-700">
+                                                        <svg className="w-3 h-3 sm:w-4 sm:h-4 text-green-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                                         </svg>
-                                                        <span>Represents your actual business</span>
+                                                        <span>Authentic business image</span>
                                                     </li>
                                                 </ul>
                                             </div>
                                             
                                             {/* Warning Section */}
-                                            <div className="bg-red-50 border border-red-200 rounded-lg p-4 space-y-2">
-                                                <p className="font-semibold text-red-900 text-sm flex items-center gap-2">
-                                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <div className="bg-red-50 border border-red-200 rounded-lg p-2 sm:p-3 space-y-1">
+                                                <p className="font-semibold text-red-900 text-xs sm:text-sm flex items-center gap-1">
+                                                    <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
                                                         <path fillRule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clipRule="evenodd" />
                                                     </svg>
-                                                    Account Suspension Policy
+                                                    Suspension Policy
                                                 </p>
-                                                <ul className="space-y-1.5 text-xs text-red-800">
-                                                    <li className="flex items-start gap-1.5">
+                                                <ul className="space-y-0.5 text-xs text-red-800">
+                                                    <li className="flex items-start gap-1">
                                                         <span className="text-red-600">•</span>
-                                                        <span>Fake or misleading business information</span>
+                                                        <span>Fake business info</span>
                                                     </li>
-                                                    <li className="flex items-start gap-1.5">
+                                                    <li className="flex items-start gap-1">
                                                         <span className="text-red-600">•</span>
-                                                        <span>Using another business's logo</span>
+                                                        <span>Using other's logos</span>
                                                     </li>
-                                                    <li className="flex items-start gap-1.5">
+                                                    <li className="flex items-start gap-1">
                                                         <span className="text-red-600">•</span>
-                                                        <span>Inappropriate or unrelated images</span>
+                                                        <span>Inappropriate images</span>
                                                     </li>
                                                 </ul>
-                                                <p className="text-xs text-red-900 font-semibold pt-1">
-                                                    May result in immediate account suspension
+                                                <p className="text-xs text-red-900 font-semibold pt-0.5">
+                                                    May cause suspension
                                                 </p>
                                             </div>
                                             
                                             {/* Confirmation Text */}
-                                            <p className="text-xs text-gray-500 italic text-center pt-2">
-                                                By confirming, you verify this is your authentic business logo and meets all requirements
+                                            <p className="text-xs text-gray-500 italic text-center pt-1">
+                                                Confirming verifies this is your authentic business logo
                                             </p>
                                         </div>
                                         
                                         {/* Footer Buttons */}
-                                        <div className="bg-gray-50 px-6 py-4 flex gap-3">
+                                        <div className="bg-gray-50 px-3 sm:px-4 py-2 sm:py-3 flex gap-2">
                                             <button
                                                 onClick={handleRejectImageRequirement}
-                                                className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                                className="flex-1 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors min-h-[32px] sm:min-h-[36px]"
                                             >
                                                 Cancel
                                             </button>
                                             <button
                                                 onClick={handleAcceptImageRequirement}
-                                                className="flex-1 px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-green-600 to-green-700 rounded-lg hover:from-green-700 hover:to-green-800 shadow-md transition-all"
+                                                className="flex-1 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-green-600 to-green-700 rounded-lg hover:from-green-700 hover:to-green-800 shadow-md transition-all min-h-[32px] sm:min-h-[36px]"
                                             >
-                                                I Understand & Confirm
+                                                Confirm
                                             </button>
                                         </div>
                                     </div>
@@ -2076,15 +2076,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                 {renderContent()}
             </main>
 
-            {/* Footer */}
-            <Footer
-                currentPage="profile"
-                userRole="place"
-                onProfileClick={() => setActiveTab('profile')}
-                onNotificationsClick={onNavigateToNotifications}
-                unreadNotifications={(notifications || []).filter(n => !n.isRead).length}
-                t={t}
-            />
+
 
             {/* Validation Popup */}
             <ValidationPopup

@@ -14,7 +14,7 @@ import TherapistTermsPage from './TherapistTermsPage';
 // Removed import - Job Opportunities page removed as it's available in live app
 // import TherapistJobOpportunitiesPage from './TherapistJobOpportunitiesPage';
 import PushNotificationSettings from '../components/PushNotificationSettings';
-import Footer from '../components/Footer';
+
 import TherapistNotifications from '../components/TherapistNotifications';
 // Removed chat import - chat system removed
 // import MemberChatWindow from '../components/MemberChatWindow';
@@ -339,10 +339,10 @@ const MassagePlaceAdminDashboard: React.FC<MassagePlaceAdminDashboardProps> = ({
         return <div className="p-4 text-center text-red-500">Could not load place data. Please try logging in again.</div>
     }
 
-    // Handle notifications from footer
-    const handleShowNotifications = () => {
-        setShowNotifications(true);
-    };
+    // Handle notifications from footer (currently unused)
+    // const handleShowNotifications = () => {
+    //     setShowNotifications(true);
+    // };
 
     const handleCloseNotifications = () => {
         setShowNotifications(false);
@@ -865,13 +865,7 @@ const MassagePlaceAdminDashboard: React.FC<MassagePlaceAdminDashboardProps> = ({
                 </div>
             )}
 
-            {/* Footer */}
-            <Footer
-                userRole="therapist"
-                currentPage="dashboard"
-                t={t}
-                onNotificationsClick={handleShowNotifications}
-            />
+
 
             {/* Notifications Modal */}
             {showNotifications && (

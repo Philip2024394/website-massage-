@@ -243,6 +243,7 @@ export const customLinksService = {
 // Appwrite service - Real implementation
 import { Client, Databases, Account, Query, Storage, ID, Permission, Role } from 'appwrite';
 import { APPWRITE_CONFIG } from './appwrite.config';
+import { rateLimitedDb, retryWithBackoff } from './rateLimitService';
 import type { AgentVisit } from '../types';
 
 
@@ -280,14 +281,15 @@ export const therapistService = {
     async getAll(): Promise<any[]> {
         try {
             console.log('📋 Fetching all therapists from collection:', APPWRITE_CONFIG.collections.therapists);
-            const response = await databases.listDocuments(
+            const response = await rateLimitedDb.listDocuments(
+                databases,
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.therapists
             );
             console.log('✅ Fetched therapists:', response.documents.length);
             
             // Add random main images and normalize status to therapists
-            const therapistsWithImages = response.documents.map((therapist, index) => {
+            const therapistsWithImages = response.documents.map((therapist: any, index: number) => {
                 const assignedMainImage = therapist.mainImage || getRandomMainImage(index);
                 
                 // Normalize status from database (lowercase) to enum format (capitalized)
@@ -362,7 +364,8 @@ export const therapistService = {
             }
 
             console.log('🔍 Searching for therapist by email:', email);
-            const response = await databases.listDocuments(
+            const response = await rateLimitedDb.listDocuments(
+                databases,
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.therapists,
                 [Query.equal('email', email)]
@@ -379,7 +382,7 @@ export const therapistService = {
                 return status; // Return as-is if unknown
             };
             
-            const normalizedTherapists = response.documents.map(therapist => {
+            const normalizedTherapists = response.documents.map((therapist: any) => {
                 // Extract busy timer data from description if present
                 let extractedBusyTimer = null;
                 let cleanDescription = therapist.description || '';
@@ -460,7 +463,8 @@ export const therapistService = {
             
             // First, get the current document to preserve all existing data
             console.log('📋 Fetching current document to preserve all fields...');
-            const currentDocument = await databases.getDocument(
+            const currentDocument = await rateLimitedDb.getDocument(
+                databases,
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.therapists,
                 id
@@ -616,7 +620,8 @@ export const therapistService = {
                 originalAvailability: data.availability
             });
             
-            const response = await databases.updateDocument(
+            const response = await rateLimitedDb.updateDocument(
+                databases,
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.therapists,
                 id,
@@ -1008,16 +1013,35 @@ export const authService = {
     },
     async createAnonymousSession(): Promise<any> {
         try {
-            // Check if already logged in
-            const currentUser = await account.get().catch(() => null);
-            if (currentUser) return currentUser;
+            // Check if already logged in with timeout
+            const currentUser = await Promise.race([
+                account.get(),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
+            ]).catch(() => null);
             
-            // Create anonymous session for guest access
-            await account.createAnonymousSession();
+            if (currentUser) {
+                console.log('✅ Session already exists, skipping anonymous creation');
+                return currentUser;
+            }
+            
+            // Create anonymous session with timeout and retry logic
+            await Promise.race([
+                account.createAnonymousSession(),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
+            ]);
+            
             return await account.get();
-        } catch (error) {
-            console.error('Error creating anonymous session:', error);
-            throw error;
+        } catch (error: any) {
+            if (error.message?.includes('429')) {
+                console.log('⚠️ Anonymous session rate limited - will retry later');
+                return null;
+            } else if (error.message?.includes('already exists')) {
+                console.log('✅ Anonymous session already exists');
+                return await account.get().catch(() => null);
+            } else {
+                console.log('Anonymous session creation deferred:', error.message);
+                return null;
+            }
         }
     }
 };

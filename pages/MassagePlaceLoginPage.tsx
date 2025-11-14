@@ -31,6 +31,58 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
             resetRateLimit('place-signup');
             console.log('✅ Place rate limits reset! You can now try logging in again.');
         };
+        
+        // Add comprehensive debugging helpers for massage place login
+        (window as any).debugPlaceAuth = async (email: string, password: string) => {
+            console.log('🔧 Debug Place Authentication for:', email);
+            try {
+                const response = await placeAuth.signIn(email, password);
+                console.log('✅ Auth response:', response);
+                return response;
+            } catch (err) {
+                console.error('❌ Auth debug error:', err);
+                return { success: false, error: err };
+            }
+        };
+        
+        // Helper to check if massage spa exists in database
+        (window as any).checkMassageSpa = async () => {
+            console.log('🔍 Checking for massage spa in database...');
+            try {
+                const { databases, DATABASE_ID, COLLECTIONS } = await import('../lib/appwrite');
+                const places = await databases.listDocuments(DATABASE_ID, COLLECTIONS.PLACES);
+                const massageSpas = places.documents.filter((place: any) => 
+                    place.name?.toLowerCase().includes('massage spa') ||
+                    place.email?.toLowerCase().includes('massage') ||
+                    place.email?.toLowerCase().includes('spa')
+                );
+                console.log('🏢 Found massage spa places:', massageSpas);
+                console.log('📧 All place emails:', places.documents.map((p: any) => p.email));
+                return massageSpas;
+            } catch (err) {
+                console.error('❌ Database check error:', err);
+                return [];
+            }
+        };
+        
+        // Helper to create test massage spa account
+        (window as any).createTestMassageSpa = async (email: string, password: string) => {
+            console.log('🔧 Creating test massage spa account...');
+            try {
+                const response = await placeAuth.signUp(email, password);
+                console.log('✅ Test account created:', response);
+                return response;
+            } catch (err) {
+                console.error('❌ Test account creation error:', err);
+                return { success: false, error: err };
+            }
+        };
+        
+        console.log('🔧 Debug helpers loaded:');
+        console.log('   - resetPlaceRateLimit()');
+        console.log('   - debugPlaceAuth(email, password)');
+        console.log('   - checkMassageSpa()');
+        console.log('   - createTestMassageSpa(email, password)');
     }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -106,8 +158,31 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
             }
         } catch (err: unknown) {
             const error = err as Error;
-            console.error(`Place ${isSignUp ? 'signup' : 'login'} error:`, error);
-            setError(handleAppwriteError(error, isSignUp ? 'signup' : 'login'));
+            console.error(`❌ Place ${isSignUp ? 'signup' : 'login'} error for ${email}:`, error);
+            console.error('Error details:', {
+                message: error.message,
+                code: (error as any).code,
+                type: (error as any).type,
+                stack: error.stack
+            });
+            
+            // Provide more specific error messages
+            let errorMessage = handleAppwriteError(error, isSignUp ? 'signup' : 'login');
+            
+            // Special handling for massage spa login issues
+            if (email.toLowerCase().includes('massage') && email.toLowerCase().includes('spa')) {
+                console.log('🏢 Massage spa login attempt detected');
+                if (error.message?.includes('Invalid credentials') || error.message?.includes('401')) {
+                    errorMessage = `Login failed for massage spa account. Please check:
+                    1. Email: ${email}
+                    2. Password length (minimum 8 characters)
+                    3. Account exists (try creating account first if needed)
+                    
+                    Use browser console: checkMassageSpa() to verify account exists`;
+                }
+            }
+            
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
