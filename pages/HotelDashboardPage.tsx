@@ -1,3 +1,24 @@
+/*
+🔒 PROTECTED FILE - HOTEL DASHBOARD 🔒
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️  WARNING: THIS FILE IS LOCKED FOR EDITING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DO NOT MODIFY WITHOUT EXPLICIT PERMISSION!
+
+This Hotel Dashboard is in a stable state and should not be modified
+unless specifically requested by the user. Any changes could break
+critical functionality.
+
+To unlock for editing, user must explicitly state:
+"UNLOCK HOTEL DASHBOARD FOR EDITING"
+
+Last Locked: November 14, 2025
+Status: 🔒 PROTECTED - NO MODIFICATIONS ALLOWED
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
+
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { 
     Building, Image as ImageIcon, LogOut, Menu, Phone, QrCode, Star, Tag, User, X, Bell,
@@ -18,6 +39,7 @@ import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import HotelBookingModal from '../components/hotel/PropertyBookingModal';
 import HotelAnalyticsSection from '../components/hotel/PropertyAnalyticsSection';
 import HotelVillaBankDetailsPage from './HotelVillaBankDetailsPage';
+import Footer from '../components/Footer';
 import DashboardHeader from '../components/DashboardHeader';
 import { safeDownload } from '../utils/domSafeHelpers';
 
@@ -939,7 +961,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
                             <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
                                 <Bell className="w-5 h-5 text-orange-600" />
                             </div>
-                            <h2 className="text-2xl font-bold text-gray-900">{t('dashboard.notifications')}</h2>
+                            <h2 className="text-2xl font-bold text-gray-900">Push Notification Settings</h2>
                         </div>
                         <PushNotificationSettings providerId={Number.parseInt(hotelId)} providerType="place" />
                     </div>
@@ -966,7 +988,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
         { id: 'coin-history', icon: BarChart3, label: 'Coin History', color: 'orange', description: 'View coin balance & transactions' },
         { id: 'coin-shop', icon: Coins, label: 'Coin Shop', color: 'yellow', description: 'Redeem rewards & cashout' },
         { id: 'bank-details', icon: CreditCard, label: 'Bank Details', color: 'green', description: 'Payment information' },
-        { id: 'notifications', icon: BellRing, label: 'Notifications', color: 'red', description: 'System alerts' },
+        { id: 'notifications', icon: BellRing, label: 'Push Settings', color: 'red', description: 'Notification preferences' },
     ];
 
     return (
@@ -1100,14 +1122,17 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
                 </div>
             </main>
 
-            {/* Footer */}
-            <footer className="bg-white border-t border-gray-200 z-20 mt-auto">
-                <div className="px-4 py-3 max-w-[430px] sm:max-w-5xl mx-auto">
-                    <p className="text-xs text-gray-500 text-center">
-                        &copy; 2025 Hotel Dashboard
-                    </p>
-                </div>
-            </footer>
+            {/* Footer Navigation */}
+            <Footer 
+                userRole="hotel"
+                currentPage="dashboard"
+                t={t}
+                onDashboardClick={() => {/* Already on dashboard */}}
+                onNotificationsClick={() => setPage && setPage('notifications')}
+                onChatClick={() => {/* TODO: Add chat functionality */}}
+                onMenuClick={() => {/* TODO: Add menu functionality */}}
+                onHomeClick={() => setPage && setPage('home')}
+            />
 
             {/* QR Modal */}
             {state.qrOpen && (

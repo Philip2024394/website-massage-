@@ -15,6 +15,7 @@ import HotelVillaBankDetailsPage from './HotelVillaBankDetailsPage';
 import HotelBookingModal from '../components/hotel/PropertyBookingModal';
 import HotelAnalyticsSection from '../components/hotel/PropertyAnalyticsSection';
 import { safeDownload } from '../utils/domSafeHelpers';
+import Footer from '../components/Footer';
 
 // External component: DiscountCard
 const DiscountCard: React.FC<{ 
@@ -786,7 +787,7 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
                             <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
                                 <Bell className="w-5 h-5 text-orange-600" />
                             </div>
-                            <h2 className="text-2xl font-bold text-gray-900">{t('dashboard.notifications')}</h2>
+                            <h2 className="text-2xl font-bold text-gray-900">Push Notification Settings</h2>
                         </div>
                         <PushNotificationSettings providerId={Number.parseInt(villaId)} providerType="place" />
                     </div>
@@ -825,7 +826,7 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
         { id: 'coin-history', icon: '📊', label: 'Coin History' },
         { id: 'coin-shop', icon: '🪙', label: 'Coin Shop' },
         { id: 'bank-details', icon: '🏦', label: 'Bank Details' },
-        { id: 'notifications', icon: '🔔', label: t('dashboard.notifications') },
+        { id: 'notifications', icon: '🔔', label: 'Push Settings' },
         { id: 'membership', icon: '📦', label: t('dashboard.membership') },
         { id: 'services-settings', icon: '⚙️', label: t('dashboard.services') },
     ];
@@ -915,14 +916,17 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
                 </div>
             </main>
 
-            {/* Footer */}
-            <footer className="bg-white border-t border-gray-200 z-20 mt-auto">
-                <div className="px-4 py-3 max-w-[430px] sm:max-w-5xl mx-auto">
-                    <p className="text-xs text-gray-500 text-center">
-                        &copy; 2025 Villa Dashboard
-                    </p>
-                </div>
-            </footer>
+            {/* Footer Navigation */}
+            <Footer 
+                userRole="villa"
+                currentPage="dashboard"
+                t={t}
+                onDashboardClick={() => {/* Already on dashboard */}}
+                onNotificationsClick={() => setPage && setPage('notifications')}
+                onChatClick={() => {/* TODO: Add chat functionality */}}
+                onMenuClick={() => {/* TODO: Add menu functionality */}}
+                onHomeClick={() => setPage && setPage('home')}
+            />
 
             {/* QR Modal */}
             {state.qrOpen && (

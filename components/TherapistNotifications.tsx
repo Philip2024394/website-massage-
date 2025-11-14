@@ -9,6 +9,7 @@ interface TherapistNotificationsProps {
     onBack: () => void;
     t: any;
     userRole?: string;
+    dashboardType?: 'therapist' | 'place' | 'standalone';
 }
 
 // Icons
@@ -41,7 +42,8 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
     onMarkAsRead, 
     onBack, 
     t, 
-    userRole 
+    userRole,
+    dashboardType = 'standalone'
 }) => {
     const [welcomeRead, setWelcomeRead] = useState(false);
 
@@ -115,27 +117,46 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
     };
 
     return (
-        <div className="p-4 bg-gray-50 min-h-screen">
-            <header className="flex items-center mb-6">
-                <button onClick={onBack} className="text-gray-600 hover:text-gray-800 mr-4" aria-label="Go back to previous page">
-                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                </button>
-                <h1 className="text-xl font-bold text-gray-800">
-                    {userRole === 'therapist' || userRole === 'place' ? 'Therapist Notifications' : t.title}
-                </h1>
+        <div className="min-h-screen bg-gray-50">
+            {/* Header - Dashboard-aware styling */}
+            <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
+                <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                        <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
+                            {dashboardType === 'therapist' && (
+                                <>
+                                    <span className="text-3xl">💆</span>
+                                    <span>Therapist Dashboard</span>
+                                </>
+                            )}
+                            {dashboardType === 'place' && (
+                                <>
+                                    <span className="text-3xl">📍</span>
+                                    <span>Place Dashboard</span>
+                                </>
+                            )}
+                            {dashboardType === 'standalone' && (
+                                <>
+                                    <span className="text-3xl">🔔</span>
+                                    <span>Therapist Notifications</span>
+                                </>
+                            )}
+                        </h1>
+                    </div>
+                </div>
             </header>
+            
+            <div className="p-4 pb-20">
 
-            <div className="space-y-3">
-                {sortedNotifications.length > 0 ? (
-                    sortedNotifications.map((n: any) => (
-                        <div key={n.id} className={`p-4 rounded-lg shadow-sm flex items-start gap-4 ${n.isRead ? 'bg-white' : 'bg-gradient-to-r from-green-50 to-blue-50 border-l-4 border-orange-500'}`}>
-                            <div className="flex-shrink-0">{getIcon(n.type)}</div>
-                            <div className="flex-grow">
-                                <p className={`text-sm ${n.isRead ? 'text-gray-600' : 'text-gray-800 font-semibold'}`}>
-                                    {n.message}
-                                </p>
+                <div className="space-y-3">
+                    {sortedNotifications.length > 0 ? (
+                        sortedNotifications.map((n: any) => (
+                            <div key={n.id} className={`p-4 rounded-lg shadow-sm flex items-start gap-4 ${n.isRead ? 'bg-white' : 'bg-gradient-to-r from-green-50 to-blue-50 border-l-4 border-orange-500'}`}>
+                                <div className="flex-shrink-0">{getIcon(n.type)}</div>
+                                <div className="flex-grow">
+                                    <p className={`text-sm ${n.isRead ? 'text-gray-600' : 'text-gray-800 font-semibold'}`}>
+                                        {n.message}
+                                    </p>
                                 
                                 {/* Special handling for customer service notification */}
                                 {n.type === 'support' && (
@@ -199,6 +220,7 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
                     </div>
                 </div>
             )}
+            </div>
         </div>
     );
 };

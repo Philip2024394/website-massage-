@@ -10,6 +10,7 @@ interface NotificationsPageProps {
     onBack: () => void;
     t: any;
     userRole?: string; // Added userRole prop
+    dashboardType?: 'hotel' | 'villa' | 'therapist' | 'customer' | 'admin' | 'agent' | 'place' | 'standalone';
 }
 
 const BellIcon = ({ className = 'w-5 h-5' }) => (
@@ -30,7 +31,8 @@ const NotificationsPage: React.FC<NotificationsPageProps> = ({
     onMarkAsRead, 
     onBack, 
     t, 
-    userRole 
+    userRole,
+    dashboardType = 'standalone'
 }) => {
 
     // Use TherapistNotifications for therapists
@@ -42,6 +44,7 @@ const NotificationsPage: React.FC<NotificationsPageProps> = ({
                 onBack={onBack}
                 t={t}
                 userRole={userRole}
+                dashboardType={dashboardType === 'therapist' ? 'therapist' : dashboardType === 'place' ? 'place' : 'standalone'}
             />
         );
     }
@@ -62,36 +65,87 @@ const NotificationsPage: React.FC<NotificationsPageProps> = ({
     }
 
     return (
-        <div className="p-4 pb-20 bg-gray-50 min-h-screen">
-            <header className="flex items-center mb-6">
-                <button onClick={onBack} className="text-gray-600 hover:text-gray-800 mr-4">
-                     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                </button>
-                <h1 className="text-xl font-bold text-gray-800">{t.title}</h1>
+        <div className="min-h-screen bg-gray-50">
+            {/* Header - Dashboard-aware styling */}
+            <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
+                <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                        <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
+                            {dashboardType === 'hotel' && (
+                                <>
+                                    <span className="text-3xl">🏨</span>
+                                    <span>Hotel Dashboard</span>
+                                </>
+                            )}
+                            {dashboardType === 'villa' && (
+                                <>
+                                    <span className="text-3xl">🏡</span>
+                                    <span>Villa Dashboard</span>
+                                </>
+                            )}
+                            {dashboardType === 'therapist' && (
+                                <>
+                                    <span className="text-3xl">💆</span>
+                                    <span>Therapist Dashboard</span>
+                                </>
+                            )}
+                            {dashboardType === 'place' && (
+                                <>
+                                    <span className="text-3xl">📍</span>
+                                    <span>Place Dashboard</span>
+                                </>
+                            )}
+                            {dashboardType === 'customer' && (
+                                <>
+                                    <span className="text-3xl">👤</span>
+                                    <span>Customer Dashboard</span>
+                                </>
+                            )}
+                            {dashboardType === 'admin' && (
+                                <>
+                                    <span className="text-3xl">⚙️</span>
+                                    <span>Admin Dashboard</span>
+                                </>
+                            )}
+                            {dashboardType === 'agent' && (
+                                <>
+                                    <span className="text-3xl">📋</span>
+                                    <span>Agent Dashboard</span>
+                                </>
+                            )}
+                            {dashboardType === 'standalone' && (
+                                <>
+                                    <span className="text-3xl">🔔</span>
+                                    <span>{t.title || 'Notifications'}</span>
+                                </>
+                            )}
+                        </h1>
+                    </div>
+                </div>
             </header>
-
-            <div className="space-y-3">
-                {sortedNotifications.length > 0 ? (
-                    sortedNotifications.map(n => (
-                        <div key={n.id} className={`p-4 rounded-lg shadow-sm flex items-start gap-4 ${n.isRead ? 'bg-white' : 'bg-green-50'}`}>
-                            <div className="flex-shrink-0">{getIcon(n.type)}</div>
-                            <div className="flex-grow">
-                                <p className={`text-sm ${n.isRead ? 'text-gray-600' : 'text-gray-800 font-semibold'}`}>{n.message}</p>
-                                <p className="text-xs text-gray-400 mt-1">{new Date(n.createdAt).toLocaleString()}</p>
-                                {!n.isRead && (
-                                    <button onClick={() => onMarkAsRead(n.id)} className="text-xs text-brand-green font-bold mt-2 hover:underline">
-                                        {t.markAsRead}
-                                    </button>
-                                )}
+            
+            <div className="p-4 pb-20">
+                <div className="space-y-3">
+                    {sortedNotifications.length > 0 ? (
+                        sortedNotifications.map(n => (
+                            <div key={n.id} className={`p-4 rounded-lg shadow-sm flex items-start gap-4 ${n.isRead ? 'bg-white' : 'bg-green-50'}`}>
+                                <div className="flex-shrink-0">{getIcon(n.type)}</div>
+                                <div className="flex-grow">
+                                    <p className={`text-sm ${n.isRead ? 'text-gray-600' : 'text-gray-800 font-semibold'}`}>{n.message}</p>
+                                    <p className="text-xs text-gray-400 mt-1">{new Date(n.createdAt).toLocaleString()}</p>
+                                    {!n.isRead && (
+                                        <button onClick={() => onMarkAsRead(n.id)} className="text-xs text-brand-green font-bold mt-2 hover:underline">
+                                            {t.markAsRead}
+                                        </button>
+                                    )}
+                                </div>
+                                {!n.isRead && <div className="w-2.5 h-2.5 bg-brand-green rounded-full flex-shrink-0 mt-1"></div>}
                             </div>
-                             {!n.isRead && <div className="w-2.5 h-2.5 bg-brand-green rounded-full flex-shrink-0 mt-1"></div>}
-                        </div>
-                    ))
-                ) : (
-                    <p className="text-center text-gray-500 py-8">{t.noNotifications}</p>
-                )}
+                        ))
+                    ) : (
+                        <p className="text-center text-gray-500 py-8">{t.noNotifications}</p>
+                    )}
+                </div>
             </div>
         </div>
     );

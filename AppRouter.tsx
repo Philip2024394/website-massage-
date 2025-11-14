@@ -1032,11 +1032,40 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 );
             }
             
+            // Determine user role and dashboard context for header styling
+            let userRole: string | undefined;
+            let notificationsDashboardType: 'hotel' | 'villa' | 'therapist' | 'customer' | 'admin' | 'agent' | 'place' | 'standalone' = 'standalone';
+            
+            if (isHotelLoggedIn) {
+                userRole = 'hotel';
+                notificationsDashboardType = 'hotel';
+            } else if (isVillaLoggedIn) {
+                userRole = 'villa';  
+                notificationsDashboardType = 'villa';
+            } else if (loggedInProvider?.type === 'therapist') {
+                userRole = 'therapist';
+                notificationsDashboardType = 'therapist';
+            } else if (loggedInProvider?.type === 'place') {
+                userRole = 'place';
+                notificationsDashboardType = 'place';
+            } else if (loggedInCustomer) {
+                userRole = 'customer';
+                notificationsDashboardType = 'customer';
+            } else if (isAdminLoggedIn) {
+                userRole = 'admin';
+                notificationsDashboardType = 'admin';
+            } else if (loggedInAgent) {
+                userRole = 'agent';
+                notificationsDashboardType = 'agent';
+            }
+
             return <NotificationsPage 
                 notifications={notifications || []}
                 onMarkAsRead={handleMarkNotificationAsRead}
                 onBack={handleBackToHome}
                 t={t?.notifications || { title: 'Notifications', noNotifications: 'No notifications yet', markAsRead: 'Mark as read' }}
+                userRole={userRole}
+                dashboardType={notificationsDashboardType}
             />;
             
         case 'massageTypes': 
