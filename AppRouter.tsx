@@ -94,8 +94,12 @@ const renderAuthPages = (page: Page, props: AppRouterProps) => {
     const { setLoggedInProvider, setPage, handleBackToHome } = props;
     
     switch (page) {
+        // ========================
+        // 🔐 AUTHENTICATION ROUTES
+        // ========================
         case 'unifiedLogin': 
             return <UnifiedLoginPage />;
+            
         case 'therapistLogin': 
             return <TherapistLoginPage 
                 onSuccess={(therapistId) => {
@@ -591,31 +595,13 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
     }
 
     switch (page) {
+        // ========================
+        // 🏠 CORE APPLICATION ROUTES  
+        // ========================
         case 'landing': 
             return <LandingPage 
                 onLanguageSelect={handleLanguageSelect} 
                 onEnterApp={handleEnterApp} 
-            />;
-            
-        case 'unifiedLogin': 
-            return <UnifiedLoginPage />;
-            
-        case 'therapistLogin': 
-            return <TherapistLoginPage 
-                onSuccess={(therapistId) => {
-                    console.log('🚀 AppRouter: TherapistLogin onSuccess called with ID:', therapistId);
-                    console.log('🔧 AppRouter: Setting loggedInProvider...');
-                    setLoggedInProvider({ id: therapistId, type: 'therapist' });
-                    console.log('🔧 AppRouter: Setting page to therapistDashboard...');
-                    setPage('therapistDashboard');
-                    console.log('✅ AppRouter: Login success handler complete');
-                    
-                    // Add a small delay to ensure state is updated
-                    setTimeout(() => {
-                        console.log('🔍 AppRouter: Post-login state check - current page should be therapistDashboard');
-                    }, 100);
-                }} 
-                onBack={handleBackToHome} 
             />;
             
         case 'home':
