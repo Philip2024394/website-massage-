@@ -7,6 +7,9 @@ import HomeIcon from '../components/icons/HomeIcon';
 import MapPinIcon from '../components/icons/MapPinIcon';
 import DocumentTextIcon from '../components/icons/DocumentTextIcon';
 import { LogIn, UserPlus } from 'lucide-react';
+import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
+import { AppDrawer } from '../components/AppDrawer';
+import { React19SafeWrapper } from '../components/React19SafeWrapper';
 import PageNumberBadge from '../components/PageNumberBadge';
 import PasswordInput from '../components/PasswordInput';
 
@@ -20,10 +23,42 @@ const loginOptions = [
   { id: 'admin', label: 'Admin', icon: DocumentTextIcon },
 ];
 
-const UnifiedLoginPage: React.FC = () => {
+interface UnifiedLoginPageProps {
+  onBack?: () => void;
+  t?: any;
+  // Navigation handlers
+  onMassageJobsClick?: () => void;
+  onHotelPortalClick?: () => void;
+  onVillaPortalClick?: () => void;
+  onTherapistPortalClick?: () => void;
+  onMassagePlacePortalClick?: () => void;
+  onAgentPortalClick?: () => void;
+  onCustomerPortalClick?: () => void;
+  onAdminPortalClick?: () => void;
+  onTermsClick?: () => void;
+  onPrivacyClick?: () => void;
+  onNavigate?: (page: string) => void;
+}
+
+const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({
+  onBack,
+  t,
+  onMassageJobsClick,
+  onHotelPortalClick,
+  onVillaPortalClick,
+  onTherapistPortalClick,
+  onMassagePlacePortalClick,
+  onAgentPortalClick,
+  onCustomerPortalClick,
+  onAdminPortalClick,
+  onTermsClick,
+  onPrivacyClick,
+  onNavigate
+}) => {
   const [selectedRole, setSelectedRole] = useState('');
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [form, setForm] = useState({ email: '', password: '', extra: '' });
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Navigation function - fallback for environments without react-router
   const navigate = (path: string) => {
@@ -101,27 +136,66 @@ const UnifiedLoginPage: React.FC = () => {
   };
 
   return (
-    <div
-      className="min-h-screen h-screen w-full flex flex-col items-center justify-center p-4 overflow-hidden fixed inset-0 z-50"
-      style={{
-        backgroundImage: "url('https://ik.imagekit.io/7grri5v7d/massage%20image%208.png?updatedAt=1760187222991')",
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
-      }}
-    >
+    <div className="min-h-screen bg-gray-50">
       <PageNumberBadge pageNumber={3} pageName="UnifiedLoginPage" isLocked={false} />
-      {/* Overlay for better readability */}
-      <div className="absolute inset-0 bg-black/40 z-10"></div>
+      
+      {/* Header */}
+      <header className="bg-white border-b border-gray-200 px-4 py-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-gray-800">
+            <span className="text-black">Inda</span><span className="text-orange-500">street</span>
+          </h1>
+          <div className="flex items-center gap-3">
+            <button onClick={() => setIsMenuOpen(true)} title="Menu" className="p-2 hover:bg-orange-50 rounded-full transition-colors text-orange-500">
+              <BurgerMenuIcon className="w-6 h-6" />
+            </button>
+          </div>
+        </div>
+      </header>
 
-      {/* Return to Home Button */}
-      <button
-        onClick={() => typeof navigate === 'function' ? navigate('/') : window.location.href = '/'}
-        className="fixed top-6 left-6 w-12 h-12 bg-orange-500 hover:bg-orange-600 rounded-full shadow-lg flex items-center justify-center transition-all z-30 border border-orange-400"
-        aria-label="Back to Home"
+      {/* Global App Drawer */}
+      <React19SafeWrapper condition={isMenuOpen}>
+        <AppDrawer
+          isOpen={isMenuOpen}
+          onClose={() => setIsMenuOpen(false)}
+          t={t}
+          onMassageJobsClick={onMassageJobsClick}
+          onHotelPortalClick={onHotelPortalClick}
+          onVillaPortalClick={onVillaPortalClick}
+          onTherapistPortalClick={onTherapistPortalClick}
+          onMassagePlacePortalClick={onMassagePlacePortalClick}
+          onAgentPortalClick={onAgentPortalClick}
+          onCustomerPortalClick={onCustomerPortalClick}
+          onAdminPortalClick={onAdminPortalClick}
+          onNavigate={onNavigate}
+          onTermsClick={onTermsClick}
+          onPrivacyClick={onPrivacyClick}
+          therapists={[]}
+          places={[]}
+        />
+      </React19SafeWrapper>
+
+      {/* Main Content with Background */}
+      <main
+        className="min-h-screen h-screen w-full flex flex-col items-center justify-center p-4 overflow-hidden"
+        style={{
+          backgroundImage: "url('https://ik.imagekit.io/7grri5v7d/massage%20image%208.png?updatedAt=1760187222991')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
       >
-        <HomeIcon className="w-6 h-6 text-white" />
-      </button>
+        {/* Overlay for better readability */}
+        <div className="absolute inset-0 bg-black/40 z-10"></div>
+
+        {/* Return to Home Button */}
+        <button
+          onClick={() => onBack ? onBack() : (typeof navigate === 'function' ? navigate('/') : window.location.href = '/')}
+          className="fixed top-20 left-6 w-12 h-12 bg-orange-500 hover:bg-orange-600 rounded-full shadow-lg flex items-center justify-center transition-all z-30 border border-orange-400"
+          aria-label="Back to Home"
+        >
+          <HomeIcon className="w-6 h-6 text-white" />
+        </button>
 
       {/* Glass Effect Login Container */}
       <div className="max-w-md w-full bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-8 relative z-20 border border-white/20">
@@ -230,6 +304,7 @@ const UnifiedLoginPage: React.FC = () => {
           </button>
         </form>
       </div>
+      </main>
     </div>
   );
 };

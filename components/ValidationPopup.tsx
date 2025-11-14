@@ -49,7 +49,7 @@ export const ValidationPopup: React.FC<ValidationPopupProps> = ({
     const { icon, bgColor, borderColor, titleColor, buttonColor } = getIconAndColors();
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black bg-opacity-50">
             <div className={`max-w-md w-full ${bgColor} ${borderColor} border-2 rounded-xl shadow-2xl transform transition-all`}>
                 <div className="p-6">
                     {/* Header */}

@@ -50,6 +50,7 @@ import AdminBankSettingsPage from './pages/AdminBankSettingsPage';
 import CustomerAuthPage from './pages/CustomerAuthPage';
 import CustomerDashboardPage from './pages/CustomerDashboardPage';
 import AboutUsPage from './pages/AboutUsPage';
+import ContactUsPage from './pages/ContactUsPage';
 import HowItWorksPage from './pages/HowItWorksPage';
 import MassageBaliPage from './pages/MassageBaliPage';
 import BlogIndexPage from './pages/BlogIndexPage';
@@ -277,7 +278,10 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
     const navToEmployerJobPosting = () => setPage('employerJobPosting');
     const navToJobUnlockPayment = () => setPage('jobUnlockPayment');
     const navToTherapistJobRegistration = () => setPage('therapistJobRegistration');
-    const commonNavigateHandler = (page: string) => setPage(page as Page);
+    const commonNavigateHandler = (page: string) => {
+        console.log('🔥 CommonNavigateHandler: navigating to', page);
+        setPage(page as Page);
+    };
     const navToBlog = () => setPage('blog');
     
     // Helper for blog pages with consistent props
@@ -309,7 +313,23 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
     
     // Helper for pages with onBack and t props
     const renderBackPage = (Component: React.ComponentType<any>, tKey?: any, extraProps: any = {}) => (
-        <Component onBack={handleBackToHome} t={tKey || t} {...extraProps} />
+        <Component 
+            onBack={handleBackToHome} 
+            t={tKey || t} 
+            // Navigation handlers for AppDrawer
+            onMassageJobsClick={portalHandlers.onMassageJobsClick}
+            onHotelPortalClick={portalHandlers.onHotelPortalClick}
+            onVillaPortalClick={portalHandlers.onVillaPortalClick}
+            onTherapistPortalClick={portalHandlers.onTherapistPortalClick}
+            onMassagePlacePortalClick={portalHandlers.onMassagePlacePortalClick}
+            onAgentPortalClick={portalHandlers.onAgentPortalClick}
+            onCustomerPortalClick={portalHandlers.onCustomerPortalClick}
+            onAdminPortalClick={portalHandlers.onAdminPortalClick}
+            onTermsClick={portalHandlers.onTermsClick}
+            onPrivacyClick={handleNavigateToPrivacyPolicy}
+            onNavigate={setPage}
+            {...extraProps} 
+        />
     );
     
     // Helper for guest notifications (sign-in required)
@@ -360,15 +380,42 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
 
     // Common portal handlers
     const portalHandlers = {
-        onMassageJobsClick: () => setPage('massageJobs'),
-        onHotelPortalClick: () => setPage('hotelLogin'),
-        onVillaPortalClick: () => setPage('villaLogin'),
-        onTherapistPortalClick: () => setPage('therapistLogin'),
-        onMassagePlacePortalClick: () => setPage('massagePlaceLogin'),
-        onAgentPortalClick: () => setPage('agentAuth'),
-        onCustomerPortalClick: () => setPage('customerAuth'),
-        onAdminPortalClick: () => setPage('adminLogin'),
-        onTermsClick: () => setPage('serviceTerms')
+        onMassageJobsClick: () => {
+            console.log('🔥 Portal: navigating to massageJobs');
+            setPage('massageJobs');
+        },
+        onHotelPortalClick: () => {
+            console.log('🔥 Portal: navigating to hotelLogin');
+            setPage('hotelLogin');
+        },
+        onVillaPortalClick: () => {
+            console.log('🔥 Portal: navigating to villaLogin');
+            setPage('villaLogin');
+        },
+        onTherapistPortalClick: () => {
+            console.log('🔥 Portal: navigating to therapistLogin');
+            setPage('therapistLogin');
+        },
+        onMassagePlacePortalClick: () => {
+            console.log('🔥 Portal: navigating to massagePlaceLogin');
+            setPage('massagePlaceLogin');
+        },
+        onAgentPortalClick: () => {
+            console.log('🔥 Portal: navigating to agentAuth');
+            setPage('agentAuth');
+        },
+        onCustomerPortalClick: () => {
+            console.log('🔥 Portal: navigating to customerAuth');
+            setPage('customerAuth');
+        },
+        onAdminPortalClick: () => {
+            console.log('🔥 Portal: navigating to adminLogin');
+            setPage('adminLogin');
+        },
+        onTermsClick: () => {
+            console.log('🔥 Portal: navigating to serviceTerms');
+            setPage('serviceTerms');
+        }
     };
     
     // Common data props
@@ -533,7 +580,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return <GuestProfilePage 
                 onBack={handleBackToHome}
                 onRegisterClick={handleNavigateToRegistrationChoice} // 🎯 Opens registration drawer
-                t={t?.profile || t}
+                t={t}
                 // AppDrawer navigation props
                 onMassageJobsClick={portalHandlers.onMassageJobsClick}
                 onHotelPortalClick={portalHandlers.onHotelPortalClick}
@@ -557,7 +604,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onBook={(place) => handleNavigateToBooking(place, 'place')} 
                 onIncrementAnalytics={(metric: any) => handleIncrementAnalytics(selectedPlace.id, 'place', metric)} 
                 loggedInProviderId={loggedInProvider?.id} 
-                t={t.detail} 
+                t={t} 
             />;
             
         case 'massagePlaceProfile': 
@@ -627,6 +674,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     }}
                     bookings={bookings}
                     notifications={notifications || []}
+                    t={t}
                 />;
             }
             return null;
@@ -640,7 +688,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 }}
                 onLogout={handleProviderLogout}
                 onNavigateToDashboard={() => setPage('therapistDashboard')}
-                t={t.therapistStatus} 
+                t={t} 
             /> || null;
             
         case 'adminLogin': 
@@ -687,17 +735,17 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 />;
             }
             
-            return <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t?.registrationChoice || {}} />;
+            return <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t} />;
         }
             
         case 'agent': 
-            return <AgentPage onBack={handleBackToHome} onNavigateToAgentAuth={handleNavigateToAgentAuth} t={t.agentPage} contactNumber={APP_CONFIG.CONTACT_NUMBER} />;
+            return <AgentPage onBack={handleBackToHome} onNavigateToAgentAuth={handleNavigateToAgentAuth} t={t} contactNumber={APP_CONFIG.CONTACT_NUMBER} />;
             
         case 'agentAuth': 
-            return <AgentAuthPage onRegister={handleAgentRegister} onLogin={handleAgentLogin} onBack={handleBackToHome} t={t.agentAuth} />;
+            return <AgentAuthPage onRegister={handleAgentRegister} onLogin={handleAgentLogin} onBack={handleBackToHome} t={t} />;
             
         case 'agentTerms': 
-            return loggedInAgent ? <AgentTermsPage onAccept={handleAgentAcceptTerms} onLogout={handleAgentLogout} t={t.agentTermsPage} /> : null;
+            return loggedInAgent ? <AgentTermsPage onAccept={handleAgentAcceptTerms} onLogout={handleAgentLogout} t={t} /> : null;
             
         case 'agentDashboard': 
             // 🛡️ SECURE: Only render if authentication is valid
@@ -710,13 +758,13 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         onStopImpersonating={handleStopImpersonating}
                         messages={adminMessages}
                         onSendMessage={handleSendAdminMessage}
-                        t={t.agentDashboard} 
+                        t={t} 
                     />
                 );
             }
             if (loggedInAgent) {
                 if (!loggedInAgent.hasAcceptedTerms) {
-                    return <AgentTermsPage onAccept={handleAgentAcceptTerms} onLogout={handleAgentLogout} t={t.agentTermsPage} />;
+                    return <AgentTermsPage onAccept={handleAgentAcceptTerms} onLogout={handleAgentLogout} t={t} />;
                 }
                 return secureRenderer.renderAgentDashboard(
                     <AgentDashboardPage 
@@ -725,28 +773,28 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         messages={adminMessages}
                         onMarkMessagesAsRead={handleMarkMessagesAsRead}
                         onSaveProfile={handleSaveAgentProfile}
-                        t={t.agentDashboard} 
+                        t={t} 
                     />
                 );
             }
             return null;
             
         case 'serviceTerms': 
-            return <ServiceTermsPage onBack={handleBackToHome} t={t.serviceTerms} contactNumber={APP_CONFIG.CONTACT_NUMBER} />;
+            return <ServiceTermsPage onBack={handleBackToHome} t={t} contactNumber={APP_CONFIG.CONTACT_NUMBER} />;
             
         case 'placeTerms':
-            return renderBackPage(PlaceTermsPage, t.placeTerms);
+            return renderBackPage(PlaceTermsPage, t);
             
         case 'placeDiscountBadge': 
             return <PlaceDiscountBadgePage 
                 onBack={handleBackToHome} 
                 placeId={loggedInProvider?.id as number || 0}
                 placeName={loggedInProvider?.type === 'place' ? 'Massage Place' : 'Place'}
-                t={t.discountBadge} 
+                t={t} 
             />;
             
         case 'privacy':
-            return renderBackPage(PrivacyPolicyPage, t.privacyPolicy);
+            return renderBackPage(PrivacyPolicyPage, t);
         case 'cookies-policy':
             return renderBackPage(CookiesPolicyPage);
             
@@ -762,7 +810,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     onLogout={handleCustomerLogout}
                     onBack={handleBackToHome}
                     onBookNow={() => {}}
-                    t={t.customerDashboard}
+                    t={t}
                 />
             );
             
@@ -771,7 +819,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onSelectPackage={handleSelectMembershipPackage}
                 onPackageSelect={handleSelectMembershipPackage}
                 onBack={handleBackToHome}
-                t={t.membership}
+                t={t}
             />;
             
         case 'booking': 
@@ -785,16 +833,16 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 }}
                 onCreateBooking={handleCreateBooking}
                 bookings={[]} // Load actual bookings from state - implemented via bookings prop
-                t={t.bookingPage}
+                t={t}
                 contactNumber={APP_CONFIG.CONTACT_NUMBER}
             /> || null;
             
         case 'bookings':
             return (
                 <div className="p-4">
-                    <h1 className="text-2xl font-bold mb-4">{t.bookings.title}</h1>
+                    <h1 className="text-2xl font-bold mb-4">{t('bookings.title')}</h1>
                     {bookings.length === 0 ? (
-                        <p className="text-gray-500">{t.bookings.noBookings}</p>
+                        <p className="text-gray-500">{t('bookings.noBookings')}</p>
                     ) : (
                         <div className="space-y-4">
                             {bookings.map(booking => (
@@ -844,14 +892,14 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 notifications={notifications || []}
                 onMarkAsRead={handleMarkNotificationAsRead}
                 onBack={handleBackToHome}
-                t={t?.notifications || { title: 'Notifications', noNotifications: 'No notifications yet', markAsRead: 'Mark as read' }}
+                t={t}
                 userRole={userRole}
                 dashboardType={notificationsDashboardType}
             />;
         }
             
         case 'massageTypes':
-            return <MassageTypesPage _onBack={handleBackToHome} onNavigate={setPage} {...portalHandlers} onPrivacyClick={() => setPage('privacy')} therapists={therapists} places={places} t={t.massageTypes} />;
+            return <MassageTypesPage _onBack={handleBackToHome} onNavigate={setPage} {...portalHandlers} onPrivacyClick={() => setPage('privacy')} therapists={therapists} places={places} t={t} />;
             
         case 'hotelLogin':
             return <HotelLoginPage 
@@ -962,6 +1010,9 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             
         case 'about-us' as any:
             return <AboutUsPage onBack={handleBackToHome} onNavigate={commonNavigateHandler} t={t} />;
+            
+        case 'contact-us' as any:
+            return <ContactUsPage onNavigate={commonNavigateHandler} {...portalHandlers} {...commonDataProps} />;
             
         case 'indastreet-partners':
             return <IndastreetPartnersPage onNavigate={commonNavigateHandler} {...portalHandlers} {...commonDataProps} />;
@@ -1178,7 +1229,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         (t as any).documentId === loggedInProvider.id
                     ) || undefined}
                     notifications={notifications.filter(n => n.providerId === loggedInProvider.id)}
-                    t={t.providerDashboard || {}}
+                    t={t}
                 />;
             }
             

@@ -70,7 +70,7 @@ const RatingModal: React.FC<RatingModalProps> = ({ onClose, onSubmit, itemName, 
     };
     
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4" onClick={onClose}>
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[100] p-4" onClick={onClose}>
             <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-auto" onClick={e => e.stopPropagation()}>
                  <div className="flex justify-between items-start mb-4">
                     <div className="flex-1 pr-2">

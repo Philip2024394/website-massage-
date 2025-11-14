@@ -488,13 +488,13 @@ const HomePage: React.FC<HomePageProps> = ({
     // Removed unused renderPlaces
 
     return (
-        <div className="h-screen overflow-hidden bg-gray-50 fixed inset-0">
+        <div className="min-h-screen bg-gray-50">
             <PageNumberBadge pageNumber={2} pageName="HomePage" isLocked={false} />
             {/* Flying Butterfly Animation */}
             <FlyingButterfly />
             
             {/* Scrollable Content Container */}
-            <div className="scroll-container h-full overflow-y-auto pb-20" style={{ paddingBottom: '80px' }}>
+            <div className="flex-1 overflow-y-auto" style={{ paddingBottom: '80px' }}>
                 <header className="bg-white p-4 shadow-md sticky top-0 z-[9997]">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">
@@ -519,7 +519,7 @@ const HomePage: React.FC<HomePageProps> = ({
                             console.log('🍔 Setting isMenuOpen to true');
                             setIsMenuOpen(true);
                             console.log('🍔 After setting - isMenuOpen should be true');
-                        }} title="Menu" style={{ zIndex: 9999, position: 'relative' }}>
+                        }} title="Menu" className="p-2 hover:bg-orange-50 rounded-full transition-colors text-orange-500">
                            <BurgerMenuIcon className="w-6 h-6" />
                         </button>
                     </div>
@@ -835,17 +835,15 @@ const HomePage: React.FC<HomePageProps> = ({
             
             </div> {/* End scrollable content container */}
 
-            {/* Footer - AGGRESSIVE Fixed positioning to prevent scrolling */}
+            {/* Footer - Fixed at bottom */}
             <footer 
-                className="!fixed !bottom-0 !left-0 !right-0 bg-white border-t border-gray-200 py-4 !z-[9998]" 
+                className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-4 z-50" 
                 style={{ 
                     position: 'fixed', 
                     bottom: '0px', 
                     left: '0px', 
                     right: '0px', 
-                    zIndex: '9998',
-                    width: '100% !important',
-                    transform: 'none !important'
+                    zIndex: '50'
                 }}
             >
                 <div className="px-4 py-3 max-w-[430px] sm:max-w-5xl mx-auto">
@@ -882,15 +880,19 @@ const HomePage: React.FC<HomePageProps> = ({
                 
                 /* SCROLL CONTAINER FIX */
                 .scroll-container {
-                    height: 100vh !important;
-                    overflow-y: auto !important;
-                    overflow-x: hidden !important;
+                    height: 100%;
+                    overflow-y: auto;
+                    overflow-x: hidden;
                 }
                 
-                /* PREVENT BODY SCROLL */
-                body, html {
-                    overflow: hidden !important;
-                    height: 100vh !important;
+                /* ENSURE PROPER BODY SCROLL */
+                body {
+                    overflow-x: hidden;
+                }
+                
+                /* PREVENT HORIZONTAL SCROLL */
+                * {
+                    box-sizing: border-box;
                 }
             `}</style>
         </div>

@@ -52,6 +52,29 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
     notifications, 
     t 
 }) => {
+    // Create a safe translation function to prevent undefined errors
+    const safeT = typeof t === 'function' ? t : (key: string) => {
+        console.warn(`Translation missing for key: ${key}`);
+        return key; // Return the key as fallback
+    };
+
+    // Safety check for translations - use fallback if needed
+    if (!t || typeof t !== 'object') {
+        console.log('⚠️ TherapistDashboard: Translation object missing or invalid, using fallbacks');
+        const fallbackT = { 
+            availabilityStatus: 'Availability Status',
+            bookings: 'Bookings',
+            profile: 'Profile',
+            analytics: 'Analytics',
+            membership: 'Membership',
+            hotelVilla: 'Hotel/Villa',
+            terms: 'Terms',
+            settings: 'Settings',
+            ...(t || {})
+        };
+        t = fallbackT;
+    }
+
     const [therapist, setTherapist] = useState<Therapist | null>(null);
     const [isLoading, setIsLoading] = useState(false); // Start with false for debugging
 
@@ -443,17 +466,17 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
 
     // Menu items for navigation - Updated to match home drawer style with Lucide React icons
     const menuItems = [
-        { id: 'status', label: t.availabilityStatus || 'Availability Status', icon: <Activity className="w-5 h-5" />, gradientColor: 'from-green-500 to-green-600', borderColor: 'border-green-500', hoverColor: 'hover:border-green-300', textColor: 'text-green-800', bgColor: 'bg-green-100' },
+        { id: 'status', label: (t && t.availabilityStatus) || 'Availability Status', icon: <Activity className="w-5 h-5" />, gradientColor: 'from-green-500 to-green-600', borderColor: 'border-green-500', hoverColor: 'hover:border-green-300', textColor: 'text-green-800', bgColor: 'bg-green-100' },
         { id: 'notifications', label: 'Notifications', icon: <Bell className="w-5 h-5" />, gradientColor: 'from-red-500 to-red-600', borderColor: 'border-red-500', hoverColor: 'hover:border-red-300', textColor: 'text-red-800', bgColor: 'bg-red-100', badge: notifications.length > 0 ? (notifications.length > 9 ? '9+' : notifications.length.toString()) : null },
-        { id: 'bookings', label: t.bookings || 'Bookings', icon: <Calendar className="w-5 h-5" />, gradientColor: 'from-blue-500 to-blue-600', borderColor: 'border-blue-500', hoverColor: 'hover:border-blue-300', textColor: 'text-blue-800', bgColor: 'bg-blue-100' },
-        { id: 'profile', label: t.profile || 'Profile', icon: <User className="w-5 h-5" />, gradientColor: 'from-orange-500 to-orange-600', borderColor: 'border-orange-500', hoverColor: 'hover:border-orange-300', textColor: 'text-orange-800', bgColor: 'bg-orange-100' },
-        { id: 'analytics', label: t.analytics || 'Analytics', icon: <TrendingUp className="w-5 h-5" />, gradientColor: 'from-orange-500 to-orange-600', borderColor: 'border-orange-500', hoverColor: 'hover:border-orange-300', textColor: 'text-orange-800', bgColor: 'bg-orange-100' },
-        { id: 'membership', label: t.membership || 'Membership', icon: <Crown className="w-5 h-5" />, gradientColor: 'from-yellow-500 to-yellow-600', borderColor: 'border-yellow-500', hoverColor: 'hover:border-yellow-300', textColor: 'text-yellow-800', bgColor: 'bg-yellow-100' },
-        { id: 'hotel-villa', label: t.hotelVilla || 'Hotel/Villa', icon: <Building className="w-5 h-5" />, gradientColor: 'from-pink-500 to-pink-600', borderColor: 'border-pink-500', hoverColor: 'hover:border-pink-300', textColor: 'text-pink-800', bgColor: 'bg-pink-100' },
+        { id: 'bookings', label: (t && t.bookings) || 'Bookings', icon: <Calendar className="w-5 h-5" />, gradientColor: 'from-blue-500 to-blue-600', borderColor: 'border-blue-500', hoverColor: 'hover:border-blue-300', textColor: 'text-blue-800', bgColor: 'bg-blue-100' },
+        { id: 'profile', label: (t && t.profile) || 'Profile', icon: <User className="w-5 h-5" />, gradientColor: 'from-orange-500 to-orange-600', borderColor: 'border-orange-500', hoverColor: 'hover:border-orange-300', textColor: 'text-orange-800', bgColor: 'bg-orange-100' },
+        { id: 'analytics', label: (t && t.analytics) || 'Analytics', icon: <TrendingUp className="w-5 h-5" />, gradientColor: 'from-orange-500 to-orange-600', borderColor: 'border-orange-500', hoverColor: 'hover:border-orange-300', textColor: 'text-orange-800', bgColor: 'bg-orange-100' },
+        { id: 'membership', label: (t && t.membership) || 'Membership', icon: <Crown className="w-5 h-5" />, gradientColor: 'from-yellow-500 to-yellow-600', borderColor: 'border-yellow-500', hoverColor: 'hover:border-yellow-300', textColor: 'text-yellow-800', bgColor: 'bg-yellow-100' },
+        { id: 'hotel-villa', label: (t && t.hotelVilla) || 'Hotel/Villa', icon: <Building className="w-5 h-5" />, gradientColor: 'from-pink-500 to-pink-600', borderColor: 'border-pink-500', hoverColor: 'hover:border-pink-300', textColor: 'text-pink-800', bgColor: 'bg-pink-100' },
         { id: 'bank-details', label: 'Bank Details', icon: <CreditCard className="w-5 h-5" />, gradientColor: 'from-green-500 to-green-600', borderColor: 'border-green-500', hoverColor: 'hover:border-green-300', textColor: 'text-green-800', bgColor: 'bg-green-100' },
         { id: 'discount-banners', label: 'Discount Banners', icon: <Tag className="w-5 h-5" />, gradientColor: 'from-orange-500 to-orange-600', borderColor: 'border-orange-500', hoverColor: 'hover:border-orange-300', textColor: 'text-orange-800', bgColor: 'bg-orange-100' },
-        { id: 'terms', label: t.terms || 'Terms', icon: <FileText className="w-5 h-5" />, gradientColor: 'from-indigo-500 to-indigo-600', borderColor: 'border-indigo-500', hoverColor: 'hover:border-indigo-300', textColor: 'text-indigo-800', bgColor: 'bg-indigo-100' },
-        { id: 'settings', label: t.settings || 'Settings', icon: <Settings className="w-5 h-5" />, gradientColor: 'from-gray-500 to-gray-600', borderColor: 'border-gray-500', hoverColor: 'hover:border-gray-300', textColor: 'text-gray-800', bgColor: 'bg-gray-100' }
+        { id: 'terms', label: (t && t.terms) || 'Terms', icon: <FileText className="w-5 h-5" />, gradientColor: 'from-indigo-500 to-indigo-600', borderColor: 'border-indigo-500', hoverColor: 'hover:border-indigo-300', textColor: 'text-indigo-800', bgColor: 'bg-indigo-100' },
+        { id: 'settings', label: (t && t.settings) || 'Settings', icon: <Settings className="w-5 h-5" />, gradientColor: 'from-gray-500 to-gray-600', borderColor: 'border-gray-500', hoverColor: 'hover:border-gray-300', textColor: 'text-gray-800', bgColor: 'bg-gray-100' }
     ];
 
     // Handle save with comprehensive data structure

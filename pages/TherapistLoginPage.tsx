@@ -12,9 +12,36 @@ interface TherapistLoginPageProps {
     onSuccess: (therapistId: string) => void;
     onBack: () => void;
     t?: any;
+    // Navigation handlers
+    onMassageJobsClick?: () => void;
+    onHotelPortalClick?: () => void;
+    onVillaPortalClick?: () => void;
+    onTherapistPortalClick?: () => void;
+    onMassagePlacePortalClick?: () => void;
+    onAgentPortalClick?: () => void;
+    onCustomerPortalClick?: () => void;
+    onAdminPortalClick?: () => void;
+    onTermsClick?: () => void;
+    onPrivacyClick?: () => void;
+    onNavigate?: (page: string) => void;
 }
 
-const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({ onSuccess, onBack: _onBack, t }) => {
+const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({ 
+    onSuccess, 
+    onBack: _onBack, 
+    t,
+    onMassageJobsClick,
+    onHotelPortalClick,
+    onVillaPortalClick,
+    onTherapistPortalClick,
+    onMassagePlacePortalClick,
+    onAgentPortalClick,
+    onCustomerPortalClick,
+    onAdminPortalClick,
+    onTermsClick,
+    onPrivacyClick,
+    onNavigate
+}) => {
     const [viewMode, setViewMode] = useState<'login' | 'register'>('login');
     const [phoneNumber, setPhoneNumber] = useState('');
     const [password, setPassword] = useState('');
@@ -113,16 +140,18 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({ onSuccess, onBa
                 <AppDrawer
                     isOpen={isMenuOpen}
                     onClose={() => setIsMenuOpen(false)}
-                    onMassageJobsClick={() => {}}
-                    onHotelPortalClick={() => {}}
-                    onVillaPortalClick={() => {}}
-                    onTherapistPortalClick={() => {}}
-                    onMassagePlacePortalClick={() => {}}
-                    onAgentPortalClick={() => {}}
-                    onCustomerPortalClick={() => {}}
-                    onAdminPortalClick={() => {}}
-                    onTermsClick={() => {}}
-                    onPrivacyClick={() => {}}
+                    t={t}
+                    onMassageJobsClick={onMassageJobsClick}
+                    onHotelPortalClick={onHotelPortalClick}
+                    onVillaPortalClick={onVillaPortalClick}
+                    onTherapistPortalClick={onTherapistPortalClick}
+                    onMassagePlacePortalClick={onMassagePlacePortalClick}
+                    onAgentPortalClick={onAgentPortalClick}
+                    onCustomerPortalClick={onCustomerPortalClick}
+                    onAdminPortalClick={onAdminPortalClick}
+                    onNavigate={onNavigate}
+                    onTermsClick={onTermsClick}
+                    onPrivacyClick={onPrivacyClick}
                     therapists={[]}
                     places={[]}
                 />

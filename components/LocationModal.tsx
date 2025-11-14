@@ -125,7 +125,7 @@ const LocationModal: React.FC<LocationModalProps> = ({ onConfirm, onClose, t }) 
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[100] p-4">
             <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-bold text-gray-800">{safeT.title}</h2>

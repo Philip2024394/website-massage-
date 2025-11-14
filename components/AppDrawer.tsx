@@ -101,6 +101,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
     };
 
     const handleItemClick = (callback?: () => void) => {
+        console.log('🔥 AppDrawer handleItemClick called', callback);
         callback?.();
         onClose();
     };
@@ -118,15 +119,19 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                     animation: float 6s ease-in-out infinite;
                 }
             `}</style>
-            <div className="fixed inset-0 z-[9998]" role="dialog" aria-modal="true">
+            <div className="fixed inset-0" role="dialog" aria-modal="true" style={{zIndex: 2147483647}}>
             {/* Backdrop */}
             <div 
                 className="absolute inset-0 bg-black bg-opacity-50 transition-opacity" 
                 onClick={onClose}
+                style={{zIndex: 2147483646}}
             />
             
             {/* Drawer Panel */}
-            <div className={`absolute right-0 top-0 bottom-0 w-[70%] sm:w-80 bg-white shadow-2xl flex flex-col transform transition-transform ease-in-out duration-300 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+            <div 
+                className={`absolute right-0 top-0 bottom-0 w-[70%] sm:w-80 bg-white shadow-2xl flex flex-col transform transition-transform ease-in-out duration-300 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+                style={{zIndex: 2147483647}}
+            >
                 
                 {/* Header */}
                 <div className="p-6 flex justify-between items-center border-b border-black">
@@ -351,7 +356,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                 </button>
 
                                 <button 
-                                    onClick={() => handleItemClick(() => onNavigate?.('about-us'))}
+                                    onClick={() => handleItemClick(() => onNavigate?.('contact-us'))}
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-cyan-500 group transform hover:scale-105"
                                 >
                                     <div className="p-2 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-lg">

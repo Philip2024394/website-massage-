@@ -233,7 +233,7 @@ const App = () => {
             <AppLayout
                 isFullScreen={state.isFullScreen}
             >
-            <div className={state.isFullScreen ? "flex-grow" : "flex-grow pb-16"}>
+            <div className={state.isFullScreen ? "flex-grow" : "flex-1"}>
                 <AppRouter
                     page={state.page}
                     isLoading={state.isLoading}
@@ -349,7 +349,9 @@ const App = () => {
                 setPage={state.setPage}
                 setLoyaltyEvent={state.setLoyaltyEvent}
             />
+            </AppLayout>
             
+            {/* Global Overlays - Outside AppLayout to prevent clipping */}
             {/* Global Booking Popup */}
             <BookingPopup
                 isOpen={isBookingPopupOpen}
@@ -388,7 +390,6 @@ const App = () => {
                 hotelVillaName={scheduleBookingInfo?.hotelVillaName}
                 hotelVillaType={scheduleBookingInfo?.hotelVillaType}
             />
-            </AppLayout>
         </DeviceStylesProvider>
     );
 };

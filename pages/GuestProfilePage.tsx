@@ -59,7 +59,7 @@ const GuestProfilePage: React.FC<GuestProfilePageProps> = ({
 }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     return (
-        <div className="min-h-screen bg-gray-50 pb-16">
+        <div className="min-h-screen bg-gray-50">
             {/* Header with Brand and Burger Menu */}
             <header className="bg-white shadow-sm px-4 py-4 sticky top-0 z-20">
                 <div className="flex justify-between items-center">

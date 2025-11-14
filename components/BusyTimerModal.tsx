@@ -28,7 +28,7 @@ const BusyTimerModal: React.FC<BusyTimerModalProps> = ({ isOpen, onClose, onConf
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-3 sm:p-4">
             <div className="bg-white rounded-2xl p-4 sm:p-6 w-full max-w-sm sm:max-w-md shadow-2xl mx-2 sm:mx-4">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-4 sm:mb-6">

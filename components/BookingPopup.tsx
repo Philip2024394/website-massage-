@@ -196,7 +196,7 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
 
   if (showWarning) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4">
         <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl">
           <div className="bg-gradient-to-r from-orange-500 to-red-500 p-5 rounded-t-2xl">
             <div className="flex items-center justify-between">

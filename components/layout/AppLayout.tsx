@@ -7,8 +7,8 @@ interface AppLayoutProps {
 
 export const AppLayout: React.FC<AppLayoutProps> = ({ isFullScreen, children }) => {
     return (
-        <div className={isFullScreen ? "h-screen flex flex-col overflow-hidden mobile-optimized" : "max-w-md mx-auto min-h-screen bg-white shadow-lg flex flex-col mobile-optimized container-mobile"}>
-            <div className={isFullScreen ? "flex-grow content-landscape" : "flex-grow pb-20 sm:pb-24 content-landscape"}>
+        <div className={isFullScreen ? "h-full flex flex-col mobile-optimized" : "max-w-md mx-auto h-full bg-white shadow-lg flex flex-col mobile-optimized container-mobile"}>
+            <div className="flex-1 content-landscape overflow-y-auto overflow-x-hidden">
                 {children}
             </div>
         </div>

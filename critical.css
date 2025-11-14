@@ -3,11 +3,11 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Base critical styles */
+/* Base critical styles - New scrolling architecture */
 html, body {
-  height: 100%;
-  width: 100%;
-  overflow-x: hidden;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden; /* Body never scrolls */
   margin: 0;
   padding: 0;
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
@@ -16,7 +16,9 @@ html, body {
 #root {
   height: 100vh;
   width: 100vw;
-  overflow-x: hidden;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Ensure icons render correctly */
