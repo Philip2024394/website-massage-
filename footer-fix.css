@@ -1,0 +1,59 @@
+/* Footer Fix Styles - Prevent scrolling conflicts */
+
+/* Ensure body has proper padding for fixed footer */
+body.has-footer {
+  padding-bottom: 80px !important;
+}
+
+/* Prevent footer from scrolling with content */
+footer[class*="fixed"] {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 50 !important;
+}
+
+/* Ensure main content doesn't overlap footer */
+main, .main-content, .page-content {
+  padding-bottom: 80px;
+  box-sizing: border-box;
+}
+
+/* Dashboard specific fixes */
+.dashboard-content {
+  padding-bottom: 80px !important;
+  min-height: calc(100vh - 80px);
+}
+
+/* Prevent horizontal scroll issues */
+html, body {
+  overflow-x: hidden;
+}
+
+/* Mobile responsive footer height */
+@media (max-width: 640px) {
+  body.has-footer,
+  main,
+  .main-content,
+  .page-content,
+  .dashboard-content {
+    padding-bottom: 64px !important;
+  }
+}
+
+/* Fix z-index hierarchy */
+.z-50 {
+  z-index: 50 !important;
+}
+
+/* Ensure footer stays at bottom even on short pages */
+.min-h-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-grow {
+  flex: 1;
+}

@@ -44,7 +44,7 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
                 onNavigate={_onNavigate}
             />
 
-            <main className="flex-1 w-full max-w-5xl mx-auto px-2 py-3 sm:p-4 md:p-6 lg:p-8 pb-24 overflow-y-auto">
+            <main className="flex-1 w-full max-w-5xl mx-auto px-2 py-3 sm:p-4 md:p-6 lg:p-8 pb-20 overflow-y-auto">
                 {/* TabContent component not found - using simple div structure */}
                 <div className="tab-content">
                     <p className="text-center p-4 text-gray-600">Villa Dashboard Content</p>

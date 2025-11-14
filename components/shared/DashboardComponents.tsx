@@ -236,7 +236,7 @@ export const DashboardFooter: React.FC<{
     type: 'hotel' | 'villa';
 }> = ({ type }) => {
     return (
-        <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-20">
+        <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
             <div className="px-4 py-3 max-w-[430px] sm:max-w-5xl mx-auto">
                 <div className="flex items-center justify-center">
                     <p className="text-xs text-gray-500 text-center">

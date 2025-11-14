@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Footer fixes */
+@import url('./footer-fix.css');
+
 /* 📱 FULL-SCREEN PWA: Complete viewport coverage */
 html, body {
   height: 100%;

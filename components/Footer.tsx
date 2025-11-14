@@ -95,7 +95,7 @@ const Footer: React.FC<FooterProps> = ({
     // Admin Footer
     if (userRole === 'admin') {
         return (
-            <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40">
+            <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
                 <div className="flex justify-around items-center h-16 max-w-md mx-auto">
                     {/* Dashboard */}
                     <button 
@@ -163,7 +163,7 @@ const Footer: React.FC<FooterProps> = ({
     // Hotel Footer
     if (userRole === 'hotel') {
         return (
-            <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40">
+            <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
                 <div className="flex justify-around items-center h-16 max-w-md mx-auto">
                     {/* Dashboard */}
                     <button 
@@ -215,7 +215,7 @@ const Footer: React.FC<FooterProps> = ({
     // Villa Footer (same as Hotel)
     if (userRole === 'villa') {
         return (
-            <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40">
+            <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
                 <div className="flex justify-around items-center h-16 max-w-md mx-auto">
                     {/* Dashboard */}
                     <button 
@@ -267,7 +267,7 @@ const Footer: React.FC<FooterProps> = ({
     // Agent Footer
     if (userRole === 'agent') {
         return (
-            <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40">
+            <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
                 <div className="flex justify-around items-center h-16 max-w-md mx-auto">
                     {/* Dashboard */}
                     <button 
@@ -375,7 +375,7 @@ const Footer: React.FC<FooterProps> = ({
 
     // User Footer
     return (
-        <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40">
+        <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
             <div className="flex justify-around items-center h-16 max-w-md mx-auto">
                 {/* Home */}
                 <button 
