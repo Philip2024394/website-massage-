@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix Therapist isLive Field</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@15.0.0/dist/sdk.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .section {
+            background: white;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .result {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #ddd;
+        }
+        
+        .success { border-left-color: #4CAF50; background: #f1f8e9; }
+        .warning { border-left-color: #ff9800; background: #fff3e0; }
+        .error { border-left-color: #f44336; background: #ffebee; }
+        .info { border-left-color: #2196F3; background: #e3f2fd; }
+        
+        button {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        
+        button:hover {
+            background: #ee5a24;
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .data-display {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔧 Fix Therapist isLive Field</h1>
+        <p>This tool will fix the isLive field for all therapists so they appear on the site</p>
+    </div>
+
+    <div class="section">
+        <h2>🔍 Step 1: Check Current Status</h2>
+        <button onclick="checkTherapistStatus()">Check Therapist Status</button>
+        <div id="status-results"></div>
+    </div>
+
+    <div class="section">
+        <h2>🛠️ Step 2: Fix isLive Field</h2>
+        <button onclick="fixIsLiveField()" id="fixButton" disabled>Set All Therapists to isLive: true</button>
+        <div id="fix-results"></div>
+    </div>
+
+    <div class="section">
+        <h2>✅ Step 3: Verify Fix</h2>
+        <button onclick="verifyFix()">Verify All Therapists Are Live</button>
+        <div id="verify-results"></div>
+    </div>
+
+    <script>
+        const APPWRITE_CONFIG = {
+            endpoint: 'https://syd.cloud.appwrite.io/v1',
+            projectId: '68f23b11000d25eb3664',
+            databaseId: '68f76ee1000e64ca8d05',
+            collections: {
+                therapists: '68f76f60001f58b9877c'
+            }
+        };
+
+        // Initialize Appwrite
+        let databases;
+        
+        function initAppwrite() {
+            const sdk = new window.Appwrite.Client();
+            sdk.setEndpoint(APPWRITE_CONFIG.endpoint).setProject(APPWRITE_CONFIG.projectId);
+            databases = new window.Appwrite.Databases(sdk);
+            console.log('✅ Appwrite initialized');
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', initAppwrite);
+
+        // Check current therapist status
+        async function checkTherapistStatus() {
+            const resultsDiv = document.getElementById('status-results');
+            resultsDiv.innerHTML = '<div class="result info">Checking therapist status...</div>';
+            
+            try {
+                const response = await databases.listDocuments(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.therapists
+                );
+                
+                const therapists = response.documents;
+                let statusReport = `<div class="result success">✅ Found ${therapists.length} therapists</div>`;
+                
+                let liveCount = 0;
+                let offlineCount = 0;
+                let missingCount = 0;
+                
+                therapists.forEach(therapist => {
+                    if (therapist.isLive === true) {
+                        liveCount++;
+                    } else if (therapist.isLive === false) {
+                        offlineCount++;
+                    } else {
+                        missingCount++;
+                    }
+                });
+                
+                statusReport += `<div class="result info">
+                    📊 Status Breakdown:
+                    <br>• Live (isLive: true): ${liveCount}
+                    <br>• Offline (isLive: false): ${offlineCount}
+                    <br>• Missing isLive field: ${missingCount}
+                </div>`;
+                
+                if (liveCount === 0) {
+                    statusReport += '<div class="result warning">⚠️ No therapists are live! This is why cards are not showing.</div>';
+                    statusReport += '<div class="result info">💡 Use the Fix button to set all therapists to isLive: true</div>';
+                    document.getElementById('fixButton').disabled = false;
+                } else {
+                    statusReport += '<div class="result success">✅ Some therapists are already live</div>';
+                    document.getElementById('fixButton').disabled = false;
+                }
+                
+                // Show sample therapist data
+                if (therapists.length > 0) {
+                    const sample = therapists[0];
+                    statusReport += `<div class="result info">📝 Sample therapist:<br>
+                        Name: ${sample.name || 'Unknown'}<br>
+                        ID: ${sample.$id}<br>
+                        isLive: ${sample.isLive}<br>
+                        Status: ${sample.status || 'Unknown'}
+                    </div>`;
+                }
+                
+                resultsDiv.innerHTML = statusReport;
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="result error">❌ Error checking status: ${error.message}</div>`;
+                console.error('Error:', error);
+            }
+        }
+
+        // Fix isLive field for all therapists
+        async function fixIsLiveField() {
+            const resultsDiv = document.getElementById('fix-results');
+            const button = document.getElementById('fixButton');
+            
+            button.disabled = true;
+            button.textContent = 'Fixing...';
+            resultsDiv.innerHTML = '<div class="result info">Fixing isLive field for all therapists...</div>';
+            
+            try {
+                // Get all therapists
+                const response = await databases.listDocuments(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.therapists
+                );
+                
+                const therapists = response.documents;
+                let fixCount = 0;
+                let errorCount = 0;
+                
+                // Update each therapist
+                for (const therapist of therapists) {
+                    try {
+                        await databases.updateDocument(
+                            APPWRITE_CONFIG.databaseId,
+                            APPWRITE_CONFIG.collections.therapists,
+                            therapist.$id,
+                            { isLive: true }
+                        );
+                        fixCount++;
+                        console.log(`✅ Fixed ${therapist.name || therapist.$id}`);
+                    } catch (error) {
+                        errorCount++;
+                        console.error(`❌ Failed to fix ${therapist.name || therapist.$id}:`, error);
+                    }
+                }
+                
+                let result = `<div class="result success">✅ Fixed ${fixCount} therapists</div>`;
+                if (errorCount > 0) {
+                    result += `<div class="result warning">⚠️ ${errorCount} therapists had errors</div>`;
+                }
+                result += '<div class="result info">🎉 All therapists should now be visible on the live site!</div>';
+                
+                resultsDiv.innerHTML = result;
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="result error">❌ Error fixing therapists: ${error.message}</div>`;
+                console.error('Error:', error);
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Set All Therapists to isLive: true';
+            }
+        }
+
+        // Verify the fix worked
+        async function verifyFix() {
+            const resultsDiv = document.getElementById('verify-results');
+            resultsDiv.innerHTML = '<div class="result info">Verifying fix...</div>';
+            
+            try {
+                const response = await databases.listDocuments(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.therapists
+                );
+                
+                const therapists = response.documents;
+                const liveTherapists = therapists.filter(t => t.isLive === true);
+                
+                if (liveTherapists.length === therapists.length) {
+                    resultsDiv.innerHTML = `<div class="result success">
+                        ✅ Perfect! All ${therapists.length} therapists are now live!
+                        <br>🎉 Therapist cards should now be visible on your website.
+                        <br>💡 Refresh your live site to see the changes.
+                    </div>`;
+                } else {
+                    resultsDiv.innerHTML = `<div class="result warning">
+                        ⚠️ Only ${liveTherapists.length} out of ${therapists.length} therapists are live.
+                        <br>Some therapists may still need to be fixed manually.
+                    </div>`;
+                }
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="result error">❌ Error verifying: ${error.message}</div>`;
+                console.error('Error:', error);
+            }
+        }
+    </script>
+</body>
+</html>
