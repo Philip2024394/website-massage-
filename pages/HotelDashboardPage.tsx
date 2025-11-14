@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { 
     Building, Image as ImageIcon, LogOut, Menu, Phone, QrCode, Star, Tag, User, X, Bell,
     BarChart3, Percent, Hotel as HotelIcon, ClipboardList, MessageSquare, Users, 
-    DollarSign, BellRing, Package, CreditCard
+    DollarSign, BellRing, Package, CreditCard, Coins
 } from 'lucide-react';
 import { Therapist, Place, HotelVillaServiceStatus, Hotel } from '../types';
 import { parsePricing } from '../utils/appwriteHelpers';
@@ -93,6 +93,7 @@ interface HotelDashboardPageProps {
     hotelId?: string;
     initialTab?: 'analytics' | 'discounts' | 'menu' | 'feedback' | 'commissions' | 'notifications';
     setPage?: (page: any) => void;
+    onNavigate?: (page: string) => void;
 }
 
 const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({ 
@@ -101,7 +102,8 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
     places = [], 
     hotelId = '1', 
     initialTab = 'analytics',
-    setPage
+    setPage,
+    onNavigate
 }) => {
     const { t } = useTranslations();
     
@@ -761,6 +763,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
         { id: 'menu', icon: ClipboardList, label: 'Menu', badge: providers.length, color: 'indigo', description: 'Service providers' },
         { id: 'feedback', icon: MessageSquare, label: 'Feedback', color: 'yellow', description: 'Customer reviews' },
         { id: 'commissions', icon: DollarSign, label: 'Commissions', color: 'orange', description: 'Payment tracking' },
+        { id: 'coin-rewards', icon: Coins, label: 'Coin Rewards', color: 'yellow', description: 'Redeem rewards & cashout' },
         { id: 'bank-details', icon: CreditCard, label: 'Bank Details', color: 'green', description: 'Payment information' },
         { id: 'notifications', icon: BellRing, label: 'Notifications', color: 'red', description: 'System alerts' },
     ];
@@ -837,6 +840,10 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
                                                 if (item.id === 'menu' && setPage) {
                                                     // Navigate to live menu page instead of showing menu tab
                                                     setPage('hotelVillaMenu');
+                                                } else if (item.id === 'coin-rewards' && onNavigate) {
+                                                    // Navigate to coin shop for rewards and cashout
+                                                    onNavigate('coin-shop');
+                                                    updateState({ isSideDrawerOpen: false });
                                                 } else {
                                                     updateState({ activeTab: item.id, isSideDrawerOpen: false });
                                                 }

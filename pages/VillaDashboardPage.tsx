@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { Building, Image as ImageIcon, LogOut, Menu, Phone, QrCode, Star, Tag, User, X, Bell } from 'lucide-react';
+import { Building, Image as ImageIcon, LogOut, Menu, Phone, QrCode, Star, Tag, User, X, Bell, 
+    BarChart3, Percent, ClipboardList, MessageSquare, DollarSign, BellRing, CreditCard, Coins } from 'lucide-react';
 import { Therapist, Place, HotelVillaServiceStatus } from '../types';
 import { parsePricing } from '../utils/appwriteHelpers';
 import { getAllTherapistImages } from '../utils/therapistImageUtils';
@@ -86,6 +87,8 @@ interface VillaDashboardPageProps {
     places?: Place[];
     villaId?: string;
     initialTab?: 'analytics' | 'discounts' | 'profile' | 'menu' | 'feedback' | 'concierge' | 'commissions' | 'notifications' | 'membership' | 'services-settings';
+    setPage?: (page: any) => void;
+    onNavigate?: (page: string) => void;
 }
 
 const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({ 
@@ -93,7 +96,9 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
     therapists = [], 
     places = [], 
     villaId = '1', 
-    initialTab = 'analytics' 
+    initialTab = 'analytics',
+    setPage,
+    onNavigate
 }) => {
     const { t } = useTranslations();
     
@@ -617,6 +622,7 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
         { id: 'feedback', icon: '⭐', label: t('dashboard.feedback') },
         { id: 'concierge', icon: '👥', label: t('dashboard.concierge') },
         { id: 'commissions', icon: '💰', label: t('dashboard.commissions') },
+        { id: 'coin-rewards', icon: '🪙', label: 'Coin Rewards' },
         { id: 'bank-details', icon: '🏦', label: 'Bank Details' },
         { id: 'notifications', icon: '🔔', label: t('dashboard.notifications') },
         { id: 'membership', icon: '📦', label: t('dashboard.membership') },
@@ -667,7 +673,13 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
                             {navItems.map((item) => (
                                 <button
                                     key={item.id}
-                                    onClick={() => updateState({ activeTab: item.id, isSideDrawerOpen: false })}
+                                    onClick={() => {
+                                        if (item.id === 'coin-rewards' && onNavigate) {
+                                            onNavigate('coin-shop');
+                                        } else {
+                                            updateState({ activeTab: item.id, isSideDrawerOpen: false });
+                                        }
+                                    }}
                                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                                         state.activeTab === item.id ? 'bg-orange-500 text-white' : 'text-gray-700 hover:bg-gray-100'
                                     }`}

@@ -1012,11 +1012,16 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 places={places}
                 hotelId={user?.id || '1'}
                 setPage={(page: Page) => setPage(page)}
+                onNavigate={(page: string) => setPage(page as Page)}
             /> || null;
             
         case 'villaDashboard': 
  
-            return isVillaLoggedIn && <VillaDashboardPage onLogout={handleVillaLogout} /> || null;
+            return isVillaLoggedIn && <VillaDashboardPage 
+                onLogout={handleVillaLogout}
+                setPage={(page: any) => setPage(page as Page)}
+                onNavigate={(page: string) => setPage(page as Page)}
+            /> || null;
             
         case 'employerJobPosting': 
  
