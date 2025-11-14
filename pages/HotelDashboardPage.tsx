@@ -1,10 +1,10 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { 
     Building, Image as ImageIcon, LogOut, Menu, Phone, QrCode, Star, Tag, User, X, Bell,
-    BarChart3, Percent, Hotel, ClipboardList, MessageSquare, Users, 
-    DollarSign, BellRing, Package
+    BarChart3, Percent, Hotel as HotelIcon, ClipboardList, MessageSquare, Users, 
+    DollarSign, BellRing, Package, CreditCard
 } from 'lucide-react';
-import { Therapist, Place, HotelVillaServiceStatus } from '../types';
+import { Therapist, Place, HotelVillaServiceStatus, Hotel } from '../types';
 import { parsePricing } from '../utils/appwriteHelpers';
 import { getAllTherapistImages } from '../utils/therapistImageUtils';
 import { analyticsService } from '../services/analyticsService';
@@ -16,6 +16,7 @@ import { useTranslations } from '../lib/useTranslations';
 import PushNotificationSettings from '../components/PushNotificationSettings';
 import HotelBookingModal from '../components/hotel/PropertyBookingModal';
 import HotelAnalyticsSection from '../components/hotel/PropertyAnalyticsSection';
+import HotelVillaBankDetailsPage from './HotelVillaBankDetailsPage';
 import DashboardHeader from '../components/DashboardHeader';
 import { safeDownload } from '../utils/domSafeHelpers';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
@@ -530,6 +531,47 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
                             </div>
                         </div>
 
+                        {/* Bank Details for Commission Payments */}
+                        <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-xl p-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                                        <CreditCard className="w-4 h-4 text-green-600" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-semibold text-gray-900">Payment Information for Therapists</h3>
+                                        <p className="text-sm text-gray-600">Therapists use this information to pay commissions</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => updateState({ activeTab: 'bank-details' })}
+                                    className="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2"
+                                >
+                                    <CreditCard className="w-4 h-4" />
+                                    Manage Bank Details
+                                </button>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                <div className="bg-white rounded-lg p-4 border border-gray-200">
+                                    <p className="text-gray-600 mb-1">Hotel Name</p>
+                                    <p className="font-semibold text-gray-900">{state.hotelName || 'Not set'}</p>
+                                </div>
+                                <div className="bg-white rounded-lg p-4 border border-gray-200">
+                                    <p className="text-gray-600 mb-1">WhatsApp</p>
+                                    <p className="font-semibold text-gray-900">{state.hotelPhone || 'Not set'}</p>
+                                </div>
+                                <div className="bg-white rounded-lg p-4 border border-gray-200">
+                                    <p className="text-gray-600 mb-1">Address</p>
+                                    <p className="font-semibold text-gray-900 text-xs">{state.hotelAddress || 'Not set'}</p>
+                                </div>
+                            </div>
+                            <div className="mt-3 text-center">
+                                <p className="text-xs text-gray-600">
+                                    💡 <strong>Complete your bank details</strong> so therapists know where to send commission payments after service completion.
+                                </p>
+                            </div>
+                        </div>
+
                         {/* Commission Records Table */}
                         <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
                             <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
@@ -662,6 +704,33 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
                     </div>
                 );
 
+            case 'bank-details':
+                return (
+                    <HotelVillaBankDetailsPage
+                        hotelVilla={{
+                            id: parseInt(hotelId),
+                            name: state.hotelName || 'Hotel',
+                            address: state.hotelAddress || '',
+                            phone: state.hotelPhone || '',
+                            email: '',
+                            bankName: '',
+                            bankAccountNumber: '',
+                            bankAccountName: '',
+                        }}
+                        hotelVillaType="hotel"
+                        onSave={async (updatedDetails) => {
+                            console.log('Bank details saved:', updatedDetails);
+                            // Update local state if needed
+                            updateState({ 
+                                hotelName: updatedDetails.name || state.hotelName,
+                                hotelAddress: updatedDetails.address || state.hotelAddress,
+                                hotelPhone: updatedDetails.phone || state.hotelPhone 
+                            });
+                        }}
+                        onBack={() => updateState({ activeTab: 'analytics' })}
+                    />
+                );
+
             case 'notifications':
                 return (
                     <div className="space-y-6">
@@ -692,6 +761,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
         { id: 'menu', icon: ClipboardList, label: 'Menu', badge: providers.length, color: 'indigo', description: 'Service providers' },
         { id: 'feedback', icon: MessageSquare, label: 'Feedback', color: 'yellow', description: 'Customer reviews' },
         { id: 'commissions', icon: DollarSign, label: 'Commissions', color: 'orange', description: 'Payment tracking' },
+        { id: 'bank-details', icon: CreditCard, label: 'Bank Details', color: 'green', description: 'Payment information' },
         { id: 'notifications', icon: BellRing, label: 'Notifications', color: 'red', description: 'System alerts' },
     ];
 

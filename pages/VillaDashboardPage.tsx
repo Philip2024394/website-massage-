@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Building, Image as ImageIcon, LogOut, Menu, Phone, QrCode, Star, Tag, User, X, Bell } from 'lucide-react';
-import { Therapist, Place, HotelVillaServiceStatus } from '../types';
+import { Therapist, Place, HotelVillaServiceStatus, Villa } from '../types';
 import { parsePricing } from '../utils/appwriteHelpers';
 import { getAllTherapistImages } from '../utils/therapistImageUtils';
 import { analyticsService } from '../services/analyticsService';
@@ -10,6 +10,7 @@ import QRCodeGenerator from 'qrcode';
 import { useTranslations } from '../lib/useTranslations';
 import PushNotificationSettings from '../components/PushNotificationSettings';
 import HotelVillaServicesSettingsPage from './HotelVillaServicesSettingsPage';
+import HotelVillaBankDetailsPage from './HotelVillaBankDetailsPage';
 import HotelBookingModal from '../components/hotel/PropertyBookingModal';
 import HotelAnalyticsSection from '../components/hotel/PropertyAnalyticsSection';
 import { safeDownload } from '../utils/domSafeHelpers';
@@ -547,6 +548,33 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
                     </div>
                 );
 
+            case 'bank-details':
+                return (
+                    <HotelVillaBankDetailsPage
+                        hotelVilla={{
+                            id: parseInt(villaId),
+                            name: state.villaName || 'Villa',
+                            address: state.villaAddress || '',
+                            phone: state.villaPhone || '',
+                            email: '',
+                            bankName: '',
+                            bankAccountNumber: '',
+                            bankAccountName: '',
+                        }}
+                        hotelVillaType="villa"
+                        onSave={async (updatedDetails) => {
+                            console.log('Villa bank details saved:', updatedDetails);
+                            // Update local state if needed
+                            updateState({ 
+                                villaName: updatedDetails.name || state.villaName,
+                                villaAddress: updatedDetails.address || state.villaAddress,
+                                villaPhone: updatedDetails.phone || state.villaPhone 
+                            });
+                        }}
+                        onBack={() => updateState({ activeTab: 'analytics' })}
+                    />
+                );
+
             case 'notifications':
                 return (
                     <div className="space-y-6">
@@ -589,6 +617,7 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
         { id: 'feedback', icon: '⭐', label: t('dashboard.feedback') },
         { id: 'concierge', icon: '👥', label: t('dashboard.concierge') },
         { id: 'commissions', icon: '💰', label: t('dashboard.commissions') },
+        { id: 'bank-details', icon: '🏦', label: 'Bank Details' },
         { id: 'notifications', icon: '🔔', label: t('dashboard.notifications') },
         { id: 'membership', icon: '📦', label: t('dashboard.membership') },
         { id: 'services-settings', icon: '⚙️', label: t('dashboard.services') },
