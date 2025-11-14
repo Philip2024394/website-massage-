@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 CORS Status Check</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .status-loading {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 6px;
+        }
+        
+        .status-success {
+            background: #e8f5e8;
+            border-left: 4px solid #4caf50;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 6px;
+        }
+        
+        .status-error {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 6px;
+        }
+        
+        .test-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 10px;
+        }
+        
+        .test-btn:hover {
+            background: #c0392b;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #e74c3c;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔍 CORS Status Checker</h1>
+        <p>Testing if your Appwrite domain fix is working...</p>
+        
+        <button class="test-btn" onclick="runCompleteTest()">
+            🧪 Test CORS Status Now
+        </button>
+        
+        <div id="test-results">
+            <div class="status-loading">
+                <strong>Ready to test...</strong><br>
+                Click the button above to check if CORS is fixed.
+            </div>
+        </div>
+        
+        <div id="therapist-count" style="margin-top: 20px;"></div>
+    </div>
+
+    <script>
+        async function runCompleteTest() {
+            const resultsDiv = document.getElementById('test-results');
+            const countDiv = document.getElementById('therapist-count');
+            
+            // Show loading
+            resultsDiv.innerHTML = `
+                <div class="status-loading">
+                    <div class="spinner"></div>
+                    <strong>Testing CORS and API connectivity...</strong>
+                </div>
+            `;
+            
+            try {
+                // Test 1: Basic Appwrite Health Check
+                console.log('Testing Appwrite health...');
+                const healthResponse = await fetch('https://syd.cloud.appwrite.io/v1/health', {
+                    method: 'GET',
+                    headers: {
+                        'X-Appwrite-Project': '68f23b11000d25eb3664'
+                    }
+                });
+                
+                if (!healthResponse.ok) {
+                    throw new Error(`Health check failed: ${healthResponse.status}`);
+                }
+                
+                console.log('Health check passed, testing account...');
+                
+                // Test 2: Account API (the one that was failing)
+                const accountResponse = await fetch('https://syd.cloud.appwrite.io/v1/account', {
+                    method: 'GET',
+                    headers: {
+                        'X-Appwrite-Project': '68f23b11000d25eb3664'
+                    }
+                });
+                
+                if (accountResponse.status === 401) {
+                    // 401 is expected (not logged in), but means CORS is working
+                    resultsDiv.innerHTML = `
+                        <div class="status-success">
+                            ✅ <strong>CORS IS FIXED!</strong><br><br>
+                            🎉 Appwrite API is now accessible from this domain.<br>
+                            🔄 The 401 error is expected (not logged in) - this means CORS is working!<br><br>
+                            <strong>Your therapist cards should now be visible on the main site!</strong>
+                        </div>
+                    `;
+                    
+                    // Now test therapist data
+                    await testTherapistData(countDiv);
+                    
+                } else if (accountResponse.ok) {
+                    resultsDiv.innerHTML = `
+                        <div class="status-success">
+                            ✅ <strong>CORS IS COMPLETELY FIXED!</strong><br><br>
+                            🎉 Full API access working from this domain.<br><br>
+                            <strong>Your therapist cards should now be visible!</strong>
+                        </div>
+                    `;
+                    
+                    await testTherapistData(countDiv);
+                } else {
+                    throw new Error(`Account API returned: ${accountResponse.status}`);
+                }
+                
+            } catch (error) {
+                console.error('Test failed:', error);
+                
+                if (error.message.includes('CORS') || error.message.includes('blocked')) {
+                    resultsDiv.innerHTML = `
+                        <div class="status-error">
+                            ❌ <strong>CORS STILL BLOCKED</strong><br><br>
+                            The domain is still not added to Appwrite platforms.<br><br>
+                            <strong>Please check:</strong><br>
+                            • Did you add "indastreetmassage.com" to Appwrite platforms?<br>
+                            • Did you wait 2-3 minutes after adding it?<br>
+                            • Try refreshing this page and testing again.
+                        </div>
+                    `;
+                } else if (error.message.includes('Failed to fetch') || error.message.includes('timeout')) {
+                    resultsDiv.innerHTML = `
+                        <div class="status-error">
+                            ❌ <strong>NETWORK ERROR</strong><br><br>
+                            Cannot reach Appwrite servers.<br><br>
+                            <strong>This could be:</strong><br>
+                            • Network connectivity issue<br>
+                            • Appwrite server temporary issue<br>
+                            • Still CORS blocked<br><br>
+                            Error: ${error.message}
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="status-error">
+                            ⚠️ <strong>UNEXPECTED ERROR</strong><br><br>
+                            Error: ${error.message}<br><br>
+                            Check browser console for more details.
+                        </div>
+                    `;
+                }
+            }
+        }
+        
+        async function testTherapistData(countDiv) {
+            try {
+                countDiv.innerHTML = `
+                    <div class="status-loading">
+                        <div class="spinner"></div>
+                        Testing therapist data access...
+                    </div>
+                `;
+                
+                // Test therapist collection access
+                const therapistResponse = await fetch('https://syd.cloud.appwrite.io/v1/databases/68f76ee1000e64ca8d05/collections/68f76f60001f58b9877c/documents', {
+                    method: 'GET',
+                    headers: {
+                        'X-Appwrite-Project': '68f23b11000d25eb3664'
+                    }
+                });
+                
+                if (therapistResponse.ok) {
+                    const data = await therapistResponse.json();
+                    const liveTherapists = data.documents.filter(t => t.isLive === true);
+                    
+                    countDiv.innerHTML = `
+                        <div class="status-success">
+                            📊 <strong>Therapist Data Access:</strong> ✅ Working<br>
+                            📈 <strong>Total Therapists:</strong> ${data.documents.length}<br>
+                            🟢 <strong>Live Therapists:</strong> ${liveTherapists.length}<br><br>
+                            ${liveTherapists.length > 0 ? 
+                                '🎉 You have live therapists! They should appear on your main site.' : 
+                                '⚠️ No therapists marked as "isLive: true". Use the fix-therapist-islive.html tool to activate them.'
+                            }
+                        </div>
+                    `;
+                } else if (therapistResponse.status === 401) {
+                    countDiv.innerHTML = `
+                        <div class="status-success">
+                            🔐 <strong>Therapist Data:</strong> Requires authentication<br>
+                            This is normal - your main app will handle authentication.<br><br>
+                            <strong>The important thing is CORS is working!</strong>
+                        </div>
+                    `;
+                } else {
+                    throw new Error(`Therapist API returned: ${therapistResponse.status}`);
+                }
+                
+            } catch (error) {
+                countDiv.innerHTML = `
+                    <div class="status-error">
+                        ⚠️ <strong>Therapist Data Test Failed:</strong><br>
+                        ${error.message}<br><br>
+                        This might be a permissions issue, but CORS appears to be working.
+                    </div>
+                `;
+            }
+        }
+        
+        // Auto-run test after 1 second
+        setTimeout(runCompleteTest, 1000);
+    </script>
+</body>
+</html>
