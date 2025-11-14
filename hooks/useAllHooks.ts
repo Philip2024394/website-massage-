@@ -90,6 +90,7 @@ export const useAllHooks = () => {
         setPage: state.setPage,
         setIsAdminLoggedIn: state.setIsAdminLoggedIn,
         setLoggedInUser: state.setLoggedInUser,
+        setUser: state.setUser,
         setLoggedInProvider: state.setLoggedInProvider,
         setLoggedInAgent: state.setLoggedInAgent,
         setLoggedInCustomer: state.setLoggedInCustomer,

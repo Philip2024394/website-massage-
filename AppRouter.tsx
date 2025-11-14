@@ -424,7 +424,7 @@ interface AppRouterProps {
     handleAdminLogout: () => Promise<void>;
     handleCustomerLogout: () => Promise<void>;
     handleAgentLogout: () => Promise<void>;
-    handleHotelLogin: () => void; // Add hotel login handler
+    handleHotelLogin: (hotelId?: string) => void; // Add hotel login handler
     handleNavigateToNotifications: () => void;
     handleNavigateToAgentAuth: () => void;
 
@@ -1065,7 +1065,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onSuccess={(hotelId) => {
                     console.log('🏨 Hotel Login Success - hotelId:', hotelId);
                     // Set hotel as logged in and navigate to dashboard
-                    handleHotelLogin();
+                    handleHotelLogin(hotelId);
                     setPage('hotelDashboard');
                 }} 
                 onBack={handleBackToHome} 
@@ -1096,8 +1096,26 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     therapists={therapists}
                     places={places}
                     hotelId={user?.id || '1'}
-                    setPage={(page: Page) => setPage(page)}
-                    onNavigate={(page: string) => setPage(page as Page)}
+                    setPage={(page: Page) => {
+                        // 🛡️ SECURITY: Only allow hotel-safe pages
+                        const hotelAllowedPages: Page[] = ['coinHistory', 'coin-shop', 'hotelVillaMenu'];
+                        if (hotelAllowedPages.includes(page as Page)) {
+                            setPage(page);
+                        } else {
+                            console.error('🚨 SECURITY: Hotel dashboard attempted to navigate to unauthorized page:', page);
+                            // Stay on hotel dashboard
+                        }
+                    }}
+                    onNavigate={(page: string) => {
+                        // 🛡️ SECURITY: Only allow hotel-safe pages
+                        const hotelAllowedPages = ['coinHistory', 'coin-shop', 'hotelVillaMenu'];
+                        if (hotelAllowedPages.includes(page)) {
+                            setPage(page as Page);
+                        } else {
+                            console.error('🚨 SECURITY: Hotel dashboard attempted to navigate to unauthorized page:', page);
+                            // Stay on hotel dashboard
+                        }
+                    }}
                 />
             );
             
@@ -1106,8 +1124,26 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return secureRenderer.renderVillaDashboard(
                 <VillaDashboardPage 
                     onLogout={handleVillaLogout}
-                    setPage={(page: any) => setPage(page as Page)}
-                    onNavigate={(page: string) => setPage(page as Page)}
+                    setPage={(page: any) => {
+                        // 🛡️ SECURITY: Only allow villa-safe pages
+                        const villaAllowedPages: Page[] = ['coinHistory', 'coin-shop', 'hotelVillaMenu'];
+                        if (villaAllowedPages.includes(page as Page)) {
+                            setPage(page as Page);
+                        } else {
+                            console.error('🚨 SECURITY: Villa dashboard attempted to navigate to unauthorized page:', page);
+                            // Stay on villa dashboard
+                        }
+                    }}
+                    onNavigate={(page: string) => {
+                        // 🛡️ SECURITY: Only allow villa-safe pages
+                        const villaAllowedPages = ['coinHistory', 'coin-shop', 'hotelVillaMenu'];
+                        if (villaAllowedPages.includes(page)) {
+                            setPage(page as Page);
+                        } else {
+                            console.error('🚨 SECURITY: Villa dashboard attempted to navigate to unauthorized page:', page);
+                            // Stay on villa dashboard
+                        }
+                    }}
                 />
             );
             

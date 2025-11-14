@@ -14,6 +14,7 @@ interface UseAuthHandlersProps {
     setIsHotelLoggedIn: (value: boolean) => void;
     setIsVillaLoggedIn: (value: boolean) => void;
     setLoggedInUser: React.Dispatch<React.SetStateAction<any>>;
+    setUser: React.Dispatch<React.SetStateAction<any>>;
     setLoggedInCustomer: React.Dispatch<React.SetStateAction<any>>;
     setLoggedInAgent: React.Dispatch<React.SetStateAction<any>>;
     setLoggedInProvider: React.Dispatch<React.SetStateAction<any>>;
@@ -26,6 +27,7 @@ export const useAuthHandlers = ({
     setIsHotelLoggedIn,
     setIsVillaLoggedIn,
     setLoggedInUser,
+    setUser,
     setLoggedInCustomer,
     setLoggedInAgent,
     setLoggedInProvider,
@@ -103,10 +105,16 @@ export const useAuthHandlers = ({
         setPage('adminDashboard');
     }, [setIsAdminLoggedIn, setPage]);
 
-    const handleHotelLogin = useCallback(() => {
+    const handleHotelLogin = useCallback((hotelId?: string) => {
         console.log('🏨 handleHotelLogin called - setting hotel logged in state');
         setIsHotelLoggedIn(true);
-    }, [setIsHotelLoggedIn]);
+        setUser({
+            id: hotelId || 'hotel-user',
+            type: 'hotel',
+            email: '', // Will be set by the login process
+            name: 'Hotel User'
+        });
+    }, [setIsHotelLoggedIn, setUser]);
 
     return {
         handleProviderLogout,
