@@ -622,7 +622,8 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
         { id: 'feedback', icon: '⭐', label: t('dashboard.feedback') },
         { id: 'concierge', icon: '👥', label: t('dashboard.concierge') },
         { id: 'commissions', icon: '💰', label: t('dashboard.commissions') },
-        { id: 'coin-rewards', icon: '🪙', label: 'Coin Rewards' },
+        { id: 'coin-history', icon: '📊', label: 'Coin History' },
+        { id: 'coin-shop', icon: '🪙', label: 'Coin Shop' },
         { id: 'bank-details', icon: '🏦', label: 'Bank Details' },
         { id: 'notifications', icon: '🔔', label: t('dashboard.notifications') },
         { id: 'membership', icon: '📦', label: t('dashboard.membership') },
@@ -674,7 +675,9 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
                                 <button
                                     key={item.id}
                                     onClick={() => {
-                                        if (item.id === 'coin-rewards' && onNavigate) {
+                                        if (item.id === 'coin-history' && onNavigate) {
+                                            onNavigate('coinHistory');
+                                        } else if (item.id === 'coin-shop' && onNavigate) {
                                             onNavigate('coin-shop');
                                         } else {
                                             updateState({ activeTab: item.id, isSideDrawerOpen: false });
