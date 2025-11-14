@@ -87,8 +87,6 @@ import TodaysDiscountsPage from './pages/TodaysDiscountsPage';
 import GuestProfilePage from './pages/GuestProfilePage'; // 🎯 NEW: Guest profile for non-registered users
 import { APP_CONFIG } from './config/appConfig';
 
-
-
 interface AppRouterProps {
     page: Page;
     isLoading: boolean;
@@ -275,6 +273,64 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         <Component onBack={handleBackToHome} setPage={setPage} t={t} />
     );
     
+    // Helper for "Coming Soon" pages
+    const renderComingSoon = (title: string) => (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="text-center">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">{title}</h2>
+                <button onClick={handleBackToHome} className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                    Back to Home
+                </button>
+            </div>
+        </div>
+    );
+    
+    // Helper for simple pages with just onNavigate
+    const renderSimplePage = (Component: React.ComponentType<any>, extraProps: any = {}) => (
+        <Component onNavigate={commonNavigateHandler} {...extraProps} />
+    );
+    
+    // Helper for pages with onBack and t props
+    const renderBackPage = (Component: React.ComponentType<any>, tKey?: any, extraProps: any = {}) => (
+        <Component onBack={handleBackToHome} t={tKey || t} {...extraProps} />
+    );
+    
+    // Helper for guest notifications (sign-in required)
+    const renderGuestNotifications = () => (
+        <div className="min-h-screen bg-gray-50 pb-16">
+            <div className="bg-white border-b border-gray-200 px-4 py-4 flex items-center">
+                <button onClick={handleBackToHome} className="mr-4">
+                    <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+                <h1 className="text-xl font-bold text-gray-900">Notifications</h1>
+            </div>
+            <div className="flex flex-col items-center justify-center px-6 py-20 text-center">
+                <div className="w-24 h-24 mb-6 rounded-full bg-orange-100 flex items-center justify-center">
+                    <svg className="w-12 h-12 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Sign In Required</h2>
+                <p className="text-gray-600 mb-8 max-w-sm">To receive and view notifications, you need to create an account or sign in.</p>
+                <div className="space-y-4 w-full max-w-xs">
+                    <button onClick={handleNavigateToRegistrationChoice} className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-orange-600 hover:to-orange-700 transition-all duration-300 shadow-lg">Create Account</button>
+                    <button onClick={() => setPage('unifiedLogin')} className="w-full bg-white text-gray-700 px-6 py-3 rounded-lg font-semibold border border-gray-300 hover:bg-gray-50 transition-colors">Sign In</button>
+                </div>
+                <div className="mt-8 bg-blue-50 rounded-lg p-4 max-w-sm">
+                    <h3 className="font-semibold text-blue-900 mb-2">With an account, you'll get:</h3>
+                    <ul className="text-sm text-blue-700 space-y-1 text-left">
+                        <li>• Booking confirmations & updates</li>
+                        <li>• Special offers & promotions</li>
+                        <li>• Therapist availability alerts</li>
+                        <li>• Payment & loyalty updates</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    );
+    
     // Helper for hotel/villa secure navigation
     const hotelVillaAllowedPages = ['coinHistory', 'coin-shop', 'hotelVillaMenu'];
     const createSecureNavHandler = (type: string) => (page: string | Page) => {
@@ -283,6 +339,30 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         } else {
             console.error(`🚨 SECURITY: ${type} dashboard attempted to navigate to unauthorized page:`, page);
         }
+    };
+
+    // Common portal handlers
+    const portalHandlers = {
+        onMassageJobsClick: () => setPage('massageJobs'),
+        onHotelPortalClick: () => setPage('hotelLogin'),
+        onVillaPortalClick: () => setPage('villaLogin'),
+        onTherapistPortalClick: () => setPage('therapistLogin'),
+        onMassagePlacePortalClick: () => setPage('massagePlaceLogin'),
+        onAgentPortalClick: () => setPage('agentAuth'),
+        onCustomerPortalClick: () => setPage('customerAuth'),
+        onAdminPortalClick: () => setPage('adminLogin'),
+        onTermsClick: () => setPage('serviceTerms')
+    };
+    
+    // Common data props
+    const commonDataProps = { therapists, places, t };
+    
+    // Common dashboard props
+    const commonDashboardProps = {
+        onNavigateToNotifications: handleNavigateToNotifications,
+        onUpdateBookingStatus: handleUpdateBookingStatus,
+        bookings,
+        notifications
     };
 
     if (isLoading && page !== 'landing') {
@@ -393,18 +473,18 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onChatWithBusyTherapist={handleChatWithBusyTherapist}
                 onShowRegisterPrompt={handleShowRegisterPromptForChat}
                 onIncrementAnalytics={(id: any, type: any, metric: any) => handleIncrementAnalytics(id, type, metric)}
-                onHotelPortalClick={handleNavigateToHotelLogin}
-                onVillaPortalClick={handleNavigateToVillaLogin}
-                onTherapistPortalClick={handleNavigateToTherapistLogin}
-                onMassagePlacePortalClick={handleNavigateToMassagePlaceLogin}
-                onAdminPortalClick={handleNavigateToAdminLogin}
+                onHotelPortalClick={portalHandlers.onHotelPortalClick}
+                onVillaPortalClick={portalHandlers.onVillaPortalClick}
+                onTherapistPortalClick={portalHandlers.onTherapistPortalClick}
+                onMassagePlacePortalClick={portalHandlers.onMassagePlacePortalClick}
+                onAdminPortalClick={portalHandlers.onAdminPortalClick}
                 onBrowseJobsClick={() => setPage('browseJobs')}
                 onEmployerJobPostingClick={() => setPage('employerJobPosting')}
-                onMassageJobsClick={() => setPage('massageJobs')}
+                onMassageJobsClick={portalHandlers.onMassageJobsClick}
                 onTherapistJobsClick={() => setPage('therapistJobs')}
                 onTermsClick={handleNavigateToServiceTerms}
                 onPrivacyClick={handleNavigateToPrivacyPolicy}
-                onNavigate={(page: string) => setPage(page as Page)}
+                onNavigate={commonNavigateHandler}
                 isLoading={isLoading}
                 t={t} 
             />;
@@ -416,15 +496,15 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onQuickBookWithChat={(therapist: Therapist) => handleQuickBookWithChat(therapist, 'therapist')}
                 userLocation={userLocation}
                 loggedInCustomer={loggedInCustomer}
-                onMassageJobsClick={() => setPage('massageJobs')}
+                onMassageJobsClick={portalHandlers.onMassageJobsClick}
                 onTherapistJobsClick={() => setPage('therapistJobs')}
-                onVillaPortalClick={handleNavigateToVillaLogin}
-                onTherapistPortalClick={handleNavigateToTherapistLogin}
-                onMassagePlacePortalClick={handleNavigateToMassagePlaceLogin}
-                onAgentPortalClick={() => setPage('agent')}
-                onCustomerPortalClick={handleNavigateToCustomerDashboard}
+                onVillaPortalClick={portalHandlers.onVillaPortalClick}
+                onTherapistPortalClick={portalHandlers.onTherapistPortalClick}
+                onMassagePlacePortalClick={portalHandlers.onMassagePlacePortalClick}
+                onAgentPortalClick={portalHandlers.onAgentPortalClick}
+                onCustomerPortalClick={portalHandlers.onCustomerPortalClick}
                 onAdminPortalClick={handleNavigateToAdminLogin}
-                onNavigate={(page: string) => setPage(page as Page)}
+                onNavigate={commonNavigateHandler}
                 onTermsClick={handleNavigateToServiceTerms}
                 onPrivacyClick={handleNavigateToPrivacyPolicy}
                 therapists={therapists}
@@ -437,16 +517,16 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onRegisterClick={handleNavigateToRegistrationChoice} // 🎯 Opens registration drawer
                 t={t?.profile || t}
                 // AppDrawer navigation props
-                onMassageJobsClick={() => setPage('massageJobs')}
-                onHotelPortalClick={handleNavigateToHotelLogin}
-                onVillaPortalClick={handleNavigateToVillaLogin}
-                onTherapistPortalClick={handleNavigateToTherapistLogin}
-                onMassagePlacePortalClick={handleNavigateToMassagePlaceLogin}
-                onAgentPortalClick={() => setPage('agent')}
-                onCustomerPortalClick={handleNavigateToCustomerDashboard}
-                onAdminPortalClick={handleNavigateToAdminLogin}
-                onNavigate={(page: string) => setPage(page as Page)}
-                onTermsClick={handleNavigateToServiceTerms}
+                onMassageJobsClick={portalHandlers.onMassageJobsClick}
+                onHotelPortalClick={portalHandlers.onHotelPortalClick}
+                onVillaPortalClick={portalHandlers.onVillaPortalClick}
+                onTherapistPortalClick={portalHandlers.onTherapistPortalClick}
+                onMassagePlacePortalClick={portalHandlers.onMassagePlacePortalClick}
+                onAgentPortalClick={portalHandlers.onAgentPortalClick}
+                onCustomerPortalClick={portalHandlers.onCustomerPortalClick}
+                onAdminPortalClick={portalHandlers.onAdminPortalClick}
+                onNavigate={commonNavigateHandler}
+                onTermsClick={portalHandlers.onTermsClick}
                 onPrivacyClick={handleNavigateToPrivacyPolicy}
                 therapists={therapists}
                 places={places}
@@ -481,17 +561,14 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onAgentPortalClick={loggedInAgent ? () => setPage('agentDashboard') : () => setPage('agent')}
                 onCustomerPortalClick={handleNavigateToCustomerDashboard}
                 onAdminPortalClick={handleNavigateToAdminLogin}
-                onNavigate={(page: string) => setPage(page as Page)}
+                onNavigate={commonNavigateHandler}
                 onTermsClick={handleNavigateToServiceTerms}
                 onPrivacyClick={handleNavigateToPrivacyPolicy}
                 therapists={therapists}
                 places={places}
             />;
-            
 
-
-        case 'therapistStatus': 
-
+        case 'therapistStatus':
             return loggedInProvider?.type === 'therapist' && <TherapistStatusPage 
                 therapist={therapists.find(t => t.id === loggedInProvider.id) ?? null}
                 onStatusChange={async (status: AvailabilityStatus) => {
@@ -540,10 +617,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     onSave={handleSavePlace}
                     onLogout={handleProviderLogout}
                     onNavigate={(page) => setPage(page as Page)}
-                    onNavigateToNotifications={() => console.log('Navigate to notifications')}
-                    onUpdateBookingStatus={(bookingId, status) => console.log('Update booking status:', bookingId, status)}
+                    {...commonDashboardProps}
                     bookings={bookings?.filter(b => b.providerId === loggedInProvider.id && b.providerType === 'place') || []}
-                    notifications={notifications || []}
                     t={t || {}}
                 />;
             }
@@ -595,8 +670,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'serviceTerms': 
             return <ServiceTermsPage onBack={handleBackToHome} t={t.serviceTerms} contactNumber={APP_CONFIG.CONTACT_NUMBER} />;
             
-        case 'placeTerms': 
-            return <PlaceTermsPage onBack={handleBackToHome} t={t.placeTerms} />;
+        case 'placeTerms':
+            return renderBackPage(PlaceTermsPage, t.placeTerms);
             
         case 'placeDiscountBadge': 
             return <PlaceDiscountBadgePage 
@@ -606,11 +681,10 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 t={t.discountBadge} 
             />;
             
-        case 'privacy': 
-            return <PrivacyPolicyPage onBack={handleBackToHome} t={t.privacyPolicy} />;
-            
-        case 'cookies-policy': 
-            return <CookiesPolicyPage onBack={handleBackToHome} t={t} />;
+        case 'privacy':
+            return renderBackPage(PrivacyPolicyPage, t.privacyPolicy);
+        case 'cookies-policy':
+            return renderBackPage(CookiesPolicyPage);
             
         case 'customerAuth': 
             return <CustomerAuthPage onSuccess={handleCustomerAuthSuccess} onBack={handleBackToHome} userLocation={userLocation} />;
@@ -628,8 +702,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 />
             );
             
-        case 'membership': 
- 
+        case 'membership':
             return <MembershipPage 
                 onSelectPackage={handleSelectMembershipPackage}
                 onPackageSelect={handleSelectMembershipPackage}
@@ -652,82 +725,28 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 contactNumber={APP_CONFIG.CONTACT_NUMBER}
             /> || null;
             
-        case 'bookings': 
-            return <div className="p-4">
-                <h1 className="text-2xl font-bold mb-4">{t.bookings.title}</h1>
-                {bookings.length === 0 ? (
-                    <p className="text-gray-500">{t.bookings.noBookings}</p>
-                ) : (
-                    <div className="space-y-4">
-                        {bookings.map(booking => (
-                            <div key={booking.id} className="bg-white p-4 rounded shadow">
-                                <p className="font-bold">{booking.providerName}</p>
-                                <p className="text-sm text-gray-600">{booking.status}</p>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>;
+        case 'bookings':
+            return (
+                <div className="p-4">
+                    <h1 className="text-2xl font-bold mb-4">{t.bookings.title}</h1>
+                    {bookings.length === 0 ? (
+                        <p className="text-gray-500">{t.bookings.noBookings}</p>
+                    ) : (
+                        <div className="space-y-4">
+                            {bookings.map(booking => (
+                                <div key={booking.id} className="bg-white p-4 rounded shadow">
+                                    <p className="font-bold">{booking.providerName}</p>
+                                    <p className="text-sm text-gray-600">{booking.status}</p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            );
             
-        case 'notifications': 
-            // Check if user is logged in - if not, show guest notification message
+        case 'notifications':
             if (!user && !loggedInProvider && !loggedInCustomer && !isAdminLoggedIn) {
-                return (
-                    <div className="min-h-screen bg-gray-50 pb-16">
-                        {/* Header */}
-                        <div className="bg-white border-b border-gray-200 px-4 py-4 flex items-center">
-                            <button onClick={handleBackToHome} className="mr-4">
-                                <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                                </svg>
-                            </button>
-                            <h1 className="text-xl font-bold text-gray-900">Notifications</h1>
-                        </div>
-
-                        {/* Guest Message */}
-                        <div className="flex flex-col items-center justify-center px-6 py-20 text-center">
-                            <div className="w-24 h-24 mb-6 rounded-full bg-orange-100 flex items-center justify-center">
-                                <svg className="w-12 h-12 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                                </svg>
-                            </div>
-                            
-                            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                                Sign In Required
-                            </h2>
-                            
-                            <p className="text-gray-600 mb-8 max-w-sm">
-                                To receive and view notifications, you need to create an account or sign in.
-                            </p>
-                            
-                            <div className="space-y-4 w-full max-w-xs">
-                                <button
-                                    onClick={handleNavigateToRegistrationChoice}
-                                    className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-orange-600 hover:to-orange-700 transition-all duration-300 shadow-lg"
-                                >
-                                    Create Account
-                                </button>
-                                
-                                <button
-                                    onClick={() => setPage('unifiedLogin')}
-                                    className="w-full bg-white text-gray-700 px-6 py-3 rounded-lg font-semibold border border-gray-300 hover:bg-gray-50 transition-colors"
-                                >
-                                    Sign In
-                                </button>
-                            </div>
-                            
-                            <div className="mt-8 bg-blue-50 rounded-lg p-4 max-w-sm">
-                                <h3 className="font-semibold text-blue-900 mb-2">With an account, you'll get:</h3>
-                                <ul className="text-sm text-blue-700 space-y-1 text-left">
-                                    <li>• Booking confirmations & updates</li>
-                                    <li>• Special offers & promotions</li>
-                                    <li>• Therapist availability alerts</li>
-                                    <li>• Payment & loyalty updates</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                );
+                return renderGuestNotifications();
             }
             
             // Determine user role and dashboard context for header styling
@@ -766,32 +785,12 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 dashboardType={notificationsDashboardType}
             />;
             
-        case 'massageTypes': 
- 
-            return <MassageTypesPage 
-                _onBack={handleBackToHome} 
-                onNavigate={(page: Page) => setPage(page)} 
-                t={t.massageTypes}
-                // AppDrawer props - same as HomePage
-                onMassageJobsClick={() => setPage('massageJobs')}
-                onHotelPortalClick={() => setPage('hotelLogin')}
-                onVillaPortalClick={() => setPage('villaLogin')}
-                onTherapistPortalClick={() => setPage('therapistLogin')}
-                onMassagePlacePortalClick={() => setPage('massagePlaceLogin')}
-                onAgentPortalClick={() => setPage('agentAuth')}
-                onCustomerPortalClick={() => setPage('customerAuth')}
-                onAdminPortalClick={() => setPage('adminLogin')}
-                onTermsClick={() => setPage('serviceTerms')}
-                onPrivacyClick={() => setPage('privacy')}
-                therapists={therapists}
-                places={places}
-            />;
+        case 'massageTypes':
+            return <MassageTypesPage _onBack={handleBackToHome} onNavigate={setPage} {...portalHandlers} onPrivacyClick={() => setPage('privacy')} therapists={therapists} places={places} t={t.massageTypes} />;
             
-        case 'hotelLogin': 
+        case 'hotelLogin':
             return <HotelLoginPage 
                 onSuccess={(hotelId) => {
-                    console.log('🏨 Hotel Login Success - hotelId:', hotelId);
-                    // Set hotel as logged in and navigate to dashboard
                     handleHotelLogin(hotelId);
                     setPage('hotelDashboard');
                 }} 
@@ -799,16 +798,13 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 t={t} 
             />;
             
-        case 'villaLogin': 
-            return <VillaLoginPage onSuccess={() => {}} onBack={handleBackToHome} t={t} />;
+        case 'villaLogin':
+            return renderBackPage(VillaLoginPage, t, { onSuccess: () => {} });
             
         case 'massagePlaceLogin': 
             return <MassagePlaceLoginPage 
                 onSuccess={(placeId) => {
-                    console.log('🔑 Massage Place Login Success - placeId:', placeId, '(type:', typeof placeId, ')');
-                    console.log('🔑 Available places in array:', places.map(p => ({ id: p.id, name: p.name, type: typeof p.id })));
                     setLoggedInProvider({ id: placeId, type: 'place' });
-                    console.log('🔑 Setting page to placeDashboard');
                     setPage('placeDashboard');
                 }} 
                 onBack={handleBackToHome}
@@ -846,13 +842,13 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onNavigate={(page: Page) => setPage(page)}
                 onMassageJobsClick={navToMassageJobs}
                 onHotelPortalClick={handleHotelLogin}
-                onVillaPortalClick={() => setPage('villaLogin')}
-                onTherapistPortalClick={() => setPage('therapistLogin')}
-                onMassagePlacePortalClick={() => setPage('massagePlaceLogin')}
-                onAgentPortalClick={handleNavigateToAgentAuth}
-                onCustomerPortalClick={() => setPage('customerAuth')}
-                onAdminPortalClick={handleAdminLogin}
-                onTermsClick={() => setPage('serviceTerms')}
+                onVillaPortalClick={portalHandlers.onVillaPortalClick}
+                onTherapistPortalClick={portalHandlers.onTherapistPortalClick}
+                onMassagePlacePortalClick={portalHandlers.onMassagePlacePortalClick}
+                onAgentPortalClick={portalHandlers.onAgentPortalClick}
+                onCustomerPortalClick={portalHandlers.onCustomerPortalClick}
+                onAdminPortalClick={portalHandlers.onAdminPortalClick}
+                onTermsClick={portalHandlers.onTermsClick}
                 onPrivacyClick={() => setPage('privacy')}
                 therapists={therapists}
                 places={places}
@@ -868,7 +864,6 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 }}
             />;
             
-            
         case 'jobPostingPayment':
             return <JobPostingPaymentPage jobId={selectedJobId || ''} onBack={handleBackToHome} onNavigate={commonNavigateHandler} />;
             
@@ -883,8 +878,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onCreateTherapistProfile={navToTherapistJobRegistration}
             />;
             
-        case 'therapistJobs': 
- 
+        case 'therapistJobs':
             return <TherapistJobRegistrationPage 
                 jobId={selectedJobId || ''}
                 onBack={handleBackToHome} 
@@ -892,49 +886,20 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 t={t} 
             />;
             
-        case 'jobUnlockPayment': 
- 
+        case 'jobUnlockPayment':
             return <JobUnlockPaymentPage />;
             
-        case 'adminBankSettings': 
+        case 'adminBankSettings':
             return isAdminLoggedIn && <AdminBankSettingsPage onBack={() => setPage('adminDashboard')} t={t} /> || null;
             
         case 'chatList': 
-            // Chat system removed - redirecting to home
-            return (
-                <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                    <div className="text-center">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-4">Chat Feature Coming Soon</h2>
-                        <button 
-                            onClick={handleBackToHome}
-                            className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-                        >
-                            Back to Home
-                        </button>
-                    </div>
-                </div>
-            );
+            return renderComingSoon('Chat Feature Coming Soon');
             
         case 'about-us' as any:
             return <AboutUsPage onBack={handleBackToHome} onNavigate={commonNavigateHandler} t={t} />;
             
-        case 'indastreet-partners': 
-            return <IndastreetPartnersPage 
-                onNavigate={(page: Page) => setPage(page)} 
-                onMassageJobsClick={() => setPage('massage-jobs' as Page)}
-                onHotelPortalClick={() => setPage('hotel-login' as Page)}
-                onVillaPortalClick={() => setPage('villa-login' as Page)}
-                onTherapistPortalClick={() => setPage('therapist-login' as Page)}
-                onMassagePlacePortalClick={() => setPage('place-login' as Page)}
-                onAgentPortalClick={() => setPage('agent-auth' as Page)}
-                onCustomerPortalClick={() => setPage('customer-auth' as Page)}
-                onAdminPortalClick={() => setPage('admin-auth' as Page)}
-                onTermsClick={() => setPage('terms' as Page)}
-                onPrivacyClick={() => setPage('privacy' as Page)}
-                therapists={therapists}
-                places={places}
-                t={t} 
-            />;
+        case 'indastreet-partners':
+            return <IndastreetPartnersPage onNavigate={commonNavigateHandler} {...portalHandlers} {...commonDataProps} />;
             
         case 'partnership-application': 
             return <PartnershipApplicationPage 
@@ -942,66 +907,34 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 t={t} 
             />;
             
-        case 'how-it-works': 
- 
-            return <HowItWorksPage onNavigate={(page: string) => setPage(page as Page)} />;
-            
+        case 'how-it-works':
+            return renderSimplePage(HowItWorksPage);
         case 'massage-bali':
-            return <MassageBaliPage onNavigate={commonNavigateHandler} />;
-            
+            return renderSimplePage(MassageBaliPage);
         case 'blog':
-            return <BlogIndexPage onNavigate={commonNavigateHandler} />;
-            
+            return renderSimplePage(BlogIndexPage);
         case 'faq':
-            return <FAQPage onNavigate={commonNavigateHandler} />;
+            return renderSimplePage(FAQPage);
             
         case 'balinese-massage':
             return <BalineseMassagePage onNavigate={commonNavigateHandler} t={t} />;
             
         case 'deep-tissue-massage':
-            return <DeepTissueMassagePage 
-                onNavigate={commonNavigateHandler} 
-                onMassageJobsClick={() => setPage('massage-jobs' as Page)}
-                onHotelPortalClick={() => setPage('hotel-login' as Page)}
-                onVillaPortalClick={() => setPage('villa-login' as Page)}
-                onTherapistPortalClick={() => setPage('therapist-login' as Page)}
-                onMassagePlacePortalClick={() => setPage('place-login' as Page)}
-                onAgentPortalClick={() => setPage('agent-auth' as Page)}
-                onCustomerPortalClick={() => setPage('customer-auth' as Page)}
-                onAdminPortalClick={() => setPage('admin-auth' as Page)}
-                onTermsClick={() => setPage('terms' as Page)}
-                onPrivacyClick={() => setPage('privacy' as Page)}
-                therapists={therapists}
-                places={places}
-                t={t} 
-            />;
-            
-        // case 'swedish-massage': 
-        //     return <SwedishMassagePage onBack={handleBackToHome} onNavigate={(page: Page) => setPage(page as Page)} t={t} />;
-            
-
+            return <DeepTissueMassagePage onNavigate={commonNavigateHandler} {...portalHandlers} {...commonDataProps} />;
             
         case 'press-media':
-            return <PressMediaPage onNavigate={commonNavigateHandler} />;
-            
-        case 'career-opportunities': 
- 
-            return <CareerOpportunitiesPage onNavigate={commonNavigateHandler} />;
-            
-        case 'therapist-info': 
- 
-            return <TherapistInfoPage onNavigate={commonNavigateHandler} />;
-            
-        case 'hotel-info': 
- 
-            return <HotelInfoPage onNavigate={commonNavigateHandler} />;
-            
-        case 'employer-info': 
- 
-            return <EmployerInfoPage onNavigate={commonNavigateHandler} />;
+            return renderSimplePage(PressMediaPage);
+        case 'career-opportunities':
+            return renderSimplePage(CareerOpportunitiesPage);
+        case 'therapist-info':
+            return renderSimplePage(TherapistInfoPage);
+        case 'hotel-info':
+            return renderSimplePage(HotelInfoPage);
+        case 'employer-info':
+            return renderSimplePage(EmployerInfoPage);
             
         case 'payment-info':
-            return <PaymentInfoPage onNavigate={commonNavigateHandler} />;
+            return renderSimplePage(PaymentInfoPage);
             
         case 'blog-bali-spa-trends-2025' as any:
             return renderBlogPage(BaliSpaIndustryTrends2025Page);
@@ -1021,20 +954,11 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'blog-traditional-balinese-massage' as any:
             return renderBlogPage(TraditionalBalineseMassagePage);
             
-        case 'blog-spa-tourism-indonesia':
-            return renderBlogPage(SpaTourismIndonesiaPage);
-            
-        case 'blog-aromatherapy-massage-oils':
-            return renderBlogPage(AromatherapyMassageOilsPage);
-            
-        case 'blog-pricing-guide-therapists':
-            return renderBlogPage(PricingGuideMassageTherapistsPage);
-            
-        case 'blog-deep-tissue-vs-swedish':
-            return renderBlogPage(DeepTissueVsSwedishMassagePage);
-            
-        case 'blog-online-presence-therapist':
-            return renderBlogPage(OnlinePresenceMassageTherapistPage);
+        case 'blog-spa-tourism-indonesia': return renderBlogPage(SpaTourismIndonesiaPage);
+        case 'blog-aromatherapy-massage-oils': return renderBlogPage(AromatherapyMassageOilsPage);
+        case 'blog-pricing-guide-therapists': return renderBlogPage(PricingGuideMassageTherapistsPage);
+        case 'blog-deep-tissue-vs-swedish': return renderBlogPage(DeepTissueVsSwedishMassagePage);
+        case 'blog-online-presence-therapist': return renderBlogPage(OnlinePresenceMassageTherapistPage);
             
         case 'blog-wellness-tourism-ubud':
             return renderBlogPage(WellnessTourismUbudPage);
@@ -1059,14 +983,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 places={places}
                 _onBook={handleNavigateToBooking}
                 setPage={setPage}
-                _onBookingSubmit={async (bookingData: any) => {
-                    try {
-                        await handleCreateBooking(bookingData);
-                    } catch (_error) {
-                        console.error('Booking submission failed:', _error);
-                        throw _error;
-                    }
-                }}
+                _onBookingSubmit={handleCreateBooking}
                 onBackToDashboard={() => {
                     // Navigate back to appropriate dashboard
                     if (isHotelLoggedIn) {
@@ -1096,7 +1013,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     else if (coinShopDashboardType === 'therapist') setPage('therapistDashboard');
                     else handleBackToHome();
                 }}
-                onNavigate={(page: string) => setPage(page as Page)} 
+                onNavigate={commonNavigateHandler} 
                 isFromTherapistDashboard={!!loggedInProvider}
                 dashboardType={coinShopDashboardType}
                 t={t} 
@@ -1138,7 +1055,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     else if (dashboardType === 'therapist') setPage('therapistDashboard');
                     else handleBackToHome();
                 }}
-                onNavigate={(page: string) => setPage(page as Page)} 
+                onNavigate={commonNavigateHandler} 
                 isFromTherapistDashboard={!!loggedInProvider}
                 isFromHotelDashboard={isHotelLoggedIn}
                 isFromVillaDashboard={isVillaLoggedIn}
@@ -1165,15 +1082,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     websiteTitle: '',
                     websiteDescription: ''
                 }}
-                onSave={async (websiteData) => {
-                    try {
-                        console.log('Saving website data:', websiteData);
-                        // Implement actual save functionality - implemented via handleSavePlace
-                    } catch (_error) {
-                        console.error('Failed to save website data:', _error);
-                        throw _error;
-                    }
-                }}
+                onSave={handleSavePlace}
                 t={t}
             />;
             
@@ -1188,13 +1097,10 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             // If we should be on therapist dashboard but ended up in default, force it
             if (loggedInProvider?.type === 'therapist' && 
                 ['therapistDashboard', 'therapist-dashboard'].includes(page as string)) {
-                console.log('🔧 AppRouter: Force rendering therapist dashboard from default case');
-                
                 return <TherapistDashboardPage 
                     onSave={handleSaveTherapist}
                     onLogout={handleProviderLogout}
-                    onNavigateToNotifications={handleNavigateToNotifications}
-                    onUpdateBookingStatus={handleUpdateBookingStatus}
+                    {...commonDashboardProps}
                     onStatusChange={async (status: AvailabilityStatus) => {
                         await handleTherapistStatusChange(status as string);
                     }}
@@ -1204,7 +1110,6 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         t.$id === loggedInProvider.id ||
                         (t as any).documentId === loggedInProvider.id
                     ) || undefined}
-                    bookings={bookings}
                     notifications={notifications.filter(n => n.providerId === loggedInProvider.id)}
                     t={t.providerDashboard || {}}
                 />;
