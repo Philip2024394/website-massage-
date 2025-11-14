@@ -171,7 +171,10 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
             {/* Drawer Header */}
             <div className="bg-orange-500 px-6 py-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-white text-lg font-semibold">Customer Dashboard</h2>
+                <h2 className="text-white text-lg font-semibold flex items-center gap-2">
+                  <span className="text-xl">👤</span>
+                  <span>Customer Dashboard</span>
+                </h2>
                 <button
                   onClick={() => setIsSideDrawerOpen(false)}
                   className="text-white hover:text-orange-200 transition-colors"

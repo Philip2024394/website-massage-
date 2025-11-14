@@ -253,29 +253,14 @@ Powered by IndaStreet`;
                                 View Live Menu
                             </button>
                             
-                            <button
-                                onClick={() => setShowShareModal(true)}
-                                className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-4 rounded-xl text-lg font-bold transition-all duration-300 hover:scale-105 shadow-lg flex items-center justify-center gap-3"
-                            >
-                                <Share className="w-5 h-5" />
-                                Share Live Menu
-                            </button>
+
                         </div>
                     </div>
 
                     {/* Floating Action Buttons - Bottom Position for Landing */}
-                    <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-20 flex items-center gap-4">
-                        {/* Share Button */}
-                        <button
-                            onClick={() => setShowShareModal(true)}
-                            className="w-14 h-14 bg-orange-500/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-orange-500/30 transition-all duration-300 hover:scale-110 shadow-lg border border-orange-300/30"
-                            title="Share Live Menu"
-                        >
-                            <Share className="w-6 h-6" />
-                        </button>
-
-                        {/* Back to Dashboard Button */}
-                        {onBackToDashboard && (
+                    {onBackToDashboard && (
+                        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-20 flex items-center gap-4">
+                            {/* Back to Dashboard Button */}
                             <button
                                 onClick={onBackToDashboard}
                                 className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-all duration-300 hover:scale-110 shadow-lg"
@@ -285,8 +270,8 @@ Powered by IndaStreet`;
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                                 </svg>
                             </button>
-                        )}
-                    </div>
+                        </div>
+                    )}
                 </div>
             ) : (
                 <div className="min-h-screen bg-gray-50 relative">
@@ -310,14 +295,7 @@ Powered by IndaStreet`;
                                 </p>
                             </div>
 
-                            {/* Share Button */}
-                            <button
-                                onClick={() => setShowShareModal(true)}
-                                className="ml-4 bg-orange-500 hover:bg-orange-600 text-white p-3 rounded-full transition-all duration-300 hover:scale-105 shadow-lg flex items-center justify-center"
-                                title="Share Live Menu"
-                            >
-                                <Share className="w-5 h-5" />
-                            </button>
+
                         </div>
                     </div>
 
@@ -356,18 +334,9 @@ Powered by IndaStreet`;
                     </div>
 
                     {/* Floating Action Buttons - Bottom Position */}
-                    <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 flex items-center gap-4">
-                        {/* Share Button */}
-                        <button
-                            onClick={() => setShowShareModal(true)}
-                            className="w-14 h-14 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center text-white hover:from-orange-600 hover:to-orange-700 transition-all duration-300 hover:scale-110 shadow-lg"
-                            title="Share Live Menu"
-                        >
-                            <Share className="w-6 h-6" />
-                        </button>
-
-                        {/* Back to Dashboard Button */}
-                        {onBackToDashboard && (
+                    {onBackToDashboard && (
+                        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 flex items-center gap-4">
+                            {/* Back to Dashboard Button */}
                             <button
                                 onClick={onBackToDashboard}
                                 className="w-14 h-14 bg-orange-500 rounded-full flex items-center justify-center text-white hover:bg-orange-600 transition-all duration-300 hover:scale-110 shadow-lg"
@@ -377,8 +346,8 @@ Powered by IndaStreet`;
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                                 </svg>
                             </button>
-                        )}
-                    </div>
+                        </div>
+                    )}
                 </div>
             )}
 

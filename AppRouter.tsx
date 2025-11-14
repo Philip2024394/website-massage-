@@ -1444,8 +1444,27 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             />;
             
         case 'coin-shop': 
-            {/* CoinShop navigation callback - type handled via interface */}
-            return <CoinShopPage onBack={handleBackToHome} onNavigate={(page: string) => setPage(page as Page)} isFromTherapistDashboard={true} t={t} />;
+            // 🛡️ SECURITY: Detect which dashboard type is accessing coin shop
+            const coinShopDashboardType = (() => {
+                if (isHotelLoggedIn) return 'hotel';
+                if (isVillaLoggedIn) return 'villa';
+                if (loggedInProvider) return 'therapist';
+                return 'standalone';
+            })();
+            
+            return <CoinShopPage 
+                onBack={() => {
+                    // Navigate back to appropriate dashboard
+                    if (coinShopDashboardType === 'hotel') setPage('hotelDashboard');
+                    else if (coinShopDashboardType === 'villa') setPage('villaDashboard');  
+                    else if (coinShopDashboardType === 'therapist') setPage('therapistDashboard');
+                    else handleBackToHome();
+                }}
+                onNavigate={(page: string) => setPage(page as Page)} 
+                isFromTherapistDashboard={!!loggedInProvider}
+                dashboardType={coinShopDashboardType}
+                t={t} 
+            />;
             
         case 'adminShopManagement': 
             return isAdminLoggedIn && <AdminShopManagementPage onBack={() => setPage('adminDashboard')} t={t} /> || null;
@@ -1457,7 +1476,39 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return <ReferralPage onBack={handleBackToHome} t={t} user={loggedInCustomer || {}} />;
             
         case 'coinHistory': 
-            return <CoinHistoryPage onBack={handleBackToHome} onNavigate={(page: string) => setPage(page as Page)} isFromTherapistDashboard={true} t={t} />;
+            // 🛡️ SECURITY: Pass correct user ID based on who's logged in
+            const currentUserId = (() => {
+                if (isHotelLoggedIn && user?.id) return user.id;
+                if (isVillaLoggedIn && user?.id) return user.id;  
+                if (loggedInProvider && loggedInProvider.id) return loggedInProvider.id.toString();
+                if (loggedInCustomer && loggedInCustomer.id) return loggedInCustomer.id;
+                return '12345'; // fallback
+            })();
+            
+            // 🛡️ SECURITY: Detect which dashboard type is accessing coin history
+            const dashboardType = (() => {
+                if (isHotelLoggedIn) return 'hotel';
+                if (isVillaLoggedIn) return 'villa';
+                if (loggedInProvider) return 'therapist';
+                return 'standalone';
+            })();
+            
+            return <CoinHistoryPage 
+                userId={currentUserId}
+                onBack={() => {
+                    // Navigate back to appropriate dashboard
+                    if (dashboardType === 'hotel') setPage('hotelDashboard');
+                    else if (dashboardType === 'villa') setPage('villaDashboard');  
+                    else if (dashboardType === 'therapist') setPage('therapistDashboard');
+                    else handleBackToHome();
+                }}
+                onNavigate={(page: string) => setPage(page as Page)} 
+                isFromTherapistDashboard={!!loggedInProvider}
+                isFromHotelDashboard={isHotelLoggedIn}
+                isFromVillaDashboard={isVillaLoggedIn}
+                dashboardType={dashboardType}
+                t={t} 
+            />;
             
         case 'coinSystemTest': 
             return <CoinSystemTestPage onBack={handleBackToHome} t={t} />;

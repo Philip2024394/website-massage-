@@ -27,6 +27,7 @@ interface CoinShopPageProps {
     onOpenMenu?: () => void; // Function to open the HomePage drawer
     t?: any;
     isFromTherapistDashboard?: boolean;
+    dashboardType?: 'hotel' | 'villa' | 'therapist' | 'standalone';
 }
 
 const CoinShopPage: React.FC<CoinShopPageProps> = ({ 
@@ -35,7 +36,8 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
     currentUser,
     onSetUserLocation,
     t,
-    isFromTherapistDashboard = false
+    isFromTherapistDashboard = false,
+    dashboardType = 'standalone'
 }) => {
     const [shopItems, setShopItems] = useState<ShopItem[]>([]);
     const [userCoins, setUserCoins] = useState<UserCoins | null>(null);
@@ -285,17 +287,57 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
             {/* HomePage-style Header */}
             <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
                 <div className="flex justify-between items-center">
-                    <h1 className="text-2xl font-bold text-gray-800">
-                        <span className="text-black">Inda</span>
-                        <span className="text-orange-500">
-                            <span className="inline-block animate-float">S</span>treet
-                        </span>
+                    <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
+                        {dashboardType === 'hotel' && (
+                            <>
+                                <span className="text-3xl">🏨</span>
+                                <span>Hotel Dashboard</span>
+                                <span className="text-sm text-gray-500">- Coin Shop</span>
+                            </>
+                        )}
+                        {dashboardType === 'villa' && (
+                            <>
+                                <span className="text-3xl">🏡</span>
+                                <span>Villa Dashboard</span>
+                                <span className="text-sm text-gray-500">- Coin Shop</span>
+                            </>
+                        )}
+                        {dashboardType === 'therapist' && (
+                            <>
+                                <span className="text-3xl">💆</span>
+                                <span>Therapist Dashboard</span>
+                                <span className="text-sm text-gray-500">- Coin Shop</span>
+                            </>
+                        )}
+                        {dashboardType === 'standalone' && (
+                            <>
+                                <span className="text-3xl">🛒</span>
+                                <span>Coin Shop</span>
+                            </>
+                        )}
                     </h1>
                     <div className="flex items-center gap-3 text-gray-600">
                         <button 
                             onClick={() => {
-                                console.log('🍔 CoinShop burger menu clicked! isFromTherapistDashboard:', isFromTherapistDashboard);
-                                if (isFromTherapistDashboard) {
+                                console.log('🍔 CoinShop burger menu clicked! Dashboard context:', {
+                                    isFromTherapistDashboard,
+                                    dashboardType
+                                });
+                                if (dashboardType === 'hotel') {
+                                    // Navigate back to hotel dashboard where drawer is available
+                                    if (onNavigate) {
+                                        onNavigate('hotelDashboard');
+                                    } else if (onBack) {
+                                        onBack();
+                                    }
+                                } else if (dashboardType === 'villa') {
+                                    // Navigate back to villa dashboard where drawer is available
+                                    if (onNavigate) {
+                                        onNavigate('villaDashboard');
+                                    } else if (onBack) {
+                                        onBack();
+                                    }
+                                } else if (dashboardType === 'therapist' || isFromTherapistDashboard) {
                                     // Navigate back to therapist dashboard where drawer is available
                                     if (onNavigate) {
                                         onNavigate('therapistDashboard');
@@ -307,7 +349,11 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
                                     setIsDrawerOpen(true);
                                 }
                             }} 
-                            title={isFromTherapistDashboard ? "Back to Dashboard" : "Menu"}
+                            title={
+                                dashboardType === 'hotel' ? "Back to Hotel Dashboard" :
+                                dashboardType === 'villa' ? "Back to Villa Dashboard" :
+                                (dashboardType === 'therapist' || isFromTherapistDashboard) ? "Back to Therapist Dashboard" : "Menu"
+                            }
                         >
                             <BurgerMenuIcon className="w-6 h-6" />
                         </button>

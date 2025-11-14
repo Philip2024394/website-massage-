@@ -14,12 +14,12 @@ import { commissionPaymentService } from '../services/commissionPaymentService';
 import QRCodeGenerator from 'qrcode';
 import { useTranslations } from '../lib/useTranslations';
 import PushNotificationSettings from '../components/PushNotificationSettings';
+import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import HotelBookingModal from '../components/hotel/PropertyBookingModal';
 import HotelAnalyticsSection from '../components/hotel/PropertyAnalyticsSection';
 import HotelVillaBankDetailsPage from './HotelVillaBankDetailsPage';
 import DashboardHeader from '../components/DashboardHeader';
 import { safeDownload } from '../utils/domSafeHelpers';
-import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 
 // External component: DiscountCard
 const DiscountCard: React.FC<{ 
@@ -238,7 +238,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
 
     useEffect(() => {
         // 🔑 CRITICAL: QR code must include specific hotel ID for commission tracking
-        const qrLink = `${globalThis.location.origin}/hotel/${hotelId}/menu`;
+        const qrLink = `${globalThis.location.origin}/?page=hotelVillaMenu&venueId=${hotelId}&venueType=hotel`;
         updateState({ qrLink });
         
         QRCodeGenerator.toDataURL(qrLink, {
@@ -420,16 +420,77 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
                             <h2 className="text-2xl font-bold text-gray-900">{t('dashboard.guestMenuPreview')}</h2>
                         </div>
                         
-                        <div className="flex gap-2 flex-wrap">
-                            <button onClick={() => window.open(state.qrLink, '_blank')} className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                        {/* Primary Action Buttons */}
+                        <div className="flex gap-2 flex-wrap mb-4">
+                            <button onClick={() => window.open(state.qrLink, '_blank')} className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                </svg>
                                 Preview Live
                             </button>
-                            <button onClick={() => updateState({ qrOpen: true })} className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors">
+                            <button onClick={() => updateState({ qrOpen: true })} className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors flex items-center gap-2">
+                                <QrCode size={16} />
                                 QR Code
                             </button>
-                            <button onClick={() => navigator.clipboard.writeText(state.qrLink)} className="bg-white border-2 border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:border-orange-500 transition-colors">
+                            <button onClick={() => navigator.clipboard.writeText(state.qrLink)} className="bg-white border-2 border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:border-orange-500 transition-colors flex items-center gap-2">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                </svg>
                                 Copy Link
                             </button>
+                        </div>
+
+                        {/* QR Code for Hotel - Share with Guests */}
+                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 mb-4">
+                            <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                <QrCode className="w-4 h-4" />
+                                Share Your Menu QR Code with Guests
+                            </h3>
+                            
+                            {/* QR Code Display */}
+                            <div className="flex flex-col sm:flex-row gap-4 items-center">
+                                <div className="bg-white p-3 rounded-lg border-2 border-gray-200 shadow-sm">
+                                    {state.qrCodeDataUrl ? (
+                                        <img src={state.qrCodeDataUrl} alt="Hotel Menu QR Code" className="w-24 h-24 object-contain" />
+                                    ) : (
+                                        <div className="w-24 h-24 bg-gray-100 rounded flex items-center justify-center">
+                                            <QrCode className="w-8 h-8 text-gray-400" />
+                                        </div>
+                                    )}
+                                </div>
+                                
+                                <div className="flex-1">
+                                    <p className="text-xs text-gray-600 mb-3">Print this QR code or share it digitally for guests to access your live menu</p>
+                                    
+                                    {/* Action Buttons for Hotel Staff */}
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                        <button 
+                                            onClick={() => safeDownload(`https://chart.googleapis.com/chart?chs=800x800&cht=qr&chl=${encodeURIComponent(state.qrLink)}`, `${state.hotelName.replace(/\s+/g, '-')}-menu-qr.png`)}
+                                            className="bg-green-600 text-white px-3 py-2 rounded-lg text-xs hover:bg-green-700 transition-colors flex items-center justify-center gap-1"
+                                        >
+                                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                            Download
+                                        </button>
+                                        <button onClick={() => window.print()} className="bg-gray-600 text-white px-3 py-2 rounded-lg text-xs hover:bg-gray-700 transition-colors flex items-center justify-center gap-1">
+                                            �️ Print
+                                        </button>
+                                        <button onClick={() => {
+                                            const hotelMessage = `🏨 ${state.hotelName} Menu\n\nScan this QR code to view our wellness services:\n${state.qrLink}\n\nBook your relaxing massage today! 💆‍♀️`;
+                                            globalThis.open(`https://wa.me/?text=${encodeURIComponent(hotelMessage)}`, '_blank');
+                                        }} className="bg-green-500 text-white px-3 py-2 rounded-lg text-xs hover:bg-green-600 transition-colors flex items-center justify-center gap-1">
+                                            � Share
+                                        </button>
+                                        <button onClick={() => {
+                                            navigator.clipboard.writeText(state.qrLink);
+                                            alert('Menu link copied! Share this with your guests.');
+                                        }} className="bg-blue-500 text-white px-3 py-2 rounded-lg text-xs hover:bg-blue-600 transition-colors flex items-center justify-center gap-1">
+                                            📋 Copy
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div className="bg-white border-2 border-gray-200 rounded-xl p-4">
@@ -464,6 +525,144 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
                                 <h3 className="text-xl font-semibold text-gray-800">No Providers Available</h3>
                             </div>
                         )}
+                    </div>
+                );
+
+            case 'qr-code':
+                return (
+                    <div className="space-y-6">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+                                <QrCode className="w-5 h-5 text-purple-600" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-gray-900">QR Code Menu</h2>
+                        </div>
+
+                        {/* Large QR Code Display */}
+                        <div className="bg-white rounded-xl shadow-lg p-8">
+                            <div className="text-center space-y-6">
+                                <h3 className="text-xl font-semibold text-gray-800">Share Your Live Menu with Guests</h3>
+                                
+                                <div className="flex flex-col lg:flex-row gap-8 items-center justify-center">
+                                    {/* Large QR Code */}
+                                    <div className="bg-white p-6 rounded-xl border-4 border-gray-200 shadow-lg">
+                                        {state.qrCodeDataUrl ? (
+                                            <img src={state.qrCodeDataUrl} alt="Hotel Menu QR Code" className="w-64 h-64 object-contain" />
+                                        ) : (
+                                            <div className="w-64 h-64 bg-gray-100 rounded flex items-center justify-center">
+                                                <QrCode className="w-16 h-16 text-gray-400" />
+                                            </div>
+                                        )}
+                                    </div>
+                                    
+                                    {/* QR Code Information */}
+                                    <div className="flex-1 max-w-md space-y-6">
+                                        <div className="text-left">
+                                            <h4 className="text-lg font-semibold text-gray-800 mb-3">How to use this QR Code:</h4>
+                                            <ul className="space-y-2 text-sm text-gray-600">
+                                                <li className="flex items-start gap-2">
+                                                    <span className="text-orange-500 font-bold">1.</span>
+                                                    <span>Download and print this QR code for display in your hotel</span>
+                                                </li>
+                                                <li className="flex items-start gap-2">
+                                                    <span className="text-orange-500 font-bold">2.</span>
+                                                    <span>Place it in lobbies, rooms, or reception areas</span>
+                                                </li>
+                                                <li className="flex items-start gap-2">
+                                                    <span className="text-orange-500 font-bold">3.</span>
+                                                    <span>Guests scan to access your live wellness menu</span>
+                                                </li>
+                                                <li className="flex items-start gap-2">
+                                                    <span className="text-orange-500 font-bold">4.</span>
+                                                    <span>All bookings are automatically tracked to your hotel</span>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        
+                                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                                            <p className="text-sm text-orange-800">
+                                                <strong>Menu URL:</strong><br />
+                                                <span className="font-mono text-xs break-all">{state.qrLink}</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {/* Action Buttons */}
+                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
+                                    <button 
+                                        onClick={() => safeDownload(`https://chart.googleapis.com/chart?chs=1000x1000&cht=qr&chl=${encodeURIComponent(state.qrLink)}`, `${state.hotelName.replace(/\s+/g, '-')}-menu-qr-large.png`)}
+                                        className="bg-green-600 text-white px-6 py-4 rounded-lg hover:bg-green-700 transition-colors flex flex-col items-center gap-2"
+                                    >
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                        <span className="text-sm font-semibold">Download Large QR</span>
+                                        <span className="text-xs opacity-90">For printing</span>
+                                    </button>
+                                    
+                                    <button 
+                                        onClick={() => window.print()} 
+                                        className="bg-blue-600 text-white px-6 py-4 rounded-lg hover:bg-blue-700 transition-colors flex flex-col items-center gap-2"
+                                    >
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                        </svg>
+                                        <span className="text-sm font-semibold">Print Now</span>
+                                        <span className="text-xs opacity-90">Direct print</span>
+                                    </button>
+                                    
+                                    <button 
+                                        onClick={() => {
+                                            const hotelMessage = `🏨 ${state.hotelName} Wellness Menu\n\nScan this QR code to view our massage services:\n${state.qrLink}\n\nRoom service available 24/7! 💆‍♀️✨`;
+                                            globalThis.open(`https://wa.me/?text=${encodeURIComponent(hotelMessage)}`, '_blank');
+                                        }} 
+                                        className="bg-green-500 text-white px-6 py-4 rounded-lg hover:bg-green-600 transition-colors flex flex-col items-center gap-2"
+                                    >
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                        </svg>
+                                        <span className="text-sm font-semibold">Share WhatsApp</span>
+                                        <span className="text-xs opacity-90">Send to guests</span>
+                                    </button>
+                                    
+                                    <button 
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(state.qrLink);
+                                            alert('Menu link copied! Share this with your guests.');
+                                        }} 
+                                        className="bg-purple-600 text-white px-6 py-4 rounded-lg hover:bg-purple-700 transition-colors flex flex-col items-center gap-2"
+                                    >
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                        </svg>
+                                        <span className="text-sm font-semibold">Copy Link</span>
+                                        <span className="text-xs opacity-90">Share anywhere</span>
+                                    </button>
+                                </div>
+
+                                {/* Live Menu Preview */}
+                                <div className="mt-8">
+                                    <button 
+                                        onClick={() => {
+                                            // Navigate to live menu using internal routing
+                                            if (setPage) {
+                                                setPage('hotelVillaMenu');
+                                            } else {
+                                                // Fallback to URL navigation for QR code sharing
+                                                window.open(state.qrLink, '_blank');
+                                            }
+                                        }} 
+                                        className="bg-orange-500 text-white px-8 py-4 rounded-lg hover:bg-orange-600 transition-colors flex items-center gap-3 mx-auto"
+                                    >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                        </svg>
+                                        Preview Your Live Menu
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 );
 
@@ -761,6 +960,7 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
         { id: 'analytics', icon: BarChart3, label: 'Analytics', color: 'blue', description: 'View performance metrics' },
         { id: 'discounts', icon: Percent, label: 'Discounts', color: 'green', description: 'Manage special offers' },
         { id: 'menu', icon: ClipboardList, label: 'Menu', badge: providers.length, color: 'indigo', description: 'Service providers' },
+        { id: 'qr-code', icon: QrCode, label: 'QR Code', color: 'purple', description: 'Share menu with guests' },
         { id: 'feedback', icon: MessageSquare, label: 'Feedback', color: 'yellow', description: 'Customer reviews' },
         { id: 'commissions', icon: DollarSign, label: 'Commissions', color: 'orange', description: 'Payment tracking' },
         { id: 'coin-history', icon: BarChart3, label: 'Coin History', color: 'orange', description: 'View coin balance & transactions' },
@@ -771,12 +971,13 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
 
     return (
         <div className="h-screen bg-gray-50 flex flex-col">
-            {/* Global Header - IndaStreet Brand */}
+            {/* Dashboard-Specific Header */}
             <header className="bg-white p-4 shadow-md sticky top-0 z-[9997]">
                 <div className="flex justify-between items-center">
-                    <h1 className="text-2xl font-bold text-gray-800">
-                        {/* Brand: Inda (black) + street (orange) */}
-                        <span className="text-black">Inda</span><span className="text-orange-500">street</span>
+                    <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
+                        {/* Dashboard-specific branding for better user context */}
+                        <span className="text-3xl">🏨</span>
+                        <span>Hotel Dashboard</span>
                     </h1>
                     <div className="flex items-center gap-3 text-gray-600">
                         <button 
@@ -794,14 +995,14 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
             {state.isSideDrawerOpen && (
                 <>
                     <div 
-                        className="fixed inset-0 bg-black bg-opacity-50 z-40" 
+                        className="fixed inset-0 bg-black bg-opacity-50 z-[9990]" 
                         onClick={() => updateState({ isSideDrawerOpen: false })}
                         onKeyDown={(e) => e.key === 'Escape' && updateState({ isSideDrawerOpen: false })}
                         role="button"
                         tabIndex={0}
                         aria-label="Close side menu"
                     />
-                    <div className="fixed top-0 right-0 h-full w-80 bg-gradient-to-br from-white via-gray-50 to-gray-100 shadow-2xl z-50 flex flex-col">
+                    <div className="fixed top-0 right-0 h-full w-80 bg-gradient-to-br from-white via-gray-50 to-gray-100 shadow-2xl z-[9995] flex flex-col">
                         <div className="p-6 flex justify-between items-center border-b border-gray-200">
                             <h2 className="font-bold text-2xl text-gray-800">
                                 Hotel Menu

@@ -130,9 +130,9 @@ const AgentDashboardPage: React.FC<AgentDashboardPageProps> = ({ agent, onLogout
             {/* Header */}
             <header className="bg-white shadow-sm px-2 sm:px-3 py-2 sm:py-3 sticky top-0 z-30">
                 <div className="max-w-7xl mx-auto flex justify-between items-center">
-                    <h1 className="text-base sm:text-2xl font-bold">
-                        <span className="text-gray-900">Inda</span>
-                        <span className="text-orange-500">Street</span>
+                    <h1 className="text-base sm:text-2xl font-bold flex items-center gap-2 sm:gap-3">
+                        <span className="text-xl sm:text-2xl">🤝</span>
+                        <span className="text-gray-900">Agent Dashboard</span>
                     </h1>
                     {!isAdminView && (
                         <button

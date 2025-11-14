@@ -837,12 +837,12 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                 }
             `}</style>
             
-            {/* Header - Same as Home Page */}
+            {/* Dashboard-Specific Header */}
             <header className="bg-white p-4 shadow-md sticky top-0 z-[9997]">
                 <div className="flex justify-between items-center">
-                    <h1 className="text-2xl font-bold text-gray-800">
-                        <span className="text-black">Indat</span>
-                        <span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
+                    <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
+                        <span className="text-3xl">💆</span>
+                        <span>Therapist Dashboard</span>
                     </h1>
                     <div className="flex items-center gap-3 text-gray-600">
                         {/* Notifications */}

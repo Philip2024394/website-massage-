@@ -1841,9 +1841,9 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             {/* Header with Burger Menu */}
             <header className="bg-white shadow-sm px-4 py-3 sticky top-0 z-40">
                 <div className="max-w-7xl mx-auto flex justify-between items-center">
-                    <h1 className="text-xl sm:text-2xl font-bold">
-                        <span className="text-gray-900">Inda</span>
-                        <span className="text-orange-500">Street</span>
+                    <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-3">
+                        <span className="text-2xl">📍</span>
+                        <span className="text-gray-900">Place Dashboard</span>
                     </h1>
                     <div className="flex items-center gap-2">
                         <NotificationBell count={unreadNotificationsCount} onClick={onNavigateToNotifications} />

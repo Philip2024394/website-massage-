@@ -12,6 +12,9 @@ interface CoinHistoryPageProps {
     onBack?: () => void;
     t?: any;
     isFromTherapistDashboard?: boolean;
+    isFromHotelDashboard?: boolean;
+    isFromVillaDashboard?: boolean;
+    dashboardType?: 'hotel' | 'villa' | 'therapist' | 'standalone';
 }
 
 const CoinHistoryPage: React.FC<CoinHistoryPageProps> = ({ 
@@ -20,7 +23,10 @@ const CoinHistoryPage: React.FC<CoinHistoryPageProps> = ({
     onNavigate,
     onOpenMenu,
     onBack,
-    isFromTherapistDashboard = false
+    isFromTherapistDashboard = false,
+    isFromHotelDashboard = false,
+    isFromVillaDashboard = false,
+    dashboardType = 'standalone'
 }) => {
     const [transactions, setTransactions] = useState<CoinTransaction[]>([]);
     const [filterType, setFilterType] = useState<'all' | 'earn' | 'spend' | 'expire'>('all');
@@ -132,7 +138,7 @@ const CoinHistoryPage: React.FC<CoinHistoryPageProps> = ({
             <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
                 <div className="flex justify-between items-center">
                     <div className="flex items-center gap-3">
-                        {onBack && (
+                        {onBack && dashboardType !== 'hotel' && (
                             <button 
                                 onClick={onBack} 
                                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -143,30 +149,56 @@ const CoinHistoryPage: React.FC<CoinHistoryPageProps> = ({
                                 </svg>
                             </button>
                         )}
-                        <h1 className="text-2xl font-bold text-gray-800">
-                            <span className="text-black">Inda</span>
-                            <span className="text-orange-500">
-                                <span className="inline-block animate-float">S</span>treet
-                            </span>
+                        <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
+                            {dashboardType === 'hotel' && (
+                                <>
+                                    <span className="text-3xl">🏨</span>
+                                    <span>Hotel Dashboard</span>
+                                </>
+                            )}
+                            {dashboardType === 'villa' && (
+                                <>
+                                    <span className="text-3xl">🏡</span>
+                                    <span>Villa Dashboard</span>
+                                    <span className="text-sm text-gray-500">- Coin History</span>
+                                </>
+                            )}
+                            {dashboardType === 'therapist' && (
+                                <>
+                                    <span className="text-3xl">💆</span>
+                                    <span>Therapist Dashboard</span>
+                                    <span className="text-sm text-gray-500">- Coin History</span>
+                                </>
+                            )}
+                            {dashboardType === 'standalone' && (
+                                <>
+                                    <span className="text-3xl">💰</span>
+                                    <span>Coin History</span>
+                                </>
+                            )}
                         </h1>
                     </div>
                     <div className="flex items-center gap-3 text-gray-600">
                         <button 
                             onClick={() => {
-                                console.log('🍔 CoinHistory burger menu clicked! isFromTherapistDashboard:', isFromTherapistDashboard);
-                                if (isFromTherapistDashboard) {
-                                    // Navigate back to therapist dashboard where drawer is available
-                                    if (onNavigate) {
-                                        onNavigate('therapistDashboard');
-                                    } else if (onBack) {
-                                        onBack();
+                                console.log('🍔 CoinHistory burger menu clicked! dashboardType:', dashboardType);
+                                
+                                // Navigate back to appropriate dashboard instead of showing generic AppDrawer
+                                if (dashboardType === 'hotel' || dashboardType === 'villa' || dashboardType === 'therapist') {
+                                    if (onBack) {
+                                        onBack(); // This will navigate back to the appropriate dashboard
+                                    } else if (onNavigate) {
+                                        // Fallback navigation
+                                        if (dashboardType === 'hotel') onNavigate('hotelDashboard');
+                                        else if (dashboardType === 'villa') onNavigate('villaDashboard');
+                                        else if (dashboardType === 'therapist') onNavigate('therapistDashboard');
                                     }
                                 } else {
-                                    // Use generic drawer for standalone access
+                                    // Only use generic drawer for standalone access
                                     setIsMenuOpen(true);
                                 }
                             }} 
-                            title={isFromTherapistDashboard ? "Back to Dashboard" : "Menu"}
+                            title={dashboardType !== 'standalone' ? "Back to Dashboard" : "Menu"}
                         >
                             <BurgerMenuIcon className="w-6 h-6" />
                         </button>
