@@ -109,7 +109,7 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                     text: `Check out ${therapist.name}'s massage services`,
                     url: window.location.href
                 });
-            } catch (__error) {
+            } catch {
                 console.log('Share canceled');
             }
         } else {

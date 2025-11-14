@@ -38,12 +38,7 @@ export const getFooterConfig = (
     'error'
   ];
 
-  // Full screen pages that manage their own layout
-  const _fullScreenPages = [
-    'adminDashboard',
-    'therapistDashboard',
-    'placeDashboard'
-  ];
+  // Full screen pages that manage their own layout (handled implicitly by page components)
 
   if (noFooterPages.includes(currentPage)) {
     return {

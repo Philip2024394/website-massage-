@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { 
     Home, Briefcase, Users, Building, MapPin, Heart, 
     Info, BookOpen, Phone, HelpCircle, Hotel,
@@ -101,14 +102,14 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
     };
 
     const handleItemClick = (callback?: () => void) => {
-        console.log('🔥 AppDrawer handleItemClick called', callback);
+        console.log('🔥 Button clicked, callback:', callback);
         callback?.();
         onClose();
     };
 
     if (!isOpen) return null;
 
-    return (
+    const content = (
         <>
             <style>{`
                 @keyframes float {
@@ -119,18 +120,17 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                     animation: float 6s ease-in-out infinite;
                 }
             `}</style>
-            <div className="fixed inset-0" role="dialog" aria-modal="true" style={{zIndex: 2147483647}}>
+            <div className="fixed inset-0" role="dialog" aria-modal="true" style={{ zIndex: 99999 }}>
             {/* Backdrop */}
             <div 
                 className="absolute inset-0 bg-black bg-opacity-50 transition-opacity" 
                 onClick={onClose}
-                style={{zIndex: 2147483646}}
             />
             
             {/* Drawer Panel */}
             <div 
                 className={`absolute right-0 top-0 bottom-0 w-[70%] sm:w-80 bg-white shadow-2xl flex flex-col transform transition-transform ease-in-out duration-300 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
-                style={{zIndex: 2147483647}}
+                style={{ zIndex: 99999 }}
             >
                 
                 {/* Header */}
@@ -493,5 +493,10 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
         </div>
         </>
     );
+
+    if (typeof document !== 'undefined' && document.body) {
+        return createPortal(content, document.body);
+    }
+    return content;
 };
 

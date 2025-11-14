@@ -52,12 +52,6 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
     notifications, 
     t 
 }) => {
-    // Create a safe translation function to prevent undefined errors
-    const safeT = typeof t === 'function' ? t : (key: string) => {
-        console.warn(`Translation missing for key: ${key}`);
-        return key; // Return the key as fallback
-    };
-
     // Safety check for translations - use fallback if needed
     if (!t || typeof t !== 'object') {
         console.log('⚠️ TherapistDashboard: Translation object missing or invalid, using fallbacks');

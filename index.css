@@ -1,7 +1,7 @@
 /* Footer fixes - must come before Tailwind */
 @import url('./footer-fix.css');
 
-/* EMERGENCY FOOTER OVERRIDE - HIGHEST SPECIFICITY */
+/* EMERGENCY FOOTER OVERRIDE - BEHIND DRAWERS */
 footer, 
 .HomePage footer,
 [class*="HomePage"] footer,
@@ -11,7 +11,7 @@ footer[class*="fixed"] {
   bottom: 0px !important;
   left: 0px !important;
   right: 0px !important;
-  z-index: 99999 !important;
+  z-index: 50 !important;
   width: 100vw !important;
   transform: none !important;
   transition: none !important;

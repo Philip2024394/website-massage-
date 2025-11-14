@@ -278,10 +278,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
     const navToEmployerJobPosting = () => setPage('employerJobPosting');
     const navToJobUnlockPayment = () => setPage('jobUnlockPayment');
     const navToTherapistJobRegistration = () => setPage('therapistJobRegistration');
-    const commonNavigateHandler = (page: string) => {
-        console.log('🔥 CommonNavigateHandler: navigating to', page);
-        setPage(page as Page);
-    };
+    const commonNavigateHandler = (page: string) => setPage(page as Page);
     const navToBlog = () => setPage('blog');
     
     // Helper for blog pages with consistent props
@@ -381,39 +378,39 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
     // Common portal handlers
     const portalHandlers = {
         onMassageJobsClick: () => {
-            console.log('🔥 Portal: navigating to massageJobs');
+            console.log('🔥 Navigating to massageJobs');
             setPage('massageJobs');
         },
         onHotelPortalClick: () => {
-            console.log('🔥 Portal: navigating to hotelLogin');
+            console.log('🔥 Navigating to hotelLogin');
             setPage('hotelLogin');
         },
         onVillaPortalClick: () => {
-            console.log('🔥 Portal: navigating to villaLogin');
+            console.log('🔥 Navigating to villaLogin');
             setPage('villaLogin');
         },
         onTherapistPortalClick: () => {
-            console.log('🔥 Portal: navigating to therapistLogin');
+            console.log('🔥 Navigating to therapistLogin');
             setPage('therapistLogin');
         },
         onMassagePlacePortalClick: () => {
-            console.log('🔥 Portal: navigating to massagePlaceLogin');
+            console.log('🔥 Navigating to massagePlaceLogin');
             setPage('massagePlaceLogin');
         },
         onAgentPortalClick: () => {
-            console.log('🔥 Portal: navigating to agentAuth');
+            console.log('🔥 Navigating to agentAuth');
             setPage('agentAuth');
         },
         onCustomerPortalClick: () => {
-            console.log('🔥 Portal: navigating to customerAuth');
+            console.log('🔥 Navigating to customerAuth');
             setPage('customerAuth');
         },
         onAdminPortalClick: () => {
-            console.log('🔥 Portal: navigating to adminLogin');
+            console.log('🔥 Navigating to adminLogin');
             setPage('adminLogin');
         },
         onTermsClick: () => {
-            console.log('🔥 Portal: navigating to serviceTerms');
+            console.log('🔥 Navigating to serviceTerms');
             setPage('serviceTerms');
         }
     };

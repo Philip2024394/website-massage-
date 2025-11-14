@@ -139,7 +139,8 @@ const App = () => {
     }, [language]);
     
     // Get translations using the actual language state - ALWAYS call this hook
-    const { t: __t } = useTranslations(language);
+    // Call the hook for side effects without binding unused variable
+    useTranslations(language);
 
     // Use the actual language handler from hooks
     const handleLanguageSelect = async (lang: 'en' | 'id') => {

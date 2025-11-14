@@ -128,7 +128,6 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
     
     const [analytics, setAnalytics] = useState<any>(null);
     const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(true);
-    const [_villaDocumentId, _setVillaDocumentId] = useState<string | null>(null);
 
     const updateState = (updates: Partial<typeof state>) => {
         setState(prev => ({ ...prev, ...updates }));
