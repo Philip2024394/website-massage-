@@ -7,6 +7,7 @@ import { therapistService } from '../lib/appwriteService';
 import { MASSAGE_TYPES_CATEGORIZED } from '../constants/rootConstants';
 import { LogOut, Activity, Calendar, TrendingUp, Bell, User, Crown, Building, FileText, Settings, Phone, X, Tag, Share2, Download, Star } from 'lucide-react';
 import { ColoredHistoryIcon, ColoredCoinsIcon } from '../components/ColoredIcons';
+import { AnalyticsCard, ActivatedDiscountButton, LiveDiscountCountdown, BookingCard, BusyCountdownTimer } from '../components/therapist-dashboard';
 
 
 
@@ -28,187 +29,15 @@ interface TherapistDashboardPageProps {
     t: any;
 }
 
-const AnalyticsCard: React.FC<{ title: string; value: number; description: string }> = ({ title, value, description }) => (
-    <div className="bg-white border-2 border-gray-200 rounded-xl p-6 hover:border-orange-300 transition-all">
-        <h4 className="text-sm font-medium text-gray-500">{title}</h4>
-        <p className="text-4xl font-bold text-orange-600 mt-2">{value.toLocaleString()}</p>
-        <p className="text-xs text-gray-500 mt-2">{description}</p>
-    </div>
-);
 
-const ActivatedDiscountButton: React.FC<{ 
-    endTime: Date; 
-    percentage: number; 
-    onExpire: () => void; 
-}> = ({ endTime, percentage: _percentage, onExpire }) => {
-    const [timeLeft, setTimeLeft] = useState<string>('');
 
-    useEffect(() => {
-        const updateCountdown = () => {
-            const now = new Date().getTime();
-            const distance = endTime.getTime() - now;
 
-            if (distance < 0) {
-                onExpire();
-                return;
-            }
 
-            const hours = Math.floor(distance / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            
-            if (hours > 0) {
-                setTimeLeft(`${hours}h ${minutes}m`);
-            } else {
-                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-                setTimeLeft(`${minutes}m ${seconds}s`);
-            }
-        };
 
-        updateCountdown();
-        const timer = setInterval(updateCountdown, 1000);
-        return () => clearInterval(timer);
-    }, [endTime, onExpire]);
 
-    return (
-        <div className="flex flex-col items-center">
-            <span className="text-lg">✅ Activated</span>
-            <span className="text-sm font-mono opacity-90">⏰ {timeLeft}</span>
-        </div>
-    );
-};
 
-const LiveDiscountCountdown: React.FC<{ 
-    endTime: Date; 
-    percentage: number; 
-    onExpire: () => void; 
-}> = ({ endTime, percentage, onExpire }) => {
-    const [timeLeft, setTimeLeft] = useState<string>('');
-    const [isExpired, setIsExpired] = useState(false);
 
-    useEffect(() => {
-        const updateCountdown = () => {
-            const now = new Date().getTime();
-            const distance = endTime.getTime() - now;
 
-            if (distance < 0) {
-                setIsExpired(true);
-                setTimeLeft('EXPIRED');
-                onExpire();
-                return;
-            }
-
-            const hours = Math.floor(distance / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-            setTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
-        };
-
-        updateCountdown();
-        const timer = setInterval(updateCountdown, 1000);
-        return () => clearInterval(timer);
-    }, [endTime, onExpire]);
-
-    if (isExpired) return null;
-
-    return (
-        <div className="mt-4 p-4 bg-gradient-to-r from-green-50 to-orange-50 border-2 border-green-300 rounded-xl">
-            <div className="text-center">
-                <div className="flex items-center justify-center space-x-2 mb-2">
-                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                    <p className="text-lg font-bold text-green-800">
-                        🎊 {percentage}% Discount LIVE!
-                    </p>
-                    <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-                </div>
-                <div className="bg-white px-4 py-2 rounded-lg border border-gray-200 shadow-sm">
-                    <p className="text-sm text-gray-600">Time Remaining:</p>
-                    <p className="text-xl font-mono font-bold text-orange-600">
-                        ⏰ {timeLeft}
-                    </p>
-                </div>
-                <p className="text-xs text-green-600 mt-2">
-                    Your pricing containers are flashing to attract customers!
-                </p>
-            </div>
-        </div>
-    );
-};
-
-const BusyCountdown: React.FC<{ busyUntil: Date }> = ({ busyUntil }) => {
-    const [timeLeft, setTimeLeft] = useState<string>('');
-
-    useEffect(() => {
-        const updateCountdown = () => {
-            const now = new Date();
-            const timeDiff = busyUntil.getTime() - now.getTime();
-
-            if (timeDiff <= 0) {
-                setTimeLeft('Available now');
-                return;
-            }
-
-            const hours = Math.floor(timeDiff / (1000 * 60 * 60));
-            const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
-
-            if (hours > 0) {
-                setTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
-            } else {
-                setTimeLeft(`${minutes}m ${seconds}s`);
-            }
-        };
-
-        updateCountdown();
-        const interval = setInterval(updateCountdown, 1000);
-
-        return () => clearInterval(interval);
-    }, [busyUntil]);
-
-    return (
-        <span className="ml-2 px-2 py-1 bg-yellow-500 text-white text-xs rounded-full font-bold">
-            ⏱️ {timeLeft}
-        </span>
-    );
-};
-
-const BookingCard: React.FC<{ booking: Booking; onUpdateStatus: (id: number, status: BookingStatus) => void; t: any }> = ({ booking, onUpdateStatus, t }) => {
-    const isPending = booking.status === BookingStatus.Pending;
-    const isUpcoming = new Date(booking.startTime) > new Date();
-
-    const statusColors = {
-        [BookingStatus.Pending]: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-        [BookingStatus.Confirmed]: 'bg-green-100 text-green-800 border-green-300',
-        [BookingStatus.OnTheWay]: 'bg-blue-100 text-blue-800 border-blue-300',
-        [BookingStatus.Cancelled]: 'bg-red-100 text-red-800 border-red-300',
-        [BookingStatus.Completed]: 'bg-gray-100 text-gray-800 border-gray-300',
-        [BookingStatus.TimedOut]: 'bg-red-100 text-red-800 border-red-300',
-        [BookingStatus.Reassigned]: 'bg-purple-100 text-purple-800 border-purple-300',
-    };
-
-    return (
-        <div className="bg-white border-2 border-gray-200 rounded-xl p-6 hover:border-orange-300 transition-all">
-            <div className="flex justify-between items-start mb-3">
-                <div>
-                    <p className="font-bold text-gray-900 text-lg">{booking.userName}</p>
-                    <p className="text-sm text-gray-600 mt-1">{t.service}: {booking.service} min</p>
-                </div>
-                <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${statusColors[booking.status]}`}>{booking.status}</span>
-            </div>
-            <p className="text-sm text-gray-600">{t.date}: {new Date(booking.startTime).toLocaleString()}</p>
-            {isPending && isUpcoming && (
-                 <div className="flex flex-col sm:flex-row gap-2 pt-4 mt-4 border-t">
-                    <button onClick={() => onUpdateStatus(booking.id, BookingStatus.Confirmed)} className="flex-1 bg-orange-500 text-white font-semibold py-2.5 px-3 sm:px-4 rounded-lg hover:bg-orange-600 transition-all text-sm">
-                        {t.confirm}
-                    </button>
-                    <button onClick={() => onUpdateStatus(booking.id, BookingStatus.Cancelled)} className="flex-1 bg-white text-gray-700 font-semibold py-2.5 px-3 sm:px-4 rounded-lg border-2 border-gray-300 hover:bg-gray-50 transition-all text-sm">
-                        {t.cancel}
-                    </button>
-                </div>
-            )}
-        </div>
-    );
-}
 
 const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({ 
     onSave, 
@@ -1416,7 +1245,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                 
                                                 {/* Busy Countdown Timer */}
                                                 {status === AvailabilityStatus.Busy && busyUntil && (
-                                                    <BusyCountdown busyUntil={busyUntil} />
+                                                    <BusyCountdownTimer busyUntil={busyUntil} />
                                                 )}
                                                 
                                                 {isDiscountActive && (
