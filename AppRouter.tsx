@@ -141,11 +141,7 @@ const renderDashboardPages = (page: Page, props: AppRouterProps) => {
 
     switch (page) {
         case 'therapistDashboard':
-            console.log('🎯 AppRouter: THERAPIST DASHBOARD CASE TRIGGERED!');
-            console.log('🔍 AppRouter: Current loggedInProvider:', loggedInProvider);
-            console.log('🔍 AppRouter: Available therapists count:', therapists.length);
-            
-            // 🔥 FIX: Find therapist by document ID (now passed from login)
+            // Find therapist by document ID (now passed from login)
             const existingTherapist = therapists.find(t => 
                 t.id === loggedInProvider?.id || 
                 t.$id === loggedInProvider?.id ||
@@ -153,44 +149,11 @@ const renderDashboardPages = (page: Page, props: AppRouterProps) => {
                 t.therapistId === loggedInProvider?.id
             );
             
-            console.log('🎯 AppRouter: Searching for therapist in homepage data:', {
-                loggedInProviderId: loggedInProvider?.id,
-                loggedInProviderType: loggedInProvider?.type,
-                totalTherapistsInArray: therapists.length,
-                searchResult: !!existingTherapist,
-                foundTherapistName: existingTherapist?.name,
-                foundTherapistId: existingTherapist?.$id || existingTherapist?.id,
-                allAvailableIds: therapists.slice(0, 3).map(t => ({ 
-                    name: t.name, 
-                    id: t.id, 
-                    $id: t.$id, 
-                    documentId: t.documentId,
-                    therapistId: t.therapistId 
-                })),
-                // Debug info from login
-                loginDebugInfo: localStorage.getItem('therapist_login_debug')
-            });
-            
-            // Additional check: ensure we have a logged in provider
-            if (!loggedInProvider) {
-                console.error('❌ AppRouter: No loggedInProvider found! User should be redirected to login.');
-                // Optionally redirect to login
-                // setPage('therapistLogin');
-                // return null;
+            if (!loggedInProvider || loggedInProvider?.type !== 'therapist') {
+                console.error('❌ AppRouter: Invalid therapist authentication:', loggedInProvider?.type);
             }
             
-            if (loggedInProvider?.type !== 'therapist') {
-                console.error('❌ AppRouter: loggedInProvider type is not therapist:', loggedInProvider?.type);
-            }
-            console.log('✅ AppRouter: About to render TherapistDashboardPage with props:', {
-                therapistId: loggedInProvider?.id || '',
-                existingTherapistData: existingTherapist ? { name: existingTherapist.name, id: existingTherapist.id } : null,
-                bookingsCount: bookings.length,
-                notificationsCount: notifications.filter(n => n.providerId === loggedInProvider?.id).length
-            });
-            
-            // �️ SECURE: Only render if authentication is valid
-            console.log('🎯 AppRouter: TherapistDashboard component created, returning securely...');
+            // SECURE: Only render if authentication is valid
             return secureRenderer.renderTherapistDashboard(
                 <TherapistDashboardPage 
                     onSave={handleSaveTherapist}
@@ -533,6 +496,16 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
     const renderBlogPage = (Component: any) => (
         <Component onBack={navToBlog} onNavigate={commonNavigateHandler} t={t} />
     );
+    
+    // Helper for hotel/villa secure navigation
+    const hotelVillaAllowedPages = ['coinHistory', 'coin-shop', 'hotelVillaMenu'];
+    const createSecureNavHandler = (type: string) => (page: string | Page) => {
+        if (hotelVillaAllowedPages.includes(page as string)) {
+            setPage(page as Page);
+        } else {
+            console.error(`🚨 SECURITY: ${type} dashboard attempted to navigate to unauthorized page:`, page);
+        }
+    };
 
     if (isLoading && page !== 'landing') {
         return <div className="flex justify-center items-center h-screen"><div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand-green"></div></div>;
@@ -767,50 +740,21 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return providerAuthInfo && <UnifiedLoginPage /> || null;
             
         case 'placeDashboard': {
-            console.log('🏢 PlaceDashboard Case - loggedInProvider:', loggedInProvider);
-            console.log('🏢 PlaceDashboard Case - loggedInProvider.id type:', typeof loggedInProvider?.id);
-            console.log('🏢 PlaceDashboard Case - places array:', places);
-            console.log('🏢 PlaceDashboard Case - places array length:', places.length);
+            // Find place or create basic object for dashboard loading
+            let currentPlace = places.find(p => p.id == loggedInProvider?.id || p.id === loggedInProvider?.id || String(p.id) === String(loggedInProvider?.id));
             
-            // Try both string and number comparison
-            let currentPlace = places.find(p => {
-                console.log('🔍 Comparing place.id:', p.id, '(type:', typeof p.id, ') with loggedInProvider.id:', loggedInProvider?.id, '(type:', typeof loggedInProvider?.id, ')');
-                return p.id == loggedInProvider?.id || p.id === loggedInProvider?.id || String(p.id) === String(loggedInProvider?.id);
-            });
-            
-            // If place not found in array, try to load from database
             if (!currentPlace && loggedInProvider?.id) {
-                console.log('⚠️ Place not found in array, attempting to load from database...');
-                // For now, create a basic place object - the PlaceDashboardPage will handle loading saved data
+                // Create basic place object - PlaceDashboardPage will handle loading saved data
                 currentPlace = {
                     id: loggedInProvider.id,
-                    name: '',
-                    description: '',
-                    rating: 0,
-                    isLive: false,
-                    openingTime: '09:00',
-                    closingTime: '21:00',
-                    location: '',
-                    phoneNumber: '',
-                    whatsappNumber: '',
-                    images: [],
-                    services: [],
-                    therapists: [],
-                    lat: 0,
-                    lng: 0,
-                    $id: String(loggedInProvider.id),
-                    mainImage: '',
-                    pricing: '{}',
-                    coordinates: '{"lat":0,"lng":0}',
-                    massageTypes: '[]',
-                    languages: [],
-                    additionalServices: []
+                    name: '', description: '', rating: 0, isLive: false,
+                    openingTime: '09:00', closingTime: '21:00', location: '', phoneNumber: '', whatsappNumber: '',
+                    images: [], services: [], therapists: [], lat: 0, lng: 0, $id: String(loggedInProvider.id),
+                    mainImage: '', pricing: '{}', coordinates: '{"lat":0,"lng":0}', massageTypes: '[]',
+                    languages: [], additionalServices: []
                 } as any;
             }
             
-            console.log('🏢 PlaceDashboard Case - currentPlace found:', currentPlace);
-            
-            // Always render PlaceDashboardPage if user is logged in as place
             if (loggedInProvider?.type === 'place') {
                 return <PlaceDashboardPage 
                     placeId={loggedInProvider.id}
@@ -826,7 +770,6 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 />;
             }
             
-            // If not logged in as place, redirect to registration
             return <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t?.registrationChoice || {}} />;
         }
             
@@ -1095,61 +1038,23 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             />;
             
         case 'hotelDashboard': 
-            // 🛡️ SECURE: Only render if authentication is valid
             return secureRenderer.renderHotelDashboard(
                 <HotelDashboardPage 
                     onLogout={handleHotelLogout} 
                     therapists={therapists}
                     places={places}
                     hotelId={user?.id || '1'}
-                    setPage={(page: Page) => {
-                        // 🛡️ SECURITY: Only allow hotel-safe pages
-                        const hotelAllowedPages: Page[] = ['coinHistory', 'coin-shop', 'hotelVillaMenu'];
-                        if (hotelAllowedPages.includes(page as Page)) {
-                            setPage(page);
-                        } else {
-                            console.error('🚨 SECURITY: Hotel dashboard attempted to navigate to unauthorized page:', page);
-                            // Stay on hotel dashboard
-                        }
-                    }}
-                    onNavigate={(page: string) => {
-                        // 🛡️ SECURITY: Only allow hotel-safe pages
-                        const hotelAllowedPages = ['coinHistory', 'coin-shop', 'hotelVillaMenu'];
-                        if (hotelAllowedPages.includes(page)) {
-                            setPage(page as Page);
-                        } else {
-                            console.error('🚨 SECURITY: Hotel dashboard attempted to navigate to unauthorized page:', page);
-                            // Stay on hotel dashboard
-                        }
-                    }}
+                    setPage={createSecureNavHandler('Hotel')}
+                    onNavigate={createSecureNavHandler('Hotel')}
                 />
             );
             
         case 'villaDashboard': 
-            // 🛡️ SECURE: Only render if authentication is valid
             return secureRenderer.renderVillaDashboard(
                 <VillaDashboardPage 
                     onLogout={handleVillaLogout}
-                    setPage={(page: any) => {
-                        // 🛡️ SECURITY: Only allow villa-safe pages
-                        const villaAllowedPages: Page[] = ['coinHistory', 'coin-shop', 'hotelVillaMenu'];
-                        if (villaAllowedPages.includes(page as Page)) {
-                            setPage(page as Page);
-                        } else {
-                            console.error('🚨 SECURITY: Villa dashboard attempted to navigate to unauthorized page:', page);
-                            // Stay on villa dashboard
-                        }
-                    }}
-                    onNavigate={(page: string) => {
-                        // 🛡️ SECURITY: Only allow villa-safe pages
-                        const villaAllowedPages = ['coinHistory', 'coin-shop', 'hotelVillaMenu'];
-                        if (villaAllowedPages.includes(page)) {
-                            setPage(page as Page);
-                        } else {
-                            console.error('🚨 SECURITY: Villa dashboard attempted to navigate to unauthorized page:', page);
-                            // Stay on villa dashboard
-                        }
-                    }}
+                    setPage={createSecureNavHandler('Villa')}
+                    onNavigate={createSecureNavHandler('Villa')}
                 />
             );
             
