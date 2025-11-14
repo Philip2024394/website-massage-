@@ -10,6 +10,7 @@ import { getAllTherapistImages } from '../utils/therapistImageUtils';
 import { analyticsService } from '../services/analyticsService';
 import { databases, ID } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
+import { commissionPaymentService } from '../services/commissionPaymentService';
 import QRCodeGenerator from 'qrcode';
 import { useTranslations } from '../lib/useTranslations';
 import PushNotificationSettings from '../components/PushNotificationSettings';
@@ -331,38 +332,38 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
         }
     };
 
-    // 🔑 CRITICAL: Commission management functions
+    // 🔑 CRITICAL: Commission management functions - FIXED TO MANAGE THERAPIST STATUS
     const handleCommissionAction = async (recordId: string, action: 'verify' | 'reject', rejectionReason?: string) => {
         try {
-            const updateData: any = {
-                updatedAt: new Date().toISOString(),
-                verifiedBy: parseInt(hotelId), // Hotel ID who is verifying
-                verifiedAt: new Date().toISOString()
-            };
-
+            console.log(`🏨 Hotel ${hotelId} ${action}ing commission record ${recordId}`);
+            
             if (action === 'verify') {
-                updateData.status = 'verified';
-                console.log(`✅ Verifying commission record ${recordId}`);
+                // ✅ VERIFY: Use proper service that sets therapist back to Available
+                await commissionPaymentService.verifyPayment(
+                    parseInt(recordId),
+                    parseInt(hotelId),
+                    true // verified = true
+                );
+                console.log(`✅ Commission verified - Therapist is now Available again!`);
+                alert('✅ Commission verified successfully!\n🟢 Therapist is now Available for new bookings.');
             } else {
-                updateData.status = 'rejected';
-                updateData.rejectionReason = rejectionReason || 'No reason provided';
-                console.log(`❌ Rejecting commission record ${recordId}: ${rejectionReason}`);
+                // ❌ REJECT: Use proper service that keeps therapist Busy
+                await commissionPaymentService.verifyPayment(
+                    parseInt(recordId),
+                    parseInt(hotelId),
+                    false, // verified = false
+                    rejectionReason || 'Payment proof was unclear or invalid'
+                );
+                console.log(`❌ Commission rejected - Therapist remains Busy until reupload`);
+                alert('❌ Commission rejected.\n🟡 Therapist remains Busy until they upload valid payment proof.');
             }
-
-            await databases.updateDocument(
-                APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.commissionRecords,
-                recordId,
-                updateData
-            );
 
             // Reload commission records to reflect changes
             await loadCommissionRecords();
             
-            alert(action === 'verify' ? '✅ Commission verified successfully!' : '❌ Commission rejected successfully!');
         } catch (error) {
             console.error(`Error ${action}ing commission:`, error);
-            alert(`Failed to ${action} commission. Please try again.`);
+            alert(`Failed to ${action} commission. Please try again.\n\nError: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     };
 
@@ -577,39 +578,53 @@ const HotelDashboardPage: React.FC<HotelDashboardPageProps> = ({
                                                         <div className="text-xs text-gray-500">{record.commissionRate}%</div>
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
-                                                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                                            record.status === 'verified' ? 'bg-green-100 text-green-800' :
-                                                            record.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                                            record.status === 'awaiting_verification' ? 'bg-blue-100 text-blue-800' :
-                                                            record.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                                                            'bg-gray-100 text-gray-800'
-                                                        }`}>
-                                                            {record.status}
-                                                        </span>
+                                                        <div className="space-y-1">
+                                                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                                                record.status === 'verified' ? 'bg-green-100 text-green-800' :
+                                                                record.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                                                record.status === 'awaiting_verification' ? 'bg-blue-100 text-blue-800' :
+                                                                record.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                                                'bg-gray-100 text-gray-800'
+                                                            }`}>
+                                                                {record.status}
+                                                            </span>
+                                                            {/* Show therapist status impact */}
+                                                            <div className="text-xs text-gray-500">
+                                                                {record.status === 'verified' && record.providerType === 'therapist' && '🟢 Therapist: Available'}
+                                                                {(record.status === 'pending' || record.status === 'awaiting_verification' || record.status === 'rejected') && record.providerType === 'therapist' && '🟡 Therapist: Busy'}
+                                                            </div>
+                                                        </div>
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                         {new Date(record.bookingDate).toLocaleDateString()}
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                                                         {record.status === 'awaiting_verification' && (
-                                                            <div className="flex gap-2">
-                                                                <button
-                                                                    onClick={() => handleCommissionAction(record.$id, 'verify')}
-                                                                    className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs transition-colors"
-                                                                >
-                                                                    ✓ Accept
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => {
-                                                                        const reason = prompt('Rejection reason (optional):');
-                                                                        if (reason !== null) { // User didn't cancel
-                                                                            handleCommissionAction(record.$id, 'reject', reason);
-                                                                        }
-                                                                    }}
-                                                                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs transition-colors"
-                                                                >
-                                                                    ✗ Reject
-                                                                </button>
+                                                            <div className="space-y-1">
+                                                                <div className="flex gap-2">
+                                                                    <button
+                                                                        onClick={() => handleCommissionAction(record.$id, 'verify')}
+                                                                        className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs transition-colors"
+                                                                        title={`Accept payment & set ${record.providerName} to Available`}
+                                                                    >
+                                                                        ✓ Accept
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            const reason = prompt('Rejection reason (optional):');
+                                                                            if (reason !== null) { // User didn't cancel
+                                                                                handleCommissionAction(record.$id, 'reject', reason);
+                                                                            }
+                                                                        }}
+                                                                        className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs transition-colors"
+                                                                        title={`Reject payment & keep ${record.providerName} Busy`}
+                                                                    >
+                                                                        ✗ Reject
+                                                                    </button>
+                                                                </div>
+                                                                <div className="text-xs text-gray-500">
+                                                                    💡 Accept = {record.providerType} becomes Available
+                                                                </div>
                                                             </div>
                                                         )}
                                                         {record.status === 'verified' && (
