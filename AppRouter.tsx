@@ -521,6 +521,13 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         t
     } = props;
 
+    // 🚀 OPTIMIZATION: Common handlers to reduce repetition
+    const navToMassageJobs = () => setPage('massageJobs');
+    const navToEmployerJobPosting = () => setPage('employerJobPosting');
+    const navToJobUnlockPayment = () => setPage('jobUnlockPayment');
+    const navToTherapistJobRegistration = () => setPage('therapistJobRegistration');
+    const commonNavigateHandler = (page: string) => setPage(page as Page);
+
     if (isLoading && page !== 'landing') {
         return <div className="flex justify-center items-center h-screen"><div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand-green"></div></div>;
     }
@@ -1140,20 +1147,15 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 />
             );
             
-        case 'employerJobPosting': 
- 
+        case 'employerJobPosting':
             return <EmployerJobPostingPage 
-                onBack={() => {
-                    console.log('🎯 AppRouter: EmployerJobPosting onBack - going back to massageJobs');
-                    setPage('massageJobs');
-                }} 
+                onBack={navToMassageJobs}
                 onNavigateToPayment={(jobId: string) => {
-                    console.log('🎯 AppRouter: onNavigateToPayment called with jobId:', jobId);
                     setSelectedJobId(jobId);
                     setPage('jobPostingPayment');
                 }}
                 onNavigate={(page: Page) => setPage(page)}
-                onMassageJobsClick={() => setPage('massageJobs')}
+                onMassageJobsClick={navToMassageJobs}
                 onHotelPortalClick={handleHotelLogin}
                 onVillaPortalClick={() => setPage('villaLogin')}
                 onTherapistPortalClick={() => setPage('therapistLogin')}
@@ -1169,44 +1171,27 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             />;
         
         case 'therapistJobRegistration':
- 
             return <TherapistJobRegistrationPage 
-                onBack={() => {
-                    console.log('🎯 AppRouter: TherapistJobRegistration onBack - going back to massageJobs');
-                    setPage('massageJobs');
-                }} 
+                onBack={navToMassageJobs}
                 onSuccess={() => {
                     alert('Profile submitted successfully!');
-                    setPage('massageJobs');
+                    navToMassageJobs();
                 }}
             />;
             
             
-        case 'jobPostingPayment': 
- 
-            return <JobPostingPaymentPage jobId={selectedJobId || ''} onBack={handleBackToHome} onNavigate={(page: string) => setPage(page as Page)} />;
+        case 'jobPostingPayment':
+            return <JobPostingPaymentPage jobId={selectedJobId || ''} onBack={handleBackToHome} onNavigate={commonNavigateHandler} />;
             
-        case 'browseJobs': 
- 
-            return <BrowseJobsPage onBack={handleBackToHome} onPostJob={() => setPage('massageJobs')} t={t} />;
+        case 'browseJobs':
+            return <BrowseJobsPage onBack={handleBackToHome} onPostJob={navToMassageJobs} t={t} />;
             
         case 'massageJobs': 
-            console.log('🔥🔥🔥 AppRouter: RENDERING MassageJobsPage - VERSION 2025-01-11-17:30:00');
- 
             return <MassageJobsPage 
                 onBack={handleBackToHome} 
-                onPostJob={() => {
-                    console.log('🎯 AppRouter: onPostJob called - navigating to employerJobPosting');
-                    setPage('employerJobPosting');
-                }} 
-                onNavigateToPayment={() => {
-                    console.log('🎯 AppRouter: onNavigateToPayment called - navigating to jobUnlockPayment');
-                    setPage('jobUnlockPayment');
-                }} 
-                onCreateTherapistProfile={() => {
-                    console.log('🎯 AppRouter: onCreateTherapistProfile called - navigating to therapistJobRegistration');
-                    setPage('therapistJobRegistration');
-                }}
+                onPostJob={navToEmployerJobPosting}
+                onNavigateToPayment={navToJobUnlockPayment}
+                onCreateTherapistProfile={navToTherapistJobRegistration}
             />;
             
         case 'therapistJobs': 
@@ -1241,9 +1226,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 </div>
             );
             
-        case 'about-us' as any: 
- 
-            return <AboutUsPage onBack={handleBackToHome} onNavigate={(page: string) => setPage(page as Page)} t={t} />;
+        case 'about-us' as any:
+            return <AboutUsPage onBack={handleBackToHome} onNavigate={commonNavigateHandler} t={t} />;
             
         case 'indastreet-partners': 
             return <IndastreetPartnersPage 
@@ -1273,26 +1257,21 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
  
             return <HowItWorksPage onNavigate={(page: string) => setPage(page as Page)} />;
             
-        case 'massage-bali': 
- 
-            return <MassageBaliPage onNavigate={(page: string) => setPage(page as Page)} />;
+        case 'massage-bali':
+            return <MassageBaliPage onNavigate={commonNavigateHandler} />;
             
-        case 'blog': 
- 
-            return <BlogIndexPage onNavigate={(page: string) => setPage(page as Page)} />;
+        case 'blog':
+            return <BlogIndexPage onNavigate={commonNavigateHandler} />;
             
-        case 'faq': 
- 
-            return <FAQPage onNavigate={(page: string) => setPage(page as Page)} />;
+        case 'faq':
+            return <FAQPage onNavigate={commonNavigateHandler} />;
             
-        case 'balinese-massage': 
- 
-            return <BalineseMassagePage onNavigate={(page: string) => setPage(page as Page)} t={t} />;
+        case 'balinese-massage':
+            return <BalineseMassagePage onNavigate={commonNavigateHandler} t={t} />;
             
-        case 'deep-tissue-massage': 
- 
+        case 'deep-tissue-massage':
             return <DeepTissueMassagePage 
-                onNavigate={(page: string) => setPage(page as Page)} 
+                onNavigate={commonNavigateHandler} 
                 onMassageJobsClick={() => setPage('massage-jobs' as Page)}
                 onHotelPortalClick={() => setPage('hotel-login' as Page)}
                 onVillaPortalClick={() => setPage('villa-login' as Page)}
