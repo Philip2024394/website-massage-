@@ -2,6 +2,7 @@ import React from 'react';
 import type { Page, Language, LoggedInProvider } from './types/pageTypes';
 import type { User, Place, Therapist, UserLocation, Booking, Notification, Agent, AdminMessage, AvailabilityStatus } from './types';
 import { BookingStatus } from './types';
+import { validateDashboardAccess, clearAllAuthStates, createSecureDashboardRenderer, type AuthenticationState } from './utils/dashboardGuards';
 
 // Page imports
 import LandingPage from './pages/LandingPage';
@@ -184,36 +185,39 @@ const renderDashboardPages = (page: Page, props: AppRouterProps) => {
                 notificationsCount: notifications.filter(n => n.providerId === loggedInProvider?.id).length
             });
             
-            // 🔥 FORCE RENDER: Always render the dashboard if we reach this case
-            const dashboardComponent = <TherapistDashboardPage 
-                onSave={handleSaveTherapist}
-                onLogout={handleProviderLogout}
-                onNavigateToNotifications={handleNavigateToNotifications}
-                onNavigate={setPage}
-                onUpdateBookingStatus={handleUpdateBookingStatus}
-                onStatusChange={async (status: AvailabilityStatus) => {
-                    await handleTherapistStatusChange(status as string);
-                }}
-                therapistId={loggedInProvider?.id || ''}
-                existingTherapistData={existingTherapist} // 🎯 Pass the same data home page uses
-                bookings={bookings}
-                notifications={notifications.filter(n => n.providerId === loggedInProvider?.id)}
-                t={t.providerDashboard || {}}
-            />;
-            
-            console.log('🎯 AppRouter: TherapistDashboard component created, returning...');
-            return dashboardComponent;
+            // �️ SECURE: Only render if authentication is valid
+            console.log('🎯 AppRouter: TherapistDashboard component created, returning securely...');
+            return secureRenderer.renderTherapistDashboard(
+                <TherapistDashboardPage 
+                    onSave={handleSaveTherapist}
+                    onLogout={handleProviderLogout}
+                    onNavigateToNotifications={handleNavigateToNotifications}
+                    onNavigate={setPage}
+                    onUpdateBookingStatus={handleUpdateBookingStatus}
+                    onStatusChange={async (status: AvailabilityStatus) => {
+                        await handleTherapistStatusChange(status as string);
+                    }}
+                    therapistId={loggedInProvider?.id || ''}
+                    existingTherapistData={existingTherapist} // 🎯 Pass the same data home page uses
+                    bookings={bookings}
+                    notifications={notifications.filter(n => n.providerId === loggedInProvider?.id)}
+                    t={t.providerDashboard || {}}
+                />
+            );
         case 'placeDashboard':
-            return <PlaceDashboardPage 
-                loggedInProvider={loggedInProvider} 
-                onLogout={handleProviderLogout}
-                setPage={setPage}
-                onNavigate={setPage}
-                bookings={bookings}
-                notifications={notifications}
-                onMarkNotificationAsRead={props.handleMarkNotificationAsRead}
-                onUpdateBookingStatus={props.handleUpdateBookingStatus}
-            />;
+            // 🛡️ SECURE: Only render if authentication is valid
+            return secureRenderer.renderPlaceDashboard(
+                <PlaceDashboardPage 
+                    loggedInProvider={loggedInProvider} 
+                    onLogout={handleProviderLogout}
+                    setPage={setPage}
+                    onNavigate={setPage}
+                    bookings={bookings}
+                    notifications={notifications}
+                    onMarkNotificationAsRead={props.handleMarkNotificationAsRead}
+                    onUpdateBookingStatus={props.handleUpdateBookingStatus}
+                />
+            );
         case 'place-discount-system':
             return <PlaceDiscountSystemPage 
                 place={loggedInProvider?.type === 'place' ? loggedInProvider as any : undefined}
@@ -517,6 +521,75 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         return <div className="flex justify-center items-center h-screen"><div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand-green"></div></div>;
     }
 
+    // 🛡️ SECURITY: Validate authentication states and prevent dashboard cross-contamination
+    const authState: AuthenticationState = {
+        isHotelLoggedIn,
+        isVillaLoggedIn, 
+        isAdminLoggedIn,
+        loggedInProvider,
+        loggedInAgent,
+        loggedInCustomer,
+        loggedInUser: user as { id: string; type: 'admin' | 'hotel' | 'villa' | 'agent' } | null
+    };
+
+    const dashboardAccess = validateDashboardAccess(authState);
+    
+    // Handle security errors
+    if (dashboardAccess.errorMessage) {
+        console.error('🚨 DASHBOARD SECURITY ERROR:', dashboardAccess.errorMessage);
+        
+        // Clear all auth states to prevent contamination
+        clearAllAuthStates({
+            setIsHotelLoggedIn: (value: boolean) => {
+                props.handleHotelLogout?.();
+            },
+            setIsVillaLoggedIn: (value: boolean) => {
+                props.handleVillaLogout?.();
+            },
+            setIsAdminLoggedIn: (value: boolean) => {
+                props.handleAdminLogout?.();
+            },
+            setLoggedInProvider,
+            setLoggedInAgent: (agent: any) => {
+                props.handleAgentLogout?.();
+            },
+            setLoggedInCustomer: (customer: any) => {
+                props.handleCustomerLogout?.();
+            }
+        });
+        
+        // Redirect to home with error message
+        setPage('home');
+        
+        // Show security error message
+        return (
+            <div className="flex flex-col justify-center items-center h-screen bg-red-50 p-4">
+                <div className="bg-white rounded-lg shadow-lg p-6 max-w-md text-center">
+                    <div className="text-6xl mb-4">🚨</div>
+                    <h2 className="text-xl font-bold text-red-600 mb-2">Security Alert</h2>
+                    <p className="text-gray-700 mb-4">{dashboardAccess.errorMessage}</p>
+                    <button 
+                        onClick={() => setPage('home')}
+                        className="bg-red-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-600 transition-colors"
+                    >
+                        Return to Home
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    // Create secure dashboard renderer
+    const secureRenderer = createSecureDashboardRenderer(authState, (message, redirectTo) => {
+        console.error('🚨 Dashboard access denied:', message);
+        if (redirectTo) setPage(redirectTo as Page);
+    });
+
+    // If renderer is null (security error already handled above), don't continue
+    if (!secureRenderer) {
+        return null;
+    }
+
     switch (page) {
         case 'landing': 
             return <LandingPage 
@@ -711,10 +784,13 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return <AdminLoginPage onAdminLogin={handleAdminLogin} onBack={handleBackToHome} t={t} />;
             
         case 'adminDashboard': 
-            return isAdminLoggedIn && <AdminDashboardPage 
-                onLogout={handleAdminLogout}
-                onNavigate={setPage}
-            /> || null;
+            // 🛡️ SECURE: Only render if authentication is valid
+            return secureRenderer.renderAdminDashboard(
+                <AdminDashboardPage 
+                    onLogout={handleAdminLogout}
+                    onNavigate={setPage}
+                />
+            );
             
         case 'providerAuth': 
             return providerAuthInfo && <UnifiedLoginPage /> || null;
@@ -787,29 +863,34 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return loggedInAgent ? <AgentTermsPage onAccept={handleAgentAcceptTerms} onLogout={handleAgentLogout} t={t.agentTermsPage} /> : null;
             
         case 'agentDashboard': 
+            // 🛡️ SECURE: Only render if authentication is valid
             if (impersonatedAgent) {
-                return <AgentDashboardPage 
-                    agent={impersonatedAgent} 
-                    onLogout={() => {}} 
-                    isAdminView={true}
-                    onStopImpersonating={handleStopImpersonating}
-                    messages={adminMessages}
-                    onSendMessage={handleSendAdminMessage}
-                    t={t.agentDashboard} 
-                />;
+                return secureRenderer.renderAgentDashboard(
+                    <AgentDashboardPage 
+                        agent={impersonatedAgent} 
+                        onLogout={() => {}} 
+                        isAdminView={true}
+                        onStopImpersonating={handleStopImpersonating}
+                        messages={adminMessages}
+                        onSendMessage={handleSendAdminMessage}
+                        t={t.agentDashboard} 
+                    />
+                );
             }
             if (loggedInAgent) {
                 if (!loggedInAgent.hasAcceptedTerms) {
                     return <AgentTermsPage onAccept={handleAgentAcceptTerms} onLogout={handleAgentLogout} t={t.agentTermsPage} />;
                 }
-                return <AgentDashboardPage 
-                    agent={loggedInAgent} 
-                    onLogout={handleAgentLogout} 
-                    messages={adminMessages}
-                    onMarkMessagesAsRead={handleMarkMessagesAsRead}
-                    onSaveProfile={handleSaveAgentProfile}
-                    t={t.agentDashboard} 
-                />;
+                return secureRenderer.renderAgentDashboard(
+                    <AgentDashboardPage 
+                        agent={loggedInAgent} 
+                        onLogout={handleAgentLogout} 
+                        messages={adminMessages}
+                        onMarkMessagesAsRead={handleMarkMessagesAsRead}
+                        onSaveProfile={handleSaveAgentProfile}
+                        t={t.agentDashboard} 
+                    />
+                );
             }
             return null;
             
@@ -837,14 +918,17 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return <CustomerAuthPage onSuccess={handleCustomerAuthSuccess} onBack={handleBackToHome} userLocation={userLocation} />;
             
         case 'customerDashboard': 
-            return loggedInCustomer && <CustomerDashboardPage 
-                customer={loggedInCustomer}
-                user={loggedInCustomer}
-                onLogout={handleCustomerLogout}
-                onBack={handleBackToHome}
-                onBookNow={() => {}}
-                t={t.customerDashboard}
-            /> || null;
+            // 🛡️ SECURE: Only render if authentication is valid
+            return secureRenderer.renderCustomerDashboard(
+                <CustomerDashboardPage 
+                    customer={loggedInCustomer}
+                    user={loggedInCustomer}
+                    onLogout={handleCustomerLogout}
+                    onBack={handleBackToHome}
+                    onBookNow={() => {}}
+                    t={t.customerDashboard}
+                />
+            );
             
         case 'membership': 
  
@@ -1005,23 +1089,27 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             />;
             
         case 'hotelDashboard': 
- 
-            return isHotelLoggedIn && <HotelDashboardPage 
-                onLogout={handleHotelLogout} 
-                therapists={therapists}
-                places={places}
-                hotelId={user?.id || '1'}
-                setPage={(page: Page) => setPage(page)}
-                onNavigate={(page: string) => setPage(page as Page)}
-            /> || null;
+            // 🛡️ SECURE: Only render if authentication is valid
+            return secureRenderer.renderHotelDashboard(
+                <HotelDashboardPage 
+                    onLogout={handleHotelLogout} 
+                    therapists={therapists}
+                    places={places}
+                    hotelId={user?.id || '1'}
+                    setPage={(page: Page) => setPage(page)}
+                    onNavigate={(page: string) => setPage(page as Page)}
+                />
+            );
             
         case 'villaDashboard': 
- 
-            return isVillaLoggedIn && <VillaDashboardPage 
-                onLogout={handleVillaLogout}
-                setPage={(page: any) => setPage(page as Page)}
-                onNavigate={(page: string) => setPage(page as Page)}
-            /> || null;
+            // 🛡️ SECURE: Only render if authentication is valid
+            return secureRenderer.renderVillaDashboard(
+                <VillaDashboardPage 
+                    onLogout={handleVillaLogout}
+                    setPage={(page: any) => setPage(page as Page)}
+                    onNavigate={(page: string) => setPage(page as Page)}
+                />
+            );
             
         case 'employerJobPosting': 
  
