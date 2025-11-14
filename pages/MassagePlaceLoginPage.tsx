@@ -4,7 +4,6 @@ import { saveSessionCache } from '../lib/sessionManager';
 import { checkRateLimit, handleAppwriteError, resetRateLimit } from '../lib/rateLimitUtils';
 import { trackDailySignIn } from '../lib/coinHooks';
 import { LogIn, UserPlus, Eye, EyeOff } from 'lucide-react';
-import PasswordInput from '../components/PasswordInput';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { AppDrawer } from '../components/AppDrawer';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';

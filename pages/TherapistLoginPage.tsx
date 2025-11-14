@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
-import Button from '../components/Button';
-import PasswordInput from '../components/PasswordInput';
 import { therapistAuth } from '../lib/auth';
 import { trackDailySignIn } from '../lib/coinHooks';
-import { LogIn, UserPlus, Mail, Eye, EyeOff, ChevronLeft } from 'lucide-react';
+import { Eye, EyeOff, ChevronLeft } from 'lucide-react';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { AppDrawer } from '../components/AppDrawer';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';

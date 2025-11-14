@@ -4,7 +4,6 @@ import { saveSessionCache } from '../lib/sessionManager';
 import { checkRateLimit, handleAppwriteError, resetRateLimit } from '../lib/rateLimitUtils';
 import { trackDailySignIn } from '../lib/coinHooks';
 import { LogIn, UserPlus, Eye, EyeOff, Mail, Lock } from 'lucide-react';
-import PasswordInput from '../components/PasswordInput';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { AppDrawer } from '../components/AppDrawer';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
@@ -16,13 +15,7 @@ interface VillaLoginPageProps {
     t: (key: string, params?: Record<string, any>) => string; // Translation function type
 }
 
-const HomeIcon: React.FC<{className?: string}> = ({ className }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-    </svg>
-);
-
-const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onSuccess, onBack }) => {
+const VillaLoginPage: React.FC<VillaLoginPageProps> = ({ onSuccess, onBack: _onBack }) => {
     const [isSignUp, setIsSignUp] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
