@@ -460,24 +460,26 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             <div className="bg-white rounded-xl shadow-md overflow-visible relative transition-all duration-300">
                 
                 {/* Main Image Banner */}
-                <div className="h-48 w-full bg-gradient-to-r from-orange-400 to-orange-600 overflow-hidden relative rounded-t-xl">
-                <img 
-                    src={displayImage} 
-                    alt={`${therapist.name} cover`} 
-                    className={`w-full h-full object-cover transition-all duration-500 ${
-                        isDiscountActive(therapist) 
-                            ? 'brightness-110 contrast-110 saturate-110' 
-                            : ''
-                    }`}
-                    onError={(e) => {
-                        console.error('🖼️ Main image failed to load:', displayImage);
-                        // Fallback to a working ImageKit URL
-                        (e.target as HTMLImageElement).src = 'https://ik.imagekit.io/7grri5v7d/hotel%20massage%20indoniseas.png?updatedAt=1761154913720';
-                    }}
-                    onLoad={() => {
-                        console.log('✅ Main image loaded successfully:', displayImage);
-                    }}
-                />
+                <div className="h-48 w-full overflow-visible relative rounded-t-xl">
+                <div className="absolute inset-0 rounded-t-xl overflow-hidden bg-gradient-to-r from-orange-400 to-orange-600">
+                    <img 
+                        src={displayImage} 
+                        alt={`${therapist.name} cover`} 
+                        className={`w-full h-full object-cover transition-all duration-500 ${
+                            isDiscountActive(therapist) 
+                                ? 'brightness-110 contrast-110 saturate-110' 
+                                : ''
+                        }`}
+                        onError={(e) => {
+                            console.error('🖼️ Main image failed to load:', displayImage);
+                            // Fallback to a working ImageKit URL
+                            (e.target as HTMLImageElement).src = 'https://ik.imagekit.io/7grri5v7d/hotel%20massage%20indoniseas.png?updatedAt=1761154913720';
+                        }}
+                        onLoad={() => {
+                            console.log('✅ Main image loaded successfully:', displayImage);
+                        }}
+                    />
+                </div>
 
                 {/* 🎯 ENHANCED DISCOUNT BADGE - Larger orange badge in top right corner with glow effect */}
                 {isDiscountActive(therapist) && (
