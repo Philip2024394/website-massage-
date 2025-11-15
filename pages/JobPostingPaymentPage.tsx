@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { CreditCard, AlertCircle, CheckCircle, Copy, ArrowLeft, DollarSign, Calendar } from 'lucide-react';
 import { databases } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
-import Footer from '../components/Footer';
+ 
 
 const BurgerMenuIcon = ({ className = 'w-6 h-6' }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -423,12 +423,7 @@ const JobPostingPaymentPage: React.FC<JobPostingPaymentPageProps> = ({
                 </div>
             </div>
 
-            {/* Footer */}
-            <Footer 
-                onHomeClick={() => onNavigate?.('home')}
-                currentPage="payment"
-                t={(key: string) => key}
-            />
+            {/* Navigation footer removed: GlobalFooter covers navigation; page keeps its own actions */}
         </div>
     );
 };

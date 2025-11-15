@@ -1,5 +1,4 @@
 import React from 'react';
-import Footer from '../components/Footer';
 import { translations } from '../translations/index.ts';
 
 interface PrivacyPolicyPageProps {
@@ -94,7 +93,7 @@ const PrivacyPolicyPage: React.FC<PrivacyPolicyPageProps> = ({ onBack, t }) => {
 
             </main>
 
-            <Footer onHomeClick={onBack} t={translations} />
+            {/* Navigation footer removed: GlobalFooter provides app-wide navigation */}
 
             <style>{`\n                @keyframes float {\n                    0%, 100% { transform: translateY(0); }\n                    50% { transform: translateY(-5px); }\n                }\n                .animate-float {\n                    animation: float 2s ease-in-out infinite;\n                }\n            `}</style>
         </div>

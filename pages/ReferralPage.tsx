@@ -456,19 +456,7 @@ const ReferralPage: React.FC<ReferralPageProps> = ({
             </div>
             </div>
             
-            {/* App Footer */}
-            <Footer
-                userRole="user"
-                currentPage="referral"
-                onHomeClick={onFooterHome || (() => _onNavigate?.('home'))}
-                onNotificationsClick={() => {}}
-                onProfileClick={onFooterProfile || (() => _onNavigate?.('profile'))}
-                onDashboardClick={onFooterDashboard}
-                onSearchClick={onFooterSearch || (() => _onNavigate?.('search'))}
-                onMenuClick={onFooterMenu || (() => setIsMenuOpen(true))}
-                onChatClick={() => {}}
-                t={t.footer || {}}
-            />
+            {/* Legacy Footer removed: GlobalFooter handles navigation */}
         </div>
     );
 };

@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import Footer from '../components/Footer';
 import { ArrowLeft, Menu } from 'lucide-react';
 import NotificationBell from '../components/NotificationBell';
 
@@ -241,11 +240,7 @@ const PlaceTermsPage: React.FC<PlaceTermsPageProps> = ({
                 </div>
             </main>
 
-            <Footer
-                currentPage="terms"
-                userRole="place"
-                t={t}
-            />
+            {/* Navigation footer removed: relying on GlobalFooter; local back button retained above */}
         </div>
     );
 };

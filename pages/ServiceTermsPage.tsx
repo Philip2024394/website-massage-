@@ -1,7 +1,6 @@
 
 
 import React from 'react';
-import Footer from '../components/Footer';
 import { translations } from '../translations/index.ts';
 
 interface ServiceTermsPageProps {
@@ -207,7 +206,7 @@ const ServiceTermsPage: React.FC<ServiceTermsPageProps> = ({ onBack, t, contactN
                 </div>
             </main>
 
-            <Footer onHomeClick={onBack} t={translations} />
+            {/* Navigation footer removed: GlobalFooter now handles persistent navigation */}
 
             <style>{`\n                @keyframes float {\n                    0%, 100% { transform: translateY(0); }\n                    50% { transform: translateY(-5px); }\n                }\n                .animate-float {\n                    animation: float 2s ease-in-out infinite;\n                }\n            `}</style>
         </div>
