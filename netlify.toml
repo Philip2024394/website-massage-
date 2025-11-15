@@ -1,7 +1,28 @@
-# ABSOLUTE MINIMUM CONFIG
+# Primary Netlify configuration (expanded from minimal)
 [build]
-  publish = "dist"  
+  publish = "dist"
+  # Uses existing bs script (tsc + vite build with vite.config.ts)
   command = "corepack enable pnpm && pnpm i && pnpm bs"
+
+[build.environment]
+  NODE_VERSION = "20"
+  PNPM_VERSION = "10.22.0"
+  ROLLUP_NO_NATIVE = "1"
+  ROLLUP_NO_WASM = "1"
+  NODE_OPTIONS = "--max-old-space-size=4096"
+  NETLIFY_BUILD_DEBUG = "true"
+  # NOTE: Move secrets to Netlify UI if sensitive
+  VITE_APP_NAME = "IndaStreet"
+  # VITE_APPWRITE_ENDPOINT = "https://syd.cloud.appwrite.io/v1"
+  # VITE_APPWRITE_PROJECT_ID = "68f23b11000d25eb3664"
+  # VITE_APPWRITE_DATABASE_ID = "68f76ee1000e64ca8d05"
+  # VITE_APPWRITE_BUCKET_ID = "68f76bdd002387590584"
+  # VITE_WHATSAPP_SUPPORT = "6281392000050"
+  # VITE_SUPPORT_EMAIL = "support@indastreet.com"
+  # VITE_PRIVACY_EMAIL = "privacy@indastreet.com"
+  # VITE_BANK_NAME = "BCA (Bank Central Asia)"
+  # VITE_BANK_ACCOUNT_NUMBER = "1234567890"
+  # VITE_BANK_ACCOUNT_NAME = "IndaStreet Platform"
 
 # SPA redirect - must handle all client-side routes
 [[redirects]]
@@ -16,3 +37,6 @@
     X-Content-Type-Options = "nosniff"
     X-Frame-Options = "DENY"
     X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=*, camera=(), microphone=()"
+    Content-Security-Policy = "default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'"
