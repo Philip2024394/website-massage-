@@ -714,7 +714,7 @@ export interface ShopItem {
     description: string;
     coinPrice: number; // Coin value required to redeem
     imageUrl: string;
-    category: 'electronics' | 'fashion' | 'wellness' | 'home' | 'gift_cards' | 'other';
+    category: 'electronics' | 'fashion' | 'wellness' | 'home' | 'gift_cards' | 'lighter' | 'other';
     stockQuantity: number;
     isActive: boolean; // Admin can enable/disable items
     estimatedDelivery: string; // e.g., "6-10 days"

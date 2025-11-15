@@ -27,6 +27,15 @@ svg {
   vertical-align: middle;
 }
 
+/* Subtle brand float animation for the 'S' */
+@keyframes brand-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+.animate-float {
+  animation: brand-float 4s ease-in-out infinite;
+}
+
 /* Fix for large black icons */
 .w-6 {
   width: 1.5rem !important;

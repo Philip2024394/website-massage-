@@ -75,7 +75,91 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
             // Load shop items
             const items = await shopItemService.getActiveItems();
             console.log('Loaded shop items:', items.length);
-            setShopItems(items);
+            // Ensure "lighter" category items exist in Appwrite (persist, not just local)
+            const existingLighter = items.filter(i => i.category === 'lighter');
+            let augmented = items;
+            if (existingLighter.length === 0) {
+                const lighterImages = [
+                    'https://ik.imagekit.io/7grri5v7d/indastreet%20indonisea.png',
+                    'https://ik.imagekit.io/7grri5v7d/indastreet%20indonisea%202.png',
+                    'https://ik.imagekit.io/7grri5v7d/indastreet%20indonisea%203.png',
+                    'https://ik.imagekit.io/7grri5v7d/indastreet%20indonisea%204.png',
+                    'https://ik.imagekit.io/7grri5v7d/indastreet%20indonisea%205.png',
+                    'https://ik.imagekit.io/7grri5v7d/indastreet%20indonisea%206.png',
+                    'https://ik.imagekit.io/7grri5v7d/indastreet%20indonisea%207.png',
+                    'https://ik.imagekit.io/7grri5v7d/indastreet%20indonisea%208.png',
+                    'https://ik.imagekit.io/7grri5v7d/indastreet%20indonisea%209.png',
+                    'https://ik.imagekit.io/7grri5v7d/indastreet%20indonisea%2010.png',
+                    'https://ik.imagekit.io/7grri5v7d/indastreet%20indonisea%2011.png',
+                    'https://ik.imagekit.io/7grri5v7d/indastreet%20indonisea%2012.png',
+                    'https://ik.imagekit.io/7grri5v7d/indastreet%20indonisea%2013.png',
+                    'https://ik.imagekit.io/7grri5v7d/indastreet%20indonisea%2014.png',
+                    'https://ik.imagekit.io/7grri5v7d/indastreet%20indonisea%2015.png',
+                    'https://ik.imagekit.io/7grri5v7d/indastreet%20indonisea%2016.png',
+                    'https://ik.imagekit.io/7grri5v7d/indastreet%20indonisea%2017.png',
+                    'https://ik.imagekit.io/7grri5v7d/indastreet%20indonisea%2018.png',
+                    'https://ik.imagekit.io/7grri5v7d/indastreet%20indonisea%2019.png',
+                    'https://ik.imagekit.io/7grri5v7d/indastreet%20indonisea%2020.png',
+                    'https://ik.imagekit.io/7grri5v7d/indastreet%20indonisea%2021.png'
+                ];
+
+                const phrases = [
+                    'Modern UV print.',
+                    'Premium UV finish.',
+                    'Durable metal body.',
+                    'Compact and reliable.',
+                    'Refillable oil design.',
+                    'Smooth ignition.',
+                    'Travel‑ready size.',
+                    'Clean, classic look.',
+                    'Gift‑ready packaging.',
+                    'Everyday carry friendly.'
+                ];
+
+                const randCoin = () => Math.floor(780 + Math.random() * (930 - 780 + 1)); // 780..930 inclusive
+                const nowIso = new Date().toISOString();
+                const lighterItems = lighterImages.map((url, idx): Partial<ShopItem> => {
+                    const coin = randCoin();
+                    const stock = 3 + Math.floor(Math.random() * 8); // 3..10
+                    const desc = `Oil lighters for all occasions. ${phrases[idx % phrases.length]} Ready to fill and use.`;
+                    return {
+                        name: `IndaStreet Lighter ${idx + 1}`,
+                        description: desc,
+                        coinPrice: coin,
+                        imageUrl: url,
+                        category: 'lighter',
+                        stockQuantity: stock,
+                        isActive: true,
+                        estimatedDelivery: '6-10 days',
+                        disclaimer: 'Design may vary from image shown.',
+                        createdAt: nowIso,
+                        updatedAt: nowIso
+                    };
+                });
+                // Persist each new lighter item to Appwrite
+                const created: ShopItem[] = [];
+                for (const it of lighterItems) {
+                    try {
+                        const doc = await shopItemService.createItem({
+                            name: it.name!,
+                            description: it.description!,
+                            coinPrice: it.coinPrice!,
+                            imageUrl: it.imageUrl!,
+                            category: 'lighter',
+                            stockQuantity: it.stockQuantity!,
+                            isActive: true,
+                            estimatedDelivery: it.estimatedDelivery!,
+                            disclaimer: it.disclaimer!
+                        });
+                        created.push(doc);
+                    } catch (e) {
+                        console.warn('Failed to create lighter item', it.name, e);
+                    }
+                }
+                augmented = [...items, ...created];
+                console.log(`Persisted ${created.length} lighter items to Appwrite.`);
+            }
+            setShopItems(augmented);
 
             // Load user coins if logged in
             if (currentUser?.id) {
@@ -105,6 +189,7 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
         { id: 'educational', label: 'Educational', icon: '📚' },
         { id: 'home', label: 'Home', icon: '🏠' },
         { id: 'gift_cards', label: 'Gift Cards', icon: '🎁' },
+        { id: 'lighter', label: 'Lighter', icon: '🔥' },
     ];
 
     const filteredItems = selectedCategory === 'all' 

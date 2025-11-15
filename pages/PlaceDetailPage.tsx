@@ -16,6 +16,7 @@ interface PlaceDetailPageProps {
     isCustomerLoggedIn?: boolean; // Check if customer is logged in
     t: any;
     loggedInProviderId?: number | string; // To prevent self-notification
+    agentCode?: string; // Optional agent attribution for sharing
 }
 
 const WhatsAppIcon: React.FC<{className?: string}> = ({ className }) => (
@@ -34,7 +35,8 @@ const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({
     onShowRegisterPrompt,
     isCustomerLoggedIn = false,
     t, 
-    loggedInProviderId 
+    loggedInProviderId,
+    agentCode
 }) => {
     const [currentMainImage, setCurrentMainImage] = useState(place.mainImage);
     const [showBookingConfirmation, setShowBookingConfirmation] = useState(false);
@@ -127,6 +129,42 @@ const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({
 
     const status = getStatus();
     
+    const handleShare = async () => {
+        try {
+            const url = new URL(window.location.href);
+            if (agentCode) {
+                url.searchParams.set('agent', agentCode);
+            }
+            // Preserve any provider deep link if present; otherwise include a hint
+            if (!url.searchParams.get('provider')) {
+                url.searchParams.set('provider', `place-${place.id}`);
+            }
+            const shareUrl = url.toString();
+
+            const shareData = {
+                title: `${place.name} – IndaStreet Massage Place`,
+                text: `Check out ${place.name} on IndaStreet`,
+                url: shareUrl
+            } as ShareData;
+
+            if (navigator.share) {
+                await navigator.share(shareData);
+            } else {
+                await navigator.clipboard.writeText(shareUrl);
+                alert('Link copied to clipboard');
+            }
+        } catch {
+            // Fallback copy on any error
+            try {
+                const url = new URL(window.location.href);
+                if (agentCode) url.searchParams.set('agent', agentCode);
+                if (!url.searchParams.get('provider')) url.searchParams.set('provider', `place-${place.id}`);
+                await navigator.clipboard.writeText(url.toString());
+                alert('Link copied to clipboard');
+            } catch {}
+        }
+    };
+    
     return (
         <div className="min-h-screen bg-white">
              <div className="relative">
@@ -135,6 +173,11 @@ const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({
                 <button onClick={onBack} className="absolute top-4 left-4 bg-white/70 rounded-full p-2 text-gray-800 hover:bg-white transition-colors z-10">
                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+                <button onClick={handleShare} title="Share" className="absolute top-4 left-16 bg-white/70 rounded-full p-2 text-gray-800 hover:bg-white transition-colors z-10">
+                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
                     </svg>
                 </button>
                 <span className={`absolute top-4 right-4 px-3 py-1 rounded-full text-white font-bold text-sm ${status.color} z-10 shadow-lg`}>

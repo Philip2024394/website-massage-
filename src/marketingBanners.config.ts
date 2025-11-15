@@ -7,14 +7,11 @@
 // ];
 
 export const BANNERS: string[] = [
-	// 4 confirmed URLs found in repo
-	'https://ik.imagekit.io/7grri5v7d/massage%20discount%205.png?updatedAt=1761803670532',
-	'https://ik.imagekit.io/7grri5v7d/massage%20discount%2010.png?updatedAt=1761803828896',
-	'https://ik.imagekit.io/7grri5v7d/massage%20discount%2015.png?updatedAt=1761803805221',
-	'https://ik.imagekit.io/7grri5v7d/massage%20discount%2020.png?updatedAt=1761803783034',
-
-	// TODO: Paste the remaining 3 ImageKit URLs below
-	// 'https://ik.imagekit.io/...',
-	// 'https://ik.imagekit.io/...',
-	// 'https://ik.imagekit.io/...',
+  'https://ik.imagekit.io/7grri5v7d/marketing%20banners%2011.png?updatedAt=1763209151620',
+  'https://ik.imagekit.io/7grri5v7d/marketing%20banners%2010.png?updatedAt=1763209130500',
+  'https://ik.imagekit.io/7grri5v7d/marketing%20banners%209.png?updatedAt=1763209107741',
+  'https://ik.imagekit.io/7grri5v7d/marketing%20banners%208.png?updatedAt=1763209088368',
+  'https://ik.imagekit.io/7grri5v7d/marketing%20banners%207.png?updatedAt=1763209069417',
+  'https://ik.imagekit.io/7grri5v7d/marketing%20banners%206.png?updatedAt=1763209046899',
+  'https://ik.imagekit.io/7grri5v7d/marketing%20banners%205.png?updatedAt=1763209023834',
 ];

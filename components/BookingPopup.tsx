@@ -66,6 +66,39 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
     try {
       setIsCreating(true);
 
+      // If booking a place (venue), ensure current time is within opening hours
+      const isPlace = (providerType || 'therapist') === 'place';
+      if (isPlace) {
+        try {
+          const placeCollection = APPWRITE_CONFIG.collections.places;
+          if (placeCollection && placeCollection !== '') {
+            const place = await databases.getDocument(
+              APPWRITE_CONFIG.databaseId,
+              placeCollection,
+              therapistId
+            );
+            const openingTime: string | undefined = (place as any).openingTime;
+            const closingTime: string | undefined = (place as any).closingTime;
+            if (openingTime && closingTime) {
+              const [oh, om] = openingTime.split(':').map(Number);
+              const [ch, cm] = closingTime.split(':').map(Number);
+              const now = new Date();
+              const nowMinutes = now.getHours() * 60 + now.getMinutes();
+              const openMinutes = oh * 60 + (om || 0);
+              const closeMinutes = ch * 60 + (cm || 0);
+              if (nowMinutes < openMinutes || nowMinutes > closeMinutes) {
+                alert(`${therapistName} is currently closed (hours ${openingTime}–${closingTime}). Please schedule within opening hours.`);
+                setIsCreating(false);
+                return;
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('Could not validate venue opening hours:', e);
+          // Continue; do not block booking if hours cannot be fetched
+        }
+      }
+
       const selectedOption = bookingOptions.find(opt => opt.duration === selectedDuration);
       if (!selectedOption) throw new Error('Invalid duration selected');
 
@@ -141,8 +174,12 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
 
       const acceptUrl = `${window.location.origin}/accept-booking/${booking.$id}`;
       
-      // Enhanced WhatsApp message with hotel/villa details
-      let message = `🏨 NEW BOOKING REQUEST - INDASTREET\n\n`;
+      // Enhanced WhatsApp message tailored by provider type
+      
+      const isPlaceMsg = isPlace;
+      let message = isPlace
+        ? `🏢 NEW VENUE BOOKING REQUEST - INDASTREET\n\n`
+        : `🛵 NEW MOBILE BOOKING REQUEST - INDASTREET\n\n`;
       message += `💼 Service: ${selectedOption.duration} min Professional Massage\n`;
       message += `💰 Price: $${selectedOption.price}\n`;
       message += `📅 Time: ${now.toLocaleString()}\n\n`;
@@ -161,6 +198,9 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
       
       message += `✅ Accept booking: ${acceptUrl}\n\n`;
       message += `⏰ Note: You have 5 minutes to respond.\n`;
+      if (isPlaceMsg) {
+        message += `🏢 Venue: ${therapistName}\n`;
+      }
       message += `📞 INDASTREET SUPPORT: +62-XXX-XXXX`;
 
       const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;

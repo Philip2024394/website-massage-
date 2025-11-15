@@ -141,7 +141,8 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                 {/* Header */}
                 <div className="p-6 flex justify-between items-center border-b border-black">
                     <h2 className="font-bold text-2xl">
-                        <span className="text-black">Inda</span><span className="text-black">Street</span>
+                        <span className="text-black">Inda</span>
+                        <span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
                     </h2>
                     <button 
                         onClick={onClose}

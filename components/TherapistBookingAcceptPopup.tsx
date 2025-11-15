@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CheckCircle, Clock, MapPin, DollarSign, X } from 'lucide-react';
 import { databases } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
+import { startContinuousNotifications, stopContinuousNotifications } from '../lib/continuousNotificationService';
 
 interface TherapistBookingAcceptPopupProps {
   isOpen: boolean;
@@ -13,6 +14,9 @@ interface TherapistBookingAcceptPopupProps {
   location?: string;
   bookingTime: string;
   therapistId: string;
+  providerType?: 'therapist' | 'place';
+  bookingType?: 'immediate' | 'scheduled';
+  scheduledTime?: string;
 }
 
 const TherapistBookingAcceptPopup: React.FC<TherapistBookingAcceptPopupProps> = ({
@@ -25,9 +29,19 @@ const TherapistBookingAcceptPopup: React.FC<TherapistBookingAcceptPopupProps> = 
   location,
   bookingTime,
   therapistId
+  , providerType = 'therapist', bookingType = 'immediate', scheduledTime
 }) => {
   const [isAccepting, setIsAccepting] = useState(false);
   const [isAccepted, setIsAccepted] = useState(false);
+
+  // Loud continuous alert until therapist acts
+  useEffect(() => {
+    if (!isOpen || !bookingId) return;
+    startContinuousNotifications(bookingId);
+    return () => {
+      stopContinuousNotifications(bookingId);
+    };
+  }, [isOpen, bookingId]);
 
   const handleAcceptBooking = async () => {
     setIsAccepting(true);
@@ -49,19 +63,33 @@ const TherapistBookingAcceptPopup: React.FC<TherapistBookingAcceptPopupProps> = 
         console.warn('⚠️ Bookings collection disabled - simulating booking confirmation');
       }
 
-      // Update therapist status to Busy (if not already)
-      await databases.updateDocument(
-        APPWRITE_CONFIG.databaseId,
-        APPWRITE_CONFIG.collections.therapists,
-        therapistId,
-        {
-          status: 'Busy',
-          currentBookingId: bookingId
+      // For therapists: set Busy only for immediate bookings or when scheduled time is imminent
+      if (providerType === 'therapist' && APPWRITE_CONFIG.collections.therapists && APPWRITE_CONFIG.collections.therapists !== '') {
+        let shouldSetBusy = bookingType === 'immediate';
+        if (!shouldSetBusy && scheduledTime) {
+          try {
+            const now = Date.now();
+            const when = new Date(scheduledTime).getTime();
+            // Consider imminent if within next 45 minutes
+            shouldSetBusy = when - now <= 45 * 60 * 1000;
+          } catch {}
         }
-      );
+        if (shouldSetBusy) {
+          await databases.updateDocument(
+            APPWRITE_CONFIG.databaseId,
+            APPWRITE_CONFIG.collections.therapists,
+            therapistId,
+            {
+              status: 'Busy',
+              currentBookingId: bookingId
+            }
+          );
+        }
+      }
 
       console.log('✅ Booking accepted:', bookingId);
       setIsAccepted(true);
+      stopContinuousNotifications(bookingId);
 
       // Close popup after showing success
       setTimeout(() => {

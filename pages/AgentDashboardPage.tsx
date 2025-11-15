@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import type { Agent, Therapist, Place, AdminMessage, AgentVisit as PersistedVisit, MonthlyAgentMetrics } from '../types';
-import { Users, RefreshCw, MessageSquare, User as UserIcon, LogOut, Code, TrendingUp, ClipboardList, MapPin, Calendar, BarChart3, Menu, X, ShieldCheck, Banknote, Megaphone, HelpCircle, Settings, Facebook, Twitter, Linkedin, Send, Link as LinkIcon } from 'lucide-react';
+import { Users, RefreshCw, MessageSquare, User as UserIcon, LogOut, Code, TrendingUp, ClipboardList, MapPin, Calendar, BarChart3, Menu, X, ShieldCheck, Banknote, Megaphone, HelpCircle, Settings, Facebook, Twitter, Linkedin, Send, Link as LinkIcon, Share2 } from 'lucide-react';
 import ImageUpload from '../components/ImageUpload';
 import TabButton from '../components/dashboard/TabButton';
-import { agentVisitService, agentService, monthlyAgentMetricsService, adminAgentOverviewService } from '../lib/appwriteService';
+import { agentVisitService, agentService, monthlyAgentMetricsService, adminAgentOverviewService, recruitLookupService, agentShareAnalyticsService } from '../lib/appwriteService';
 import { getAgentTerms } from './agentTermsContent';
 import { BANNERS } from '../src/marketingBanners.config';
 
@@ -26,7 +26,7 @@ const WhatsAppIcon: React.FC<{ className?: string }> = ({ className }) => (
 );
 
 const AgentDashboardPage: React.FC<AgentDashboardPageProps> = ({ agent, onLogout, t, isAdminView = false, onStopImpersonating, messages = [], onSendMessage, onMarkMessagesAsRead, onSaveProfile }) => {
-    const [activeTab, setActiveTab] = useState<'clients' | 'renewals' | 'earnings' | 'messages' | 'profile' | 'visits' | 'stats' | 'bank' | 'agreements' | 'marketing' | 'help' | 'settings'>('clients');
+    const [activeTab, setActiveTab] = useState<'clients' | 'renewals' | 'earnings' | 'messages' | 'profile' | 'visits' | 'stats' | 'bank' | 'agreements' | 'marketing' | 'shares' | 'help' | 'settings'>('clients');
     const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
     const [agentDoc, setAgentDoc] = useState<Agent>(agent);
     const [remoteVisits, setRemoteVisits] = useState<PersistedVisit[]>([]);
@@ -37,6 +37,10 @@ const AgentDashboardPage: React.FC<AgentDashboardPageProps> = ({ agent, onLogout
     const [overviewLoading, setOverviewLoading] = useState(false);
     const [attributionCounts, setAttributionCounts] = useState<{ therapists: number; places: number }>({ therapists: 0, places: 0 });
     const [commissionDue, setCommissionDue] = useState<number>(0);
+    // Recruits & Shares state
+    const [recruitedTherapists, setRecruitedTherapists] = useState<any[]>([]);
+    const [recruitedPlaces, setRecruitedPlaces] = useState<any[]>([]);
+    const [shareCounts, setShareCounts] = useState<Record<string, { whatsapp: number; facebook: number; twitter: number; linkedin: number; telegram: number; copy: number }>>({});
     const agreementTerms = useMemo(() => getAgentTerms((t && t.terms) ? t.terms : undefined), [t]);
     const idrFormatter = useMemo(() => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }), []);
         // Visit logging state
@@ -260,6 +264,43 @@ const AgentDashboardPage: React.FC<AgentDashboardPageProps> = ({ agent, onLogout
         };
         fetchVisits();
     }, [activeTab, agentDoc.agentId, agentDoc.$id]);
+
+    // Fetch recruits when shares tab opened
+    useEffect(() => {
+        const loadRecruits = async () => {
+            if (activeTab !== 'shares') return;
+            try {
+                const [ths, pls] = await Promise.all([
+                    recruitLookupService.therapistsByAgentCode(agentDoc.agentCode),
+                    recruitLookupService.placesByAgentCode(agentDoc.agentCode)
+                ]);
+                setRecruitedTherapists(ths);
+                setRecruitedPlaces(pls);
+                // Load counts per recruit
+                const counts: any = {};
+                const tasks: Array<Promise<void>> = [];
+                const addTask = (ptype: 'therapist' | 'place', doc: any) => {
+                    const pid = (doc.id ?? doc.$id ?? '').toString();
+                    tasks.push(
+                        agentShareAnalyticsService.getCountsByPlatform({
+                            agentCode: agentDoc.agentCode,
+                            providerType: ptype,
+                            providerId: pid
+                        }).then(c => { counts[`${ptype}-${pid}`] = c; })
+                    );
+                };
+                ths.forEach(d => addTask('therapist', d));
+                pls.forEach(d => addTask('place', d));
+                await Promise.all(tasks);
+                setShareCounts(counts);
+            } catch (e) {
+                console.warn('Failed to load recruits', e);
+                setRecruitedTherapists([]);
+                setRecruitedPlaces([]);
+            }
+        };
+        loadRecruits();
+    }, [activeTab, agentDoc.agentCode]);
 
     // Agreement checkboxes state (profile compliance)
     const [agreedTaxResponsibility, setAgreedTaxResponsibility] = useState(false);
@@ -581,6 +622,12 @@ const AgentDashboardPage: React.FC<AgentDashboardPageProps> = ({ agent, onLogout
                             onClick={() => handleTabClick('marketing')}
                         />
                         <TabButton
+                            icon={<Share2 />}
+                            label={'Recruits & Shares'}
+                            isActive={activeTab === 'shares'}
+                            onClick={() => handleTabClick('shares')}
+                        />
+                        <TabButton
                             icon={<HelpCircle />}
                             label={'Help'}
                             isActive={activeTab === 'help'}
@@ -642,6 +689,138 @@ const AgentDashboardPage: React.FC<AgentDashboardPageProps> = ({ agent, onLogout
                                         <p className="text-gray-500">{t.clients.noClients}</p>
                                     </div>
                                 )}
+                            </div>
+                        )}
+
+                        {/* SHARES TAB */}
+                        {activeTab === 'shares' && (
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                                        <Share2 className="w-5 h-5 text-orange-600" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-2xl font-bold text-gray-900">Recruits & Share Links</h2>
+                                        <p className="text-xs text-gray-500">Share profiles with your agent code and see clicks</p>
+                                    </div>
+                                </div>
+
+                                {/* Help text */}
+                                <div className="bg-white border-2 border-gray-200 rounded-xl p-4">
+                                    <p className="text-sm text-gray-700">Share therapist and massage place profiles you've recruited. Each link includes your agent code. When people open the link, we count the click by platform.</p>
+                                </div>
+
+                                {/* Therapists */}
+                                <div className="bg-white border-2 border-gray-200 rounded-xl p-6">
+                                    <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">Therapists <span className="text-xs font-semibold text-gray-500">({recruitedTherapists.length})</span></h3>
+                                    {recruitedTherapists.length === 0 ? (
+                                        <p className="text-sm text-gray-500">No recruited therapists found.</p>
+                                    ) : (
+                                        <div className="grid gap-4">
+                                            {recruitedTherapists.map((th: any) => {
+                                                const pid = (th.id ?? th.$id ?? '').toString();
+                                                const key = `therapist-${pid}`;
+                                                const counts = shareCounts[key] || { whatsapp: 0, facebook: 0, twitter: 0, linkedin: 0, telegram: 0, copy: 0 };
+                                                const base = window.location.origin;
+                                                const build = (platform: string) => `${base}/?provider=therapist-${encodeURIComponent(pid)}&agent=${encodeURIComponent(agentDoc.agentCode)}&platform=${encodeURIComponent(platform)}`;
+                                                const share = async (platform: 'whatsapp'|'facebook'|'twitter'|'linkedin'|'telegram'|'copy') => {
+                                                    const url = build(platform);
+                                                    await agentShareAnalyticsService.trackShareInitiated({ agentCode: agentDoc.agentCode, providerType: 'therapist', providerId: pid, platform });
+                                                    if (platform === 'copy') {
+                                                        await navigator.clipboard.writeText(url);
+                                                        alert('Link copied');
+                                                    } else {
+                                                        const encUrl = encodeURIComponent(url);
+                                                        const text = encodeURIComponent(`Check this therapist profile on IndaStreet`);
+                                                        const maps: Record<'whatsapp'|'facebook'|'twitter'|'linkedin'|'telegram'|'copy', string> = {
+                                                            whatsapp: `https://wa.me/?text=${text}%20${encUrl}`,
+                                                            facebook: `https://www.facebook.com/sharer/sharer.php?u=${encUrl}`,
+                                                            twitter: `https://twitter.com/intent/tweet?text=${text}&url=${encUrl}`,
+                                                            linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encUrl}`,
+                                                            telegram: `https://t.me/share/url?url=${encUrl}&text=${text}`,
+                                                            copy: ''
+                                                        };
+                                                        window.open(maps[platform], '_blank', 'noopener,noreferrer');
+                                                    }
+                                                };
+                                                return (
+                                                    <div key={key} className="border border-gray-200 rounded-lg p-4">
+                                                        <div className="flex items-center justify-between">
+                                                            <div>
+                                                                <p className="font-semibold text-gray-900">{th.name || 'Therapist'}</p>
+                                                                <p className="text-xs text-gray-500">ID: {pid}</p>
+                                                            </div>
+                                                            <div className="flex items-center gap-2">
+                                                                <button onClick={() => share('whatsapp')} className="px-3 py-2 text-xs bg-green-50 text-green-700 rounded-md">WhatsApp ({counts.whatsapp})</button>
+                                                                <button onClick={() => share('facebook')} className="px-3 py-2 text-xs bg-blue-50 text-blue-700 rounded-md">Facebook ({counts.facebook})</button>
+                                                                <button onClick={() => share('twitter')} className="px-3 py-2 text-xs bg-sky-50 text-sky-700 rounded-md">X/Twitter ({counts.twitter})</button>
+                                                                <button onClick={() => share('linkedin')} className="px-3 py-2 text-xs bg-indigo-50 text-indigo-700 rounded-md">LinkedIn ({counts.linkedin})</button>
+                                                                <button onClick={() => share('telegram')} className="px-3 py-2 text-xs bg-cyan-50 text-cyan-700 rounded-md">Telegram ({counts.telegram})</button>
+                                                                <button onClick={() => share('copy')} className="px-3 py-2 text-xs bg-gray-100 text-gray-700 rounded-md">Copy ({counts.copy})</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Places */}
+                                <div className="bg-white border-2 border-gray-200 rounded-xl p-6">
+                                    <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">Massage Places <span className="text-xs font-semibold text-gray-500">({recruitedPlaces.length})</span></h3>
+                                    {recruitedPlaces.length === 0 ? (
+                                        <p className="text-sm text-gray-500">No recruited places found.</p>
+                                    ) : (
+                                        <div className="grid gap-4">
+                                            {recruitedPlaces.map((pl: any) => {
+                                                const pid = (pl.id ?? pl.$id ?? '').toString();
+                                                const key = `place-${pid}`;
+                                                const counts = shareCounts[key] || { whatsapp: 0, facebook: 0, twitter: 0, linkedin: 0, telegram: 0, copy: 0 };
+                                                const base = window.location.origin;
+                                                const build = (platform: string) => `${base}/?provider=place-${encodeURIComponent(pid)}&agent=${encodeURIComponent(agentDoc.agentCode)}&platform=${encodeURIComponent(platform)}`;
+                                                const share = async (platform: 'whatsapp'|'facebook'|'twitter'|'linkedin'|'telegram'|'copy') => {
+                                                    const url = build(platform);
+                                                    await agentShareAnalyticsService.trackShareInitiated({ agentCode: agentDoc.agentCode, providerType: 'place', providerId: pid, platform });
+                                                    if (platform === 'copy') {
+                                                        await navigator.clipboard.writeText(url);
+                                                        alert('Link copied');
+                                                    } else {
+                                                        const encUrl = encodeURIComponent(url);
+                                                        const text = encodeURIComponent(`Check this massage place on IndaStreet`);
+                                                        const maps: Record<'whatsapp'|'facebook'|'twitter'|'linkedin'|'telegram'|'copy', string> = {
+                                                            whatsapp: `https://wa.me/?text=${text}%20${encUrl}`,
+                                                            facebook: `https://www.facebook.com/sharer/sharer.php?u=${encUrl}`,
+                                                            twitter: `https://twitter.com/intent/tweet?text=${text}&url=${encUrl}`,
+                                                            linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encUrl}`,
+                                                            telegram: `https://t.me/share/url?url=${encUrl}&text=${text}`,
+                                                            copy: ''
+                                                        };
+                                                        window.open(maps[platform], '_blank', 'noopener,noreferrer');
+                                                    }
+                                                };
+                                                return (
+                                                    <div key={key} className="border border-gray-200 rounded-lg p-4">
+                                                        <div className="flex items-center justify-between">
+                                                            <div>
+                                                                <p className="font-semibold text-gray-900">{pl.name || 'Massage Place'}</p>
+                                                                <p className="text-xs text-gray-500">ID: {pid}</p>
+                                                            </div>
+                                                            <div className="flex items-center gap-2">
+                                                                <button onClick={() => share('whatsapp')} className="px-3 py-2 text-xs bg-green-50 text-green-700 rounded-md">WhatsApp ({counts.whatsapp})</button>
+                                                                <button onClick={() => share('facebook')} className="px-3 py-2 text-xs bg-blue-50 text-blue-700 rounded-md">Facebook ({counts.facebook})</button>
+                                                                <button onClick={() => share('twitter')} className="px-3 py-2 text-xs bg-sky-50 text-sky-700 rounded-md">X/Twitter ({counts.twitter})</button>
+                                                                <button onClick={() => share('linkedin')} className="px-3 py-2 text-xs bg-indigo-50 text-indigo-700 rounded-md">LinkedIn ({counts.linkedin})</button>
+                                                                <button onClick={() => share('telegram')} className="px-3 py-2 text-xs bg-cyan-50 text-cyan-700 rounded-md">Telegram ({counts.telegram})</button>
+                                                                <button onClick={() => share('copy')} className="px-3 py-2 text-xs bg-gray-100 text-gray-700 rounded-md">Copy ({counts.copy})</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         )}
 

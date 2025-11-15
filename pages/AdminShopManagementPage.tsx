@@ -562,6 +562,7 @@ const AdminShopManagementPage: React.FC<AdminShopManagementPageProps> = ({ onNav
                                         <option value="wellness">Wellness</option>
                                         <option value="home">Home</option>
                                         <option value="gift_cards">Gift Cards</option>
+                                        <option value="lighter">Lighter</option>
                                         <option value="other">Other</option>
                                         {customCategories.map(category => (
                                             <option key={category} value={category}>
@@ -678,7 +679,7 @@ const AdminShopManagementPage: React.FC<AdminShopManagementPageProps> = ({ onNav
                             <div>
                                 <h3 className="font-bold text-base sm:text-lg mb-2 sm:mb-3">Default Categories</h3>
                                 <div className="space-y-2">
-                                    {['electronics', 'fashion', 'wellness', 'home', 'gift_cards', 'other'].map(category => (
+                                    {['electronics', 'fashion', 'wellness', 'home', 'gift_cards', 'lighter', 'other'].map(category => (
                                         <div key={category} className="flex items-center justify-between p-2 sm:p-3 bg-gray-100 rounded-lg">
                                             <span className="font-medium capitalize text-sm sm:text-base">{category.replace(/_/g, ' ')}</span>
                                             <span className="text-xs text-gray-500 bg-gray-200 px-2 sm:px-3 py-1 rounded-full">Default</span>

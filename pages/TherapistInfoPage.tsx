@@ -24,7 +24,7 @@ const TherapistInfoPage: React.FC<TherapistInfoPageProps> = ({ onNavigate }) => 
             <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold">
-                        <span className="text-black">Inda</span><span className="text-orange-500">street</span>
+                        <span className="text-black">Inda</span><span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
                     </h1>
                     <div className="flex items-center gap-4 pb-20 text-gray-600">
                         <button onClick={() => setIsMenuOpen(true)} title="Menu">

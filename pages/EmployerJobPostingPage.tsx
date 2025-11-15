@@ -356,19 +356,21 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Header - HomePage Style */}
-            <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
+            {/* Header - Match HomePage style */}
+            <header className="bg-white p-4 shadow-md sticky top-0 z-[9997]">
                 <div className="flex justify-between items-center">
                     <button 
                         onClick={() => setIsDrawerOpen(true)}
-                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                        className="p-2 hover:bg-orange-50 rounded-full transition-colors text-orange-500"
+                        aria-label="Open menu"
                     >
-                        <Menu className="w-6 h-6 text-gray-600" />
+                        <Menu className="w-6 h-6" />
                     </button>
                     <h1 className="text-2xl font-bold text-gray-800">
-                        <span className="text-black">Inda</span><span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
+                        <span className="text-black">Inda</span>
+                        <span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
                     </h1>
-                    <div className="w-10"> {/* Spacer for balance */}</div>
+                    <div className="w-10" />
                 </div>
             </header>
 

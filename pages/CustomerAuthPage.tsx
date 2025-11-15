@@ -157,7 +157,7 @@ const CustomerAuthPage: React.FC<CustomerAuthPageProps> = ({ onSuccess, onBack, 
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-800">
             {/* Brand: Inda (black) + street (orange) */}
-            <span className="text-black">Inda</span><span className="text-orange-500">street</span>
+            <span className="text-black">Inda</span><span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
           </h1>
           <div className="flex items-center gap-3 text-gray-600">
             {/* Back to Home Button */}

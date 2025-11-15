@@ -11,6 +11,7 @@ import ConfirmAccountsPage from './ConfirmAccountsPage';
 import DrawerButtonsPage from './DrawerButtonsPage';
 import AgentCommissionPage from './AgentCommissionPage';
 import PlatformAnalyticsPage from './PlatformAnalyticsPage';
+import GoogleMapsAPIStatus from '../components/GoogleMapsAPIStatus';
 import { adminAgentOverviewService } from '../lib/appwriteService';
 import { Users as UsersIcon, DollarSign as DollarIcon, Target, TrendingUp } from 'lucide-react';
 import BankDetailsManagementPage from './BankDetailsManagementPage';
@@ -390,6 +391,8 @@ const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'i
       <main className="flex-1 max-w-7xl mx-auto w-full px-2 sm:px-4 py-4 sm:py-6 pb-24">
         {activePage === 'platform-analytics' && (
           <div className="space-y-6">
+            {/* Google Maps API status indicator */}
+            <GoogleMapsAPIStatus className="border rounded-xl" />
             <PlatformAnalyticsPage />
             {/* Agent Overview Section */}
             <div className="bg-white shadow-sm border rounded-xl p-4">

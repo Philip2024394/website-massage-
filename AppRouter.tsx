@@ -1,4 +1,4 @@
-import React from 'react';
+ 
 import { useTranslations } from './lib/useTranslations';
 import { useLanguage } from './hooks/useLanguage';
 import type { Page, Language, LoggedInProvider } from './types/pageTypes';
@@ -11,81 +11,85 @@ import LandingPage from './pages/LandingPage';
 import UnifiedLoginPage from './pages/UnifiedLoginPage';
 import TherapistLoginPage from './pages/TherapistLoginPage';
 import HomePage from './pages/HomePage';
-import PlaceDetailPage from './pages/PlaceDetailPage';
-import MassagePlaceProfilePage from './pages/MassagePlaceProfilePage';
-import AdminDashboardPage from './pages/AdminDashboardPage';
-// AdminDatabaseManager disabled - using Appwrite production database only
-import AdminLoginPage from './pages/AdminLoginPage';
-import RegistrationChoicePage from './pages/RegistrationChoicePage';
-import TherapistDashboardPage from './pages/TherapistDashboardPage';
-import TherapistProfilePage from './pages/TherapistProfilePage'; // 🎯 NEW: Customer-facing therapist profile
-import TherapistStatusPage from './pages/TherapistStatusPage';
-import PlaceDashboardPage from './pages/PlaceDashboardPage';
+import React from 'react';
 
-import AgentPage from './pages/AgentPage';
-import AgentAuthPage from './pages/AgentAuthPage';
-import AgentDashboardPage from './pages/AgentDashboardPage';
-import AgentTermsPage from './pages/AgentTermsPage';
-import ServiceTermsPage from './pages/ServiceTermsPage';
-import PlaceTermsPage from './pages/PlaceTermsPage';
-import PlaceDiscountBadgePage from './pages/PlaceDiscountBadgePage';
-import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
-import CookiesPolicyPage from './pages/CookiesPolicyPage';
-import MembershipPage from './pages/MembershipPage';
-import BookingPage from './pages/BookingPage';
-import NotificationsPage from './pages/NotificationsPage';
-import MassageTypesPage from './pages/MassageTypesPage';
-import HotelDashboardPage from './pages/HotelDashboardPage';
-import VillaDashboardPage from './pages/VillaDashboardPage';
-import HotelLoginPage from './pages/HotelLoginPage';
-import VillaLoginPage from './pages/VillaLoginPage';
-import MassagePlaceLoginPage from './pages/MassagePlaceLoginPage';
-import EmployerJobPostingPage from './pages/EmployerJobPostingPage';
-import JobPostingPaymentPage from './pages/JobPostingPaymentPage';
-import BrowseJobsPage from './pages/BrowseJobsPage';
-import MassageJobsPage from './pages/MassageJobsPage';
-import IndastreetPartnersPage from './pages/IndastreetPartnersPage';
-import PartnershipApplicationPage from './pages/PartnershipApplicationPage';
-import TherapistJobRegistrationPage from './pages/TherapistJobRegistrationPage';
-import JobUnlockPaymentPage from './pages/JobUnlockPaymentPage';
-import AdminBankSettingsPage from './pages/AdminBankSettingsPage';
-import CustomerAuthPage from './pages/CustomerAuthPage';
-import CustomerDashboardPage from './pages/CustomerDashboardPage';
-import AboutUsPage from './pages/AboutUsPage';
-import ContactUsPage from './pages/ContactUsPage';
-import HowItWorksPage from './pages/HowItWorksPage';
-import MassageBaliPage from './pages/MassageBaliPage';
-import BlogIndexPage from './pages/BlogIndexPage';
-import FAQPage from './pages/FAQPage';
-import BalineseMassagePage from './pages/BalineseMassagePage';
-import DeepTissueMassagePage from './pages/DeepTissueMassagePage';
-import PressMediaPage from './pages/PressMediaPage';
-import CareerOpportunitiesPage from './pages/CareerOpportunitiesPage';
-import TherapistInfoPage from './pages/TherapistInfoPage';
-import HotelInfoPage from './pages/HotelInfoPage';
-import EmployerInfoPage from './pages/EmployerInfoPage';
-import PaymentInfoPage from './pages/PaymentInfoPage';
-import BaliSpaIndustryTrends2025Page from './pages/blog/BaliSpaIndustryTrends2025Page';
-import Top10MassageTechniquesPage from './pages/blog/Top10MassageTechniquesPage';
-import MassageCareerIndonesiaPage from './pages/blog/MassageCareerIndonesiaPage';
-import BenefitsRegularMassageTherapyPage from './pages/blog/BenefitsRegularMassageTherapyPage';
-import HiringMassageTherapistsGuidePage from './pages/blog/HiringMassageTherapistsGuidePage';
-import TraditionalBalineseMassagePage from './pages/blog/TraditionalBalineseMassagePage';
-import SpaTourismIndonesiaPage from './pages/blog/SpaTourismIndonesiaPage';
-import AromatherapyMassageOilsPage from './pages/blog/AromatherapyMassageOilsPage';
-import PricingGuideMassageTherapistsPage from './pages/blog/PricingGuideMassageTherapistsPage';
-import DeepTissueVsSwedishMassagePage from './pages/blog/DeepTissueVsSwedishMassagePage';
-import OnlinePresenceMassageTherapistPage from './pages/blog/OnlinePresenceMassageTherapistPage';
-import WellnessTourismUbudPage from './pages/blog/WellnessTourismUbudPage';
-import GuestAlertsPage from './pages/GuestAlertsPage';
-import HotelVillaMenuPage from './pages/HotelVillaMenuPage';
+// Lazy-load heavy/non-critical pages to shrink initial JS bundle
+const PlaceDetailPage = React.lazy(() => import('./pages/PlaceDetailPage'));
+const MassagePlaceProfilePage = React.lazy(() => import('./pages/MassagePlaceProfilePage'));
+const AdminDashboardPage = React.lazy(() => import('./pages/AdminDashboardPage'));
+const AdminLoginPage = React.lazy(() => import('./pages/AdminLoginPage'));
+const RegistrationChoicePage = React.lazy(() => import('./pages/RegistrationChoicePage'));
+const TherapistDashboardPage = React.lazy(() => import('./pages/TherapistDashboardPage'));
+const TherapistProfilePage = React.lazy(() => import('./pages/TherapistProfilePage'));
+const TherapistStatusPage = React.lazy(() => import('./pages/TherapistStatusPage'));
+const PlaceDashboardPage = React.lazy(() => import('./pages/PlaceDashboardPage'));
+
+const AgentPage = React.lazy(() => import('./pages/AgentPage'));
+const AgentAuthPage = React.lazy(() => import('./pages/AgentAuthPage'));
+const AgentDashboardPage = React.lazy(() => import('./pages/AgentDashboardPage'));
+const AgentTermsPage = React.lazy(() => import('./pages/AgentTermsPage'));
+const ServiceTermsPage = React.lazy(() => import('./pages/ServiceTermsPage'));
+const PlaceTermsPage = React.lazy(() => import('./pages/PlaceTermsPage'));
+const PlaceDiscountBadgePage = React.lazy(() => import('./pages/PlaceDiscountBadgePage'));
+const PrivacyPolicyPage = React.lazy(() => import('./pages/PrivacyPolicyPage'));
+const CookiesPolicyPage = React.lazy(() => import('./pages/CookiesPolicyPage'));
+const MembershipPage = React.lazy(() => import('./pages/MembershipPage'));
+const BookingPage = React.lazy(() => import('./pages/BookingPage'));
+const NotificationsPage = React.lazy(() => import('./pages/NotificationsPage'));
+const MassageTypesPage = React.lazy(() => import('./pages/MassageTypesPage'));
+const HotelDashboardPage = React.lazy(() => import('./pages/HotelDashboardPage'));
+const VillaDashboardPage = React.lazy(() => import('./pages/VillaDashboardPage'));
+const HotelLoginPage = React.lazy(() => import('./pages/HotelLoginPage'));
+const VillaLoginPage = React.lazy(() => import('./pages/VillaLoginPage'));
+const MassagePlaceLoginPage = React.lazy(() => import('./pages/MassagePlaceLoginPage'));
+const AcceptBookingPage = React.lazy(() => import('./pages/AcceptBookingPage'));
+const EmployerJobPostingPage = React.lazy(() => import('./pages/EmployerJobPostingPage'));
+const JobPostingPaymentPage = React.lazy(() => import('./pages/JobPostingPaymentPage'));
+const BrowseJobsPage = React.lazy(() => import('./pages/BrowseJobsPage'));
+const MassageJobsPage = React.lazy(() => import('./pages/MassageJobsPage'));
+const IndastreetPartnersPage = React.lazy(() => import('./pages/IndastreetPartnersPage'));
+const PartnershipApplicationPage = React.lazy(() => import('./pages/PartnershipApplicationPage'));
+const TherapistJobRegistrationPage = React.lazy(() => import('./pages/TherapistJobRegistrationPage'));
+const JobUnlockPaymentPage = React.lazy(() => import('./pages/JobUnlockPaymentPage'));
+const AdminBankSettingsPage = React.lazy(() => import('./pages/AdminBankSettingsPage'));
+const CustomerAuthPage = React.lazy(() => import('./pages/CustomerAuthPage'));
+const CustomerDashboardPage = React.lazy(() => import('./pages/CustomerDashboardPage'));
+const AboutUsPage = React.lazy(() => import('./pages/AboutUsPage'));
+const ContactUsPage = React.lazy(() => import('./pages/ContactUsPage'));
+const HowItWorksPage = React.lazy(() => import('./pages/HowItWorksPage'));
+const MassageBaliPage = React.lazy(() => import('./pages/MassageBaliPage'));
+const BlogIndexPage = React.lazy(() => import('./pages/BlogIndexPage'));
+const FAQPage = React.lazy(() => import('./pages/FAQPage'));
+const BalineseMassagePage = React.lazy(() => import('./pages/BalineseMassagePage'));
+const DeepTissueMassagePage = React.lazy(() => import('./pages/DeepTissueMassagePage'));
+const PressMediaPage = React.lazy(() => import('./pages/PressMediaPage'));
+const CareerOpportunitiesPage = React.lazy(() => import('./pages/CareerOpportunitiesPage'));
+const TherapistInfoPage = React.lazy(() => import('./pages/TherapistInfoPage'));
+const HotelInfoPage = React.lazy(() => import('./pages/HotelInfoPage'));
+const EmployerInfoPage = React.lazy(() => import('./pages/EmployerInfoPage'));
+const PaymentInfoPage = React.lazy(() => import('./pages/PaymentInfoPage'));
+const BaliSpaIndustryTrends2025Page = React.lazy(() => import('./pages/blog/BaliSpaIndustryTrends2025Page'));
+const Top10MassageTechniquesPage = React.lazy(() => import('./pages/blog/Top10MassageTechniquesPage'));
+const MassageCareerIndonesiaPage = React.lazy(() => import('./pages/blog/MassageCareerIndonesiaPage'));
+const BenefitsRegularMassageTherapyPage = React.lazy(() => import('./pages/blog/BenefitsRegularMassageTherapyPage'));
+const HiringMassageTherapistsGuidePage = React.lazy(() => import('./pages/blog/HiringMassageTherapistsGuidePage'));
+const TraditionalBalineseMassagePage = React.lazy(() => import('./pages/blog/TraditionalBalineseMassagePage'));
+const SpaTourismIndonesiaPage = React.lazy(() => import('./pages/blog/SpaTourismIndonesiaPage'));
+const AromatherapyMassageOilsPage = React.lazy(() => import('./pages/blog/AromatherapyMassageOilsPage'));
+const PricingGuideMassageTherapistsPage = React.lazy(() => import('./pages/blog/PricingGuideMassageTherapistsPage'));
+const DeepTissueVsSwedishMassagePage = React.lazy(() => import('./pages/blog/DeepTissueVsSwedishMassagePage'));
+const OnlinePresenceMassageTherapistPage = React.lazy(() => import('./pages/blog/OnlinePresenceMassageTherapistPage'));
+const WellnessTourismUbudPage = React.lazy(() => import('./pages/blog/WellnessTourismUbudPage'));
+const GuestAlertsPage = React.lazy(() => import('./pages/GuestAlertsPage'));
+const HotelVillaMenuPage = React.lazy(() => import('./pages/HotelVillaMenuPage'));
+// Eager-load CoinShopPage to avoid dynamic import fetch issues during dev
 import CoinShopPage from './pages/CoinShopPage';
-import AdminShopManagementPage from './pages/AdminShopManagementPage';
-import RewardBannersTestPage from './pages/RewardBannersTestPage';
-import ReferralPage from './pages/ReferralPage';
-import CoinHistoryPage from './pages/CoinHistoryPage';
-import CoinSystemTestPage from './pages/CoinSystemTestPage';
-import WebsiteManagementPage from './pages/WebsiteManagementPage';
+const AdminShopManagementPage = React.lazy(() => import('./pages/AdminShopManagementPage'));
+const RewardBannersTestPage = React.lazy(() => import('./pages/RewardBannersTestPage'));
+const ReferralPage = React.lazy(() => import('./pages/ReferralPage'));
+const CoinHistoryPage = React.lazy(() => import('./pages/CoinHistoryPage'));
+const CoinSystemTestPage = React.lazy(() => import('./pages/CoinSystemTestPage'));
+const WebsiteManagementPage = React.lazy(() => import('./pages/WebsiteManagementPage'));
 import TodaysDiscountsPage from './pages/TodaysDiscountsPage';
 import GuestProfilePage from './pages/GuestProfilePage'; // 🎯 NEW: Guest profile for non-registered users
 import { APP_CONFIG } from './config/appConfig';
@@ -547,6 +551,9 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         // ========================
         // 🏠 CORE APPLICATION ROUTES  
         // ========================
+        case 'accept-booking':
+            return <AcceptBookingPage />;
+
         case 'landing': 
             return <LandingPage 
                 onLanguageSelect={handleLanguageSelect} 
@@ -646,6 +653,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onIncrementAnalytics={(metric: any) => handleIncrementAnalytics(selectedPlace.id, 'place', metric)} 
                 loggedInProviderId={loggedInProvider?.id} 
                 t={t} 
+                agentCode={loggedInAgent?.agentCode}
             />;
             
         case 'massagePlaceProfile': 
@@ -822,7 +830,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return null;
             
         case 'serviceTerms': 
-            return <ServiceTermsPage onBack={handleBackToHome} t={t} contactNumber={APP_CONFIG.CONTACT_NUMBER} />;
+            return <ServiceTermsPage onBack={handleBackToHome} t={(t as any)?.serviceTerms || t} contactNumber={APP_CONFIG.CONTACT_NUMBER} />;
             
         case 'placeTerms':
             return renderBackPage(PlaceTermsPage, t);
@@ -878,6 +886,10 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 t={t}
                 contactNumber={APP_CONFIG.CONTACT_NUMBER}
             /> || null;
+
+        case 'accept-booking':
+            // Render accept booking flow when deep-linked or path-detected
+            return <AcceptBookingPage />;
             
         case 'bookings':
             return (

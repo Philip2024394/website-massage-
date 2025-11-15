@@ -58,6 +58,8 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
   const [roomNumber, setRoomNumber] = useState('');
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [lastBookingTime, setLastBookingTime] = useState<string>('22:00');
+  const [openingTime, setOpeningTime] = useState<string>('09:00');
+  const [closingTime, setClosingTime] = useState<string>('21:00');
   const [isCreating, setIsCreating] = useState(false);
 
   const durations = [
@@ -75,6 +77,8 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
 
     // Parse last booking time (format: "HH:MM")
     const [lastHour, lastMinute] = lastBookingTime.split(':').map(Number);
+    const [openH, openM] = openingTime.split(':').map(Number);
+    const [closeH, closeM] = closingTime.split(':').map(Number);
 
     // Get today's bookings to mark unavailable slots
     let todayBookings: any[] = [];
@@ -98,10 +102,13 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
       console.warn('⚠️ Bookings collection disabled - no schedule conflicts will be checked');
     }
 
-    // Generate slots from 8 AM to last booking time
-    for (let hour = 8; hour <= lastHour; hour++) {
-      const startMinute = hour === 8 ? 0 : 0;
-      const endMinute = hour === lastHour ? lastMinute : 45;
+    // Generate slots: for places, use opening/closing; for therapists, 8AM to last booking time
+    const isPlace = therapistType === 'place';
+    const startHour = isPlace ? openH : 8;
+    const endHour = isPlace ? closeH : lastHour;
+    for (let hour = startHour; hour <= endHour; hour++) {
+      const startMinute = isPlace ? (hour === openH ? openM : 0) : 0;
+      const endMinute = hour === endHour ? (isPlace ? closeM : lastMinute) : 45;
 
       for (let minute = startMinute; minute <= endMinute; minute += 15) {
         // Skip past times
@@ -115,7 +122,8 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
         // Check if this slot conflicts with existing bookings (including 30min buffer)
         const isBooked = todayBookings.some((booking: any) => {
           const bookingStart = new Date(booking.scheduledTime || booking.createdAt);
-          const bookingEnd = new Date(bookingStart.getTime() + (booking.duration + 30) * 60000); // duration + 30min travel
+          const buffer = therapistType === 'place' ? 0 : 30; // no travel buffer for places
+          const bookingEnd = new Date(bookingStart.getTime() + (booking.duration + buffer) * 60000);
           return slotTime >= bookingStart && slotTime < bookingEnd;
         });
 
@@ -151,8 +159,13 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
             collectionId,
             therapistId
           );
-          if (therapist.lastBookingTime) {
-            setLastBookingTime(therapist.lastBookingTime);
+          if (therapistType === 'place') {
+            if ((therapist as any).openingTime) setOpeningTime((therapist as any).openingTime);
+            if ((therapist as any).closingTime) setClosingTime((therapist as any).closingTime);
+          } else {
+            if (therapist.lastBookingTime) {
+              setLastBookingTime(therapist.lastBookingTime);
+            }
           }
         } catch (error) {
           console.error('Error fetching therapist schedule:', error);
@@ -271,15 +284,20 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
         console.warn('⚠️ Could not play booking notification sound:', error);
       }
 
-      // Send WhatsApp notification to therapist
+      // Send WhatsApp notification to therapist/place
       const acceptUrl = `${window.location.origin}/accept-booking/${booking.$id}`;
       
-      // Enhanced WhatsApp message with hotel/villa details
-      let message = isImmediateBooking 
-        ? `🎯 IMMEDIATE BOOKING REQUEST - INDASTREET\n\n`
-        : `📅 SCHEDULED BOOKING REQUEST - INDASTREET\n\n`;
+      // Enhanced WhatsApp message with provider-type aware header
+      const isPlace = therapistType === 'place';
+      const header = isPlace
+        ? (isImmediateBooking ? '🏢 VENUE IMMEDIATE REQUEST' : '🏢 VENUE SCHEDULE REQUEST')
+        : (isImmediateBooking ? '🛵 MOBILE IMMEDIATE REQUEST' : '🗓️ MOBILE SCHEDULE REQUEST');
+      let message = `${header} - INDASTREET\n\n`;
       message += `👤 Customer: ${customerName}\n`;
       message += `📱 WhatsApp: ${customerWhatsApp}\n`;
+      if (isPlace) {
+        message += `🏢 Venue: ${therapistName}\n`;
+      }
       
       if (isImmediateBooking) {
         message += `⏰ Requested: ASAP (${new Date().toLocaleString()})\n`;
@@ -416,7 +434,9 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
                       <Clock className="text-orange-500" size={18} />
                       <div>
                         <div className="font-bold text-gray-800 text-sm">{option.label}</div>
-                        <div className="text-xs text-gray-500">+ 30 min travel time</div>
+                        {therapistType === 'therapist' && (
+                          <div className="text-xs text-gray-500">+ 30 min travel time</div>
+                        )}
                       </div>
                     </div>
                     <div className="text-xl font-bold text-orange-600">${option.price}</div>
@@ -443,7 +463,11 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
               <div className="bg-orange-50 p-3 rounded-lg mb-3">
                 <p className="text-xs text-orange-800 flex items-center gap-1">
                   <Clock className="inline w-3 h-3" />
-                  Last booking today: {lastBookingTime}
+                  {therapistType === 'place' ? (
+                    <>Open today: {openingTime}–{closingTime}</>
+                  ) : (
+                    <>Last booking today: {lastBookingTime}</>
+                  )}
                 </p>
               </div>
 
@@ -495,7 +519,7 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
                 </div>
                 <div className="text-xs text-orange-800 mt-1 flex items-center gap-1">
                   <Clock className="inline w-3 h-3" />
-                  <strong>Duration:</strong> {selectedDuration} min (+30 min travel)
+                  <strong>Duration:</strong> {selectedDuration} min{therapistType === 'therapist' ? ' (+30 min travel)' : ''}
                 </div>
               </div>
 

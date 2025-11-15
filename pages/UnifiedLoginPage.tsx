@@ -143,7 +143,7 @@ const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({
       <header className="bg-white border-b border-gray-200 px-4 py-4">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-gray-800">
-            <span className="text-black">Inda</span><span className="text-orange-500">street</span>
+            <span className="text-black">Inda</span><span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
           </h1>
           <div className="flex items-center gap-3">
             <button onClick={() => setIsMenuOpen(true)} title="Menu" className="p-2 hover:bg-orange-50 rounded-full transition-colors text-orange-500">

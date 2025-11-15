@@ -8,11 +8,12 @@ import { DeviceStylesProvider } from './components/DeviceAware';
 import BookingPopup from './components/BookingPopup';
 import BookingStatusTracker from './components/BookingStatusTracker';
 import ScheduleBookingPopup from './components/ScheduleBookingPopup';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { bookingExpirationService } from './services/bookingExpirationService';
 import { cleanupLocalStorage } from './utils/localStorageCleanup';
 import './lib/globalErrorHandler'; // Initialize global error handling
 import { LanguageProvider } from './context/LanguageContext';
+import { agentShareAnalyticsService } from './lib/appwriteService';
 // Temporarily removed: import { useSimpleLanguage } from './context/SimpleLanguageContext';
 // Temporarily removed: import SimpleLanguageSelector from './components/SimpleLanguageSelector';
 
@@ -125,6 +126,37 @@ const App = () => {
         };
     }, []);
 
+    // Inbound share click tracking via URL params (agent/provider/platform)
+    useEffect(() => {
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const agent = params.get('agent');
+            const provider = params.get('provider'); // format: therapist-<id> or place-<id>
+            const platform = (params.get('platform') || 'copy') as any;
+            if (agent && provider) {
+                const [ptype, pidRaw] = provider.split('-');
+                const providerType = (ptype === 'therapist' ? 'therapist' : 'place') as 'therapist' | 'place';
+                const providerId = pidRaw;
+                // Persist deeplink for when data loads
+                sessionStorage.setItem('pending_deeplink', JSON.stringify({ agent, provider, platform }));
+                agentShareAnalyticsService.trackShareClick({
+                    agentCode: agent,
+                    providerType,
+                    providerId,
+                    platform
+                });
+                // Optional: clean params from URL to avoid double counting on SPA nav
+                const url = new URL(window.location.href);
+                url.searchParams.delete('agent');
+                url.searchParams.delete('provider');
+                url.searchParams.delete('platform');
+                window.history.replaceState({}, '', url.toString());
+            }
+        } catch (e) {
+            console.warn('Inbound share tracking failed:', e);
+        }
+    }, []);
+
     // All hooks combined - ALWAYS call this hook at the same point
     const hooks = useAllHooks();
     const { state, navigation, authHandlers, providerAgentHandlers, derived } = hooks;
@@ -141,6 +173,48 @@ const App = () => {
     
     // Get translations using the actual language state - provide to AppRouter
     const { t: _t, dict } = useTranslations(language);
+
+    // Detect direct path navigation for accept-booking links and switch to that page
+    useEffect(() => {
+        try {
+            const path = window.location.pathname || '';
+            if (path.startsWith('/accept-booking/')) {
+                state.setPage('accept-booking');
+            }
+        } catch (e) {
+            console.warn('Path detection failed:', e);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Navigate to deep-linked profile once data is available (requires state)
+    useEffect(() => {
+        try {
+            const pending = sessionStorage.getItem('pending_deeplink');
+            if (!pending) return;
+            const { provider } = JSON.parse(pending) as { provider: string };
+            if (!provider) return;
+            const [ptype, pidRaw] = provider.split('-');
+            const idStr = (pidRaw || '').toString();
+            if (ptype === 'therapist' && state.therapists && state.therapists.length) {
+                const found = state.therapists.find((th: any) => ((th.id ?? th.$id ?? '').toString() === idStr));
+                if (found) {
+                    state.setSelectedTherapist(found);
+                    state.setPage('therapistProfile');
+                    sessionStorage.removeItem('pending_deeplink');
+                }
+            } else if (ptype === 'place' && state.places && state.places.length) {
+                const found = state.places.find((pl: any) => ((pl.id ?? pl.$id ?? '').toString() === idStr));
+                if (found) {
+                    state.setSelectedPlace(found);
+                    state.setPage('massagePlaceProfile');
+                    sessionStorage.removeItem('pending_deeplink');
+                }
+            }
+        } catch (e) {
+            console.warn('Deeplink navigation failed:', e);
+        }
+    }, [state.therapists, state.places]);
 
     // Use the actual language handler from hooks
     const handleLanguageSelect = async (lang: 'en' | 'id') => {
@@ -236,6 +310,7 @@ const App = () => {
                 isFullScreen={state.isFullScreen}
             >
             <div className={state.isFullScreen ? "flex-grow" : "flex-1"}>
+                <Suspense fallback={<div className="p-6 text-gray-600">Loading…</div>}>
                 <AppRouter
                     page={state.page}
                     isLoading={state.isLoading}
@@ -330,6 +405,7 @@ const App = () => {
 
                     setSelectedJobId={() => {}}
                 />
+                </Suspense>
             </div>
 
             <AppFooterLayout

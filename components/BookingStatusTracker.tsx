@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { startContinuousNotifications, stopContinuousNotifications } from '../lib/continuousNotificationService';
 import { Clock, CheckCircle, XCircle, AlertTriangle, Search, User, MessageCircle } from 'lucide-react';
 
 interface BookingStatusTrackerProps {
@@ -37,6 +38,16 @@ const BookingStatusTracker: React.FC<BookingStatusTrackerProps> = ({
   const [acceptedTherapist, setAcceptedTherapist] = useState<TherapistAcceptance | null>(null);
   const [showCancelWarning, setShowCancelWarning] = useState<boolean>(false);
 
+  // Continuous notification audio while awaiting/trying to find therapist
+  useEffect(() => {
+    if (!isOpen || !bookingId) return;
+    // Begin continuous notifications when tracker opens (awaiting response)
+    startContinuousNotifications(bookingId);
+    return () => {
+      stopContinuousNotifications(bookingId);
+    };
+  }, [isOpen, bookingId]);
+
   // Play notification sound
   const playNotificationSound = (type: 'booking' | 'success' | 'alert') => {
     try {
@@ -61,6 +72,8 @@ const BookingStatusTracker: React.FC<BookingStatusTrackerProps> = ({
       };
       setAcceptedTherapist(mockTherapist);
       setStatus('therapist-found');
+      // Stop continuous notifications once a therapist is found
+      if (bookingId) stopContinuousNotifications(bookingId);
       playNotificationSound('success');
     }, 3000); // Simulate 3 seconds search time
   };
@@ -106,6 +119,8 @@ const BookingStatusTracker: React.FC<BookingStatusTrackerProps> = ({
     try {
       // Update therapist status to busy (replace with real Appwrite update)
       console.log('Setting therapist status to busy:', acceptedTherapist.therapistId);
+      // Stop notifications on accept
+      if (bookingId) stopContinuousNotifications(bookingId);
       
       // Send WhatsApp confirmation to therapist
       const message = `✅ BOOKING CONFIRMED!\n\nCustomer has accepted your service.\nBooking Ref: Indastreet-${bookingId.slice(0, 5)}\nDuration: ${duration} min\nPrice: Rp ${(price * 15000).toLocaleString()}\n\nPlease start your journey to the customer.\nEstimated arrival: ${acceptedTherapist.estimatedArrival} minutes\n\nINDASTREET TEAM`;
@@ -140,6 +155,7 @@ const BookingStatusTracker: React.FC<BookingStatusTrackerProps> = ({
   // Handle booking cancellation
   const handleCancelBooking = () => {
     playNotificationSound('alert');
+    if (bookingId) stopContinuousNotifications(bookingId);
     setShowCancelWarning(false);
     onClose();
   };

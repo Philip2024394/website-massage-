@@ -14,11 +14,9 @@ self.addEventListener('install', (event) => {
     
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
+            // Avoid pre-caching multi-megabyte audio files to keep first-load fast
             return cache.addAll([
                 '/',
-                '/sounds/booking-alert.mp3',
-                '/sounds/message-notification.mp3', 
-                '/sounds/success-notification.mp3',
                 '/icon-192.png',
                 '/icon-512.png'
             ]);

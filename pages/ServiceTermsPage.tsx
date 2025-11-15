@@ -1,7 +1,4 @@
-
-
 import React from 'react';
-import { translations } from '../translations/index.ts';
 
 interface ServiceTermsPageProps {
     onBack: () => void;
@@ -13,15 +10,13 @@ const ServiceTermsPage: React.FC<ServiceTermsPageProps> = ({ onBack, t, contactN
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
+            <header className="bg-white p-4 shadow-md sticky top-0 z-[9997]">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">
                         <span className="text-black">Inda</span>
-                        <span className="text-orange-500">
-                            <span className="inline-block animate-float">S</span>treet
-                        </span>
+                        <span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
                     </h1>
-                    <button onClick={onBack} className="text-gray-600 hover:text-gray-800">
+                    <button onClick={onBack} className="p-2 hover:bg-orange-50 rounded-full transition-colors text-orange-500" aria-label="Close">
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>

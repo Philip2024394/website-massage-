@@ -5,7 +5,15 @@ import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import TherapistBookingAcceptPopup from '../components/TherapistBookingAcceptPopup';
 
 const AcceptBookingPage: React.FC = () => {
-  const { bookingId } = useParams<{ bookingId: string }>();
+  // Prefer URL params if using react-router; fallback to path parsing when not inside a Router
+  let { bookingId } = useParams<{ bookingId: string }>();
+  if (!bookingId && typeof window !== 'undefined') {
+    const parts = (window.location.pathname || '').split('/').filter(Boolean);
+    // Expecting /accept-booking/:bookingId
+    if (parts[0] === 'accept-booking' && parts[1]) {
+      bookingId = parts[1];
+    }
+  }
   const [booking, setBooking] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -88,6 +96,9 @@ const AcceptBookingPage: React.FC = () => {
         price={booking.price}
         location={booking.location || 'Not specified'}
         bookingTime={booking.createdAt}
+        providerType={(booking.providerType || booking.therapistType || 'therapist') as 'therapist' | 'place'}
+        bookingType={(booking.bookingType || 'immediate') as 'immediate' | 'scheduled'}
+        scheduledTime={booking.scheduledTime}
       />
     </div>
   );

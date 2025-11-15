@@ -62,7 +62,7 @@ const AgentLoginPage: React.FC<AgentLoginPageProps> = ({ onSuccess, _onBack, t: 
             <header className="bg-white p-4 shadow-md z-[9997] flex-shrink-0">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">
-                        <span className="text-black">Inda</span><span className="text-orange-500">street</span>
+                        <span className="text-black">Inda</span><span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
                     </h1>
                     <div className="flex items-center gap-3 text-gray-600" />
                 </div>
