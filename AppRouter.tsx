@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTranslations } from './lib/useTranslations';
+import { useLanguage } from './hooks/useLanguage';
 import type { Page, Language, LoggedInProvider } from './types/pageTypes';
 import type { User, Place, Therapist, UserLocation, Booking, Notification, Agent, AdminMessage, AvailabilityStatus } from './types';
 import { BookingStatus } from './types';
@@ -258,7 +259,9 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
     } = props;
     
     // Build a translation adapter from the active language dictionary
-    const { t: tFn, dict } = useTranslations(language as any);
+    const { language: ctxLanguage } = useLanguage();
+    const activeLanguage = (language as any) || ctxLanguage;
+    const { t: tFn, dict } = useTranslations(activeLanguage as any);
     const t: any = ((key: string) => tFn(key)) as any;
     // Spread all top-level namespaces for object-style access (e.g., t.home, t.common)
     if (dict && typeof dict === 'object') {

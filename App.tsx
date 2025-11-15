@@ -12,6 +12,7 @@ import { useState, useEffect } from 'react';
 import { bookingExpirationService } from './services/bookingExpirationService';
 import { cleanupLocalStorage } from './utils/localStorageCleanup';
 import './lib/globalErrorHandler'; // Initialize global error handling
+import { LanguageProvider } from './context/LanguageContext';
 // Temporarily removed: import { useSimpleLanguage } from './context/SimpleLanguageContext';
 // Temporarily removed: import SimpleLanguageSelector from './components/SimpleLanguageSelector';
 
@@ -229,6 +230,7 @@ const App = () => {
     };
 
     return (
+        <LanguageProvider value={{ language: language as 'en' | 'id', setLanguage: handleLanguageSelect }}>
         <DeviceStylesProvider>
             <AppLayout
                 isFullScreen={state.isFullScreen}
@@ -393,6 +395,7 @@ const App = () => {
                 hotelVillaType={scheduleBookingInfo?.hotelVillaType}
             />
         </DeviceStylesProvider>
+        </LanguageProvider>
     );
 };
 

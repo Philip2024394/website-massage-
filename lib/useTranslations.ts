@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useContext } from 'react';
+import { LanguageContext } from '../context/LanguageContext';
 import { translationsService } from './appwriteService';
 import { translations as fallbackTranslations } from '../translations/index';
 import { vscodeTranslateService } from './vscodeTranslateService';
@@ -35,6 +36,8 @@ const cacheTranslations = (data: any) => {
 };
 
 export function useTranslations(language?: 'en' | 'id') {
+    // Allow implicit language from context when param not provided
+    const ctx = useContext(LanguageContext);
     // Get stored language preference if no language is provided
     const getStoredLanguage = (): 'en' | 'id' => {
         try {
@@ -45,7 +48,7 @@ export function useTranslations(language?: 'en' | 'id') {
         }
     };
     
-    const currentLanguage = language || getStoredLanguage();
+    const currentLanguage = language || ctx.language || getStoredLanguage();
     
     const [translations, setTranslations] = useState(fallbackTranslations);
     const [loading, setLoading] = useState(false);

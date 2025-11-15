@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../hooks/useLanguage';
 import Button from '../components/Button';
 import { useTranslations } from '../lib/useTranslations';
 import { locationService } from '../services/locationService';
@@ -40,6 +41,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
         }
     });
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const { setLanguage: setGlobalLanguage } = useLanguage();
     const [isDetectingLocation, setIsDetectingLocation] = useState(false);
     
     // Get translations for the selected language
@@ -260,6 +262,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
                                                 console.log('🌐 Previous selectedLanguage was:', selectedLanguage);
                                                 const newLanguage = lang.code as Language;
                                                 setSelectedLanguage(newLanguage);
+                                                setGlobalLanguage(newLanguage as 'en' | 'id');
                                                 
                                                 // Save to localStorage for persistence
                                                 try {
