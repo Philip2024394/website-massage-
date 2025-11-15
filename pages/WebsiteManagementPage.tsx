@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Globe, Star, ArrowLeft, Save, Eye, Home, Activity, Users, MapPin, TrendingUp } from 'lucide-react';
+import { Globe, Star, Save, Eye, Home, Activity, Users, MapPin, TrendingUp } from 'lucide-react';
 
 interface WebsiteManagementPageProps {
     onBack: () => void;
@@ -91,13 +91,6 @@ const WebsiteManagementPage: React.FC<WebsiteManagementPageProps> = ({
             <header className="bg-white p-4 shadow-md sticky top-0 z-[9997]">
                 <div className="max-w-4xl mx-auto flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <button
-                            onClick={onBack}
-                            aria-label="Back"
-                            className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-700"
-                        >
-                            <ArrowLeft className="w-5 h-5" />
-                        </button>
                         <h1 className="text-2xl font-bold text-gray-800">
                             <span className="text-black">Inda</span>
                             <span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>

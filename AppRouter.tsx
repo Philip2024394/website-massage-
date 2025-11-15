@@ -59,7 +59,7 @@ const ContactUsPage = React.lazy(() => import('./pages/ContactUsPage'));
 const HowItWorksPage = React.lazy(() => import('./pages/HowItWorksPage'));
 const MassageBaliPage = React.lazy(() => import('./pages/MassageBaliPage'));
 const BlogIndexPage = React.lazy(() => import('./pages/BlogIndexPage'));
-const FAQPage = React.lazy(() => import('./pages/FAQPage'));
+import FAQPage from './pages/FAQPage';
 const BalineseMassagePage = React.lazy(() => import('./pages/BalineseMassagePage'));
 const DeepTissueMassagePage = React.lazy(() => import('./pages/DeepTissueMassagePage'));
 const PressMediaPage = React.lazy(() => import('./pages/PressMediaPage'));
@@ -89,7 +89,8 @@ const RewardBannersTestPage = React.lazy(() => import('./pages/RewardBannersTest
 const ReferralPage = React.lazy(() => import('./pages/ReferralPage'));
 const CoinHistoryPage = React.lazy(() => import('./pages/CoinHistoryPage'));
 const CoinSystemTestPage = React.lazy(() => import('./pages/CoinSystemTestPage'));
-const WebsiteManagementPage = React.lazy(() => import('./pages/WebsiteManagementPage'));
+// Eager-load WebsiteManagementPage to avoid dev dynamic import fetch issue
+import WebsiteManagementPage from './pages/WebsiteManagementPage';
 import TodaysDiscountsPage from './pages/TodaysDiscountsPage';
 import GuestProfilePage from './pages/GuestProfilePage'; // 🎯 NEW: Guest profile for non-registered users
 import { APP_CONFIG } from './config/appConfig';

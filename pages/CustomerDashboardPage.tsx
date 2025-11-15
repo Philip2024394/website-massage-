@@ -32,6 +32,10 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
   const [selectedWallet, setSelectedWallet] = useState<LoyaltyWallet | null>(null);
   const [transactions, setTransactions] = useState<CoinTransaction[]>([]);
   const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [bookingToCancel, setBookingToCancel] = useState<Booking | null>(null);
+  const [cancelReason, setCancelReason] = useState('');
+  const [cancelOtherText, setCancelOtherText] = useState('');
 
   useEffect(() => {
     loadBookings();
@@ -83,12 +87,74 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
     (b) => new Date(b.startTime) < new Date() || b.status === BookingStatus.Cancelled
   );
 
-  const handleCancelBooking = async (bookingId: number) => {
-    if (!confirm('Are you sure you want to cancel this booking?')) return;
+  const CANCELLATION_REASONS = [
+    'I have changed my mind',
+    'I would like to rebook another time',
+    'I got delayed',
+    'The Therapist is running late',
+    'Important meeting',
+    'Other Reason'
+  ];
+
+  const checkCancellationAllowed = (booking: Booking): { allowed: boolean; message?: string } => {
+    const now = new Date();
+    const start = new Date(booking.startTime);
+    const createdRaw = (booking as any).createdAt || (booking as any).$createdAt || booking.startTime;
+    const created = new Date(createdRaw);
+
+    if (start.getTime() <= now.getTime()) {
+      return { allowed: false, message: 'This booking has started or passed and cannot be cancelled.' };
+    }
+
+    const msToStart = start.getTime() - now.getTime();
+    const msFromCreate = now.getTime() - created.getTime();
+    const fiveHoursMs = 5 * 60 * 60 * 1000;
+    const tenMinutesMs = 10 * 60 * 1000;
+
+    if (msToStart >= fiveHoursMs) {
+      return { allowed: true };
+    }
+
+    if (msFromCreate <= tenMinutesMs) {
+      return { allowed: true };
+    }
+
+    return {
+      allowed: false,
+      message:
+        'Cancellations must be 5 hours in advance for scheduled bookings. For Book Now, you can cancel within 10 minutes of the request.'
+    };
+  };
+
+  const openCancelModal = (booking: Booking) => {
+    setBookingToCancel(booking);
+    setCancelReason('');
+    setCancelOtherText('');
+    setShowCancelModal(true);
+  };
+
+  const confirmCancelBooking = async () => {
+    if (!bookingToCancel) return;
+
+    const policy = checkCancellationAllowed(bookingToCancel);
+    if (!policy.allowed) {
+      alert(`❌ ${policy.message}`);
+      return;
+    }
+
+    const finalReason = cancelReason === 'Other Reason' ? (cancelOtherText || 'Other Reason') : cancelReason;
+    if (!finalReason) {
+      alert('Please select a cancellation reason.');
+      return;
+    }
 
     try {
-      await bookingService.delete(String(bookingId));
+      const id = String((bookingToCancel as any).id || (bookingToCancel as any).$id || '');
+      if (!id) throw new Error('Missing booking id');
+      await bookingService.cancel(id, finalReason);
       await loadBookings();
+      setShowCancelModal(false);
+      setBookingToCancel(null);
       alert('✅ Booking cancelled successfully');
     } catch (error) {
       console.error('Error cancelling booking:', error);
@@ -358,7 +424,7 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
                       </div>
 
                       <button
-                        onClick={() => handleCancelBooking(booking.id)}
+                        onClick={() => openCancelModal(booking)}
                         className="w-full bg-red-50 text-red-600 py-2 rounded-lg hover:bg-red-100 transition-all font-semibold"
                       >
                         ❌ Cancel Booking
@@ -865,6 +931,60 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
                 className="flex-1 bg-red-500 text-white py-3 rounded-lg font-semibold hover:bg-red-600 transition-all"
               >
                 Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cancellation Modal */}
+      {showCancelModal && bookingToCancel && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md">
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Cancel Booking</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Please select a reason to cancel. Policy: 5 hours in advance for scheduled bookings; Book Now can be cancelled within 10 minutes of request.
+            </p>
+
+            <div className="space-y-2 mb-3">
+              {CANCELLATION_REASONS.map((r) => (
+                <label key={r} className="flex items-center gap-2 text-sm">
+                  <input
+                    type="radio"
+                    name="cancel-reason"
+                    value={r}
+                    checked={cancelReason === r}
+                    onChange={(e) => setCancelReason(e.target.value)}
+                  />
+                  <span>{r}</span>
+                </label>
+              ))}
+            </div>
+
+            {cancelReason === 'Other Reason' && (
+              <input
+                className="w-full p-3 border-2 border-gray-300 rounded-lg text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-gray-50 mb-4"
+                placeholder="Enter reason..."
+                value={cancelOtherText}
+                onChange={(e) => setCancelOtherText(e.target.value)}
+              />
+            )}
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowCancelModal(false);
+                  setBookingToCancel(null);
+                }}
+                className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-all"
+              >
+                Close
+              </button>
+              <button
+                onClick={confirmCancelBooking}
+                className="flex-1 bg-red-500 text-white py-3 rounded-lg font-semibold hover:bg-red-600 transition-all"
+              >
+                Confirm Cancel
               </button>
             </div>
           </div>

@@ -45,6 +45,7 @@ const FAQPage: React.FC<FAQPageProps> = ({
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const categories = [
+        { id: 'booking', name: 'Bookings', icon: '📅' },
         { id: 'therapist', name: 'For Therapists', icon: '🧘' },
         { id: 'hotel', name: 'For Hotels', icon: '🏨' },
         { id: 'employer', name: 'For Employers', icon: '👔' },
@@ -54,6 +55,22 @@ const FAQPage: React.FC<FAQPageProps> = ({
     ];
 
     const faqs: FAQ[] = [
+        // Booking FAQs
+        {
+            category: 'booking',
+            question: 'Can I cancel my booking?',
+            answer: 'Yes, you can cancel your booking by contacting the therapist or massage spa directly in a timely manner. Please note: if a therapist is already on the way, or if a massage place has a placement booking within 3 hours of your arrival time, they may request a cancellation fee to cover travel costs or loss of earnings. This fee may be up to 20% of the session price and is at the provider\'s discretion.'
+        },
+        {
+            category: 'booking',
+            question: 'Can I reject a therapist on arrival or at a massage spa?',
+            answer: 'Yes. You may cancel on arrival if the therapist does not correspond with the profile image or details shown on their profile card. For massage spas, advance notice is usually required for cancellations, but you may request a change of therapist. A change may require additional waiting time. We recommend confirming important details in advance (therapist, session type, duration, and price) to ensure a positive experience.'
+        },
+        {
+            category: 'booking',
+            question: 'Is it normal to wait for a therapist or massage place?',
+            answer: 'Most bookings start on time. Occasionally delays happen if the previous client requested extra time, or due to traffic, weather, or other unforeseen reasons. Therapists and massage places will keep you informed and aim to stay as close to your scheduled time as possible. If your timing is critical, mention it when booking so the provider can plan accordingly.'
+        },
         // Therapist FAQs
         {
             category: 'therapist',
@@ -219,6 +236,37 @@ const FAQPage: React.FC<FAQPageProps> = ({
             category: 'technical',
             question: 'How do I delete my account?',
             answer: 'Email support@indastreet.com from your registered email address with subject "Account Deletion Request". Include your full name and phone number. We\'ll process deletion within 7 business days. Note: account deletion is permanent and cannot be reversed. All profile data, reviews, and booking history will be permanently removed.'
+        },
+        // Platform & App Flow FAQs
+        {
+            category: 'technical',
+            question: 'How is distance calculated and how do I know Maps is working?',
+            answer: 'Your device location is used to estimate distance to therapists and places. When Google Maps Distance Matrix is active you\'ll see a green indicator; if it\'s unavailable you\'ll see a red indicator and we fallback to an accurate on-device calculation. Make sure location services are enabled on your phone for best results.'
+        },
+        {
+            category: 'technical',
+            question: 'What\'s the difference between Book Now and Schedule?',
+            answer: 'Book Now requests an immediate booking to the selected provider. Schedule lets you pick a later time. For massage places (venues), Book Now and Schedule respect the venue\'s opening hours. For mobile therapists, Book Now depends on their current status (Online/Busy/Offline), while Schedule lets you choose a future slot.'
+        },
+        {
+            category: 'technical',
+            question: 'How are massage places different from mobile therapists?',
+            answer: 'Massage places are venues with opening/closing hours and do not show live Online/Busy status. We enforce venue hours for both Book Now and Schedule. Mobile therapists are individuals with status (Online/Busy/Offline); immediate bookings can set them Busy until confirmed, while scheduled bookings set Busy close to the appointment time.'
+        },
+        {
+            category: 'technical',
+            question: 'Why do I hear a loud sound during booking?',
+            answer: 'We use a continuous notification sound to make sure you don\'t miss important booking updates. It stops automatically when the booking is accepted, canceled, a therapist is found, or you close the screen. You can control your device volume if needed.'
+        },
+        {
+            category: 'technical',
+            question: 'Do shared links open the exact profile?',
+            answer: 'Yes. When you share a therapist or place profile, the recipient link opens directly to that exact profile (deep link). Agents also get credit for recruits and shares that originate from their links, visible in the dashboard analytics.'
+        },
+        {
+            category: 'technical',
+            question: 'What is the Online Shop and Coin Shop?',
+            answer: 'The Online Shop showcases curated items you can browse from the Home page. The Coin Shop is part of our rewards system for eligible dashboards (e.g., therapists, hotels, villas) where coins can be earned and redeemed for certain items or benefits. Availability may vary by account type.'
         },
     ];
 

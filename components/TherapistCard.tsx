@@ -460,7 +460,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             <div className="bg-white rounded-xl shadow-md overflow-visible relative transition-all duration-300">
                 
                 {/* Main Image Banner */}
-                <div className="h-48 w-full bg-gradient-to-r from-orange-400 to-orange-600 overflow-visible relative rounded-t-xl">
+                <div className="h-48 w-full bg-gradient-to-r from-orange-400 to-orange-600 overflow-hidden relative rounded-t-xl">
                 <img 
                     src={displayImage} 
                     alt={`${therapist.name} cover`} 

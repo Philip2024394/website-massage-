@@ -32,9 +32,62 @@ const LIVE_MENU_THERAPIST_IMAGES = [
     'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4198000f867f6e47/view?project=68f23b11000d25eb3664',
 ];
 
-// Helper function to get main image sequentially for home page
-const getRandomMainImage = (index: number): string => {
-    return THERAPIST_MAIN_IMAGES[index % THERAPIST_MAIN_IMAGES.length];
+// Helper functions to assign main images without repeats until pool is exhausted
+const IMAGE_POOL_STORAGE_KEY = 'therapist_main_image_pool_v2';
+const IMAGE_POOL_HASH_KEY = 'therapist_main_image_pool_hash_v2';
+
+const hashImageList = (list: string[]): string => {
+    // Simple stable hash
+    const data = list.join('|');
+    let h = 0;
+    for (let i = 0; i < data.length; i++) {
+        h = (h << 5) - h + data.charCodeAt(i);
+        h |= 0;
+    }
+    return String(h);
+};
+
+const shuffle = <T,>(arr: T[]): T[] => {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+};
+
+const getNonRepeatingMainImage = (index: number): string => {
+    // If no window (e.g., server or script), fall back to deterministic cycle
+    if (typeof window === 'undefined') {
+        return THERAPIST_MAIN_IMAGES[index % THERAPIST_MAIN_IMAGES.length];
+    }
+
+    try {
+        const storedHash = localStorage.getItem(IMAGE_POOL_HASH_KEY);
+        const currentHash = hashImageList(THERAPIST_MAIN_IMAGES);
+        let pool: string[] | null = null;
+
+        if (storedHash === currentHash) {
+            const raw = localStorage.getItem(IMAGE_POOL_STORAGE_KEY);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed) && parsed.length === THERAPIST_MAIN_IMAGES.length) {
+                    pool = parsed as string[];
+                }
+            }
+        }
+
+        if (!pool) {
+            pool = shuffle(THERAPIST_MAIN_IMAGES);
+            localStorage.setItem(IMAGE_POOL_STORAGE_KEY, JSON.stringify(pool));
+            localStorage.setItem(IMAGE_POOL_HASH_KEY, currentHash);
+        }
+
+        return pool[index % pool.length];
+    } catch (_e) {
+        // If localStorage blocked, gracefully fallback
+        return THERAPIST_MAIN_IMAGES[index % THERAPIST_MAIN_IMAGES.length];
+    }
 };
 
 // Helper function to get random live menu image
@@ -291,7 +344,7 @@ export const therapistService = {
             
             // Add random main images and normalize status to therapists
             const therapistsWithImages = response.documents.map((therapist: any, index: number) => {
-                const assignedMainImage = therapist.mainImage || getRandomMainImage(index);
+                const assignedMainImage = therapist.mainImage || getNonRepeatingMainImage(index);
                 
                 // Normalize status from database (lowercase) to enum format (capitalized)
                 const normalizeStatus = (status: string) => {
@@ -1859,6 +1912,51 @@ export const bookingService = {
             console.log('✅ Booking deleted:', bookingId);
         } catch (error) {
             console.error('Error deleting booking:', error);
+            throw error;
+        }
+    },
+
+    async cancel(bookingId: string, reason?: string): Promise<void> {
+        try {
+            const nowIso = new Date().toISOString();
+            try {
+                await databases.updateDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.bookings,
+                    bookingId,
+                    {
+                        status: 'Cancelled',
+                        cancelledAt: nowIso,
+                        // Attempt to persist reason if attribute exists
+                        cancellationReason: reason || null
+                    }
+                );
+            } catch (updateErr) {
+                console.warn('⚠️ Full cancel update failed, retrying without reason:', (updateErr as any)?.message);
+                await databases.updateDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.bookings,
+                    bookingId,
+                    {
+                        status: 'Cancelled',
+                        cancelledAt: nowIso
+                    }
+                );
+            }
+
+            try {
+                await notificationService.create({
+                    type: 'booking_cancelled',
+                    message: `Booking ${bookingId} was cancelled${reason ? `: ${reason}` : ''}.`,
+                    bookingId
+                });
+            } catch (notifyErr) {
+                console.warn('⚠️ Failed to send cancellation notification:', (notifyErr as any)?.message);
+            }
+
+            console.log('✅ Booking cancelled:', bookingId);
+        } catch (error) {
+            console.error('Error cancelling booking:', error);
             throw error;
         }
     }
