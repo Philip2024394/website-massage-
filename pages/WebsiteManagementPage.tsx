@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Globe, Star, ArrowLeft, Save, Eye } from 'lucide-react';
+import { Globe, Star, ArrowLeft, Save, Eye, Home, Activity, Users, MapPin, TrendingUp } from 'lucide-react';
 
 interface WebsiteManagementPageProps {
     onBack: () => void;
@@ -86,73 +86,70 @@ const WebsiteManagementPage: React.FC<WebsiteManagementPageProps> = ({
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Header */}
-            <div className="bg-white shadow-sm border-b">
-                <div className="max-w-4xl mx-auto px-4 py-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4 pb-20">
-                            <button
-                                onClick={onBack}
-                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                            >
-                                <ArrowLeft className="w-5 h-5 text-gray-600" />
-                            </button>
+        <div className="min-h-screen bg-orange-50">
+            {/* Top Home Header */}
+            <div className="sticky top-0 z-30 bg-gradient-to-r from-orange-500 to-orange-600 shadow">
+                <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={onBack}
+                            aria-label="Back"
+                            className="p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
+                        >
+                            <ArrowLeft className="w-5 h-5 text-white" />
+                        </button>
+                        <div className="flex items-center gap-2">
+                            <div className="w-9 h-9 bg-white/20 backdrop-blur rounded-lg flex items-center justify-center">
+                                <Home className="w-5 h-5 text-white" />
+                            </div>
                             <div>
-                                <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
-                                        <Globe className="w-6 h-6 text-white" />
-                                    </div>
-                                    Website Management
-                                </h1>
-                                <p className="text-sm text-gray-600 mt-1">
-                                    Manage your website for Indastreet Partners Directory
-                                </p>
+                                <h1 className="text-lg font-semibold text-white leading-tight">Website Management</h1>
+                                <p className="text-[11px] text-orange-100">Indastreet Partner Directory Setup</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                            <button
-                                onClick={() => setIsPreviewMode(!isPreviewMode)}
-                                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors"
-                            >
-                                <Eye className="w-4 h-4" />
-                                {isPreviewMode ? 'Edit Mode' : 'Preview'}
-                            </button>
-                            <button
-                                onClick={handleSave}
-                                disabled={isSaving}
-                                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
-                            >
-                                <Save className="w-4 h-4" />
-                                {isSaving ? 'Saving...' : 'Save Changes'}
-                            </button>
-                        </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => setIsPreviewMode(!isPreviewMode)}
+                            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-orange-700 bg-white rounded-md shadow-sm hover:bg-orange-50 transition-colors"
+                        >
+                            <Eye className="w-4 h-4" />
+                            {isPreviewMode ? 'Edit' : 'Preview'}
+                        </button>
+                        <button
+                            onClick={handleSave}
+                            disabled={isSaving}
+                            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-white bg-orange-700 rounded-md shadow-sm hover:bg-orange-800 transition-colors disabled:opacity-50"
+                        >
+                            <Save className="w-4 h-4" />
+                            {isSaving ? 'Saving' : 'Save'}
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <div className="max-w-4xl mx-auto px-4 py-8">
+            <div className="max-w-4xl mx-auto px-4 py-6">
                 {isPreviewMode ? (
                     /* Preview Mode */
                     <div className="space-y-6">
-                        <div className="bg-white rounded-xl shadow-sm border p-6">
-                            <h2 className="text-xl font-bold text-gray-900 mb-4">Preview: Partners Directory Listing</h2>
+                        <div className="bg-white rounded-xl shadow-sm border p-5">
+                            <h2 className="text-base font-semibold text-gray-800 mb-4 flex items-center gap-2"><Globe className="w-4 h-4 text-orange-500" /> Preview Listing</h2>
                             
                             {websiteUrl && websiteTitle ? (
-                                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-lg p-6">
-                                    <div className="flex items-start gap-4 pb-20">
-                                        <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                                            <Globe className="w-8 h-8 text-white" />
+                                <div className="bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 rounded-lg p-5">
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                            <Globe className="w-7 h-7 text-white" />
                                         </div>
                                         <div className="flex-1">
-                                            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                                            <h3 className="text-base font-semibold text-gray-900 mb-1">
                                                 {websiteTitle || 'Your Website Title'}
                                             </h3>
-                                            <p className="text-sm text-gray-600 mb-3">
+                                            <p className="text-xs text-gray-600 mb-2">
                                                 {getUserTypeLabel()} • Indastreet Partner
                                             </p>
                                             {websiteDescription && (
-                                                <p className="text-sm text-gray-700 mb-4 line-clamp-3">
+                                                <p className="text-xs text-gray-700 mb-3 line-clamp-4">
                                                     {websiteDescription}
                                                 </p>
                                             )}
@@ -161,14 +158,14 @@ const WebsiteManagementPage: React.FC<WebsiteManagementPageProps> = ({
                                                     href={websiteUrl}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium"
+                                                    className="inline-flex items-center gap-2 px-3 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors text-xs font-medium"
                                                 >
                                                     <Globe className="w-4 h-4" />
                                                     Visit Website
                                                 </a>
-                                                <div className="flex items-center gap-1 text-xs text-indigo-600">
+                                                <div className="flex items-center gap-1 text-[10px] text-orange-600">
                                                     <Star className="w-3 h-3 fill-current" />
-                                                    <span>SEO Optimized</span>
+                                                    <span>SEO Ready</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -176,8 +173,8 @@ const WebsiteManagementPage: React.FC<WebsiteManagementPageProps> = ({
                                 </div>
                             ) : (
                                 <div className="text-center py-12 text-gray-500">
-                                    <Globe className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                                    <p>Fill in your website information to see the preview</p>
+                                    <Globe className="w-14 h-14 mx-auto mb-3 text-gray-300" />
+                                    <p className="text-sm">Enter details to preview your listing</p>
                                 </div>
                             )}
                         </div>
@@ -186,50 +183,54 @@ const WebsiteManagementPage: React.FC<WebsiteManagementPageProps> = ({
                     /* Edit Mode */
                     <div className="space-y-6">
                         {/* Information Section */}
-                        <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-xl border border-indigo-200">
+                        <div className="bg-gradient-to-r from-orange-50 to-orange-100 p-5 rounded-xl border border-orange-200">
                             <div className="flex items-center gap-3 mb-4">
-                                <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
-                                    <Globe className="w-6 h-6 text-indigo-600" />
+                                <div className="w-9 h-9 bg-orange-100 rounded-lg flex items-center justify-center">
+                                    <Globe className="w-5 h-5 text-orange-600" />
                                 </div>
                                 <div>
-                                    <h2 className="text-xl font-bold text-gray-900">
-                                        🤝 Indastreet Partners Directory
+                                    <h2 className="text-base font-semibold text-gray-900 flex items-center gap-1">
+                                        <span>🤝 Indastreet Partners Directory</span>
                                     </h2>
-                                    <p className="text-sm text-indigo-600">Optional but Recommended</p>
+                                    <p className="text-[11px] text-orange-600">Optional but Recommended</p>
                                 </div>
                             </div>
                             
-                            <div className="bg-white/50 rounded-lg p-4 pb-20 space-y-3">
-                                <p className="text-sm text-gray-700">
+                            <div className="bg-white/60 rounded-lg p-4 space-y-3">
+                                <p className="text-xs text-gray-700 leading-relaxed">
                                     Add your website to be featured in our <strong>Indastreet Partners</strong> directory for better SEO ranking and exposure.
-                                    Being part of the Indastreet Partnership will drive additional traffic to your website.
+                                    This boosts visibility and drives more relevant visitors to your business.
                                 </p>
                                 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-20 mt-4">
-                                    <div className="flex items-center gap-2 text-sm text-green-700">
-                                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                        <span>Increased Web Traffic</span>
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-2">
+                                    <div className="flex items-center gap-2 text-[11px] text-orange-700">
+                                        <TrendingUp className="w-3.5 h-3.5" />
+                                        <span>Traffic</span>
                                     </div>
-                                    <div className="flex items-center gap-2 text-sm text-blue-700">
-                                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                    <div className="flex items-center gap-2 text-[11px] text-orange-700">
+                                        <Activity className="w-3.5 h-3.5" />
                                         <span>SEO Boost</span>
                                     </div>
-                                    <div className="flex items-center gap-2 text-sm text-purple-700">
-                                        <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                                        <span>Brand Exposure</span>
+                                    <div className="flex items-center gap-2 text-[11px] text-orange-700">
+                                        <Users className="w-3.5 h-3.5" />
+                                        <span>Exposure</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-[11px] text-orange-700">
+                                        <MapPin className="w-3.5 h-3.5" />
+                                        <span>Local Reach</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         {/* Website Information Form */}
-                        <div className="bg-white rounded-xl shadow-sm border p-6">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-6">Website Information</h3>
+                        <div className="bg-white rounded-xl shadow-sm border p-5">
+                            <h3 className="text-sm font-semibold text-gray-800 mb-5 flex items-center gap-2"><Globe className="w-4 h-4 text-orange-500" /> Website Information</h3>
                             
                             <div className="space-y-6">
                                 {/* Website URL */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    <label className="block text-xs font-medium text-gray-700 mb-2">
                                         Website URL *
                                     </label>
                                     <div className="relative">
@@ -241,18 +242,18 @@ const WebsiteManagementPage: React.FC<WebsiteManagementPageProps> = ({
                                             value={websiteUrl} 
                                             onChange={e => setWebsiteUrl(e.target.value)} 
                                             placeholder="https://yourwebsite.com" 
-                                            className={`block w-full pl-10 pr-3 py-3 bg-white border rounded-lg shadow-sm focus:outline-none focus:ring-2 text-gray-900 ${
+                                            className={`block w-full pl-10 pr-3 py-2.5 bg-white border rounded-lg shadow-sm focus:outline-none focus:ring-2 text-gray-900 text-sm ${
                                                 websiteUrl && !isValidUrl(websiteUrl)
                                                     ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
-                                                    : 'border-gray-300 focus:ring-indigo-500 focus:border-indigo-500'
+                                                    : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'
                                             }`}
                                         />
                                     </div>
-                                    <p className="text-xs text-gray-500 mt-2">
+                                    <p className="text-[11px] text-gray-500 mt-1">
                                         Your professional website or business URL
                                     </p>
                                     {websiteUrl && !isValidUrl(websiteUrl) && (
-                                        <p className="text-xs text-red-600 mt-1">
+                                        <p className="text-[11px] text-red-600 mt-1">
                                             Please enter a valid URL (e.g., https://example.com)
                                         </p>
                                     )}
@@ -260,7 +261,7 @@ const WebsiteManagementPage: React.FC<WebsiteManagementPageProps> = ({
 
                                 {/* Website Title */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    <label className="block text-xs font-medium text-gray-700 mb-2">
                                         Website Title *
                                     </label>
                                     <input 
@@ -268,14 +269,14 @@ const WebsiteManagementPage: React.FC<WebsiteManagementPageProps> = ({
                                         value={websiteTitle} 
                                         onChange={e => setWebsiteTitle(e.target.value)} 
                                         placeholder="Professional Massage & Wellness Services" 
-                                        className="block w-full px-3 py-3 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+                                        className="block w-full px-3 py-2.5 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 text-sm"
                                         maxLength={100}
                                     />
                                     <div className="flex justify-between items-center mt-2">
-                                        <p className="text-xs text-gray-500">
+                                        <p className="text-[11px] text-gray-500">
                                             Display name for your website link
                                         </p>
-                                        <p className="text-xs text-gray-400">
+                                        <p className="text-[11px] text-gray-400">
                                             {websiteTitle.length}/100 characters
                                         </p>
                                     </div>
@@ -283,7 +284,7 @@ const WebsiteManagementPage: React.FC<WebsiteManagementPageProps> = ({
 
                                 {/* Website Description */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    <label className="block text-xs font-medium text-gray-700 mb-2">
                                         Website Description
                                     </label>
                                     <textarea 
@@ -291,14 +292,14 @@ const WebsiteManagementPage: React.FC<WebsiteManagementPageProps> = ({
                                         onChange={e => setWebsiteDescription(e.target.value)} 
                                         placeholder="Brief description of your website and services for the partners directory. Describe what makes your business unique and what visitors can expect..." 
                                         rows={4}
-                                        className="block w-full px-3 py-3 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+                                        className="block w-full px-3 py-2.5 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 text-sm"
                                         maxLength={300}
                                     />
                                     <div className="flex justify-between items-center mt-2">
-                                        <p className="text-xs text-gray-500">
+                                        <p className="text-[11px] text-gray-500">
                                             Short description for the partners directory (optional)
                                         </p>
-                                        <p className="text-xs text-gray-400">
+                                        <p className="text-[11px] text-gray-400">
                                             {websiteDescription.length}/300 characters
                                         </p>
                                     </div>
@@ -307,47 +308,31 @@ const WebsiteManagementPage: React.FC<WebsiteManagementPageProps> = ({
                         </div>
 
                         {/* SEO Benefits Card */}
-                        <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
-                            <div className="flex items-center gap-3 mb-4">
-                                <Star className="w-6 h-6 text-blue-600" />
-                                <h3 className="text-lg font-semibold text-blue-900">SEO Benefits</h3>
+                        <div className="bg-orange-50 border border-orange-200 rounded-xl p-5">
+                            <div className="flex items-center gap-2 mb-3">
+                                <Star className="w-5 h-5 text-orange-600" />
+                                <h3 className="text-sm font-semibold text-orange-900">SEO Benefits</h3>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-20">
-                                <div className="flex items-start gap-3">
-                                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                                    <div>
-                                        <h4 className="font-medium text-blue-900">Higher Google Ranking</h4>
-                                        <p className="text-sm text-blue-700">
-                                            Backlinks from our directory improve your search engine visibility
-                                        </p>
-                                    </div>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <div className="flex flex-col gap-1 bg-white rounded-lg p-3 border border-orange-100">
+                                    <TrendingUp className="w-4 h-4 text-orange-600" />
+                                    <h4 className="text-xs font-medium text-gray-800">Higher Ranking</h4>
+                                    <p className="text-[10px] text-gray-600">Quality backlink improves visibility</p>
                                 </div>
-                                <div className="flex items-start gap-3">
-                                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                                    <div>
-                                        <h4 className="font-medium text-blue-900">Increased Traffic</h4>
-                                        <p className="text-sm text-blue-700">
-                                            Drive qualified visitors to your website through our platform
-                                        </p>
-                                    </div>
+                                <div className="flex flex-col gap-1 bg-white rounded-lg p-3 border border-orange-100">
+                                    <Activity className="w-4 h-4 text-orange-600" />
+                                    <h4 className="text-xs font-medium text-gray-800">More Traffic</h4>
+                                    <p className="text-[10px] text-gray-600">Directory sends relevant visitors</p>
                                 </div>
-                                <div className="flex items-start gap-3">
-                                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                                    <div>
-                                        <h4 className="font-medium text-blue-900">Brand Authority</h4>
-                                        <p className="text-sm text-blue-700">
-                                            Association with Indastreet enhances your business credibility
-                                        </p>
-                                    </div>
+                                <div className="flex flex-col gap-1 bg-white rounded-lg p-3 border border-orange-100">
+                                    <Users className="w-4 h-4 text-orange-600" />
+                                    <h4 className="text-xs font-medium text-gray-800">Authority</h4>
+                                    <p className="text-[10px] text-gray-600">Brand trust & credibility</p>
                                 </div>
-                                <div className="flex items-start gap-3">
-                                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                                    <div>
-                                        <h4 className="font-medium text-blue-900">Local SEO</h4>
-                                        <p className="text-sm text-blue-700">
-                                            Better local search rankings for location-based queries
-                                        </p>
-                                    </div>
+                                <div className="flex flex-col gap-1 bg-white rounded-lg p-3 border border-orange-100">
+                                    <MapPin className="w-4 h-4 text-orange-600" />
+                                    <h4 className="text-xs font-medium text-gray-800">Local SEO</h4>
+                                    <p className="text-[10px] text-gray-600">Better location searches</p>
                                 </div>
                             </div>
                         </div>
