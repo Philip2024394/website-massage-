@@ -1,5 +1,4 @@
 import React from 'react';
-import { Home, ShoppingBag, User, Bell } from 'lucide-react';
 
 interface GlobalFooterProps {
     currentPage: string;
@@ -40,27 +39,29 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
         }
     };
 
-    // Helper function to get icon and text color
-    const getColor = (buttonType: string) => {
-        const active = isActive(buttonType);
-        return active ? 'text-orange-600' : 'text-gray-500';
-    };
+    // Helper to build image icons with active state opacity
+    const imageIcon = (key: string, src: string, alt: string) => (
+        <img
+            src={src}
+            alt={alt}
+            loading="lazy"
+            className={`w-7 h-7 object-contain transition-opacity ${isActive(key) ? 'opacity-100' : 'opacity-60'}`}
+        />
+    );
 
     // Navigation items configuration - Always show notifications instead of search
-    const getSecondButton = () => {
-        return {
-            key: 'notifications',
-            icon: <Bell className={`w-6 h-6 ${getColor('notifications')}`} />,
-            label: 'Notifications',
-            onClick: () => onNavigate('notifications'),
-            badgeCount: unreadNotifications
-        };
-    };
+    const getSecondButton = () => ({
+        key: 'notifications',
+        icon: imageIcon('notifications', 'https://ik.imagekit.io/7grri5v7d/home%20buttons.png', 'Notifications'),
+        label: 'Notifications',
+        onClick: () => onNavigate('notifications'),
+        badgeCount: unreadNotifications
+    });
 
     const navigationItems = [
         {
             key: 'home',
-            icon: <Home className={`w-6 h-6 ${getColor('home')}`} />,
+            icon: imageIcon('home', 'https://ik.imagekit.io/7grri5v7d/home%20button.png', 'Home'),
             label: 'Home',
             onClick: () => onNavigate('home'),
             badgeCount: 0
@@ -68,17 +69,16 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
         getSecondButton(),
         {
             key: 'shop',
-            icon: <ShoppingBag className={`w-6 h-6 ${getColor('shop')}`} />,
+            icon: imageIcon('shop', 'https://ik.imagekit.io/7grri5v7d/home%20buttonss.png', 'Shop'),
             label: 'Shop',
             onClick: () => onNavigate('coin-shop'),
             badgeCount: 0
         },
         {
             key: 'profile',
-            icon: <User className={`w-6 h-6 ${getColor('profile')}`} />,
+            icon: imageIcon('profile', 'https://ik.imagekit.io/7grri5v7d/home%20buttonsss.png?updatedAt=1763217899529', 'Profile'),
             label: 'Profile',
             onClick: () => {
-                // Navigate to appropriate profile/dashboard based on user role
                 switch (userRole) {
                     case 'admin':
                         onNavigate('adminDashboard');
