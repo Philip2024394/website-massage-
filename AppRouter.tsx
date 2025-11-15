@@ -845,7 +845,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             />;
             
         case 'privacy':
-            return renderBackPage(PrivacyPolicyPage, t);
+            // Pass only the privacyPolicy translation namespace to avoid runtime errors
+            return renderBackPage(PrivacyPolicyPage, (t as any)?.privacyPolicy || t);
         case 'cookies-policy':
             return renderBackPage(CookiesPolicyPage);
             
