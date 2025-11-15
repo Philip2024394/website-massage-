@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Star, Heart, Share2, MapPin, MessageCircle, Phone, Clock } from 'lucide-react';
-import { AppDrawer } from '../components/AppDrawer';
+// Drawer is restricted to HomePage; not used here
 
 interface TherapistProfilePageProps {
     therapist: any;
@@ -45,7 +45,7 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
     places: _places
 }) => {
     const [isFavorited, setIsFavorited] = useState(false);
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    // No local drawer state; drawer is home-only
     const [selectedMassageTypes, setSelectedMassageTypes] = useState<Set<string>>(new Set());
 
     const formatPrice = (price: number) => {
@@ -133,10 +133,7 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
 
     return (
         <div className="min-h-screen bg-white">
-            <AppDrawer
-                isOpen={isMenuOpen}
-                onClose={() => setIsMenuOpen(false)}
-            />
+            {/* No AppDrawer here; drawer access is home-only */}
 
             <div className="w-full max-w-6xl mx-auto px-4 py-6 pb-4">
                 {/* Hero Section - Clean Text */}

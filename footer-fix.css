@@ -58,11 +58,41 @@ div[role="dialog"] {
   transform: translateZ(0); /* Force hardware acceleration and new layer */
 }
 
+/* Prevent invisible full-screen layers from swallowing clicks */
+.fixed.inset-0 {
+  pointer-events: none !important; /* Outer container doesn't capture events */
+}
+.fixed.inset-0 > * {
+  pointer-events: auto !important; /* Backdrop and panels remain interactive */
+}
+
 /* Force drawer backdrop and panel to top */
 .fixed.inset-0 > .absolute,
 .fixed.inset-0 .bg-white {
   z-index: 2147483647 !important;
   transform: translateZ(0); /* Force to top layer */
+}
+
+/* Ensure backdrop is under the panel to allow clicks inside drawer */
+.fixed.inset-0 > .absolute.bg-black {
+  z-index: 2147483646 !important; /* One below panel */
+}
+/* Common gradient panel containers get highest priority */
+.fixed.inset-0 > .absolute.bg-white,
+.fixed.inset-0 > .absolute[class*="bg-gradient-to-"] {
+  z-index: 2147483647 !important;
+}
+
+/* SAFETY NET: Also enforce for any dialog-scoped drawers, even if not using .fixed.inset-0 */
+[role="dialog"] > .absolute.bg-black {
+  z-index: 2147483646 !important; /* Backdrop below panel */
+}
+[role="dialog"] > .absolute {
+  z-index: 2147483647 !important; /* Panels above backdrop & footer */
+}
+[role="dialog"] > .absolute[class*="bg-gradient-to-"],
+[role="dialog"] > .absolute.bg-white {
+  z-index: 2147483647 !important; /* Ensure gradient/white panels are on top */
 }
 
 /* Z-Index Hierarchy (Footer Behind Drawers) */
@@ -105,6 +135,14 @@ div[role="dialog"] {
   transform: none !important;
   contain: none !important;
   isolation: auto !important;
+}
+
+/* Ensure page headers are always clickable above content layers (below drawers) */
+header {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 2147483645 !important; /* Below drawer (2147483647), above content/footer */
+  pointer-events: auto !important;
 }
 
 /* Remove all bottom padding that interferes with footer */

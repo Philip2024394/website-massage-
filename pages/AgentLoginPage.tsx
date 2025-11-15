@@ -3,9 +3,8 @@ import React, { useState } from 'react';
 
 import { agentAuth } from '../lib/auth';
 import { LogIn, UserPlus, Eye, EyeOff } from 'lucide-react';
-import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
-import { AppDrawer } from '../components/AppDrawer';
-import { React19SafeWrapper } from '../components/React19SafeWrapper';
+// No burger menu here
+// Drawer is home-only; not used here
 import PageNumberBadge from '../components/PageNumberBadge';
 
 interface AgentLoginPageProps {
@@ -20,7 +19,7 @@ const AgentLoginPage: React.FC<AgentLoginPageProps> = ({ onSuccess, _onBack, t: 
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    // No drawer state here; drawer is restricted to HomePage
     const [showPassword, setShowPassword] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -65,33 +64,10 @@ const AgentLoginPage: React.FC<AgentLoginPageProps> = ({ onSuccess, _onBack, t: 
                     <h1 className="text-2xl font-bold text-gray-800">
                         <span className="text-black">Inda</span><span className="text-orange-500">street</span>
                     </h1>
-                    <div className="flex items-center gap-3 text-gray-600">
-                        <button onClick={() => setIsMenuOpen(true)} title="Menu">
-                            <BurgerMenuIcon className="w-6 h-6" />
-                        </button>
-                    </div>
+                    <div className="flex items-center gap-3 text-gray-600" />
                 </div>
             </header>
 
-            {/* Global App Drawer */}
-            <React19SafeWrapper condition={isMenuOpen}>
-                <AppDrawer
-                    isOpen={isMenuOpen}
-                    onClose={() => setIsMenuOpen(false)}
-                    onMassageJobsClick={() => {}}
-                    onHotelPortalClick={() => {}}
-                    onVillaPortalClick={() => {}}
-                    onTherapistPortalClick={() => {}}
-                    onMassagePlacePortalClick={() => {}}
-                    onAgentPortalClick={() => {}}
-                    onCustomerPortalClick={() => {}}
-                    onAdminPortalClick={() => {}}
-                    onTermsClick={() => {}}
-                    onPrivacyClick={() => {}}
-                    therapists={[]}
-                    places={[]}
-                />
-            </React19SafeWrapper>
 
             {/* Main Content */}
             <main className="flex-1 flex items-center justify-center p-4 overflow-hidden">

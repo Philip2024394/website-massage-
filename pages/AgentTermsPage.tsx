@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Button from '../components/Button';
+import { getAgentTerms } from './agentTermsContent';
 
 interface AgentTermsPageProps {
     onAccept: () => Promise<void>;
@@ -17,6 +18,9 @@ const TermSection: React.FC<{ title: string; content: string }> = ({ title, cont
 const AgentTermsPage: React.FC<AgentTermsPageProps> = ({ onAccept, onLogout, t }) => {
     const [isLoading, setIsLoading] = useState(false);
 
+    // Safe defaults to protect from missing translations and strengthen legal coverage
+    const terms = useMemo(() => getAgentTerms(t), [t]);
+
     const handleAccept = async () => {
         setIsLoading(true);
         await onAccept();
@@ -25,36 +29,26 @@ const AgentTermsPage: React.FC<AgentTermsPageProps> = ({ onAccept, onLogout, t }
     
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
-             <header className="p-4 bg-white sticky top-0 z-10 shadow-sm flex items-center justify-center">
-                <h1 className="text-xl font-bold text-gray-800">{t.title}</h1>
+                 <header className="p-4 bg-white sticky top-0 z-10 shadow-sm flex items-center justify-center">
+                     <h1 className="text-xl font-bold text-gray-800">{terms.title}</h1>
             </header>
 
             <div className="flex-grow p-6 overflow-y-auto">
-                 <p className="text-center text-gray-600 mb-6">{t.agreement}</p>
+                 <p className="text-center text-gray-600 mb-6">{terms.agreement}</p>
                  <div className="space-y-6">
-                    <TermSection title={t.registrationFee.title} content={t.registrationFee.content} />
-                    <TermSection title={t.independentContractor.title} content={t.independentContractor.content} />
-                    <TermSection title={t.noExclusivity.title} content={t.noExclusivity.content} />
-                    <TermSection title={t.professionalConduct.title} content={t.professionalConduct.content} />
-                    <TermSection title={t.socialMediaPolicy.title} content={t.socialMediaPolicy.content} />
-                    <TermSection title={t.performance.title} content={t.performance.content} />
-                    <TermSection title={t.performanceTiers.title} content={t.performanceTiers.content} />
-                    <TermSection title={t.renewals.title} content={t.renewals.content} />
-                    <TermSection title={t.payment.title} content={t.payment.content} />
-                    <TermSection title={t.profileCompletion.title} content={t.profileCompletion.content} />
-                    <TermSection title={t.compliance.title} content={t.compliance.content} />
-                    <TermSection title={t.training.title} content={t.training.content} />
-                    <TermSection title={t.indemnification.title} content={t.indemnification.content} />
+                    {terms.sections.map((s: any, idx: number) => (
+                        <TermSection key={idx} title={s.title} content={s.content} />
+                    ))}
                 </div>
             </div>
 
             <footer className="p-4 bg-white border-t sticky bottom-0 z-10">
                 <div className="flex gap-4 pb-20">
                      <Button onClick={onLogout} variant="secondary" disabled={isLoading}>
-                        {t.declineButton}
+                        {terms.declineButton}
                     </Button>
                     <Button onClick={handleAccept} disabled={isLoading}>
-                        {isLoading ? 'Accepting...' : t.acceptButton}
+                        {isLoading ? 'Accepting...' : terms.acceptButton}
                     </Button>
                 </div>
             </footer>

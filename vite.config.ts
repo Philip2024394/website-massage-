@@ -1,9 +1,13 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import path from 'path'
+import path, { dirname } from 'path'
+import { fileURLToPath } from 'url'
 
 // Force Rollup to use JavaScript fallback instead of native binaries
 process.env.ROLLUP_NO_NATIVE = '1'
+
+// Ensure __dirname is available in ESM context
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -23,7 +27,7 @@ export default defineConfig({
     },
   },
   server: {
-    port: 3000,
+    port: Number(process.env.PORT) || Number(process.env.VITE_PORT) || 3000,
     host: true,
     open: true,
     headers: {
@@ -49,7 +53,17 @@ export default defineConfig({
       // Let Vite automatically find an available port for HMR
     },
     // Graceful shutdown handling
+    // Allow auto-bumping to a free port to prevent exit code 1 when 3000 is busy
     strictPort: false,
+  },
+  // Ensure preview also uses a low, predictable port
+  preview: {
+    port: 4000,
+    host: true,
+    open: true,
+    headers: {
+      'Cache-Control': 'no-store',
+    },
   },
   build: {
     outDir: 'dist',

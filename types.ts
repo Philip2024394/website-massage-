@@ -388,6 +388,9 @@ export interface Agent {
     totalEarnings?: number; // Total earnings
     clients?: string; // Client list JSON
     idCardImage?: string; // ID card image URL
+    profileImage?: string; // Agent profile photo URL
+    age?: number; // Agent age
+    religion?: string; // Agent religion
     
     // Bank details
     bankName?: string; // Bank name
@@ -397,6 +400,13 @@ export interface Agent {
     
     // Additional identifier
     id?: string; // Alternative ID field
+
+    // Compliance agreements (optional)
+    agreedTaxResponsibility?: boolean;
+    agreedUniformRequirement?: boolean;
+    agreedTransportation?: boolean;
+    agreedNoCriminalRecord?: boolean;
+    agreedIdPresentation?: boolean;
 }
 
 export interface UserLocation {
@@ -767,4 +777,18 @@ export interface UserCoins {
     lifetimeEarned: number;
     lifetimeSpent: number;
     updatedAt?: string;
+}
+
+// Monthly aggregated agent performance metrics
+export interface MonthlyAgentMetrics {
+    $id?: string; // Appwrite document ID
+    agentId: string;
+    agentCode: string;
+    month: string; // Format YYYY-MM
+    newSignUpsCount: number;
+    recurringSignUpsCount: number;
+    targetMet: boolean;
+    streakCount: number;
+    commissionRateApplied: number; // 20 or 23
+    calculatedAt: string; // ISO timestamp of snapshot generation
 }

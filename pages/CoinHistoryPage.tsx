@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { TrendingUp, Clock, Gift, Calendar, AlertCircle, Award, ShoppingBag, CheckCircle } from 'lucide-react';
 import { coinService, CoinTransaction, CoinBalance } from '../lib/coinService';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
-import { AppDrawer } from '../components/AppDrawer';
+// Drawer restricted to HomePage only
 
 interface CoinHistoryPageProps {
     userId?: string;
@@ -34,7 +34,7 @@ const CoinHistoryPage: React.FC<CoinHistoryPageProps> = ({
 }) => {
     const [transactions, setTransactions] = useState<CoinTransaction[]>([]);
     const [filterType, setFilterType] = useState<'all' | 'earn' | 'spend' | 'expire'>('all');
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    // Drawer is home-only; do not maintain local drawer state here
     const [coinBalance, setCoinBalance] = useState<CoinBalance>({
         total: 0,
         active: 0,
@@ -198,8 +198,10 @@ const CoinHistoryPage: React.FC<CoinHistoryPageProps> = ({
                                         else if (dashboardType === 'therapist') onNavigate('therapistDashboard');
                                     }
                                 } else {
-                                    // Only use generic drawer for standalone access
-                                    setIsMenuOpen(true);
+                                    // Drawer is home-only; send standalone users to home
+                                    if (onNavigate) {
+                                        onNavigate('home');
+                                    }
                                 }
                             }} 
                             title={dashboardType !== 'standalone' ? "Back to Dashboard" : "Menu"}
@@ -393,17 +395,7 @@ const CoinHistoryPage: React.FC<CoinHistoryPageProps> = ({
                 }
             `}</style>
 
-            {/* Global App Drawer - Same as HomePage */}
-            {isMenuOpen && (
-                <AppDrawer
-                    isOpen={isMenuOpen}
-                    onClose={() => {
-                        console.log('🍔 CoinHistory AppDrawer onClose called');
-                        setIsMenuOpen(false);
-                    }}
-                    onNavigate={onNavigate}
-                />
-            )}
+            {/* No AppDrawer here; drawer access is home-only */}
         </div>
     );
 };

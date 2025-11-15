@@ -137,6 +137,8 @@ export function useTranslations(language?: 'en' | 'id') {
             }
             return result;
         },
+        // Expose the active language dictionary for object-style access
+        dict: finalTranslations,
         loading,
         refresh: loadTranslations,
         hasLanguage: !!(translations[currentLanguage] && Object.keys(translations[currentLanguage]).length > 0),

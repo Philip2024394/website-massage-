@@ -4,7 +4,101 @@
   "collections": [],
   "buckets": [],
   "teams": [],
-  "databases": [],
+  "databases": [
+    {
+      "databaseId": "68f76ee1000e64ca8d05",
+      "name": "main",
+      "enabled": true,
+      "collections": [
+        {
+          "collectionId": "agents_collection_id",
+          "name": "Agents",
+          "enabled": true,
+          "documentSecurity": true,
+          "attributes": [
+            {"type": "string", "key": "name", "size": 255, "required": true, "array": false},
+            {"type": "string", "key": "email", "size": 255, "required": true, "array": false},
+            {"type": "string", "key": "password", "size": 255, "required": true, "array": false},
+            {"type": "string", "key": "whatsappNumber", "size": 50, "required": true, "array": false},
+            {"type": "string", "key": "code", "size": 20, "required": true, "array": false},
+            {"type": "enum", "key": "commissionTier", "elements": ["base20", "base23"], "required": true, "array": false},
+            {"type": "integer", "key": "streakMonths", "required": true, "array": false},
+            {"type": "integer", "key": "newSignUpsThisMonth", "required": true, "array": false},
+            {"type": "integer", "key": "recurringSignUpsThisMonth", "required": true, "array": false},
+            {"type": "boolean", "key": "termsAccepted", "required": true, "array": false},
+            {"type": "boolean", "key": "complianceAccepted", "required": true, "array": false},
+            {"type": "boolean", "key": "marketingAccepted", "required": true, "array": false},
+            {"type": "datetime", "key": "termsAcceptedAt", "required": false, "array": false},
+            {"type": "datetime", "key": "complianceAcceptedAt", "required": false, "array": false},
+            {"type": "datetime", "key": "marketingAcceptedAt", "required": false, "array": false},
+            {"type": "string", "key": "bankIban", "size": 50, "required": false, "array": false},
+            {"type": "string", "key": "bankSwift", "size": 20, "required": false, "array": false},
+            {"type": "boolean", "key": "payoutEnabled", "required": true, "array": false},
+            {"type": "float", "key": "totalEarnings", "required": false, "array": false},
+            {"type": "datetime", "key": "createdAt", "required": true, "array": false}
+          ],
+          "indexes": [
+            {"key": "idx_code_unique", "type": "unique", "attributes": ["code"], "orders": ["ASC"]},
+            {"key": "idx_commissionTier", "type": "key", "attributes": ["commissionTier"], "orders": ["ASC"]},
+            {"key": "idx_createdAt", "type": "key", "attributes": ["createdAt"], "orders": ["DESC"]}
+          ]
+        },
+        {
+          "collectionId": "agent_visits_collection_id",
+          "name": "Agent Visits",
+          "enabled": true,
+          "documentSecurity": true,
+          "attributes": [
+            {"type": "string", "key": "agentId", "size": 255, "required": true, "array": false},
+            {"type": "string", "key": "agentCode", "size": 50, "required": true, "array": false},
+            {"type": "enum", "key": "providerType", "elements": ["therapist", "place"], "required": true, "array": false},
+            {"type": "string", "key": "providerId", "size": 255, "required": false, "array": false},
+            {"type": "string", "key": "providerName", "size": 255, "required": true, "array": false},
+            {"type": "datetime", "key": "visitDate", "required": true, "array": false},
+            {"type": "float", "key": "locationLat", "required": true, "array": false},
+            {"type": "float", "key": "locationLng", "required": true, "array": false},
+            {"type": "string", "key": "locationAddress", "size": 1000, "required": true, "array": false},
+            {"type": "datetime", "key": "locationTimestamp", "required": true, "array": false},
+            {"type": "string", "key": "meetingNotes", "size": 5000, "required": true, "array": false},
+            {"type": "datetime", "key": "callbackAt", "required": false, "array": false},
+            {"type": "enum", "key": "membershipAgreed", "elements": ["none", "1month", "3month", "6month", "1year"], "required": true, "array": false},
+            {"type": "enum", "key": "status", "elements": ["pending", "completed", "followup_required"], "required": true, "array": false},
+            {"type": "datetime", "key": "createdAt", "required": true, "array": false},
+            {"type": "datetime", "key": "updatedAt", "required": false, "array": false}
+          ],
+          "indexes": [
+            {"key": "idx_agentId", "type": "key", "attributes": ["agentId"], "orders": ["ASC"]},
+            {"key": "idx_visitDate", "type": "key", "attributes": ["visitDate"], "orders": ["DESC"]},
+            {"key": "idx_status", "type": "key", "attributes": ["status"], "orders": ["ASC"]},
+            {"key": "idx_membershipAgreed", "type": "key", "attributes": ["membershipAgreed"], "orders": ["ASC"]},
+            {"key": "idx_providerType", "type": "key", "attributes": ["providerType"], "orders": ["ASC"]}
+          ]
+        },
+        {
+          "collectionId": "monthly_agent_metrics_collection_id",
+          "name": "Monthly Agent Metrics",
+          "enabled": true,
+          "documentSecurity": true,
+          "attributes": [
+            {"type": "string", "key": "agentId", "size": 255, "required": true, "array": false},
+            {"type": "string", "key": "agentCode", "size": 50, "required": true, "array": false},
+            {"type": "string", "key": "month", "size": 7, "required": true, "array": false},
+            {"type": "integer", "key": "newSignUpsCount", "required": true, "array": false},
+            {"type": "integer", "key": "recurringSignUpsCount", "required": true, "array": false},
+            {"type": "boolean", "key": "targetMet", "required": true, "array": false},
+            {"type": "integer", "key": "streakCount", "required": true, "array": false},
+            {"type": "float", "key": "commissionRateApplied", "required": true, "array": false},
+            {"type": "datetime", "key": "calculatedAt", "required": true, "array": false}
+          ],
+          "indexes": [
+            {"key": "idx_agent_month", "type": "key", "attributes": ["agentId", "month"], "orders": ["ASC", "ASC"]},
+            {"key": "idx_month", "type": "key", "attributes": ["month"], "orders": ["DESC"]},
+            {"key": "idx_targetMet", "type": "key", "attributes": ["targetMet"], "orders": ["ASC"]}
+          ]
+        }
+      ]
+    }
+  ],
   "hosting": {
     "rules": [
       {

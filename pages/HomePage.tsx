@@ -529,6 +529,7 @@ const HomePage: React.FC<HomePageProps> = ({
             {/* Global App Drawer - Chrome Safe Rendering */}
             <React19SafeWrapper condition={isMenuOpen}>
                 <AppDrawer
+                    isHome={true}
                     isOpen={isMenuOpen}
                     onClose={() => {
                         console.log('🍔 AppDrawer onClose called');

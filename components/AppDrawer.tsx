@@ -9,6 +9,8 @@ import {
 interface AppDrawerProps {
     isOpen: boolean;
     onClose: () => void;
+    // Restrict rendering to HomePage context only
+    isHome?: boolean;
     
     // Translation function
     t?: (key: string) => string;
@@ -34,6 +36,7 @@ interface AppDrawerProps {
 export const AppDrawer: React.FC<AppDrawerProps> = ({
     isOpen,
     onClose,
+    isHome,
     t,
     onMassageJobsClick,
     onHotelPortalClick,
@@ -51,6 +54,8 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
 }) => {
     console.log('🚪 AppDrawer rendered with isOpen:', isOpen);
     console.log('🔤 AppDrawer t prop:', { t, tType: typeof t, tIsFunction: typeof t === 'function' });
+    // Enforce drawer availability only on HomePage
+    if (!isHome) return null;
     if (!isOpen) return null;
 
     // Default fallback translations

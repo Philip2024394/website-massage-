@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import { account, databases, DATABASE_ID, COLLECTIONS, ID } from '../lib/appwrite';
 import { saveSessionCache } from '../lib/sessionManager';
 import { checkRateLimit, handleAppwriteError, resetRateLimit } from '../lib/rateLimitUtils';
-import { LogIn, UserPlus } from 'lucide-react';
+import { LogIn, UserPlus, Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import LocationPopup from '../components/LocationPopup';
-import PasswordInput from '../components/PasswordInput';
 
 interface AgentAuthPageProps {
     onRegister: (name: string, email: string) => Promise<{ success: boolean, message: string }>;
@@ -27,6 +26,7 @@ const AgentAuthPage: React.FC<AgentAuthPageProps> = ({ onRegister, onLogin, onBa
     const [loading, setLoading] = useState(false);
     const [showLocationPopup, setShowLocationPopup] = useState(false);
     const [loginSuccess, setLoginSuccess] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     // Make rate limit reset functions available in browser console for testing
     React.useEffect(() => {
@@ -78,80 +78,137 @@ const AgentAuthPage: React.FC<AgentAuthPageProps> = ({ onRegister, onLogin, onBa
             }
 
             if (isSignUp) {
-                // Create account
-                console.log('📝 Creating agent account for:', email);
-                const defaultName = email.split('@')[0]; // Generate name from email
-                const newUser = await account.create(
-                    'unique()',
-                    email,
-                    password,
-                    defaultName
-                );
+                console.log('📝 Starting agent signup flow for:', email);
+                const defaultName = email.split('@')[0];
 
-                console.log('✅ Account created successfully!', { userId: newUser.$id });
+                // Create Appwrite user account
+                const newUser = await account.create('unique()', email, password, defaultName);
+                console.log('✅ Appwrite user created', { userId: newUser.$id });
 
-                // Automatically login after signup
-                console.log('🔐 Creating session...');
+                // Create a temporary session to write the agent document, then force logout
                 await account.createEmailPasswordSession(email, password);
-                
-                // Get user details
                 const user = await account.get();
-                
-                // Create agent record in database matching your exact schema
-                const agentData = {
-                    // Required fields per your schema
-                    agentId: user.$id,                              // Required: Agent identifier
-                    name: defaultName,                              // Required: Agent name from email
-                    email: email,                                   // Required: Email address
-                    contactNumber: 'To be updated',                 // Required: Contact number
-                    agentCode: `AGT${Date.now().toString().slice(-6)}`, // Required: Unique agent code
-                    hasAcceptedTerms: true,                         // Required: Terms acceptance
-                    isActive: true,                                 // Required: Account status
-                    
-                    // Optional fields with defaults
-                    assignedDate: new Date().toISOString(),         // Assignment date
-                    region: null,                                   // Region assignment
-                    successRate: null,                              // Success rate (0-1)
-                    tier: 'Standard',                               // Agent tier
-                    lastLogin: null,                                // Last login timestamp
-                    isLive: true,                                   // 🚀 AUTO-ACTIVE: Live status (automatically active)
-                    activeTherapists: 0,                            // Active therapist count
-                    password: '',                                   // Password (managed by Auth)
-                    whatsappNumber: null,                           // WhatsApp number
-                    commissionRate: 20,                             // Commission rate (max 23)
-                    createdAt: new Date().toISOString(),            // Creation timestamp
-                    totalEarnings: 0.0,                             // Total earnings
-                    clients: '[]',                                  // Client list JSON
-                    idCardImage: null                               // ID card image URL
+
+                // Generate referral code (uppercase, length 8)
+                const rawCode = `AGT${Date.now().toString().slice(-6)}`.toUpperCase();
+
+                // Pruned agent data: only schema-documented base + extension attributes (exclude unsupported `code` key)
+                const fullAgentData: Record<string, any> = {
+                    // Base required
+                    agentId: user.$id,
+                    name: defaultName,
+                    email,
+                    contactNumber: 'To be updated',
+                    whatsappNumber: 'To be updated',
+                    agentCode: rawCode, // legacy key retained
+                    hasAcceptedTerms: true,
+                    isActive: true,
+                    // Extension required (excluding `code` which is not in current collection)
+                    streakMonths: 0,
+                    newSignUpsThisMonth: 0,
+                    recurringSignUpsThisMonth: 0,
+                    complianceAccepted: false,
+                    marketingAccepted: false,
+                    payoutEnabled: false,
+                    createdAt: new Date().toISOString(),
+                    // Optional but documented (safe defaults)
+                    tier: 'Standard',
+                    commissionRate: 20,
+                    totalEarnings: 0.0,
+                    clients: '[]',
+                    isLive: false,
+                    activeTherapists: 0,
+                    assignedDate: new Date().toISOString(),
+                    region: null,
+                    successRate: null,
+                    lastLogin: null,
+                    idCardImage: null
                 };
-                
-                console.log('📝 Creating agent database record...');
-                const agentDoc = await databases.createDocument(
-                    DATABASE_ID,
-                    COLLECTIONS.AGENTS,
-                    ID.unique(),
-                    agentData
+
+                // Minimal fallback set (guaranteed base schema)
+                const minimalAgentData = {
+                    // Core required (base schema)
+                    agentId: user.$id,
+                    name: defaultName,
+                    email,
+                    contactNumber: 'To be updated',
+                    agentCode: rawCode, // legacy key (retain for compatibility)
+                    hasAcceptedTerms: true,
+                    isActive: true,
+                    whatsappNumber: 'To be updated',
+                    // Extension required attributes (excluding unsupported `code`)
+                    streakMonths: 0,
+                    newSignUpsThisMonth: 0,
+                    recurringSignUpsThisMonth: 0,
+                    complianceAccepted: false,
+                    marketingAccepted: false,
+                    payoutEnabled: false, // agreements + banking not yet complete
+                    createdAt: new Date().toISOString(),
+                    // Additional safe defaults (non-required but commonly present)
+                    totalEarnings: 0.0,
+                    activeTherapists: 0,
+                    isLive: false,
+                    clients: '[]'
+                };
+
+                // Whitelist allowed keys based on AGENT_SCHEMA_ALIGNED.md (excluding extension fields causing errors)
+                const allowedKeys = [
+                    'agentId','name','email','contactNumber','agentCode','hasAcceptedTerms','isActive',
+                    'assignedDate','region','successRate','tier','lastLogin','isLive','activeTherapists',
+                    'password','whatsappNumber','commissionRate','createdAt','totalEarnings','clients','idCardImage',
+                    // Extension fields confirmed accepted so far (omit unsupported commissionTier and termsAccepted)
+                    'streakMonths','newSignUpsThisMonth','recurringSignUpsThisMonth',
+                    'complianceAccepted','marketingAccepted','payoutEnabled'
+                ];
+                const sanitize = (data: Record<string, any>) => Object.fromEntries(
+                    Object.entries(data).filter(([k]) => allowedKeys.includes(k))
                 );
-                
-                // Save session cache
-                saveSessionCache({
-                    type: 'agent',
-                    id: user.$id,
-                    email: user.email,
-                    documentId: agentDoc.$id,
-                    data: agentDoc
-                });
-                
-                console.log('✅ Agent account created and logged in successfully!');
-                
-                // Call the onRegister prop for any additional logic
-                const result = await onRegister(defaultName, email);
-                if (result.success) {
-                    setError('✅ Account created successfully! Redirecting to dashboard...');
-                } else {
-                    console.warn('⚠️ onRegister callback failed:', result.message);
-                    setError('✅ Account created successfully! Redirecting to dashboard...');
+
+                let agentDoc;
+                try {
+                    console.log('🗃️ Attempting full agent document creation (sanitized)...');
+                    agentDoc = await databases.createDocument(
+                        DATABASE_ID,
+                        COLLECTIONS.AGENTS,
+                        ID.unique(),
+                        sanitize(fullAgentData)
+                    );
+                    console.log('✅ Full agent document created');
+                } catch (docErr: any) {
+                    console.warn('⚠️ Full agent create failed, retrying with minimal sanitized schema:', docErr?.message);
+                    try {
+                        agentDoc = await databases.createDocument(
+                            DATABASE_ID,
+                            COLLECTIONS.AGENTS,
+                            ID.unique(),
+                            sanitize(minimalAgentData)
+                        );
+                        console.log('✅ Minimal agent document created');
+                    } catch (fallbackErr: any) {
+                        console.error('❌ Fallback agent document creation failed:', fallbackErr);
+                        setError(handleAppwriteError(fallbackErr, 'agent document creation'));
+                        setLoading(false);
+                        return;
+                    }
                 }
+
+                console.log('✅ Agent account fully set up');
+
+                // Sign out to require explicit sign-in, per requested flow
+                try {
+                    await account.deleteSession('current');
+                    console.log('🔒 Logged out after signup to require sign-in');
+                } catch (e) {
+                    console.warn('⚠️ Failed to delete session after signup (may already be cleared):', (e as any)?.message);
+                }
+
+                // Switch to Sign In tab and prompt the user to continue
+                setIsSignUp(false);
+                setPassword('');
+                resetRateLimit('agent-signup');
+                setError('✅ Account created. Please sign in to continue.');
+                setLoading(false);
+                return;
             } else {
                 // Login
                 console.log('🔐 Creating session...');
@@ -256,45 +313,57 @@ const AgentAuthPage: React.FC<AgentAuthPageProps> = ({ onRegister, onLogin, onBa
     };
 
     return (
-        <div 
-            className="min-h-screen flex items-center justify-center p-4 relative"
-            style={{
-                backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/garden%20forest.png?updatedAt=1761334454082)',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat'
-            }}
-        >
-            {/* Overlay for better readability */}
-            <div className="absolute inset-0 bg-black/40"></div>
-
-            {/* Home Button */}
-            <button
-                onClick={onBack}
-                className="fixed top-6 left-6 w-12 h-12 bg-orange-500 hover:bg-orange-600 rounded-full shadow-lg flex items-center justify-center transition-all z-20 border border-orange-400"
-                aria-label="Go to home"
-            >
-                <HomeIcon className="w-6 h-6 text-white" />
-            </button>
-
-            {/* Glass Effect Login Container */}
-            <div className="max-w-md w-full bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-8 relative z-10 border border-white/20">
-                <div className="text-center mb-8">
-                    <h1 className="text-4xl font-bold mb-2">
-                        <span className="text-white">Inda</span>
-                        <span className="text-orange-400">Street</span>
+        <div className="flex flex-col min-h-screen bg-gray-50">
+            {/* Global Header (parity with hotel layout) */}
+            <header className="bg-white p-4 shadow-md z-[9997] flex-shrink-0">
+                <div className="flex justify-between items-center">
+                    <h1 className="text-2xl font-bold text-gray-800">
+                        <span className="text-black">Inda</span><span className="text-orange-500">street</span>
                     </h1>
-                    <p className="text-white/90 font-medium">Agent Account</p>
+                    <button
+                        onClick={onBack}
+                        className="w-10 h-10 bg-orange-500 hover:bg-orange-600 rounded-full shadow-lg flex items-center justify-center transition-all border border-orange-400"
+                        aria-label="Go to home"
+                    >
+                        <HomeIcon className="w-6 h-6 text-white" />
+                    </button>
                 </div>
+            </header>
 
-                <div className="flex mb-6 bg-white/10 backdrop-blur-sm rounded-lg p-1 border border-white/20">
+            {/* Main Content with Background */}
+            <main
+                className="flex-1 flex items-start justify-center px-4 py-2 overflow-y-auto relative bg-cover bg-center bg-no-repeat min-h-0 mb-[var(--footer-height,64px)]"
+                style={{
+                    backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/start%20your%20journey%20now.png?updatedAt=1763196560458)'
+                }}
+            >
+                <div className="max-w-md w-full relative z-10 max-h-full overflow-y-auto pt-4 sm:pt-6" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                    {/* Header under global header */}
+                    <div className="text-center mb-4 sm:mb-6">
+                        <h2 className="text-4xl sm:text-5xl font-bold mb-2 sm:mb-3 text-gray-800 drop-shadow-lg">Agent</h2>
+                        <p className="text-gray-600 text-xs sm:text-sm drop-shadow">Earn commissions and grow the network</p>
+                    </div>
+
+                    <div className="mb-3 sm:mb-4 min-h-[50px] flex items-center">
+                        {error && (
+                            <div className={`w-full p-2 sm:p-3 rounded-lg text-sm ${
+                                error.includes('✅') || error.includes('Switched to Sign In mode')
+                                    ? 'bg-green-50 text-green-700 border border-green-200'
+                                    : 'bg-red-50 text-red-700 border border-red-200'
+                            }`}>
+                                {error}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="flex mb-4 sm:mb-6 bg-white/95 backdrop-blur-sm rounded-lg p-1 border border-white/20 shadow-lg">
                     <button
                         onClick={() => {
                             setIsSignUp(false);
-                            setError(''); // Clear error when switching modes
+                            setError('');
                         }}
-                        className={`flex-1 py-2 px-4 rounded-md transition-all ${
-                            !isSignUp ? 'bg-orange-500 shadow-lg text-white font-semibold' : 'text-white/90 hover:bg-white/5'
+                        className={`flex-1 py-3 px-4 rounded-lg transition-all font-medium ${
+                            !isSignUp ? 'bg-orange-500 text-white shadow-sm' : 'text-gray-700 hover:text-orange-500 hover:bg-orange-50/80'
                         }`}
                     >
                         Sign In
@@ -302,74 +371,87 @@ const AgentAuthPage: React.FC<AgentAuthPageProps> = ({ onRegister, onLogin, onBa
                     <button
                         onClick={() => {
                             setIsSignUp(true);
-                            setError(''); // Clear error when switching modes
+                            setError('');
                         }}
-                        className={`flex-1 py-2 px-4 rounded-md transition-all ${
-                            isSignUp ? 'bg-orange-500 shadow-lg text-white font-semibold' : 'text-white/90 hover:bg-white/5'
+                        className={`flex-1 py-3 px-4 rounded-lg transition-all font-medium ${
+                            isSignUp ? 'bg-orange-500 text-white shadow-sm' : 'text-gray-700 hover:text-orange-500 hover:bg-orange-50/80'
                         }`}
                     >
                         Create Account
                     </button>
                 </div>
 
-                {error && (
-                    <div className={`mb-4 p-3 rounded-lg backdrop-blur-sm border ${
-                        error.includes('created') || error.includes('Switched to Sign In mode')
-                            ? 'bg-blue-500/20 text-blue-100 border-blue-400/30' 
-                            : 'bg-red-500/20 text-red-100 border-red-400/30'
-                    }`}>
-                        {error}
-                    </div>
-                )}
+                    <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-800 mb-2 drop-shadow">
+                                Email Address
+                            </label>
+                            <div className="relative">
+                                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-orange-500 w-5 h-5 z-10" />
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="Enter your email"
+                                    className="w-full pl-12 pr-4 py-3 rounded-xl border border-white/20 focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400 transition-all bg-white/95 backdrop-blur-sm text-gray-900 placeholder-gray-500 shadow-lg"
+                                    required
+                                />
+                            </div>
+                        </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-white/90 mb-2">
-                            Email
-                        </label>
-                        <input
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
-                            placeholder="agent@example.com"
-                            required
-                            onKeyDown={(e) => e.key === 'Enter' && handleSubmit}
-                        />
-                    </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-800 mb-2 drop-shadow">
+                                Password
+                            </label>
+                            <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-orange-500 w-5 h-5 z-10" />
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder={isSignUp ? 'Create a password (min 8 characters)' : 'Enter your password'}
+                                    className="w-full pl-12 pr-12 py-3 rounded-xl border border-white/20 focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400 transition-all bg-white/95 backdrop-blur-sm text-gray-900 placeholder-gray-500 shadow-lg"
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-orange-500 hover:text-orange-400 transition-colors z-10"
+                                >
+                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                </button>
+                            </div>
+                        </div>
 
-                    <div onKeyDown={(e) => e.key === 'Enter' && handleSubmit}>
-                        <PasswordInput
-                            value={password}
-                            onChange={setPassword}
-                            label="Password"
-                            placeholder="Enter your password"
-                            required
-                            minLength={8}
-                        />
-                    </div>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full py-4 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-xl hover:shadow-2xl backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {loading ? (
+                                <div className="flex items-center justify-center">
+                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
+                                    {isSignUp ? 'Creating Account...' : 'Signing In...'}
+                                </div>
+                            ) : (
+                                <div className="flex items-center justify-center">
+                                    {isSignUp ? <UserPlus className="w-5 h-5 mr-2" /> : <LogIn className="w-5 h-5 mr-2" />}
+                                    {isSignUp ? 'Create Agent Account' : 'Sign In as Agent'}
+                                </div>
+                            )}
+                        </button>
+                    </form>
+                </div>
+            </main>
 
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 px-4 mt-6 shadow-lg rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium flex items-center justify-center gap-2"
-                    >
-                        {loading ? (
-                            'Processing...'
-                        ) : isSignUp ? (
-                            <>
-                                <UserPlus className="w-5 h-5" />
-                                Create Account
-                            </>
-                        ) : (
-                            <>
-                                <LogIn className="w-5 h-5" />
-                                Sign In
-                            </>
-                        )}
-                    </button>
-                </form>
-            </div>
+            {/* Hide scrollbars */}
+            <style>{`
+                .max-w-md::-webkit-scrollbar { display: none; }
+                @media (max-height: 600px) {
+                    .space-y-4 > * + * { margin-top: 0.75rem; }
+                    .space-y-6 > * + * { margin-top: 1rem; }
+                }
+            `}</style>
 
             {/* Location Popup */}
             <LocationPopup

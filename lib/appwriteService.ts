@@ -1,4 +1,5 @@
 // Main image URLs for therapist cards on HOME PAGE (stored in Appwrite)
+import type { MonthlyAgentMetrics } from '../types';
 const THERAPIST_MAIN_IMAGES = [
     'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4181001758526d84/view?project=68f23b11000d25eb3664',
     'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4182001d05a11a19/view?project=68f23b11000d25eb3664',
@@ -952,6 +953,134 @@ export const agentService = {
         } catch (error) {
             console.error('Error updating agent:', error);
             throw error;
+        }
+    }
+};
+
+// ================================
+// Admin Agent Overview Aggregations
+// ================================
+export const adminAgentOverviewService = {
+    /** Count therapists referencing an agentCode */
+    async countTherapistsByAgentCode(agentCode: string): Promise<number> {
+        try {
+            const docs = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.therapists,
+                [Query.equal('agentCode', agentCode)]
+            );
+            return docs.total; // Appwrite provides total
+        } catch (error) {
+            console.error('Error counting therapists by agentCode:', error);
+            return 0;
+        }
+    },
+    /** Count places referencing an agentCode */
+    async countPlacesByAgentCode(agentCode: string): Promise<number> {
+        try {
+            const docs = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.places,
+                [Query.equal('agentCode', agentCode)]
+            );
+            return docs.total;
+        } catch (error) {
+            console.error('Error counting places by agentCode:', error);
+            return 0;
+        }
+    },
+    /** Count visits logged for agent */
+    async countVisits(agentId: string): Promise<number> {
+        try {
+            const docs = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.agentVisits,
+                [Query.equal('agentId', agentId)]
+            );
+            return docs.total;
+        } catch (error) {
+            console.error('Error counting visits:', error);
+            return 0;
+        }
+    },
+    /** Get latest monthly metrics snapshot */
+    async getLatestMonthlySnapshot(agentId: string): Promise<MonthlyAgentMetrics | null> {
+        try {
+            const docs = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                'monthly_agent_metrics_collection_id',
+                [
+                    Query.equal('agentId', agentId),
+                    Query.orderDesc('month'),
+                    Query.limit(1)
+                ]
+            );
+            const doc = docs.documents[0];
+            if (!doc) return null;
+            return {
+                $id: doc.$id,
+                agentId: doc.agentId,
+                agentCode: doc.agentCode,
+                month: doc.month,
+                newSignUpsCount: doc.newSignUpsCount,
+                recurringSignUpsCount: doc.recurringSignUpsCount,
+                targetMet: doc.targetMet,
+                streakCount: doc.streakCount,
+                commissionRateApplied: doc.commissionRateApplied,
+                calculatedAt: doc.calculatedAt
+            };
+        } catch (error) {
+            console.error('Error fetching latest monthly snapshot:', error);
+            return null;
+        }
+    },
+    /** Derive commission due placeholder (base + recurring) */
+    calculateCommissionDue(snapshot: MonthlyAgentMetrics | null): number {
+        if (!snapshot) return 0;
+        const baseRate = snapshot.commissionRateApplied || 20; // percent
+        const recurringRate = snapshot.targetMet ? 10 : 0;
+        // Placeholder monetary assumption: each signup worth fixed 100 unit (replace with real booking revenue later)
+        const assumedValuePerSignup = 100;
+        const base = (snapshot.newSignUpsCount * assumedValuePerSignup) * (baseRate / 100);
+        const recurring = (snapshot.recurringSignUpsCount * assumedValuePerSignup) * (recurringRate / 100);
+        return Math.round(base + recurring);
+    },
+    /** List overview rows for all agents */
+    async listAgentOverviews(): Promise<Array<{
+        agentId: string; name: string; agentCode: string; tier?: string; visits: number; therapistSignups: number; placeSignups: number; monthNew: number; monthRecurring: number; targetMet: boolean; streakCount: number; commissionDue: number; payoutReady: boolean;
+    }>> {
+        try {
+            const agents = await agentService.getAll();
+            const rows: Array<any> = [];
+            for (const a of agents) {
+                const agentId = a.$id || a.agentId;
+                const [therapistCount, placeCount, visitCount, snapshot] = await Promise.all([
+                    this.countTherapistsByAgentCode(a.agentCode),
+                    this.countPlacesByAgentCode(a.agentCode),
+                    this.countVisits(agentId),
+                    this.getLatestMonthlySnapshot(agentId)
+                ]);
+                const commissionDue = this.calculateCommissionDue(snapshot);
+                rows.push({
+                    agentId,
+                    name: a.name,
+                    agentCode: a.agentCode,
+                    tier: a.tier,
+                    visits: visitCount,
+                    therapistSignups: therapistCount,
+                    placeSignups: placeCount,
+                    monthNew: snapshot?.newSignUpsCount || 0,
+                    monthRecurring: snapshot?.recurringSignUpsCount || 0,
+                    targetMet: !!snapshot?.targetMet,
+                    streakCount: snapshot?.streakCount || 0,
+                    commissionDue,
+                    payoutReady: !!(a.bankAccountNumber && a.bankName && a.bankAccountName)
+                });
+            }
+            return rows;
+        } catch (error) {
+            console.error('Error building agent overviews:', error);
+            return [];
         }
     }
 };
@@ -2997,13 +3126,60 @@ export const agentVisitService = {
     }
 };
 
+// ================================
+// Monthly Agent Metrics Service
+// ================================
+
+export const monthlyAgentMetricsService = {
+    /**
+     * List monthly metrics snapshots for an agent (latest first)
+     */
+    async listByAgent(agentId: string, limit: number = 12): Promise<MonthlyAgentMetrics[]> {
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                'monthly_agent_metrics_collection_id', // collection ID placeholder; ensure config mapping added if needed
+                [
+                    Query.equal('agentId', agentId),
+                    Query.orderDesc('month'),
+                    Query.limit(limit)
+                ]
+            );
+            return response.documents.map((doc: any) => ({
+                $id: doc.$id,
+                agentId: doc.agentId,
+                agentCode: doc.agentCode,
+                month: doc.month,
+                newSignUpsCount: doc.newSignUpsCount,
+                recurringSignUpsCount: doc.recurringSignUpsCount,
+                targetMet: doc.targetMet,
+                streakCount: doc.streakCount,
+                commissionRateApplied: doc.commissionRateApplied,
+                calculatedAt: doc.calculatedAt,
+            }));
+        } catch (error) {
+            console.error('Error listing monthly agent metrics:', error);
+            return [];
+        }
+    },
+    /**
+     * Get the latest snapshot for an agent
+     */
+    async getLatest(agentId: string): Promise<MonthlyAgentMetrics | null> {
+        const list = await this.listByAgent(agentId, 1);
+        return list[0] || null;
+    }
+};
+
 // --- Coin Shop Service ---
 import { ShopItem, ShopCoinTransaction, ShopOrder, UserCoins } from '../types';
 
 const COIN_SHOP_DATABASE_ID = '68f76ee1000e64ca8d05';
 
 // Collection IDs
-const SHOP_ITEMS_COLLECTION_ID = 'shop_items_collection_id';
+// Coin Shop Collections (update with real IDs once created in Appwrite Console)
+// shopItems collection already documented in COIN_SHOP_COLLECTIONS.md with ID 'shopitems'
+const SHOP_ITEMS_COLLECTION_ID = 'shopitems';
 const COIN_TRANSACTIONS_COLLECTION_ID = 'coin_transactions_collection_id';
 const SHOP_ORDERS_COLLECTION_ID = 'shop_orders_collection_id';
 const USER_COINS_COLLECTION_ID = 'user_coins_collection_id';

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AppDrawer } from '../components/AppDrawer';
+// Drawer is home-only; not used here
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import FlyingButterfly from '../components/FlyingButterfly';
 
@@ -38,7 +38,7 @@ const AromatherapyMassagePage: React.FC<AromatherapyMassagePageProps> = ({
     places = [],
     t: _t 
 }) => {
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    // No drawer state here; drawer is restricted to HomePage
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -81,32 +81,13 @@ const AromatherapyMassagePage: React.FC<AromatherapyMassagePageProps> = ({
                             </svg>
                         </button>
 
-                        <button onClick={() => setIsMenuOpen(true)} title="Menu" style={{ zIndex: 9999, position: 'relative' }}>
+                        <button onClick={() => onNavigate && onNavigate('home')} title="Home" style={{ zIndex: 9999, position: 'relative' }}>
                            <BurgerMenuIcon className="w-6 h-6" />
                         </button>
                     </div>
                 </div>
             </header>
             
-            {/* Global App Drawer */}
-            <AppDrawer
-                isOpen={isMenuOpen}
-                onClose={() => setIsMenuOpen(false)}
-                t={_t}
-                onMassageJobsClick={onMassageJobsClick}
-                onHotelPortalClick={onHotelPortalClick}
-                onVillaPortalClick={onVillaPortalClick}
-                onTherapistPortalClick={onTherapistPortalClick}
-                onMassagePlacePortalClick={onMassagePlacePortalClick}
-                onAgentPortalClick={onAgentPortalClick}
-                onCustomerPortalClick={onCustomerPortalClick}
-                onAdminPortalClick={onAdminPortalClick}
-                onNavigate={onNavigate}
-                onTermsClick={onTermsClick}
-                onPrivacyClick={onPrivacyClick}
-                therapists={therapists}
-                places={places}
-            />
 
             <div className="p-4 pb-20">
             <div className="max-w-4xl mx-auto">

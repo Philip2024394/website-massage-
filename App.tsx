@@ -138,9 +138,8 @@ const App = () => {
         }
     }, [language]);
     
-    // Get translations using the actual language state - ALWAYS call this hook
-    // Call the hook for side effects without binding unused variable
-    useTranslations(language);
+    // Get translations using the actual language state - provide to AppRouter
+    const { t: _t, dict } = useTranslations(language);
 
     // Use the actual language handler from hooks
     const handleLanguageSelect = async (lang: 'en' | 'id') => {
@@ -242,6 +241,7 @@ const App = () => {
                     loggedInProvider={state.loggedInProvider}
                     loggedInCustomer={state.loggedInCustomer}
                     loggedInAgent={state.loggedInAgent}
+                    language={language}
                     isAdminLoggedIn={state.isAdminLoggedIn}
                     isHotelLoggedIn={state.isHotelLoggedIn}
                     isVillaLoggedIn={state.isVillaLoggedIn}
@@ -249,7 +249,8 @@ const App = () => {
                     places={state.places}
                     notifications={state.notifications}
                     bookings={state.bookings}
-                    user={state.user}
+                    // Pass the global loggedInUser (role-aware) to satisfy dashboard guards
+                    user={state.loggedInUser as any}
                     userLocation={state.userLocation}
                     selectedPlace={state.selectedPlace}
                     selectedMassageType={state.selectedMassageType}
@@ -294,19 +295,19 @@ const App = () => {
                     }
                     handleSaveTherapist={providerAgentHandlers?.handleSaveTherapist || (() => Promise.resolve())}
                     handleSavePlace={providerAgentHandlers?.handleSavePlace || (() => Promise.resolve())}
-                    handleAgentRegister={() => Promise.resolve({ success: true, message: '' })}
-                    handleAgentLogin={() => Promise.resolve({ success: true, message: '' })}
-                    handleAgentAcceptTerms={() => Promise.resolve()}
-                    handleSaveAgentProfile={() => Promise.resolve()}
-                    handleStopImpersonating={() => {}}
-                    handleSendAdminMessage={() => Promise.resolve()}
-                    handleMarkMessagesAsRead={() => Promise.resolve()}
+                    handleAgentRegister={providerAgentHandlers?.handleAgentRegister || (async () => ({ success: false, message: 'Unavailable' }))}
+                    handleAgentLogin={providerAgentHandlers?.handleAgentLogin || (async () => ({ success: false, message: 'Unavailable' }))}
+                    handleAgentAcceptTerms={providerAgentHandlers?.handleAgentAcceptTerms || (() => Promise.resolve())}
+                    handleSaveAgentProfile={providerAgentHandlers?.handleSaveAgentProfile || (() => Promise.resolve())}
+                    handleStopImpersonating={providerAgentHandlers?.handleStopImpersonating || (() => {})}
+                    handleSendAdminMessage={providerAgentHandlers?.handleSendAdminMessage || (() => Promise.resolve())}
+                    handleMarkMessagesAsRead={providerAgentHandlers?.handleMarkMessagesAsRead || (() => Promise.resolve())}
                     handleSelectMembershipPackage={() => {}}
 
-                    handleProviderLogout={() => Promise.resolve()}
+                    handleProviderLogout={authHandlers?.handleProviderLogout || (() => Promise.resolve())}
                     handleCustomerAuthSuccess={() => Promise.resolve()}
-                    handleCustomerLogout={() => Promise.resolve()}
-                    handleAgentLogout={() => Promise.resolve()}
+                    handleCustomerLogout={authHandlers?.handleCustomerLogout || (() => Promise.resolve())}
+                    handleAgentLogout={authHandlers?.handleAgentLogout || (() => Promise.resolve())}
                     handleHotelLogout={authHandlers?.handleHotelLogout || (() => Promise.resolve())}
                     handleVillaLogout={authHandlers?.handleVillaLogout || (() => Promise.resolve())}
                     handleAdminLogout={authHandlers?.handleAdminLogout || (() => Promise.resolve())}

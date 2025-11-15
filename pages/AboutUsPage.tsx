@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AppDrawer } from '../components/AppDrawer';
+// Drawer is home-only; not used here
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 
 interface AboutUsPageProps {
@@ -36,7 +36,7 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
     therapists = [],
     places = []
 }) => {
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    // No drawer state here; drawer is restricted to HomePage
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -46,31 +46,13 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
                         <span className="text-black">Inda</span><span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
                     </h1>
                     <div className="flex items-center gap-4 pb-20 text-gray-600">
-                        <button onClick={() => setIsMenuOpen(true)} title="Menu">
+                        <button onClick={() => onNavigate('home')} title="Home">
                            <BurgerMenuIcon className="w-6 h-6" />
                         </button>
                     </div>
                 </div>
             </header>
             
-            {/* Global App Drawer */}
-            <AppDrawer
-                isOpen={isMenuOpen}
-                onClose={() => setIsMenuOpen(false)}
-                onMassageJobsClick={onMassageJobsClick}
-
-                onVillaPortalClick={onVillaPortalClick}
-                onTherapistPortalClick={onTherapistPortalClick}
-                onMassagePlacePortalClick={onMassagePlacePortalClick}
-                onAgentPortalClick={onAgentPortalClick}
-                onCustomerPortalClick={onCustomerPortalClick}
-                onAdminPortalClick={onAdminPortalClick}
-                onNavigate={onNavigate}
-                onTermsClick={onTermsClick}
-                onPrivacyClick={onPrivacyClick}
-                therapists={therapists}
-                places={places}
-            />
             
             {/* Hero Section */}
             <div 

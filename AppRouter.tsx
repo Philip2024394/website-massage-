@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslations } from './lib/useTranslations';
 import type { Page, Language, LoggedInProvider } from './types/pageTypes';
 import type { User, Place, Therapist, UserLocation, Booking, Notification, Agent, AdminMessage, AvailabilityStatus } from './types';
 import { BookingStatus } from './types';
@@ -92,6 +93,7 @@ interface AppRouterProps {
     page: Page;
     isLoading: boolean;
     user: User | null;
+    language?: Language;
     loggedInAgent: Agent | null;
     loggedInProvider: LoggedInProvider | null;
     loggedInCustomer: any;
@@ -181,6 +183,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         page,
         isLoading,
         user,
+        language,
         loggedInAgent,
         loggedInProvider,
         loggedInCustomer,
@@ -254,23 +257,61 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         setSelectedJobId
     } = props;
     
-    // Placeholder for translation function - to be removed when proper i18n is implemented
-    const t = (key: string) => {
-        // Basic fallback translations for essential keys
-        const fallbacks: Record<string, string> = {
-            'home.homeServiceTab': 'Home Service',
-            'home.massagePlacesTab': 'Massage Places',
-            'home.loading': 'Loading...',
-            'home.loginSignUp': 'Login / Sign Up',
-            'home.locationLabel': 'Location',
-            'home.selectLocation': 'Select Location',
-            'home.setLocation': 'Set Location',
-            'home.nearbyTherapists': 'Nearby Therapists',
-            'home.nearbyMassagePlaces': 'Nearby Massage Places',
-            'home.noTherapists': 'No therapists found in this area',
-            'home.noMassagePlaces': 'No massage places found in this area',
-        };
-        return fallbacks[key] || key;
+    // Build a translation adapter from the active language dictionary
+    const { t: tFn, dict } = useTranslations(language as any);
+    const t: any = ((key: string) => tFn(key)) as any;
+    // Spread all top-level namespaces for object-style access (e.g., t.home, t.common)
+    if (dict && typeof dict === 'object') {
+        Object.keys(dict).forEach(ns => {
+            const val = (dict as any)[ns];
+            if (val && typeof val === 'object') {
+                t[ns] = val;
+            }
+        });
+    }
+    // Provide commonly used generic namespaces if missing, localized by language
+    const isId = (language === 'id');
+    t.tabs = t.tabs || {
+        clients: isId ? 'Klien' : 'Clients',
+        renewals: isId ? 'Perpanjangan' : 'Renewals',
+        earnings: isId ? 'Pendapatan' : 'Earnings',
+        messages: isId ? 'Pesan' : 'Messages',
+        profile: isId ? 'Profil' : 'Profile',
+        visits: isId ? 'Kunjungan' : 'Visits',
+        stats: isId ? 'Statistik' : 'Stats'
+    };
+    t.messages = t.messages || {
+        impersonationBanner: isId ? 'Anda melihat sebagai {agentName}' : 'You are viewing as {agentName}',
+        returnToAdmin: isId ? 'Kembali ke Admin' : 'Return to Admin',
+        adminMessageTitle: isId ? 'Pesan Admin' : 'Admin Messages',
+        unreadMessages: isId ? 'Anda memiliki pesan belum dibaca' : 'You have unread messages',
+        noMessages: isId ? 'Belum ada pesan' : 'No messages yet',
+        adminChatPlaceholder: isId ? 'Ketik pesan ke admin...' : 'Type a message to admin...',
+        sendButton: isId ? 'Kirim' : 'Send'
+    };
+    t.clients = t.clients || {
+        membershipExpires: isId ? 'Keanggotaan berakhir pada {date}' : 'Membership expires on {date}',
+        therapists: isId ? 'Terapis' : 'Therapists',
+        places: isId ? 'Tempat' : 'Places',
+        noClients: isId ? 'Belum ada klien' : 'No clients yet'
+    };
+    t.renewals = t.renewals || {
+        contact: isId ? 'Kontak' : 'Contact'
+    };
+    t.earnings = t.earnings || {
+        toptierTier: isId ? 'Tingkat atas' : 'Top tier',
+        standardTier: isId ? 'Standar' : 'Standard'
+    };
+    // Ensure Agent Profile translations exist to prevent runtime errors on Profile tab
+    t.profile = t.profile || {
+        title: isId ? 'Profil Agen' : 'Agent Profile',
+        bankName: isId ? 'Nama Bank' : 'Bank Name',
+        accountNumber: isId ? 'Nomor Rekening' : 'Account Number',
+        accountName: isId ? 'Nama Pemilik Rekening' : 'Account Name',
+        contactNumber: isId ? 'Nomor Kontak' : 'Contact Number',
+        homeAddress: isId ? 'Alamat Rumah' : 'Home Address',
+        idCard: isId ? 'Kartu Identitas' : 'ID Card',
+        saveButton: isId ? 'Simpan Perubahan' : 'Save Changes'
     };
 
     // 🚀 OPTIMIZATION: Common handlers to reduce repetition
@@ -528,7 +569,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onLogout={handleLogout}
                 onLoginClick={handleNavigateToTherapistLogin}
                 onCreateProfileClick={handleNavigateToRegistrationChoice}
-                onAgentPortalClick={loggedInAgent ? () => setPage('agentDashboard') : () => setPage('agent')}
+                onAgentPortalClick={loggedInAgent ? () => setPage('agentDashboard') : portalHandlers.onAgentPortalClick}
                 onCustomerPortalClick={handleNavigateToCustomerDashboard}
                 onBook={handleNavigateToBooking}
                 onQuickBookWithChat={handleQuickBookWithChat}
@@ -620,7 +661,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onVillaPortalClick={handleNavigateToVillaLogin}
                 onTherapistPortalClick={handleNavigateToTherapistLogin}
                 onMassagePlacePortalClick={handleNavigateToMassagePlaceLogin}
-                onAgentPortalClick={loggedInAgent ? () => setPage('agentDashboard') : () => setPage('agent')}
+                onAgentPortalClick={loggedInAgent ? () => setPage('agentDashboard') : portalHandlers.onAgentPortalClick}
                 onCustomerPortalClick={handleNavigateToCustomerDashboard}
                 onAdminPortalClick={handleNavigateToAdminLogin}
                 onNavigate={commonNavigateHandler}
@@ -736,7 +777,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         }
             
         case 'agent': 
-            return <AgentPage onBack={handleBackToHome} onNavigateToAgentAuth={handleNavigateToAgentAuth} t={t} contactNumber={APP_CONFIG.CONTACT_NUMBER} />;
+            // Route legacy 'agent' path to the unified AgentAuthPage to avoid blank pages
+            return <AgentAuthPage onRegister={handleAgentRegister} onLogin={handleAgentLogin} onBack={handleBackToHome} t={t} />;
             
         case 'agentAuth': 
             return <AgentAuthPage onRegister={handleAgentRegister} onLogin={handleAgentLogin} onBack={handleBackToHome} t={t} />;
@@ -902,7 +944,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return <HotelLoginPage 
                 onSuccess={(hotelId) => {
                     handleHotelLogin(hotelId);
-                    setPage('hotelDashboard');
+                    // Defer navigation a tick to avoid concurrent DOM placement glitches
+                    setTimeout(() => setPage('hotelDashboard'), 0);
                 }} 
                 onBack={handleBackToHome} 
                 t={t} 

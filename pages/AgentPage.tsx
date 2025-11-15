@@ -29,8 +29,16 @@ const AgentPage: React.FC<AgentPageProps> = ({ onBack, onNavigateToAgentAuth, t:
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-green-50">
-            <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
+        <div
+            className="min-h-screen relative"
+            style={{
+                backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/admin%20login%20dash%20baords.png?updatedAt=1763186860823)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat'
+            }}
+        >
+            <header className="p-4 bg-white/80 backdrop-blur sticky top-0 z-20 shadow-sm">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">
                         <span className="text-black">Inda</span>
@@ -38,17 +46,26 @@ const AgentPage: React.FC<AgentPageProps> = ({ onBack, onNavigateToAgentAuth, t:
                             <span className="inline-block animate-float">S</span>treet
                         </span>
                     </h1>
-                    <button onClick={onBack} className="text-gray-600 hover:text-gray-800">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
+                    <div className="flex items-center gap-3">
+                        <button onClick={onBack} className="text-gray-700 hover:text-gray-900" aria-label="Close">
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </header>
 
             <main className="p-6 space-y-8 pb-32 max-w-4xl mx-auto">
+
                 {/* Hero Section */}
-                <div className="text-center py-8">
+                <div className="text-center py-8 bg-white/80 backdrop-blur rounded-2xl">
+                    <img
+                        src="https://ik.imagekit.io/7grri5v7d/indastreet%20agent.png?updatedAt=1763103354040"
+                        alt="IndaStreet Agent"
+                        className="w-full h-56 md:h-64 object-cover rounded-xl mb-4"
+                        loading="lazy"
+                    />
                     <div className="inline-block bg-orange-100 text-orange-800 px-4 py-2 rounded-full text-sm font-semibold mb-4 animate-pulse">
                         🔥 Limited Positions Available - Nationwide Opportunity
                     </div>
@@ -62,7 +79,7 @@ const AgentPage: React.FC<AgentPageProps> = ({ onBack, onNavigateToAgentAuth, t:
                 </div>
 
                 {/* Nationwide Opportunity Banner */}
-                <div className="bg-gradient-to-r from-green-100 to-green-200 text-gray-800 p-6 rounded-2xl shadow-lg">
+                <div className="bg-white/85 backdrop-blur text-gray-800 p-6 rounded-2xl shadow-lg">
                     <h3 className="text-2xl md:text-3xl font-bold text-center mb-3">Nationwide Opportunity</h3>
                     <p className="text-center text-gray-700 text-lg max-w-3xl mx-auto">
                         Whether you're in Jakarta, Bali, Surabaya, Bandung, or any city across Indonesia - this opportunity is for YOU! 
@@ -70,8 +87,18 @@ const AgentPage: React.FC<AgentPageProps> = ({ onBack, onNavigateToAgentAuth, t:
                     </p>
                 </div>
 
-                {/* Exclusive Badge */}
-                <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-8 rounded-2xl shadow-xl text-center">
+                {/* Exclusive Badge / Represent Excellence */}
+                <div
+                    className="relative text-white p-8 rounded-2xl shadow-xl text-center overflow-hidden"
+                    style={{
+                        backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/excellence%20image.png?updatedAt=1763195208515)',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center'
+                    }}
+                >
+                    {/* Gradient overlay for readability */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/30 pointer-events-none" />
+                    <div className="relative">
                     <div className="text-4xl mb-3">⭐</div>
                     <h3 className="text-2xl md:text-3xl font-bold mb-3">Represent Excellence</h3>
                     <p className="text-orange-100 text-lg mb-4 max-w-2xl mx-auto">
@@ -81,10 +108,11 @@ const AgentPage: React.FC<AgentPageProps> = ({ onBack, onNavigateToAgentAuth, t:
                     <div className="inline-block bg-gray-300 text-gray-600 px-6 py-2 rounded-full font-semibold cursor-not-allowed">
                         Contact Us via WhatsApp Below
                     </div>
+                    </div>
                 </div>
 
                 {/* Income Benefits */}
-                <div className="bg-white rounded-2xl shadow-xl p-8 border-2 border-orange-200">
+                <div className="bg-white/90 backdrop-blur rounded-2xl shadow-xl p-8 border-2 border-orange-200">
                     <div className="text-center mb-8">
                         <div className="text-4xl mb-3">💰</div>
                         <h3 className="text-3xl font-bold text-gray-900 mb-3">Exceptional Income Potential</h3>
@@ -149,7 +177,14 @@ const AgentPage: React.FC<AgentPageProps> = ({ onBack, onNavigateToAgentAuth, t:
                 <div className="grid md:grid-cols-2 gap-6">
                     {/* Work Your Hours */}
                     <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1">
-                        <div className="text-4xl mb-4">⏰</div>
+                        <div className="mb-4 flex justify-center">
+                            <img
+                                src="https://ik.imagekit.io/7grri5v7d/work%20own%20hours.png?updatedAt=1763189018094"
+                                alt="Work Your Own Hours"
+                                className="w-28 h-28 object-contain"
+                                loading="lazy"
+                            />
+                        </div>
                         <h4 className="text-xl font-bold text-gray-900 mb-3">Work Your Own Hours</h4>
                         <p className="text-gray-600 leading-relaxed">
                             Complete freedom and flexibility! Work full-time, part-time, or whenever it suits your lifestyle. 
@@ -159,7 +194,14 @@ const AgentPage: React.FC<AgentPageProps> = ({ onBack, onNavigateToAgentAuth, t:
 
                     {/* Limited Positions */}
                     <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1">
-                        <div className="text-4xl mb-4">🎯</div>
+                        <div className="mb-4 flex justify-center">
+                            <img
+                                src="https://ik.imagekit.io/7grri5v7d/unlimted.png?updatedAt=1763188536027"
+                                alt="Limited Positions Available"
+                                className="w-28 h-28 object-contain"
+                                loading="lazy"
+                            />
+                        </div>
                         <h4 className="text-xl font-bold text-gray-900 mb-3">Limited Positions Available</h4>
                         <p className="text-gray-600 leading-relaxed">
                             Exclusive territory rights protect your business! We're only accepting a select number of agents per region 
@@ -169,7 +211,14 @@ const AgentPage: React.FC<AgentPageProps> = ({ onBack, onNavigateToAgentAuth, t:
 
                     {/* Premium Brand */}
                     <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1">
-                        <div className="text-4xl mb-4">👔</div>
+                        <div className="mb-4 flex justify-center">
+                            <img
+                                src="https://ik.imagekit.io/7grri5v7d/excellence.png?updatedAt=1763188353675"
+                                alt="Represent Excellence"
+                                className="w-28 h-28 object-contain"
+                                loading="lazy"
+                            />
+                        </div>
                         <h4 className="text-xl font-bold text-gray-900 mb-3">Represent Excellence</h4>
                         <p className="text-gray-600 leading-relaxed">
                             Stand proud as a representative of Indonesia's premier wellness platform. Full brand support, 
@@ -179,7 +228,14 @@ const AgentPage: React.FC<AgentPageProps> = ({ onBack, onNavigateToAgentAuth, t:
 
                     {/* Growth Opportunity */}
                     <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1">
-                        <div className="text-4xl mb-4">📈</div>
+                        <div className="mb-4 flex justify-center">
+                            <img
+                                src="https://ik.imagekit.io/7grri5v7d/unlimted%20work%20hours.png?updatedAt=1763189746057"
+                                alt="Unlimited Growth Potential"
+                                className="w-28 h-28 object-contain"
+                                loading="lazy"
+                            />
+                        </div>
                         <h4 className="text-xl font-bold text-gray-900 mb-3">Unlimited Growth Potential</h4>
                         <p className="text-gray-600 leading-relaxed">
                             No ceiling on your earnings! Build your network across multiple cities, expand your territory, 
@@ -189,7 +245,14 @@ const AgentPage: React.FC<AgentPageProps> = ({ onBack, onNavigateToAgentAuth, t:
 
                     {/* Training & Support */}
                     <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1">
-                        <div className="text-4xl mb-4">🎓</div>
+                        <div className="mb-4 flex justify-center">
+                            <img
+                                src="https://ik.imagekit.io/7grri5v7d/training.png?updatedAt=1763188622931"
+                                alt="Full Training & Support"
+                                className="w-28 h-28 object-contain"
+                                loading="lazy"
+                            />
+                        </div>
                         <h4 className="text-xl font-bold text-gray-900 mb-3">Full Training & Support</h4>
                         <p className="text-gray-600 leading-relaxed">
                             No experience needed! We provide comprehensive training, dedicated support team, 
@@ -199,7 +262,14 @@ const AgentPage: React.FC<AgentPageProps> = ({ onBack, onNavigateToAgentAuth, t:
 
                     {/* All Indonesians Welcome */}
                     <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1">
-                        <div className="text-4xl mb-4">🤝</div>
+                        <div className="mb-4 flex justify-center">
+                            <img
+                                src="https://ik.imagekit.io/7grri5v7d/training%20indonisea.png?updatedAt=1763188798666"
+                                alt="Open to All Indonesians"
+                                className="w-28 h-28 object-contain"
+                                loading="lazy"
+                            />
+                        </div>
                         <h4 className="text-xl font-bold text-gray-900 mb-3">Open to All Indonesians</h4>
                         <p className="text-gray-600 leading-relaxed">
                             This opportunity is for everyone! Students, professionals, stay-at-home parents, retirees - 
@@ -209,7 +279,7 @@ const AgentPage: React.FC<AgentPageProps> = ({ onBack, onNavigateToAgentAuth, t:
                 </div>
 
                 {/* Why Now Section */}
-                <div className="bg-gradient-to-br from-gray-50 to-orange-50 p-8 rounded-2xl border-2 border-orange-200">
+                <div className="bg-white/85 backdrop-blur p-8 rounded-2xl border-2 border-orange-200">
                     <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 text-center">Why Join Now?</h3>
                     <div className="space-y-4 max-w-3xl mx-auto">
                         <div className="flex items-start gap-4 pb-20">
@@ -231,30 +301,43 @@ const AgentPage: React.FC<AgentPageProps> = ({ onBack, onNavigateToAgentAuth, t:
                     </div>
                 </div>
 
-                {/* Call to Action Banner */}
-                <div className="bg-gradient-to-r from-gray-900 to-gray-800 text-white p-8 rounded-2xl text-center shadow-2xl">
-                    <h3 className="text-2xl md:text-3xl font-bold mb-4">Ready to Start Your Journey?</h3>
-                    <p className="text-gray-300 mb-6 max-w-2xl mx-auto text-lg leading-relaxed">
-                        Join the exclusive IndaStreet Agent program today and start building your independent business 
-                        with unlimited earning potential across Indonesia
-                    </p>
-                    <div className="inline-block bg-gray-600 text-gray-300 px-6 py-3 rounded-full text-base font-bold shadow-lg">
-                        📱 Contact Us via WhatsApp Below
+                {/* Bottom Journey Banner with Image (as requested) */}
+                <div className="overflow-hidden rounded-xl border border-white/30 bg-white/50 backdrop-blur">
+                    <div className="relative">
+                        <img
+                            src="https://ik.imagekit.io/7grri5v7d/start%20your%20journey.png?updatedAt=1763196282314"
+                            alt="Start Your Journey"
+                            className="w-full h-48 object-cover"
+                            loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-tr from-black/50 via-transparent to-black/30 flex items-center">
+                            <h2 className="text-xl font-bold text-white px-5 drop-shadow-lg">Ready to Start Your Journey?</h2>
+                        </div>
                     </div>
-                    <p className="text-gray-400 text-sm mt-4">Use the WhatsApp button below to get started</p>
+                    <div className="px-5 pt-3 text-sm text-gray-800 text-center">
+                        📣 Join the exclusive IndaStreet Agent program and start building your independent business across Indonesia.
+                    </div>
+                    {/* Moved CTA buttons directly under banner text */}
+                    <div className="px-5 pb-5">
+                        <div className="max-w-2xl mx-auto flex flex-col md:flex-row gap-2 md:gap-3">
+                            <Button
+                                onClick={handleWhatsAppClick}
+                                className="flex-1 flex items-center justify-center gap-2 md:gap-3 text-sm md:text-base py-2.5 md:py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 rounded-lg"
+                            >
+                                <WhatsAppIcon className="w-5 h-5 md:w-6 md:h-6"/>
+                                <span>WhatsApp Us</span>
+                            </Button>
+                            <Button
+                                onClick={onNavigateToAgentAuth}
+                                className="flex-1 text-sm md:text-base py-2.5 md:py-3 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white font-semibold rounded-lg shadow-md"
+                            >
+                                Sign In / Create Account
+                            </Button>
+                        </div>
+                    </div>
                 </div>
             </main>
 
-                {/* WhatsApp CTA */}
-                <div className="p-4 pb-20 max-w-md mx-auto mt-6">
-                    <Button
-                        onClick={handleWhatsAppClick}
-                        className="w-full flex items-center justify-center gap-3 text-lg py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 rounded-lg"
-                    >
-                        <WhatsAppIcon className="w-6 h-6"/>
-                        <span>Contact Us on WhatsApp</span>
-                    </Button>
-                </div>
 
             <style>{`
                 @keyframes float {

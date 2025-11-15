@@ -100,21 +100,65 @@ export const useAuthHandlers = ({
     }, [setLoggedInAgent, setPage]);
 
     const handleAdminLogin = useCallback(() => {
-        console.log('🎯 handleAdminLogin called - navigating to admin dashboard');
+        console.log('🎯 handleAdminLogin called - preparing secure admin session');
+        // Clear other auth states to avoid multi-session conflicts
+        setIsHotelLoggedIn(false);
+        setIsVillaLoggedIn(false);
+        setLoggedInProvider(null);
+        setLoggedInAgent(null);
+        setLoggedInCustomer(null);
+        // Set unified user context required by dashboard guards
+        setLoggedInUser({ id: 'admin-user', type: 'admin', email: '', name: 'Admin User' } as any);
+        setUser({ id: 'admin-user', type: 'admin', email: '', name: 'Admin User' });
         setIsAdminLoggedIn(true);
         setPage('adminDashboard');
-    }, [setIsAdminLoggedIn, setPage]);
+    }, [
+        setIsAdminLoggedIn,
+        setIsHotelLoggedIn,
+        setIsVillaLoggedIn,
+        setLoggedInProvider,
+        setLoggedInAgent,
+        setLoggedInCustomer,
+        setLoggedInUser,
+        setUser,
+        setPage
+    ]);
 
     const handleHotelLogin = useCallback((hotelId?: string) => {
         console.log('🏨 handleHotelLogin called - setting hotel logged in state');
+        // Ensure other auth states are cleared to avoid multi-session conflicts
         setIsHotelLoggedIn(true);
+        setIsVillaLoggedIn(false);
+        setIsAdminLoggedIn(false);
+        setLoggedInProvider(null);
+        setLoggedInAgent(null);
+        setLoggedInCustomer(null);
+
+        // Set the unified logged-in user context to hotel
+        setLoggedInUser({
+            id: hotelId || 'hotel-user',
+            type: 'hotel',
+            email: '',
+            name: 'Hotel User'
+        } as any);
+
+        // Keep lightweight user object for components relying on `state.user`
         setUser({
             id: hotelId || 'hotel-user',
             type: 'hotel',
-            email: '', // Will be set by the login process
+            email: '',
             name: 'Hotel User'
         });
-    }, [setIsHotelLoggedIn, setUser]);
+    }, [
+        setIsHotelLoggedIn,
+        setIsVillaLoggedIn,
+        setIsAdminLoggedIn,
+        setLoggedInProvider,
+        setLoggedInAgent,
+        setLoggedInCustomer,
+        setLoggedInUser,
+        setUser
+    ]);
 
     return {
         handleProviderLogout,

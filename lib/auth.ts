@@ -102,7 +102,7 @@ export const adminAuth = {
 
 // Therapist Authentication
 export const therapistAuth = {
-    async signUp(email: string, password: string): Promise<AuthResponse> {
+    async signUp(email: string, password: string, agentCode?: string): Promise<AuthResponse> {
         try {
             console.log('🔵 [Therapist Sign-Up] Starting...', { email });
             
@@ -157,6 +157,7 @@ export const therapistAuth = {
                     massageTypes: '',
                     languages: '',
                     coordinates: JSON.stringify({ lat: 0, lng: 0 }),
+                    agentCode: agentCode || '', // Store referral agent code if provided
                 }
             );
             
@@ -234,7 +235,7 @@ export const therapistAuth = {
 
 // Place Authentication - Streamlined with only required attributes
 export const placeAuth = {
-    async signUp(email: string, password: string): Promise<AuthResponse> {
+    async signUp(email: string, password: string, agentCode?: string): Promise<AuthResponse> {
         try {
             const user = await account.create(ID.unique(), email, password);
             const generatedPlaceId = ID.unique();
@@ -257,6 +258,7 @@ export const placeAuth = {
                 closingTime: '21:00',                         // ✅ Required: Closing time
                 coordinates: [106.8456, -6.2088],             // ✅ Required: Point format [lng, lat] for Jakarta
                 hotelId: '',                                  // ✅ Required: Empty for independent massage places
+                agentCode: agentCode || '',                   // Referral agent code if signup via agent
             };
             
             console.log('📊 Place data (required only):', placeData);

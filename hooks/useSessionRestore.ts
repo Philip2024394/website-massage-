@@ -83,6 +83,8 @@ export const useSessionRestore = (props: UseSessionRestoreProps) => {
                     break;
                 
                 case 'agent':
+                    // Restore both agent doc and global user type for guards
+                    setLoggedInUser({ id: sessionUser.id, type: 'agent', email: sessionUser.email });
                     setLoggedInAgent({
                         id: sessionUser.id,
                         email: sessionUser.email,

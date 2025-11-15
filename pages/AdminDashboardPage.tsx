@@ -11,6 +11,8 @@ import ConfirmAccountsPage from './ConfirmAccountsPage';
 import DrawerButtonsPage from './DrawerButtonsPage';
 import AgentCommissionPage from './AgentCommissionPage';
 import PlatformAnalyticsPage from './PlatformAnalyticsPage';
+import { adminAgentOverviewService } from '../lib/appwriteService';
+import { Users as UsersIcon, DollarSign as DollarIcon, Target, TrendingUp } from 'lucide-react';
 import BankDetailsManagementPage from './BankDetailsManagementPage';
 import PaymentTransactionsPage from './PaymentTransactionsPage';
 import AdminShopManagementPage from './AdminShopManagementPage';
@@ -33,6 +35,26 @@ const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'i
   const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
   const [showTranslationManager, setShowTranslationManager] = useState(false);
   const [showTherapistTranslations, setShowTherapistTranslations] = useState(false);
+  const [agentRows, setAgentRows] = useState<any[]>([]);
+  const [agentLoading, setAgentLoading] = useState(false);
+  const [agentError, setAgentError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadAgents = async () => {
+      if (activePage !== 'platform-analytics') return; // show in analytics page area
+      try {
+        setAgentLoading(true);
+        setAgentError(null);
+        const rows = await adminAgentOverviewService.listAgentOverviews();
+        setAgentRows(rows);
+      } catch (e: any) {
+        setAgentError(e?.message || 'Failed to load agents');
+      } finally {
+        setAgentLoading(false);
+      }
+    };
+    loadAgents();
+  }, [activePage]);
 
   useEffect(() => {
     // Initialize anonymous session for Appwrite access
@@ -47,11 +69,12 @@ const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'i
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Side Drawer Overlay */}
       {isSideDrawerOpen && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40"
+          className="fixed inset-0 z-40 backdrop-blur-[2px]" 
+          style={{ backgroundColor: 'rgba(0,0,0,0.15)' }}
           onClick={() => setIsSideDrawerOpen(false)}
         />
       )}
@@ -364,8 +387,63 @@ const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'i
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-6 pb-20">
-        {activePage === 'platform-analytics' && <PlatformAnalyticsPage />}
+      <main className="flex-1 max-w-7xl mx-auto w-full px-2 sm:px-4 py-4 sm:py-6 pb-24">
+        {activePage === 'platform-analytics' && (
+          <div className="space-y-6">
+            <PlatformAnalyticsPage />
+            {/* Agent Overview Section */}
+            <div className="bg-white shadow-sm border rounded-xl p-4">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2"><UsersIcon className="w-5 h-5 text-orange-600" /> Agents Overview</h2>
+                {agentLoading && <span className="text-xs text-gray-500">Loading...</span>}
+              </div>
+              {agentError && <p className="text-xs text-red-600 mb-3">{agentError}</p>}
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm">
+                  <thead>
+                    <tr className="bg-gray-50 text-gray-700">
+                      <th className="px-3 py-2 text-left font-semibold">Agent</th>
+                      <th className="px-3 py-2 text-left font-semibold">Code</th>
+                      <th className="px-3 py-2 text-left font-semibold">Tier</th>
+                      <th className="px-3 py-2 text-left font-semibold">Visits</th>
+                      <th className="px-3 py-2 text-left font-semibold">Therapists</th>
+                      <th className="px-3 py-2 text-left font-semibold">Places</th>
+                      <th className="px-3 py-2 text-left font-semibold">Month New</th>
+                      <th className="px-3 py-2 text-left font-semibold">Month Rec</th>
+                      <th className="px-3 py-2 text-left font-semibold">Target</th>
+                      <th className="px-3 py-2 text-left font-semibold">Streak</th>
+                      <th className="px-3 py-2 text-left font-semibold">Comm Due</th>
+                      <th className="px-3 py-2 text-left font-semibold">Payout Ready</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {agentRows.length === 0 && !agentLoading && (
+                      <tr>
+                        <td colSpan={12} className="px-3 py-6 text-center text-gray-500">No agents found.</td>
+                      </tr>
+                    )}
+                    {agentRows.map(row => (
+                      <tr key={row.agentId} className="border-t hover:bg-gray-50">
+                        <td className="px-3 py-2 font-medium text-gray-900">{row.name}</td>
+                        <td className="px-3 py-2 font-mono text-xs text-gray-700">{row.agentCode}</td>
+                        <td className="px-3 py-2 text-xs"><span className={`px-2 py-0.5 rounded-full font-semibold ${row.tier === 'Toptier' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>{row.tier || 'Std'}</span></td>
+                        <td className="px-3 py-2 text-center">{row.visits}</td>
+                        <td className="px-3 py-2 text-center">{row.therapistSignups}</td>
+                        <td className="px-3 py-2 text-center">{row.placeSignups}</td>
+                        <td className="px-3 py-2 text-center">{row.monthNew}</td>
+                        <td className="px-3 py-2 text-center">{row.monthRecurring}</td>
+                        <td className="px-3 py-2 text-center">{row.targetMet ? '✓' : '—'}</td>
+                        <td className="px-3 py-2 text-center">{row.streakCount}</td>
+                        <td className="px-3 py-2 text-center">{row.commissionDue}</td>
+                        <td className="px-3 py-2 text-center">{row.payoutReady ? '✓' : '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
         {activePage === 'confirm-therapists' && <ConfirmTherapistsPage />}
         {activePage === 'confirm-places' && <ConfirmPlacesPage />}
         {activePage === 'place-activation-requests' && <PlaceActivationRequests />}
@@ -380,6 +458,41 @@ const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'i
         {activePage === 'drawer-buttons' && <DrawerButtonsPage />}
         {activePage === 'agent-commission' && <AgentCommissionPage />}
       </main>
+
+      {/* Footer */}
+      <footer className="bg-white border-t shadow-sm mt-auto">
+        <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+          <div>
+            <h4 className="font-semibold text-gray-800 mb-2">Platform</h4>
+            <ul className="space-y-1">
+              <li className="text-gray-600">Version 2.0.0</li>
+              <li className="text-gray-600">Status: <span className="text-green-600 font-medium">Operational</span></li>
+              <li className="text-gray-600">Region: Global</li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-semibold text-gray-800 mb-2">Quick Links</h4>
+            <ul className="space-y-1">
+              <li><button onClick={() => onNavigate?.('serviceTerms')} className="text-orange-600 hover:underline">Terms of Service</button></li>
+              <li><button onClick={() => onNavigate?.('privacy')} className="text-orange-600 hover:underline">Privacy Policy</button></li>
+              <li><button onClick={() => setActivePage('membership-pricing')} className="text-orange-600 hover:underline">Membership Pricing</button></li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-semibold text-gray-800 mb-2">Admin Actions</h4>
+            <div className="flex flex-wrap gap-2">
+              <button onClick={() => setActivePage('platform-analytics')} className="px-3 py-1.5 bg-orange-500 text-white rounded text-xs font-medium hover:bg-orange-600">Analytics</button>
+              <button onClick={() => setActivePage('confirm-therapists')} className="px-3 py-1.5 bg-gray-100 rounded text-xs font-medium hover:bg-gray-200">Therapists</button>
+              <button onClick={() => setActivePage('confirm-places')} className="px-3 py-1.5 bg-gray-100 rounded text-xs font-medium hover:bg-gray-200">Places</button>
+              <button onClick={() => setActivePage('shop-management')} className="px-3 py-1.5 bg-gray-100 rounded text-xs font-medium hover:bg-gray-200">Shop</button>
+              <button onClick={() => setActivePage('agent-commission')} className="px-3 py-1.5 bg-gray-100 rounded text-xs font-medium hover:bg-gray-200">Agent</button>
+            </div>
+          </div>
+        </div>
+        <div className="bg-gray-50 border-t text-center text-xs text-gray-500 py-3">
+          © {new Date().getFullYear()} IndaStreet Admin. All rights reserved.
+        </div>
+      </footer>
 
       {/* Translation Manager Modal */}
       {showTranslationManager && (

@@ -101,6 +101,7 @@ const ConfirmPlacesPage: React.FC = () => {
 
       await placeService.update(placeId, {
         isLive: true,
+        status: 'active',
         activeMembershipDate: newExpiryDateString,
       });
 
@@ -119,7 +120,8 @@ const ConfirmPlacesPage: React.FC = () => {
     setUpdatingId(placeId);
     try {
       await placeService.update(placeId, {
-        isLive: true, // 🚀 AUTO-ACTIVE: New places go live automatically
+        isLive: false,
+        status: 'deactivated'
       });
 
       await fetchPlaces();

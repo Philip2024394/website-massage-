@@ -93,7 +93,10 @@ const ConfirmTherapistsPage: React.FC = () => {
         country: t.country || '',
         whatsappNumber: t.whatsappNumber || t.phoneNumber || '',
         profilePicture: t.profilePicture || '',
-        status: (t.isLive ? 'active' : 'pending') as 'pending' | 'active' | 'deactivated', // Map isLive to status for display
+        // Prefer explicit stored status if valid; fall back to isLive heuristic
+        status: (['pending','active','deactivated'].includes(t.status) 
+          ? t.status 
+          : (t.isLive ? 'active' : 'pending')) as 'pending' | 'active' | 'deactivated',
         membershipPackage: t.membershipPackage,
         activeMembershipDate: t.activeMembershipDate,
         isLive: t.isLive || false,
@@ -151,6 +154,7 @@ const ConfirmTherapistsPage: React.FC = () => {
       // Prepare activation update with data preservation
       const updateData = {
         isLive: true,
+        status: 'active',
         activeMembershipDate: newExpiryDateString,
         // Preserve all existing fields if available (valid schema attributes only)
         ...(existingTherapist && {
@@ -214,7 +218,7 @@ const ConfirmTherapistsPage: React.FC = () => {
       // Prepare deactivation update with data preservation
       const updateData = {
         status: 'deactivated',
-        isLive: true, // 🚀 AUTO-ACTIVE: New therapists go live automatically
+        isLive: false,
         // Preserve all existing fields if available (valid schema attributes only)
         ...(existingTherapist && {
           name: existingTherapist.name,

@@ -5,9 +5,8 @@ import { checkRateLimit, handleAppwriteError, resetRateLimit, resetAllRateLimits
 import PageNumberBadge from '../components/PageNumberBadge';
 
 import { LogIn, UserPlus, Eye, EyeOff } from 'lucide-react';
-import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
-import { AppDrawer } from '../components/AppDrawer';
-import { React19SafeWrapper } from '../components/React19SafeWrapper';
+// No burger menu here
+// Drawer is home-only; not used here
 
 interface AdminLoginPageProps {
     onAdminLogin: () => void;
@@ -21,7 +20,7 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin: _onAdminL
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    // No drawer state here; drawer is restricted to HomePage
     const [showPassword, setShowPassword] = useState(false);
 
     // Make rate limit reset functions available in browser console for testing
@@ -122,33 +121,10 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onAdminLogin: _onAdminL
                     <h1 className="text-2xl font-bold text-gray-800">
                         <span className="text-black">Inda</span><span className="text-orange-500">street</span>
                     </h1>
-                    <div className="flex items-center gap-3 text-gray-600">
-                        <button onClick={() => setIsMenuOpen(true)} title="Menu">
-                            <BurgerMenuIcon className="w-6 h-6" />
-                        </button>
-                    </div>
+                    <div className="flex items-center gap-3 text-gray-600" />
                 </div>
             </header>
 
-            {/* Global App Drawer */}
-            <React19SafeWrapper condition={isMenuOpen}>
-                <AppDrawer
-                    isOpen={isMenuOpen}
-                    onClose={() => setIsMenuOpen(false)}
-                    onMassageJobsClick={() => {}}
-                    onHotelPortalClick={() => {}}
-                    onVillaPortalClick={() => {}}
-                    onTherapistPortalClick={() => {}}
-                    onMassagePlacePortalClick={() => {}}
-                    onAgentPortalClick={() => {}}
-                    onCustomerPortalClick={() => {}}
-                    onAdminPortalClick={() => {}}
-                    onTermsClick={() => {}}
-                    onPrivacyClick={() => {}}
-                    therapists={[]}
-                    places={[]}
-                />
-            </React19SafeWrapper>
 
             {/* Main Content */}
             <main className="flex-1 flex items-center justify-center p-4 overflow-hidden">
