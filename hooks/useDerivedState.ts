@@ -42,7 +42,7 @@ export const useDerivedState = ({
     );
 
     const pagesWithoutFooter: Page[] = [
-        'landing', 'adminDashboard', 'hotelVillaMenu'
+        'adminDashboard', 'hotelVillaMenu'
     ];
 
     // Detect PWA standalone (Android Chrome, iOS Safari)
