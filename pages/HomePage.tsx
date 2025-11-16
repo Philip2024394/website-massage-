@@ -213,8 +213,10 @@ const HomePage: React.FC<HomePageProps> = ({
     // Add has-footer class for proper CSS support
     useEffect(() => {
         document.body.classList.add('has-footer');
+        document.body.classList.add('is-home');
         return () => {
             document.body.classList.remove('has-footer');
+            document.body.classList.remove('is-home');
         };
     }, []);
 
