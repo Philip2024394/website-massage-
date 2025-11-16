@@ -5,7 +5,7 @@
  */
 
 import { databases } from './appwrite';
-import { coinService } from './appwriteService';
+import { coinService as historyCoinService } from './coinService';
 import APPWRITE_CONFIG from './appwrite.config';
 import { Query } from 'appwrite';
 
@@ -300,18 +300,17 @@ export const awardWelcomeBonus = async (
 
         // Award the welcome coins into the coin system with a transaction record
         const coinsAwarded = WELCOME_BONUS.COINS;
+        let awarded = false;
         try {
-            await coinService.addCoins(
+            const tx = await historyCoinService.awardCoins(
                 userId,
-                userType,
-                userName,
                 coinsAwarded,
                 WELCOME_BONUS.DESCRIPTION,
-                'welcome_bonus'
+                { source: 'welcome_bonus', deviceId, ipAddress }
             );
+            awarded = !!tx;
         } catch (coinErr) {
-            console.error('Error persisting welcome coins to coin system:', coinErr);
-            // Continue to mark registration to avoid repeated attempts; support can adjust balance manually if needed
+            console.error('Error persisting welcome coins to coin history system:', coinErr);
         }
 
         // Update registration record
@@ -320,20 +319,24 @@ export const awardWelcomeBonus = async (
             COLLECTIONS.userRegistrations,
             registration.$id as string,
             {
-                hasReceivedWelcomeBonus: true,
-                welcomeBonusAmount: coinsAwarded,
+                hasReceivedWelcomeBonus: awarded,
+                welcomeBonusAmount: awarded ? coinsAwarded : 0,
                 firstLoginDate: new Date().toISOString()
             }
         );
 
-        // Store in localStorage
-        localStorage.setItem('indastreet_welcome_bonus_received', 'true');
-        localStorage.setItem('indastreet_welcome_coins', coinsAwarded.toString());
+        // Store in localStorage only if awarded
+        if (awarded) {
+            localStorage.setItem('indastreet_welcome_bonus_received', 'true');
+            localStorage.setItem('indastreet_welcome_coins', coinsAwarded.toString());
+        }
 
         return {
-            success: true,
+            success: awarded,
             coinsAwarded,
-            message: `Congratulations! You've received ${coinsAwarded} IndaStreet coins!`,
+            message: awarded
+                ? `Congratulations! You've received ${coinsAwarded} IndaStreet coins!`
+                : 'Welcome bonus could not be recorded. Please contact support.',
             registrationId: registration.$id
         };
     } catch (error) {
