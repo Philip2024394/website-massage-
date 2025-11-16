@@ -6,13 +6,15 @@ interface OrangeLocationModalProps {
     onAllow: () => void;
     onDeny: () => void;
     language?: 'en' | 'id';
+    size?: 'default' | 'compact';
 }
 
 const OrangeLocationModal: React.FC<OrangeLocationModalProps> = ({
     isVisible,
     onAllow,
     onDeny,
-    language = 'id'
+    language = 'id',
+    size = 'default'
 }) => {
     const [isLoading, setIsLoading] = useState(false);
 
@@ -62,25 +64,35 @@ const OrangeLocationModal: React.FC<OrangeLocationModalProps> = ({
         }, 1000);
     };
 
+    // Size-based classes
+    const containerMaxWidth = size === 'compact' ? 'max-w-sm' : 'max-w-md';
+    const headerPadding = size === 'compact' ? 'p-4' : 'p-6';
+    const headerIconWrap = size === 'compact' ? 'w-12 h-12' : 'w-16 h-16';
+    const headerIconSize = size === 'compact' ? 'w-6 h-6' : 'w-8 h-8';
+    const titleText = size === 'compact' ? 'text-xl' : 'text-2xl';
+    const bodyPadding = size === 'compact' ? 'p-4' : 'p-6';
+    const allowBtnPadding = size === 'compact' ? 'py-3 px-5' : 'py-4 px-6';
+    const denyBtnPadding = size === 'compact' ? 'py-2.5 px-5' : 'py-3 px-6';
+
     return (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[9999] p-4 animate-fadeIn">
-            <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full mx-4 relative overflow-hidden animate-slideUp">
+            <div className={`bg-white rounded-3xl shadow-2xl ${containerMaxWidth} w-full mx-4 relative overflow-hidden animate-slideUp`}>
                 {/* Orange gradient header */}
-                <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-6 text-white relative">
+                <div className={`bg-gradient-to-r from-orange-500 to-orange-600 ${headerPadding} text-white relative`}>
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white bg-opacity-10 rounded-full -mr-16 -mt-16"></div>
                     <div className="absolute bottom-0 left-0 w-24 h-24 bg-white bg-opacity-10 rounded-full -ml-12 -mb-12"></div>
                     
                     <div className="relative z-10 text-center">
-                        <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
-                            <MapPin className="w-8 h-8 text-white" />
+                        <div className={`${headerIconWrap} bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm`}>
+                            <MapPin className={`${headerIconSize} text-white`} />
                         </div>
-                        <h2 className="text-2xl font-bold mb-2">{t.title}</h2>
+                        <h2 className={`${titleText} font-bold mb-2`}>{t.title}</h2>
                         <p className="text-orange-100 text-sm">{t.subtitle}</p>
                     </div>
                 </div>
 
                 {/* Content */}
-                <div className="p-6">
+                <div className={`${bodyPadding}`}>
                     <p className="text-gray-700 text-center mb-6 leading-relaxed">
                         {t.description}
                     </p>
@@ -102,7 +114,7 @@ const OrangeLocationModal: React.FC<OrangeLocationModalProps> = ({
                         <button
                             onClick={handleAllow}
                             disabled={isLoading}
-                            className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-70 disabled:transform-none shadow-lg flex items-center justify-center space-x-2"
+                            className={`w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold ${allowBtnPadding} rounded-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-70 disabled:transform-none shadow-lg flex items-center justify-center space-x-2`}
                         >
                             {isLoading ? (
                                 <>
@@ -120,7 +132,7 @@ const OrangeLocationModal: React.FC<OrangeLocationModalProps> = ({
                         <button
                             onClick={onDeny}
                             disabled={isLoading}
-                            className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-6 rounded-xl transition-all duration-300 disabled:opacity-50"
+                            className={`w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium ${denyBtnPadding} rounded-xl transition-all duration-300 disabled:opacity-50`}
                         >
                             {t.denyButton}
                         </button>

@@ -50,6 +50,20 @@ export const useAppState = () => {
         return 'hotelVillaMenu';
       }
       
+      // Restore last page from session if available
+      const sessionPage = sessionStorage.getItem('current_page') as Page | null;
+      if (sessionPage && typeof sessionPage === 'string') {
+        console.log('↩️ Restoring session page:', sessionPage);
+        return sessionPage as Page;
+      }
+      
+      // If user has already entered the app in this session, go to home
+      const hasEntered = sessionStorage.getItem('has_entered_app');
+      if (hasEntered === 'true') {
+        console.log('🚪 Session indicates app already entered → home');
+        return 'home';
+      }
+      
       // Allow specific test pages via URL parameter
       if (pageParam === 'rewardBannersTest' || pageParam === 'reward-banners-test') {
         console.log('🎯 URL parameter detected: Opening reward banners test page');

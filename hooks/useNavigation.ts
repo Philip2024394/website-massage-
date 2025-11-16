@@ -179,6 +179,8 @@ export const useNavigation = ({
             
             // Set flag to start fresh (prevent session restore)
             sessionStorage.setItem('start_fresh', 'true');
+            // Mark that user has entered the app for this session
+            sessionStorage.setItem('has_entered_app', 'true');
             
             // Clear all dashboard sessions when entering from landing page
             setIsAdminLoggedIn(false);
@@ -211,6 +213,7 @@ export const useNavigation = ({
             setLanguage(lang);
             setUserLocation(location);
             localStorage.setItem('user_location', JSON.stringify(location));
+            sessionStorage.setItem('has_entered_app', 'true');
             setPage('home');
         }
     }, [setIsAdminLoggedIn, setIsHotelLoggedIn, setIsVillaLoggedIn, setLoggedInProvider, 

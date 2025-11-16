@@ -52,6 +52,7 @@ interface HomePageProps {
     onNavigate?: (page: string) => void;
     isLoading: boolean;
     t: any;
+    language?: 'en' | 'id';
 }
 
 
@@ -92,7 +93,8 @@ const HomePage: React.FC<HomePageProps> = ({
     onTermsClick, 
     onPrivacyClick, 
     onNavigate, 
-    t 
+    t,
+    language
 }) => {
     console.log('🏠 HomePage: Component is being called!');
     // Enhanced debug logging for translations
@@ -837,7 +839,8 @@ const HomePage: React.FC<HomePageProps> = ({
                 isVisible={isLocationModalOpen}
                 onAllow={handleLocationAllow}
                 onDeny={handleLocationDeny}
-                language='id'
+                language={language || 'en'}
+                size="compact"
             />
             
             {/* Rating modal removed for design mock */}

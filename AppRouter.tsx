@@ -562,6 +562,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             console.log('🏠 AppRouter: Rendering HomePage component');
             return <HomePage 
                 user={user} 
+                language={activeLanguage as 'en' | 'id'}
                 loggedInAgent={loggedInAgent}
                 loggedInProvider={loggedInProvider ? {
                     id: loggedInProvider.id,
