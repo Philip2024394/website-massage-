@@ -29,6 +29,7 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
   const [previousTab, setPreviousTab] = useState<'profile' | 'bookings' | 'calendar' | 'wallet'>('bookings');
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showProfilePrompt, setShowProfilePrompt] = useState(false);
   
   const [showConfirmLogout, setShowConfirmLogout] = useState(false);
@@ -51,6 +52,41 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
   });
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [showWelcome, setShowWelcome] = useState(false);
+
+  // Respect an initial tab request (e.g., from footer navigation)
+  useEffect(() => {
+    try {
+      const key = 'customer_dashboard_initial_tab';
+      const requested = sessionStorage.getItem(key);
+      if (requested === 'profile' || requested === 'bookings' || requested === 'calendar' || requested === 'wallet') {
+        setPreviousTab('bookings');
+        setActiveTab(requested as 'profile' | 'bookings' | 'calendar' | 'wallet');
+        sessionStorage.removeItem(key);
+      }
+    } catch {}
+  }, []);
+
+  // Listen for runtime tab switches (e.g., footer click while already on dashboard)
+  useEffect(() => {
+    const handler = (e: any) => {
+      try {
+        const tab = e?.detail?.tab;
+        if (tab === 'profile' || tab === 'bookings' || tab === 'calendar' || tab === 'wallet') {
+          setPreviousTab(activeTab);
+          setActiveTab(tab);
+        }
+      } catch {}
+    };
+    window.addEventListener('customer_dashboard_set_tab', handler as EventListener);
+    return () => window.removeEventListener('customer_dashboard_set_tab', handler as EventListener);
+  }, [activeTab]);
+
+  // Listen for open drawer request from footer Menu button
+  useEffect(() => {
+    const openDrawer = () => setIsSideDrawerOpen(true);
+    window.addEventListener('customer_dashboard_open_drawer', openDrawer as EventListener);
+    return () => window.removeEventListener('customer_dashboard_open_drawer', openDrawer as EventListener);
+  }, []);
 
   // First-login profile prompt: show if critical fields are missing and not previously dismissed
   useEffect(() => {
@@ -103,7 +139,8 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
         let doc = await userService.getCustomerByEmail(user.email);
         if (!doc) {
           // Create minimal doc if missing
-          await userService.updateCustomerByEmail(user.email, {});
+          const uid = (user && (user.$id || (user as any).userId || user.id)) as string | undefined;
+          await userService.updateCustomerByEmail(user.email, uid ? { userId: uid } : {});
           doc = await userService.getCustomerByEmail(user.email);
         }
         const created = (doc && (doc.$createdAt || doc.createdAt)) ? new Date(doc.$createdAt || doc.createdAt) : new Date();
@@ -135,7 +172,8 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
         const raw = localStorage.getItem(key);
         if (!raw) return;
         const pending = JSON.parse(raw);
-        await userService.updateCustomerByEmail(user.email, pending);
+        const uid = (user && (user.$id || (user as any).userId || user.id)) as string | undefined;
+        await userService.updateCustomerByEmail(user.email, uid ? { userId: uid, ...pending } : pending);
         localStorage.removeItem(key);
         console.log('✅ Synced local profile changes to server');
       } catch (e) {
@@ -158,9 +196,12 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
 
   const loadBookings = async () => {
     setIsLoading(true);
+    setErrorMessage(null);
     try {
       // Get all bookings for this user
-      const allBookings = await bookingService.getByUser(user.$id || user.userId);
+      const userId = (user && (user.$id || (user as any).userId || user.id)) as string | undefined;
+      if (!userId) throw new Error('Missing user id for loading bookings');
+      const allBookings = await bookingService.getByUser(userId);
       
       // Sort by startTime (newest first)
       allBookings.sort((a: Booking, b: Booking) => 
@@ -170,6 +211,7 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
       setBookings(allBookings);
     } catch (error) {
       console.error('Error loading bookings:', error);
+      setErrorMessage('Failed to load updates. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -177,10 +219,14 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
 
   const loadWallets = async () => {
     try {
-      const userWallets = await getUserWallets(user.$id || user.userId);
+      setErrorMessage(null);
+      const userId = (user && (user.$id || (user as any).userId || user.id)) as string | undefined;
+      if (!userId) throw new Error('Missing user id for loading wallets');
+      const userWallets = await getUserWallets(userId);
       setWallets(userWallets);
     } catch (error) {
       console.error('Error loading wallets:', error);
+      setErrorMessage('Failed to load updates. Please try again.');
     }
   };
 
@@ -301,6 +347,15 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
             <span className="text-black">Inda</span><span className="text-orange-500">Street</span>
           </h1>
           <div className="flex items-center gap-3 text-gray-600">
+            <button
+              onClick={() => { loadBookings(); loadWallets(); if (selectedWallet) { loadTransactions(selectedWallet.$id!); } }}
+              className="p-2 hover:bg-orange-50 rounded-full transition-colors text-orange-500"
+              title="Refresh"
+            >
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v6h6M20 20v-6h-6M20 8a8 8 0 10-6.906 11.906" />
+              </svg>
+            </button>
             <button 
               onClick={() => setIsSideDrawerOpen(true)}
               className="p-2 hover:bg-orange-50 rounded-full transition-colors text-orange-500" 
@@ -317,6 +372,20 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
           </div>
         </div>
       </header>
+
+      {/* Error banner */}
+      {errorMessage && (
+        <div className="mx-4 mt-3 bg-red-50 border border-red-200 text-red-800 rounded-lg p-3 flex items-start gap-2">
+          <span className="text-xl">⚠️</span>
+          <div className="flex-1 text-sm">
+            {errorMessage}
+            <button
+              onClick={() => { setErrorMessage(null); loadBookings(); loadWallets(); }}
+              className="ml-2 text-red-700 underline font-semibold"
+            >Try again</button>
+          </div>
+        </div>
+      )}
 
       {/* Compact user summary below header */}
       <div className="px-4 pt-4">
@@ -1168,7 +1237,9 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
                 onClick={async () => {
                   setIsSavingProfile(true);
                   try {
+                    const uid = (user && (user.$id || (user as any).userId || user.id)) as string | undefined;
                     await userService.updateCustomerByEmail(user.email, {
+                      ...(uid ? { userId: uid } : {}),
                       name: profileForm.name,
                       address: profileForm.address,
                       whatsappNumber: profileForm.whatsappNumber,

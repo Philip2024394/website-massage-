@@ -58,7 +58,7 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
         badgeCount: unreadNotifications
     });
 
-    const navigationItems = [
+    let navigationItems = [
         {
             key: 'home',
             icon: imageIcon('home', 'https://ik.imagekit.io/7grri5v7d/home%20button.png', 'Home'),
@@ -101,7 +101,17 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
                         break;
                     case 'customer':
                     case 'user':
-                        onNavigate('customerDashboard');
+                        try {
+                            if (currentPage === 'customerDashboard') {
+                                window.dispatchEvent(new CustomEvent('customer_dashboard_set_tab', { detail: { tab: 'profile' } }));
+                            } else {
+                                sessionStorage.setItem('customer_dashboard_initial_tab', 'profile');
+                                onNavigate('customerDashboard');
+                            }
+                        } catch {
+                            // Fallback: still navigate
+                            onNavigate('customerDashboard');
+                        }
                         break;
                     default:
                         onNavigate('profile');
@@ -111,6 +121,35 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
             badgeCount: unreadNotifications
         }
     ];
+
+    // Inject a dedicated Menu button for customers on their dashboard to open the side drawer
+    if ((userRole === 'customer' || userRole === 'user') && currentPage === 'customerDashboard') {
+        const menuButton = {
+            key: 'menu',
+            icon: (
+                <svg xmlns="http://www.w3.org/2000/svg" className={`w-7 h-7 ${isActive('menu') ? 'opacity-100' : 'opacity-60'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            ),
+            label: 'Menu',
+            onClick: () => {
+                try {
+                    window.dispatchEvent(new CustomEvent('customer_dashboard_open_drawer'));
+                } catch {
+                    // no-op
+                }
+            },
+            badgeCount: 0
+        } as const;
+
+        // Place Menu as the second item, shifting others to keep four items visible
+        navigationItems = [navigationItems[0], menuButton, ...navigationItems.slice(1)];
+        // Keep footer concise: if more than 4, drop extra before 'profile'
+        if (navigationItems.length > 4) {
+            // Remove the third item if we have 5 (prefer to keep notifications)
+            navigationItems.splice(2, navigationItems.length - 4);
+        }
+    }
 
     return (
         <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>

@@ -186,8 +186,14 @@ export const getUserWallets = async (userId: string): Promise<LoyaltyWallet[]> =
 
         return response.documents as unknown as LoyaltyWallet[];
     } catch (error) {
+        const msg = (error as any)?.message || '';
+        const code = (error as any)?.code;
+        if (code === 404 || /could not be found/i.test(msg)) {
+            console.warn('loyalty_wallets collection missing; returning empty wallets.');
+            return [];
+        }
         console.error('Error getting user wallets:', error);
-        throw error;
+        return [];
     }
 };
 
@@ -607,8 +613,14 @@ export const getTransactionHistory = async (
 
         return response.documents as unknown as CoinTransaction[];
     } catch (error) {
+        const msg = (error as any)?.message || '';
+        const code = (error as any)?.code;
+        if (code === 404 || /could not be found/i.test(msg)) {
+            console.warn('coin_transactions collection missing; returning empty history.');
+            return [];
+        }
         console.error('Error getting transaction history:', error);
-        throw error;
+        return [];
     }
 };
 

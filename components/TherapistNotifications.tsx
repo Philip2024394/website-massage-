@@ -157,52 +157,49 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
                                     <p className={`text-sm ${n.isRead ? 'text-gray-600' : 'text-gray-800 font-semibold'}`}>
                                         {n.message}
                                     </p>
-                                
-                                {/* Special handling for customer service notification */}
-                                {n.type === 'support' && (
-                                    <div className="mt-3 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <p className="text-sm font-semibold text-blue-800">Customer Service Email:</p>
-                                                <p className="text-sm text-blue-600 font-mono">indastreet.id@gmail.com</p>
+                                    {/* Special handling for customer service notification */}
+                                    {n.type === 'support' && (
+                                        <div className="mt-3 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <p className="text-sm font-semibold text-blue-800">Customer Service Email:</p>
+                                                    <p className="text-sm text-blue-600 font-mono">indastreet.id@gmail.com</p>
+                                                </div>
+                                                <button 
+                                                    onClick={copyEmail}
+                                                    className="bg-blue-500 text-white px-3 py-1 rounded-md text-xs hover:bg-blue-600 transition-colors"
+                                                    aria-label="Copy customer service email address to clipboard"
+                                                >
+                                                    Copy Email
+                                                </button>
                                             </div>
-                                            <button 
-                                                onClick={copyEmail}
-                                                className="bg-blue-500 text-white px-3 py-1 rounded-md text-xs hover:bg-blue-600 transition-colors"
-                                                aria-label="Copy customer service email address to clipboard"
-                                            >
-                                                Copy Email
-                                            </button>
                                         </div>
-                                    </div>
-                                )}
-
-                                <p className="text-xs text-gray-400 mt-1">
-                                    {new Date(n.createdAt).toLocaleString()}
-                                </p>
-                                
-                                {!n.isRead && (
-                                    <button 
-                                        onClick={() => handleMarkAsRead(n.id)} 
-                                        className="text-xs text-orange-500 font-bold mt-2 hover:underline bg-orange-50 px-2 py-1 rounded"
-                                    >
-                                        {t.markAsRead || 'Mark as Read'}
-                                    </button>
-                                )}
+                                    )}
+                                    <p className="text-xs text-gray-400 mt-1">
+                                        {new Date(n.createdAt).toLocaleString()}
+                                    </p>
+                                    {!n.isRead && (
+                                        <button 
+                                            onClick={() => handleMarkAsRead(n.id)} 
+                                            className="text-xs text-orange-500 font-bold mt-2 hover:underline bg-orange-50 px-2 py-1 rounded"
+                                        >
+                                            {t.markAsRead || 'Mark as Read'}
+                                        </button>
+                                    )}
+                                </div>
+                                {!n.isRead && <div className="w-2.5 h-2.5 bg-orange-500 rounded-full flex-shrink-0 mt-1 animate-pulse"></div>}
                             </div>
-                            {!n.isRead && <div className="w-2.5 h-2.5 bg-orange-500 rounded-full flex-shrink-0 mt-1 animate-pulse"></div>}
+                        ))
+                    ) : (
+                        <div className="text-center py-8">
+                            <BellIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                            <p className="text-gray-500">{t.noNotifications || 'No notifications yet'}</p>
+                            <p className="text-xs text-gray-400 mt-2">
+                                New updates and messages will appear here
+                            </p>
                         </div>
-                    ))
-                ) : (
-                    <div className="text-center py-8">
-                        <BellIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                        <p className="text-gray-500">{t.noNotifications || 'No notifications yet'}</p>
-                        <p className="text-xs text-gray-400 mt-2">
-                            New updates and messages will appear here
-                        </p>
-                    </div>
-                )}
-            </div>
+                    )}
+                </div>
 
             {/* Quick Actions for Therapists */}
             {(userRole === 'therapist' || userRole === 'place') && (

@@ -257,6 +257,27 @@ export const recordUserRegistration = async (
 
         return created as unknown as UserRegistrationRecord;
     } catch (error) {
+        const msg = (error as any)?.message || '';
+        const code = (error as any)?.code;
+        if (code === 404 || /could not be found/i.test(msg)) {
+            console.warn('user_registrations collection missing; recording registration locally.');
+            // Local fallback record
+            const local: UserRegistrationRecord = {
+                $id: undefined,
+                userId,
+                userType,
+                deviceId,
+                ipAddress,
+                hasReceivedWelcomeBonus: false,
+                registrationDate: new Date().toISOString(),
+                firstLoginDate: undefined
+            };
+            try {
+                localStorage.setItem('indastreet_registered', 'true');
+                localStorage.setItem('indastreet_registration_date', local.registrationDate);
+            } catch {}
+            return local;
+        }
         console.error('Error recording registration:', error);
         throw error;
     }
@@ -313,17 +334,29 @@ export const awardWelcomeBonus = async (
             console.error('Error persisting welcome coins to coin history system:', coinErr);
         }
 
-        // Update registration record
-        await databases.updateDocument(
-            DATABASE_ID,
-            COLLECTIONS.userRegistrations,
-            registration.$id as string,
-            {
-                hasReceivedWelcomeBonus: awarded,
-                welcomeBonusAmount: awarded ? coinsAwarded : 0,
-                firstLoginDate: new Date().toISOString()
+        // Update registration record (best-effort)
+        try {
+            if (registration.$id) {
+                await databases.updateDocument(
+                    DATABASE_ID,
+                    COLLECTIONS.userRegistrations,
+                    registration.$id as string,
+                    {
+                        hasReceivedWelcomeBonus: awarded,
+                        welcomeBonusAmount: awarded ? coinsAwarded : 0,
+                        firstLoginDate: new Date().toISOString()
+                    }
+                );
             }
-        );
+        } catch (updateErr) {
+            const msg = (updateErr as any)?.message || '';
+            const code = (updateErr as any)?.code;
+            if (code === 404 || /could not be found/i.test(msg)) {
+                console.warn('user_registrations collection missing during update; continuing.');
+            } else {
+                console.error('Error updating registration record:', updateErr);
+            }
+        }
 
         // Store in localStorage only if awarded
         if (awarded) {
