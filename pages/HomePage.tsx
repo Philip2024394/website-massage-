@@ -639,35 +639,7 @@ const HomePage: React.FC<HomePageProps> = ({
                         </button>
                     </div>
                     
-                    {/* Massage Directory Button - Centered */}
-                    <div className="flex justify-center mt-3">
-                        <button 
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                console.log('📋 Massage Directory button clicked!');
-                                console.log('onNavigate function exists:', !!onNavigate);
-                                
-                                if (onNavigate) {
-                                    console.log('✅ Calling onNavigate with massageTypes');
-                                    try {
-                                        onNavigate('massageTypes');
-                                        console.log('✅ Navigation to massageTypes called successfully');
-                                    } catch (error) {
-                                        console.error('❌ Error calling onNavigate:', error);
-                                    }
-                                } else {
-                                    console.error('❌ onNavigate is not available!');
-                                    alert('Navigation function not available. Please refresh the page.');
-                                }
-                            }}
-                            className="text-orange-500 font-semibold text-sm hover:text-orange-600 transition-colors bg-orange-50 px-4 py-2 rounded border-2 border-orange-200 cursor-pointer"
-                            type="button"
-                            title="Click to go to Massage Directory"
-                        >
-                            Massage Directory
-                        </button>
-                    </div>
+                    {/* Massage Directory hero button removed as requested */}
                 </div>
 
                 {/* Therapists and Places Display */}
@@ -718,6 +690,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                         isCustomerLoggedIn={!!loggedInCustomer}
                                         onIncrementAnalytics={(metric) => onIncrementAnalytics(therapist.id || therapist.$id, 'therapist', metric)}
                                         loggedInProviderId={loggedInProvider?.id}
+                                            onNavigate={onNavigate}
                                         activeDiscount={realDiscount}
                                         t={t}
                                     />

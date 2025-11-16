@@ -76,6 +76,7 @@ const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({
 
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -85,6 +86,7 @@ const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({
       return;
     }
     try {
+      setLoading(true);
       if (mode === 'register') {
         if (selectedRole === 'admin') {
           try {
@@ -117,21 +119,45 @@ const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({
             }
           }
         } else {
-          setError('Registration for this role is not implemented yet.');
+          if (selectedRole === 'user') {
+            try {
+              await authService.register(form.email, form.password, 'User');
+              try { localStorage.setItem('just_registered', 'true'); } catch {}
+              setSuccess('Account created. Please sign in to continue.');
+              setMode('login');
+            } catch (err: any) {
+              if (err?.message?.includes('already exists')) {
+                setError('An account with this email already exists. Please use Login.');
+                setMode('login');
+              } else {
+                setError(err?.message || 'An error occurred.');
+              }
+            }
+          } else {
+            setError('Registration for this role is not implemented yet.');
+          }
         }
       } else {
         if (selectedRole === 'admin') {
           await authService.login(form.email, form.password);
           setSuccess('Logged in as admin! Redirecting...');
-          setTimeout(() => {
-            window.location.reload();
-          }, 1000);
+          setTimeout(() => { window.location.reload(); }, 1000);
+        } else if (selectedRole === 'user') {
+          await authService.login(form.email, form.password);
+          setSuccess('Logged in! Redirecting to your dashboard...');
+          if (onNavigate) {
+            onNavigate('customerDashboard');
+          } else {
+            setTimeout(() => { window.location.reload(); }, 500);
+          }
         } else {
           setError('Login for this role is not implemented yet.');
         }
       }
     } catch (err: any) {
       setError(err?.message || 'An error occurred.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -188,14 +214,7 @@ const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({
         {/* Overlay for better readability */}
         <div className="absolute inset-0 bg-black/40 z-10"></div>
 
-        {/* Return to Home Button */}
-        <button
-          onClick={() => onBack ? onBack() : (typeof navigate === 'function' ? navigate('/') : window.location.href = '/')}
-          className="fixed top-20 left-6 w-12 h-12 bg-orange-500 hover:bg-orange-600 rounded-full shadow-lg flex items-center justify-center transition-all z-30 border border-orange-400"
-          aria-label="Back to Home"
-        >
-          <HomeIcon className="w-6 h-6 text-white" />
-        </button>
+        {/* Removed floating Home button per request */}
 
       {/* Glass Effect Login Container */}
       <div className="max-w-md w-full bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-8 relative z-20 border border-white/20">
@@ -288,17 +307,18 @@ const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({
           )}
           <button
             type="submit"
-            className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 shadow-lg transition-all mt-6"
+            disabled={loading}
+            className={`w-full ${loading ? 'bg-orange-300 cursor-wait' : 'bg-orange-500 hover:bg-orange-600'} text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 shadow-lg transition-all mt-6`}
           >
             {mode === 'login' ? (
               <>
                 <LogIn className="w-5 h-5" />
-                Login
+                {loading ? 'Logging in…' : 'Login'}
               </>
             ) : (
               <>
                 <UserPlus className="w-5 h-5" />
-                Register
+                {loading ? 'Creating…' : 'Register'}
               </>
             )}
           </button>

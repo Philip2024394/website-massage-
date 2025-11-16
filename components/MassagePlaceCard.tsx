@@ -477,7 +477,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                 </button>
 
                 {/* Refer Friend and Leave Review Links */}
-                <div className="flex justify-between items-center mt-3 px-2">
+                <div className="flex flex-wrap justify-between items-center gap-2 mt-3 px-2">
                     <button
                         onClick={() => setShowReferModal(true)}
                         className="flex items-center gap-1.5 text-sm text-gray-700 hover:text-gray-900 font-semibold transition-colors"
@@ -488,6 +488,23 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                         </svg>
                         <span>Refer Friend</span>
                     </button>
+                    {onNavigate && (
+                        <button
+                            type="button"
+                            onClick={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                onNavigate('massageTypes');
+                            }}
+                            title="Go to Massage Directory"
+                            className="flex items-center gap-1 text-sm text-gray-700 hover:text-gray-900 font-semibold transition-colors"
+                        >
+                            <svg className="w-5 h-5 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h8m0 0l-3.5 3.5M16 7l-3.5 3.5M5 12h14M5 16h14" />
+                            </svg>
+                            <span>Massage Directory</span>
+                        </button>
+                    )}
                     <button
                         onClick={() => {
                             if (!isCustomerLoggedIn) {

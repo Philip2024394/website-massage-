@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { bookingService } from '../lib/appwriteService';
+import { bookingService, userService } from '../lib/appwriteService';
 import { Booking, BookingStatus, LoyaltyWallet, CoinTransaction } from '../types';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import { getUserWallets, getTransactionHistory } from '../lib/loyaltyService';
 import { X, Calendar as CalendarIcon, Wallet, CreditCard, User, Coins, Camera, Users, History } from 'lucide-react';
+import { imageUploadService } from '../lib/services/imageService';
+import { WELCOME_BONUS, shouldShowWelcomePopup, markWelcomePopupSeen } from '../lib/deviceTracking';
 
 interface CustomerDashboardPageProps {
   customer?: any;
@@ -36,10 +38,29 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
   const [bookingToCancel, setBookingToCancel] = useState<Booking | null>(null);
   const [cancelReason, setCancelReason] = useState('');
   const [cancelOtherText, setCancelOtherText] = useState('');
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [profileForm, setProfileForm] = useState({
+    name: user?.name || '',
+    address: (user?.address as string) || '',
+    whatsappNumber: (user?.whatsappNumber as string) || '',
+    customerPhoto: (user?.customerPhoto as string) || ''
+  });
+  const [showWelcome, setShowWelcome] = useState(false);
 
   useEffect(() => {
     loadBookings();
     loadWallets();
+  }, []);
+
+  // Show welcome confetti/coins popup for first-time registration
+  useEffect(() => {
+    try {
+      const justRegistered = localStorage.getItem('just_registered') === 'true';
+      if (justRegistered || shouldShowWelcomePopup()) {
+        setShowWelcome(true);
+        localStorage.removeItem('just_registered');
+      }
+    } catch {}
   }, []);
 
   const loadBookings = async () => {
@@ -324,6 +345,30 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
                 💰 Coin History
               </button>
 
+              {/* Terms & Conditions */}
+              <button
+                onClick={() => {
+                  onNavigate?.('serviceTerms');
+                  setIsSideDrawerOpen(false);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors text-gray-700 hover:bg-gray-100"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c.667 0 2-.4 2-2s-1.333-2-2-2-2 .4-2 2 1.333 2 2 2zm0 2c-2.667 0-8 1.333-8 4v2h16v-2c0-2.667-5.333-4-8-4z" /></svg>
+                Terms & Conditions
+              </button>
+
+              {/* Privacy Policy */}
+              <button
+                onClick={() => {
+                  onNavigate?.('privacy');
+                  setIsSideDrawerOpen(false);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors text-gray-700 hover:bg-gray-100"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c1.657 0 3-1.343 3-3V5a3 3 0 10-6 0v3c0 1.657 1.343 3 3 3zM5 21h14a2 2 0 002-2v-7H3v7a2 2 0 002 2z" /></svg>
+                Privacy Policy
+              </button>
+
               {/* Coin Shop Link */}
               <button
                 onClick={() => {
@@ -358,6 +403,18 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
               >
                 <Users className="w-5 h-5" />
                 Become Agent
+              </button>
+
+              {/* Invite Friends (Referral) */}
+              <button
+                onClick={() => {
+                  onNavigate?.('referral');
+                  setIsSideDrawerOpen(false);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors text-gray-700 hover:bg-gray-100"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                Invite Friends (Get Coins)
               </button>
             </div>
           </div>
@@ -527,7 +584,7 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
 
                 {/* Coin History Button */}
                 <button
-                  onClick={() => onNavigate('coin-history')}
+                  onClick={() => onNavigate('coinHistory')}
                   className="w-full flex items-center justify-between p-4 bg-white rounded-xl shadow-md hover:shadow-lg transition-all border-2 border-orange-200 hover:border-orange-400"
                 >
                   <div className="flex items-center gap-3">
@@ -543,6 +600,7 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </button>
+
               </div>
             )}
 
@@ -790,7 +848,7 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
           </div>
         )}
 
-        {/* Profile Tab - SAME DESIGN AS HOTEL DASHBOARD */}
+        {/* Profile Tab - Editable */}
         {activeTab === 'profile' && (
           <div className="space-y-6">
             {/* Page Header - Same as Hotel Dashboard */}
@@ -806,7 +864,7 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
               </div>
             </div>
 
-            {/* Personal Information Section - Same layout as Hotel Dashboard */}
+            {/* Personal Information Section */}
             <div>
               <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                 <svg className="w-4 h-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -814,11 +872,11 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
                 </svg>
                 Full Name
               </label>
-              <input 
-                className="w-full p-3 border-2 border-gray-300 rounded-lg text-base font-medium focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-gray-50" 
-                value={user.name}
-                disabled
-                readOnly
+              <input
+                className="w-full p-3 border-2 border-gray-300 rounded-lg text-base font-medium focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white"
+                value={profileForm.name}
+                onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
+                placeholder="Your full name"
               />
             </div>
 
@@ -829,8 +887,8 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
                 </svg>
                 Email Address
               </label>
-              <input 
-                className="w-full p-3 border-2 border-gray-300 rounded-lg text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-gray-50" 
+              <input
+                className="w-full p-3 border-2 border-gray-300 rounded-lg text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-gray-50"
                 value={user.email}
                 disabled
                 readOnly
@@ -842,13 +900,13 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
                 <svg className="w-4 h-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                 </svg>
-                Phone Number
+                WhatsApp Number
               </label>
-              <input 
-                className="w-full p-3 border-2 border-gray-300 rounded-lg text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-gray-50" 
-                value={user.phone || 'Not provided'}
-                disabled
-                readOnly
+              <input
+                className="w-full p-3 border-2 border-gray-300 rounded-lg text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white"
+                value={profileForm.whatsappNumber}
+                onChange={(e) => setProfileForm({ ...profileForm, whatsappNumber: e.target.value })}
+                placeholder="e.g. +62 812-3456-7890"
               />
             </div>
 
@@ -865,6 +923,84 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
                 disabled
                 readOnly
               />
+            </div>
+
+            {/* Address */}
+            <div>
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                <svg className="w-4 h-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm0 2c-3.333 0-10 1.667-10 5v3h20v-3c0-3.333-6.667-5-10-5z"/></svg>
+                Address
+              </label>
+              <input
+                className="w-full p-3 border-2 border-gray-300 rounded-lg text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white"
+                value={profileForm.address}
+                onChange={(e) => setProfileForm({ ...profileForm, address: e.target.value })}
+                placeholder="Your address"
+              />
+            </div>
+
+            {/* Profile Photo Upload */}
+            <div>
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                <svg className="w-4 h-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7h4l2-3h6l2 3h4v12H3z"/></svg>
+                Profile Photo
+              </label>
+              {profileForm.customerPhoto ? (
+                <div className="flex items-center gap-3 mb-2">
+                  <img src={profileForm.customerPhoto} alt="Profile" className="w-16 h-16 rounded-full object-cover border" />
+                  <button
+                    className="px-3 py-2 text-sm bg-gray-100 rounded-lg border hover:bg-gray-200"
+                    onClick={() => setProfileForm({ ...profileForm, customerPhoto: '' })}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ) : null}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = async () => {
+                    try {
+                      const base64 = reader.result as string;
+                      const url = await imageUploadService.uploadProfileImage(base64);
+                      setProfileForm((p) => ({ ...p, customerPhoto: url }));
+                    } catch (err) {
+                      alert('Failed to upload image');
+                    }
+                  };
+                  reader.readAsDataURL(file);
+                }}
+              />
+            </div>
+
+            {/* Save Button */}
+            <div className="flex justify-end pt-2">
+              <button
+                disabled={isSavingProfile}
+                onClick={async () => {
+                  setIsSavingProfile(true);
+                  try {
+                    await userService.updateCustomerByEmail(user.email, {
+                      name: profileForm.name,
+                      address: profileForm.address,
+                      whatsappNumber: profileForm.whatsappNumber,
+                      customerPhoto: profileForm.customerPhoto
+                    });
+                    alert('Profile saved');
+                  } catch (e) {
+                    alert('Failed to save profile');
+                  } finally {
+                    setIsSavingProfile(false);
+                  }
+                }}
+                className={`px-6 py-3 rounded-lg font-semibold text-white ${isSavingProfile ? 'bg-orange-300' : 'bg-orange-500 hover:bg-orange-600'} shadow`}
+              >
+                {isSavingProfile ? 'Saving…' : 'Save Profile'}
+              </button>
             </div>
 
             {/* Statistics Section - Same as Hotel Dashboard */}
@@ -987,6 +1123,34 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
                 Confirm Cancel
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Welcome Bonus Celebration */}
+      {showWelcome && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => { setShowWelcome(false); try { markWelcomePopupSeen(); } catch {} }}>
+          {/* Falling coins */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            {Array.from({ length: 24 }).map((_, i) => (
+              <div key={i} className="absolute text-3xl animate-[fall_3s_linear_infinite]" style={{ left: `${(i * 37) % 100}%`, animationDelay: `${(i%6)*0.25}s` }}>🪙</div>
+            ))}
+            <style>{`@keyframes fall { 0% { transform: translateY(-10% ) rotate(0deg); opacity: 1;} 80% {opacity: 1;} 100% { transform: translateY(110%) rotate(360deg); opacity: 0;} }`}</style>
+          </div>
+          <div className="relative bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="text-center mb-4">
+              <div className="text-6xl mb-2">🎉</div>
+              <h3 className="text-2xl font-bold text-gray-900">Congratulations!</h3>
+              <p className="text-gray-600 mt-1">Your account was created successfully.</p>
+            </div>
+            <div className="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl p-5 text-white text-center shadow">
+              <div className="text-sm opacity-90">Welcome Bonus</div>
+              <div className="text-5xl font-extrabold my-2">+{WELCOME_BONUS.COINS} 🪙</div>
+              <div className="text-sm opacity-90">Use coins in the Coin Shop</div>
+            </div>
+            <button className="w-full mt-5 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-xl" onClick={() => { setShowWelcome(false); try { markWelcomePopupSeen(); } catch {} }}>
+              Awesome! 🌟
+            </button>
           </div>
         </div>
       )}

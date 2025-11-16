@@ -31,6 +31,7 @@ const HotelVillaMenuPage: React.FC<HotelVillaMenuPageProps> = ({
     language: propLanguage = 'en',
     _onBook,
     _onBookingSubmit,
+    setPage,
     onBackToDashboard
 }) => {
     const [activeTab, setActiveTab] = useState<'therapists' | 'places'>('therapists');
@@ -120,6 +121,7 @@ Powered by IndaStreet`;
                                 onBook={(provider) => handleBookProvider(provider, 'therapist')}
                                 onRate={() => {}}
                                 onIncrementAnalytics={() => {}}
+                                onNavigate={setPage ? (p) => setPage(p as any) : undefined}
                                 t={t}
                             />
                         </div>

@@ -1,9 +1,47 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ShopItem, UserCoins } from '../types';
 import { shopItemService, coinService, shopOrderService } from '../lib/appwriteService';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import LocationModal from '../components/LocationModal';
 import { AppDrawer } from '../components/AppDrawer';
+
+interface CategoryOption {
+    id: string;
+    label: string;
+    icon: string;
+}
+
+const BASE_CATEGORY_CONFIGS: CategoryOption[] = [
+    { id: 'all', label: 'All', icon: '🛍️' },
+    { id: 'electronics', label: 'Electronics', icon: '📱' },
+    { id: 'fashion', label: 'Fashion', icon: '👕' },
+    { id: 'wellness', label: 'Wellness', icon: '💆' },
+    { id: 'educational', label: 'Educational', icon: '📚' },
+    { id: 'home', label: 'Home', icon: '🏠' },
+    { id: 'gift_cards', label: 'Gift Cards', icon: '🎁' },
+    { id: 'lighter', label: 'Lighter', icon: '🔥' },
+];
+
+const CATEGORY_ICON_OVERRIDES: Record<string, string> = {
+    'Leather Belts': '👖',
+    Watches: '⌚',
+    'Work Belts': '🛠️',
+    Home: '🏠',
+    electronics: '📱',
+    fashion: '👕',
+    wellness: '💆',
+    educational: '📚',
+    lighter: '🔥',
+};
+
+const BASE_CATEGORY_IDS = new Set(BASE_CATEGORY_CONFIGS.map((category) => category.id));
+
+const formatCategoryLabel = (category: string) =>
+    category
+        .replace(/_/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .replace(/\b\w/g, (char) => char.toUpperCase());
 
 interface CoinShopPageProps {
     onNavigate: (page: string) => void;
@@ -35,6 +73,8 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
     onBack,
     currentUser,
     onSetUserLocation,
+    onTermsClick,
+    onPrivacyClick,
     t,
     isFromTherapistDashboard = false,
     dashboardType = 'standalone'
@@ -60,6 +100,8 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
     
     // Location modal state
     const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+    // Image preview state for enlarging product images with details
+    const [previewItem, setPreviewItem] = useState<ShopItem | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 12;
 
@@ -159,6 +201,83 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
                 augmented = [...items, ...created];
                 console.log(`Persisted ${created.length} lighter items to Appwrite.`);
             }
+            // Ensure "Watches" category items exist in Appwrite (persist)
+            const existingWatches = augmented.filter(i => (i.category || '').trim() === 'Watches');
+            const providedWatchImages = [
+                'https://ik.imagekit.io/7grri5v7d/belt%2020.png?updatedAt=1763284365379',
+                'https://ik.imagekit.io/7grri5v7d/belt%2021.png?updatedAt=1763284381996',
+                'https://ik.imagekit.io/7grri5v7d/belt%2022.png?updatedAt=1763284402810',
+                'https://ik.imagekit.io/7grri5v7d/belt%2019.png?updatedAt=1763284340327'
+            ];
+            if (existingWatches.length === 0) {
+                const nowIso = new Date().toISOString();
+                const watchImages = providedWatchImages;
+                const watchPhrases = [
+                    'Classic analog design.',
+                    'Durable strap, daily wear.',
+                    'Water resistant build.',
+                    'Clear dial, easy read.'
+                ];
+                const randCoin = () => Math.floor(2400 + Math.random() * (3200 - 2400 + 1)); // 2400..3200
+                const watchItems: Partial<ShopItem>[] = watchImages.map((url, idx) => ({
+                    name: `IndaStreet Watch ${idx + 1}`,
+                    description: `Stylish wrist watch. ${watchPhrases[idx % watchPhrases.length]}`,
+                    coinPrice: randCoin(),
+                    imageUrl: url,
+                    category: 'Watches' as any,
+                    stockQuantity: 5 + Math.floor(Math.random() * 6),
+                    isActive: true,
+                    estimatedDelivery: '6-10 days',
+                    disclaimer: 'Designs may vary slightly from images.',
+                    createdAt: nowIso,
+                    updatedAt: nowIso
+                }));
+                const createdWatches: ShopItem[] = [];
+                for (const it of watchItems) {
+                    try {
+                        const doc = await shopItemService.createItem({
+                            name: it.name!,
+                            description: it.description!,
+                            coinPrice: it.coinPrice!,
+                            imageUrl: it.imageUrl!,
+                            category: 'Watches' as any,
+                            stockQuantity: it.stockQuantity!,
+                            isActive: true,
+                            estimatedDelivery: it.estimatedDelivery!,
+                            disclaimer: it.disclaimer!
+                        });
+                        createdWatches.push(doc);
+                    } catch (e) {
+                        console.warn('Failed to create watch item', it.name, e);
+                    }
+                }
+                augmented = [...augmented, ...createdWatches];
+                console.log(`Persisted ${createdWatches.length} watch items to Appwrite.`);
+            } else {
+                // Dev-only migration: if watches already exist with placeholder images, update to provided images
+                const isDevHost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+                if (isDevHost) {
+                    const placeholders = existingWatches.filter(w => (w.imageUrl || '').includes('placehold.co'));
+                    if (placeholders.length > 0) {
+                        const updatedDocs: ShopItem[] = [];
+                        for (let i = 0; i < placeholders.length; i++) {
+                            const w = placeholders[i];
+                            const newUrl = providedWatchImages[i % providedWatchImages.length];
+                            try {
+                                const doc = await shopItemService.updateItem(w.$id || '', { imageUrl: newUrl });
+                                updatedDocs.push(doc);
+                            } catch (e) {
+                                console.warn('Failed to update existing watch image', w.$id, e);
+                            }
+                        }
+                        if (updatedDocs.length > 0) {
+                            const updatedIds = new Set(updatedDocs.map(d => d.$id));
+                            augmented = augmented.map(it => updatedIds.has(it.$id || '') ? (updatedDocs.find(d => d.$id === it.$id) || it) : it);
+                            console.log(`Updated ${updatedDocs.length} existing watch items with new images.`);
+                        }
+                    }
+                }
+            }
             setShopItems(augmented);
 
             // Load user coins if logged in
@@ -181,16 +300,35 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
         }
     };
 
-    const categories = [
-        { id: 'all', label: 'All', icon: '🛍️' },
-        { id: 'electronics', label: 'Electronics', icon: '📱' },
-        { id: 'fashion', label: 'Fashion', icon: '👕' },
-        { id: 'wellness', label: 'Wellness', icon: '💆' },
-        { id: 'educational', label: 'Educational', icon: '📚' },
-        { id: 'home', label: 'Home', icon: '🏠' },
-        { id: 'gift_cards', label: 'Gift Cards', icon: '🎁' },
-        { id: 'lighter', label: 'Lighter', icon: '🔥' },
-    ];
+    const dynamicCategories = useMemo<CategoryOption[]>(() => {
+        const uniqueCategories = Array.from(
+            new Set(
+                shopItems
+                    .map((item) => (item.category || '').trim())
+                    .filter((category): category is string => Boolean(category))
+            )
+        );
+
+        return uniqueCategories
+            .filter((category) => !BASE_CATEGORY_IDS.has(category))
+            .sort((a, b) => formatCategoryLabel(a).localeCompare(formatCategoryLabel(b)))
+            .map((category) => ({
+                id: category,
+                label: formatCategoryLabel(category),
+                icon: CATEGORY_ICON_OVERRIDES[category] || '🧾'
+            }));
+    }, [shopItems]);
+
+    const categories = useMemo<CategoryOption[]>(
+        () => [...BASE_CATEGORY_CONFIGS, ...dynamicCategories],
+        [dynamicCategories]
+    );
+
+    useEffect(() => {
+        if (selectedCategory !== 'all' && !categories.some((category) => category.id === selectedCategory)) {
+            setSelectedCategory('all');
+        }
+    }, [categories, selectedCategory]);
 
     const filteredItems = selectedCategory === 'all' 
         ? shopItems 
@@ -219,6 +357,170 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
             setCurrentPage(currentPage - 1);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
+    };
+
+    // Product number helpers
+    const getCategoryPrefix = (category?: string) => {
+        const c = (category || '').toLowerCase();
+        if (c === 'watches') return 'WAT';
+        if (c === 'lighter') return 'LIT';
+        if (c === 'leather belts') return 'BEL';
+        if (c === 'work belts') return 'WBEL';
+        if (c === 'home') return 'HOME';
+        return 'PRD';
+    };
+    const computeProductNumber = (item: ShopItem) => {
+        const source = (item.$id || item.name || '').trim();
+        let hash = 0;
+        for (let i = 0; i < source.length; i++) {
+            hash = ((hash << 5) - hash) + source.charCodeAt(i);
+            hash |= 0; // Convert to 32bit integer
+        }
+        const num = Math.abs(hash % 100000);
+        return `${getCategoryPrefix(item.category)}-${num.toString().padStart(5, '0')}`;
+    };
+
+    // Safer renderer to avoid complex nested JSX ternaries in-place
+    const renderProductContent = () => {
+        if (loading) {
+            return (
+                <div className="text-center py-12">
+                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-orange-500"></div>
+                    <p className="mt-4 text-gray-600">Loading shop items...</p>
+                </div>
+            );
+        }
+
+        if (filteredItems.length === 0) {
+            return (
+                <div className="text-center py-12">
+                    <div className="text-6xl mb-4">🛍️</div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">No Items Available</h3>
+                    <p className="text-gray-600">Check back later for new items!</p>
+                </div>
+            );
+        }
+
+        return (
+            <>
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 pb-20">
+                    {paginatedItems.map((item) => (
+                        <div
+                            key={item.$id}
+                            className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200 hover:shadow-md transition-shadow"
+                        >
+                            {/* Product Image (smaller on mobile, no cropping) */}
+                            <div className="relative bg-gray-50 h-28 sm:h-36 md:h-44 flex items-center justify-center">
+                                <img
+                                    src={item.imageUrl}
+                                    alt={item.name}
+                                    className="max-w-full max-h-full object-contain cursor-zoom-in p-2"
+                                    onClick={() => setPreviewItem(item)}
+                                />
+                                {/* Coin Price Badge - Top Right - Black Glass Effect */}
+                                <div className="absolute top-2 right-2 bg-black bg-opacity-70 backdrop-blur-md text-white px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1 border border-white border-opacity-20">
+                                    <span className="font-bold text-sm">{item.coinPrice.toLocaleString()}</span>
+                                    <span className="text-xs">🪙</span>
+                                </div>
+                                {item.stockQuantity <= 0 && (
+                                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                                        <span className="bg-red-500 text-white px-4 py-2 rounded-lg font-bold">
+                                            Out of Stock
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Product Info */}
+                            <div className="p-3">
+                                <h3 className="font-bold text-gray-900 text-sm mb-1 line-clamp-2">
+                                    {item.name}
+                                </h3>
+                                <p className="text-xs text-gray-600 mb-2 line-clamp-2">
+                                    {item.description}
+                                </p>
+
+                                {/* Coin Price */}
+                                <div className="flex items-center gap-1 mb-2">
+                                    <span className="text-orange-500 text-lg font-bold">
+                                        {item.coinPrice}
+                                    </span>
+                                    <span className="text-orange-500 text-sm">🪙</span>
+                                </div>
+
+                                {/* Delivery Time */}
+                                <div className="flex items-center gap-1 mb-1 text-xs text-gray-500">
+                                    <>
+                                        <span>🚚</span>
+                                        <span>Delivery: {item.estimatedDelivery || '7-10 days'}</span>
+                                    </>
+                                </div>
+
+                                {/* Product Number */}
+                                <div className="flex items-center gap-1 mb-3 text-xs text-gray-500">
+                                    <span>🏷️</span>
+                                    <span>Product No: {computeProductNumber(item)}</span>
+                                </div>
+
+                                {/* Action Button */}
+                                <button
+                                    onClick={() => handleCashIn(item)}
+                                    disabled={item.stockQuantity <= 0 || processingItemId === item.$id}
+                                    className={`w-full py-2.5 rounded-lg font-bold text-sm transition-colors ${
+                                        item.stockQuantity <= 0
+                                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                            : processingItemId === item.$id
+                                            ? 'bg-orange-300 text-white cursor-wait'
+                                            : 'bg-orange-500 text-white hover:bg-orange-600'
+                                    }`}
+                                >
+                                    {processingItemId === item.$id ? 'Processing...' : 'Cash In'}
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                    <div className="flex items-center justify-center gap-4 pb-20 mt-8 mb-6">
+                        <button
+                            onClick={handlePrevPage}
+                            disabled={currentPage === 1}
+                            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-bold transition-colors ${
+                                currentPage === 1
+                                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                    : 'bg-orange-500 text-white hover:bg-orange-600'
+                            }`}
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
+                            Previous
+                        </button>
+
+                        <div className="text-gray-700 font-semibold">
+                            Page {currentPage} of {totalPages}
+                        </div>
+
+                        <button
+                            onClick={handleNextPage}
+                            disabled={currentPage === totalPages}
+                            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-bold transition-colors ${
+                                currentPage === totalPages
+                                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                    : 'bg-orange-500 text-white hover:bg-orange-600'
+                            }`}
+                        >
+                            Next
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                    </div>
+                )}
+            </>
+        );
     };
 
 
@@ -506,6 +808,23 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
                 <p className="text-gray-600 text-base max-w-2xl mx-auto">
                     Let's Cash in your coins for awesome products dispatched within 48 hours. Delivery times may vary across Indonesia
                 </p>
+                <div className="text-xs text-gray-500 mt-2">
+                    By cashing in, you agree to our
+                    {' '}
+                    <button
+                        className="text-orange-600 underline"
+                        onClick={() => {
+                            if (typeof (onTermsClick) === 'function') {
+                                onTermsClick();
+                            } else if (typeof (onNavigate) === 'function') {
+                                onNavigate('serviceTerms');
+                            }
+                        }}
+                    >
+                        Shop Terms & Conditions
+                    </button>
+                    .
+                </div>
             </div>
 
             {/* Shop Items Grid with Falling Coins Background */}
@@ -538,132 +857,7 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
                 </div>
 
                 {/* Product Content */}
-                {loading ? (
-                    <div className="text-center py-12">
-                        <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-orange-500"></div>
-                        <p className="mt-4 text-gray-600">Loading shop items...</p>
-                    </div>
-                ) : filteredItems.length === 0 ? (
-                    <div className="text-center py-12">
-                        <div className="text-6xl mb-4">🛍️</div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">No Items Available</h3>
-                        <p className="text-gray-600">Check back later for new items!</p>
-                    </div>
-                ) : (
-                    <>
-                    <div className="grid grid-cols-2 gap-4 pb-20">
-                        {paginatedItems.map((item) => (
-                            <div
-                                key={item.$id}
-                                className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200 hover:shadow-md transition-shadow"
-                            >
-                                {/* Product Image */}
-                                <div className="relative aspect-square bg-gray-100">
-                                    <img
-                                        src={item.imageUrl}
-                                        alt={item.name}
-                                        className="w-full h-full object-cover"
-                                    />
-                                    
-                                    {/* Coin Price Badge - Top Right - Black Glass Effect */}
-                                    <div className="absolute top-2 right-2 bg-black bg-opacity-70 backdrop-blur-md text-white px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1 border border-white border-opacity-20">
-                                        <span className="font-bold text-sm">{item.coinPrice.toLocaleString()}</span>
-                                        <span className="text-xs">🪙</span>
-                                    </div>
-                                    
-                                    {item.stockQuantity <= 0 && (
-                                        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                                            <span className="bg-red-500 text-white px-4 py-2 rounded-lg font-bold">
-                                                Out of Stock
-                                            </span>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Product Info */}
-                                <div className="p-3">
-                                    <h3 className="font-bold text-gray-900 text-sm mb-1 line-clamp-2">
-                                        {item.name}
-                                    </h3>
-                                    <p className="text-xs text-gray-600 mb-2 line-clamp-2">
-                                        {item.description}
-                                    </p>
-
-                                    {/* Coin Price */}
-                                    <div className="flex items-center gap-1 mb-2">
-                                        <span className="text-orange-500 text-lg font-bold">
-                                            {item.coinPrice}
-                                        </span>
-                                        <span className="text-orange-500 text-sm">🪙</span>
-                                    </div>
-
-                                    {/* Delivery Time */}
-                                    <div className="flex items-center gap-1 mb-3 text-xs text-gray-500">
-                                        <>
-                                            <span>🚚</span>
-                                            <span>Delivery: {item.estimatedDelivery || '7-10 days'}</span>
-                                        </>
-                                    </div>
-
-                                    {/* Action Button */}
-                                    <button
-                                        onClick={() => handleCashIn(item)}
-                                        disabled={item.stockQuantity <= 0 || processingItemId === item.$id}
-                                        className={`w-full py-2.5 rounded-lg font-bold text-sm transition-colors ${
-                                            item.stockQuantity <= 0
-                                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                                : processingItemId === item.$id
-                                                ? 'bg-orange-300 text-white cursor-wait'
-                                                : 'bg-orange-500 text-white hover:bg-orange-600'
-                                        }`}
-                                    >
-                                        {processingItemId === item.$id ? 'Processing...' : 'Cash In'}
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Pagination Controls */}
-                    {totalPages > 1 && (
-                        <div className="flex items-center justify-center gap-4 pb-20 mt-8 mb-6">
-                            <button
-                                onClick={handlePrevPage}
-                                disabled={currentPage === 1}
-                                className={`flex items-center gap-2 px-6 py-3 rounded-lg font-bold transition-colors ${
-                                    currentPage === 1
-                                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                                        : 'bg-orange-500 text-white hover:bg-orange-600'
-                                }`}
-                            >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                                </svg>
-                                Previous
-                            </button>
-
-                            <div className="text-gray-700 font-semibold">
-                                Page {currentPage} of {totalPages}
-                            </div>
-
-                            <button
-                                onClick={handleNextPage}
-                                disabled={currentPage === totalPages}
-                                className={`flex items-center gap-2 px-6 py-3 rounded-lg font-bold transition-colors ${
-                                    currentPage === totalPages
-                                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                                        : 'bg-orange-500 text-white hover:bg-orange-600'
-                                }`}
-                            >
-                                Next
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                </svg>
-                            </button>
-                        </div>
-                    )}
-                    </>
-                )}
+                {renderProductContent()}
             </div>
 
             {/* Delivery Info Modal with Confetti */}
@@ -895,6 +1089,45 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
                         confirmButton: 'Confirm Location'
                     }}
                 />
+            )}
+
+            {/* Image Preview Modal */}
+            {previewItem && (
+                <div
+                    className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4"
+                    onClick={() => setPreviewItem(null)}
+                >
+                    <button
+                        onClick={() => setPreviewItem(null)}
+                        aria-label="Close preview"
+                        className="absolute top-4 right-4 text-white bg-black/50 hover:bg-black/70 rounded-full p-2"
+                    >
+                        ✕
+                    </button>
+                    <div
+                        className="bg-white rounded-xl max-w-3xl w-full p-4"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="w-full grid grid-cols-1 gap-3">
+                            <img
+                                src={previewItem.imageUrl}
+                                alt={previewItem.name}
+                                className="max-h-[70vh] object-contain rounded-lg"
+                            />
+                            <div className="px-1 pb-1">
+                                <div className="flex items-center justify-between mb-1">
+                                    <h3 className="font-bold text-gray-900 text-base">{previewItem.name}</h3>
+                                    <div className="flex items-center gap-1 text-orange-600 font-bold">
+                                        <span>{previewItem.coinPrice.toLocaleString()}</span>
+                                        <span>🪙</span>
+                                    </div>
+                                </div>
+                                <p className="text-sm text-gray-600 mb-1">{previewItem.description}</p>
+                                <div className="text-xs text-gray-500">🏷️ Product No: {computeProductNumber(previewItem)}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             )}
 
             <style>{`

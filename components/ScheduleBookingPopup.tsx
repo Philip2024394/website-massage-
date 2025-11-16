@@ -273,16 +273,10 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
       );
 
       console.log('✅ Booking created successfully:', booking);
-
-      // Play MP3 notification sound for therapist notification
-      try {
-        const audio = new Audio('/sounds/booking-notification.mp3');
-        audio.volume = 0.8;
-        await audio.play();
-        console.log('🔊 Booking notification sound played');
-      } catch (error) {
-        console.warn('⚠️ Could not play booking notification sound:', error);
-      }
+      // Audio note:
+      // Do not play a one-off sound here. The Booking Status Tracker starts
+      // continuous notifications immediately, which provides the audible feedback.
+      // Playing here caused overlapping sounds.
 
       // Send WhatsApp notification to therapist/place
       const acceptUrl = `${window.location.origin}/accept-booking/${booking.$id}`;

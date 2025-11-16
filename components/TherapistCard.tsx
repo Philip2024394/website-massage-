@@ -18,6 +18,7 @@ interface TherapistCardProps {
     onChatWithBusyTherapist?: (therapist: Therapist) => void; // Chat with busy therapist
     onIncrementAnalytics: (metric: keyof Analytics) => void;
     onShowRegisterPrompt?: () => void; // Show registration popup
+    onNavigate?: (page: string) => void;
     isCustomerLoggedIn?: boolean; // Check if customer is logged in
     activeDiscount?: { percentage: number; expiresAt: Date } | null; // Active discount
     t: any;
@@ -123,6 +124,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     onQuickBookWithChat,
     onIncrementAnalytics,
     onShowRegisterPrompt,
+    onNavigate,
     isCustomerLoggedIn = false,
     activeDiscount,
     t: _t,
@@ -953,7 +955,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             </div>
 
             {/* Refer Friend and Leave Review Links */}
-            <div className="flex justify-between items-center mt-2 px-1">
+            <div className="flex flex-wrap justify-between items-center gap-2 mt-2 px-1">
                 <button
                     onClick={() => setShowReferModal(true)}
                     className="flex items-center gap-1 text-xs text-gray-700 hover:text-gray-900 font-semibold transition-colors"
@@ -964,6 +966,23 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     </svg>
                     <span>Refer Friend</span>
                 </button>
+                {onNavigate && (
+                    <button
+                        type="button"
+                        onClick={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            onNavigate('massageTypes');
+                        }}
+                        title="Go to Massage Directory"
+                        className="flex items-center gap-1 text-xs text-gray-700 hover:text-gray-900 font-semibold transition-colors"
+                    >
+                        <svg className="w-4 h-4 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h8m0 0l-3.5 3.5M16 7l-3.5 3.5M5 12h14M5 16h14" />
+                        </svg>
+                        <span>Massage Directory</span>
+                    </button>
+                )}
                 <button
                     onClick={() => {
                         if (!isCustomerLoggedIn) {

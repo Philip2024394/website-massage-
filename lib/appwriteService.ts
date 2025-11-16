@@ -1019,6 +1019,46 @@ export const userService = {
             throw error;
         }
     },
+    async getCustomerByEmail(email: string): Promise<any | null> {
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.users,
+                [Query.equal('email', email), Query.limit(1)]
+            );
+            return response.documents.length > 0 ? response.documents[0] : null;
+        } catch (error) {
+            console.error('Error fetching customer by email:', error);
+            throw error;
+        }
+    },
+    async updateCustomerById(docId: string, data: any): Promise<any> {
+        try {
+            const response = await databases.updateDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.users,
+                docId,
+                data
+            );
+            return response;
+        } catch (error) {
+            console.error('Error updating customer by id:', error);
+            throw error;
+        }
+    },
+    async updateCustomerByEmail(email: string, data: any): Promise<any> {
+        try {
+            const existing = await userService.getCustomerByEmail(email);
+            if (existing) {
+                return await userService.updateCustomerById(existing.$id, data);
+            }
+            // If not exists, create minimal doc
+            return await userService.create({ email, ...data });
+        } catch (error) {
+            console.error('Error updating customer by email:', error);
+            throw error;
+        }
+    },
     async getByUserId(userId: string): Promise<any> {
         try {
             const response = await databases.listDocuments(
@@ -1052,6 +1092,9 @@ export const userService = {
             if (placeResponse.documents.length > 0) {
                 return placeResponse.documents[0];
             }
+            // Also check users collection for customers
+            const customer = await userService.getCustomerByEmail(email);
+            if (customer) return customer;
             
             return null;
         } catch (error) {
@@ -1597,22 +1640,6 @@ export const reviewService = {
             return response.documents;
         } catch (error) {
             console.error('Error fetching reviews:', error);
-            return [];
-        }
-    },
-
-    async getPending(): Promise<any[]> {
-        try {
-            const response = await databases.listDocuments(
-                APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.reviews,
-                [
-                    Query.equal('status', 'pending')
-                ]
-            );
-            return response.documents;
-        } catch (error) {
-            console.error('Error fetching pending reviews:', error);
             return [];
         }
     },

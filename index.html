@@ -220,37 +220,48 @@
     <!-- CACHE BUSTER: 2024-10-31-10:05:00 -->
     <script type="module" src="/index.tsx?v=20241031100500"></script>
     <script>
-        // 📱 PWA SERVICE WORKER: Enable for full-screen app experience
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(function(registration) {
-                        console.log('✅ PWA Service Worker registered:', registration.scope);
-                        
-                        // Enable install prompt for "Add to Home Screen"
-                        let deferredPrompt;
-                        window.addEventListener('beforeinstallprompt', (e) => {
-                            e.preventDefault();
-                            deferredPrompt = e;
-                            console.log('📱 PWA install prompt ready');
-                        });
-                        
-                        // Auto-show install prompt after 3 seconds if available
-                        setTimeout(() => {
-                            if (deferredPrompt) {
-                                deferredPrompt.prompt();
-                                deferredPrompt.userChoice.then((choiceResult) => {
-                                    console.log('PWA install choice:', choiceResult.outcome);
-                                    deferredPrompt = null;
-                                });
-                            }
-                        }, 3000);
-                    })
-                    .catch(function(error) {
-                        console.log('❌ PWA Service Worker registration failed:', error);
+      // 📱 PWA SERVICE WORKER: Disabled on localhost to avoid dev cache issues
+      if ('serviceWorker' in navigator) {
+        const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+
+        if (isLocal) {
+          // Proactively unregister any SWs when developing locally
+          navigator.serviceWorker.getRegistrations().then((regs) => {
+            regs.forEach((reg) => reg.unregister());
+            console.log('🧹 Unregistered existing service workers on localhost');
+          });
+        } else if (window.location.protocol === 'https:') {
+          // Only register in production (HTTPS) environments
+          window.addEventListener('load', function() {
+            navigator.serviceWorker.register('/sw.js')
+              .then(function(registration) {
+                console.log('✅ PWA Service Worker registered:', registration.scope);
+
+                // Enable install prompt for "Add to Home Screen"
+                let deferredPrompt;
+                window.addEventListener('beforeinstallprompt', (e) => {
+                  e.preventDefault();
+                  deferredPrompt = e;
+                  console.log('📱 PWA install prompt ready');
+                });
+
+                // Auto-show install prompt after 3 seconds if available
+                setTimeout(() => {
+                  if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                      console.log('PWA install choice:', choiceResult.outcome);
+                      deferredPrompt = null;
                     });
-            });
+                  }
+                }, 3000);
+              })
+              .catch(function(error) {
+                console.log('❌ PWA Service Worker registration failed:', error);
+              });
+          });
         }
+      }
     </script>
 </body>
 </html>

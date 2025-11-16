@@ -36,7 +36,7 @@ const CookiesPolicyPage = React.lazy(() => import('./pages/CookiesPolicyPage'));
 const MembershipPage = React.lazy(() => import('./pages/MembershipPage'));
 const BookingPage = React.lazy(() => import('./pages/BookingPage'));
 const NotificationsPage = React.lazy(() => import('./pages/NotificationsPage'));
-const MassageTypesPage = React.lazy(() => import('./pages/MassageTypesPage'));
+import MassageTypesPage from './pages/MassageTypesPage';
 const HotelDashboardPage = React.lazy(() => import('./pages/HotelDashboardPage'));
 const VillaDashboardPage = React.lazy(() => import('./pages/VillaDashboardPage'));
 const HotelLoginPage = React.lazy(() => import('./pages/HotelLoginPage'));
@@ -752,7 +752,22 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             );
             
         case 'providerAuth': 
-            return providerAuthInfo && <UnifiedLoginPage /> || null;
+            return providerAuthInfo && (
+                <UnifiedLoginPage 
+                    onNavigate={(page: string) => setPage(page as Page)}
+                    onTermsClick={handleNavigateToServiceTerms}
+                    onPrivacyClick={handleNavigateToPrivacyPolicy}
+                />
+            ) || null;
+        
+        case 'unifiedLogin':
+            return (
+                <UnifiedLoginPage 
+                    onNavigate={(page: string) => setPage(page as Page)}
+                    onTermsClick={handleNavigateToServiceTerms}
+                    onPrivacyClick={handleNavigateToPrivacyPolicy}
+                />
+            );
             
         case 'placeDashboard': {
             // Find place or create basic object for dashboard loading
