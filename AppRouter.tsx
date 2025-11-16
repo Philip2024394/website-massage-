@@ -57,7 +57,8 @@ const TherapistJobRegistrationPage = React.lazy(() => import('./pages/TherapistJ
 const JobUnlockPaymentPage = React.lazy(() => import('./pages/JobUnlockPaymentPage'));
 const AdminBankSettingsPage = React.lazy(() => import('./pages/AdminBankSettingsPage'));
 // Customer auth unified into UnifiedLoginPage; legacy CustomerAuthPage removed
-const CustomerDashboardPage = React.lazy(() => import('./pages/CustomerDashboardPage'));
+// Eager-load CustomerDashboardPage to avoid dynamic import fetch issues during dev
+import CustomerDashboardPage from './pages/CustomerDashboardPage';
 const AboutUsPage = React.lazy(() => import('./pages/AboutUsPage'));
 const ContactUsPage = React.lazy(() => import('./pages/ContactUsPage'));
 const HowItWorksPage = React.lazy(() => import('./pages/HowItWorksPage'));
