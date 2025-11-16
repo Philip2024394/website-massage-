@@ -71,7 +71,10 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
             key: 'shop',
             icon: imageIcon('shop', 'https://ik.imagekit.io/7grri5v7d/home%20buttonss.png', 'Shop'),
             label: 'Shop',
-            onClick: () => onNavigate('coin-shop'),
+            onClick: () => {
+                try { sessionStorage.setItem('coin_shop_origin', 'home'); } catch {}
+                onNavigate('coin-shop');
+            },
             badgeCount: 0
         },
         {

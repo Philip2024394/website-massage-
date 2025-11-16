@@ -1170,13 +1170,22 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             />;
             
         case 'coin-shop': {
-            // 🛡️ SECURITY: Detect which dashboard type is accessing coin shop
-            const coinShopDashboardType = (() => {
+            // 🛡️ SECURITY + UX: Detect which dashboard type is accessing coin shop
+            // If origin flagged as 'home', force standalone header regardless of session.
+            let coinShopDashboardType = (() => {
                 if (isHotelLoggedIn) return 'hotel';
                 if (isVillaLoggedIn) return 'villa';
                 if (loggedInProvider) return 'therapist';
                 return 'standalone';
             })();
+
+            try {
+                const origin = sessionStorage.getItem('coin_shop_origin');
+                if (origin === 'home') {
+                    coinShopDashboardType = 'standalone';
+                    sessionStorage.removeItem('coin_shop_origin');
+                }
+            } catch {}
             
             return <CoinShopPage 
                 onBack={() => {
@@ -1188,7 +1197,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 }}
                 onNavigate={commonNavigateHandler} 
                 isFromTherapistDashboard={!!loggedInProvider}
-                dashboardType={coinShopDashboardType}
+                dashboardType={coinShopDashboardType as 'therapist' | 'hotel' | 'villa' | 'standalone'}
                 t={t} 
             />;
         }

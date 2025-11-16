@@ -14,6 +14,9 @@ const Section: React.FC<{ title: string, content: string | React.ReactNode }> = 
 );
 
 const PrivacyPolicyPage: React.FC<PrivacyPolicyPageProps> = ({ onBack, t }) => {
+    // Defensive translation guards to prevent runtime crashes if namespace shape changes
+    const tp = t || {};
+    const safeArr = (arr: any) => (Array.isArray(arr) ? arr : []);
     return (
         <div className="min-h-screen bg-gray-50">
             <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
@@ -33,63 +36,63 @@ const PrivacyPolicyPage: React.FC<PrivacyPolicyPageProps> = ({ onBack, t }) => {
             </header>
 
             <main className="p-6 space-y-8 text-gray-700 pb-24">
-                <p className="text-xs text-gray-500">{t.lastUpdated}</p>
+                <p className="text-xs text-gray-500">{tp.lastUpdated || ''}</p>
 
-                <Section title={t.introduction.title} content={t.introduction.content} />
+                <Section title={tp.introduction?.title || 'Introduction'} content={tp.introduction?.content || ''} />
                 
-                <Section title={t.dataCollection.title} content={
+                <Section title={tp.dataCollection?.title || 'Data We Collect'} content={
                     <div className="space-y-2 text-sm text-gray-700 leading-relaxed">
-                        <p>• {t.dataCollection.personal}</p>
-                        <p>• {t.dataCollection.usage}</p>
-                        <p>• {t.dataCollection.location}</p>
-                        <p>• {t.dataCollection.photos}</p>
-                        <p>• {t.dataCollection.communications}</p>
+                        <p>• {tp.dataCollection?.personal || ''}</p>
+                        <p>• {tp.dataCollection?.usage || ''}</p>
+                        <p>• {tp.dataCollection?.location || ''}</p>
+                        <p>• {tp.dataCollection?.photos || ''}</p>
+                        <p>• {tp.dataCollection?.communications || ''}</p>
                     </div>
                 } />
 
-                <Section title={t.dataUsage.title} content={
+                <Section title={tp.dataUsage?.title || 'How We Use Data'} content={
                     <div>
-                        <p className="text-sm text-gray-700 leading-relaxed mb-2">{t.dataUsage.content}</p>
+                        <p className="text-sm text-gray-700 leading-relaxed mb-2">{tp.dataUsage?.content || ''}</p>
                         <ul className="list-disc list-inside space-y-1 text-sm text-gray-700">
-                            {t.dataUsage.points.map((point: string, index: number) => <li key={index}>{point}</li>)}
+                            {safeArr(tp.dataUsage?.points).map((point: string, index: number) => <li key={index}>{point}</li>)}
                         </ul>
                     </div>
                 } />
 
-                <Section title={t.dataSharing.title} content={
+                <Section title={tp.dataSharing?.title || 'Data Sharing'} content={
                      <div>
-                        <p className="text-sm text-gray-700 leading-relaxed mb-2">{t.dataSharing.content}</p>
+                        <p className="text-sm text-gray-700 leading-relaxed mb-2">{tp.dataSharing?.content || ''}</p>
                         <ul className="list-disc list-inside space-y-1 text-sm text-gray-700">
-                            {t.dataSharing.points.map((point: string, index: number) => <li key={index}>{point}</li>)}
+                            {safeArr(tp.dataSharing?.points).map((point: string, index: number) => <li key={index}>{point}</li>)}
                         </ul>
-                        <p className="text-sm text-gray-700 leading-relaxed mt-3 italic">{t.dataSharing.note}</p>
+                        <p className="text-sm text-gray-700 leading-relaxed mt-3 italic">{tp.dataSharing?.note || ''}</p>
                     </div>
                 } />
 
-                <Section title={t.legalBasis.title} content={
+                <Section title={tp.legalBasis?.title || 'Legal Basis'} content={
                     <div>
-                        <p className="text-sm text-gray-700 leading-relaxed mb-2">{t.legalBasis.content}</p>
+                        <p className="text-sm text-gray-700 leading-relaxed mb-2">{tp.legalBasis?.content || ''}</p>
                         <ul className="list-disc list-inside space-y-1 text-sm text-gray-700">
-                            {t.legalBasis.points.map((point: string, index: number) => <li key={index}>{point}</li>)}
+                            {safeArr(tp.legalBasis?.points).map((point: string, index: number) => <li key={index}>{point}</li>)}
                         </ul>
                     </div>
                 } />
 
-                <Section title={t.dataRetention.title} content={t.dataRetention.content} />
-                <Section title={t.security.title} content={t.security.content} />
-                <Section title={t.yourRights.title} content={t.yourRights.content} />
-                <Section title={t.cookies.title} content={t.cookies.content} />
-                <Section title={t.thirdPartyServices.title} content={t.thirdPartyServices.content} />
-                <Section title={t.childrenPrivacy.title} content={t.childrenPrivacy.content} />
-                <Section title={t.dataTransfer.title} content={t.dataTransfer.content} />
-                <Section title={t.policyChanges.title} content={t.policyChanges.content} />
-                <Section title={t.governing.title} content={t.governing.content} />
+                <Section title={tp.dataRetention?.title || 'Data Retention'} content={tp.dataRetention?.content || ''} />
+                <Section title={tp.security?.title || 'Security'} content={tp.security?.content || ''} />
+                <Section title={tp.yourRights?.title || 'Your Rights'} content={tp.yourRights?.content || ''} />
+                <Section title={tp.cookies?.title || 'Cookies'} content={tp.cookies?.content || ''} />
+                <Section title={tp.thirdPartyServices?.title || 'Third-Party Services'} content={tp.thirdPartyServices?.content || ''} />
+                <Section title={tp.childrenPrivacy?.title || "Children's Privacy"} content={tp.childrenPrivacy?.content || ''} />
+                <Section title={tp.dataTransfer?.title || 'International Transfers'} content={tp.dataTransfer?.content || ''} />
+                <Section title={tp.policyChanges?.title || 'Policy Changes'} content={tp.policyChanges?.content || ''} />
+                <Section title={tp.governing?.title || 'Governing Law'} content={tp.governing?.content || ''} />
                 
                 <div className="bg-orange-50 border-l-4 border-orange-500 p-4 rounded">
-                    <Section title={t.disclaimer.title} content={t.disclaimer.content} />
+                    <Section title={tp.disclaimer?.title || 'Disclaimer'} content={tp.disclaimer?.content || ''} />
                 </div>
 
-                <Section title={t.contact.title} content={t.contact.content} />
+                <Section title={tp.contact?.title || 'Contact'} content={tp.contact?.content || ''} />
 
             </main>
 
