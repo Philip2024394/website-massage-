@@ -153,7 +153,7 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
 
     return (
         <footer
-            className="fixed left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50"
+            className="fixed left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-[9999]"
             style={{
                 // Elevate footer above device gesture/nav bar by adding extra offset
                 bottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)',

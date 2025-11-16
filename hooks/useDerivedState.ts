@@ -56,7 +56,8 @@ export const useDerivedState = ({
     const baseShowFooter = !pagesWithoutFooter.includes(page) && !(page === 'chatList' && activeChatRoom);
 
     // Standalone rule: always show footer on all pages when installed (PWA)
-    const showFooter = isStandalone ? true : baseShowFooter;
+    // Explicitly force footer on landing to avoid any regressions
+    const showFooter = page === 'landing' ? true : (isStandalone ? true : baseShowFooter);
 
     return {
         getUserRole,
