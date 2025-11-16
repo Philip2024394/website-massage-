@@ -587,7 +587,7 @@ const HomePage: React.FC<HomePageProps> = ({
 
                 <div className="space-y-3 mb-6">
                     <div className="flex items-center w-full gap-3">
-                        <div className="relative flex-1 min-w-0">
+                        <div className="relative flex-1 min-w-0 basis-0">
                             <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"/>
                             <select 
                                 className="w-full pl-10 pr-8 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 appearance-none focus:outline-none focus:ring-2 focus:ring-green-600"
@@ -625,14 +625,15 @@ const HomePage: React.FC<HomePageProps> = ({
                                     alert('Navigation function not available. Please refresh the page.');
                                 }
                             }} 
-                            className="ml-auto p-0 bg-transparent border-0 hover:opacity-90 transition-opacity cursor-pointer h-[108px] w-[216px] flex items-center justify-center flex-shrink-0"
+                            className="ml-auto inline-flex p-0 bg-transparent border-0 outline-none focus:outline-none active:outline-none ring-0 focus:ring-0 cursor-pointer items-center justify-center flex-shrink-0"
+                            style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                             type="button"
                             title="Click to go to Online Shop"
                         >
                             <img 
                                 src="https://ik.imagekit.io/7grri5v7d/online%20shop.png"
                                 alt="Online Shop"
-                                className="h-full w-auto select-none"
+                                className="select-none transition-opacity hover:opacity-90 h-10 w-auto sm:h-16 md:h-[88px] lg:h-[108px]"
                                 loading="lazy"
                                 draggable={false}
                             />
