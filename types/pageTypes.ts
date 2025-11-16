@@ -119,7 +119,11 @@ export type Page =
     | 'coin-test' 
     | 'website-management'
     | 'todays-discounts'
-    | 'accept-booking';
+    | 'accept-booking'
+    | 'verifiedProBadge'
+    | 'customerProviders'
+    | 'customerReviews'
+    | 'customerSupport';
 
 export type Language = 'en' | 'id';
 

@@ -1,5 +1,6 @@
 import { AppLayout } from './components/layout/AppLayout';
 import { AppFooterLayout } from './components/layout/AppFooterLayout';
+import GlobalHeader from './components/GlobalHeader';
 import AppRouter from './AppRouter';
 import { useAllHooks } from './hooks/useAllHooks';
 import { useTranslations } from './lib/useTranslations';
@@ -309,6 +310,8 @@ const App = () => {
             <AppLayout
                 isFullScreen={state.page === 'landing' || state.isFullScreen}
             >
+            {/* Global Header only in PWA standalone and when page lacks its own header */}
+            <GlobalHeader page={state.page} />
             <div className={state.isFullScreen ? "flex-grow" : "flex-1"}>
                 <Suspense fallback={<div className="p-6 text-gray-600">Loading…</div>}>
                 <AppRouter
@@ -400,6 +403,7 @@ const App = () => {
 
                     setPage={state.setPage}
                     setLoggedInProvider={state.setLoggedInProvider}
+                    setLoggedInCustomer={state.setLoggedInCustomer}
 
 
 

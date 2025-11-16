@@ -11,6 +11,9 @@ import LandingPage from './pages/LandingPage';
 import UnifiedLoginPage from './pages/UnifiedLoginPage';
 import TherapistLoginPage from './pages/TherapistLoginPage';
 import HomePage from './pages/HomePage';
+import CustomerProvidersPage from './pages/CustomerProvidersPage';
+import CustomerReviewsPage from './pages/CustomerReviewsPage';
+import CustomerSupportPage from './pages/CustomerSupportPage';
 import React from 'react';
 
 // Lazy-load heavy/non-critical pages to shrink initial JS bundle
@@ -31,6 +34,7 @@ const AgentTermsPage = React.lazy(() => import('./pages/AgentTermsPage'));
 const ServiceTermsPage = React.lazy(() => import('./pages/ServiceTermsPage'));
 const PlaceTermsPage = React.lazy(() => import('./pages/PlaceTermsPage'));
 const PlaceDiscountBadgePage = React.lazy(() => import('./pages/PlaceDiscountBadgePage'));
+const VerifiedProBadgePage = React.lazy(() => import('./pages/VerifiedProBadgePage'));
 const PrivacyPolicyPage = React.lazy(() => import('./pages/PrivacyPolicyPage'));
 const CookiesPolicyPage = React.lazy(() => import('./pages/CookiesPolicyPage'));
 const MembershipPage = React.lazy(() => import('./pages/MembershipPage'));
@@ -52,7 +56,7 @@ const PartnershipApplicationPage = React.lazy(() => import('./pages/PartnershipA
 const TherapistJobRegistrationPage = React.lazy(() => import('./pages/TherapistJobRegistrationPage'));
 const JobUnlockPaymentPage = React.lazy(() => import('./pages/JobUnlockPaymentPage'));
 const AdminBankSettingsPage = React.lazy(() => import('./pages/AdminBankSettingsPage'));
-const CustomerAuthPage = React.lazy(() => import('./pages/CustomerAuthPage'));
+// Customer auth unified into UnifiedLoginPage; legacy CustomerAuthPage removed
 const CustomerDashboardPage = React.lazy(() => import('./pages/CustomerDashboardPage'));
 const AboutUsPage = React.lazy(() => import('./pages/AboutUsPage'));
 const ContactUsPage = React.lazy(() => import('./pages/ContactUsPage'));
@@ -178,6 +182,7 @@ interface AppRouterProps {
 
     setPage: (page: Page) => void;
     setLoggedInProvider: (provider: LoggedInProvider | null) => void;
+    setLoggedInCustomer: (customer: any) => void;
 
 
 
@@ -720,6 +725,9 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         console.log('Update booking status:', bookingId, status);
                         // Handle booking status update here
                     }}
+                    onStatusChange={async (status: AvailabilityStatus) => {
+                        await handleTherapistStatusChange(status as unknown as string);
+                    }}
                     bookings={bookings}
                     notifications={notifications || []}
                     t={t}
@@ -757,6 +765,10 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     onNavigate={(page: string) => setPage(page as Page)}
                     onTermsClick={handleNavigateToServiceTerms}
                     onPrivacyClick={handleNavigateToPrivacyPolicy}
+                    onCustomerLoginSuccess={(customer: any) => {
+                        props.setLoggedInCustomer(customer);
+                        setPage('customerDashboard');
+                    }}
                 />
             ) || null;
         
@@ -766,6 +778,10 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     onNavigate={(page: string) => setPage(page as Page)}
                     onTermsClick={handleNavigateToServiceTerms}
                     onPrivacyClick={handleNavigateToPrivacyPolicy}
+                    onCustomerLoginSuccess={(customer: any) => {
+                        props.setLoggedInCustomer(customer);
+                        setPage('customerDashboard');
+                    }}
                 />
             );
             
@@ -856,6 +872,18 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 placeName={loggedInProvider?.type === 'place' ? 'Massage Place' : 'Place'}
                 t={t} 
             />;
+        case 'verifiedProBadge': {
+            const providerId = (loggedInProvider?.id as number) || 0;
+            const providerType = (loggedInProvider?.type as 'therapist' | 'place') || 'therapist';
+            return (
+                <VerifiedProBadgePage
+                    onBack={handleBackToHome}
+                    providerId={providerId}
+                    providerType={providerType}
+                    providerName={providerType === 'therapist' ? selectedTherapist?.name || 'Provider' : selectedPlace?.name || 'Provider'}
+                />
+            );
+        }
             
         case 'privacy':
             // Pass only the privacyPolicy translation namespace to avoid runtime errors
@@ -864,7 +892,19 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return renderBackPage(CookiesPolicyPage);
             
         case 'customerAuth': 
-            return <CustomerAuthPage onSuccess={handleCustomerAuthSuccess} onBack={handleBackToHome} userLocation={userLocation} />;
+            // Route legacy customerAuth to UnifiedLoginPage for a single customer sign-in/up experience
+            return (
+                <UnifiedLoginPage 
+                    onNavigate={(page: string) => setPage(page as Page)}
+                    onTermsClick={handleNavigateToServiceTerms}
+                    onPrivacyClick={handleNavigateToPrivacyPolicy}
+                    forceCustomer={true}
+                    onCustomerLoginSuccess={(customer: any) => {
+                        props.setLoggedInCustomer(customer);
+                        setPage('customerDashboard');
+                    }}
+                />
+            );
             
         case 'customerDashboard': 
             // 🛡️ SECURE: Only render if authentication is valid
@@ -874,7 +914,35 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     user={loggedInCustomer}
                     onLogout={handleCustomerLogout}
                     onBack={handleBackToHome}
-                    onBookNow={() => {}}
+                    onBookNow={() => setPage('home')}
+                    onNavigate={(page: string) => setPage(page as Page)}
+                    t={t}
+                />
+            );
+        case 'customerProviders':
+            return secureRenderer.renderCustomerDashboard(
+                <CustomerProvidersPage 
+                    user={loggedInCustomer}
+                    onBack={handleBackToHome}
+                    onNavigate={(page: string) => setPage(page as Page)}
+                    t={t}
+                />
+            );
+        case 'customerReviews':
+            return secureRenderer.renderCustomerDashboard(
+                <CustomerReviewsPage 
+                    user={loggedInCustomer}
+                    onBack={handleBackToHome}
+                    onNavigate={(page: string) => setPage(page as Page)}
+                    t={t}
+                />
+            );
+        case 'customerSupport':
+            return secureRenderer.renderCustomerDashboard(
+                <CustomerSupportPage 
+                    user={loggedInCustomer}
+                    onBack={handleBackToHome}
+                    onNavigate={(page: string) => setPage(page as Page)}
                     t={t}
                 />
             );

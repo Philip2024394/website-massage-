@@ -554,10 +554,17 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
             setBusyUntil(busyEndTime);
             setStatus(AvailabilityStatus.Busy);
             
-            // Only call onStatusChange - don't mix with handleSave
-            if (onStatusChange) {
-                await onStatusChange(AvailabilityStatus.Busy);
+            // Persist busyUntil to backend immediately for consistency across app
+            try {
+                await therapistService.update(String(therapistId), {
+                    busyUntil: busyEndTime.toISOString()
+                } as any);
+            } catch (persistErr) {
+                console.warn('Busy timer persistence warning:', persistErr);
             }
+
+            // Update status using upstream handler
+            if (onStatusChange) await onStatusChange(AvailabilityStatus.Busy);
             
             setToast({ 
                 message: `You are now busy for ${minutes} minutes`, 
@@ -572,7 +579,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
             });
             setTimeout(() => setToast(null), 3000);
         }
-    }, [onStatusChange]);
+    }, [onStatusChange, therapistId]);
 
     // Account Settings Handlers
     const handleChangePassword = async () => {
@@ -3493,6 +3500,27 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                             Coin Shop
                                                         </p>
                                                         <p className="text-xs text-gray-500">Redeem rewards & benefits</p>
+                                                    </div>
+                                                </button>
+                                            )}
+
+                                            {/* Verified Pro Badge */}
+                                            {onNavigate && (
+                                                <button
+                                                    onClick={() => {
+                                                        setIsSideDrawerOpen(false);
+                                                        onNavigate('verifiedProBadge' as any);
+                                                    }}
+                                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-emerald-400 group transform hover:scale-105 hover:bg-emerald-50"
+                                                >
+                                                    <div className="p-2 bg-gradient-to-br from-emerald-400 to-emerald-500 rounded-lg">
+                                                        <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.39 4.84L20 8l-4 3.9.95 5.52L12 15.9l-4.95 2.52L8 11.9 4 8l5.61-1.16L12 2z"/></svg>
+                                                    </div>
+                                                    <div className="flex-grow">
+                                                        <p className="font-semibold text-gray-800 group-hover:text-emerald-600 transition-colors">
+                                                            Verified Pro Badge
+                                                        </p>
+                                                        <p className="text-xs text-gray-500">Eligibility and application</p>
                                                     </div>
                                                 </button>
                                             )}

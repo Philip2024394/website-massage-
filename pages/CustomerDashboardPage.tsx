@@ -201,48 +201,44 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
-      {/* Header with Burger Menu */}
-      <header className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-6 shadow-lg sticky top-0 z-30">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <button
+      {/* Header matching HomePage style */}
+      <header className="bg-white p-4 shadow-md sticky top-0 z-[9997]">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-gray-800">
+            <span className="text-black">Inda</span><span className="text-orange-500">Street</span>
+          </h1>
+          <div className="flex items-center gap-3 text-gray-600">
+            <button 
               onClick={() => setIsSideDrawerOpen(true)}
-              className="p-2 text-white hover:text-orange-200 hover:bg-white/20 rounded-lg transition-colors"
+              className="p-2 hover:bg-orange-50 rounded-full transition-colors text-orange-500" 
+              title="Menu"
             >
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
-            <button onClick={onBack} className="text-white text-2xl">
-              ←
-            </button>
-          </div>
-          <button
-            onClick={() => setShowConfirmLogout(true)}
-            className="bg-white/20 px-4 py-2 rounded-lg hover:bg-white/30 transition-all"
-          >
-            Logout
-          </button>
-        </div>
-        
-        <div className="flex items-center space-x-4">
-          <div className="bg-white/20 rounded-full p-4 text-4xl">
-            👤
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold">{user.name}</h1>
-            <p className="text-orange-100">{user.email}</p>
-            <div className="flex items-center space-x-2 mt-2">
-              <span className="bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold">
-                {user.membershipLevel?.toUpperCase() || 'FREE'} MEMBER
-              </span>
-              <span className="text-orange-100 text-sm">
-                📚 {bookings.length} Total Bookings
-              </span>
-            </div>
+            <button 
+              onClick={() => setShowConfirmLogout(true)}
+              className="px-3 py-2 text-sm font-semibold text-orange-600 hover:bg-orange-50 rounded-lg"
+            >Logout</button>
           </div>
         </div>
       </header>
+
+      {/* Compact user summary below header */}
+      <div className="px-4 pt-4">
+        <div className="bg-white rounded-xl p-4 shadow flex items-center gap-4">
+          <div className="w-14 h-14 rounded-full bg-orange-100 flex items-center justify-center text-2xl">👤</div>
+          <div className="flex-1">
+            <h2 className="text-lg font-bold text-gray-900">{(profileForm.name || user?.name || '').trim() || 'Guest'}</h2>
+            <p className="text-xs text-gray-500">{user.email}</p>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-[10px] font-semibold tracking-wide">{user.membershipLevel?.toUpperCase() || 'FREE'} MEMBER</span>
+              <span className="text-gray-600 text-xs">📚 {bookings.length} bookings</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Side Drawer */}
       {isSideDrawerOpen && (
@@ -260,7 +256,7 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
               <div className="flex items-center justify-between">
                 <h2 className="text-white text-lg font-semibold flex items-center gap-2">
                   <span className="text-xl">👤</span>
-                  <span>Customer Dashboard</span>
+                  <span>Guest Dashboard</span>
                 </h2>
                 <button
                   onClick={() => setIsSideDrawerOpen(false)}
@@ -271,8 +267,19 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
               </div>
             </div>
 
-            {/* Navigation Items */}
+            {/* Navigation Items (extended for customer needs) */}
             <div className="p-4 space-y-2">
+              {/* Book a Massage (Home) */}
+              <button
+                onClick={() => {
+                  onNavigate?.('home');
+                  setIsSideDrawerOpen(false);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors text-gray-700 hover:bg-gray-100"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+                Book a Massage
+              </button>
               <button
                 onClick={() => {
                   setActiveTab('bookings');
@@ -286,6 +293,17 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
               >
                 <CreditCard className="w-5 h-5" />
                 Bookings
+              </button>
+
+              <button
+                onClick={() => {
+                  onNavigate?.('customerProviders');
+                  setIsSideDrawerOpen(false);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors text-gray-700 hover:bg-gray-100"
+              >
+                <Users className="w-5 h-5" />
+                Booked Providers
               </button>
 
               <button
@@ -336,13 +354,37 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
               {/* Coin History Link */}
               <button
                 onClick={() => {
-                  onNavigate?.('coin-history');
+                  onNavigate?.('coinHistory');
                   setIsSideDrawerOpen(false);
                 }}
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors text-gray-700 hover:bg-gray-100"
               >
                 <History className="w-5 h-5" />
                 💰 Coin History
+              </button>
+
+              {/* Reviews Page */}
+              <button
+                onClick={() => {
+                  onNavigate?.('customerReviews');
+                  setIsSideDrawerOpen(false);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors text-gray-700 hover:bg-gray-100"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.8-2.034c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                Reviews
+              </button>
+
+              {/* Support Page */}
+              <button
+                onClick={() => {
+                  onNavigate?.('customerSupport');
+                  setIsSideDrawerOpen(false);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors text-gray-700 hover:bg-gray-100"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636a9 9 0 11-12.728 0M12 8v4m0 4h.01" /></svg>
+                Support
               </button>
 
               {/* Terms & Conditions */}
@@ -369,7 +411,7 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
                 Privacy Policy
               </button>
 
-              {/* Coin Shop Link */}
+              {/* Rewards Link */}
               <button
                 onClick={() => {
                   onNavigate?.('coin-shop');
@@ -378,7 +420,7 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors text-gray-700 hover:bg-gray-100"
               >
                 <Coins className="w-5 h-5" />
-                🛍️ Coin Shop
+                🛍️ Rewards
               </button>
 
               {/* Profile Upload Link */}
@@ -390,7 +432,7 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors text-gray-700 hover:bg-gray-100"
               >
                 <Camera className="w-5 h-5" />
-                Upload Photo
+                Profile Upload
               </button>
 
               {/* Become Agent Link */}
@@ -415,6 +457,18 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                 Invite Friends (Get Coins)
+              </button>
+
+              {/* Logout */}
+              <button
+                onClick={() => {
+                  setIsSideDrawerOpen(false);
+                  onLogout();
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors text-red-600 hover:bg-red-50"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 11-6 0v-1" /></svg>
+                Logout
               </button>
             </div>
           </div>
@@ -560,10 +614,10 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
               </div>
             </div>
 
-            {/* Coin Navigation Buttons */}
+            {/* Rewards & Coin Navigation Buttons */}
             {onNavigate && (
               <div className="space-y-3">
-                {/* Coin Shop Button */}
+                {/* Rewards Button */}
                 <button
                   onClick={() => onNavigate('coin-shop')}
                   className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl shadow-md hover:shadow-lg transition-all text-white"
@@ -573,7 +627,7 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
                       🛍️
                     </div>
                     <div className="text-left">
-                      <h3 className="font-bold">Coin Shop</h3>
+                      <h3 className="font-bold">Rewards</h3>
                       <p className="text-sm text-purple-100">Spend coins on rewards</p>
                     </div>
                   </div>
@@ -1146,7 +1200,7 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
             <div className="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl p-5 text-white text-center shadow">
               <div className="text-sm opacity-90">Welcome Bonus</div>
               <div className="text-5xl font-extrabold my-2">+{WELCOME_BONUS.COINS} 🪙</div>
-              <div className="text-sm opacity-90">Use coins in the Coin Shop</div>
+              <div className="text-sm opacity-90">Use coins in Rewards</div>
             </div>
             <button className="w-full mt-5 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-xl" onClick={() => { setShowWelcome(false); try { markWelcomePopupSeen(); } catch {} }}>
               Awesome! 🌟

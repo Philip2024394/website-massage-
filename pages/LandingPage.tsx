@@ -6,6 +6,7 @@ import { locationService } from '../services/locationService';
 import { deviceService } from '../services/deviceService';
 import { vscodeTranslateService } from '../lib/vscodeTranslateService';
 import PageNumberBadge from '../components/PageNumberBadge';
+import { usePWAInstall } from '../hooks/usePWAInstall';
 import type { UserLocation } from '../types';
 import type { Language } from '../types/pageTypes';
 
@@ -34,6 +35,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const { setLanguage: setGlobalLanguage } = useLanguage();
     const [isDetectingLocation, setIsDetectingLocation] = useState(false);
+    // PWA install hook
+    const { requestInstall, isInstalled, isIOS, showIOSInstructions, setShowIOSInstructions } = usePWAInstall();
     
     // Get translations for the selected language
     const { t, loading: translationsLoading, refresh: refreshTranslations, hasLanguage } = useTranslations(selectedLanguage ?? undefined);
@@ -166,6 +169,14 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
             // Call the function immediately
             await onEnterApp(selectedLanguage, userLocation);
             console.log('✅ onEnterApp called successfully with language:', selectedLanguage);
+
+            // Attempt PWA install prompt right after successful enter
+            try {
+                const installResult = await requestInstall();
+                console.log('📦 PWA install attempt result:', installResult);
+            } catch (installError) {
+                console.warn('⚠️ PWA install attempt failed:', installError);
+            }
             
         } catch (error) {
             console.error('❌ Failed to get location:', error);
@@ -181,6 +192,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
             try {
                 await onEnterApp(selectedLanguage, defaultLocation);
                 console.log('✅ onEnterApp called successfully with fallback location');
+                try {
+                    const installResult = await requestInstall();
+                    console.log('📦 PWA install attempt result (fallback location):', installResult);
+                } catch (installError) {
+                    console.warn('⚠️ PWA install attempt failed (fallback location):', installError);
+                }
             } catch (enterError) {
                 console.error('❌ Failed to call onEnterApp:', enterError);
             }
@@ -358,6 +375,22 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
                         </div>
                     </Button>
                 </div>
+                {/* iOS manual Add to Home Screen instructions (minimal inline - full modal planned) */}
+                {showIOSInstructions && isIOS && !isInstalled && (
+                    <div className="mt-6 max-w-sm mx-auto bg-white/10 backdrop-blur-md border border-white/20 rounded-lg p-4 text-left text-sm">
+                        <p className="font-semibold mb-2">Add to Home Screen (iOS)</p>
+                        <ol className="list-decimal list-inside space-y-1 text-white/90">
+                            <li>Tap the Share icon in Safari.</li>
+                            <li>Select "Add to Home Screen".</li>
+                            <li>Confirm name and tap Add.</li>
+                        </ol>
+                        <button
+                            type="button"
+                            onClick={() => setShowIOSInstructions(false)}
+                            className="mt-3 text-xs px-3 py-1 rounded bg-black/40 hover:bg-black/60 transition"
+                        >Dismiss</button>
+                    </div>
+                )}
             </div>
         </div>
     );

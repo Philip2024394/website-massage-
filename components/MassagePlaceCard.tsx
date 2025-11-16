@@ -278,14 +278,24 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
             
             {/* Logo/Profile Picture - Positioned below banner, overlapping */}
             <div className="absolute top-40 left-4 z-10">
-                <img 
-                    className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg bg-gray-100" 
-                    src={(place as any).logo || mainImage}
-                    alt={place.name}
-                    onError={(e) => {
-                        e.currentTarget.src = 'https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382';
-                    }}
-                />
+                <div className="relative w-20 h-20">
+                    <img 
+                        className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg bg-gray-100" 
+                        src={(place as any).logo || mainImage}
+                        alt={place.name}
+                        onError={(e) => {
+                            e.currentTarget.src = 'https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382';
+                        }}
+                    />
+                    {/* Verified Pro Rosette */}
+                    {(place as any).isVerified && (
+                        <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-2 border-white shadow-md flex items-center justify-center bg-gradient-to-br from-yellow-400 to-amber-500">
+                            <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M10 1.5l2.19 4.44 4.9.71-3.54 3.45.83 4.86L10 12.9l-4.38 2.33.83-4.86L2.91 6.65l4.9-.71L10 1.5zm-1.2 9.09l-1.6-1.6a.75.75 0 10-1.06 1.06l2.13 2.13a.75.75 0 001.06 0l4.13-4.13a.75.75 0 10-1.06-1.06l-3.6 3.6z" clipRule="evenodd"/>
+                            </svg>
+                        </div>
+                    )}
+                </div>
             </div>
             
             {/* Distance - Positioned above place name */}

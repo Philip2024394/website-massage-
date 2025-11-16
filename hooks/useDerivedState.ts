@@ -44,7 +44,19 @@ export const useDerivedState = ({
     const pagesWithoutFooter: Page[] = [
         'landing', 'adminDashboard', 'hotelVillaMenu'
     ];
-    const showFooter = !pagesWithoutFooter.includes(page) && !(page === 'chatList' && activeChatRoom);
+
+    // Detect PWA standalone (Android Chrome, iOS Safari)
+    const isStandalone = typeof window !== 'undefined' && (
+        window.matchMedia('(display-mode: standalone)').matches ||
+        // iOS Safari exposes navigator.standalone when launched from home screen
+        (window.navigator as any)?.standalone === true
+    );
+
+    // Base rule: hide on specific pages and when chat is open
+    const baseShowFooter = !pagesWithoutFooter.includes(page) && !(page === 'chatList' && activeChatRoom);
+
+    // Standalone rule: always show footer on all pages when installed (PWA)
+    const showFooter = isStandalone ? true : baseShowFooter;
 
     return {
         getUserRole,

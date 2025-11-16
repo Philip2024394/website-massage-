@@ -1331,7 +1331,12 @@ export const authService = {
             throw error;
         }
     },
-    async register(email: string, password: string, name: string): Promise<any> {
+    async register(
+        email: string,
+        password: string,
+        name: string,
+        options?: { autoLogin?: boolean }
+    ): Promise<any> {
         try {
             // Delete any existing session first
             try {
@@ -1343,8 +1348,11 @@ export const authService = {
             }
             
             const response = await account.create('unique()', email, password, name);
-            // Auto-login after registration
-            await account.createEmailPasswordSession(email, password);
+            // Auto-login after registration unless explicitly disabled
+            const shouldAutoLogin = options?.autoLogin !== false;
+            if (shouldAutoLogin) {
+                await account.createEmailPasswordSession(email, password);
+            }
             return response;
         } catch (error) {
             console.error('Error registering:', error);

@@ -570,6 +570,15 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                 </svg>
                             </div>
                         )}
+
+                        {/* Verified Pro Rosette - Small golden rosette at bottom-right when isVerified */}
+                        {therapist.isVerified && (
+                            <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-2 border-white shadow-md flex items-center justify-center bg-gradient-to-br from-yellow-400 to-amber-500">
+                                <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M10 1.5l2.19 4.44 4.9.71-3.54 3.45.83 4.86L10 12.9l-4.38 2.33.83-4.86L2.91 6.65l4.9-.71L10 1.5zm-1.2 9.09l-1.6-1.6a.75.75 0 10-1.06 1.06l2.13 2.13a.75.75 0 001.06 0l4.13-4.13a.75.75 0 10-1.06-1.06l-3.6 3.6z" clipRule="evenodd"/>
+                                </svg>
+                            </div>
+                        )}
                     </div>
                 </div>
 

@@ -100,6 +100,7 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
                         onNavigate('agentDashboard');
                         break;
                     case 'customer':
+                    case 'user':
                         onNavigate('customerDashboard');
                         break;
                     default:

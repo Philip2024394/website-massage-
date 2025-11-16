@@ -1998,6 +1998,20 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                     <span className="font-medium">Discount Badges</span>
                                 </button>
                             )}
+
+                            {/* Verified Pro Badge */}
+                            {onNavigate && (
+                                <button
+                                    onClick={() => {
+                                        setIsSideDrawerOpen(false);
+                                        onNavigate('verifiedProBadge');
+                                    }}
+                                    className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-emerald-50 transition-colors border-l-4 border-transparent hover:border-emerald-500"
+                                >
+                                    <div className="w-6 h-6 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg flex items-center justify-center text-white text-sm font-bold">✓</div>
+                                    <span className="font-medium">Verified Pro Badge</span>
+                                </button>
+                            )}
                             
                             <button
                                 onClick={() => {

@@ -53,8 +53,8 @@ export const homeTranslations = {
         massageSpaDesc: 'Spa partner portal',
         agent: 'Agent',
         agentDesc: 'Agent portal',
-        customer: 'Customer',
-        customerDesc: 'Customer portal',
+        customer: 'Guest',
+        customerDesc: 'Guest portal',
         // Company section
         aboutUs: 'About Us',
         aboutUsDesc: 'Learn about us',
@@ -195,8 +195,8 @@ export const homeTranslations = {
         massageSpaDesc: 'Portal mitra spa',
         agent: 'Agen',
         agentDesc: 'Portal agen',
-        customer: 'Pelanggan',
-        customerDesc: 'Portal pelanggan',
+        customer: 'Tamu',
+        customerDesc: 'Portal tamu',
         // Company section
         aboutUs: 'Tentang Kami',
         aboutUsDesc: 'Pelajari tentang kami',

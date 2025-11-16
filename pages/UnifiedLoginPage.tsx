@@ -1,27 +1,10 @@
 import React, { useState } from 'react';
 import { authService } from '../lib/appwriteService';
-import UserSolidIcon from '../components/icons/UserSolidIcon';
-// import HomeIcon from '../components/icons/HomeIcon';
-import BriefcaseIcon from '../components/icons/BriefcaseIcon';
-import HomeIcon from '../components/icons/HomeIcon';
-import MapPinIcon from '../components/icons/MapPinIcon';
-import DocumentTextIcon from '../components/icons/DocumentTextIcon';
-import { LogIn, UserPlus } from 'lucide-react';
+import { LogIn, UserPlus, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { AppDrawer } from '../components/AppDrawer';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
 import PageNumberBadge from '../components/PageNumberBadge';
-import PasswordInput from '../components/PasswordInput';
-
-const loginOptions = [
-  { id: 'user', label: 'User', icon: UserSolidIcon },
-  { id: 'therapist', label: 'Therapist', icon: UserSolidIcon },
-  { id: 'place', label: 'Massage Place', icon: BriefcaseIcon },
-  { id: 'hotel', label: 'Hotel', icon: HomeIcon },
-  { id: 'villa', label: 'Villa', icon: MapPinIcon },
-  { id: 'agent', label: 'Agent', icon: BriefcaseIcon },
-  { id: 'admin', label: 'Admin', icon: DocumentTextIcon },
-];
 
 interface UnifiedLoginPageProps {
   onBack?: () => void;
@@ -38,6 +21,10 @@ interface UnifiedLoginPageProps {
   onTermsClick?: () => void;
   onPrivacyClick?: () => void;
   onNavigate?: (page: string) => void;
+  // When true, hide role selection and force customer (user) context
+  forceCustomer?: boolean;
+  // Called after successful customer login to set app state
+  onCustomerLoginSuccess?: (customer: any) => void;
 }
 
 const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({
@@ -53,27 +40,16 @@ const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({
   onAdminPortalClick,
   onTermsClick,
   onPrivacyClick,
-  onNavigate
+  onNavigate,
+  forceCustomer = false,
+  onCustomerLoginSuccess
 }) => {
-  const [selectedRole, setSelectedRole] = useState('');
+  // Customer-only unified auth (exact hotel layout)
   const [mode, setMode] = useState<'login' | 'register'>('login');
-  const [form, setForm] = useState({ email: '', password: '', extra: '' });
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  // Navigation function - fallback for environments without react-router
-  const navigate = (path: string) => {
-    window.location.href = path;
-  };
-
-  const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedRole(e.target.value);
-    setForm({ email: '', password: '', extra: '' });
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
@@ -81,77 +57,53 @@ const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({
     e.preventDefault();
     setError('');
     setSuccess('');
-    if (!selectedRole) {
-      setError('Please select a role.');
-      return;
-    }
     try {
       setLoading(true);
       if (mode === 'register') {
-        if (selectedRole === 'admin') {
-          try {
-            await authService.register(form.email, form.password, 'Admin');
-            // Try to log in immediately after registration
-            try {
-              await authService.login(form.email, form.password);
-              setSuccess('Admin account created and logged in! Redirecting...');
-              setTimeout(() => { window.location.reload(); }, 1000);
-            } catch (loginErr: any) {
-              // If session conflict, try logout then login again
-              if (loginErr?.message?.includes('session is active')) {
-                try {
-                  await authService.logout();
-                  await authService.login(form.email, form.password);
-                  setSuccess('Admin account created and logged in! Redirecting...');
-                  setTimeout(() => { window.location.reload(); }, 1000);
-                } catch (finalErr: any) {
-                  setError(finalErr?.message || 'An error occurred after registration.');
-                }
-              } else {
-                setError(loginErr?.message || 'An error occurred after registration.');
-              }
-            }
-          } catch (err: any) {
-            if (err?.message?.includes('already exists')) {
-              setError('An account with this email already exists. Please use the Login button.');
-            } else {
-              setError(err?.message || 'An error occurred.');
-            }
-          }
-        } else {
-          if (selectedRole === 'user') {
-            try {
-              await authService.register(form.email, form.password, 'User');
-              try { localStorage.setItem('just_registered', 'true'); } catch {}
-              setSuccess('Account created. Please sign in to continue.');
-              setMode('login');
-            } catch (err: any) {
-              if (err?.message?.includes('already exists')) {
-                setError('An account with this email already exists. Please use Login.');
-                setMode('login');
-              } else {
-                setError(err?.message || 'An error occurred.');
-              }
-            }
-          } else {
-            setError('Registration for this role is not implemented yet.');
-          }
+        // Customer registration only
+        try {
+          await authService.register(email, password, 'User', { autoLogin: false });
+          try { localStorage.setItem('just_registered', 'true'); } catch {}
+          setSuccess('Account created. Please sign in to continue.');
+          setMode('login');
+        } catch (err: any) {
+          console.error('[Auth][Register][User] Error object:', err);
+          const type = err?.type || err?.response?.type;
+          const msg = err?.message || err?.response?.message || '';
+          const message = msg.includes('already exists') || type === 'user_email_already_exists'
+            ? 'An account with this email already exists. Please use Login.'
+            : type === 'user_invalid_email' || msg.toLowerCase().includes('invalid email')
+              ? 'Please enter a valid email address.'
+              : type === 'user_invalid_password' || msg.toLowerCase().includes('password')
+                ? 'Password must be at least 8 characters.'
+                : type === 'auth_provider_disabled'
+                  ? 'Email/password sign-up is disabled in server settings.'
+                  : msg || 'An error occurred.';
+          setError(message);
+          if (message.includes('already exists')) setMode('login');
         }
       } else {
-        if (selectedRole === 'admin') {
-          await authService.login(form.email, form.password);
-          setSuccess('Logged in as admin! Redirecting...');
-          setTimeout(() => { window.location.reload(); }, 1000);
-        } else if (selectedRole === 'user') {
-          await authService.login(form.email, form.password);
+        try {
+          const current = await authService.login(email, password);
           setSuccess('Logged in! Redirecting to your dashboard...');
-          if (onNavigate) {
-            onNavigate('customerDashboard');
-          } else {
-            setTimeout(() => { window.location.reload(); }, 500);
+          if (onCustomerLoginSuccess && current) {
+            try {
+              onCustomerLoginSuccess({ id: current.$id, email: current.email, name: current.name });
+            } catch {}
           }
-        } else {
-          setError('Login for this role is not implemented yet.');
+          if (onNavigate) onNavigate('customerDashboard');
+          else setTimeout(() => { window.location.reload(); }, 500);
+        } catch (err: any) {
+          console.error('[Auth][Login] Error object:', err);
+          const type = err?.type || err?.response?.type;
+          const msg = err?.message || err?.response?.message || '';
+          if (type === 'user_invalid_credentials' || msg.toLowerCase().includes('invalid credentials')) {
+            setError('Incorrect email or password.');
+          } else if (type === 'auth_provider_disabled') {
+            setError('Email/password login is disabled in server settings.');
+          } else {
+            setError(msg || 'An error occurred.');
+          }
         }
       }
     } catch (err: any) {
@@ -162,17 +114,16 @@ const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="h-screen bg-gray-50 flex flex-col overflow-hidden fixed inset-0">
       <PageNumberBadge pageNumber={3} pageName="UnifiedLoginPage" isLocked={false} />
-      
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-4 py-4">
-        <div className="flex items-center justify-between">
+      <header className="bg-white p-4 shadow-md z-[9997] flex-shrink-0">
+        <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-800">
             <span className="text-black">Inda</span><span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
           </h1>
-          <div className="flex items-center gap-3">
-            <button onClick={() => setIsMenuOpen(true)} title="Menu" className="p-2 hover:bg-orange-50 rounded-full transition-colors text-orange-500">
+          <div className="flex items-center gap-3 text-gray-600">
+            <button onClick={() => setIsMenuOpen(true)} title="Menu">
               <BurgerMenuIcon className="w-6 h-6" />
             </button>
           </div>
@@ -184,7 +135,6 @@ const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({
         <AppDrawer
           isOpen={isMenuOpen}
           onClose={() => setIsMenuOpen(false)}
-          t={t}
           onMassageJobsClick={onMassageJobsClick}
           onHotelPortalClick={onHotelPortalClick}
           onVillaPortalClick={onVillaPortalClick}
@@ -193,7 +143,6 @@ const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({
           onAgentPortalClick={onAgentPortalClick}
           onCustomerPortalClick={onCustomerPortalClick}
           onAdminPortalClick={onAdminPortalClick}
-          onNavigate={onNavigate}
           onTermsClick={onTermsClick}
           onPrivacyClick={onPrivacyClick}
           therapists={[]}
@@ -202,129 +151,180 @@ const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({
       </React19SafeWrapper>
 
       {/* Main Content with Background */}
-      <main
-        className="min-h-screen h-screen w-full flex flex-col items-center justify-center p-4 overflow-hidden"
+      <main 
+        className="flex-1 flex items-start justify-center px-4 py-2 overflow-hidden relative bg-cover bg-center bg-no-repeat min-h-0"
         style={{
-          backgroundImage: "url('https://ik.imagekit.io/7grri5v7d/massage%20image%208.png?updatedAt=1760187222991')",
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
+          backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/admin%20login%20dash%20baord.png?updatedAt=1763186156216)'
         }}
       >
-        {/* Overlay for better readability */}
-        <div className="absolute inset-0 bg-black/40 z-10"></div>
+        <div className="max-w-md w-full relative z-10 max-h-full overflow-y-auto pt-4 sm:pt-6" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          {/* Header - Positioned right under header area */}
+          <div className="text-center mb-4 sm:mb-6">
+            <h2 className="text-4xl sm:text-5xl font-bold mb-2 sm:mb-3 text-gray-800 drop-shadow-lg">Guest</h2>
+            <p className="text-gray-600 text-xs sm:text-sm drop-shadow">Access your bookings and rewards</p>
+          </div>
 
-        {/* Removed floating Home button per request */}
-
-      {/* Glass Effect Login Container */}
-      <div className="max-w-md w-full bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-8 relative z-20 border border-white/20">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-2">
-            <span className="text-white">Inda</span>
-            <span className="text-orange-400">Street</span>
-          </h1>
-          <p className="text-white/90 font-medium">Customer Account</p>
-        </div>
-
-        <div className="flex mb-6 bg-white/10 backdrop-blur-sm rounded-lg p-1 border border-white/20">
-          <button
-            onClick={() => setMode('login')}
-            className={`flex-1 py-2 px-4 rounded-md transition-all ${
-              mode === 'login' ? 'bg-orange-500 shadow-lg text-white font-semibold' : 'text-white/90 hover:bg-white/5'
-            }`}
-          >
-            Sign In
-          </button>
-          <button
-            onClick={() => setMode('register')}
-            className={`flex-1 py-2 px-4 rounded-md transition-all ${
-              mode === 'register' ? 'bg-orange-500 shadow-lg text-white font-semibold' : 'text-white/90 hover:bg-white/5'
-            }`}
-          >
-            Create Account
-          </button>
-        </div>
-
-        {error && (
-          <div className="mb-4 p-3 rounded-lg backdrop-blur-sm bg-red-500/20 text-red-100 border border-red-400/30">
-            {error}
-          </div>
-        )}
-        {success && (
-          <div className="mb-4 p-3 rounded-lg backdrop-blur-sm bg-green-500/20 text-green-100 border border-green-400/30">
-            {success}
-          </div>
-        )}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-white/90 mb-2">Select Role</label>
-            <select
-              className="w-full bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg p-3 focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900"
-              value={selectedRole}
-              onChange={handleRoleChange}
-              required
-            >
-              <option value="" disabled>Select...</option>
-              {loginOptions.map(opt => (
-                <option key={opt.id} value={opt.id}>{opt.label}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-white/90 mb-2">Email</label>
-            <input
-              type="email"
-              name="email"
-              className="w-full bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg p-3 focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
-              value={form.email}
-              onChange={handleInputChange}
-              placeholder="your@email.com"
-              required
-            />
-          </div>
-          <div>
-            <PasswordInput
-              value={form.password}
-              onChange={(value) => setForm({ ...form, password: value })}
-              label="Password"
-              placeholder="••••••••"
-              required
-            />
-          </div>
-          {/* Extra field for registration, e.g. agent code for therapist/place */}
-          {mode === 'register' && (selectedRole === 'therapist' || selectedRole === 'place') && (
-            <div>
-              <label className="block text-sm font-medium text-white/90 mb-2">Agent Code (optional)</label>
-              <input
-                type="text"
-                name="extra"
-                className="w-full bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg p-3 focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-900 placeholder-gray-500"
-                value={form.extra}
-                onChange={handleInputChange}
-                placeholder="Agent code (optional)"
-              />
-            </div>
-          )}
-          <button
-            type="submit"
-            disabled={loading}
-            className={`w-full ${loading ? 'bg-orange-300 cursor-wait' : 'bg-orange-500 hover:bg-orange-600'} text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 shadow-lg transition-all mt-6`}
-          >
-            {mode === 'login' ? (
-              <>
-                <LogIn className="w-5 h-5" />
-                {loading ? 'Logging in…' : 'Login'}
-              </>
-            ) : (
-              <>
-                <UserPlus className="w-5 h-5" />
-                {loading ? 'Creating…' : 'Register'}
-              </>
+          {/* Status messages */}
+          <div className="mb-3 sm:mb-4 min-h-[50px] flex items-center">
+            {(error || success) && (
+              <div className={`w-full p-2 sm:p-3 rounded-lg text-sm ${
+                success
+                  ? 'bg-green-50 text-green-700 border border-green-200'
+                  : 'bg-red-50 text-red-700 border border-red-200'
+              }`}>
+                {success || error}
+              </div>
             )}
-          </button>
-        </form>
-      </div>
+          </div>
+
+          {/* Tab Navigation */}
+          <div className="flex mb-4 sm:mb-6 bg-white/95 backdrop-blur-sm rounded-lg p-1 border border-white/20 shadow-lg">
+            <button
+              onClick={() => { setMode('login'); setError(''); setSuccess(''); }}
+              className={`flex-1 py-3 px-4 rounded-lg transition-all font-medium ${
+                mode !== 'register' ? 'bg-orange-500 text-white shadow-sm' : 'text-gray-700 hover:text-orange-500 hover:bg-orange-50/80'
+              }`}
+            >
+              Sign In
+            </button>
+            <button
+              onClick={() => { setMode('register'); setError(''); setSuccess(''); }}
+              className={`flex-1 py-3 px-4 rounded-lg transition-all font-medium ${
+                mode === 'register' ? 'bg-orange-500 text-white shadow-sm' : 'text-gray-700 hover:text-orange-500 hover:bg-orange-50/80'
+              }`}
+            >
+              Create Account
+            </button>
+          </div>
+
+          {/* Forms */}
+          {mode !== 'register' ? (
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-800 mb-2 drop-shadow">Email Address</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-orange-500 w-5 h-5 z-10" />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email"
+                    className="w-full pl-12 pr-4 py-3 rounded-xl border border-white/20 focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400 transition-all bg-white/95 backdrop-blur-sm text-gray-900 placeholder-gray-500 shadow-lg"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-800 mb-2 drop-shadow">Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-orange-500 w-5 h-5 z-10" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    className="w-full pl-12 pr-12 py-3 rounded-xl border border-white/20 focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400 transition-all bg-white/95 backdrop-blur-sm text-gray-900 placeholder-gray-500 shadow-lg"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-orange-500 hover:text-orange-400 transition-colors z-10"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-4 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-xl hover:shadow-2xl backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <div className="flex items-center justify-center">
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
+                    Signing In...
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center">
+                    <LogIn className="w-5 h-5 mr-2" />
+                    Sign In
+                  </div>
+                )}
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-800 mb-2 drop-shadow">Email Address</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-orange-500 w-5 h-5 z-10" />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email"
+                    className="w-full pl-12 pr-4 py-3 rounded-xl border border-white/20 focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400 transition-all bg-white/95 backdrop-blur-sm text-gray-900 placeholder-gray-500 shadow-lg"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-800 mb-2 drop-shadow">Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-orange-500 w-5 h-5 z-10" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Create a password (min 8 characters)"
+                    className="w-full pl-12 pr-12 py-3 rounded-xl border border-white/20 focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400 transition-all bg-white/95 backdrop-blur-sm text-gray-900 placeholder-gray-500 shadow-lg"
+                    required
+                    minLength={8}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-orange-500 hover:text-orange-400 transition-colors z-10"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-4 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-xl hover:shadow-2xl backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <div className="flex items-center justify-center">
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
+                    Creating Account...
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center">
+                    <UserPlus className="w-5 h-5 mr-2" />
+                    Create Account
+                  </div>
+                )}
+              </button>
+            </form>
+          )}
+        </div>
       </main>
+
+      {/* Hide scrollbars */}
+      <style>{`
+        .max-w-md::-webkit-scrollbar { display: none; }
+        @media (max-height: 600px) {
+          .space-y-4 > * + * { margin-top: 0.75rem; }
+          .space-y-6 > * + * { margin-top: 1rem; }
+        }
+      `}</style>
     </div>
   );
 };
