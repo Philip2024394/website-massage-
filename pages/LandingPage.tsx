@@ -28,24 +28,15 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
     console.log('onEnterApp prop received:', !!onEnterApp);
     
     const [imageLoaded, setImageLoaded] = useState(false);
-    const [selectedLanguage, setSelectedLanguage] = useState<Language>(() => {
-        // Check localStorage, default to English for consistency
-        try {
-            const storedLanguage = localStorage.getItem('app_language');
-            const initialLang = (storedLanguage === 'id' || storedLanguage === 'en') ? storedLanguage as Language : 'en';
-            console.log('🔍 LandingPage: Initial language from localStorage:', storedLanguage, '→', initialLang);
-            return initialLang;
-        } catch {
-            console.log('🔍 LandingPage: localStorage error, defaulting to English');
-            return 'en';
-        }
-    });
+    // Require explicit user selection (no prefilled language)
+    const [selectedLanguage, setSelectedLanguage] = useState<Language | null>(null);
+    const [mustSelectLanguage, setMustSelectLanguage] = useState(true);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const { setLanguage: setGlobalLanguage } = useLanguage();
     const [isDetectingLocation, setIsDetectingLocation] = useState(false);
     
     // Get translations for the selected language
-    const { t, loading: translationsLoading, refresh: refreshTranslations, hasLanguage } = useTranslations(selectedLanguage);
+    const { t, loading: translationsLoading, refresh: refreshTranslations, hasLanguage } = useTranslations(selectedLanguage ?? undefined);
 
     // Debug logging
     useEffect(() => {
@@ -133,6 +124,13 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
             console.error('❌ onEnterApp function is not provided!');
             return;
         }
+
+        // Enforce explicit language selection
+        if (!selectedLanguage) {
+            console.warn('❌ Cannot enter app: language not selected');
+            setMustSelectLanguage(true);
+            return;
+        }
         
         // Get comprehensive device information
         const deviceInfo = deviceService.getDeviceInfo();
@@ -194,13 +192,15 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
         }
     };
 
-    const selectedLang = languages.find(lang => lang.code === selectedLanguage) || languages[0];
+    const selectedLang = selectedLanguage
+        ? (languages.find(lang => lang.code === selectedLanguage) || languages[0])
+        : null;
 
     return (
-        <div className="fixed inset-0 w-full h-full flex overflow-hidden">
+        <div className="relative min-h-screen w-full flex overflow-hidden">
             <PageNumberBadge pageNumber={1} pageName="LandingPage" />
             <div
-                className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ease-in-out"
+                className="absolute inset-0 z-0 w-full h-full bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ease-in-out"
                 style={{
                     backgroundImage: `url('${imageSrc}')`,
                     backgroundSize: 'cover',
@@ -209,8 +209,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
                 }}
             />
             {/* Extra gradient overlay for readability */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60 pointer-events-none" />
-            <div className="relative z-50 flex-grow flex flex-col items-center justify-center text-white px-4 text-center w-full h-full">
+            <div className="absolute inset-0 z-10 bg-gradient-to-b from-black/60 via-black/40 to-black/60 pointer-events-none" />
+            <div className="relative z-20 flex-grow flex flex-col items-center justify-center text-white px-4 text-center w-full min-h-screen">
                 <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
                     <span className="text-white">Inda</span><span className="text-orange-400">street</span>
                 </h1>
@@ -230,9 +230,11 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
                         >
                             <div className="flex items-center gap-2 sm:gap-3">
                                 <span className="text-xl sm:text-2xl w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center bg-gray-900 rounded-full">
-                                    {selectedLang.flag}
+                                    {selectedLang ? selectedLang.flag : '🌐'}
                                 </span>
-                                <span className="font-medium text-sm sm:text-base">{selectedLang.name}</span>
+                                <span className="font-medium text-sm sm:text-base">
+                                    {selectedLang ? selectedLang.name : (t('landing.selectLanguage') || 'Select Language')}
+                                </span>
                             </div>
                             <svg
                                 className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
@@ -264,6 +266,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
                                                 console.log('🌐 Previous selectedLanguage was:', selectedLanguage);
                                                 const newLanguage = lang.code as Language;
                                                 setSelectedLanguage(newLanguage);
+                                                setMustSelectLanguage(false);
                                                 setGlobalLanguage(newLanguage as 'en' | 'id');
                                                 
                                                 // Save to localStorage for persistence
@@ -303,6 +306,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
                                 </div>
                             </>
                         )}
+                        {/* Require selection message */}
+                        {mustSelectLanguage && (
+                            <p className="mt-2 text-xs text-orange-300 text-left">Please select your language to continue.</p>
+                        )}
                     </div>
 
                     {/* Enter App Button */}
@@ -328,7 +335,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
                             handleEnterApp();
                         }}
                         variant="primary"
-                        disabled={isDetectingLocation}
+                        disabled={isDetectingLocation || !selectedLanguage}
                         className="!py-2.5 sm:!py-4 !text-base sm:!text-lg font-bold relative z-10"
                     >
                         <div className="flex items-center justify-center gap-2">
