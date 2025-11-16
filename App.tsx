@@ -307,7 +307,7 @@ const App = () => {
         <LanguageProvider value={{ language: language as 'en' | 'id', setLanguage: handleLanguageSelect }}>
         <DeviceStylesProvider>
             <AppLayout
-                isFullScreen={state.isFullScreen}
+                isFullScreen={state.page === 'landing' || state.isFullScreen}
             >
             <div className={state.isFullScreen ? "flex-grow" : "flex-1"}>
                 <Suspense fallback={<div className="p-6 text-gray-600">Loading…</div>}>

@@ -229,8 +229,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
                             className="w-full bg-black text-white rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between hover:bg-gray-900 transition-colors shadow-lg border border-gray-800"
                         >
                             <div className="flex items-center gap-2 sm:gap-3">
-                                <span className="text-xl sm:text-2xl w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center bg-gray-900 rounded-full">
-                                    {selectedLang ? selectedLang.flag : '🌐'}
+                                <span className="text-xl sm:text-2xl w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center bg-orange-600 text-white rounded-full">
+                                    {selectedLang ? selectedLang.flag : '🟠'}
                                 </span>
                                 <span className="font-medium text-sm sm:text-base">
                                     {selectedLang ? selectedLang.name : (t('landing.selectLanguage') || 'Select Language')}
@@ -292,7 +292,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
                                             }}
                                             className="w-full px-3 sm:px-4 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3 hover:bg-orange-50 transition-colors text-left"
                                         >
-                                            <span className="text-xl sm:text-2xl w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center bg-gray-100 rounded-full">
+                                            <span className="text-xl sm:text-2xl w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center bg-orange-50 rounded-full">
                                                 {lang.flag}
                                             </span>
                                             <span className="text-gray-800 font-medium text-sm sm:text-base">{lang.name}</span>

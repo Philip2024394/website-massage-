@@ -5,7 +5,7 @@
  * This ensures therapists NEVER miss booking notifications - essential for business revenue
  */
 
-const CACHE_NAME = 'indastreet-v1';
+const CACHE_NAME = 'indastreet-v2';
 const NOTIFICATION_SOUND_URL = '/sounds/booking-alert.mp3';
 
 // Install service worker
