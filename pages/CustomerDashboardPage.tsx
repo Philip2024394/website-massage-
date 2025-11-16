@@ -47,6 +47,24 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
   });
   const [showWelcome, setShowWelcome] = useState(false);
 
+  // Derive a friendly display name: prefer profile name; if generic 'User' or empty, derive from email; else fallback to 'Guest'
+  const getDisplayName = () => {
+    try {
+      const raw = (profileForm.name || user?.name || '').trim();
+      const isGeneric = raw.toLowerCase() === 'user';
+      if (raw && !isGeneric) return raw;
+      const email: string | undefined = user?.email;
+      if (email && email.includes('@')) {
+        const local = email.split('@')[0];
+        const formatted = local
+          .replace(/[._-]+/g, ' ')
+          .replace(/\b\w/g, (c) => c.toUpperCase());
+        return formatted || 'Guest';
+      }
+    } catch {}
+    return 'Guest';
+  };
+
   useEffect(() => {
     loadBookings();
     loadWallets();
@@ -230,7 +248,7 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
         <div className="bg-white rounded-xl p-4 shadow flex items-center gap-4">
           <div className="w-14 h-14 rounded-full bg-orange-100 flex items-center justify-center text-2xl">👤</div>
           <div className="flex-1">
-            <h2 className="text-lg font-bold text-gray-900">{(profileForm.name || user?.name || '').trim() || 'Guest'}</h2>
+            <h2 className="text-lg font-bold text-gray-900">{getDisplayName()}</h2>
             <p className="text-xs text-gray-500">{user.email}</p>
             <div className="flex items-center gap-2 mt-1">
               <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-[10px] font-semibold tracking-wide">{user.membershipLevel?.toUpperCase() || 'FREE'} MEMBER</span>
