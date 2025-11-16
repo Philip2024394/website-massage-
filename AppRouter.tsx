@@ -552,9 +552,6 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         // ========================
         // 🏠 CORE APPLICATION ROUTES  
         // ========================
-        case 'accept-booking':
-            return <AcceptBookingPage />;
-
         case 'landing': 
             return <LandingPage 
                 onLanguageSelect={handleLanguageSelect} 

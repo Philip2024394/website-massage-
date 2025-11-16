@@ -55,11 +55,10 @@ export const useAppState = () => {
         console.log('🎯 URL parameter detected: Opening reward banners test page');
         return 'rewardBannersTest';
       }
-      
-      // Temporarily show home page directly for testing
-      // (Session restoration is handled in the useState initializer above)
-      console.log('🧪 TEST: Fresh page load - showing home page directly');
-      return 'home';
+
+      // Default: always start at landing on fresh app arrival
+      console.log('🚪 Fresh arrival: starting at landing page');
+      return 'landing';
     } catch {
       console.log('⚠️ URL parameter parsing failed, defaulting to landing page');
       return 'landing';
@@ -75,14 +74,7 @@ export const useAppState = () => {
 
   // Use a ref to prevent re-initialization on component re-renders
   const [page, _setPage] = useState<Page>(() => {
-    // Check for active navigation session first
-    const activeNavigation = sessionStorage.getItem('current_page');
-    if (activeNavigation && activeNavigation !== 'landing') {
-      console.log('🚀 MOUNTING: Restoring active navigation:', activeNavigation);
-      return activeNavigation as Page;
-    }
-    
-    // Use getInitialPage only for fresh mounts
+    // Always compute initial page from URL context; do not restore last page
     const initialPage = getInitialPage();
     console.log('🚀 MOUNTING: Fresh initialization:', initialPage);
     return initialPage;

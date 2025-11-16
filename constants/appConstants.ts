@@ -1,7 +1,7 @@
 // App constants and configuration
 export const APP_CONSTANTS = {
   DEFAULT_CONTACT_NUMBER: '6281392000050',
-  DEFAULT_PAGE: 'home' as const,
+  DEFAULT_PAGE: 'landing' as const,
   GOOGLE_MAPS_SCRIPT_ID: 'google-maps-script',
 } as const;
 

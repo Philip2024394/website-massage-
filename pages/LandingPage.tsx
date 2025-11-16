@@ -208,7 +208,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
                     opacity: imageLoaded ? 1 : 0,
                 }}
             />
-            <div className="relative z-10 flex-grow flex flex-col items-center justify-center bg-black bg-opacity-50 text-white px-4 text-center w-full h-full">
+            {/* Extra gradient overlay for readability */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60 pointer-events-none" />
+            <div className="relative z-50 flex-grow flex flex-col items-center justify-center text-white px-4 text-center w-full h-full">
                 <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
                     <span className="text-white">Inda</span><span className="text-orange-400">street</span>
                 </h1>
@@ -217,11 +219,11 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
                 </p>
                 
                 <div className="w-full max-w-sm sm:max-w-md px-2 space-y-3 sm:space-y-4">
-                    <h2 className="text-sm sm:text-base lg:text-lg font-semibold mb-3">{t('landing.getStarted')}</h2>
+                    <h2 className="text-sm sm:text-base lg:text-lg font-semibold mb-3">{t('landing.getStarted') || 'Get Started'}</h2>
                     
                     {/* Language Dropdown */}
                     <div className="relative">
-                        <label className="block text-xs sm:text-sm font-medium mb-2 text-left">{t('landing.selectLanguage')}</label>
+                        <label className="block text-xs sm:text-sm font-medium mb-2 text-left">{t('landing.selectLanguage') || 'Select Language'}</label>
                         <button
                             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                             className="w-full bg-black text-white rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between hover:bg-gray-900 transition-colors shadow-lg border border-gray-800"
@@ -340,7 +342,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
                                 </>
                             ) : (
                                 <>
-                                    {t('landing.enter')}
+                                    {t('landing.enter') || 'Enter'}
                                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                                     </svg>

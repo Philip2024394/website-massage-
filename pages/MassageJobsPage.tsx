@@ -221,25 +221,6 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                         <span className="text-black">Inda</span><span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
                     </h1>
                     <div className="flex items-center gap-3">
-                        <button
-                            onClick={() => {
-                                console.log('🎯 BUTTON CLICKED - VERSION 2025-01-11-17:00:00');
-                                console.log('Active tab:', activeTab);
-                                
-                                if (activeTab === 'employers') {
-                                    console.log('Employer tab - calling onPostJob');
-                                    onPostJob();
-                                } else {
-                                    console.log('Therapist tab - calling onCreateTherapistProfile');
-                                    if (onCreateTherapistProfile) {
-                                        onCreateTherapistProfile();
-                                    }
-                                }
-                            }}
-                            className="flex items-center gap-1.5 sm:gap-2 py-1.5 sm:py-2 px-3 sm:px-4 bg-orange-500 text-white shadow-lg rounded-lg transition-all duration-200 text-xs sm:text-sm font-semibold whitespace-nowrap hover:bg-orange-600"
-                        >
-                            <span>{activeTab === 'employers' ? 'Post Job' : 'Create Profile'}</span>
-                        </button>
                         <button onClick={() => setIsMenuOpen(true)} title="Menu" className="text-gray-600">
                            <BurgerMenuIcon className="w-6 h-6" />
                         </button>
@@ -277,6 +258,24 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                 👨‍⚕️ Therapist Seeking Jobs
                             </button>
                         </div>
+                    </div>
+
+                    {/* Hero Action - moved from header under the tabs */}
+                    <div className="flex justify-center mb-6">
+                        <button
+                            onClick={() => {
+                                console.log('🎯 HERO ACTION CLICKED');
+                                console.log('Active tab:', activeTab);
+                                if (activeTab === 'employers') {
+                                    onPostJob();
+                                } else if (onCreateTherapistProfile) {
+                                    onCreateTherapistProfile();
+                                }
+                            }}
+                            className="flex items-center gap-2 py-2 px-5 bg-orange-500 text-white shadow-lg rounded-full transition-all duration-200 text-sm font-semibold whitespace-nowrap hover:bg-orange-600"
+                        >
+                            <span>{activeTab === 'employers' ? 'Post Job' : 'Create Profile'}</span>
+                        </button>
                     </div>
 
             {/* Job Count */}

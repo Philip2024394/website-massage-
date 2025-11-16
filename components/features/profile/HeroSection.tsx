@@ -486,14 +486,14 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             {/* Refer Friend Modal */}
             {showReferModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4" onClick={() => setShowReferModal(false)}>
-                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-[90vw] max-h-[85vh] sm:max-w-xs md:max-w-sm p-3 sm:p-4 animate-fadeIn overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-[88vw] max-h-[78vh] sm:max-w-xs md:max-w-sm p-3 sm:p-4 animate-fadeIn overflow-y-auto" onClick={(e) => e.stopPropagation()}>
                         <div className="text-center">
                             <div className="w-16 h-16 sm:w-20 sm:h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 overflow-hidden relative">
                                 {/* Main coin image */}
                                 <img 
                                     src="https://ik.imagekit.io/7grri5v7d/INDASTREET_coins_new-removebg-preview.png?updatedAt=1762338892035"
                                     alt="IndaStreet Coins"
-                                    className="w-20 h-20 sm:w-28 sm:h-28 object-contain z-10 relative"
+                                    className="w-16 h-16 sm:w-28 sm:h-28 object-contain z-10 relative"
                                 />
                                 
                                 {/* Falling coins animation */}
@@ -531,7 +531,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                             <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-1 sm:mb-2">Refer a Friend</h3>
                             <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">Share IndaStreet with friends and earn coins! 🎁</p>
                             
-                            <div className="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl p-4 mb-6">
+                            <div className="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl p-3 sm:p-4 mb-4 sm:mb-6">
                                 <div className="flex items-center justify-center gap-2 mb-2">
                                     <svg className="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
@@ -542,7 +542,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                                 <p className="text-sm text-gray-700">For each friend who signs up!</p>
                             </div>
                             
-                            <div className="space-y-3 mb-6">
+                            <div className="space-y-3 mb-4 sm:mb-6">
                                 <p className="text-sm text-gray-600 text-left">
                                     📱 Share your referral link:
                                 </p>
@@ -565,7 +565,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                                 </div>
                             </div>
                             
-                            <div className="space-y-2 mb-6">
+                            <div className="space-y-2 mb-4 sm:mb-6">
                                 <p className="text-sm text-gray-600 mb-3">Share via:</p>
                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                                     <button
@@ -577,7 +577,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                                         <img 
                                             src="https://ik.imagekit.io/7grri5v7d/whats%20app%20icon.png?updatedAt=1761844859402" 
                                             alt="WhatsApp"
-                                            className="w-12 h-12 sm:w-14 sm:h-14 object-contain"
+                                            className="w-10 h-10 sm:w-14 sm:h-14 object-contain"
                                         />
                                         <span className="text-xs sm:text-sm font-semibold text-gray-700">WhatsApp</span>
                                     </button>
@@ -590,7 +590,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                                         <img 
                                             src="https://ik.imagekit.io/7grri5v7d/facebook.png?updatedAt=1761844676576" 
                                             alt="Facebook"
-                                            className="w-12 h-12 sm:w-14 sm:h-14 object-contain"
+                                            className="w-10 h-10 sm:w-14 sm:h-14 object-contain"
                                         />
                                         <span className="text-xs sm:text-sm font-semibold text-gray-700">Facebook</span>
                                     </button>
@@ -604,7 +604,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                                         <img 
                                             src="https://ik.imagekit.io/7grri5v7d/insta.png?updatedAt=1761845305146" 
                                             alt="Instagram"
-                                            className="w-12 h-12 sm:w-14 sm:h-14 object-contain"
+                                            className="w-10 h-10 sm:w-14 sm:h-14 object-contain"
                                         />
                                         <span className="text-xs sm:text-sm font-semibold text-gray-700">Instagram</span>
                                     </button>
@@ -618,7 +618,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                                         <img 
                                             src="https://ik.imagekit.io/7grri5v7d/tiktok.png?updatedAt=1761845101981" 
                                             alt="TikTok"
-                                            className="w-12 h-12 sm:w-14 sm:h-14 object-contain"
+                                            className="w-10 h-10 sm:w-14 sm:h-14 object-contain"
                                         />
                                         <span className="text-xs sm:text-sm font-semibold text-gray-700">TikTok</span>
                                     </button>

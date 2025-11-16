@@ -1010,7 +1010,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             {/* Refer Friend Modal */}
             {showReferModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4" onClick={() => setShowReferModal(false)}>
-                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-[90vw] max-h-[85vh] sm:max-w-xs md:max-w-sm p-3 sm:p-4 overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-[88vw] max-h-[80vh] sm:max-w-xs md:max-w-sm p-3 sm:p-4 overflow-y-auto" onClick={(e) => e.stopPropagation()}>
                         <div className="text-center">
                             <div className="w-16 h-16 sm:w-20 sm:h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3">
                                 {/* Main coin image - Increased by 20% */}
