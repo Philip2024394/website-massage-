@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { authService, notificationService } from '../lib/appwriteService';
+import { getDeviceFingerprint, awardWelcomeBonus, isEligibleForWelcomeBonus } from '../lib/deviceTracking';
 import { LogIn, UserPlus, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { AppDrawer } from '../components/AppDrawer';
@@ -99,6 +100,22 @@ const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({
         try {
           const current = await authService.login(email, password);
           setSuccess('Logged in! Redirecting to your dashboard...');
+          // One-time welcome coins on first login (non-blocking)
+          try {
+            const eligible = await isEligibleForWelcomeBonus();
+            if (eligible.eligible && current) {
+              const fp = await getDeviceFingerprint();
+              await awardWelcomeBonus(
+                current.$id,
+                'customer',
+                fp.deviceId,
+                fp.ipAddress,
+                current.name || (current.email?.split('@')[0] ?? 'User')
+              );
+            }
+          } catch (wbErr) {
+            console.warn('Welcome bonus check/award failed (non-blocking):', wbErr);
+          }
           if (onCustomerLoginSuccess && current) {
             try {
               onCustomerLoginSuccess({ id: current.$id, email: current.email, name: current.name });

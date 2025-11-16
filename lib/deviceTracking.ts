@@ -5,6 +5,7 @@
  */
 
 import { databases } from './appwrite';
+import { coinService } from './appwriteService';
 import APPWRITE_CONFIG from './appwrite.config';
 import { Query } from 'appwrite';
 
@@ -269,7 +270,8 @@ export const awardWelcomeBonus = async (
     userId: string,
     userType: 'customer' | 'therapist' | 'place',
     deviceId: string,
-    ipAddress: string
+    ipAddress: string,
+    userName: string
 ): Promise<{
     success: boolean;
     coinsAwarded: number;
@@ -296,9 +298,21 @@ export const awardWelcomeBonus = async (
             ipAddress
         );
 
-        // Award the welcome coins
-        // This will be implemented in your existing loyalty system
+        // Award the welcome coins into the coin system with a transaction record
         const coinsAwarded = WELCOME_BONUS.COINS;
+        try {
+            await coinService.addCoins(
+                userId,
+                userType,
+                userName,
+                coinsAwarded,
+                WELCOME_BONUS.DESCRIPTION,
+                'welcome_bonus'
+            );
+        } catch (coinErr) {
+            console.error('Error persisting welcome coins to coin system:', coinErr);
+            // Continue to mark registration to avoid repeated attempts; support can adjust balance manually if needed
+        }
 
         // Update registration record
         await databases.updateDocument(
