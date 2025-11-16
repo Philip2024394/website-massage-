@@ -28,7 +28,8 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
   const [activeTab, setActiveTab] = useState<'profile' | 'bookings' | 'calendar' | 'wallet'>('bookings');
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [showProfilePrompt, setShowProfilePrompt] = useState(false);
+  
   const [showConfirmLogout, setShowConfirmLogout] = useState(false);
   const [wallets, setWallets] = useState<LoyaltyWallet[]>([]);
   const [selectedWallet, setSelectedWallet] = useState<LoyaltyWallet | null>(null);
@@ -39,13 +40,28 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
   const [cancelReason, setCancelReason] = useState('');
   const [cancelOtherText, setCancelOtherText] = useState('');
   const [isSavingProfile, setIsSavingProfile] = useState(false);
+
   const [profileForm, setProfileForm] = useState({
     name: user?.name || '',
     address: (user?.address as string) || '',
     whatsappNumber: (user?.whatsappNumber as string) || '',
     customerPhoto: (user?.customerPhoto as string) || ''
   });
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [showWelcome, setShowWelcome] = useState(false);
+
+  // First-login profile prompt: show if critical fields are missing and not previously dismissed
+  useEffect(() => {
+    try {
+      const seen = localStorage.getItem('profile_prompt_seen') === 'true';
+      const missingName = !((profileForm.name || user?.name || '').trim());
+      const missingWhatsApp = !((profileForm.whatsappNumber || '').trim());
+      const missingPhoto = !((profileForm.customerPhoto || '').trim());
+      if (!seen && (missingName || missingWhatsApp || missingPhoto)) {
+        setShowProfilePrompt(true);
+      }
+    } catch {}
+  }, [profileForm.name, profileForm.whatsappNumber, profileForm.customerPhoto, user?.name]);
 
   // Derive a friendly display name: prefer profile name; if generic 'User' or empty, derive from email; else fallback to 'Guest'
   const getDisplayName = () => {
@@ -58,11 +74,18 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
         const local = email.split('@')[0];
         const formatted = local
           .replace(/[._-]+/g, ' ')
-          .replace(/\b\w/g, (c) => c.toUpperCase());
+          .replace(/\b\w/g, (c: string) => c.toUpperCase());
         return formatted || 'Guest';
       }
     } catch {}
     return 'Guest';
+  };
+
+  const getMembershipLabel = () => {
+    const raw = (user?.membershipLevel || '').toString().trim();
+    if (!raw) return 'Free Member';
+    const lower = raw.toLowerCase();
+    return lower.replace(/\b\w/g, (c: string) => c.toUpperCase()) + ' Member';
   };
 
   useEffect(() => {
@@ -251,7 +274,7 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
             <h2 className="text-lg font-bold text-gray-900">{getDisplayName()}</h2>
             <p className="text-xs text-gray-500">{user.email}</p>
             <div className="flex items-center gap-2 mt-1">
-              <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-[10px] font-semibold tracking-wide">{user.membershipLevel?.toUpperCase() || 'FREE'} MEMBER</span>
+              <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-[10px] font-semibold tracking-wide">{getMembershipLabel()}</span>
               <span className="text-gray-600 text-xs">📚 {bookings.length} bookings</span>
             </div>
           </div>
@@ -498,6 +521,34 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
         {/* Bookings Tab */}
         {activeTab === 'bookings' && (
           <div className="space-y-6">
+            {/* First-login Edit Profile Prompt */}
+            {showProfilePrompt && (
+              <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-xl p-4 flex items-start gap-3">
+                <div className="text-2xl leading-none">🪪</div>
+                <div className="flex-1">
+                  <p className="font-semibold mb-1">Complete your profile</p>
+                  <p className="text-sm text-blue-700">Add your name, WhatsApp number, and a photo so therapists can reach you easily.</p>
+                  <div className="mt-3 flex gap-2">
+                    <button
+                      onClick={() => {
+                        setActiveTab('profile');
+                        setShowProfilePrompt(false);
+                        try { localStorage.setItem('profile_prompt_seen', 'true'); } catch {}
+                      }}
+                      className="px-3 py-1.5 rounded-md bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700"
+                    >Edit Profile Now</button>
+                    <button
+                      onClick={() => {
+                        setShowProfilePrompt(false);
+                        try { localStorage.setItem('profile_prompt_seen', 'true'); } catch {}
+                      }}
+                      className="px-3 py-1.5 rounded-md bg-transparent border border-blue-300 text-blue-700 text-sm hover:bg-blue-100"
+                    >Maybe Later</button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Quick Book Button */}
             <button
               onClick={onBookNow}
@@ -508,12 +559,10 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
 
             {/* Upcoming Bookings */}
             <div>
-              <h2 className="text-xl font-bold text-gray-900 mb-4">
-                🔜 Upcoming Bookings ({upcomingBookings.length})
-              </h2>
               {isLoading ? (
                 <div className="text-center py-8 text-gray-500">⏳ Loading...</div>
               ) : upcomingBookings.length === 0 ? (
+                // Hide the "Upcoming Bookings (0)" header; show only the CTA card
                 <div className="bg-white rounded-xl p-8 text-center">
                   <div className="text-6xl mb-4">📅</div>
                   <p className="text-gray-600 mb-4">No upcoming bookings</p>
@@ -525,8 +574,12 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
                   </button>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {upcomingBookings.map((booking) => (
+                <>
+                  <h2 className="text-xl font-bold text-gray-900 mb-4">
+                    🔜 Upcoming Bookings ({upcomingBookings.length})
+                  </h2>
+                  <div className="space-y-3">
+                    {upcomingBookings.map((booking) => (
                     <div
                       key={booking.id}
                       className="bg-white rounded-xl p-4 shadow-md border-l-4 border-orange-500"
@@ -560,7 +613,8 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
                       </button>
                     </div>
                   ))}
-                </div>
+                  </div>
+                </>
               )}
             </div>
 
