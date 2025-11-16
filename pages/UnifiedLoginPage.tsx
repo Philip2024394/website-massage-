@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { authService } from '../lib/appwriteService';
+import { authService, notificationService } from '../lib/appwriteService';
 import { LogIn, UserPlus, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { AppDrawer } from '../components/AppDrawer';
@@ -63,6 +63,19 @@ const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({
         // Customer registration only
         try {
           await authService.register(email, password, 'User', { autoLogin: false });
+          // Notify admin of new user registration (non-blocking)
+          try {
+            await notificationService.create({
+              title: 'New User Registered',
+              message: `New customer signup: ${email}`,
+              recipientType: 'admin',
+              type: 'system',
+              priority: 'medium',
+              data: { email }
+            });
+          } catch (notifyErr) {
+            console.warn('Failed to create admin notification for registration:', notifyErr);
+          }
           try { localStorage.setItem('just_registered', 'true'); } catch {}
           setSuccess('Account created. Please sign in to continue.');
           setMode('login');

@@ -6,6 +6,7 @@ import { locationService } from '../services/locationService';
 import { deviceService } from '../services/deviceService';
 import { vscodeTranslateService } from '../lib/vscodeTranslateService';
 import PageNumberBadge from '../components/PageNumberBadge';
+import PWAInstallIOSModal from '../components/PWAInstallIOSModal';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 import type { UserLocation } from '../types';
 import type { Language } from '../types/pageTypes';
@@ -375,22 +376,13 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
                         </div>
                     </Button>
                 </div>
-                {/* iOS manual Add to Home Screen instructions (minimal inline - full modal planned) */}
-                {showIOSInstructions && isIOS && !isInstalled && (
-                    <div className="mt-6 max-w-sm mx-auto bg-white/10 backdrop-blur-md border border-white/20 rounded-lg p-4 text-left text-sm">
-                        <p className="font-semibold mb-2">Add to Home Screen (iOS)</p>
-                        <ol className="list-decimal list-inside space-y-1 text-white/90">
-                            <li>Tap the Share icon in Safari.</li>
-                            <li>Select "Add to Home Screen".</li>
-                            <li>Confirm name and tap Add.</li>
-                        </ol>
-                        <button
-                            type="button"
-                            onClick={() => setShowIOSInstructions(false)}
-                            className="mt-3 text-xs px-3 py-1 rounded bg-black/40 hover:bg-black/60 transition"
-                        >Dismiss</button>
-                    </div>
-                )}
+                <PWAInstallIOSModal
+                    visible={
+                        showIOSInstructions && isIOS && !isInstalled &&
+                        (() => { try { return !localStorage.getItem('ios_a2hs_dismissed'); } catch { return true; } })()
+                    }
+                    onClose={() => setShowIOSInstructions(false)}
+                />
             </div>
         </div>
     );

@@ -26,6 +26,7 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
   onNavigate
 }) => {
   const [activeTab, setActiveTab] = useState<'profile' | 'bookings' | 'calendar' | 'wallet'>('bookings');
+  const [previousTab, setPreviousTab] = useState<'profile' | 'bookings' | 'calendar' | 'wallet'>('bookings');
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showProfilePrompt, setShowProfilePrompt] = useState(false);
@@ -40,6 +41,7 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
   const [cancelReason, setCancelReason] = useState('');
   const [cancelOtherText, setCancelOtherText] = useState('');
   const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [memberSince, setMemberSince] = useState<string | null>(null);
 
   const [profileForm, setProfileForm] = useState({
     name: user?.name || '',
@@ -92,6 +94,56 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
     loadBookings();
     loadWallets();
   }, []);
+
+  // Ensure user profile document exists and derive "member since" date
+  useEffect(() => {
+    const ensureProfileAndMemberSince = async () => {
+      try {
+        // Try fetch existing profile doc
+        let doc = await userService.getCustomerByEmail(user.email);
+        if (!doc) {
+          // Create minimal doc if missing
+          await userService.updateCustomerByEmail(user.email, {});
+          doc = await userService.getCustomerByEmail(user.email);
+        }
+        const created = (doc && (doc.$createdAt || doc.createdAt)) ? new Date(doc.$createdAt || doc.createdAt) : new Date();
+        const label = created.toLocaleDateString(undefined, { year: 'numeric', month: 'short' });
+        setMemberSince(label);
+        try { localStorage.setItem(`member_since_${user.email}`, created.toISOString()); } catch {}
+      } catch (e) {
+        // Fallback to local storage or today
+        try {
+          const iso = localStorage.getItem(`member_since_${user.email}`);
+          if (iso) {
+            const d = new Date(iso);
+            setMemberSince(d.toLocaleDateString(undefined, { year: 'numeric', month: 'short' }));
+            return;
+          }
+        } catch {}
+        const today = new Date();
+        setMemberSince(today.toLocaleDateString(undefined, { year: 'numeric', month: 'short' }));
+      }
+    };
+    ensureProfileAndMemberSince();
+  }, [user?.email]);
+
+  // Auto-sync any locally saved profile edits when online
+  useEffect(() => {
+    const trySyncLocalProfile = async () => {
+      try {
+        const key = `customer_profile_${user.email}`;
+        const raw = localStorage.getItem(key);
+        if (!raw) return;
+        const pending = JSON.parse(raw);
+        await userService.updateCustomerByEmail(user.email, pending);
+        localStorage.removeItem(key);
+        console.log('✅ Synced local profile changes to server');
+      } catch (e) {
+        console.warn('⚠️ Failed to sync local profile to server:', e);
+      }
+    };
+    trySyncLocalProfile();
+  }, [user?.email]);
 
   // Show welcome confetti/coins popup for first-time registration
   useEffect(() => {
@@ -273,6 +325,9 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
           <div className="flex-1">
             <h2 className="text-lg font-bold text-gray-900">{getDisplayName()}</h2>
             <p className="text-xs text-gray-500">{user.email}</p>
+            {memberSince && (
+              <p className="text-[11px] text-gray-400">Member since {memberSince}</p>
+            )}
             <div className="flex items-center gap-2 mt-1">
               <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-[10px] font-semibold tracking-wide">{getMembershipLabel()}</span>
               <span className="text-gray-600 text-xs">📚 {bookings.length} bookings</span>
@@ -379,6 +434,7 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
 
               <button
                 onClick={() => {
+                  setPreviousTab(activeTab);
                   setActiveTab('profile');
                   setIsSideDrawerOpen(false);
                 }}
@@ -467,6 +523,7 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
               {/* Profile Upload Link */}
               <button
                 onClick={() => {
+                  setPreviousTab(activeTab);
                   setActiveTab('profile');
                   setIsSideDrawerOpen(false);
                 }}
@@ -531,6 +588,7 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
                   <div className="mt-3 flex gap-2">
                     <button
                       onClick={() => {
+                        setPreviousTab(activeTab);
                         setActiveTab('profile');
                         setShowProfilePrompt(false);
                         try { localStorage.setItem('profile_prompt_seen', 'true'); } catch {}
@@ -1118,9 +1176,21 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
                     });
                     alert('Profile saved');
                   } catch (e) {
-                    alert('Failed to save profile');
+                    // Persist locally as fallback
+                    try {
+                      localStorage.setItem(
+                        `customer_profile_${user.email}`,
+                        JSON.stringify(profileForm)
+                      );
+                      alert('Saved locally. Will sync when online.');
+                    } catch {
+                      alert('Failed to save profile');
+                    }
                   } finally {
                     setIsSavingProfile(false);
+                    try { localStorage.setItem('profile_prompt_seen', 'true'); } catch {}
+                    setShowProfilePrompt(false);
+                    setActiveTab(previousTab);
                   }
                 }}
                 className={`px-6 py-3 rounded-lg font-semibold text-white ${isSavingProfile ? 'bg-orange-300' : 'bg-orange-500 hover:bg-orange-600'} shadow`}
