@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-// Drawer is home-only; not used here
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
+import { AppDrawer } from '../components/AppDrawer';
+import { React19SafeWrapper } from '../components/React19SafeWrapper';
 
 interface AboutUsPageProps {
     onNavigate: (page: string) => void;
@@ -36,7 +37,7 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
     therapists = [],
     places = []
 }) => {
-    // No drawer state here; drawer is restricted to HomePage
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -46,12 +47,20 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
                         <span className="text-black">Inda</span><span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
                     </h1>
                     <div className="flex items-center gap-4 pb-20 text-gray-600">
-                        <button onClick={() => onNavigate('home')} title="Home">
+                        <button onClick={() => setIsMenuOpen(true)} title="Menu">
                            <BurgerMenuIcon className="w-6 h-6" />
                         </button>
                     </div>
                 </div>
             </header>
+            {/* Global App Drawer - same content as Home */}
+            <React19SafeWrapper condition={isMenuOpen}>
+                <AppDrawer
+                    isOpen={isMenuOpen}
+                    onClose={() => setIsMenuOpen(false)}
+                    onNavigate={onNavigate}
+                />
+            </React19SafeWrapper>
             
             
             {/* Hero Section */}

@@ -36,7 +36,7 @@ interface AppDrawerProps {
 export const AppDrawer: React.FC<AppDrawerProps> = ({
     isOpen,
     onClose,
-    isHome,
+    isHome = true,
     t,
     onMassageJobsClick,
     onHotelPortalClick,

@@ -3,6 +3,8 @@ import { Query } from 'appwrite';
 import { databases } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
+import { AppDrawer } from '../components/AppDrawer';
+import { React19SafeWrapper } from '../components/React19SafeWrapper';
 
 const DATABASE_ID = APPWRITE_CONFIG.databaseId;
 const COLLECTIONS = APPWRITE_CONFIG.collections;
@@ -100,7 +102,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
     const [jobPostings, setJobPostings] = useState<EmployerJobPosting[]>([]);
     const [therapistListings, setTherapistListings] = useState<TherapistJobListing[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [, setIsMenuOpen] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [searchQuery] = useState('');
     const [selectedType] = useState<string>('all');
     const [selectedLocation] = useState<string>('all');
@@ -227,6 +229,14 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                     </div>
                 </div>
             </header>
+
+            {/* Global App Drawer - Reuse HomePage drawer */}
+            <React19SafeWrapper condition={isMenuOpen}>
+                <AppDrawer
+                    isOpen={isMenuOpen}
+                    onClose={() => setIsMenuOpen(false)}
+                />
+            </React19SafeWrapper>
 
             <main className="p-4">
                 <div className="max-w-7xl mx-auto">
