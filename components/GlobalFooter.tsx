@@ -152,8 +152,15 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
     }
 
     return (
-        <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-            <div className="flex justify-around items-center h-16 max-w-md mx-auto px-2">
+        <footer
+            className="fixed left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50"
+            style={{
+                // Elevate footer above device gesture/nav bar by adding extra offset
+                bottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)',
+                paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)'
+            }}
+        >
+            <div className="flex justify-around items-center h-20 max-w-md mx-auto px-2">
                 {navigationItems.map((item) => (
                     <button
                         key={item.key}
