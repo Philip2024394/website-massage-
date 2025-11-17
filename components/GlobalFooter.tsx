@@ -21,7 +21,7 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
         const searchPages = ['search', 'therapists', 'places', 'massageTypes'];
         const notificationPages = ['notifications'];
         const shopPages = ['coin-shop', 'shop', 'membership'];
-                const profilePages = ['profile', 'customerDashboard', 'therapistDashboard', 'villaDashboard', 'agentDashboard', 'adminDashboard'];
+                const profilePages = ['profile', 'customerDashboard', 'therapistDashboard', 'agentDashboard', 'adminDashboard'];
 
         switch (buttonType) {
             case 'home':
@@ -91,10 +91,9 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
                         onNavigate('therapistDashboard');
                         break;
                     case 'hotel':
-                        onNavigate('villaDashboard');
-                        break;
                     case 'villa':
-                        onNavigate('villaDashboard');
+                        // Legacy hotel/villa roles now redirect to profile
+                        onNavigate('profile');
                         break;
                     case 'agent':
                         onNavigate('agentDashboard');

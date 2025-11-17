@@ -24,7 +24,6 @@ export const getFooterConfig = (
     'adminDashboard',
     'therapistDashboard',
     'placeDashboard',
-    'villaDashboard',
     'agentDashboard',
     'customerDashboard'
   ];
@@ -49,16 +48,6 @@ export const getFooterConfig = (
   }
 
   if (dashboardPages.includes(currentPage)) {
-    // Special handling for Partners dashboard that uses DashboardFooter component
-    if (currentPage === 'villaDashboard') {
-      return {
-        showGlobalFooter: false,
-        showDashboardFooter: true,
-        pageClass: 'has-dashboard-footer',
-        paddingBottom: 'pb-16'
-      };
-    }
-    
     return {
       showGlobalFooter: true,
       showDashboardFooter: false,

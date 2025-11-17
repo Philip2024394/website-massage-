@@ -1051,10 +1051,6 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'massageTypes':
             return <MassageTypesPage _onBack={handleBackToHome} onNavigate={setPage} {...portalHandlers} onPrivacyClick={() => setPage('privacy')} therapists={therapists} places={places} t={t} />;
             
-        // 'hotelLogin' route removed. Hotel login is deprecated; use 'villaLogin'.
-            
-        case 'villaLogin' as any:
-            return renderComingSoon('This page has been removed');
 
         case 'massagePlaceLogin': 
             return <MassagePlaceLoginPage 
@@ -1066,10 +1062,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 t={t}
             />;
             
-        // 'hotelDashboard' route removed; any legacy navigation now redirects elsewhere at link source
-            
-        case 'villaDashboard' as any: 
-            return renderComingSoon('This page has been removed');
+        // Legacy hotel/villa dashboard/login routes fully removed
             
         case 'employerJobPosting':
             return <EmployerJobPostingPage 

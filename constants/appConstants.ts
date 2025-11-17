@@ -15,7 +15,8 @@ export const STORAGE_KEYS = {
   SUPABASE_CONFIG: 'supabaseConfig',
 } as const;
 
-export type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'agentAuth' | 'agentDashboard' | 'agentTerms' | 'serviceTerms' | 'privacy' | 'membership' | 'booking' | 'notifications' | 'hotelLogin' | 'hotelDashboard' | 'villaLogin' | 'villaDashboard' | 'supabaseSettings';
+// Removed legacy hotel/villa pages from Page union (hotelLogin, hotelDashboard, villaLogin, villaDashboard)
+export type Page = 'landing' | 'auth' | 'home' | 'detail' | 'adminLogin' | 'adminDashboard' | 'registrationChoice' | 'providerAuth' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'agentAuth' | 'agentDashboard' | 'agentTerms' | 'serviceTerms' | 'privacy' | 'membership' | 'booking' | 'notifications' | 'supabaseSettings';
 
 export type Language = 'en' | 'id';
 
