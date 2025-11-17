@@ -1,0 +1,2 @@
+services/promoterService.ts(55,28): error TS2339: Property 'message' does not exist on type '{}'.
+

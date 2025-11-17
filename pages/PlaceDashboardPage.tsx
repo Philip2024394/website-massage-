@@ -152,10 +152,10 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
     const liveMenuLink = useMemo(() => {
         try {
-            const base = `${globalThis.location.origin}/?page=hotelVillaMenu`;
+            const base = `${globalThis.location.origin}/?page=promoterLiveMenu`;
             return `${base}&autoOpen=1`;
         } catch {
-            return '/?page=hotelVillaMenu&autoOpen=1';
+            return '/?page=promoterLiveMenu&autoOpen=1';
         }
     }, []);
     // Commission summary state

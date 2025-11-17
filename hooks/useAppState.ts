@@ -61,7 +61,32 @@ export const useAppState = () => {
         console.log('🎯 URL parameter detected: Opening reward banners test page');
         return 'rewardBannersTest';
       }
-      // 'hotelVillaMenu' parameter deprecated
+
+      // Map deprecated/legacy query pages to new equivalents
+      if (pageParam === 'hotelVillaMenu') {
+        console.log('🔁 Mapping deprecated page "hotelVillaMenu" → "promoterLiveMenu"');
+        return 'promoterLiveMenu';
+      }
+
+      // Support direct navigation via query param for promoter/partner pages
+      const allowedQueryPages: Page[] = [
+        'home',
+        'partnersDashboard',
+        'promoterAuth',
+        'promoterMembershipSales',
+        'promoterCommission',
+        'promoterQR',
+        'promoterBookingStats',
+        'promoterLiveMenu',
+        'promoterHotelVillaMassage',
+        'promoterBankAccount',
+        'promoterTerms',
+        'profile'
+      ];
+      if (pageParam && (allowedQueryPages as string[]).includes(pageParam)) {
+        console.log('🎯 URL parameter detected: Opening page from query:', pageParam);
+        return pageParam as Page;
+      }
 
       // Default: always start at landing on fresh app arrival
       console.log('🚪 Fresh arrival: starting at landing page');

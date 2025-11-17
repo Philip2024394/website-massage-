@@ -19,7 +19,7 @@ const PartnersDashboardPage: React.FC<{ t?: any; setPage?: (p: any) => void }> =
 
   const liveMenuUrl = useMemo(() => {
     const aff = affiliateCode ? `&aff=${encodeURIComponent(affiliateCode)}` : '';
-    const base = `${globalThis.location.origin}/?page=hotelVillaMenu`;
+    const base = `${globalThis.location.origin}/?page=promoterLiveMenu`;
     const params = `venueId=${encodeURIComponent(venueId || '')}&venueType=${venueType}`;
     return `${base}&${params}${aff}`;
   }, [venueId, venueType, affiliateCode]);
@@ -133,12 +133,12 @@ const PartnersDashboardPage: React.FC<{ t?: any; setPage?: (p: any) => void }> =
           <button onClick={() => {
             try {
               const url = new URL(window.location.href);
-              url.searchParams.set('page', 'hotelVillaMenu');
+              url.searchParams.set('page', 'promoterLiveMenu');
               url.searchParams.set('venueId', venueId || '');
               url.searchParams.set('venueType', venueType);
               window.history.replaceState({}, '', url.toString());
             } catch {}
-            if (setPage) setPage('hotelVillaMenu');
+            if (setPage) setPage('promoterLiveMenu');
           }} className="bg-orange-500 text-white px-4 py-2 rounded-lg flex items-center gap-2">
             <ExternalLink className="w-4 h-4" /> Preview in App
           </button>
