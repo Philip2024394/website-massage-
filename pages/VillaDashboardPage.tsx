@@ -304,7 +304,7 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
     }, [state.activeTab]);
 
     useEffect(() => {
-        const qrLink = `${globalThis.location.origin}/?page=hotelVillaMenu&venueId=${villaId}&venueType=villa&auto=1&aff=${encodeURIComponent(affiliateCode)}`;
+        const qrLink = `${globalThis.location.origin}/?page=hotelVillaMenu&venueId=${villaId}&venueType=villa&aff=${encodeURIComponent(affiliateCode)}`;
         updateState({ qrLink });
 
         // High-contrast, high-resolution QR for reliable scanning

@@ -281,7 +281,7 @@ Powered by IndaStreet`;
                                 onClick={() => setShowLandingPage(false)}
                                 className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 rounded-xl text-lg font-bold transition-all duration-300 hover:scale-105 shadow-lg"
                             >
-                                View Live Menu
+                                View Menu
                             </button>
                             
 
