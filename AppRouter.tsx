@@ -89,7 +89,8 @@ const PromoterCommissionPage = React.lazy(() => import('./pages/PromoterCommissi
 import PromoterQRPage from './pages/PromoterQRPage';
 const PromoterBookingStatsPage = React.lazy(() => import('./pages/PromoterBookingStatsPage'));
 const ProviderCommissionPage = React.lazy(() => import('./pages/ProviderCommissionPage'));
-const PromoterLiveMenuPage = React.lazy(() => import('./pages/PromoterLiveMenuPage'));
+// Eager-load PromoterLiveMenuPage to avoid dev dynamic import fetch issues
+import PromoterLiveMenuPage from './pages/PromoterLiveMenuPage';
 // Eager-load to avoid dev dynamic import fetch issue for this page
 import PromoterHotelVillaMassagePage from './pages/PromoterHotelVillaMassagePage';
 const PromoterTermsPage = React.lazy(() => import('./pages/PromoterTermsPage'));
@@ -456,14 +457,9 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         </div>
     );
     
-    // Helper for hotel/villa secure navigation
-    const hotelVillaAllowedPages = ['coinHistory', 'coin-shop'];
-    const createSecureNavHandler = (type: string) => (page: string | Page) => {
-        if (hotelVillaAllowedPages.includes(page as string)) {
-            setPage(page as Page);
-        } else {
-            console.error(`🚨 SECURITY: ${type} dashboard attempted to navigate to unauthorized page:`, page);
-        }
+    // Hotel/Villa restricted navigation removed: unified promoter & provider experience
+    const createSecureNavHandler = (_type: string) => (page: string | Page) => {
+        setPage(page as Page);
     };
 
     // Common portal handlers
@@ -473,11 +469,11 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             setPage('massageJobs');
         },
         onHotelPortalClick: () => {
-            console.log('🔥 Hotel portal deprecated → redirecting to home');
-            setPage('home');
+            // Fully deprecated: redirect to unified promoter auth
+            setPage('promoterAuth');
         },
         onVillaPortalClick: () => {
-            console.log('🔥 Navigating to promoterAuth');
+            // Villa portal also unified
             setPage('promoterAuth');
         },
         onTherapistPortalClick: () => {
