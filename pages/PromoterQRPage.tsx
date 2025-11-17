@@ -39,10 +39,18 @@ const PromoterQRPage: React.FC<{ t?: any; onBack?: () => void; onNavigate?: (p: 
       const origin = globalThis.location?.origin || '';
       const code = promotorCode || '';
       if (!origin || !code) return '';
-      return `${origin}/?aff=${encodeURIComponent(code)}`;
-    } catch {
-      return '';
-    }
+      // Canonical live menu URL
+      return `${origin}/live-menu?aff=${encodeURIComponent(code)}`;
+    } catch { return ''; }
+  }, [promotorCode]);
+
+  const shortAliasUrl = useMemo(() => {
+    try {
+      const origin = globalThis.location?.origin || '';
+      const code = promotorCode || '';
+      if (!origin || !code) return '';
+      return `${origin}/r/${encodeURIComponent(code)}`;
+    } catch { return ''; }
   }, [promotorCode]);
 
   const qrSrc = useMemo(() => {
@@ -99,8 +107,9 @@ const PromoterQRPage: React.FC<{ t?: any; onBack?: () => void; onNavigate?: (p: 
               </div>
             )}
             {!!qrSrc && (<img src={qrSrc} alt="Promoter QR" className={`w-64 h-64 ${!isActive ? 'opacity-50' : ''}`} />)}
-            <div className="mt-4 w-full">
-              <div className="bg-gray-50 text-gray-700 text-sm rounded px-3 py-2 break-all select-all">{shareUrl}</div>
+            <div className="mt-4 w-full space-y-2">
+              <div className="bg-gray-50 text-gray-700 text-sm rounded px-3 py-2 break-all select-all" title="Canonical share URL">{shareUrl}</div>
+              <div className="bg-gray-50 text-gray-500 text-xs rounded px-3 py-2 break-all select-all" title="Short alias URL">{shortAliasUrl}</div>
             </div>
             <div className="mt-4 grid grid-cols-3 gap-2 w-full">
               <button onClick={handleCopy} disabled={!isActive} className={`px-3 py-2 rounded-lg text-sm ${isActive ? 'bg-slate-800 text-white' : 'bg-gray-400 text-white cursor-not-allowed'}`}>{copied ? 'Copied' : 'Copy'}</button>

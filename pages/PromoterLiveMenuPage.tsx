@@ -170,6 +170,19 @@ const PromoterLiveMenuPage: React.FC<{ t?: any; onBack?: () => void; onNavigate?
         {!code && (
           <div className="mb-4 text-sm text-gray-600">Sign in to attach your promotor ID to bookings.</div>
         )}
+        {code && (
+          <div className="mb-4 text-xs bg-orange-50 border border-orange-200 text-orange-700 rounded-md px-3 py-2 flex items-center justify-between">
+            <span>Promotor ID active: <span className="font-mono font-semibold">{code}</span></span>
+            <button
+              onClick={() => {
+                try {
+                  navigator.clipboard.writeText(`${window.location.origin}/live-menu?aff=${code}`);
+                } catch {}
+              }}
+              className="text-[11px] px-2 py-1 bg-orange-600 text-white rounded hover:bg-orange-700"
+            >Copy Link</button>
+          </div>
+        )}
 
         {loading ? (
           <div className="text-gray-600">Loading…</div>

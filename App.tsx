@@ -169,6 +169,26 @@ const App = () => {
             if (path.startsWith('/accept-booking/')) {
                 state.setPage('accept-booking');
             }
+            // Unified promoter live menu: /live-menu and short alias /r/:code
+            if (path === '/live-menu') {
+                state.setPage('promoterLiveMenu');
+            } else {
+                const m = path.match(/^\/r\/([A-Za-z0-9_-]+)$/);
+                if (m) {
+                    // Capture affiliate code (will be persisted by attribution util later) then normalize URL
+                    try {
+                        const code = m[1];
+                        const mod = require('./lib/affiliateAttribution');
+                        if (mod && typeof mod.setCode === 'function') mod.setCode(code);
+                        // Replace path with canonical /live-menu?aff=CODE without full reload
+                        const url = new URL(window.location.href);
+                        url.pathname = '/live-menu';
+                        url.searchParams.set('aff', code);
+                        window.history.replaceState({}, '', url.toString());
+                        state.setPage('promoterLiveMenu');
+                    } catch {}
+                }
+            }
         } catch (e) {
             console.warn('Path detection failed:', e);
         }
