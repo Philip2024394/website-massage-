@@ -823,10 +823,10 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                 </div>
             </div>
             
-            {/* Hotel/Villa Special Pricing Section */}
+            {/* Partners Special Pricing Section */}
             <div className="border-t border-gray-200 pt-4">
                 <div className="mb-3">
-                    <h3 className="text-sm sm:text-md font-medium text-orange-800">Hotel/Villa Live Menu Pricing</h3>
+                    <h3 className="text-sm sm:text-md font-medium text-orange-800">Partners Menu Pricing</h3>
                     <div className="mt-2 p-3 bg-orange-50 border border-orange-200 rounded-lg">
                         <div className="flex items-start gap-2">
                             <div className="w-4 h-4 bg-orange-500 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
@@ -836,9 +836,7 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                             </div>
                             <div>
                                 <p className="text-xs text-orange-800 font-semibold mb-1">Commission Structure</p>
-                                <p className="text-xs text-orange-700 leading-relaxed">
-                                    Hotels and villas receive a <span className="font-semibold">20% commission</span> for each guest room service massage booking. The prices you set here already include this 20% commission, so you'll receive 80% of the displayed amount.
-                                </p>
+                                <p className="text-xs text-orange-700 leading-relaxed">A <span className="font-semibold">10% commission</span> is owed to Indastreet Partners on bookings attributed via partner links.</p>
                             </div>
                         </div>
                     </div>

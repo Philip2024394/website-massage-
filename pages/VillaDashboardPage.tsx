@@ -388,8 +388,8 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
                                 <Tag className="w-5 h-5 text-orange-600" />
                             </div>
                             <div>
-                                <h2 className="text-2xl font-bold text-gray-900">{t('dashboard.discounts')}</h2>
-                                <p className="text-xs text-gray-500">All providers offering discounts for your guests</p>
+                                <h2 className="text-2xl font-bold text-gray-900">Therapist Partners</h2>
+                                <p className="text-xs text-gray-500">Invite and view therapists and places offering guest benefits</p>
                             </div>
                         </div>
                         {providers.length > 0 ? (
@@ -876,15 +876,49 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
                             </div>
                             {(() => {
                                 const origin = globalThis.location?.origin || '';
-                                const regLink = `${origin}/?page=providerAuth&aff=${encodeURIComponent(affiliateCode)}`;
+                                // Attach both affiliate code and partner id so attribution is unquestionably tied to this dashboard
+                                const regLink = `${origin}/?page=providerAuth&aff=${encodeURIComponent(affiliateCode)}&pid=${encodeURIComponent(String(villaId))}`;
+                                const inputId = 'provider-reg-link-input';
                                 return (
                                     <div className="space-y-2">
                                         <div className="text-xs text-gray-500">Registration link</div>
                                         <div className="flex items-center gap-2">
-                                            <input className="flex-1 border rounded-lg px-3 py-2 text-sm" readOnly value={regLink} />
-                                            <button onClick={() => navigator.clipboard.writeText(regLink)} className="px-3 py-2 bg-orange-500 text-white rounded-lg text-sm">Copy</button>
+                                            <input
+                                                id={inputId}
+                                                className="flex-1 border rounded-lg px-3 py-2 text-sm select-all"
+                                                readOnly
+                                                value={regLink}
+                                                onFocus={(e) => e.currentTarget.select()}
+                                            />
+                                            <button
+                                                onClick={() => {
+                                                    const el = document.getElementById(inputId) as HTMLInputElement | null;
+                                                    if (el) { el.select(); }
+                                                    navigator.clipboard.writeText(regLink);
+                                                }}
+                                                className="px-3 py-2 bg-orange-500 text-white rounded-lg text-sm"
+                                            >Copy</button>
+                                            <button
+                                                onClick={() => {
+                                                    const el = document.getElementById(inputId) as HTMLInputElement | null;
+                                                    if (el) { el.select(); }
+                                                }}
+                                                className="px-3 py-2 bg-gray-100 text-gray-800 rounded-lg text-sm"
+                                            >Select</button>
                                         </div>
-                                        <p className="text-xs text-gray-500">Share this link with therapists or massage places you refer.</p>
+                                        <div className="text-xs text-gray-600">
+                                            <div className="mb-1">Direct link:</div>
+                                            <a href={regLink} target="_blank" rel="noreferrer" className="font-mono break-all text-blue-600 hover:underline">{regLink}</a>
+                                        </div>
+                                        <div className="mt-2 text-xs text-gray-600 leading-relaxed">
+                                            <p className="mb-1"><strong>How it works:</strong></p>
+                                            <ul className="list-disc ml-5 space-y-1">
+                                                <li>Share this link with therapists or massage places you invite to Indastreet.</li>
+                                                <li>When they click and register, your partner code <span className="font-mono">{affiliateCode}</span> is automatically attached to their account.</li>
+                                                <li>All eligible memberships and renewals are attributed to your dashboard account (Partner ID <span className="font-mono">{String(villaId)}</span>).</li>
+                                                <li>You earn {Math.round(NEW_MEMBER_RATE * 100)}% on their first membership and {Math.round(RENEWAL_RATE * 100)}% on renewals, plus a {Math.round(BONUS_RATE * 100)}% bonus where applicable.</li>
+                                            </ul>
+                                        </div>
                                     </div>
                                 );
                             })()}
@@ -1016,7 +1050,7 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
     // Navigation items for sidebar - SYNCHRONIZED WITH HOTEL DASHBOARD
     const navItems = [
         { id: 'analytics', icon: BarChart3, label: 'Analytics', color: 'blue', description: 'View performance metrics' },
-        { id: 'discounts', icon: Percent, label: 'Discounts', color: 'green', description: 'Manage special offers' },
+        { id: 'discounts', icon: Percent, label: 'Therapist Partners', color: 'green', description: 'Invite and manage partners' },
         { id: 'menu', icon: ClipboardList, label: 'Menu', badge: providers.length, color: 'indigo', description: 'Service providers' },
         { id: 'qr-code', icon: QrCode, label: 'QR Code', color: 'purple', description: 'Share menu with guests' },
         { id: 'feedback', icon: MessageSquare, label: 'Feedback', color: 'yellow', description: 'Customer reviews' },

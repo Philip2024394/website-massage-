@@ -708,7 +708,7 @@ const MassagePlaceAdminDashboard: React.FC<MassagePlaceAdminDashboardProps> = ({
                                 }`}
                             >
                                 <Hotel className="w-5 h-5" />
-                                <span className="font-medium">Hotel & Villa</span>
+                                <span className="font-medium">Indastreet Partners</span>
                             </button>
                             <button
                                 onClick={() => {

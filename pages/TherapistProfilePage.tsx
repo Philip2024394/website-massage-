@@ -316,23 +316,23 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                     </div>
                 </div>
 
-                {/* Hotel & Villa Pricing */}
+                {/* Partners Pricing */}
                 <div className="mb-6">
-                    <h2 className="text-xl font-medium text-black mb-4">Hotel & Villa Menu Prices</h2>
+                    <h2 className="text-xl font-medium text-black mb-4">Partner Menu Prices</h2>
                     <div className="space-y-2 mb-4">
                         {Object.entries(therapist.pricing || {}).map(([duration, price]) => {
-                            const hotelPrice = Math.round(Number(price) / 0.8);
+                            const partnerPrice = Math.round(Number(price));
                             return (
                                 <div key={duration} className="p-3 flex justify-between">
                                     <span className="text-black">{duration} Minutes</span>
-                                    <span className="text-black font-medium">Rp {formatPrice(hotelPrice)}</span>
+                                    <span className="text-black font-medium">Rp {formatPrice(partnerPrice)}</span>
                                 </div>
                             );
                         })}
                     </div>
                     <div className="p-3">
                         <p className="text-sm text-black">
-                            <strong>20% Commission Deducted:</strong> Hotel/Villa takes 20% commission from these menu prices
+                            <strong>10% Commission Owed:</strong> Indastreet Partners commission applies to attributed bookings
                         </p>
                     </div>
                 </div>
