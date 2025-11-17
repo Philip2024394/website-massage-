@@ -47,24 +47,24 @@ export const promoterService = {
           Permission.update(Role.user(userId))
         ]
       );
-    } catch (e: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       // Surface clearer guidance if the collection is misconfigured
       try {
         const dbId = APPWRITE_CONFIG.databaseId || DATABASE_ID;
         const promotersCol = (APPWRITE_CONFIG.collections as any)?.promoters || COLLECTIONS.PROMOTERS;
-        const baseMsg = (e && (e as any).message) || String(e);
-        if (baseMsg && baseMsg.toLowerCase().includes('collection') && baseMsg.toLowerCase().includes('not be found')) {
+        if (message.toLowerCase().includes('collection') && message.toLowerCase().includes('not be found')) {
           throw new Error(`Promoters collection not found. Please set APPWRITE_CONFIG.collections.promoters to your actual collection ID. Current value: '${promotersCol}' in database '${dbId}'.`);
         }
       } catch {}
-      // If already exists, ignore
+      // If already exists, ignore: return existing document if present
       try {
         const dbId = APPWRITE_CONFIG.databaseId || DATABASE_ID;
         const promotersCol = (APPWRITE_CONFIG.collections as any)?.promoters || COLLECTIONS.PROMOTERS;
-        const d = await databases.getDocument(dbId, promotersCol, params.userId);
-        return d;
+        const existing = await databases.getDocument(dbId, promotersCol, params.userId);
+        return existing;
       } catch {
-        throw e;
+        throw error;
       }
     }
   },
