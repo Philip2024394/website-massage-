@@ -423,7 +423,7 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
                             <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
                                 <Menu className="w-5 h-5 text-orange-600" />
                             </div>
-                            <h2 className="text-2xl font-bold text-gray-900">{t('dashboard.guestMenuPreview')}</h2>
+                            <h2 className="text-2xl font-bold text-gray-900">Live Massage Menu</h2>
                         </div>
                         
                         {/* Primary Action Buttons */}
