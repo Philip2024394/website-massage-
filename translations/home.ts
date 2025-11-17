@@ -28,8 +28,6 @@ export const homeTranslations = {
       menu: {
         title: 'Menu',
         createProfile: 'Create Profile',
-        agentLogin: 'Agent Portal',
-        agentDashboard: 'Agent Dashboard',
         adminLogin: 'Admin Login',
         customerLogin: 'Customer Login',
         logout: 'Logout',
@@ -43,16 +41,10 @@ export const homeTranslations = {
         massageJobs: 'Massage Jobs',
         massageJobsDesc: 'Find opportunities',
         // Login portals
-        hotel: 'Hotel',
-        hotelDesc: 'Hotel partner portal',
-        villa: 'Villa',
-        villaDesc: 'Villa partner portal',
         therapists: 'Therapists',
         therapistsDesc: 'Therapist portal',
         massageSpa: 'Massage Spa',
         massageSpaDesc: 'Spa partner portal',
-        agent: 'Agent',
-        agentDesc: 'Agent portal',
         customer: 'Guest',
         customerDesc: 'Guest portal',
         // Company section
@@ -89,15 +81,11 @@ export const homeTranslations = {
       logout: 'Logout',
       onlineStatus: 'Online Status',
       booking: 'Booking',
-      hotelVilla: 'Hotel/Villa',
       promotions: 'Promotions',
       jobOpportunities: 'Job Opportunities',
       membershipPlans: 'Membership Plans',
       terms: 'Terms',
-      // Hotel/Villa specific
-      roomBookings: 'Room Bookings',
-      guestServices: 'Guest Services',
-      propertyManagement: 'Property Management',
+      
       // Therapist specific
       myBookings: 'My Bookings',
       schedule: 'Schedule',
@@ -170,8 +158,6 @@ export const homeTranslations = {
       menu: {
         title: 'Menu',
         createProfile: 'Buat Profil',
-        agentLogin: 'Portal Agen',
-        agentDashboard: 'Dashboard Agen',
         adminLogin: 'Login Admin',
         customerLogin: 'Login Pelanggan',
         logout: 'Keluar',
@@ -185,16 +171,10 @@ export const homeTranslations = {
         massageJobs: 'Lowongan Pijat',
         massageJobsDesc: 'Temukan peluang',
         // Login portals
-        hotel: 'Hotel',
-        hotelDesc: 'Portal mitra hotel',
-        villa: 'Villa',
-        villaDesc: 'Portal mitra villa',
         therapists: 'Terapis',
         therapistsDesc: 'Portal terapis',
         massageSpa: 'Spa Pijat',
         massageSpaDesc: 'Portal mitra spa',
-        agent: 'Agen',
-        agentDesc: 'Portal agen',
         customer: 'Tamu',
         customerDesc: 'Portal tamu',
         // Company section
@@ -231,15 +211,11 @@ export const homeTranslations = {
       logout: 'Keluar',
       onlineStatus: 'Status Online',
       booking: 'Pemesanan',
-      hotelVilla: 'Hotel/Villa',
       promotions: 'Promosi',
       jobOpportunities: 'Peluang Kerja',
       membershipPlans: 'Paket Keanggotaan',
       terms: 'Syarat',
-      // Hotel/Villa specific
-      roomBookings: 'Reservasi Kamar',
-      guestServices: 'Layanan Tamu',
-      propertyManagement: 'Manajemen Properti',
+      
       // Therapist specific
       myBookings: 'Reservasi Saya',
       schedule: 'Jadwal',

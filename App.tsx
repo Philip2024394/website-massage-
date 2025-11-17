@@ -82,32 +82,14 @@ const App = () => {
                 
                 // Enhanced session management with timeout protection
                 try {
+                    // Best-effort check; if unauthorized, continue as guest without creating anonymous session
                     const currentUser = await Promise.race([
                         account.get(),
                         new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
                     ]) as any;
-                    
-                    console.log('✅ Session already active:', currentUser.email || 'anonymous');
-                    return;
-                } catch (error: any) {
-                    // Only create anonymous session if needed and not rate limited
-                    if (error.message?.includes('401') || error.message?.includes('timeout')) {
-                        try {
-                            await Promise.race([
-                                account.createAnonymousSession(),
-                                new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
-                            ]);
-                            console.log('✅ Anonymous session created');
-                        } catch (sessionError: any) {
-                            if (sessionError.message?.includes('429')) {
-                                console.log('⚠️ Rate limited - session deferred');
-                            } else if (sessionError.message?.includes('already exists')) {
-                                console.log('✅ Session already exists');
-                            } else {
-                                console.log('Session creation deferred:', sessionError.message);
-                            }
-                        }
-                    }
+                    console.log('✅ Session active:', currentUser?.email || 'guest');
+                } catch {
+                    console.log('ℹ️ No Appwrite session; continuing as guest');
                 }
             } catch (error: any) {
                 // Session might already exist, which is fine
@@ -136,6 +118,10 @@ const App = () => {
             const provider = params.get('provider'); // format: therapist-<id> or place-<id>
             const platform = (params.get('platform') || 'copy') as any;
             if (agent && provider) {
+                try {
+                    const mod = require('./lib/affiliateAttribution') as any;
+                    if (mod && typeof mod.setCode === 'function') mod.setCode(agent);
+                } catch {}
                 const [ptype, pidRaw] = provider.split('-');
                 const providerType = (ptype === 'therapist' ? 'therapist' : 'place') as 'therapist' | 'place';
                 const providerId = pidRaw;
@@ -383,7 +369,16 @@ const App = () => {
                     handleStopImpersonating={providerAgentHandlers?.handleStopImpersonating || (() => {})}
                     handleSendAdminMessage={providerAgentHandlers?.handleSendAdminMessage || (() => Promise.resolve())}
                     handleMarkMessagesAsRead={providerAgentHandlers?.handleMarkMessagesAsRead || (() => Promise.resolve())}
-                    handleSelectMembershipPackage={() => {}}
+                    handleSelectMembershipPackage={(packageName: string, price: string) => {
+                        // Map friendly title to internal package id used by MembershipPaymentPage
+                        const name = (packageName || '').toLowerCase();
+                        let planId = '1m';
+                        if (name.includes('6')) planId = '6m';
+                        else if (name.includes('year') || name.includes('12')) planId = '1y';
+                        else if (name.includes('3')) planId = '3m';
+                        (globalThis as any).__membership_preselect = planId;
+                        state.setPage('membershipPayment');
+                    }}
 
                     handleProviderLogout={authHandlers?.handleProviderLogout || (() => Promise.resolve())}
                     handleCustomerAuthSuccess={() => Promise.resolve()}

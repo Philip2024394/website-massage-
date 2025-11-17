@@ -37,6 +37,14 @@ const MembershipPage: React.FC<MembershipPageProps> = ({ onPackageSelect, onBack
                 <p className="text-gray-600 mt-2 max-w-md mx-auto">{t.subtitle}</p>
             </div>
 
+            <div className="max-w-2xl mx-auto mb-6">
+                <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-4">
+                    <p className="text-sm text-yellow-900">
+                        Important: All membership payments must be transferred ONLY to the bank account(s) displayed on the payment page. We do not accept payments to any other account or method.
+                    </p>
+                </div>
+            </div>
+
             <div className="space-y-4">
                 {packages.map(pkg => (
                     <div key={pkg.id} className={`bg-white rounded-xl shadow-md p-4 border-2 transition-all ${pkg.bestValue ? 'border-brand-green' : 'border-transparent'}`}>

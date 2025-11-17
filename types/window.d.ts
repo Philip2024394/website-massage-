@@ -6,9 +6,8 @@ declare global {
       whatsappNumber?: string,
       providerId?: string,
       providerType?: 'therapist' | 'place',
-      hotelVillaId?: string,
-      hotelVillaName?: string,
-      hotelVillaType?: 'hotel' | 'villa'
+      partnerId?: string,
+      partnerName?: string
     ) => void;
     openBookingStatusTracker?: (statusInfo: {
       bookingId: string;

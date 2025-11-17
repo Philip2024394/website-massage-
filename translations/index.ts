@@ -77,18 +77,7 @@ translations.en.bookingPage = {
   bookingSuccessTitle: 'Booking Confirmed!',
   bookingSuccessMessage: 'Your booking with {name} has been confirmed.',
 };
-translations.en.agentPage = {
-  title: 'Agent Portal',
-  description: 'Join our agent program and earn commissions by referring massage therapists and places.',
-  joinButton: 'Join as Agent',
-  learnMore: 'Learn More',
-};
-translations.en.agentTermsPage = {
-  title: 'Agent Terms & Conditions',
-  accept: 'I Accept',
-  decline: 'Decline',
-  terms: 'Please read and accept the terms and conditions to continue.',
-};
+// Agent pages removed
 translations.en.detail = {
   title: 'Details',
   description: 'Description',
@@ -342,18 +331,7 @@ translations.id.notificationsPage = {
   noNotifications: 'Belum ada notifikasi.',
   markAllRead: 'Tandai Semua Sudah Dibaca',
 };
-translations.id.agentPage = {
-  title: 'Portal Agen',
-  description: 'Bergabunglah dengan program agen kami dan dapatkan komisi dengan mereferensikan terapis pijat dan tempat.',
-  joinButton: 'Bergabung sebagai Agen',
-  learnMore: 'Pelajari Lebih Lanjut',
-};
-translations.id.agentTermsPage = {
-  title: 'Syarat & Ketentuan Agen',
-  accept: 'Saya Setuju',
-  decline: 'Tolak',
-  terms: 'Silakan baca dan terima syarat dan ketentuan untuk melanjutkan.',
-};
+// Agent pages removed
 translations.id.detail = {
   title: 'Detail',
   description: 'Deskripsi',
@@ -563,38 +541,7 @@ translations.id.privacyPolicy = {
   },
 };
 
-// Hotel/Villa Menu translations
-translations.en.hotelVillaMenu = {
-  loadingMenu: 'Loading menu...',
-  venueNotFound: 'Venue Not Found',
-  menuNotAvailable: 'This menu is not available.',
-  welcomeTitle: 'Welcome to Our Wellness Menu',
-  welcomeDescription: 'Browse our exclusive selection of professional therapists and wellness centers.',
-  bookingNote: 'Note the ID number and contact our front desk to book your perfect relaxation experience.',
-  therapistsTab: 'Therapists',
-  wellnessCentersTab: 'Wellness Centers',
-  noTherapistsAvailable: 'No therapists available at the moment',
-  noWellnessCentersAvailable: 'No wellness centers available at the moment',
-  bookingId: 'BOOKING ID',
-  showToFrontDesk: 'Show this number to our front desk',
-  allRightsReserved: 'All Rights Reserved',
-};
-
-translations.id.hotelVillaMenu = {
-  loadingMenu: 'Memuat menu...',
-  venueNotFound: 'Venue Tidak Ditemukan',
-  menuNotAvailable: 'Menu ini tidak tersedia.',
-  welcomeTitle: 'Selamat Datang di Menu Wellness Kami',
-  welcomeDescription: 'Jelajahi pilihan eksklusif terapis profesional dan pusat kesehatan kami.',
-  bookingNote: 'Catat nomor ID dan hubungi front desk kami untuk memesan pengalaman relaksasi yang sempurna.',
-  therapistsTab: 'Terapis',
-  wellnessCentersTab: 'Pusat Wellness',
-  noTherapistsAvailable: 'Tidak ada terapis yang tersedia saat ini',
-  noWellnessCentersAvailable: 'Tidak ada pusat wellness yang tersedia saat ini',
-  bookingId: 'ID BOOKING',
-  showToFrontDesk: 'Tunjukkan nomor ini ke front desk kami',
-  allRightsReserved: 'Hak Cipta Dilindungi',
-};
+// Hotel/Villa menu translations removed
 
 export default translations;
 export { translations };

@@ -85,8 +85,8 @@ export const useNavigation = ({
     // Simple page navigation handlers
     const handleNavigateToAuth = useCallback(() => setPage('profile'), [setPage]);
     const handleNavigateToTherapistLogin = useCallback(() => setPage('therapistLogin'), [setPage]);
-    const handleNavigateToHotelLogin = useCallback(() => setPage('villaLogin'), [setPage]);
-    const handleNavigateToVillaLogin = useCallback(() => setPage('villaLogin'), [setPage]);
+    const handleNavigateToHotelLogin = useCallback(() => setPage('home'), [setPage]);
+    const handleNavigateToVillaLogin = useCallback(() => setPage('home'), [setPage]);
     const handleNavigateToMassagePlaceLogin = useCallback(() => setPage('massagePlaceLogin'), [setPage]);
     const handleNavigateToAdminLogin = useCallback(() => setPage('adminLogin'), [setPage]);
     const handleNavigateToRegistrationChoice = useCallback(() => setPage('registrationChoice'), [setPage]);
@@ -101,7 +101,7 @@ export const useNavigation = ({
     const handleNavigateToServiceTerms = useCallback(() => setPage('serviceTerms'), [setPage]);
     const handleNavigateToPrivacyPolicy = useCallback(() => setPage('privacy'), [setPage]);
     const handleNavigateToNotifications = useCallback(() => setPage('notifications'), [setPage]);
-    const handleNavigateToAgentAuth = useCallback(() => setPage('villaLogin'), [setPage]);
+    const handleNavigateToAgentAuth = useCallback(() => setPage('home'), [setPage]);
     const handleNavigateToCustomerAuth = useCallback(() => setPage('profile'), [setPage]);
     const handleNavigateToTherapistDashboard = useCallback(() => setPage('therapistDashboard'), [setPage]);
     const handleNavigateToCustomerDashboard = useCallback(() => {

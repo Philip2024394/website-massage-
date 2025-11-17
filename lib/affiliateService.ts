@@ -1,4 +1,4 @@
-import { Client, Databases, ID } from 'appwrite';
+import { Client, Databases, ID, Query } from 'appwrite';
 import { APPWRITE_CONFIG } from './appwrite.config';
 
 // Commission config (global 10%)
@@ -17,6 +17,32 @@ function getDb(): Databases | null {
     return databases;
   } catch {
     return null;
+  }
+}
+
+export async function approveAttributionForBooking(bookingId: string) {
+  try {
+    const collectionId = (APPWRITE_CONFIG.collections as any)?.affiliateAttributions;
+    if (!collectionId) return;
+    const db = getDb();
+    if (!db) return;
+    const res = await db.listDocuments(APPWRITE_CONFIG.databaseId, collectionId, [
+      Query.equal('bookingId', bookingId),
+      Query.limit(50)
+    ]);
+    for (const doc of (res.documents || [])) {
+      try {
+        const status = String((doc as any).commissionStatus || 'pending').toLowerCase();
+        if (status === 'pending') {
+          await db.updateDocument(APPWRITE_CONFIG.databaseId, collectionId, (doc as any).$id, {
+            commissionStatus: 'approved',
+            approvedAt: new Date().toISOString()
+          });
+        }
+      } catch {}
+    }
+  } catch (e) {
+    console.warn('approveAttributionForBooking failed', e);
   }
 }
 

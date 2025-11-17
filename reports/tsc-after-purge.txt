@@ -1,0 +1,14 @@
+AppRouter.tsx(520,9): error TS2322: Type '{ id: string; type: "admin" | "hotel" | "villa" | "agent"; } | null' is not assignable to type '{ id: string; type: "admin"; } | null'.
+  Type '{ id: string; type: "admin" | "hotel" | "villa" | "agent"; }' is not assignable to type '{ id: string; type: "admin"; }'.
+    Types of property 'type' are incompatible.
+      Type '"admin" | "hotel" | "villa" | "agent"' is not assignable to type '"admin"'.
+        Type '"hotel"' is not assignable to type '"admin"'.
+AppRouter.tsx(531,13): error TS2353: Object literal may only specify known properties, and 'setIsHotelLoggedIn' does not exist in type '{ setIsAdminLoggedIn?: ((value: boolean) => void) | undefined; setLoggedInProvider?: ((provider: any) => void) | undefined; setLoggedInCustomer?: ((customer: any) => void) | undefined; setLoggedInUser?: ((user: any) => void) | undefined; }'.
+hooks/useAuthHandlers.ts(40,13): error TS2353: Object literal may only specify known properties, and 'setIsHotelLoggedIn' does not exist in type '{ setIsAdminLoggedIn?: ((value: boolean) => void) | undefined; setLoggedInUser?: ((user: any) => void) | undefined; setLoggedInProvider?: ((provider: any) => void) | undefined; setLoggedInCustomer?: ((customer: any) => void) | undefined; }'.
+hooks/useAuthHandlers.ts(54,13): error TS2353: Object literal may only specify known properties, and 'setIsHotelLoggedIn' does not exist in type '{ setIsAdminLoggedIn?: ((value: boolean) => void) | undefined; setLoggedInUser?: ((user: any) => void) | undefined; setLoggedInProvider?: ((provider: any) => void) | undefined; setLoggedInCustomer?: ((customer: any) => void) | undefined; }'.
+hooks/useAuthHandlers.ts(68,13): error TS2353: Object literal may only specify known properties, and 'setIsVillaLoggedIn' does not exist in type '{ setIsAdminLoggedIn?: ((value: boolean) => void) | undefined; setLoggedInUser?: ((user: any) => void) | undefined; setLoggedInProvider?: ((provider: any) => void) | undefined; setLoggedInCustomer?: ((customer: any) => void) | undefined; }'.
+pages/PlatformAnalyticsPage.tsx(160,240): error TS2339: Property 'totalHotels' does not exist on type 'PlatformAnalytics'.
+pages/PlatformAnalyticsPage.tsx(161,243): error TS2339: Property 'totalVillas' does not exist on type 'PlatformAnalytics'.
+utils/authGuards.ts(47,48): error TS2339: Property 'filter' does not exist on type '{ type: string; collection: string; }'.
+utils/authGuards.ts(47,63): error TS2339: Property 'filter' does not exist on type '{ type: string; collection: string; }'.
+

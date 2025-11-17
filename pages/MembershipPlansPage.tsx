@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Crown, Check, Star, Calendar, Database, Users, Menu } from 'lucide-react';
 import Button from '../components/Button';
 import NotificationBell from '../components/NotificationBell';
+import { membershipReferralService } from '../lib/membershipReferralService';
+import { mapPublicPlanIdToPaymentPkg } from '../utils/membershipMapping';
+import { getCode as getAffiliateCode } from '../lib/affiliateAttribution';
 
 interface MembershipPlan {
   id: string;
@@ -14,12 +17,15 @@ interface MembershipPlan {
   savings?: string;
 }
 
+import type { Page } from '../types/pageTypes';
+
 interface MembershipPlansPageProps {
   onBack: () => void;
   userType: 'therapist' | 'place';
   currentPlan?: string;
   onNavigateToNotifications?: () => void;
   unreadNotificationsCount?: number;
+  onNavigate?: (page: Page) => void;
 }
 
 const MembershipPlansPage: React.FC<MembershipPlansPageProps> = ({ 
@@ -27,7 +33,8 @@ const MembershipPlansPage: React.FC<MembershipPlansPageProps> = ({
   currentPlan = 'free',
   onBack,
   onNavigateToNotifications,
-  unreadNotificationsCount = 0
+  unreadNotificationsCount = 0,
+  onNavigate
 }) => {
   const [plans, setPlans] = useState<MembershipPlan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,65 +61,56 @@ const MembershipPlansPage: React.FC<MembershipPlansPageProps> = ({
   // Mock data - this will be replaced with admin-updated data
   const defaultPlans: MembershipPlan[] = [
     {
-      id: '1month',
-      name: '1 Month',
-      duration: '1 Month',
-      price: 25000,
+      id: 'monthly',
+      name: 'Monthly',
+      duration: 'Billed monthly',
+      price: 150000,
       features: [
+        'First 30 days FREE',
         'Live presence on platform',
         'Customer booking management',
         'Profile customization',
-        'Basic analytics',
-        'Customer communication tools'
+        'Basic analytics'
       ]
     },
     {
-      id: '3month',
+      id: '3months',
       name: '3 Months',
-      duration: '3 Months',
-      price: 65000,
-      originalPrice: 75000,
-      savings: 'Save Rp 10,000',
+      duration: 'Billed every 3 months',
+      price: 150000,
       features: [
-        'All 1-month features',
-        'Priority listing placement',
-        'Advanced analytics dashboard',
-        'Bulk booking management',
-        'Extended profile options',
-        'Customer review management'
+        'First 30 days FREE',
+        'Live presence on platform',
+        'Customer booking management',
+        'Profile customization',
+        'Basic analytics'
       ]
     },
     {
-      id: '6month',
+      id: '6months',
       name: '6 Months',
-      duration: '6 Months',
-      price: 120000,
-      originalPrice: 150000,
-      savings: 'Save Rp 30,000',
+      duration: 'Rp 140,000 / month',
+      price: 140000,
       isPopular: true,
       features: [
-        'All 3-month features',
-        'Featured provider status',
-        'Premium customer support',
+        'First 30 days FREE',
+        'Priority listing placement',
+        'Advanced analytics dashboard',
         'Marketing tools & promotions',
-        'Revenue optimization insights',
-        'Multi-location management'
+        'Premium support'
       ]
     },
     {
-      id: '12month',
+      id: '12months',
       name: '12 Months',
-      duration: '12 Months',
-      price: 200000,
-      originalPrice: 300000,
-      savings: 'Save Rp 100,000',
+      duration: 'Rp 130,000 / month',
+      price: 130000,
       features: [
-        'All 6-month features',
-        'Exclusive partner benefits',
-        'API access for integrations',
-        'White-label booking widgets',
-        'Priority feature requests',
-        'Dedicated account manager'
+        'First 30 days FREE',
+        'Top placement boost',
+        'Verified Pro badge eligibility',
+        'Dedicated success tips',
+        'All premium features'
       ]
     }
   ];
@@ -132,8 +130,35 @@ const MembershipPlansPage: React.FC<MembershipPlansPageProps> = ({
   }, [defaultPlans]);
 
   const handleSelectPlan = (planId: string) => {
-    console.log(`Selected plan: ${planId} for ${userType}`);
-    // Implement plan selection logic
+    try {
+      const selected = plans.find(p => p.id === planId);
+      const price = selected?.price || 0;
+      const code = getAffiliateCode() || (globalThis as any).my_affiliate_code || '';
+      // New signup commission: 20% of first month
+      const commissionRate = 0.20;
+      const paymentPkgId = mapPublicPlanIdToPaymentPkg(planId);
+      if (code) {
+        // Record membership referral attribution (pending until payment confirmed)
+        membershipReferralService.recordReferral({
+          affiliateCode: code,
+          referredType: userType,
+          planId: paymentPkgId,
+          planPrice: price,
+          commissionRate,
+          status: 'pending'
+        });
+      }
+      // Preselect for payment page and navigate
+      (globalThis as any).__membership_preselect = paymentPkgId; 
+      if (onNavigate) {
+        onNavigate('membershipPayment');
+      } else {
+        alert('Proceeding to payment. If you are not redirected, please open Membership Payment from the menu.');
+      }
+    } catch (e) {
+      console.warn('Failed to record membership referral', e);
+      alert('Plan selected. If something goes wrong, please contact support on WhatsApp.');
+    }
   };
 
   if (loading) {
@@ -149,6 +174,14 @@ const MembershipPlansPage: React.FC<MembershipPlansPageProps> = ({
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Payment Policy Banner */}
+      <div className="max-w-6xl mx-auto px-4 pt-4">
+        <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-4 mb-4">
+          <p className="text-sm text-yellow-900">
+            Important: All membership payments must be transferred ONLY to the bank account(s) displayed on the payment page. We do not accept payment to any other account or method.
+          </p>
+        </div>
+      </div>
       {/* Header with Burger Menu */}
       <header className="bg-white shadow-sm px-4 py-3 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
@@ -241,8 +274,7 @@ const MembershipPlansPage: React.FC<MembershipPlansPageProps> = ({
         </div>
       </div>
 
-      {/* Header */}
-      {/* Notice */}
+      {/* Free Trial Notice */}
       <div className="max-w-6xl mx-auto px-4 py-6">
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
           <div className="flex items-start">
@@ -250,17 +282,10 @@ const MembershipPlansPage: React.FC<MembershipPlansPageProps> = ({
               <Star className="w-6 h-6 text-blue-600" />
             </div>
             <div className="ml-4">
-              <h3 className="text-lg font-semibold text-blue-900 mb-2">
-                About Our Membership Plans
-              </h3>
+              <h3 className="text-lg font-semibold text-blue-900 mb-2">First 30 Days Free</h3>
               <p className="text-blue-800 leading-relaxed">
-                Our membership packages are designed to enhance your online presence and provide secure data storage. 
-                <strong> Indastreet never withholds commissions or fees from your massage services.</strong> We believe in 
-                empowering our community to grow and succeed at minimal cost. Think of this as your investment in joining 
-                an awesome community that helps you progress to the next level.
-              </p>
-              <p className="text-sm text-blue-700 mt-3 font-medium">
-                - The Indastreet Team
+                Enjoy a 30-day free membership trial. From month 2, monthly membership is <strong>Rp 150,000</strong>.
+                Save more with <strong>6 months at Rp 140,000/month</strong> or <strong>12 months at Rp 130,000/month</strong>.
               </p>
             </div>
           </div>
@@ -288,13 +313,8 @@ const MembershipPlansPage: React.FC<MembershipPlansPageProps> = ({
                 <div className="text-center mb-6">
                   <h3 className="text-xl font-bold text-gray-900 mb-2">{plan.name}</h3>
                   <div className="mb-2">
-                    {plan.originalPrice && (
-                      <span className="text-sm text-gray-500 line-through mr-2">
-                        Rp {plan.originalPrice.toLocaleString()}
-                      </span>
-                    )}
                     <span className="text-3xl font-bold text-orange-600">
-                      Rp {plan.price.toLocaleString()}
+                      Rp {plan.price.toLocaleString()} <span className="text-base font-semibold text-gray-600">/ month</span>
                     </span>
                   </div>
                   <p className="text-gray-600 flex items-center justify-center">
@@ -333,6 +353,37 @@ const MembershipPlansPage: React.FC<MembershipPlansPageProps> = ({
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Tiers Section */}
+        <div className="mt-12">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Account Tiers</h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Bronze</h3>
+              <ul className="space-y-2 text-sm text-gray-700">
+                <li><Check className="inline w-4 h-4 text-green-500 mr-1"/> Profile listing + bookings</li>
+                <li><Check className="inline w-4 h-4 text-green-500 mr-1"/> Basic analytics</li>
+                <li><Check className="inline w-4 h-4 text-green-500 mr-1"/> Community support</li>
+              </ul>
+            </div>
+            <div className="bg-white rounded-lg shadow-sm border border-yellow-300 p-5 ring-1 ring-yellow-100">
+              <h3 className="text-lg font-semibold text-yellow-800 mb-2">Silver</h3>
+              <ul className="space-y-2 text-sm text-gray-700">
+                <li><Check className="inline w-4 h-4 text-green-500 mr-1"/> Priority listing boost</li>
+                <li><Check className="inline w-4 h-4 text-green-500 mr-1"/> Advanced analytics</li>
+                <li><Check className="inline w-4 h-4 text-green-500 mr-1"/> Marketing tools</li>
+              </ul>
+            </div>
+            <div className="bg-white rounded-lg shadow-sm border border-yellow-500 p-5 ring-2 ring-yellow-200">
+              <h3 className="text-lg font-semibold text-yellow-900 mb-2">Gold</h3>
+              <ul className="space-y-2 text-sm text-gray-700">
+                <li><Check className="inline w-4 h-4 text-green-500 mr-1"/> Top placement eligibility</li>
+                <li><Check className="inline w-4 h-4 text-green-500 mr-1"/> Verified Pro badge eligibility</li>
+                <li><Check className="inline w-4 h-4 text-green-500 mr-1"/> Priority support</li>
+              </ul>
+            </div>
+          </div>
         </div>
 
         {/* Current Plan Section */}

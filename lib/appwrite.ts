@@ -19,6 +19,7 @@ export const COLLECTIONS = {
     PLACES: 'places_collection_id',
     USERS: 'users_collection_id', 
     AGENTS: 'agents_collection_id',
+    PROMOTERS: 'promoters_collection_id',
     BOOKINGS: 'bookings_collection_id',
     REVIEWS: 'reviews_collection_id',
     ANALYTICS: 'analytics_collection_id',
@@ -34,5 +35,7 @@ export const COLLECTIONS = {
     LOGIN_BACKGROUNDS: 'login_backgrounds',
     TRANSLATIONS: 'translations_collection_id',
     COMMISSION_RECORDS: 'commission_records',
-    ATTRIBUTES: 'ATTRIBUTES'
+    ATTRIBUTES: 'ATTRIBUTES',
+    PROMOTER_PAYOUT_REQUESTS: 'promoter_payout_requests',
+    PROMOTER_TABLE_STAND_ORDERS: 'promoter_table_stand_orders'
 };

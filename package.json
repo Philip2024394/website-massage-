@@ -30,9 +30,9 @@
     "migrate:flags": "tsx scripts/migrateFlagImages.ts",
     "mobile:android": "cd mobile && npx react-native run-android",
     "mobile:ios": "cd mobile && npx react-native run-ios",
-    "mobile:start": "cd mobile && npx react-native start"
-    ,"schema:export:hotels": "node scripts/exportHotelsSchema.cjs"
-    ,"schema:validate:hotels": "node scripts/validateHotelsPayloads.cjs"
+    "mobile:start": "cd mobile && npx react-native start",
+    "schema:export:hotels": "node scripts/exportHotelsSchema.cjs",
+    "schema:validate:hotels": "node scripts/validateHotelsPayloads.cjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.0.0",
@@ -72,17 +72,19 @@
     "@vitejs/plugin-react": "^4.3.3",
     "autoprefixer": "^10.4.16",
     "cross-env": "^10.1.0",
+    "dotenv": "^16.4.5",
     "esbuild": "0.25.11",
     "eslint": "^9.15.0",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.12",
     "globals": "^16.5.0",
     "jsdom": "^25.0.0",
-    "dotenv": "^16.4.5",
     "postcss": "^8.4.32",
     "tailwindcss": "^3.3.6",
+    "ts-prune": "^0.10.3",
     "tsx": "^4.20.6",
     "typescript": "^5.6.3",
+    "unimported": "^1.31.1",
     "vite": "^6.4.1",
     "vitest": "^2.0.0"
   },

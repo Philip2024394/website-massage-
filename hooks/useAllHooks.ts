@@ -8,7 +8,6 @@ import { useDataFetching } from './useDataFetching';
 import { useNavigation } from './useNavigation';
 import { useAuthHandlers } from './useAuthHandlers';
 import { useBookingHandlers } from './useBookingHandlers';
-import { useProviderAgentHandlers } from './useProviderAgentHandlers';
 // Local database handlers removed - using Appwrite only
 import { useFooterNavigation } from './useFooterNavigation';
 import { useDerivedState } from './useDerivedState';
@@ -146,24 +145,8 @@ export const useAllHooks = () => {
 
     // Local database handlers removed - using Appwrite only
     
-    // ALWAYS call provider/agent handlers in the same order (keeping for compatibility)
-    const originalProviderAgentHandlers = useProviderAgentHandlers({
-        loggedInProvider: state.loggedInProvider,
-        loggedInAgent: state.loggedInAgent,
-        impersonatedAgent: state.impersonatedAgent,
-        therapists: state.therapists,
-        places: state.places,
-        setLoggedInAgent: state.setLoggedInAgent,
-        setImpersonatedAgent: state.setImpersonatedAgent,
-        setAdminMessages: state.setAdminMessages,
-        setPage: state.setPage,
-        setTherapists: state.setTherapists,
-        setPlaces: state.setPlaces,
-        refreshData: refreshData
-    });
-    
-    // ✅ APPWRITE ONLY: Use original provider/agent handlers for all functions
-    const providerAgentHandlers = originalProviderAgentHandlers;
+    // Provider/Agent handlers removed with Agent/Hotel/Villa features.
+    const providerAgentHandlers = {} as any;
     
     // ALWAYS call footer navigation in the same order
     const footerNav = useFooterNavigation({

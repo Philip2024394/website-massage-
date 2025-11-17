@@ -1,0 +1,30 @@
+AppRouter.tsx(465,21): error TS2345: Argument of type '"villaLogin"' is not assignable to parameter of type 'Page'.
+AppRouter.tsx(469,21): error TS2345: Argument of type '"villaLogin"' is not assignable to parameter of type 'Page'.
+AppRouter.tsx(481,21): error TS2345: Argument of type '"villaLogin"' is not assignable to parameter of type 'Page'.
+AppRouter.tsx(827,14): error TS2678: Type '"agent"' is not comparable to type 'Page'.
+AppRouter.tsx(828,14): error TS2678: Type '"agentAuth"' is not comparable to type 'Page'.
+AppRouter.tsx(829,14): error TS2678: Type '"agentTerms"' is not comparable to type 'Page'.
+AppRouter.tsx(830,14): error TS2678: Type '"agentDashboard"' is not comparable to type 'Page'.
+AppRouter.tsx(1030,14): error TS2678: Type '"villaLogin"' is not comparable to type 'Page'.
+AppRouter.tsx(1045,14): error TS2678: Type '"villaDashboard"' is not comparable to type 'Page'.
+AppRouter.tsx(1148,14): error TS2678: Type '"hotel-info"' is not comparable to type 'Page'.
+AppRouter.tsx(1190,14): error TS2678: Type '"hotelVillaMenu"' is not comparable to type 'Page'.
+AppRouter.tsx(1214,68): error TS2345: Argument of type '"villaDashboard"' is not assignable to parameter of type 'Page'.
+AppRouter.tsx(1256,60): error TS2345: Argument of type '"villaDashboard"' is not assignable to parameter of type 'Page'.
+hooks/useAppState.ts(50,9): error TS2322: Type '"hotelVillaMenu"' is not assignable to type 'Page'.
+hooks/useAppState.ts(74,9): error TS2322: Type '"hotelVillaMenu"' is not assignable to type 'Page'.
+hooks/useDerivedState.ts(45,27): error TS2322: Type '"hotelVillaMenu"' is not assignable to type 'Page'.
+hooks/useFooterNavigation.ts(25,22): error TS2678: Type '"hotel"' is not comparable to type '"admin"'.
+hooks/useFooterNavigation.ts(26,22): error TS2678: Type '"villa"' is not comparable to type '"admin"'.
+hooks/useFooterNavigation.ts(27,22): error TS2678: Type '"agent"' is not comparable to type '"admin"'.
+hooks/useFooterNavigation.ts(27,39): error TS2345: Argument of type '"agentDashboard"' is not assignable to parameter of type 'Page'.
+hooks/useFooterNavigation.ts(36,21): error TS2345: Argument of type '"agentDashboard"' is not assignable to parameter of type 'Page'.
+hooks/useFooterNavigation.ts(41,21): error TS2345: Argument of type '"villaDashboard"' is not assignable to parameter of type 'Page'.
+hooks/useFooterNavigation.ts(55,21): error TS2345: Argument of type '"agentDashboard"' is not assignable to parameter of type 'Page'.
+hooks/useFooterNavigation.ts(60,21): error TS2345: Argument of type '"villaDashboard"' is not assignable to parameter of type 'Page'.
+hooks/useFooterNavigation.ts(72,21): error TS2345: Argument of type '"agentDashboard"' is not assignable to parameter of type 'Page'.
+hooks/useNavigation.ts(88,66): error TS2345: Argument of type '"villaLogin"' is not assignable to parameter of type 'Page'.
+hooks/useNavigation.ts(89,66): error TS2345: Argument of type '"villaLogin"' is not assignable to parameter of type 'Page'.
+hooks/useNavigation.ts(104,65): error TS2345: Argument of type '"villaLogin"' is not assignable to parameter of type 'Page'.
+lib/auth.ts(305,41): error TS2304: Cannot find name 'buildHotelsPayload'.
+

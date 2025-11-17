@@ -39,6 +39,7 @@ interface MembershipPaymentPageProps {
     userType: 'therapist' | 'place';
     onBack: () => void;
     onPaymentSubmitted: () => void;
+    preselectedPackageId?: string; // optional: auto-select and jump to payment step
 }
 
 const MembershipPaymentPage: React.FC<MembershipPaymentPageProps> = ({
@@ -47,7 +48,8 @@ const MembershipPaymentPage: React.FC<MembershipPaymentPageProps> = ({
     userName,
     userType,
     onBack,
-    onPaymentSubmitted
+    onPaymentSubmitted,
+    preselectedPackageId
 }) => {
     const [step, setStep] = useState<'select' | 'payment' | 'upload' | 'success'>('select');
     const [selectedPackage, setSelectedPackage] = useState<MembershipPackage | null>(null);
@@ -131,6 +133,16 @@ const MembershipPaymentPage: React.FC<MembershipPaymentPageProps> = ({
         setSelectedPackage(pkg);
         setStep('payment');
     };
+
+    // Preselect package if provided
+    useEffect(() => {
+        if (!preselectedPackageId) return;
+        const pkg = packages.find(p => p.id === preselectedPackageId);
+        if (pkg) {
+            handlePackageSelect(pkg);
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [preselectedPackageId]);
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -259,6 +271,13 @@ const MembershipPaymentPage: React.FC<MembershipPaymentPageProps> = ({
                         </button>
                         <h1 className="text-3xl font-bold text-gray-900 mb-2">Choose Your Membership</h1>
                         <p className="text-gray-600">Select the perfect package for your needs</p>
+                    </div>
+
+                    {/* Payment Policy Banner */}
+                    <div className="mb-6 bg-yellow-50 border border-yellow-300 rounded-lg p-4">
+                        <p className="text-sm text-yellow-900">
+                            Important: All membership payments must be transferred ONLY to the bank account(s) displayed on the payment page. We do not accept payment to any other account or method.
+                        </p>
                     </div>
 
                     {/* Packages Grid */}
@@ -447,6 +466,9 @@ const MembershipPaymentPage: React.FC<MembershipPaymentPageProps> = ({
                                 <li>Upload the screenshot on the next page</li>
                                 <li>Wait for admin confirmation (usually within 24 hours)</li>
                             </ol>
+                            <div className="mt-3 text-sm text-blue-900">
+                                Note: Membership fees are only payable to the bank account(s) shown above.
+                            </div>
                         </div>
 
                         {/* Action Buttons */}

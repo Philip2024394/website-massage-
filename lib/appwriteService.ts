@@ -1368,37 +1368,10 @@ export const authService = {
         }
     },
     async createAnonymousSession(): Promise<any> {
-        try {
-            // Check if already logged in with timeout
-            const currentUser = await Promise.race([
-                account.get(),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
-            ]).catch(() => null);
-            
-            if (currentUser) {
-                console.log('✅ Session already exists, skipping anonymous creation');
-                return currentUser;
-            }
-            
-            // Create anonymous session with timeout and retry logic
-            await Promise.race([
-                account.createAnonymousSession(),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
-            ]);
-            
-            return await account.get();
-        } catch (error: any) {
-            if (error.message?.includes('429')) {
-                console.log('⚠️ Anonymous session rate limited - will retry later');
-                return null;
-            } else if (error.message?.includes('already exists')) {
-                console.log('✅ Anonymous session already exists');
-                return await account.get().catch(() => null);
-            } else {
-                console.log('Anonymous session creation deferred:', error.message);
-                return null;
-            }
-        }
+        // Anonymous sessions are disabled/not supported on this environment (Appwrite Cloud)
+        // Avoid 501/401 noise and continue as guest.
+        console.log('ℹ️ Skipping anonymous session creation (disabled in this environment)');
+        return null;
     }
 };
 

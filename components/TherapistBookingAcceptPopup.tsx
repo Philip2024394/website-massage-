@@ -3,6 +3,7 @@ import { CheckCircle, Clock, MapPin, DollarSign, X } from 'lucide-react';
 import { databases } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import { startContinuousNotifications, stopContinuousNotifications } from '../lib/continuousNotificationService';
+import { approveAttributionForBooking } from '../lib/affiliateService';
 
 interface TherapistBookingAcceptPopupProps {
   isOpen: boolean;
@@ -88,6 +89,7 @@ const TherapistBookingAcceptPopup: React.FC<TherapistBookingAcceptPopupProps> = 
       }
 
       console.log('✅ Booking accepted:', bookingId);
+      try { await approveAttributionForBooking(bookingId); } catch {}
       setIsAccepted(true);
       stopContinuousNotifications(bookingId);
 

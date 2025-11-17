@@ -35,13 +35,11 @@ const VerifiedProBadgePage = React.lazy(() => import('./pages/VerifiedProBadgePa
 const PrivacyPolicyPage = React.lazy(() => import('./pages/PrivacyPolicyPage'));
 const CookiesPolicyPage = React.lazy(() => import('./pages/CookiesPolicyPage'));
 const MembershipPage = React.lazy(() => import('./pages/MembershipPage'));
+const MembershipPaymentPage = React.lazy(() => import('./pages/MembershipPaymentPage'));
 const BookingPage = React.lazy(() => import('./pages/BookingPage'));
 const NotificationsPage = React.lazy(() => import('./pages/NotificationsPage'));
 import MassageTypesPage from './pages/MassageTypesPage';
-// HotelDashboardPage removed: route now redirects to Villa Dashboard
-import VillaDashboardPage from './pages/VillaDashboardPage';
-// Eager-load VillaLoginPage to avoid dev dynamic import fetch issues
-import VillaLoginPage from './pages/VillaLoginPage';
+// Hotel/Villa app routes removed
 const MassagePlaceLoginPage = React.lazy(() => import('./pages/MassagePlaceLoginPage'));
 const AcceptBookingPage = React.lazy(() => import('./pages/AcceptBookingPage'));
 const EmployerJobPostingPage = React.lazy(() => import('./pages/EmployerJobPostingPage'));
@@ -67,7 +65,7 @@ const DeepTissueMassagePage = React.lazy(() => import('./pages/DeepTissueMassage
 const PressMediaPage = React.lazy(() => import('./pages/PressMediaPage'));
 const CareerOpportunitiesPage = React.lazy(() => import('./pages/CareerOpportunitiesPage'));
 const TherapistInfoPage = React.lazy(() => import('./pages/TherapistInfoPage'));
-const HotelInfoPage = React.lazy(() => import('./pages/HotelInfoPage'));
+// Hotel info page removed
 const EmployerInfoPage = React.lazy(() => import('./pages/EmployerInfoPage'));
 const PaymentInfoPage = React.lazy(() => import('./pages/PaymentInfoPage'));
 const BaliSpaIndustryTrends2025Page = React.lazy(() => import('./pages/blog/BaliSpaIndustryTrends2025Page'));
@@ -83,7 +81,18 @@ const DeepTissueVsSwedishMassagePage = React.lazy(() => import('./pages/blog/Dee
 const OnlinePresenceMassageTherapistPage = React.lazy(() => import('./pages/blog/OnlinePresenceMassageTherapistPage'));
 const WellnessTourismUbudPage = React.lazy(() => import('./pages/blog/WellnessTourismUbudPage'));
 const GuestAlertsPage = React.lazy(() => import('./pages/GuestAlertsPage'));
-const HotelVillaMenuPage = React.lazy(() => import('./pages/HotelVillaMenuPage'));
+// Hotel/Villa live menu page removed
+const PartnersDashboardPage = React.lazy(() => import('./pages/PartnersDashboardPage'));
+const IndastreetPromoterAuthPage = React.lazy(() => import('./pages/IndastreetPromoterAuthPage'));
+const PromoterMembershipSalesPage = React.lazy(() => import('./pages/PromoterMembershipSalesPage'));
+const PromoterCommissionPage = React.lazy(() => import('./pages/PromoterCommissionPage'));
+const PromoterQRPage = React.lazy(() => import('./pages/PromoterQRPage'));
+const PromoterBookingStatsPage = React.lazy(() => import('./pages/PromoterBookingStatsPage'));
+const ProviderCommissionPage = React.lazy(() => import('./pages/ProviderCommissionPage'));
+const PromoterLiveMenuPage = React.lazy(() => import('./pages/PromoterLiveMenuPage'));
+const PromoterHotelVillaMassagePage = React.lazy(() => import('./pages/PromoterHotelVillaMassagePage'));
+const PromoterTermsPage = React.lazy(() => import('./pages/PromoterTermsPage'));
+const PromoterBankAccountPage = React.lazy(() => import('./pages/PromoterBankAccountPage'));
 // Eager-load CoinShopPage to avoid dynamic import fetch issues during dev
 import CoinShopPage from './pages/CoinShopPage';
 const AdminShopManagementPage = React.lazy(() => import('./pages/AdminShopManagementPage'));
@@ -447,7 +456,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
     );
     
     // Helper for hotel/villa secure navigation
-    const hotelVillaAllowedPages = ['coinHistory', 'coin-shop', 'hotelVillaMenu'];
+    const hotelVillaAllowedPages = ['coinHistory', 'coin-shop'];
     const createSecureNavHandler = (type: string) => (page: string | Page) => {
         if (hotelVillaAllowedPages.includes(page as string)) {
             setPage(page as Page);
@@ -463,12 +472,12 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             setPage('massageJobs');
         },
         onHotelPortalClick: () => {
-            console.log('🔥 Hotel portal deprecated → redirecting to villaLogin');
-            setPage('villaLogin');
+            console.log('🔥 Hotel portal deprecated → redirecting to home');
+            setPage('home');
         },
         onVillaPortalClick: () => {
-            console.log('🔥 Navigating to villaLogin');
-            setPage('villaLogin');
+            console.log('🔥 Navigating to promoterAuth');
+            setPage('promoterAuth');
         },
         onTherapistPortalClick: () => {
             console.log('🔥 Navigating to therapistLogin');
@@ -479,8 +488,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             setPage('massagePlaceLogin');
         },
         onAgentPortalClick: () => {
-            console.log('🔥 Agent portal deprecated → redirecting to villaLogin');
-            setPage('villaLogin');
+            console.log('🔥 Agent portal deprecated → redirecting to home');
+            setPage('home');
         },
         onCustomerPortalClick: () => {
             console.log('🔥 Customer portal disabled → redirecting to profile');
@@ -826,18 +835,18 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t} />;
         }
             
-        case 'agent':
-        case 'agentAuth':
-        case 'agentTerms':
-        case 'agentDashboard': {
-            // Redirect all deprecated agent routes to Indastreet Partner (villa) login/dashboard
-            const target = isVillaLoggedIn ? 'villaDashboard' : 'villaLogin';
-            setTimeout(() => setPage(target as Page), 0);
+        case 'agent' as any:
+        case 'agentAuth' as any:
+        case 'agentTerms' as any:
+        case 'agentDashboard' as any: {
+            // Redirect all deprecated agent routes to Home
+            const target: Page = 'home';
+            setTimeout(() => setPage(target), 0);
             return (
                 <div className="p-6 max-w-xl mx-auto mt-10 bg-white border border-yellow-200 rounded-lg shadow">
                     <h2 className="text-xl font-bold text-yellow-700 mb-2">Agent Portal Moved</h2>
                     <p className="text-sm text-gray-700">We moved the Agent experience into the Indastreet Partner dashboard.</p>
-                    <p className="text-sm text-gray-700 mt-2">Redirecting you now…</p>
+                    <p className="text-sm text-gray-700 mt-2">Redirecting you to home…</p>
                 </div>
             );
         }
@@ -943,6 +952,24 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onBack={handleBackToHome}
                 t={t}
             />;
+        case 'membershipPayment': {
+            const preselected = (globalThis as any).__membership_preselect as string | undefined;
+            const userId = String((loggedInProvider && loggedInProvider.id) || (user && (user as any).id) || '');
+            const userEmail = (user && (user as any).email) || '';
+            const userName = (user && (user as any).name) || '';
+            const userType: 'therapist' | 'place' = (loggedInProvider?.type as any) || 'therapist';
+            return (
+                <MembershipPaymentPage
+                    userId={userId}
+                    userEmail={userEmail}
+                    userName={userName}
+                    userType={userType}
+                    preselectedPackageId={preselected}
+                    onBack={handleBackToHome}
+                    onPaymentSubmitted={handleBackToHome}
+                />
+            );
+        }
             
         case 'booking': 
             return providerForBooking && <BookingPage 
@@ -1029,26 +1056,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             
         // 'hotelLogin' route removed. Hotel login is deprecated; use 'villaLogin'.
             
-        case 'villaLogin':
-            return <VillaLoginPage 
-                onSuccess={(villaId: string) => {
-                    handleVillaLogin(villaId);
-                    setTimeout(() => setPage('villaDashboard'), 0);
-                }}
-                onBack={handleBackToHome}
-                t={t}
-                onMassageJobsClick={portalHandlers.onMassageJobsClick}
-                onHotelPortalClick={portalHandlers.onHotelPortalClick}
-                onVillaPortalClick={portalHandlers.onVillaPortalClick}
-                onTherapistPortalClick={portalHandlers.onTherapistPortalClick}
-                onMassagePlacePortalClick={portalHandlers.onMassagePlacePortalClick}
-                onAgentPortalClick={portalHandlers.onAgentPortalClick}
-                onCustomerPortalClick={portalHandlers.onCustomerPortalClick}
-                onAdminPortalClick={portalHandlers.onAdminPortalClick}
-                onTermsClick={portalHandlers.onTermsClick}
-                onPrivacyClick={handleNavigateToPrivacyPolicy}
-                onNavigate={(p: string) => setPage(p as any)}
-            />;
+        case 'villaLogin' as any:
+            return renderComingSoon('This page has been removed');
 
         case 'massagePlaceLogin': 
             return <MassagePlaceLoginPage 
@@ -1062,14 +1071,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             
         // 'hotelDashboard' route removed; any legacy navigation now redirects elsewhere at link source
             
-        case 'villaDashboard': 
-            return secureRenderer.renderVillaDashboard(
-                <VillaDashboardPage 
-                    onLogout={handleVillaLogout}
-                    setPage={createSecureNavHandler('Villa')}
-                    onNavigate={createSecureNavHandler('Villa')}
-                />
-            );
+        case 'villaDashboard' as any: 
+            return renderComingSoon('This page has been removed');
             
         case 'employerJobPosting':
             return <EmployerJobPostingPage 
@@ -1171,8 +1174,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return renderSimplePage(CareerOpportunitiesPage);
         case 'therapist-info':
             return renderSimplePage(TherapistInfoPage);
-        case 'hotel-info':
-            return renderSimplePage(HotelInfoPage);
+        case 'hotel-info' as any:
+            return renderComingSoon('This page has been removed');
         case 'employer-info':
             return renderSimplePage(EmployerInfoPage);
             
@@ -1209,34 +1212,44 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'guestAlerts': 
             return <GuestAlertsPage onBack={handleBackToHome} t={t} />;
             
-        case 'hotelVillaMenu': {
-            const params = new URLSearchParams(globalThis.location?.search || '');
-            const qVenueId = params.get('venueId') || '';
-            const qVenueType = (params.get('venueType') as ('hotel' | 'villa' | null)) || null;
-            const resolvedVenueType = qVenueType || (isHotelLoggedIn ? 'hotel' : (isVillaLoggedIn ? 'villa' : 'hotel'));
-            return <HotelVillaMenuPage 
-                venueId={venueMenuId || qVenueId}
-                venueName={(() => {
-                    if (resolvedVenueType === 'hotel') return 'Hotel';
-                    if (resolvedVenueType === 'villa') return 'Villa';
-                    return 'Venue';
-                })()}
-                venueType={resolvedVenueType}
-                therapists={therapists}
-                places={places}
-                _onBook={handleNavigateToBooking}
-                setPage={setPage}
-                _onBookingSubmit={handleCreateBooking}
-                onBackToDashboard={() => {
-                    // Navigate back to appropriate dashboard (hotel dashboard removed)
-                    if (isVillaLoggedIn) {
-                        setPage('villaDashboard');
-                    } else {
-                        setPage('home'); // Fallback to home
-                    }
-                }}
-            />;
+        case 'partnersDashboard': {
+            return <PartnersDashboardPage t={t} setPage={setPage} />;
         }
+
+        case 'promoterAuth': {
+            return renderBackPage(IndastreetPromoterAuthPage, t);
+        }
+
+        case 'promoterMembershipSales': {
+            return renderBackPage(PromoterMembershipSalesPage, t);
+        }
+        case 'promoterCommission': {
+            return renderBackPage(PromoterCommissionPage, t);
+        }
+        case 'promoterQR': {
+            return renderBackPage(PromoterQRPage, t);
+        }
+        case 'promoterBookingStats': {
+            return renderBackPage(PromoterBookingStatsPage, t);
+        }
+        case 'providerCommission': {
+            return renderBackPage(ProviderCommissionPage, t, { loggedInProvider });
+        }
+        case 'promoterLiveMenu': {
+            return renderBackPage(PromoterLiveMenuPage, t);
+        }
+        case 'promoterHotelVillaMassage': {
+            return renderBackPage(PromoterHotelVillaMassagePage, t);
+        }
+        case 'promoterTerms': {
+            return renderBackPage(PromoterTermsPage, t);
+        }
+        case 'promoterBankAccount': {
+            return renderBackPage(PromoterBankAccountPage, t);
+        }
+
+        case 'hotelVillaMenu' as any:
+            return renderComingSoon('Live Menu has been removed');
             
         case 'coin-shop': {
             // 🛡️ SECURITY + UX: Detect which dashboard type is accessing coin shop
@@ -1259,7 +1272,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return <CoinShopPage 
                 onBack={() => {
                     // Navigate back to appropriate dashboard
-                    if (coinShopDashboardType === 'villa') setPage('villaDashboard');  
+                    if (coinShopDashboardType === 'villa') setPage('home');  
                     else if (coinShopDashboardType === 'therapist') setPage('therapistDashboard');
                     else handleBackToHome();
                 }}
@@ -1301,7 +1314,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 userId={currentUserId}
                 onBack={() => {
                     // Navigate back to appropriate dashboard
-                    if (dashboardType === 'villa') setPage('villaDashboard');  
+                    if (dashboardType === 'villa') setPage('home');  
                     else if (dashboardType === 'therapist') setPage('therapistDashboard');
                     else handleBackToHome();
                 }}

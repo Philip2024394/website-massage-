@@ -1,8 +1,8 @@
 import { APP_CONFIG } from '../config';
-import { Therapist, Place, User, Agent, HotelVillaServiceStatus } from '../types';
+import { Therapist, Place, User } from '../types';
 import { AvailabilityStatus } from '../types';
 import { stringifyPricing, stringifyMassageTypes, stringifyCoordinates, stringifyAnalytics } from '../utils/appwriteHelpers';
-import { therapistService, placeService, agentService } from '../lib/appwriteService';
+import { therapistService, placeService } from '../lib/appwriteService';
 
 // Main image URLs from ImageKit for therapists
 const THERAPIST_MAIN_IMAGES = [
@@ -51,7 +51,7 @@ const generateMockTherapists = (): Therapist[] => [
         location: 'Kemang, Jakarta Selatan',
         coordinates: stringifyCoordinates({ lat: -6.2615, lng: 106.8106 }),
         activeMembershipDate: new Date().toISOString().split('T')[0],
-        analytics: stringifyAnalytics({ 
+                analytics: stringifyAnalytics({ 
           impressions: 1250, 
           views: 0,
           profileViews: 567, 
@@ -61,9 +61,6 @@ const generateMockTherapists = (): Therapist[] => [
           directions_clicks: 0,
           bookings: 0 
         }),
-        hotelVillaServiceStatus: HotelVillaServiceStatus.OptedIn,
-        hotelDiscount: 25,
-        villaDiscount: 30,
     },
     {
         id: 2,
@@ -83,7 +80,7 @@ const generateMockTherapists = (): Therapist[] => [
         location: 'Senopati, Jakarta Selatan',
         coordinates: stringifyCoordinates({ lat: -6.2297, lng: 106.8253 }),
         activeMembershipDate: new Date().toISOString().split('T')[0],
-        analytics: stringifyAnalytics({ 
+                analytics: stringifyAnalytics({ 
           impressions: 980, 
           views: 0,
           profileViews: 432, 
@@ -93,7 +90,6 @@ const generateMockTherapists = (): Therapist[] => [
           directions_clicks: 0,
           bookings: 0 
         }),
-        hotelVillaServiceStatus: HotelVillaServiceStatus.NotOptedIn,
     },
     {
         id: 3,
@@ -113,7 +109,7 @@ const generateMockTherapists = (): Therapist[] => [
         location: 'Menteng, Jakarta Pusat',
         coordinates: stringifyCoordinates({ lat: -6.2088, lng: 106.8456 }),
         activeMembershipDate: new Date().toISOString().split('T')[0],
-        analytics: stringifyAnalytics({ 
+                analytics: stringifyAnalytics({ 
           impressions: 1450, 
           views: 0,
           profileViews: 678, 
@@ -123,9 +119,6 @@ const generateMockTherapists = (): Therapist[] => [
           directions_clicks: 0,
           bookings: 0 
         }),
-        hotelVillaServiceStatus: HotelVillaServiceStatus.OptedIn,
-        hotelDiscount: 20,
-        villaDiscount: 22,
     }
 ];
 
@@ -153,7 +146,7 @@ const generateMockPlaces = (): Place[] => [
         openingTime: '09:00',
         closingTime: '22:00',
         activeMembershipDate: new Date().toISOString().split('T')[0],
-        analytics: stringifyAnalytics({ 
+                analytics: stringifyAnalytics({ 
           impressions: 2100, 
           views: 0,
           profileViews: 987, 
@@ -163,9 +156,6 @@ const generateMockPlaces = (): Place[] => [
           directions_clicks: 0,
           bookings: 0 
         }),
-        hotelVillaServiceStatus: HotelVillaServiceStatus.OptedIn,
-        hotelDiscount: 35,
-        villaDiscount: 40,
     },
     {
         id: 2,
@@ -189,7 +179,7 @@ const generateMockPlaces = (): Place[] => [
         openingTime: '08:00',
         closingTime: '21:00',
         activeMembershipDate: new Date().toISOString().split('T')[0],
-        analytics: stringifyAnalytics({ 
+                analytics: stringifyAnalytics({ 
           impressions: 1678, 
           views: 0,
           profileViews: 743, 
@@ -199,9 +189,6 @@ const generateMockPlaces = (): Place[] => [
           directions_clicks: 0,
           bookings: 0 
         }),
-        hotelVillaServiceStatus: HotelVillaServiceStatus.OptedIn,
-        hotelDiscount: 25,
-        villaDiscount: 28,
     }
 ];
 
@@ -302,25 +289,7 @@ export const dataService = {
         }
     },
 
-    // Agents (basic implementation)
-    async getAgents(): Promise<Agent[]> {
-        if (APP_CONFIG.DATA_SOURCE === 'mock') {
-            return [
-                { 
-                    id: '1', 
-                    agentId: 'AGT001',
-                    name: 'Agent Smith', 
-                    email: 'agent@example.com', 
-                    contactNumber: '+1234567890',
-                    agentCode: 'AGT001',
-                    hasAcceptedTerms: true,
-                    isActive: true
-                }
-            ];
-        } else {
-            return agentService.getAll() || [];
-        }
-    },
+    // Agents removed
 
     // Configuration
     getDataSource(): 'mock' | 'appwrite' {

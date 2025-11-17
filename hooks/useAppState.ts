@@ -40,15 +40,7 @@ export const useAppState = () => {
       const urlParams = new URLSearchParams(window.location.search);
       const pageParam = urlParams.get('page');
       
-      // Check for hotel/villa menu URL pattern: /hotel/:id/menu or /villa/:id/menu
-      const pathname = window.location.pathname;
-      const hotelMenuMatch = pathname.match(/\/hotel\/([^/]+)\/menu/);
-      const villaMenuMatch = pathname.match(/\/villa\/([^/]+)\/menu/);
-      
-      if (hotelMenuMatch || villaMenuMatch) {
-        console.log('🏨 Hotel/Villa menu URL detected:', pathname);
-        return 'hotelVillaMenu';
-      }
+      // Hotel/Villa menu URLs deprecated
       
       // Restore last page from session if available
       const sessionPage = sessionStorage.getItem('current_page') as Page | null;
@@ -69,10 +61,7 @@ export const useAppState = () => {
         console.log('🎯 URL parameter detected: Opening reward banners test page');
         return 'rewardBannersTest';
       }
-      if (pageParam === 'hotelVillaMenu') {
-        console.log('🎯 URL parameter detected: Opening Hotel/Villa Menu');
-        return 'hotelVillaMenu';
-      }
+      // 'hotelVillaMenu' parameter deprecated
 
       // Default: always start at landing on fresh app arrival
       console.log('🚪 Fresh arrival: starting at landing page');

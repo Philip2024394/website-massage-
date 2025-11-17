@@ -9,7 +9,6 @@ import ConfirmAccountsPage from './ConfirmAccountsPage';
 // Removed chat import - chat system removed
 // import AdminChatListPage from './AdminChatListPage';
 import DrawerButtonsPage from './DrawerButtonsPage';
-import AgentCommissionPage from './AgentCommissionPage';
 import PlatformAnalyticsPage from './PlatformAnalyticsPage';
 import GoogleMapsAPIStatus from '../components/GoogleMapsAPIStatus';
 import { adminAgentOverviewService } from '../lib/appwriteService';
@@ -19,6 +18,8 @@ import PaymentTransactionsPage from './PaymentTransactionsPage';
 import AdminShopManagementPage from './AdminShopManagementPage';
 import MembershipPricingPage from './MembershipPricingPage';
 import AdminJobPostingsPage from './AdminJobPostingsPage';
+import AdminPromotersPage from './AdminPromotersPage';
+import AdminMembershipReferralsPage from './AdminMembershipReferralsPage';
 import TranslationManager from '../components/TranslationManager';
 import AdminTranslationPanel from '../components/AdminTranslationPanel';
 import PlaceActivationRequests from '../components/PlaceActivationRequests';
@@ -30,7 +31,7 @@ interface AdminDashboardPageProps {
     initialTab?: DashboardPage;
     onNavigate?: (page: Page) => void;
 }
-type DashboardPage = 'platform-analytics' | 'confirm-therapists' | 'confirm-places' | 'confirm-accounts' | 'drawer-buttons' | 'agent-commission' | 'bank-details' | 'payment-transactions' | 'shop-management' | 'membership-pricing' | 'job-postings' | 'translations' | 'therapist-translations' | 'place-activation-requests';
+type DashboardPage = 'platform-analytics' | 'confirm-therapists' | 'confirm-places' | 'confirm-accounts' | 'drawer-buttons' | 'bank-details' | 'payment-transactions' | 'shop-management' | 'membership-pricing' | 'job-postings' | 'translations' | 'therapist-translations' | 'place-activation-requests' | 'promoters' | 'membership-referrals';
 const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'initialTab' | 'onNavigate'>> = ({ onLogout, initialTab, onNavigate }) => {
   const [activePage, setActivePage] = useState<DashboardPage>(initialTab || 'platform-analytics');
   const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
@@ -187,6 +188,36 @@ const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'i
             <span className="font-medium">Job Postings</span>
           </button>
 
+          <button
+            onClick={() => {
+              setActivePage('promoters');
+              setIsSideDrawerOpen(false);
+            }}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+              activePage === 'promoters'
+                ? 'bg-orange-500 text-white shadow-md'
+                : 'text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            <Users className="w-5 h-5" />
+            <span className="font-medium">Promoters</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActivePage('membership-referrals');
+              setIsSideDrawerOpen(false);
+            }}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+              activePage === 'membership-referrals'
+                ? 'bg-orange-500 text-white shadow-md'
+                : 'text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            <DollarIcon className="w-5 h-5" />
+            <span className="font-medium">Membership Referrals</span>
+          </button>
+
           {/* Chat system removed - using WhatsApp booking */}
           {/* <button
             onClick={() => {
@@ -248,20 +279,7 @@ const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'i
             <span className="font-medium">Shop</span>
           </button>
 
-          <button
-            onClick={() => {
-              setActivePage('agent-commission');
-              setIsSideDrawerOpen(false);
-            }}
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-              activePage === 'agent-commission'
-                ? 'bg-orange-500 text-white shadow-md'
-                : 'text-gray-700 hover:bg-gray-100'
-            }`}
-          >
-            <Percent className="w-5 h-5" />
-            <span className="font-medium">Agent Commission</span>
-          </button>
+          {/* Agent Commission removed */}
 
           <button
             onClick={() => {
@@ -452,6 +470,8 @@ const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'i
         {activePage === 'place-activation-requests' && <PlaceActivationRequests />}
         {activePage === 'confirm-accounts' && <ConfirmAccountsPage />}
         {activePage === 'job-postings' && <AdminJobPostingsPage />}
+        {activePage === 'promoters' && <AdminPromotersPage />}
+        {activePage === 'membership-referrals' && <AdminMembershipReferralsPage />}
         {/* Chat system removed - using WhatsApp booking */}
         {/* {activePage === 'chat-messages' && <AdminChatListPage />} */}
         {activePage === 'bank-details' && <BankDetailsManagementPage />}
@@ -459,7 +479,7 @@ const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'i
         {activePage === 'shop-management' && <AdminShopManagementPage onNavigate={() => {}} />}
         {activePage === 'membership-pricing' && <MembershipPricingPage />}
         {activePage === 'drawer-buttons' && <DrawerButtonsPage />}
-        {activePage === 'agent-commission' && <AgentCommissionPage />}
+        {/* Agent Commission removed */}
       </main>
 
       {/* Footer */}
@@ -488,7 +508,7 @@ const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'i
               <button onClick={() => setActivePage('confirm-therapists')} className="px-3 py-1.5 bg-gray-100 rounded text-xs font-medium hover:bg-gray-200">Therapists</button>
               <button onClick={() => setActivePage('confirm-places')} className="px-3 py-1.5 bg-gray-100 rounded text-xs font-medium hover:bg-gray-200">Places</button>
               <button onClick={() => setActivePage('shop-management')} className="px-3 py-1.5 bg-gray-100 rounded text-xs font-medium hover:bg-gray-200">Shop</button>
-              <button onClick={() => setActivePage('agent-commission')} className="px-3 py-1.5 bg-gray-100 rounded text-xs font-medium hover:bg-gray-200">Agent</button>
+              {/* Agent quick link removed */}
             </div>
           </div>
         </div>

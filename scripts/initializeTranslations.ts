@@ -29,23 +29,14 @@ const BOOKING_TRANSLATIONS = {
   'booking.noAvailableSlots': 'No available time slots for selected date',
   'booking.bookingWith': 'Booking with',
   
-  // Hotel/Villa Menu Page
-  'menu.selectLanguage': 'Select Your Language',
-  'menu.welcomeMessage': 'Welcome to',
-  'menu.selectProvider': 'Select a Massage Provider',
-  'menu.availableNow': 'Available Now',
-  'menu.noProviders': 'No providers available at the moment. Please try again later.',
-  'menu.refreshing': 'Refreshing...',
-  'menu.liveUpdates': 'Live updates active',
-  'menu.individualTherapists': 'Individual Therapists',
-  'menu.massageSpas': 'Massage Spas',
+  // Menu Page (generic)
   
   // Provider Booking Card
   'provider.awaitingResponse': 'AWAITING RESPONSE',
   'provider.confirmed': 'CONFIRMED',
   'provider.onTheWay': 'ON THE WAY',
   'provider.timedOut': 'TIMED OUT',
-  'provider.hotelVilla': 'Hotel/Villa',
+  
   'provider.roomNumber': 'Room Number',
   'provider.guestName': 'Guest Name',
   'provider.serviceDuration': 'Service Duration',
@@ -56,7 +47,7 @@ const BOOKING_TRANSLATIONS = {
   'provider.declineButton': 'Decline',
   'provider.confirmedMessage': 'You have confirmed this booking.',
   'provider.onTheWayMessage': 'You have indicated you are on the way to the guest.',
-  'provider.guestNotified': 'Guest and hotel have been notified.',
+  'provider.guestNotified': 'Guest has been notified.',
   'provider.timeoutMessage': 'Response time expired. This booking may have been reassigned to another provider.',
   
   // Common

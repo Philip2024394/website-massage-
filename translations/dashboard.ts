@@ -1,4 +1,4 @@
-// Dashboard related translations (admin, therapist, place, agent)
+// Dashboard related translations (admin, therapist, place)
 export const dashboardTranslations = {
   en: {
     adminDashboard: {
@@ -6,7 +6,7 @@ export const dashboardTranslations = {
       tabs: {
         members: 'Members Management',
         settings: 'App Settings',
-        agents: 'Agents',
+        
         reviews: 'Reviews',
       },
       therapists: 'Therapists',
@@ -41,15 +41,7 @@ export const dashboardTranslations = {
         placeholder: 'e.g. 6281234567890',
         saveButton: 'Save Number',
       },
-      agents: {
-        title: 'Agent Management',
-        agentCode: 'Agent Code',
-        agentTier: 'Tier',
-        lastLogin: 'Last Login',
-        totalSignups: 'Total Sign-ups',
-        viewDashboard: 'View Dashboard',
-        neverLoggedIn: 'Never',
-      },
+      
       reviews: {
         title: 'Pending Reviews',
         noPendingReviews: 'There are no pending reviews to approve.',
@@ -115,35 +107,7 @@ export const dashboardTranslations = {
         allTime: 'All time',
       },
     },
-    agentDashboard: {
-      title: 'Agent Dashboard',
-      welcome: 'Welcome back, {name}!',
-      stats: {
-        totalSignups: 'Total Sign-ups',
-        thisWeek: 'This Week',
-        thisMonth: 'This Month',
-        allTime: 'All Time',
-        commissionEarned: 'Commission Earned',
-      },
-      signups: {
-        title: 'Recent Sign-ups',
-        noSignups: 'No sign-ups yet.',
-        provider: 'Provider',
-        type: 'Type',
-        date: 'Date',
-        commission: 'Commission',
-      },
-      profile: {
-        title: 'My Profile',
-        editProfile: 'Edit Profile',
-        agentCode: 'Agent Code',
-        tier: 'Tier',
-        joinDate: 'Join Date',
-        profileSavedSuccess: 'Profile saved successfully!',
-        profileSavedError: 'Error saving profile. Please try again.',
-      },
-      logout: 'Logout',
-    },
+    
   },
   id: {
     adminDashboard: {
@@ -151,7 +115,7 @@ export const dashboardTranslations = {
       tabs: {
         members: 'Manajemen Anggota',
         settings: 'Pengaturan Aplikasi',
-        agents: 'Agen',
+        
         reviews: 'Review',
       },
       therapists: 'Terapis',
@@ -186,15 +150,7 @@ export const dashboardTranslations = {
         placeholder: 'cth. 6281234567890',
         saveButton: 'Simpan Nomor',
       },
-      agents: {
-        title: 'Manajemen Agen',
-        agentCode: 'Kode Agen',
-        agentTier: 'Tingkat',
-        lastLogin: 'Login Terakhir',
-        totalSignups: 'Total Pendaftaran',
-        viewDashboard: 'Lihat Dashboard',
-        neverLoggedIn: 'Belum Pernah',
-      },
+      
       reviews: {
         title: 'Review Tertunda',
         noPendingReviews: 'Tidak ada review tertunda untuk disetujui.',
@@ -260,32 +216,6 @@ export const dashboardTranslations = {
         allTime: 'Sepanjang waktu',
       },
     },
-    agentDashboard: {
-      title: 'Dashboard Agen',
-      welcome: 'Selamat datang kembali, {name}!',
-      stats: {
-        totalSignups: 'Total Pendaftaran',
-        thisWeek: 'Minggu Ini',
-        thisMonth: 'Bulan Ini',
-        allTime: 'Sepanjang Waktu',
-        commissionEarned: 'Komisi Diperoleh',
-      },
-      signups: {
-        title: 'Pendaftaran Terbaru',
-        noSignups: 'Belum ada pendaftaran.',
-        provider: 'Penyedia',
-        type: 'Jenis',
-        date: 'Tanggal',
-        commission: 'Komisi',
-      },
-      profile: {
-        title: 'Profil Saya',
-        editProfile: 'Edit Profil',
-        agentCode: 'Kode Agen',
-        tier: 'Tingkat',
-        joinDate: 'Tanggal Bergabung',
-      },
-      logout: 'Keluar',
-    },
+    
   },
 };

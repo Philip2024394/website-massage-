@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import type { Place, Pricing, Booking, Notification } from '../types';
 import { BookingStatus, HotelVillaServiceStatus } from '../types';
 import { Calendar, TrendingUp, LogOut, Bell, MessageSquare, X, Megaphone, Menu, DollarSign } from 'lucide-react';
@@ -8,9 +8,12 @@ import Button from '../components/Button';
 import DiscountSharePage from './DiscountSharePage';
 import MembershipPlansPage from './MembershipPlansPage';
 import ImageUpload from '../components/ImageUpload';
-import HotelVillaOptIn from '../components/HotelVillaOptIn';
+// Hotel/Villa Opt-In removed
 
 import { placeService } from '../lib/appwriteService';
+import { databases } from '../lib/appwrite';
+import { APPWRITE_CONFIG } from '../lib/appwrite.config';
+import { Query } from 'appwrite';
 import TherapistTermsPage from './TherapistTermsPage';
 import UserSolidIcon from '../components/icons/UserSolidIcon';
 import DocumentTextIcon from '../components/icons/DocumentTextIcon';
@@ -147,6 +150,67 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     const [mapsApiLoaded, setMapsApiLoaded] = useState(false);
     const [activeTab, setActiveTab] = useState('profile');
     const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
+    const liveMenuLink = useMemo(() => {
+        try {
+            const base = `${globalThis.location.origin}/?page=hotelVillaMenu`;
+            return `${base}&autoOpen=1`;
+        } catch {
+            return '/?page=hotelVillaMenu&autoOpen=1';
+        }
+    }, []);
+    // Commission summary state
+    const [commissionLoading, setCommissionLoading] = useState(false);
+    const [commissionPendingTotal, setCommissionPendingTotal] = useState(0);
+    const [commissionWeekTotal, setCommissionWeekTotal] = useState(0);
+    const [commissionNextFriday, setCommissionNextFriday] = useState<string>('');
+    const computeWeekWindow = () => {
+        const now = new Date();
+        const day = now.getDay();
+        const start = new Date(now);
+        const diffToSat = (day + 1) % 7;
+        start.setDate(now.getDate() - diffToSat);
+        start.setHours(0, 0, 0, 0);
+        const nextFri = new Date(now);
+        const addDays = (5 - day + 7) % 7 || 7;
+        nextFri.setDate(now.getDate() + addDays);
+        nextFri.setHours(23, 59, 59, 999);
+        return { startIso: start.toISOString(), nextFriday: nextFri };
+    };
+    const loadCommissionSummary = useCallback(async () => {
+        try {
+            const col = (APPWRITE_CONFIG.collections as any)?.affiliateAttributions;
+            if (!col || !placeId) return;
+            setCommissionLoading(true);
+            const res = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                col,
+                [Query.equal('providerId', String(placeId)), Query.orderDesc('$createdAt'), Query.limit(500)]
+            );
+            const docs = (res.documents || []) as any[];
+            const pending = docs.filter(d => (d.commissionStatus || 'pending').toLowerCase() === 'pending');
+            const pendingTotal = pending.reduce((sum, d) => sum + Number(d.commissionAmount || 0), 0);
+            const { startIso, nextFriday } = computeWeekWindow();
+            const weekDocs = pending.filter(d => {
+                const ts = d.createdAt || d.$createdAt;
+                return ts && String(ts) >= startIso;
+            });
+            const weekTotal = weekDocs.reduce((sum, d) => sum + Number(d.commissionAmount || 0), 0);
+            setCommissionPendingTotal(pendingTotal);
+            setCommissionWeekTotal(weekTotal);
+            setCommissionNextFriday(nextFriday.toLocaleDateString());
+        } catch (e) {
+            console.warn('Commission summary load failed', e);
+        } finally {
+            setCommissionLoading(false);
+        }
+    }, [placeId]);
+    useEffect(() => {
+        if (activeTab === 'hotelVilla') {
+            loadCommissionSummary();
+            const { nextFriday } = computeWeekWindow();
+            setCommissionNextFriday(nextFriday.toLocaleDateString());
+        }
+    }, [activeTab, loadCommissionSummary]);
     
     // Website information for Indastreet Partners Directory
     const [websiteUrl, setWebsiteUrl] = useState('');
@@ -1075,6 +1139,46 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                 <p className="text-xs text-gray-500">Massage places owe 10% on attributed bookings to Indastreet Partners.</p>
                             </div>
                         </div>
+                        {/* Live Menu (in-app) */}
+                        <div className="bg-white border border-gray-200 rounded-lg p-4">
+                            <div className="flex items-center justify-between mb-3">
+                                <h3 className="font-semibold text-gray-800">Live Menu</h3>
+                                <button
+                                    onClick={() => {
+                                        try {
+                                            const url = new URL(window.location.href);
+                                            url.searchParams.set('page', 'hotelVillaMenu');
+                                            url.searchParams.set('autoOpen', '1');
+                                            window.history.replaceState({}, '', url.toString());
+                                        } catch {}
+                                        if (onNavigate) onNavigate('hotelVillaMenu');
+                                    }}
+                                    className="px-3 py-2 bg-orange-500 text-white rounded-lg text-sm hover:bg-orange-600"
+                                >
+                                    Open In App
+                                </button>
+                            </div>
+                            <div className="border rounded-lg overflow-hidden">
+                                <iframe title="Live Menu Preview" src={liveMenuLink} style={{ width: '100%', height: '560px', border: '0' }} />
+                            </div>
+                        </div>
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                <div>
+                                    <div className="text-sm text-blue-900">This week pending</div>
+                                    <div className="text-lg font-semibold text-blue-900">Rp {commissionWeekTotal.toLocaleString()}</div>
+                                </div>
+                                <div>
+                                    <div className="text-sm text-blue-900">Total pending</div>
+                                    <div className="text-lg font-semibold text-blue-900">Rp {commissionPendingTotal.toLocaleString()}</div>
+                                </div>
+                                <div>
+                                    <div className="text-sm text-blue-900">Due by</div>
+                                    <div className="text-lg font-semibold text-blue-900">Friday, {commissionNextFriday}</div>
+                                </div>
+                            </div>
+                            {commissionLoading && <div className="text-xs text-blue-800 mt-2">Loading latest commission summary…</div>}
+                        </div>
                         <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
                             <h3 className="font-semibold text-orange-800 mb-1">Payment Policy</h3>
                             <ul className="list-disc ml-5 text-sm text-orange-800 space-y-1">
@@ -1849,6 +1953,15 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                     </h1>
                     <div className="flex items-center gap-2">
                         <NotificationBell count={unreadNotificationsCount} onClick={onNavigateToNotifications} />
+                                                {onNavigate && (
+                                                    <button
+                                                        onClick={() => onNavigate('providerCommission' as any)}
+                                                        className="px-3 py-1.5 rounded-lg text-sm bg-emerald-600 text-white hover:bg-emerald-700"
+                                                        title="View Commissions"
+                                                    >
+                                                        Commissions
+                                                    </button>
+                                                )}
                         <button
                             onClick={() => setIsSideDrawerOpen(true)}
                             className="p-2 text-gray-700 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-colors"
@@ -1858,6 +1971,14 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                     </div>
                 </div>
             </header>
+
+                        {/* Commission Banner */}
+                        {onNavigate && (
+                            <div className="mx-4 mt-3 mb-0 bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-lg p-3 text-sm">
+                                Commission owed to promoters must be paid within 48 hours.
+                                <button onClick={() => onNavigate('providerCommission' as any)} className="ml-2 inline-flex px-2 py-1 bg-emerald-600 text-white rounded text-xs">Open Commissions</button>
+                            </div>
+                        )}
 
             {/* Side Drawer */}
             {isSideDrawerOpen && (

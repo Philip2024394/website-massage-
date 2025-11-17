@@ -5,22 +5,21 @@
  */
 
 export interface AuthenticationState {
-    isHotelLoggedIn: boolean;
-    isVillaLoggedIn: boolean;
     isAdminLoggedIn: boolean;
     loggedInProvider: { id: string | number; type: 'therapist' | 'place' } | null;
-    loggedInAgent: any | null;
     loggedInCustomer: any | null;
     loggedInUser: { id: string; type: 'admin' | 'hotel' | 'villa' | 'agent' } | null;
+    // Legacy optional flags retained for compatibility with existing callers
+    isHotelLoggedIn?: boolean;
+    isVillaLoggedIn?: boolean;
+    loggedInAgent?: any | null;
 }
 
 export interface DashboardAccess {
-    canAccessVillaDashboard: boolean;
     canAccessTherapistDashboard: boolean;
     canAccessPlaceDashboard: boolean;
     canAccessAdminDashboard: boolean;
     canAccessCustomerDashboard: boolean;
-    canAccessAgentDashboard: boolean;
     redirectTo?: string;
     errorMessage?: string;
 }
@@ -30,110 +29,70 @@ export interface DashboardAccess {
  */
 export const validateDashboardAccess = (authState: AuthenticationState): DashboardAccess => {
     const {
-        isHotelLoggedIn,
-        isVillaLoggedIn,
         isAdminLoggedIn,
         loggedInProvider,
-        loggedInAgent,
         loggedInCustomer,
         loggedInUser
     } = authState;
 
     // Count how many different authentication states are active
     const activeAuthCount = [
-        isHotelLoggedIn,
-        isVillaLoggedIn,
         isAdminLoggedIn,
         !!loggedInProvider,
-        !!loggedInAgent,
         !!loggedInCustomer
     ].filter(Boolean).length;
 
     // 🚨 CRITICAL: Multiple authentication states detected
     if (activeAuthCount > 1) {
         console.error('🚨 SECURITY ALERT: Multiple authentication states detected!', {
-            isHotelLoggedIn,
-            isVillaLoggedIn,
             isAdminLoggedIn,
             hasProvider: !!loggedInProvider,
-            hasAgent: !!loggedInAgent,
             hasCustomer: !!loggedInCustomer,
             loggedInUser
         });
 
         return {
-            canAccessVillaDashboard: false,
             canAccessTherapistDashboard: false,
             canAccessPlaceDashboard: false,
             canAccessAdminDashboard: false,
             canAccessCustomerDashboard: false,
-            canAccessAgentDashboard: false,
             redirectTo: 'home',
             errorMessage: 'Multiple login sessions detected. Please log out and log in again with the correct account type.'
         };
     }
 
-    // Villa Dashboard Access  
-    const canAccessVillaDashboard = isVillaLoggedIn && 
-        !isHotelLoggedIn && 
-        !isAdminLoggedIn && 
-        !loggedInProvider && 
-        !loggedInAgent && 
-        !loggedInCustomer &&
-        loggedInUser?.type === 'villa';
-
     // Therapist Dashboard Access
-    const canAccessTherapistDashboard = !isHotelLoggedIn && 
-        !isVillaLoggedIn && 
+    const canAccessTherapistDashboard = 
         !isAdminLoggedIn && 
         loggedInProvider?.type === 'therapist' && 
-        !loggedInAgent && 
         !loggedInCustomer &&
         !loggedInUser;
 
     // Place Dashboard Access
-    const canAccessPlaceDashboard = !isHotelLoggedIn && 
-        !isVillaLoggedIn && 
+    const canAccessPlaceDashboard = 
         !isAdminLoggedIn && 
         loggedInProvider?.type === 'place' && 
-        !loggedInAgent && 
         !loggedInCustomer &&
         !loggedInUser;
 
     // Admin Dashboard Access
     const canAccessAdminDashboard = isAdminLoggedIn && 
-        !isHotelLoggedIn && 
-        !isVillaLoggedIn && 
         !loggedInProvider && 
-        !loggedInAgent && 
         !loggedInCustomer &&
         loggedInUser?.type === 'admin';
 
     // Customer Dashboard Access
-    const canAccessCustomerDashboard = !isHotelLoggedIn && 
-        !isVillaLoggedIn && 
+    const canAccessCustomerDashboard = 
         !isAdminLoggedIn && 
         !loggedInProvider && 
-        !loggedInAgent && 
         !!loggedInCustomer &&
         !loggedInUser;
 
-    // Agent Dashboard Access
-    const canAccessAgentDashboard = !isHotelLoggedIn && 
-        !isVillaLoggedIn && 
-        !isAdminLoggedIn && 
-        !loggedInProvider && 
-        !!loggedInAgent && 
-        !loggedInCustomer &&
-        loggedInUser?.type === 'agent';
-
     return {
-        canAccessVillaDashboard,
         canAccessTherapistDashboard,
         canAccessPlaceDashboard,
         canAccessAdminDashboard,
-        canAccessCustomerDashboard,
-        canAccessAgentDashboard
+        canAccessCustomerDashboard
     };
 };
 
@@ -141,24 +100,25 @@ export const validateDashboardAccess = (authState: AuthenticationState): Dashboa
  * Clears all authentication states to prevent cross-contamination
  */
 export const clearAllAuthStates = (stateSetters: {
-    setIsHotelLoggedIn?: (value: boolean) => void;
-    setIsVillaLoggedIn?: (value: boolean) => void;
     setIsAdminLoggedIn?: (value: boolean) => void;
     setLoggedInProvider?: (provider: any) => void;
-    setLoggedInAgent?: (agent: any) => void;
     setLoggedInCustomer?: (customer: any) => void;
     setLoggedInUser?: (user: any) => void;
+    // Legacy optional setters retained for compatibility
+    setIsHotelLoggedIn?: (value: boolean) => void;
+    setIsVillaLoggedIn?: (value: boolean) => void;
+    setLoggedInAgent?: (agent: any) => void;
     setImpersonatedAgent?: (agent: any) => void;
 }) => {
     console.log('🧹 SECURITY: Clearing ALL authentication states...');
     
-    if (stateSetters.setIsHotelLoggedIn) stateSetters.setIsHotelLoggedIn(false);
-    if (stateSetters.setIsVillaLoggedIn) stateSetters.setIsVillaLoggedIn(false);
     if (stateSetters.setIsAdminLoggedIn) stateSetters.setIsAdminLoggedIn(false);
     if (stateSetters.setLoggedInProvider) stateSetters.setLoggedInProvider(null);
-    if (stateSetters.setLoggedInAgent) stateSetters.setLoggedInAgent(null);
     if (stateSetters.setLoggedInCustomer) stateSetters.setLoggedInCustomer(null);
     if (stateSetters.setLoggedInUser) stateSetters.setLoggedInUser(null);
+    if (stateSetters.setIsHotelLoggedIn) stateSetters.setIsHotelLoggedIn(false);
+    if (stateSetters.setIsVillaLoggedIn) stateSetters.setIsVillaLoggedIn(false);
+    if (stateSetters.setLoggedInAgent) stateSetters.setLoggedInAgent(null);
     if (stateSetters.setImpersonatedAgent) stateSetters.setImpersonatedAgent(null);
     
     // localStorage disabled: persistence keys removed. Auth state cleared in memory only.
@@ -180,9 +140,6 @@ export const createSecureDashboardRenderer = (
     }
 
     return {
-        renderVillaDashboard: (component: React.ReactNode) => 
-            access.canAccessVillaDashboard ? component : null,
-            
         renderTherapistDashboard: (component: React.ReactNode) => 
             access.canAccessTherapistDashboard ? component : null,
             
@@ -194,8 +151,5 @@ export const createSecureDashboardRenderer = (
             
         renderCustomerDashboard: (component: React.ReactNode) => 
             access.canAccessCustomerDashboard ? component : null,
-            
-        renderAgentDashboard: (component: React.ReactNode) => 
-            access.canAccessAgentDashboard ? component : null,
     };
 };

@@ -1,0 +1,2 @@
+lib/auth.ts(389,1): error TS1005: '}' expected.
+

@@ -50,6 +50,12 @@ export const APPWRITE_CONFIG = {
         // NEW: Affiliate tracking
         affiliateClicks: 'affiliate_clicks',
         affiliateAttributions: 'affiliate_attributions',
+        // NEW: Membership referrals (promoter-attributed memberships)
+        membershipReferrals: 'membership_referrals',
+        // NEW: Promoter subsystem (mapped to existing agents collection)
+        promoters: 'agents_collection_id',
+        promoterPayoutRequests: 'promoter_payout_requests',
+        promoterTableStandOrders: 'promoter_table_stand_orders',
     },
     
     // Storage bucket ID

@@ -55,26 +55,8 @@ function showThrottledNotification(error: any, context: string) {
         userMessage = 'Service temporarily unavailable. Please try again later.';
         type = 'warning';
     } else if (error?.code === 401) {
-        userMessage = 'Session expired. Refreshing automatically...';
+        userMessage = 'You are not signed in. Some actions may be limited.';
         type = 'info';
-        
-        // Try to create anonymous session automatically (with protection against multiple attempts)
-        if (!isCreatingAnonymousSession) {
-            isCreatingAnonymousSession = true;
-            setTimeout(async () => {
-                try {
-                    const { account } = await import('./appwrite');
-                    await account.createAnonymousSession();
-                    console.log('🔄 Auto-created anonymous session after 401 error');
-                } catch (authError: any) {
-                    if (!authError.message?.includes('already exists') && !authError.message?.includes('429')) {
-                        console.log('⚠️ Could not auto-create session:', authError.message);
-                    }
-                } finally {
-                    isCreatingAnonymousSession = false;
-                }
-            }, 1000);
-        }
     } else if (error?.code === 'timeout' || error?.message?.includes('timeout')) {
         userMessage = 'Request timed out. Please try again.';
         type = 'warning';

@@ -1,0 +1,12 @@
+AppRouter.tsx(42,32): error TS2307: Cannot find module './pages/VillaDashboardPage' or its corresponding type declarations.
+AppRouter.tsx(44,28): error TS2307: Cannot find module './pages/VillaLoginPage' or its corresponding type declarations.
+AppRouter.tsx(70,47): error TS2307: Cannot find module './pages/HotelInfoPage' or its corresponding type declarations.
+AppRouter.tsx(86,52): error TS2307: Cannot find module './pages/HotelVillaMenuPage' or its corresponding type declarations.
+AppRouter.tsx(1213,14): error TS2678: Type '"partnersDashboard"' is not comparable to type 'Page'.
+hooks/useAllHooks.ts(11,42): error TS2307: Cannot find module './useProviderAgentHandlers' or its corresponding type declarations.
+lib/auth.ts(4,36): error TS2307: Cannot find module './hotelsSchema' or its corresponding type declarations.
+pages/AdminDashboardPage.tsx(12,33): error TS2307: Cannot find module './AgentCommissionPage' or its corresponding type declarations.
+pages/PartnersDashboardPage.tsx(30,33): error TS2345: Argument of type 'CommissionSummary' is not assignable to parameter of type 'SetStateAction<{ clicks: number; attributions: number; pendingCommission: number; } | null>'.
+  Type 'CommissionSummary' is missing the following properties from type '{ clicks: number; attributions: number; pendingCommission: number; }': attributions, pendingCommission
+pages/PlaceDashboardPage.tsx(11,29): error TS2307: Cannot find module '../components/HotelVillaOptIn' or its corresponding type declarations.
+

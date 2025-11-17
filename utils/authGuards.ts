@@ -2,14 +2,14 @@
  * Authentication Guards and Cross-Contamination Prevention
  * 
  * This utility provides functions to prevent authentication state mixing
- * between different user types (therapist, hotel, villa, admin, etc.)
+ * between different user types (therapist, place, admin, customer)
  */
 
 import { databases, DATABASE_ID, COLLECTIONS } from '../lib/appwrite';
 
 export interface AuthenticationResult {
     success: boolean;
-    userType: 'therapist' | 'place' | 'hotel' | 'villa' | 'admin' | 'customer' | 'unknown';
+    userType: 'therapist' | 'place' | 'admin' | 'customer' | 'unknown';
     documentId?: string;
     data?: any;
     error?: string;
@@ -20,17 +20,15 @@ export interface AuthenticationResult {
  * and provides detailed information about what type they actually are
  */
 export const validateUserAuthentication = async (
-    expectedType: 'therapist' | 'place' | 'hotel' | 'villa' | 'admin' | 'customer',
+    expectedType: 'therapist' | 'place' | 'admin' | 'customer',
     userId: string
 ): Promise<AuthenticationResult> => {
     console.log(`🔍 Validating user authentication for type: ${expectedType}, userId: ${userId}`);
     
     try {
-        const checks = [
+        const checks: Array<{ type: string; collection: string; filter?: (doc: any) => boolean }> = [
             { type: 'therapist', collection: COLLECTIONS.THERAPISTS },
             { type: 'place', collection: COLLECTIONS.PLACES },
-            { type: 'hotel', collection: COLLECTIONS.HOTELS, filter: (doc: any) => doc.type === 'hotel' },
-            { type: 'villa', collection: COLLECTIONS.HOTELS, filter: (doc: any) => doc.type === 'villa' },
         ];
         
         // Check each user type to determine what this user actually is
@@ -119,8 +117,8 @@ export const clearAllAuthenticationStates = (stateSetters: {
     setIsAdminLoggedIn?: (value: boolean) => void;
     setLoggedInUser?: (user: any) => void;
     setLoggedInProvider?: (provider: any) => void;
-    setLoggedInAgent?: (agent: any) => void;
     setLoggedInCustomer?: (customer: any) => void;
+    setLoggedInAgent?: (agent: any) => void;
     setImpersonatedAgent?: (agent: any) => void;
 }) => {
     console.log('🧹 Clearing all authentication states...');
@@ -133,8 +131,8 @@ export const clearAllAuthenticationStates = (stateSetters: {
     // Clear all user objects
     if (stateSetters.setLoggedInUser) stateSetters.setLoggedInUser(null);
     if (stateSetters.setLoggedInProvider) stateSetters.setLoggedInProvider(null);
-    if (stateSetters.setLoggedInAgent) stateSetters.setLoggedInAgent(null);
     if (stateSetters.setLoggedInCustomer) stateSetters.setLoggedInCustomer(null);
+    if (stateSetters.setLoggedInAgent) stateSetters.setLoggedInAgent(null);
     if (stateSetters.setImpersonatedAgent) stateSetters.setImpersonatedAgent(null);
     
     console.log('✅ All authentication states cleared');

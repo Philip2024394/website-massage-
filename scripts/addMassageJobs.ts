@@ -286,6 +286,10 @@ async function addJobPostings() {
     const postedDate = new Date().toISOString();
 
     for (const job of jobPostings) {
+        // Skip hotel/villa related postings
+        if ((job as any).businessType === 'hotel' || /villa/i.test((job as any).jobTitle)) {
+            continue;
+        }
         try {
             await databases.createDocument(
                 DATABASE_ID,

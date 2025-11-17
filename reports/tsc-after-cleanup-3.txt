@@ -1,0 +1,11 @@
+AppRouter.tsx(827,14): error TS2678: Type '"agent"' is not comparable to type 'Page'.
+AppRouter.tsx(828,14): error TS2678: Type '"agentAuth"' is not comparable to type 'Page'.
+AppRouter.tsx(829,14): error TS2678: Type '"agentTerms"' is not comparable to type 'Page'.
+AppRouter.tsx(830,14): error TS2678: Type '"agentDashboard"' is not comparable to type 'Page'.
+AppRouter.tsx(1030,14): error TS2678: Type '"villaLogin"' is not comparable to type 'Page'.
+AppRouter.tsx(1045,14): error TS2678: Type '"villaDashboard"' is not comparable to type 'Page'.
+AppRouter.tsx(1148,14): error TS2678: Type '"hotel-info"' is not comparable to type 'Page'.
+AppRouter.tsx(1190,14): error TS2678: Type '"hotelVillaMenu"' is not comparable to type 'Page'.
+AppRouter.tsx(1214,68): error TS2345: Argument of type '"villaDashboard"' is not assignable to parameter of type 'Page'.
+AppRouter.tsx(1256,60): error TS2345: Argument of type '"villaDashboard"' is not assignable to parameter of type 'Page'.
+

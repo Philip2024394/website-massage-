@@ -31,6 +31,9 @@ interface AppDrawerProps {
     // Data for display
     therapists?: any[];
     places?: any[];
+
+    // Context flags
+    promoterMode?: boolean;
 }
 
 export const AppDrawer: React.FC<AppDrawerProps> = ({
@@ -50,7 +53,8 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
     onTermsClick,
     onPrivacyClick,
     therapists = [],
-    places = []
+    places = [],
+    promoterMode = false
 }) => {
     console.log('🚪 AppDrawer rendered with isOpen:', isOpen);
     console.log('🔤 AppDrawer t prop:', { t, tType: typeof t, tIsFunction: typeof t === 'function' });
@@ -79,7 +83,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
             'home.menu.massageJobsDesc': 'Find opportunities',
             'home.menu.hotel': 'Hotel',
             'home.menu.hotelDesc': 'Hotel partner portal',
-            'home.menu.villa': 'Indastreet Partners',
+            'home.menu.villa': 'indastreet Promoter',
             'home.menu.villaDesc': 'Partner portal',
             'home.menu.therapists': 'Therapists',
             'home.menu.therapistsDesc': 'Therapist portal',
@@ -204,7 +208,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                 {/* Hotel portal removed */}
 
                                 <button 
-                                    onClick={() => handleItemClick(onVillaPortalClick, 'villaLogin')}
+                                    onClick={() => handleItemClick(onVillaPortalClick, 'promoterAuth')}
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm transition-all border-l-4 border-black group"
                                 >
                                     <div className="p-2 bg-black rounded-lg">
@@ -349,6 +353,133 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                 </button>
                             </div>
                         </div>
+
+                        {/* PROMOTER DASHBOARD SECTION */}
+                        {promoterMode && (
+                        <div className="mb-6">
+                            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2">
+                                Promoter Dashboard
+                            </h3>
+                            <div className="space-y-2">
+                                <button 
+                                    onClick={() => handleItemClick(() => onNavigate?.('promoterTerms'))}
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-slate-500 group transform hover:scale-105"
+                                >
+                                    <div className="p-2 bg-gradient-to-br from-slate-500 to-slate-600 rounded-lg">
+                                        <Users className="w-5 h-5 text-white" />
+                                    </div>
+                                    <div className="flex-grow">
+                                        <p className="font-semibold text-gray-800 group-hover:text-slate-600 transition-colors">
+                                            Terms & Conditions
+                                        </p>
+                                        <p className="text-xs text-gray-500">Read and accept the terms</p>
+                                    </div>
+                                </button>
+                                <button 
+                                    onClick={() => handleItemClick(() => onNavigate?.('promoterBankAccount'))}
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-slate-500 group transform hover:scale-105"
+                                >
+                                    <div className="p-2 bg-gradient-to-br from-slate-500 to-slate-600 rounded-lg">
+                                        <Users className="w-5 h-5 text-white" />
+                                    </div>
+                                    <div className="flex-grow">
+                                        <p className="font-semibold text-gray-800 group-hover:text-slate-600 transition-colors">
+                                            Bank Account
+                                        </p>
+                                        <p className="text-xs text-gray-500">Set bank, ID and WhatsApp</p>
+                                    </div>
+                                </button>
+                                <button 
+                                    onClick={() => handleItemClick(() => onNavigate?.('promoterHotelVillaMassage'))}
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-orange-500 group transform hover:scale-105"
+                                >
+                                    <div className="p-2 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg">
+                                        <Users className="w-5 h-5 text-white" />
+                                    </div>
+                                    <div className="flex-grow">
+                                        <p className="font-semibold text-gray-800 group-hover:text-orange-600 transition-colors">
+                                            Hotel Villa Massage
+                                        </p>
+                                        <p className="text-xs text-gray-500">Order QR table stands</p>
+                                    </div>
+                                </button>
+                                <button 
+                                    onClick={() => handleItemClick(() => onNavigate?.('promoterQR'))}
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-black group transform hover:scale-105"
+                                >
+                                    <div className="p-2 bg-black rounded-lg">
+                                        <Home className="w-5 h-5 text-white" />
+                                    </div>
+                                    <div className="flex-grow">
+                                        <p className="font-semibold text-gray-800 group-hover:text-black transition-colors">
+                                            Share QR
+                                        </p>
+                                        <p className="text-xs text-gray-500">QR link with your code</p>
+                                    </div>
+                                </button>
+
+                                <button 
+                                    onClick={() => handleItemClick(() => onNavigate?.('promoterMembershipSales'))}
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-orange-500 group transform hover:scale-105"
+                                >
+                                    <div className="p-2 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg">
+                                        <Users className="w-5 h-5 text-white" />
+                                    </div>
+                                    <div className="flex-grow">
+                                        <p className="font-semibold text-gray-800 group-hover:text-orange-600 transition-colors">
+                                            Membership Sales
+                                        </p>
+                                        <p className="text-xs text-gray-500">Track new signups by month</p>
+                                    </div>
+                                </button>
+
+                                <button 
+                                    onClick={() => handleItemClick(() => onNavigate?.('promoterCommission'))}
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-emerald-500 group transform hover:scale-105"
+                                >
+                                    <div className="p-2 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg">
+                                        <Briefcase className="w-5 h-5 text-white" />
+                                    </div>
+                                    <div className="flex-grow">
+                                        <p className="font-semibold text-gray-800 group-hover:text-emerald-600 transition-colors">
+                                            Commission
+                                        </p>
+                                        <p className="text-xs text-gray-500">Rates, eligibility and status</p>
+                                    </div>
+                                </button>
+
+                                <button 
+                                    onClick={() => handleItemClick(() => onNavigate?.('promoterBookingStats'))}
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-blue-500 group transform hover:scale-105"
+                                >
+                                    <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg">
+                                        <Users className="w-5 h-5 text-white" />
+                                    </div>
+                                    <div className="flex-grow">
+                                        <p className="font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
+                                            Booking Stats
+                                        </p>
+                                        <p className="text-xs text-gray-500">Bookings attributed to your code</p>
+                                    </div>
+                                </button>
+
+                                <button 
+                                    onClick={() => handleItemClick(() => onNavigate?.('promoterLiveMenu'))}
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-red-500 group transform hover:scale-105"
+                                >
+                                    <div className="p-2 bg-gradient-to-br from-red-500 to-red-600 rounded-lg">
+                                        <Home className="w-5 h-5 text-white" />
+                                    </div>
+                                    <div className="flex-grow">
+                                        <p className="font-semibold text-gray-800 group-hover:text-red-600 transition-colors">
+                                            Live Menu
+                                        </p>
+                                        <p className="text-xs text-gray-500">Live therapists and open places</p>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                        )}
 
                         {/* LOCATIONS SECTION */}
                         <div className="mb-6">

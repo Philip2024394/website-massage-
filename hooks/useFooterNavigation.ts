@@ -20,25 +20,15 @@ export const useFooterNavigation = ({
 }: UseFooterNavigationProps) => {
     const handleFooterHome = () => {
         if (loggedInUser) {
-            switch(loggedInUser.type) {
-                case 'admin': setPage('adminDashboard'); break;
-                case 'hotel': setPage('home'); break;
-                case 'villa': setPage('home'); break;
-                case 'agent': setPage('agentDashboard'); break;
-            }
+            if (loggedInUser.type === 'admin') setPage('adminDashboard');
         } else if (loggedInProvider) {
             if (loggedInProvider.type === 'therapist') {
                 setPage('therapistDashboard');
             } else {
                 setPage('placeDashboard');
             }
-        } else if (loggedInAgent) {
-            setPage('agentDashboard');
         } else if (loggedInCustomer) {
             setPage('home');
-        } else if (isHotelLoggedIn) {
-            // Redirect legacy hotel login to Partners dashboard
-            setPage('villaDashboard');
         } else {
             setPage('home');
         }
@@ -51,13 +41,8 @@ export const useFooterNavigation = ({
             } else {
                 setPage('placeDashboard');
             }
-        } else if (loggedInAgent) {
-            setPage('agentDashboard');
         } else if (loggedInCustomer) {
             setPage('customerDashboard');
-        } else if (isHotelLoggedIn) {
-            // Redirect legacy hotel path to Partners dashboard
-            setPage('villaDashboard');
         }
     };
 
@@ -68,8 +53,6 @@ export const useFooterNavigation = ({
             } else {
                 setPage('placeDashboard');
             }
-        } else if (loggedInAgent) {
-            setPage('agentDashboard');
         } else if (loggedInCustomer) {
             setPage('customerDashboard');
         } else {

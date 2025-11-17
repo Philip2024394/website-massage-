@@ -18,12 +18,9 @@ export default defineConfig({
       '@/shared': path.resolve(__dirname, './src/shared'),
       '@/apps': path.resolve(__dirname, './src/apps'),
       '@/admin': path.resolve(__dirname, './src/apps/admin'),
-      '@/agent': path.resolve(__dirname, './src/apps/agent'),
       '@/client': path.resolve(__dirname, './src/apps/client'),
       '@/therapist': path.resolve(__dirname, './src/apps/therapist'),
       '@/place': path.resolve(__dirname, './src/apps/place'),
-      '@/hotel': path.resolve(__dirname, './src/apps/hotel'),
-      '@/villa': path.resolve(__dirname, './src/apps/villa'),
     },
   },
   server: {
@@ -114,10 +111,7 @@ export default defineConfig({
           }
           
           // Split dashboard pages
-          if (id.includes('pages/HotelDashboardPage') || 
-              id.includes('pages/VillaDashboardPage')) {
-            return 'dashboard-hotel-villa';
-          }
+          // Removed hotel/villa dashboards
           
           if (id.includes('pages/TherapistDashboardPage') || 
               id.includes('pages/PlaceDashboardPage')) {

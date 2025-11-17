@@ -4,6 +4,9 @@ import type { Page } from '../types/pageTypes';
 import { AvailabilityStatus, BookingStatus } from '../types';
 import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages, stringifyPricing, stringifyCoordinates, stringifyMassageTypes, stringifyLanguages, stringifyAnalytics } from '../utils/appwriteHelpers';
 import { therapistService } from '../lib/appwriteService';
+import { databases } from '../lib/appwrite';
+import { APPWRITE_CONFIG } from '../lib/appwrite.config';
+import { Query } from 'appwrite';
 import { MASSAGE_TYPES_CATEGORIZED } from '../constants/rootConstants';
 import { LogOut, Activity, Calendar, TrendingUp, Bell, User, Crown, Building, FileText, Settings, Phone, X, Tag, Share2, Download, Star, CreditCard } from 'lucide-react';
 import { ColoredHistoryIcon, ColoredCoinsIcon } from '../components/ColoredIcons';
@@ -104,6 +107,65 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
     const [showBusyTimerModal, setShowBusyTimerModal] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [busyUntil, setBusyUntil] = useState<Date | null>(null);
+    // Commission summary state
+    const [commissionLoading, setCommissionLoading] = useState(false);
+    const [commissionPendingTotal, setCommissionPendingTotal] = useState(0);
+    const [commissionWeekTotal, setCommissionWeekTotal] = useState(0);
+    const [commissionNextFriday, setCommissionNextFriday] = useState<string>('');
+
+    const computeWeekWindow = () => {
+        const now = new Date();
+        const day = now.getDay(); // 0 Sun .. 6 Sat
+        // Start of week: Saturday 00:00 (or choose Monday; we use Saturday to align "due Friday")
+        const start = new Date(now);
+        const diffToSat = (day + 1) % 7; // days since Saturday
+        start.setDate(now.getDate() - diffToSat);
+        start.setHours(0, 0, 0, 0);
+        // Next Friday 23:59:59
+        const nextFri = new Date(now);
+        const addDays = (5 - day + 7) % 7 || 7; // if today is Friday, next Friday = +7
+        nextFri.setDate(now.getDate() + addDays);
+        nextFri.setHours(23, 59, 59, 999);
+        return { startIso: start.toISOString(), nextFriday: nextFri };
+    };
+
+    const loadCommissionSummary = useCallback(async () => {
+        try {
+            const col = (APPWRITE_CONFIG.collections as any)?.affiliateAttributions;
+            if (!col) return;
+            setCommissionLoading(true);
+            // Fetch recent attributions for this provider
+            const res = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                col,
+                [Query.equal('providerId', String(therapistId)), Query.orderDesc('$createdAt'), Query.limit(500)]
+            );
+            const docs = res.documents || [] as any[];
+            const pending = docs.filter(d => (d.commissionStatus || 'pending').toLowerCase() === 'pending');
+            const pendingTotal = pending.reduce((sum, d) => sum + Number(d.commissionAmount || 0), 0);
+            const { startIso, nextFriday } = computeWeekWindow();
+            const weekDocs = pending.filter(d => {
+                const ts = d.createdAt || d.$createdAt;
+                return ts && String(ts) >= startIso;
+            });
+            const weekTotal = weekDocs.reduce((sum, d) => sum + Number(d.commissionAmount || 0), 0);
+            setCommissionPendingTotal(pendingTotal);
+            setCommissionWeekTotal(weekTotal);
+            setCommissionNextFriday(nextFriday.toLocaleDateString());
+        } catch (e) {
+            console.warn('Commission summary load failed', e);
+        } finally {
+            setCommissionLoading(false);
+        }
+    }, [therapistId]);
+
+    useEffect(() => {
+        if (activeTab === 'hotel-villa') {
+            loadCommissionSummary();
+            const { nextFriday } = computeWeekWindow();
+            setCommissionNextFriday(nextFriday.toLocaleDateString());
+        }
+    }, [activeTab, loadCommissionSummary]);
     
     // Account Settings Modal States
     const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
@@ -755,6 +817,15 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                         <span>Therapist Dashboard</span>
                     </h1>
                     <div className="flex items-center gap-3 text-gray-600">
+                        {onNavigate && (
+                            <button
+                                onClick={() => onNavigate('providerCommission' as any)}
+                                className="px-3 py-1.5 rounded-lg text-sm bg-emerald-600 text-white hover:bg-emerald-700"
+                                title="View Commissions"
+                            >
+                                Commissions
+                            </button>
+                        )}
                         {/* Status Badge */}
                         <button 
                             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -791,6 +862,14 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                     </div>
                 </div>
             </header>
+
+            {/* Commission Banner */}
+            {onNavigate && (
+                <div className="mx-4 mt-3 mb-0 bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-lg p-3 text-sm">
+                    Commission owed to promoters must be paid within 48 hours.
+                    <button onClick={() => onNavigate('providerCommission' as any)} className="ml-2 inline-flex px-2 py-1 bg-emerald-600 text-white rounded text-xs">Open Commissions</button>
+                </div>
+            )}
 
             {/* Main Content Container - Compact Version */}
             <div className="max-w-6xl mx-auto px-4 py-3">
@@ -2276,9 +2355,52 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
 
                                         {/* Upgrade Options */}
                                         <div className="text-center">
-                                            <button className="bg-yellow-500 text-white py-3 px-6 rounded-lg font-medium hover:bg-yellow-600 transition-colors">
-                                                Upgrade Membership
-                                            </button>
+                                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 inline-block mb-4 text-sm text-blue-800">
+                                                First 30 days free. Then Rp 150,000/month. Save more with 6 or 12 months.
+                                            </div>
+                                            <div className="grid md:grid-cols-3 gap-4 text-left">
+                                                <div className="border rounded-lg p-4">
+                                                    <div className="text-lg font-semibold">Monthly</div>
+                                                    <div className="text-2xl font-bold text-orange-600">Rp 150,000 <span className="text-base text-gray-600">/ month</span></div>
+                                                    <ul className="mt-2 text-sm text-gray-700 space-y-1">
+                                                        <li>• First 30 days FREE</li>
+                                                        <li>• Profile + bookings</li>
+                                                        <li>• Basic analytics</li>
+                                                    </ul>
+                                                </div>
+                                                <div className="border rounded-lg p-4 ring-1 ring-yellow-200">
+                                                    <div className="text-lg font-semibold">6 Months</div>
+                                                    <div className="text-2xl font-bold text-orange-600">Rp 140,000 <span className="text-base text-gray-600">/ month</span></div>
+                                                    <ul className="mt-2 text-sm text-gray-700 space-y-1">
+                                                        <li>• First 30 days FREE</li>
+                                                        <li>• Listing boost</li>
+                                                        <li>• Advanced analytics</li>
+                                                    </ul>
+                                                </div>
+                                                <div className="border rounded-lg p-4 ring-2 ring-yellow-300">
+                                                    <div className="text-lg font-semibold">12 Months</div>
+                                                    <div className="text-2xl font-bold text-orange-600">Rp 130,000 <span className="text-base text-gray-600">/ month</span></div>
+                                                    <ul className="mt-2 text-sm text-gray-700 space-y-1">
+                                                        <li>• First 30 days FREE</li>
+                                                        <li>• Top placement eligibility</li>
+                                                        <li>• Verified Pro eligibility</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            <div className="mt-6 grid md:grid-cols-3 gap-4 text-left">
+                                                <div className="bg-white border rounded-lg p-4">
+                                                    <div className="font-semibold mb-1">Bronze</div>
+                                                    <div className="text-sm text-gray-700">Profile listing, bookings, basic analytics, community support.</div>
+                                                </div>
+                                                <div className="bg-white border rounded-lg p-4">
+                                                    <div className="font-semibold mb-1">Silver</div>
+                                                    <div className="text-sm text-gray-700">Listing boost, advanced analytics, marketing tools.</div>
+                                                </div>
+                                                <div className="bg-white border rounded-lg p-4">
+                                                    <div className="font-semibold mb-1">Gold</div>
+                                                    <div className="text-sm text-gray-700">Top placement eligibility, Verified Pro eligibility, priority support.</div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 )}
@@ -2288,6 +2410,23 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                         <div className="mb-4">
                                             <h2 className="text-xl font-bold text-gray-900 mb-1">Commission Due (Partners)</h2>
                                             <p className="text-gray-600 text-sm">All therapist bookings attributed via partner links include a 10% commission to Indastreet Partners.</p>
+                                        </div>
+                                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                                <div>
+                                                    <div className="text-sm text-blue-900">This week pending</div>
+                                                    <div className="text-lg font-semibold text-blue-900">Rp {commissionWeekTotal.toLocaleString()}</div>
+                                                </div>
+                                                <div>
+                                                    <div className="text-sm text-blue-900">Total pending</div>
+                                                    <div className="text-lg font-semibold text-blue-900">Rp {commissionPendingTotal.toLocaleString()}</div>
+                                                </div>
+                                                <div>
+                                                    <div className="text-sm text-blue-900">Due by</div>
+                                                    <div className="text-lg font-semibold text-blue-900">Friday, {commissionNextFriday}</div>
+                                                </div>
+                                            </div>
+                                            {commissionLoading && <div className="text-xs text-blue-800 mt-2">Loading latest commission summary…</div>}
                                         </div>
                                         <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-4">
                                             <h3 className="font-semibold text-orange-800 mb-1">Payment Policy</h3>

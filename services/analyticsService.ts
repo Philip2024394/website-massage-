@@ -37,9 +37,7 @@ export enum AnalyticsEventType {
     PROVIDER_GOES_LIVE = 'provider_goes_live',
     PROVIDER_STATUS_CHANGE = 'provider_status_change',
     
-    // Hotel/Villa Events
-    HOTEL_MENU_VIEW = 'hotel_menu_view',
-    VILLA_MENU_VIEW = 'villa_menu_view',
+    // Partner Events (generic)
     GUEST_FEEDBACK_SUBMITTED = 'guest_feedback_submitted',
     
     // Commission Events
@@ -60,8 +58,7 @@ export interface AnalyticsEvent {
     userId?: string;
     therapistId?: number | string;
     placeId?: number | string;
-    hotelId?: number | string;
-    villaId?: number | string;
+    partnerId?: number | string;
     bookingId?: number;
     
     // Event Metadata
@@ -139,43 +136,6 @@ export interface PlaceAnalytics {
 }
 
 export interface HotelVillaAnalytics {
-    hotelVillaId: number | string;
-    name: string;
-    type: 'hotel' | 'villa';
-    
-    // QR & Menu Metrics
-    totalQRScans: number;
-    uniqueGuestViews: number;
-    menuViews: number;
-    
-    // Booking Metrics
-    totalBookings: number;
-    completedBookings: number;
-    
-    // Provider Metrics
-    uniqueProvidersViewed: number;
-    topProviders: Array<{
-        providerId: number;
-        providerName: string;
-        providerType: 'therapist' | 'place';
-        bookingCount: number;
-    }>;
-    
-    // Commission Metrics
-    totalCommissionEarned: number;
-    pendingCommissions: number;
-    verifiedCommissions: number;
-    
-    // Guest Metrics
-    averageGuestRating: number;
-    totalFeedbacks: number;
-    
-    // Time Metrics
-    peakHours: string[];
-    
-    // Period
-    periodStart: string;
-    periodEnd: string;
 }
 
 export interface PlatformAnalytics {
@@ -191,17 +151,16 @@ export interface PlatformAnalytics {
     livePlaces: number;
     newProvidersThisPeriod: number;
     
-    // Hotel/Villa Metrics
+    // Partner Metrics (generic)
     totalHotels: number;
     totalVillas: number;
     activeHotelVillas: number;
-    
     // Booking Metrics
     totalBookings: number;
     completedBookings: number;
     cancelledBookings: number;
     bookingCompletionRate: number;
-    
+                
     // Financial Metrics
     totalRevenue: number;
     totalCommissions: number;
@@ -232,12 +191,7 @@ export interface PlatformAnalytics {
         revenue: number;
         rating: number;
     }>;
-    topHotels: Array<{
-        id: number | string;
-        name: string;
-        bookings: number;
-        commissionsEarned: number;
-    }>;
+    // Removed hotel/villa top lists
     
     // Period
     periodStart: string;
@@ -310,19 +264,7 @@ class AnalyticsService {
         });
     }
 
-    /**
-     * Track QR code scan (hotel/villa)
-     */
-    async trackQRScan(
-        hotelVillaId: number | string,
-        type: 'hotel' | 'villa'
-    ): Promise<void> {
-        await this.trackEvent({
-            eventType: AnalyticsEventType.QR_SCAN,
-            ...(type === 'hotel' ? { hotelId: hotelVillaId } : { villaId: hotelVillaId }),
-            metadata: { type }
-        });
-    }
+    // Removed QR scan tracking for hotel/villa
 
     /**
      * Track booking completion
@@ -364,24 +306,7 @@ class AnalyticsService {
         });
     }
 
-    /**
-     * Track commission earned (hotel/villa)
-     */
-    async trackCommissionEarned(
-        hotelVillaId: number | string,
-        type: 'hotel' | 'villa',
-        amount: number,
-        bookingId?: number
-    ): Promise<void> {
-        await this.trackEvent({
-            eventType: AnalyticsEventType.COMMISSION_EARNED,
-            ...(type === 'hotel' ? { hotelId: hotelVillaId } : { villaId: hotelVillaId }),
-            bookingId,
-            amount,
-            currency: 'IDR',
-            metadata: { type }
-        });
-    }
+    // Removed commission earned tracking for hotel/villa
 
     // ========================================================================
     // ANALYTICS RETRIEVAL METHODS
@@ -515,64 +440,7 @@ class AnalyticsService {
         }
     }
 
-    /**
-     * Get hotel/villa analytics for a specific period
-     */
-    async getHotelVillaAnalytics(
-        hotelVillaId: number | string,
-        type: 'hotel' | 'villa',
-        startDate: string,
-        endDate: string
-    ): Promise<HotelVillaAnalytics> {
-        try {
-            const queries = [
-                Query.equal(type === 'hotel' ? 'hotelId' : 'villaId', hotelVillaId.toString()),
-                Query.greaterThanEqual('timestamp', startDate),
-                Query.lessThanEqual('timestamp', endDate)
-            ];
-
-            const events = await databases.listDocuments(
-                DATABASE_ID,
-                this.EVENTS_COLLECTION,
-                queries
-            );
-
-            const qrScans = events.documents.filter(e => e.eventType === AnalyticsEventType.QR_SCAN).length;
-            const menuViews = events.documents.filter(e => 
-                e.eventType === AnalyticsEventType.HOTEL_MENU_VIEW || 
-                e.eventType === AnalyticsEventType.VILLA_MENU_VIEW
-            ).length;
-            const completedBookings = events.documents.filter(e => e.eventType === AnalyticsEventType.BOOKING_COMPLETED).length;
-
-            // Get commission data
-            const commissionEvents = events.documents.filter(e => e.eventType === AnalyticsEventType.COMMISSION_EARNED);
-            const totalCommissionEarned = commissionEvents.reduce((sum, e) => sum + (e.amount || 0), 0);
-
-            return {
-                hotelVillaId,
-                name: 'Hotel/Villa Name', // TODO: Fetch from database
-                type,
-                totalQRScans: qrScans,
-                uniqueGuestViews: qrScans, // Approximate
-                menuViews,
-                totalBookings: completedBookings,
-                completedBookings,
-                uniqueProvidersViewed: 0, // TODO: Calculate from events
-                topProviders: [], // TODO: Calculate top providers
-                totalCommissionEarned,
-                pendingCommissions: 0, // TODO: Get from commission records
-                verifiedCommissions: totalCommissionEarned,
-                averageGuestRating: 0, // TODO: Get from feedback
-                totalFeedbacks: 0,
-                peakHours: this.calculatePeakHours(events.documents),
-                periodStart: startDate,
-                periodEnd: endDate
-            };
-        } catch (error) {
-            console.error('Error getting hotel/villa analytics:', error);
-            throw error;
-        }
-    }
+    // Removed hotel/villa analytics retrieval
 
     /**
      * Get platform-wide analytics
@@ -623,9 +491,10 @@ class AnalyticsService {
                 totalPlaces: places.documents.length,
                 livePlaces,
                 newProvidersThisPeriod: 0,
-                totalHotels: 0, // TODO: Get from hotels collection
-                totalVillas: 0, // TODO: Get from villas collection
+                totalHotels: 0,
+                totalVillas: 0,
                 activeHotelVillas: 0,
+                
                 totalBookings: bookings.documents.length,
                 completedBookings: completedBookingsCount,
                 cancelledBookings: cancelledBookingsCount,
@@ -643,7 +512,7 @@ class AnalyticsService {
                 platformConversionRate: 0,
                 topTherapists: [],
                 topPlaces: [],
-                topHotels: [],
+                
                 periodStart: startDate,
                 periodEnd: endDate,
                 lastUpdated: new Date().toISOString()
