@@ -1,9 +1,11 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { AppDrawer } from '../components/AppDrawer';
 import { account } from '../lib/appwrite';
 import { promoterService } from '../services/promoterService';
 import { therapistService, placeService } from '../lib/appwriteService';
+import TherapistCard from '../components/TherapistCard';
+import MassagePlaceCard from '../components/MassagePlaceCard';
 
 function isPlaceOpen(place: any): boolean {
   try {
@@ -24,10 +26,12 @@ function isPlaceOpen(place: any): boolean {
 const PromoterLiveMenuPage: React.FC<{ t?: any; onBack?: () => void; onNavigate?: (p: any) => void }> = ({ t, onBack, onNavigate }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [code, setCode] = useState('');
-  const [tab, setTab] = useState<'therapists' | 'places'>('therapists');
+  const [activeTab, setActiveTab] = useState<'therapists' | 'places'>('therapists');
   const [loading, setLoading] = useState(true);
   const [therapists, setTherapists] = useState<any[]>([]);
   const [places, setPlaces] = useState<any[]>([]);
+  const [selectedRatingItem, setSelectedRatingItem] = useState<{ item: any; type: 'therapist' | 'place' } | null>(null);
+  const [showRatingModal, setShowRatingModal] = useState(false);
   const [isActive, setIsActive] = useState(true);
 
   useEffect(() => {
@@ -36,13 +40,16 @@ const PromoterLiveMenuPage: React.FC<{ t?: any; onBack?: () => void; onNavigate?
       try {
         const me = await account.get();
         const id = (me as any).$id || '';
-        if (mounted) setCode(id);
         try {
           if (id) {
             const prof = await promoterService.getProfile(id);
-            if (mounted) setIsActive(!!((prof as any).isActive ?? (prof as any).active));
+            const agent = (prof as any).agentCode || id;
+            if (mounted) {
+              setIsActive(!!((prof as any).isActive ?? (prof as any).active));
+              setCode(agent);
+            }
           }
-        } catch { if (mounted) setIsActive(true); }
+        } catch { if (mounted) { setIsActive(true); setCode(id); } }
       } catch { if (mounted) { setCode(''); setIsActive(true); } }
       // Persist code for booking attribution only if active
       try {
@@ -66,10 +73,11 @@ const PromoterLiveMenuPage: React.FC<{ t?: any; onBack?: () => void; onNavigate?
           placeService.getAll()
         ]);
         if (!mounted) return;
-        const liveTherapists = (ths || []).filter((t: any) => (t.isLive !== false) && ((t.availability || t.status) === 'Available'));
-        const openPlaces = (pls || []).filter((p: any) => (p.isLive !== false) && isPlaceOpen(p));
+        // Keep all live therapists (available + busy + others) and all live places (open + closed)
+        const liveTherapists = (ths || []).filter((t: any) => t && (t.isLive !== false));
+        const livePlaces = (pls || []).filter((p: any) => p && (p.isLive !== false));
         setTherapists(liveTherapists);
-        setPlaces(openPlaces);
+        setPlaces(livePlaces);
       } catch {
         if (mounted) { setTherapists([]); setPlaces([]); }
       } finally { if (mounted) setLoading(false); }
@@ -88,9 +96,39 @@ const PromoterLiveMenuPage: React.FC<{ t?: any; onBack?: () => void; onNavigate?
     } catch {}
   };
 
+  // Sorting logic
+  const sortedTherapists = useMemo(() => {
+    const rank = (t: any) => {
+      const status = String((t.availability || t.status || '')).toLowerCase();
+      if (status.includes('available')) return 0;
+      if (status.includes('busy')) return 1;
+      return 2; // offline or other
+    };
+    return [...therapists].sort((a,b) => rank(a) - rank(b));
+  }, [therapists]);
+
+  const sortedPlaces = useMemo(() => {
+    return [...places].sort((a,b) => {
+      const aOpen = isPlaceOpen(a) ? 0 : 1;
+      const bOpen = isPlaceOpen(b) ? 0 : 1;
+      if (aOpen !== bOpen) return aOpen - bOpen;
+      return String(a.name).localeCompare(String(b.name));
+    });
+  }, [places]);
+
+  // Handlers needed by card components (simplified for promoter live menu context)
+  const handleRate = (item: any, type: 'therapist' | 'place') => {
+    setSelectedRatingItem({ item, type });
+    setShowRatingModal(true); // (Rating modal UI not yet implemented here)
+  };
+  const handleCloseRating = () => { setShowRatingModal(false); setSelectedRatingItem(null); };
+  const handleIncrementAnalytics = (_id: any, _type: 'therapist' | 'place', _metric: any) => { /* no-op for now */ };
+  const handleNavigate = (page: string) => { try { onNavigate?.(page); } catch {} };
+  const isCustomerLoggedIn = false; // promoter view treated as guest viewer
+
   return (
     <div className="min-h-screen bg-white">
-      <header className="bg-white p-4 shadow-md sticky top-0 z-20">
+      <header className="bg-white p-4 shadow-md sticky top-0 z-20" data-page-header="true">
         <div className="flex justify-between items-center">
           <button onClick={onBack} className="p-2 mr-2 rounded-full hover:bg-gray-100" aria-label="Back">
             <svg className="w-6 h-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/></svg>
@@ -99,7 +137,7 @@ const PromoterLiveMenuPage: React.FC<{ t?: any; onBack?: () => void; onNavigate?
             <span className="text-black">Inda</span>
             <span className="text-orange-500"><span className="inline-block">S</span>treet</span>
           </h1>
-          <button onClick={() => setIsMenuOpen(true)} title="Menu" className="p-2 rounded-full hover:bg-gray-100">
+          <button onClick={() => setIsMenuOpen(true)} title="Menu" className="p-2 rounded-full hover:bg-gray-100 force-show-menu">
             <BurgerMenuIcon className="w-6 h-6" />
           </button>
         </div>
@@ -113,62 +151,72 @@ const PromoterLiveMenuPage: React.FC<{ t?: any; onBack?: () => void; onNavigate?
             Your promoter account is deactivated. Booking links are disabled.
           </div>
         )}
-        <div className="mb-4 flex items-center gap-2">
-          <button onClick={() => setTab('therapists')} className={`px-4 py-2 rounded-lg text-sm ${tab==='therapists' ? 'bg-black text-white' : 'bg-gray-100 text-gray-800'}`}>Therapists Live</button>
-          <button onClick={() => setTab('places')} className={`px-4 py-2 rounded-lg text-sm ${tab==='places' ? 'bg-black text-white' : 'bg-gray-100 text-gray-800'}`}>Massage Places Open</button>
+        {/* Hero toggle identical style to HomePage */}
+        <div className="flex bg-gray-200 rounded-full p-1 mb-6">
+          <button 
+            onClick={() => setActiveTab('therapists')} 
+            className={`w-1/2 py-2 px-4 rounded-full flex items-center justify-center gap-2 text-sm font-semibold transition-colors duration-300 ${activeTab === 'therapists' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
+          >
+            Home Service
+          </button>
+          <button 
+            onClick={() => setActiveTab('places')} 
+            className={`w-1/2 py-2 px-4 rounded-full flex items-center justify-center gap-2 text-sm font-semibold transition-colors duration-300 ${activeTab === 'places' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
+          >
+            Massage Places
+          </button>
         </div>
 
         {!code && (
-          <div className="mb-4 text-sm text-gray-600">Sign in to attach your promoter code to bookings.</div>
+          <div className="mb-4 text-sm text-gray-600">Sign in to attach your promotor ID to bookings.</div>
         )}
 
         {loading ? (
           <div className="text-gray-600">Loading…</div>
-        ) : tab === 'therapists' ? (
-          therapists.length === 0 ? (
+        ) : activeTab === 'therapists' ? (
+          sortedTherapists.length === 0 ? (
             <div className="text-gray-600">No therapists are live right now.</div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {therapists.map((t: any) => (
-                <div key={t.$id || t.id} className="bg-white border border-gray-200 rounded-xl p-4">
-                  <div className="flex items-center gap-3">
-                    <img src={t.profilePicture || t.mainImage || 'https://via.placeholder.com/64'} alt={t.name} className="w-16 h-16 rounded-lg object-cover" />
-                    <div>
-                      <div className="font-semibold text-gray-900">{t.name}</div>
-                      <div className="text-xs text-emerald-600">Available</div>
-                    </div>
-                  </div>
-                  <div className="mt-3 flex gap-2">
-                    <button onClick={() => goToProvider('therapist', String(t.$id || t.id))} disabled={!isActive} className={`flex-1 px-3 py-2 rounded-lg text-sm ${isActive ? 'bg-orange-500 text-white' : 'bg-gray-300 text-gray-600 cursor-not-allowed'}`}>View & Book</button>
-                    <button onClick={() => {
-                      try { (window as any).openBookingPopup?.(t.name, t.whatsappNumber, String(t.$id || t.id), 'therapist'); } catch {}
-                    }} disabled={!isActive} className={`flex-1 px-3 py-2 rounded-lg text-sm ${isActive ? 'bg-black text-white' : 'bg-gray-300 text-gray-600 cursor-not-allowed'}`}>Book Now</button>
-                  </div>
-                </div>
+            <div className="space-y-4">
+              {sortedTherapists.map((therapist: any, index: number) => (
+                <TherapistCard
+                  key={therapist.$id || `therapist-${therapist.id}-${index}`}
+                  therapist={therapist}
+                  userLocation={null}
+                  onRate={() => handleRate(therapist, 'therapist')}
+                  onBook={() => goToProvider('therapist', String(therapist.$id || therapist.id))}
+                  onQuickBookWithChat={() => {
+                    try { (window as any).openBookingPopup?.(therapist.name, therapist.whatsappNumber, String(therapist.$id || therapist.id), 'therapist'); } catch {}
+                  }}
+                  onIncrementAnalytics={(metric) => handleIncrementAnalytics(therapist.$id || therapist.id, 'therapist', metric)}
+                  onShowRegisterPrompt={() => {}}
+                  isCustomerLoggedIn={isCustomerLoggedIn}
+                  onNavigate={handleNavigate}
+                  activeDiscount={therapist.discountPercentage ? { percentage: therapist.discountPercentage, expiresAt: new Date(therapist.discountEndTime || Date.now()+3600000) } : null}
+                  t={{ home: { therapistCard: {} } }}
+                />
               ))}
             </div>
           )
         ) : (
-          places.length === 0 ? (
+          sortedPlaces.length === 0 ? (
             <div className="text-gray-600">No massage places are open right now.</div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {places.map((p: any) => (
-                <div key={p.$id || p.id} className="bg-white border border-gray-200 rounded-xl p-4">
-                  <div className="flex items-center gap-3">
-                    <img src={p.profilePicture || p.mainImage || 'https://via.placeholder.com/64'} alt={p.name} className="w-16 h-16 rounded-lg object-cover" />
-                    <div>
-                      <div className="font-semibold text-gray-900">{p.name}</div>
-                      <div className="text-xs text-emerald-600">Open now</div>
-                    </div>
-                  </div>
-                  <div className="mt-3 flex gap-2">
-                    <button onClick={() => goToProvider('place', String(p.$id || p.id))} disabled={!isActive} className={`flex-1 px-3 py-2 rounded-lg text-sm ${isActive ? 'bg-orange-500 text-white' : 'bg-gray-300 text-gray-600 cursor-not-allowed'}`}>View & Book</button>
-                    <button onClick={() => {
-                      try { (window as any).openBookingPopup?.(p.name, p.whatsappNumber, String(p.$id || p.id), 'place'); } catch {}
-                    }} disabled={!isActive} className={`flex-1 px-3 py-2 rounded-lg text-sm ${isActive ? 'bg-black text-white' : 'bg-gray-300 text-gray-600 cursor-not-allowed'}`}>Book Now</button>
-                  </div>
-                </div>
+            <div className="space-y-4">
+              {sortedPlaces.map((place: any, index: number) => (
+                <MassagePlaceCard
+                  key={place.$id || `place-${place.id}-${index}`}
+                  place={place}
+                  onRate={() => handleRate(place, 'place')}
+                  onSelectPlace={() => goToProvider('place', String(place.$id || place.id))}
+                  onNavigate={handleNavigate}
+                  onIncrementAnalytics={(metric) => handleIncrementAnalytics(place.$id || place.id, 'place', metric)}
+                  onShowRegisterPrompt={() => {}}
+                  isCustomerLoggedIn={isCustomerLoggedIn}
+                  activeDiscount={place.discountPercentage ? { percentage: place.discountPercentage, expiresAt: new Date(place.discountEndTime || Date.now()+3600000) } : null}
+                  t={{}}
+                  userLocation={null}
+                />
               ))}
             </div>
           )

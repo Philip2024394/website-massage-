@@ -810,7 +810,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
             {/* Scrollable Content Container */}
             <div className="scroll-container h-full overflow-y-auto pb-20" style={{ paddingBottom: '80px' }}>
                 {/* Dashboard-Specific Header */}
-            <header className="bg-white p-4 shadow-md sticky top-0 z-[9997]">
+            <header className="bg-white p-4 shadow-md sticky top-0 z-[9997]" data-page-header="true">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
                         <span className="text-3xl">💆</span>
@@ -852,7 +852,9 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                 console.log('🍔 Therapist burger menu clicked! Current isSideDrawerOpen:', isSideDrawerOpen);
                                 setIsSideDrawerOpen(true);
                             }} 
-                            title="Menu" 
+                            title="Menu"
+                            aria-label="Open menu"
+                            className="force-show-menu"
                             style={{ zIndex: 9999, position: 'relative' }}
                         >
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

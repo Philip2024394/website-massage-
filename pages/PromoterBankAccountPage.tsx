@@ -86,14 +86,14 @@ const PromoterBankAccountPage: React.FC<{ t?: any; onBack?: () => void; onNaviga
   return (
     <div className="min-h-screen bg-gray-50">
       <AppDrawer isOpen={isMenuOpen} isHome={true} onClose={() => setIsMenuOpen(false)} t={t} onNavigate={onNavigate} promoterMode={true} />
-      <header className="bg-white border-b border-gray-200 px-4 py-4 flex items-center">
+      <header className="bg-white border-b border-gray-200 px-4 py-4 flex items-center" data-page-header="true">
         <button onClick={onBack} className="mr-4">
           <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
         <h1 className="text-xl font-bold text-gray-900 flex-1">Promoter Bank Account</h1>
-        <button onClick={() => setIsMenuOpen(true)} className="px-3 py-2 bg-gray-800 text-white rounded-lg text-sm">Menu</button>
+        <button onClick={() => setIsMenuOpen(true)} className="px-3 py-2 bg-gray-800 text-white rounded-lg text-sm force-show-menu" title="Menu" aria-label="Open menu">Menu</button>
       </header>
 
       <main className="max-w-2xl mx-auto p-4 space-y-4">

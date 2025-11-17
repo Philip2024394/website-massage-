@@ -9,10 +9,10 @@ export const promoterService = {
       const promotersCol = (APPWRITE_CONFIG.collections as any)?.promoters || COLLECTIONS.PROMOTERS;
       const safeName = (name || email || 'New Promoter').trim();
       const agentId = (userId || '').slice(0, 64);
+      // Generate a friendly short promotor ID like P-8F4K2Z using stable user-based suffix
       const baseCode = (userId || '').replace(/[^A-Za-z0-9]/g, '');
-      const agentCode = (baseCode || 'AG')
-        .slice(-30)
-        .padStart(30, '0');
+      const shortSuffix = (baseCode || 'PROMOTOR').slice(-8).toUpperCase();
+      const agentCode = `P-${shortSuffix}`;
       const nowIso = new Date().toISOString();
       // Satisfy required fields of agents_collection_id schema (only known attributes)
       const doc: any = {

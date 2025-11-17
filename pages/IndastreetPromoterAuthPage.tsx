@@ -95,7 +95,7 @@ const IndastreetPromoterAuthPage: React.FC<Props> = ({ onBack, onNavigate, t }) 
 
   return (
     <div className="min-h-screen bg-cover bg-center" style={{ backgroundImage: `url(${bgUrl})` }}>
-      <header className="bg-white/80 backdrop-blur p-4 shadow-md sticky top-0 z-20">
+      <header className="bg-white/80 backdrop-blur p-4 shadow-md sticky top-0 z-30" data-page-header="true">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-800">
             <span className="text-black">Inda</span>
@@ -110,8 +110,8 @@ const IndastreetPromoterAuthPage: React.FC<Props> = ({ onBack, onNavigate, t }) 
               <HomeIcon className="w-4 h-4" />
               <span>Home</span>
             </button>
-            <button onClick={() => setIsMenuOpen(true)} title="Menu" className="p-2 rounded-full hover:bg-gray-100">
-              <BurgerMenuIcon className="w-6 h-6" />
+            <button onClick={() => setIsMenuOpen(true)} title="Menu" aria-label="Open menu" className="p-2 rounded-full hover:bg-gray-100 text-gray-900 force-show-menu">
+              <BurgerMenuIcon className="w-6 h-6 text-gray-900" />
             </button>
           </div>
         </div>

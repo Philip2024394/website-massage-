@@ -175,8 +175,8 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                 {/* Scrollable Menu Content */}
                 <nav className="flex-grow overflow-y-auto p-4">
                     <div className="space-y-2">
-                        
                         {/* JOB POSTING SECTION */}
+                        {!promoterMode && (
                         <div className="mb-6">
                             <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2">
                                 {translate('home.menu.sections.jobPosting')}
@@ -198,8 +198,10 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                 </button>
                             </div>
                         </div>
+                        )}
 
                         {/* LOGIN / CREATE ACCOUNT SECTION */}
+                        {!promoterMode && (
                         <div className="mb-6">
                             <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2">
                                 {translate('home.menu.sections.loginCreateAccount')}
@@ -272,8 +274,10 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                 {/* Guest/Customer entry removed as requested */}
                             </div>
                         </div>
+                        )}
 
                         {/* COMPANY SECTION */}
+                        {!promoterMode && (
                         <div className="mb-6">
                             <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2">
                                 {translate('home.menu.sections.company')}
@@ -353,6 +357,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                 </button>
                             </div>
                         </div>
+                        )}
 
                         {/* PROMOTER DASHBOARD SECTION */}
                         {promoterMode && (
@@ -361,6 +366,20 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                 Promoter Dashboard
                             </h3>
                             <div className="space-y-2">
+                                <button 
+                                    onClick={() => handleItemClick(() => onNavigate?.('partnersDashboard'))}
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-black group transform hover:scale-105"
+                                >
+                                    <div className="p-2 bg-black rounded-lg">
+                                        <Home className="w-5 h-5 text-white" />
+                                    </div>
+                                    <div className="flex-grow">
+                                        <p className="font-semibold text-gray-800 group-hover:text-black transition-colors">
+                                            Dashboard
+                                        </p>
+                                        <p className="text-xs text-gray-500">Promoter home</p>
+                                    </div>
+                                </button>
                                 <button 
                                     onClick={() => handleItemClick(() => onNavigate?.('promoterTerms'))}
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-slate-500 group transform hover:scale-105"
@@ -482,6 +501,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                         )}
 
                         {/* LOCATIONS SECTION */}
+                        {!promoterMode && (
                         <div className="mb-6">
                             <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2">
                                 Locations
@@ -507,8 +527,10 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                 </button>
                             </div>
                         </div>
+                        )}
 
                         {/* SERVICES SECTION */}
+                        {!promoterMode && (
                         <div className="mb-6">
                             <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2">
                                 Services
@@ -541,8 +563,10 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                 </button>
                             </div>
                         </div>
+                        )}
 
                         {/* HELP & SUPPORT SECTION */}
+                        {!promoterMode && (
                         <div className="mb-6">
                             <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2">
                                 Help & Support
@@ -562,8 +586,10 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                 </button>
                             </div>
                         </div>
+                        )}
 
                         {/* FOOTER LINKS */}
+                        {!promoterMode && (
                         <div className="pt-4 mt-6 border-t border-gray-300">
                             <div className="flex justify-center gap-4 px-4 py-2">
                                 {onAdminPortalClick && (
@@ -598,6 +624,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                 )}
                             </div>
                         </div>
+                        )}
                     </div>
                 </nav>
             </div>

@@ -1945,7 +1945,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
             {/* Header with Burger Menu */}
-            <header className="bg-white shadow-sm px-4 py-3 sticky top-0 z-40">
+            <header className="bg-white shadow-sm px-4 py-3 sticky top-0 z-40" data-page-header="true">
                 <div className="max-w-7xl mx-auto flex justify-between items-center">
                     <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-3">
                         <span className="text-2xl">📍</span>
@@ -1964,7 +1964,9 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                                 )}
                         <button
                             onClick={() => setIsSideDrawerOpen(true)}
-                            className="p-2 text-gray-700 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-colors"
+                            className="p-2 text-gray-700 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-colors force-show-menu"
+                            title="Menu"
+                            aria-label="Open menu"
                         >
                             <Menu className="w-5 h-5 text-orange-600" />
                         </button>

@@ -387,7 +387,7 @@ const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'i
       </div>
 
       {/* Header */}
-      <header className="bg-white shadow-sm px-2 sm:px-3 py-2 sm:py-3 sticky top-0 z-30">
+      <header className="bg-white shadow-sm px-2 sm:px-3 py-2 sm:py-3 sticky top-0 z-30" data-page-header="true">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
             <h1 className="text-base sm:text-2xl font-bold flex items-center gap-2 sm:gap-3">
@@ -397,8 +397,9 @@ const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'i
           </div>
           <button
             onClick={() => setIsSideDrawerOpen(true)}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors force-show-menu"
             aria-label="Open menu"
+            title="Menu"
           >
             <Menu className="w-5 h-5 text-gray-700" />
           </button>

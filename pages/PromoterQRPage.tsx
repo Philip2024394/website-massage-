@@ -7,6 +7,7 @@ import { promoterService } from '../services/promoterService';
 const PromoterQRPage: React.FC<{ t?: any; onBack?: () => void; onNavigate?: (p: any) => void }> = ({ t, onBack, onNavigate }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [userId, setUserId] = useState<string>('');
+  const [promotorCode, setPromotorCode] = useState<string>('');
   const [copied, setCopied] = useState(false);
   const [isActive, setIsActive] = useState(true);
 
@@ -20,11 +21,14 @@ const PromoterQRPage: React.FC<{ t?: any; onBack?: () => void; onNavigate?: (p: 
         try {
           if (id) {
             const prof = await promoterService.getProfile(id);
-            if (mounted) setIsActive(!!((prof as any).isActive ?? (prof as any).active));
+            if (mounted) {
+              setIsActive(!!((prof as any).isActive ?? (prof as any).active));
+              setPromotorCode((prof as any).agentCode || id);
+            }
           }
-        } catch { if (mounted) setIsActive(true); }
+        } catch { if (mounted) { setIsActive(true); setPromotorCode(id); } }
       } catch {
-        if (mounted) { setUserId(''); setIsActive(true); }
+        if (mounted) { setUserId(''); setIsActive(true); setPromotorCode(''); }
       }
     })();
     return () => { mounted = false; };
@@ -33,13 +37,13 @@ const PromoterQRPage: React.FC<{ t?: any; onBack?: () => void; onNavigate?: (p: 
   const shareUrl = useMemo(() => {
     try {
       const origin = globalThis.location?.origin || '';
-      const code = userId || '';
+      const code = promotorCode || '';
       if (!origin || !code) return '';
       return `${origin}/?aff=${encodeURIComponent(code)}`;
     } catch {
       return '';
     }
-  }, [userId]);
+  }, [promotorCode]);
 
   const qrSrc = useMemo(() => {
     if (!shareUrl) return '';
@@ -64,16 +68,13 @@ const PromoterQRPage: React.FC<{ t?: any; onBack?: () => void; onNavigate?: (p: 
 
   return (
     <div className="min-h-screen bg-white">
-      <header className="bg-white p-4 shadow-md sticky top-0 z-20">
-        <div className="flex justify-between items-center">
-          <button onClick={onBack} className="p-2 mr-2 rounded-full hover:bg-gray-100" aria-label="Back">
-            <svg className="w-6 h-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/></svg>
-          </button>
+      <header className="bg-white p-4 shadow-md sticky top-0 z-20" data-page-header="true">
+        <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-gray-800">
             <span className="text-black">Inda</span>
             <span className="text-orange-500"><span className="inline-block">S</span>treet</span>
           </h1>
-          <button onClick={() => setIsMenuOpen(true)} title="Menu" className="p-2 rounded-full hover:bg-gray-100">
+          <button onClick={() => setIsMenuOpen(true)} title="Menu" className="p-2 rounded-full hover:bg-gray-100 force-show-menu" aria-label="Menu">
             <BurgerMenuIcon className="w-6 h-6" />
           </button>
         </div>
@@ -85,7 +86,7 @@ const PromoterQRPage: React.FC<{ t?: any; onBack?: () => void; onNavigate?: (p: 
         <div className="mb-6">
           <h2 className="text-xl font-bold text-gray-900">Share Your Promoter QR</h2>
           <p className="text-sm text-gray-600">Anyone scanning this QR will carry your code.</p>
-          <p className="text-sm text-gray-600">Affiliate code: <span className="font-mono">{userId || 'N/A'}</span></p>
+          <p className="text-sm text-gray-600">Promotor ID: <span className="font-mono">{promotorCode || 'N/A'}</span></p>
         </div>
 
         {!userId ? (

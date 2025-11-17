@@ -84,13 +84,14 @@ const GuestAlertsPage = React.lazy(() => import('./pages/GuestAlertsPage'));
 // Hotel/Villa live menu page removed
 const PartnersDashboardPage = React.lazy(() => import('./pages/PartnersDashboardPage'));
 const IndastreetPromoterAuthPage = React.lazy(() => import('./pages/IndastreetPromoterAuthPage'));
-const PromoterMembershipSalesPage = React.lazy(() => import('./pages/PromoterMembershipSalesPage'));
+import PromoterMembershipSalesPage from './pages/PromoterMembershipSalesPage';
 const PromoterCommissionPage = React.lazy(() => import('./pages/PromoterCommissionPage'));
-const PromoterQRPage = React.lazy(() => import('./pages/PromoterQRPage'));
+import PromoterQRPage from './pages/PromoterQRPage';
 const PromoterBookingStatsPage = React.lazy(() => import('./pages/PromoterBookingStatsPage'));
 const ProviderCommissionPage = React.lazy(() => import('./pages/ProviderCommissionPage'));
 const PromoterLiveMenuPage = React.lazy(() => import('./pages/PromoterLiveMenuPage'));
-const PromoterHotelVillaMassagePage = React.lazy(() => import('./pages/PromoterHotelVillaMassagePage'));
+// Eager-load to avoid dev dynamic import fetch issue for this page
+import PromoterHotelVillaMassagePage from './pages/PromoterHotelVillaMassagePage';
 const PromoterTermsPage = React.lazy(() => import('./pages/PromoterTermsPage'));
 const PromoterBankAccountPage = React.lazy(() => import('./pages/PromoterBankAccountPage'));
 // Eager-load CoinShopPage to avoid dynamic import fetch issues during dev

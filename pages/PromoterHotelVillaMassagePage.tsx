@@ -10,6 +10,7 @@ const HERO_IMG = 'https://images.unsplash.com/photo-1519710164239-da123dc03ef4?q
 const PromoterHotelVillaMassagePage: React.FC<{ t?: any; onBack?: () => void; onNavigate?: (p: any) => void }> = ({ t, onBack, onNavigate }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [userId, setUserId] = useState('');
+  const [promotorCode, setPromotorCode] = useState('');
   const [hotelOrVillaName, setHotelOrVillaName] = useState('');
   const [quantity, setQuantity] = useState(20);
   const [notes, setNotes] = useState('');
@@ -27,9 +28,10 @@ const PromoterHotelVillaMassagePage: React.FC<{ t?: any; onBack?: () => void; on
           if (id) {
             const prof = await promoterService.getProfile(id);
             setIsActive(!!((prof as any).isActive ?? (prof as any).active));
+            setPromotorCode((prof as any).agentCode || id);
           }
-        } catch { setIsActive(true); }
-      } catch { setUserId(''); setIsActive(true); }
+        } catch { setIsActive(true); setPromotorCode(id); }
+      } catch { setUserId(''); setIsActive(true); setPromotorCode(''); }
     })();
   }, []);
 
@@ -40,11 +42,11 @@ const PromoterHotelVillaMassagePage: React.FC<{ t?: any; onBack?: () => void; on
   const shareUrl = useMemo(() => {
     try {
       const origin = globalThis.location?.origin || '';
-      const code = userId || '';
+      const code = promotorCode || '';
       if (!origin || !code) return '';
       return `${origin}/?aff=${encodeURIComponent(code)}`;
     } catch { return ''; }
-  }, [userId]);
+  }, [promotorCode]);
 
   const qrSrc = useMemo(() => {
     if (!shareUrl) return '';
@@ -85,7 +87,7 @@ const PromoterHotelVillaMassagePage: React.FC<{ t?: any; onBack?: () => void; on
 
   return (
     <div className="min-h-screen bg-white">
-      <header className="bg-white p-4 shadow-md sticky top-0 z-20">
+      <header className="bg-white p-4 shadow-md sticky top-0 z-20" data-page-header="true">
         <div className="flex justify-between items-center">
           <button onClick={onBack} className="p-2 mr-2 rounded-full hover:bg-gray-100" aria-label="Back">
             <svg className="w-6 h-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/></svg>
@@ -94,7 +96,7 @@ const PromoterHotelVillaMassagePage: React.FC<{ t?: any; onBack?: () => void; on
             <span className="text-black">Inda</span>
             <span className="text-orange-500"><span className="inline-block">S</span>treet</span>
           </h1>
-          <button onClick={() => setIsMenuOpen(true)} title="Menu" className="p-2 rounded-full hover:bg-gray-100">
+          <button onClick={() => setIsMenuOpen(true)} title="Menu" className="p-2 rounded-full hover:bg-gray-100 force-show-menu">
             <BurgerMenuIcon className="w-6 h-6" />
           </button>
         </div>

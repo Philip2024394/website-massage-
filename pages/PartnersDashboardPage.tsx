@@ -53,17 +53,43 @@ const PartnersDashboardPage: React.FC<{ t?: any; setPage?: (p: any) => void }> =
     };
   }, []);
 
+  // Auto-open drawer via query param for verification/testing
+  useEffect(() => {
+    try {
+      const sp = new URLSearchParams(globalThis.location.search || '');
+      const open = sp.get('openDrawer');
+      if (open === '1' || (open || '').toLowerCase() === 'true') {
+        setIsMenuOpen(true);
+      }
+    } catch {}
+  }, []);
+
+  // Keyboard shortcut: press "m" to toggle the drawer (debug/assist discovery)
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.key || '').toLowerCase() === 'm') setIsMenuOpen(v => !v);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
   return (
     <div className="min-h-screen bg-white">
       {/* Local header with burger to open side drawer */}
-      <header className="bg-white p-4 shadow-md sticky top-0 z-20">
+      <header className="bg-white p-4 shadow-md sticky top-0 z-30" data-page-header="true">
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-900">
             <span className="text-black">Inda</span>
             <span className="text-orange-500"><span className="inline-block">S</span>treet</span>
           </h1>
-          <button onClick={() => setIsMenuOpen(true)} title="Menu" className="p-2 rounded-full hover:bg-gray-100">
-            <BurgerMenuIcon className="w-6 h-6" />
+          <button
+            onClick={() => setIsMenuOpen(true)}
+            title="Menu"
+            aria-label="Open menu"
+            className="px-3 py-2 rounded-full hover:bg-gray-100 text-gray-900 border border-gray-200 inline-flex items-center gap-2 force-show-menu"
+          >
+            <BurgerMenuIcon className="w-6 h-6 text-gray-900" />
+            <span className="font-medium">Menu</span>
           </button>
         </div>
       </header>
@@ -89,9 +115,9 @@ const PartnersDashboardPage: React.FC<{ t?: any; setPage?: (p: any) => void }> =
       </div>
 
       {/* Affiliate Summary */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div className="bg-white border-2 border-gray-200 rounded-xl p-4">
-          <div className="text-xs text-gray-500">Affiliate Code</div>
+          <div className="text-xs text-gray-500">Promotor ID</div>
           <div className="font-mono text-lg">{affiliateCode}</div>
         </div>
         <div className="bg-white border-2 border-gray-200 rounded-xl p-4">
@@ -167,6 +193,18 @@ const PartnersDashboardPage: React.FC<{ t?: any; setPage?: (p: any) => void }> =
 
       {loading && <div className="text-xs text-gray-500 mt-2">Loading affiliate summary…</div>}
     </div>
+
+    {/* Floating Menu Button (fallback) */}
+    <button
+      onClick={() => setIsMenuOpen(true)}
+      aria-label="Open menu"
+      title="Menu"
+      className="fixed bottom-4 right-4 z-40 rounded-full shadow-lg bg-black text-white px-4 py-3 flex items-center gap-2 md:hidden force-show-menu"
+      style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+    >
+      <BurgerMenuIcon className="w-5 h-5 text-white" />
+      <span className="text-sm">Menu</span>
+    </button>
     </div>
   );
 };

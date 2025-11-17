@@ -93,7 +93,7 @@ const PromoterCommissionPage: React.FC<{ t?: any; onBack?: () => void; onNavigat
 
   return (
     <div className="min-h-screen bg-white">
-      <header className="bg-white p-4 shadow-md sticky top-0 z-20">
+      <header className="bg-white p-4 shadow-md sticky top-0 z-20" data-page-header="true">
         <div className="flex justify-between items-center">
           <button onClick={onBack} className="p-2 mr-2 rounded-full hover:bg-gray-100" aria-label="Back">
             <svg className="w-6 h-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/></svg>
@@ -102,7 +102,7 @@ const PromoterCommissionPage: React.FC<{ t?: any; onBack?: () => void; onNavigat
             <span className="text-black">Inda</span>
             <span className="text-orange-500"><span className="inline-block">S</span>treet</span>
           </h1>
-          <button onClick={() => setIsMenuOpen(true)} title="Menu" className="p-2 rounded-full hover:bg-gray-100">
+          <button onClick={() => setIsMenuOpen(true)} title="Menu" className="p-2 rounded-full hover:bg-gray-100 force-show-menu">
             <BurgerMenuIcon className="w-6 h-6" />
           </button>
         </div>
@@ -118,7 +118,7 @@ const PromoterCommissionPage: React.FC<{ t?: any; onBack?: () => void; onNavigat
         )}
         <div className="mb-6">
           <h2 className="text-xl font-bold text-gray-900">Commission</h2>
-          <p className="text-sm text-gray-600">Affiliate code: <span className="font-mono">{affiliateCode || 'N/A'}</span></p>
+          <p className="text-sm text-gray-600">Promotor ID: <span className="font-mono">{affiliateCode || 'N/A'}</span></p>
         </div>
 
         <section className="bg-white border border-gray-200 rounded-xl p-4 mb-4">
