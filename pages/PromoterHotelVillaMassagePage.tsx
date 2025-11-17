@@ -5,7 +5,7 @@ import { account } from '../lib/appwrite';
 import { promoterService } from '../services/promoterService';
 import { databases, DATABASE_ID, COLLECTIONS } from '../lib/appwrite';
 
-const HERO_IMG = 'https://images.unsplash.com/photo-1519710164239-da123dc03ef4?q=80&w=1200&auto=format&fit=crop';
+const HERO_IMG = 'https://ik.imagekit.io/7grri5v7d/indastreet%20table%201.png';
 
 const PromoterHotelVillaMassagePage: React.FC<{ t?: any; onBack?: () => void; onNavigate?: (p: any) => void }> = ({ t, onBack, onNavigate }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
