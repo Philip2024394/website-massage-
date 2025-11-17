@@ -51,8 +51,7 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [registerData, setRegisterData] = useState({
         email: '',
-        password: '',
-        agentCode: '' // optional referral agent code
+        password: ''
     });
 
 
@@ -98,7 +97,7 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({
         setLoading(true);
 
         try {
-            const response = await therapistAuth.signUp(registerData.email, registerData.password, registerData.agentCode || undefined);
+            const response = await therapistAuth.signUp(registerData.email, registerData.password);
             
             if (response.success && response.userId) {
                 setViewMode('login');
@@ -106,8 +105,7 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({
                 setPhoneNumber(registerData.email);  // Pre-fill email for login
                 setRegisterData({
                     email: '',
-                    password: '',
-                    agentCode: ''
+                    password: ''
                 });
             } else {
                 throw new Error(response.error || 'Registration failed. Please try again.');
@@ -161,7 +159,7 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({
 
             {/* Main Content with Background */}
             <main 
-                className="flex-1 flex items-start justify-center px-4 py-2 overflow-hidden relative bg-cover bg-center bg-no-repeat min-h-0"
+                className="flex-1 flex items-start justify-center px-4 py-2 overflow-y-auto relative bg-cover bg-center bg-no-repeat min-h-0"
                 style={{
                     backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/massage%20therapist%20bew.png?updatedAt=1763136088363)'
                 }}
@@ -256,21 +254,7 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({
                                 </div>
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-800 mb-2 drop-shadow">
-                                    Agent Code (optional)
-                                </label>
-                                <div className="relative">
-                                    <input
-                                        type="text"
-                                        value={registerData.agentCode}
-                                        onChange={(e) => setRegisterData(prev => ({ ...prev, agentCode: e.target.value.toUpperCase() }))}
-                                        placeholder="Enter agent referral code if you have one"
-                                        className="w-full px-4 py-3 rounded-xl border border-white/20 focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400 transition-all bg-white/95 backdrop-blur-sm text-gray-900 placeholder-gray-500 shadow-lg font-mono"
-                                    />
-                                </div>
-                                <p className="text-xs text-gray-500 mt-1">If an IndaStreet Agent referred you, enter their code so they receive commission.</p>
-                            </div>
+                            {/* Agent referral code removed – promoters now share links directly */}
 
                             <button
                                 type="submit"
