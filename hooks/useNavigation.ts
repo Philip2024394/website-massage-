@@ -59,7 +59,7 @@ export const useNavigation = ({
 
     const handleRegisterPromptRegister = useCallback(() => {
         setShowRegisterPrompt(false);
-        setPage('customerAuth');
+        setPage('profile');
         // Scroll to top
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }, [setShowRegisterPrompt, setPage]);
@@ -83,9 +83,9 @@ export const useNavigation = ({
     }, [loggedInProvider, setPage]);
 
     // Simple page navigation handlers
-    const handleNavigateToAuth = useCallback(() => setPage('unifiedLogin'), [setPage]);
+    const handleNavigateToAuth = useCallback(() => setPage('profile'), [setPage]);
     const handleNavigateToTherapistLogin = useCallback(() => setPage('therapistLogin'), [setPage]);
-    const handleNavigateToHotelLogin = useCallback(() => setPage('hotelLogin'), [setPage]);
+    const handleNavigateToHotelLogin = useCallback(() => setPage('villaLogin'), [setPage]);
     const handleNavigateToVillaLogin = useCallback(() => setPage('villaLogin'), [setPage]);
     const handleNavigateToMassagePlaceLogin = useCallback(() => setPage('massagePlaceLogin'), [setPage]);
     const handleNavigateToAdminLogin = useCallback(() => setPage('adminLogin'), [setPage]);
@@ -95,20 +95,20 @@ export const useNavigation = ({
     const handleSelectRegistration = useCallback((type: 'therapist' | 'place') => {
         console.log('🎯 HANDLER: Registration type selected:', type);
         setProviderAuthInfo({ type, mode: 'register' });
-        setPage('providerAuth');
+        setPage('registrationChoice');
     }, [setProviderAuthInfo, setPage]);
     
     const handleNavigateToServiceTerms = useCallback(() => setPage('serviceTerms'), [setPage]);
     const handleNavigateToPrivacyPolicy = useCallback(() => setPage('privacy'), [setPage]);
     const handleNavigateToNotifications = useCallback(() => setPage('notifications'), [setPage]);
-    const handleNavigateToAgentAuth = useCallback(() => setPage('agentAuth'), [setPage]);
-    const handleNavigateToCustomerAuth = useCallback(() => setPage('customerAuth'), [setPage]);
+    const handleNavigateToAgentAuth = useCallback(() => setPage('villaLogin'), [setPage]);
+    const handleNavigateToCustomerAuth = useCallback(() => setPage('profile'), [setPage]);
     const handleNavigateToTherapistDashboard = useCallback(() => setPage('therapistDashboard'), [setPage]);
     const handleNavigateToCustomerDashboard = useCallback(() => {
         if (loggedInCustomer) {
             setPage('customerDashboard');
         } else {
-            setPage('customerAuth');
+            setPage('profile');
         }
     }, [loggedInCustomer, setPage]);
     const handleNavigateToTherapistProfileCreation = useCallback(() => {

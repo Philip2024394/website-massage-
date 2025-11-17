@@ -9,14 +9,14 @@ export const getRouteCategory = (page: Page): 'auth' | 'dashboard' | 'content' |
     // Authentication routes
     const authRoutes = [
         'unifiedLogin', 'therapistLogin', 'adminLogin', 'hotelLogin', 
-        'villaLogin', 'massagePlaceLogin', 'customerAuth', 'agentAuth', 
+        'villaLogin', 'massagePlaceLogin', 'customerAuth', 
         'providerAuth', 'registrationChoice'
     ];
     
     // Dashboard routes  
     const dashboardRoutes = [
-        'therapistDashboard', 'placeDashboard', 'hotelDashboard', 'villaDashboard',
-        'adminDashboard', 'agentDashboard', 'customerDashboard', 'place-discount-system'
+        'therapistDashboard', 'placeDashboard', 'villaDashboard',
+        'adminDashboard', 'customerDashboard', 'place-discount-system'
     ];
     
     // Content/Information routes

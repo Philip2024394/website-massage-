@@ -14,7 +14,6 @@ export const isAuthRoute = (page: Page): boolean => {
         'villaLogin',
         'massagePlaceLogin',
         'customerAuth',
-        'agentAuth',
         'providerAuth',
         'registrationChoice'
     ];
@@ -25,10 +24,8 @@ export const isDashboardRoute = (page: Page): boolean => {
     const dashboardRoutes = [
         'therapistDashboard',
         'placeDashboard',
-        'hotelDashboard', 
         'villaDashboard',
         'adminDashboard',
-        'agentDashboard',
         'customerDashboard'
     ];
     return dashboardRoutes.includes(page);

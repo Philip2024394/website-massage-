@@ -189,27 +189,56 @@ Powered by IndaStreet`;
     useEffect(() => {
         // Minimal loading simulation
         setLoading(false);
+        try {
+            const params = new URLSearchParams(window.location.search || '');
+            const auto = params.get('auto');
+            if (auto === '1' || auto === 'true') {
+                setShowLandingPage(false);
+            }
+        } catch {}
     }, [venueId]);
 
-    // Filter providers that have opted into hotel services with discounts
+    // Auto-open live view when navigated from an internal dashboard (has onBackToDashboard)
+    useEffect(() => {
+        if (onBackToDashboard) {
+            setShowLandingPage(false);
+        }
+    }, [onBackToDashboard]);
+
+    // Pick discount based on venue type (hotel vs villa)
+    const getVenueDiscount = (obj: any) => (
+        venueType === 'villa'
+            ? (obj.villaDiscount ?? obj.hotelDiscount ?? 0)
+            : (obj.hotelDiscount ?? obj.villaDiscount ?? 0)
+    );
+
+    // Filter providers that have opted in (or are active) with applicable discounts
     const liveTherapists = useMemo(() => {
         return therapists
-            .filter(therapist => 
-                therapist.hotelVillaServiceStatus === HotelVillaServiceStatus.OptedIn && 
-                (therapist.hotelDiscount || 0) > 0
-            )
+            .filter(therapist => {
+                const status = therapist.hotelVillaServiceStatus;
+                const discount = getVenueDiscount(therapist);
+                return (status === HotelVillaServiceStatus.OptedIn || status === HotelVillaServiceStatus.Active) && discount > 0;
+            })
             .map(therapist => ({
                 ...therapist,
+                hotelDiscount: getVenueDiscount(therapist),
                 mainImage: (therapist as any).mainImage || getRandomTherapistImageRandom()
             }));
-    }, [therapists]);
+    }, [therapists, venueType]);
     
     const livePlaces = useMemo(() => {
-        return places.filter(place => 
-            place.hotelVillaServiceStatus === HotelVillaServiceStatus.OptedIn && 
-            (place.hotelDiscount || 0) > 0
-        );
-    }, [places]);
+        return places
+            .filter(place => {
+                const status = place.hotelVillaServiceStatus;
+                const discount = getVenueDiscount(place);
+                return (status === HotelVillaServiceStatus.OptedIn || status === HotelVillaServiceStatus.Active) && discount > 0;
+            })
+            .map(place => ({
+                ...place,
+                hotelDiscount: getVenueDiscount(place)
+            }));
+    }, [places, venueType]);
 
     if (loading) {
         return (

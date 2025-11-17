@@ -15,7 +15,6 @@ export interface AuthenticationState {
 }
 
 export interface DashboardAccess {
-    canAccessHotelDashboard: boolean;
     canAccessVillaDashboard: boolean;
     canAccessTherapistDashboard: boolean;
     canAccessPlaceDashboard: boolean;
@@ -63,7 +62,6 @@ export const validateDashboardAccess = (authState: AuthenticationState): Dashboa
         });
 
         return {
-            canAccessHotelDashboard: false,
             canAccessVillaDashboard: false,
             canAccessTherapistDashboard: false,
             canAccessPlaceDashboard: false,
@@ -74,15 +72,6 @@ export const validateDashboardAccess = (authState: AuthenticationState): Dashboa
             errorMessage: 'Multiple login sessions detected. Please log out and log in again with the correct account type.'
         };
     }
-
-    // Hotel Dashboard Access
-    const canAccessHotelDashboard = isHotelLoggedIn && 
-        !isVillaLoggedIn && 
-        !isAdminLoggedIn && 
-        !loggedInProvider && 
-        !loggedInAgent && 
-        !loggedInCustomer &&
-        loggedInUser?.type === 'hotel';
 
     // Villa Dashboard Access  
     const canAccessVillaDashboard = isVillaLoggedIn && 
@@ -139,7 +128,6 @@ export const validateDashboardAccess = (authState: AuthenticationState): Dashboa
         loggedInUser?.type === 'agent';
 
     return {
-        canAccessHotelDashboard,
         canAccessVillaDashboard,
         canAccessTherapistDashboard,
         canAccessPlaceDashboard,
@@ -173,14 +161,8 @@ export const clearAllAuthStates = (stateSetters: {
     if (stateSetters.setLoggedInUser) stateSetters.setLoggedInUser(null);
     if (stateSetters.setImpersonatedAgent) stateSetters.setImpersonatedAgent(null);
     
-    // Clear localStorage
-    localStorage.removeItem('app_hotel_logged_in');
-    localStorage.removeItem('app_villa_logged_in');
-    localStorage.removeItem('app_logged_in_provider');
-    localStorage.removeItem('app_logged_in_agent');
-    localStorage.removeItem('app_impersonated_agent');
-    
-    console.log('✅ SECURITY: All authentication states cleared');
+    // localStorage disabled: persistence keys removed. Auth state cleared in memory only.
+    console.log('✅ SECURITY: All authentication states cleared (no localStorage)');
 };
 
 /**
@@ -198,9 +180,6 @@ export const createSecureDashboardRenderer = (
     }
 
     return {
-        renderHotelDashboard: (component: React.ReactNode) => 
-            access.canAccessHotelDashboard ? component : null,
-            
         renderVillaDashboard: (component: React.ReactNode) => 
             access.canAccessVillaDashboard ? component : null,
             

@@ -113,9 +113,9 @@ const QuickSupportPage: React.FC<QuickSupportPageProps> = ({ onNavigate }) => {
                         </div>
 
                         <div className="bg-white rounded-xl p-5 shadow-sm border-l-4 border-blue-500">
-                            <h3 className="text-lg font-bold text-gray-900 mb-2">🏨 For Hotels & Villas</h3>
+                            <h3 className="text-lg font-bold text-gray-900 mb-2">🏨 For Hotels & Partners</h3>
                             <p className="text-sm text-gray-600 mb-3">
-                                Need help with your hotel or villa dashboard and services?
+                                Need help with your hotel or Indastreet Partners dashboard and services?
                             </p>
                             <ul className="text-xs text-gray-600 space-y-1 ml-4">
                                 <li>• Dashboard navigation</li>

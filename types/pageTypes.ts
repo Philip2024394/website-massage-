@@ -33,7 +33,6 @@ export type Page =
     | 'notifications' 
     | 'massageTypes' 
     | 'hotelLogin' 
-    | 'hotelDashboard' 
     | 'villaLogin' 
     | 'villaDashboard' 
     | 'unifiedLogin' 

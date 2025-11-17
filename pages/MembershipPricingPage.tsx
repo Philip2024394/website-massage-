@@ -86,10 +86,10 @@ const MembershipPricingPage: React.FC = () => {
       console.log('Saving package:', pkg);
       
       const dashboardText = pkg.category === 'therapist' || pkg.category === 'place' 
-        ? '• Therapist dashboards\n• Massage place dashboards\n• Agent dashboards'
+        ? '• Therapist dashboards\n• Massage place dashboards'
         : pkg.category === 'hotel'
-        ? '• Hotel dashboards\n• Agent dashboards'
-        : '• Villa dashboards\n• Agent dashboards';
+        ? '• Hotel dashboards\n• Indastreet Partners'
+        : '• Indastreet Partners dashboard';
       
       alert(`✅ Package "${pkg.title}" saved successfully!\n\nThis will update pricing for:\n${dashboardText}`);
       setEditingId(null);
@@ -244,8 +244,8 @@ const MembershipPricingPage: React.FC = () => {
             )}
             {activeCategory === 'villa' && (
               <ul className="text-sm text-blue-700 mt-2 space-y-1">
-                <li>✅ <strong>Villa Dashboard</strong> - Membership page</li>
-                <li>✅ <strong>Agent Dashboard</strong> - Villa membership packages</li>
+                <li>✅ <strong>Indastreet Partners</strong> - Membership page</li>
+                <li>✅ <strong>Indastreet Partners</strong> - Membership packages</li>
               </ul>
             )}
           </div>

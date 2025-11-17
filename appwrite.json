@@ -95,6 +95,49 @@
             {"key": "idx_month", "type": "key", "attributes": ["month"], "orders": ["DESC"]},
             {"key": "idx_targetMet", "type": "key", "attributes": ["targetMet"], "orders": ["ASC"]}
           ]
+        },
+        {
+          "collectionId": "affiliate_clicks",
+          "name": "Affiliate Clicks",
+          "enabled": true,
+          "documentSecurity": true,
+          "attributes": [
+            {"type": "string", "key": "affiliateCode", "size": 64, "required": true, "array": false},
+            {"type": "string", "key": "path", "size": 512, "required": true, "array": false},
+            {"type": "string", "key": "referrer", "size": 512, "required": false, "array": false},
+            {"type": "string", "key": "userAgent", "size": 500, "required": false, "array": false},
+            {"type": "datetime", "key": "createdAt", "required": true, "array": false}
+          ],
+          "indexes": [
+            {"key": "idx_code_time", "type": "key", "attributes": ["affiliateCode", "createdAt"], "orders": ["ASC", "DESC"]},
+            {"key": "idx_createdAt", "type": "key", "attributes": ["createdAt"], "orders": ["DESC"]}
+          ]
+        },
+        {
+          "collectionId": "affiliate_attributions",
+          "name": "Affiliate Attributions",
+          "enabled": true,
+          "documentSecurity": true,
+          "attributes": [
+            {"type": "string", "key": "bookingId", "size": 100, "required": true, "array": false},
+            {"type": "string", "key": "providerId", "size": 100, "required": true, "array": false},
+            {"type": "string", "key": "providerName", "size": 255, "required": false, "array": false},
+            {"type": "enum", "key": "providerType", "elements": ["therapist", "place"], "required": true, "array": false},
+            {"type": "string", "key": "affiliateCode", "size": 64, "required": true, "array": false},
+            {"type": "float", "key": "commissionRate", "required": true, "array": false},
+            {"type": "float", "key": "commissionAmount", "required": true, "array": false},
+            {"type": "enum", "key": "commissionStatus", "elements": ["pending", "approved", "paid"], "required": true, "array": false},
+            {"type": "string", "key": "source", "size": 64, "required": false, "array": false},
+            {"type": "string", "key": "venueId", "size": 100, "required": false, "array": false},
+            {"type": "string", "key": "venueName", "size": 255, "required": false, "array": false},
+            {"type": "string", "key": "venueType", "size": 20, "required": false, "array": false},
+            {"type": "datetime", "key": "createdAt", "required": true, "array": false}
+          ],
+          "indexes": [
+            {"key": "idx_code_time", "type": "key", "attributes": ["affiliateCode", "createdAt"], "orders": ["ASC", "DESC"]},
+            {"key": "idx_provider_status", "type": "key", "attributes": ["providerId", "commissionStatus", "createdAt"], "orders": ["ASC", "ASC", "DESC"]},
+            {"key": "idx_status_time", "type": "key", "attributes": ["commissionStatus", "createdAt"], "orders": ["ASC", "DESC"]}
+          ]
         }
       ]
     }

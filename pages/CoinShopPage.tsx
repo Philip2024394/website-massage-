@@ -65,7 +65,7 @@ interface CoinShopPageProps {
     onOpenMenu?: () => void; // Function to open the HomePage drawer
     t?: any;
     isFromTherapistDashboard?: boolean;
-    dashboardType?: 'hotel' | 'villa' | 'therapist' | 'standalone';
+    dashboardType?: 'villa' | 'therapist' | 'standalone';
 }
 
 const CoinShopPage: React.FC<CoinShopPageProps> = ({ 
@@ -278,6 +278,55 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
                     }
                 }
             }
+            // ================= Coin Value Overrides for Leather Belts =================
+            const BELT_COIN_OVERRIDES: Record<string, number> = {
+                'BEL-71104': 1270,
+                'BEL-05270': 1089,
+                'BEL-12250': 1360,
+                'BEL-92404': 1430
+            };
+            const computeProductNumberLocal = (item: ShopItem) => {
+                const getCategoryPrefixLocal = (category?: string) => {
+                    const c = (category || '').toLowerCase();
+                    if (c === 'watches') return 'WAT';
+                    if (c === 'lighter') return 'LIT';
+                    if (c === 'leather belts') return 'BEL';
+                    if (c === 'work belts') return 'WBEL';
+                    if (c === 'home') return 'HOME';
+                    return 'PRD';
+                };
+                const source = (item.$id || item.name || '').trim();
+                let hash = 0;
+                for (let i = 0; i < source.length; i++) {
+                    hash = ((hash << 5) - hash) + source.charCodeAt(i);
+                    hash |= 0;
+                }
+                const num = Math.abs(hash % 100000);
+                return `${getCategoryPrefixLocal(item.category)}-${num.toString().padStart(5, '0')}`;
+            };
+            augmented = augmented.map(it => {
+                try {
+                    const cat = (it.category || '').toLowerCase();
+                    if (cat === 'leather belts') {
+                        const pn = computeProductNumberLocal(it);
+                        if (BELT_COIN_OVERRIDES[pn]) {
+                            it.coinPrice = BELT_COIN_OVERRIDES[pn];
+                        } else if (typeof it.coinPrice !== 'number' || it.coinPrice < 800 || it.coinPrice > 5000) {
+                            // Assign random coin value between 840 and 976 inclusive for other leather belts
+                            it.coinPrice = Math.floor(840 + Math.random() * (976 - 840 + 1));
+                        }
+                    } else if (cat === 'watches') {
+                        // Normalize watch coin values into 740 - 830 range as requested
+                        if (typeof it.coinPrice !== 'number' || it.coinPrice < 740 || it.coinPrice > 830) {
+                            it.coinPrice = Math.floor(740 + Math.random() * (830 - 740 + 1)); // 740..830 inclusive
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Belt coin override failed for item', it?.name, e);
+                }
+                return it;
+            });
+
             setShopItems(augmented);
 
             // Load user coins if logged in
@@ -330,8 +379,26 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
         }
     }, [categories, selectedCategory]);
 
-    const filteredItems = selectedCategory === 'all' 
-        ? shopItems 
+    // Mixed interleaved product list when "all" is selected
+    const mixedAllItems = useMemo(() => {
+        if (selectedCategory !== 'all') return [];
+        const categoryOrder = Array.from(new Set(shopItems.map(i => i.category)));
+        const buckets = categoryOrder.map(cat => shopItems.filter(i => i.category === cat));
+        const result: ShopItem[] = [];
+        let remaining = buckets.reduce((acc, b) => acc + b.length, 0);
+        while (remaining > 0) {
+            for (const bucket of buckets) {
+                if (bucket.length > 0) {
+                    result.push(bucket.shift()!);
+                }
+            }
+            remaining = buckets.reduce((acc, b) => acc + b.length, 0);
+        }
+        return result;
+    }, [shopItems, selectedCategory]);
+
+    const filteredItems = selectedCategory === 'all'
+        ? mixedAllItems
         : shopItems.filter(item => item.category === selectedCategory);
     
     console.log('Selected category:', selectedCategory);
@@ -443,7 +510,7 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
                                 {/* Coin Price */}
                                 <div className="flex items-center gap-1 mb-2">
                                     <span className="text-orange-500 text-lg font-bold">
-                                        {item.coinPrice}
+                                        {item.coinPrice.toLocaleString()}
                                     </span>
                                     <span className="text-orange-500 text-sm">🪙</span>
                                 </div>
@@ -675,17 +742,11 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
             <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
-                        {dashboardType === 'hotel' && (
-                            <>
-                                <span className="text-3xl">🏨</span>
-                                <span>Hotel Dashboard</span>
-                                <span className="text-sm text-gray-500">- Coin Shop</span>
-                            </>
-                        )}
+                        {/* Hotel dashboard removed */}
                         {dashboardType === 'villa' && (
                             <>
                                 <span className="text-3xl">🏡</span>
-                                <span>Villa Dashboard</span>
+                                <span>Indastreet Partners</span>
                                 <span className="text-sm text-gray-500">- Coin Shop</span>
                             </>
                         )}
@@ -710,14 +771,7 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
                                     isFromTherapistDashboard,
                                     dashboardType
                                 });
-                                if (dashboardType === 'hotel') {
-                                    // Navigate back to hotel dashboard where drawer is available
-                                    if (onNavigate) {
-                                        onNavigate('hotelDashboard');
-                                    } else if (onBack) {
-                                        onBack();
-                                    }
-                                } else if (dashboardType === 'villa') {
+                                if (dashboardType === 'villa') {
                                     // Navigate back to villa dashboard where drawer is available
                                     if (onNavigate) {
                                         onNavigate('villaDashboard');
@@ -737,8 +791,7 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
                                 }
                             }} 
                             title={
-                                dashboardType === 'hotel' ? "Back to Hotel Dashboard" :
-                                dashboardType === 'villa' ? "Back to Villa Dashboard" :
+                                dashboardType === 'villa' ? "Back to Indastreet Partners" :
                                 (dashboardType === 'therapist' || isFromTherapistDashboard) ? "Back to Therapist Dashboard" : "Menu"
                             }
                         >
@@ -751,9 +804,9 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
             <AppDrawer 
                 isOpen={isDrawerOpen} 
                 onClose={() => setIsDrawerOpen(false)} 
-                onNavigate={() => {
+                onNavigate={(page) => {
                     setIsDrawerOpen(false);
-                    // Handle navigation here
+                    try { onNavigate(page); } catch {}
                 }}
                 t={t}
             />

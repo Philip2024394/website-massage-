@@ -64,10 +64,14 @@ export const useAppState = () => {
         return 'home';
       }
       
-      // Allow specific test pages via URL parameter
+      // Allow specific pages via URL parameter
       if (pageParam === 'rewardBannersTest' || pageParam === 'reward-banners-test') {
         console.log('🎯 URL parameter detected: Opening reward banners test page');
         return 'rewardBannersTest';
+      }
+      if (pageParam === 'hotelVillaMenu') {
+        console.log('🎯 URL parameter detected: Opening Hotel/Villa Menu');
+        return 'hotelVillaMenu';
       }
 
       // Default: always start at landing on fresh app arrival
@@ -228,6 +232,12 @@ export const useAppState = () => {
   // Extract venue ID from URL for hotel/villa menu
   const getInitialVenueId = (): string => {
     try {
+      const search = new URLSearchParams(window.location.search);
+      const fromQuery = search.get('venueId');
+      if (fromQuery) {
+        console.log('🏷️ Venue ID extracted from query:', fromQuery);
+        return fromQuery;
+      }
       const pathname = window.location.pathname;
       const hotelMenuMatch = pathname.match(/\/hotel\/([^/]+)\/menu/);
       const villaMenuMatch = pathname.match(/\/villa\/([^/]+)\/menu/);

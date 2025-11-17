@@ -181,6 +181,16 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
       }
     };
     trySyncLocalProfile();
+
+    // Also listen for browser coming back online to attempt immediate sync
+    const handleOnline = () => {
+      console.log('🌐 Online event detected, attempting profile sync');
+      trySyncLocalProfile();
+    };
+    window.addEventListener('online', handleOnline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+    };
   }, [user?.email]);
 
   // Show welcome confetti/coins popup for first-time registration
@@ -1247,15 +1257,23 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
                     });
                     alert('Profile saved');
                   } catch (e) {
-                    // Persist locally as fallback
+                    const isOffline = typeof navigator !== 'undefined' && navigator.onLine === false;
+                    // Persist locally as fallback if offline or server error
                     try {
                       localStorage.setItem(
                         `customer_profile_${user.email}`,
                         JSON.stringify(profileForm)
                       );
-                      alert('Saved locally. Will sync when online.');
-                    } catch {
-                      alert('Failed to save profile');
+                      if (isOffline) {
+                        alert('You are offline. Changes saved locally and will sync when connection returns.');
+                      } else {
+                        // Provide more diagnostic info for logged-in users
+                        const msg = (e && (e as any).message) ? (e as any).message : 'Unknown error';
+                        alert('Server update failed. Changes saved locally and will retry when online.\nDetails: ' + msg);
+                      }
+                    } catch (storageErr) {
+                      console.warn('Failed to persist local profile backup:', storageErr);
+                      alert('Failed to save profile: ' + ((storageErr as any)?.message || 'Unknown storage error'));
                     }
                   } finally {
                     setIsSavingProfile(false);

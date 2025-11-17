@@ -11,7 +11,9 @@ import BookingStatusTracker from './components/BookingStatusTracker';
 import ScheduleBookingPopup from './components/ScheduleBookingPopup';
 import { useState, useEffect, Suspense } from 'react';
 import { bookingExpirationService } from './services/bookingExpirationService';
-import { cleanupLocalStorage } from './utils/localStorageCleanup';
+// localStorage disabled globally
+import './utils/disableLocalStorage';
+// (Former cleanupLocalStorage import removed as localStorage persisted data is no longer used)
 import './lib/globalErrorHandler'; // Initialize global error handling
 import { LanguageProvider } from './context/LanguageContext';
 import { agentShareAnalyticsService } from './lib/appwriteService';
@@ -60,8 +62,7 @@ const App = () => {
 
     // Start booking expiration service on mount
     useEffect(() => {
-        // Clean up any corrupted localStorage data
-        cleanupLocalStorage();
+        // localStorage disabled: skip cleanupLocalStorage()
         
         // 🔧 FIX: Initialize Appwrite SDK and make it globally available
         const initializeAppwriteSession = async () => {
@@ -392,6 +393,7 @@ const App = () => {
                     handleVillaLogout={authHandlers?.handleVillaLogout || (() => Promise.resolve())}
                     handleAdminLogout={authHandlers?.handleAdminLogout || (() => Promise.resolve())}
                     handleHotelLogin={authHandlers?.handleHotelLogin || (() => {})}
+                    handleVillaLogin={authHandlers?.handleVillaLogin || (() => {})}
                     handleCreateBooking={() => Promise.resolve()}
 
                     handleUpdateBookingStatus={() => Promise.resolve()}
@@ -429,7 +431,7 @@ const App = () => {
                     return role;
                 }}
                 handleRegisterPromptClose={() => state.setShowRegisterPrompt(false)}
-                handleRegisterPromptRegister={() => state.setPage('customerAuth')}
+                handleRegisterPromptRegister={() => state.setPage('profile')}
                 setPage={state.setPage}
                 setLoyaltyEvent={state.setLoyaltyEvent}
             />

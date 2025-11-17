@@ -1,6 +1,7 @@
 import { account, databases, DATABASE_ID, COLLECTIONS } from './appwrite';
 import { ID } from 'appwrite';
 import { getRandomTherapistImage } from '../utils/therapistImageUtils';
+import { buildHotelsPayload } from './hotelsSchema';
 
 export interface AuthResponse {
     success: boolean;
@@ -9,95 +10,103 @@ export interface AuthResponse {
     error?: string;
 }
 
-// Admin Authentication
+// Hotel Authentication (repaired)
+export const hotelAuth = {
+    async signUp(email: string, password: string): Promise<AuthResponse> {
+        try {
+            console.log('🏨 Starting hotel signup for:', email);
+            const user = await account.create(ID.unique(), email, password);
+            console.log('✅ Appwrite user created:', user.$id);
+            try {
+                const hotelId = ID.unique();
+                const { sanitized, diff } = buildHotelsPayload({ id: hotelId, email, type: 'hotel', userId: user.$id });
+                if (diff.unknown.length || diff.missingRequired.length) {
+                    console.warn('⚠️ Hotel payload sanitized. Unknown:', diff.unknown, 'Missing filled:', diff.missingRequired);
+                    const STRICT = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_HOTELS_STRICT_SCHEMA === '1')
+                        || (typeof process !== 'undefined' && process.env?.VITE_HOTELS_STRICT_SCHEMA === '1');
+                    if (STRICT) {
+                        throw new Error(`Hotel payload schema issues. Unknown: ${diff.unknown.join(', ')} Missing: ${diff.missingRequired.join(', ')}`);
+                    }
+                }
+                const hotelDoc = await databases.createDocument(
+                    DATABASE_ID,
+                    COLLECTIONS.HOTELS,
+                    hotelId,
+                    sanitized
+                );
+                console.log('✅ Hotel document created:', hotelDoc.$id);
+                return { success: true, userId: user.$id, documentId: hotelDoc.$id };
+            } catch (dbError: any) {
+                console.warn('⚠️ Hotel collection error, but user created:', dbError.message);
+                return { success: true, userId: user.$id, error: 'Hotel user created but collection unavailable' };
+            }
+        } catch (error: any) {
+            console.error('Hotel sign up error:', error);
+            return { success: false, error: error.message };
+        }
+    },
+    async signIn(email: string, password: string): Promise<AuthResponse> {
+        try {
+            console.log('🏨 Starting hotel signin for:', email);
+            try {
+                await account.deleteSession('current');
+                console.log('🗑️ Existing session cleared before hotel login');
+            } catch (err: any) {
+                console.log('ℹ️ No existing session to clear:', err?.message || 'unknown reason');
+            }
+            const session = await account.createEmailPasswordSession(email, password);
+            console.log('✅ Session created:', session.$id);
+            const user = await account.get();
+            console.log('✅ User retrieved:', user.$id);
+            try {
+                const hotels = await databases.listDocuments(
+                    DATABASE_ID,
+                    COLLECTIONS.HOTELS
+                );
+                const hotel = hotels.documents.find((doc: any) => doc.email === email || doc.userId === user.$id);
+                if (!hotel) {
+                    console.warn('⚠️ Hotel document not found, but allowing login');
+                    return { success: true, userId: user.$id, error: 'Hotel document not found but login allowed' };
+                }
+                console.log('✅ Hotel document found:', hotel.$id);
+                return { success: true, userId: user.$id, documentId: hotel.$id };
+            } catch (dbError: any) {
+                console.warn('⚠️ Hotel collection query failed, but allowing login:', dbError.message);
+                return { success: true, userId: user.$id, error: 'Hotel collection unavailable but login allowed' };
+            }
+        } catch (error: any) {
+            console.error('Hotel sign in error:', error);
+            return { success: false, error: error.message };
+        }
+    }
+};
+
+// Admin Authentication (collection disabled, auth-only)
 export const adminAuth = {
     async signUp(email: string, password: string): Promise<AuthResponse> {
         try {
-            // Create Appwrite account
+            console.log('👤 Admin signup start:', email);
             const user = await account.create(ID.unique(), email, password);
-            
-            // Create admin document in database (if collection exists)
-            try {
-                if (!COLLECTIONS.ADMINS) {
-                    console.warn('⚠️ Admin collection not configured - skipping admin document creation');
-                    return { success: true, userId: user.$id, error: 'Admin collection disabled' };
-                }
-                
-                const admin = await databases.createDocument(
-                    DATABASE_ID,
-                    COLLECTIONS.ADMINS,
-                    ID.unique(),
-                    {
-                        // Required fields per schema
-                        username: email.split('@')[0], // Required
-                        password: '', // Password handled by Appwrite auth
-                        email, // Required
-                        role: 'regular', // Required - default to regular admin
-                        createdAt: new Date().toISOString(), // Required
-                        userId: user.$id, // Store reference to Appwrite user
-                        
-                        // Optional fields
-                        lastLogin: null,
-                    }
-                );
-                return { success: true, userId: user.$id, documentId: admin.$id };
-            } catch (dbError: any) {
-                console.warn('⚠️ Admins collection not found, user created but no admin document:', dbError?.message);
-                return { success: true, userId: user.$id, error: 'Admin collection not configured' };
-            }
+            console.log('✅ Admin user created:', user.$id);
+            return { success: true, userId: user.$id };
         } catch (error: any) {
-            console.error('Admin sign up error:', error);
+            console.error('Admin signup error:', error);
             return { success: false, error: error.message };
         }
     },
-    
     async signIn(email: string, password: string): Promise<AuthResponse> {
         try {
-            // Delete any existing session first
-            try {
-                await account.deleteSession('current');
-                console.log('🗑️ Existing session cleared before admin login');
-            } catch (err: any) {
-                // No session to delete, continue
-                console.log('ℹ️ No existing session to clear:', err?.message || 'unknown reason');
-            }
-
-            // Create session
-            await account.createEmailPasswordSession(email, password);
-            
-            // Get user
+            console.log('👤 Admin signin start:', email);
+            try { await account.deleteSession('current'); } catch {}
+            const session = await account.createEmailPasswordSession(email, password);
+            console.log('✅ Admin session created:', session.$id);
             const user = await account.get();
-            
-            // Get admin document - with improved error handling
-            try {
-                if (!COLLECTIONS.ADMINS) {
-                    console.warn('⚠️ Admin collection not configured - allowing login without admin document');
-                    return { success: true, userId: user.$id, error: 'Admin collection disabled' };
-                }
-                
-                const admins = await databases.listDocuments(
-                    DATABASE_ID,
-                    COLLECTIONS.ADMINS
-                );
-                
-                const admin = admins.documents.find((doc: any) => doc.userId === user.$id);
-                
-                if (!admin) {
-                    console.warn('⚠️ Admin document not found for user, but allowing login');
-                    return { success: true, userId: user.$id, error: 'Admin document not found but login allowed' };
-                }
-                
-                return { success: true, userId: user.$id, documentId: admin.$id };
-            } catch (dbError: any) {
-                console.warn('⚠️ Admins collection query failed, but allowing login anyway:', dbError.message);
-                // Allow admin access even if collection query fails
-                return { success: true, userId: user.$id, error: 'Admin collection query failed but login allowed' };
-            }
+            return { success: true, userId: user.$id };
         } catch (error: any) {
-            console.error('Admin sign in error:', error);
+            console.error('Admin signin error:', error);
             return { success: false, error: error.message };
         }
-    },
+    }
 };
 
 // Therapist Authentication
@@ -354,106 +363,7 @@ export const placeAuth = {
     },
 };
 
-// Hotel Authentication
-export const hotelAuth = {
-    async signUp(email: string, password: string): Promise<AuthResponse> {
-        try {
-            console.log('🏨 Starting hotel signup for:', email);
-            const user = await account.create(ID.unique(), email, password);
-            console.log('✅ Appwrite user created:', user.$id);
-            
-            try {
-                const hotelId = ID.unique();
-                const hotel = await databases.createDocument(
-                    DATABASE_ID,
-                    COLLECTIONS.HOTELS,
-                    hotelId,
-                    {
-                        // Simplified hotel data - only email and password required
-                        id: hotelId,                      // Required - document identifier
-                        name: `Hotel ${email.split('@')[0]}`,  // Hotel name from email
-                        hotelName: `Hotel ${email.split('@')[0]}`, // Required hotelName field
-                        type: 'hotel',                    // Required - hotel type
-                        email,                            // Required - email address
-                        password: '',                     // Required - handled by Appwrite auth
-                        location: 'Location pending',    // Required - default location
-                        address: 'Address pending',      // Required - SCHEMA COMPLIANT FIELD
-                        hotelAddress: 'Address pending',  // Required - Dashboard field
-                        contactPerson: email.split('@')[0], // Required - default contact
-                        contactNumber: '',               // Required - SCHEMA COMPLIANT FIELD
-                        whatsappNumber: '',              // Required - empty default
-                        hotelId: '',                     // Required by Appwrite schema - empty for hotels (self-reference)
-                        qrCodeEnabled: false,            // Required - default false
-                        isActive: true,                  // Required - auto-activate for simplicity
-                        createdAt: new Date().toISOString(), // Add creation timestamp
-                        userId: user.$id,                // Link to Appwrite user
-                        
-                        // Optional fields with defaults
-                        partnerTherapists: JSON.stringify([]),
-                        discountRate: 0,
-                    }
-                );
-                console.log('✅ Hotel document created:', hotel.$id);
-                return { success: true, userId: user.$id, documentId: hotel.$id };
-            } catch (dbError: any) {
-                console.warn('⚠️ Hotel collection error, but user created:', dbError.message);
-                // User created successfully even if hotel document fails
-                return { success: true, userId: user.$id, error: 'Hotel user created but collection unavailable' };
-            }
-        } catch (error: any) {
-            console.error('Hotel sign up error:', error);
-            return { success: false, error: error.message };
-        }
-    },
-    
-    async signIn(email: string, password: string): Promise<AuthResponse> {
-        try {
-            console.log('🏨 Starting hotel signin for:', email);
-            
-            // Delete any existing session first
-            try {
-                await account.deleteSession('current');
-                console.log('🗑️ Existing session cleared before hotel login');
-            } catch (err: any) {
-                // No session to delete, continue
-                console.log('ℹ️ No existing session to clear:', err?.message || 'unknown reason');
-            }
-
-            // Create new session
-            const session = await account.createEmailPasswordSession(email, password);
-            console.log('✅ Session created:', session.$id);
-            
-            const user = await account.get();
-            console.log('✅ User retrieved:', user.$id);
-            
-            try {
-                const hotels = await databases.listDocuments(
-                    DATABASE_ID,
-                    COLLECTIONS.HOTELS
-                );
-                
-                const hotel = hotels.documents.find((doc: any) => 
-                    doc.email === email || doc.userId === user.$id
-                );
-                
-                if (!hotel) {
-                    console.warn('⚠️ Hotel document not found, but allowing login');
-                    return { success: true, userId: user.$id, error: 'Hotel document not found but login allowed' };
-                }
-                
-                console.log('✅ Hotel document found:', hotel.$id);
-                return { success: true, userId: user.$id, documentId: hotel.$id };
-            } catch (dbError: any) {
-                console.warn('⚠️ Hotel collection query failed, but allowing login:', dbError.message);
-                // Allow login even if database query fails
-                return { success: true, userId: user.$id, error: 'Hotel collection unavailable but login allowed' };
-            }
-        } catch (error: any) {
-            console.error('Hotel sign in error:', error);
-            return { success: false, error: error.message };
-        }
-    },
-};
+// (Duplicate hotelAuth removed)
 
 // Villa Authentication
 export const villaAuth = {
@@ -462,38 +372,23 @@ export const villaAuth = {
             const user = await account.create(ID.unique(), email, password);
             
             const villaId = ID.unique();
-            const villa = await databases.createDocument(
-                DATABASE_ID,
-                COLLECTIONS.HOTELS, // Villas are stored in hotels collection
-                villaId,
-                {
-                    // Required fields per schema
-                    id: villaId,                         // Required - document identifier
-                    name: `Villa ${email.split('@')[0]}`, // Hotel/Villa name
-                    hotelName: `Villa ${email.split('@')[0]}`, // Required hotelName field
-                    type: 'villa', // Required - hotel or villa
-                    location: 'Location pending', // Required
-                    address: 'Address pending', // Required - SCHEMA COMPLIANT FIELD
-                    hotelAddress: 'Address pending', // Required - Dashboard field
-                    contactPerson: email.split('@')[0], // Required
-                    contactNumber: '', // Required - SCHEMA COMPLIANT FIELD
-                    hotelPhone: '', // Required - Dashboard field (same as contactNumber)
-                    email, // Required
-                    password: '', // Required - handled by Appwrite auth
-                    whatsappNumber: '', // Required
-                    hotelId: '', // Required by Appwrite schema - empty for villas (self-reference)
-                    qrCodeEnabled: false, // Required
-                    isActive: false, // Required - admin approval needed
-                    createdAt: new Date().toISOString(), // Required
-                    userId: user.$id, // Link to Appwrite user - MISSING FIELD ADDED
-                    
-                    // Optional fields
-                    partnerTherapists: JSON.stringify([]),
-                    discountRate: 0,
+            const { sanitized, diff } = buildHotelsPayload({ id: villaId, email, type: 'villa', userId: user.$id });
+            if (diff.unknown.length || diff.missingRequired.length) {
+                console.warn('⚠️ Villa payload sanitized. Unknown:', diff.unknown, 'Missing filled:', diff.missingRequired);
+                const STRICT = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_HOTELS_STRICT_SCHEMA === '1')
+                  || (typeof process !== 'undefined' && process.env?.VITE_HOTELS_STRICT_SCHEMA === '1');
+                if (STRICT) {
+                    throw new Error(`Villa payload schema issues. Unknown: ${diff.unknown.join(', ')} Missing: ${diff.missingRequired.join(', ')}`);
                 }
+            }
+            console.log('🟣 [Villa SignUp] Final payload to createDocument:', sanitized);
+            const villaDoc = await databases.createDocument(
+                DATABASE_ID,
+                COLLECTIONS.HOTELS,
+                villaId,
+                sanitized
             );
-            
-            return { success: true, userId: user.$id, documentId: villa.$id };
+            return { success: true, userId: user.$id, documentId: villaDoc.$id };
         } catch (error: any) {
             console.error('Villa sign up error:', error);
             return { success: false, error: error.message };
@@ -519,12 +414,44 @@ export const villaAuth = {
                 COLLECTIONS.HOTELS // Villas are stored in hotels collection
             );
             
-            const villa = villas.documents.find((doc: any) => doc.email === email && doc.type === 'villa');
-            
+            // Use explicit any to accommodate createDocument return type differences
+            let villa: any = villas.documents.find((doc: any) => doc.email === email && doc.type === 'villa');
+
             if (!villa) {
-                throw new Error('Villa not found');
+                console.warn('⚠️ Villa document missing for email, creating new minimal villa profile.');
+                const villaId = ID.unique();
+                const minimalPayload: Record<string, any> = {
+                    id: villaId,
+                    hotelId: villaId,
+                    hotelName: `Villa ${email.split('@')[0]}`,
+                    name: `Villa ${email.split('@')[0]}`,
+                    type: 'villa',
+                    email,
+                    createdAt: new Date().toISOString(),
+                    userId: user.$id,
+                    partnerTherapists: JSON.stringify([]),
+                    discountRate: 0,
+                    hotelAddress: 'Address pending',
+                    address: 'Address pending',
+                    contactNumber: ''
+                };
+                try {
+                    villa = await databases.createDocument(
+                        DATABASE_ID,
+                        COLLECTIONS.HOTELS,
+                        villaId,
+                        minimalPayload
+                    );
+                    console.log('✅ Created missing villa profile:', villa.$id);
+                } catch (createErr: any) {
+                    console.error('❌ Failed to create missing villa profile:', createErr?.message || createErr);
+                    throw new Error('Villa profile creation failed');
+                }
             }
-            
+
+            if (!villa) {
+                throw new Error('Villa profile not retrievable after creation');
+            }
             return { success: true, userId: user.$id, documentId: villa.$id };
         } catch (error: any) {
             console.error('Villa sign in error:', error);

@@ -2,7 +2,7 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { 
     Home, Briefcase, Users, Building, MapPin, Heart, 
-    Info, BookOpen, Phone, HelpCircle, Hotel,
+    Info, BookOpen, Phone, HelpCircle,
     X as CloseIcon
 } from 'lucide-react';
 
@@ -79,14 +79,14 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
             'home.menu.massageJobsDesc': 'Find opportunities',
             'home.menu.hotel': 'Hotel',
             'home.menu.hotelDesc': 'Hotel partner portal',
-            'home.menu.villa': 'Villa',
-            'home.menu.villaDesc': 'Villa partner portal',
+            'home.menu.villa': 'Indastreet Partners',
+            'home.menu.villaDesc': 'Partner portal',
             'home.menu.therapists': 'Therapists',
             'home.menu.therapistsDesc': 'Therapist portal',
             'home.menu.massageSpa': 'Massage Spa',
             'home.menu.massageSpaDesc': 'Spa partner portal',
-            'home.menu.agent': 'Agent',
-            'home.menu.agentDesc': 'Agent portal',
+            'home.menu.agent': 'Indastreet Partner',
+            'home.menu.agentDesc': 'Partner portal',
             'home.menu.customer': 'Guest',
             'home.menu.customerDesc': 'Guest portal',
             'home.menu.aboutUs': 'About Us',
@@ -106,9 +106,24 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
         return fallbacks[key] || key;
     };
 
-    const handleItemClick = (callback?: () => void) => {
-        console.log('🔥 Button clicked, callback:', callback);
-        callback?.();
+    const go = (page?: string) => {
+        if (page && onNavigate) {
+            try { onNavigate(page); } catch {}
+            onClose();
+        }
+    };
+
+    const handleItemClick = (callback?: () => void, fallbackPage?: string) => {
+        console.log('🔥 Button clicked, callback:', callback, 'fallback:', fallbackPage);
+        if (callback) {
+            callback();
+            onClose();
+            return;
+        }
+        if (fallbackPage) {
+            go(fallbackPage);
+            return;
+        }
         onClose();
     };
 
@@ -164,7 +179,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                             </h3>
                             <div className="space-y-2">
                                 <button 
-                                    onClick={() => handleItemClick(onMassageJobsClick)}
+                                    onClick={() => handleItemClick(onMassageJobsClick, 'massageJobs')}
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-blue-500 group transform hover:scale-105"
                                 >
                                     <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg">
@@ -186,23 +201,10 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                 {translate('home.menu.sections.loginCreateAccount')}
                             </h3>
                             <div className="space-y-2">
-                                <button 
-                                    onClick={() => handleItemClick(onHotelPortalClick)}
-                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-orange-500 group transform hover:scale-105"
-                                >
-                                    <div className="p-2 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg">
-                                        <Hotel className="w-5 h-5 text-white" />
-                                    </div>
-                                    <div className="flex-grow">
-                                        <p className="font-semibold text-gray-800 group-hover:text-orange-600 transition-colors">
-                                            {translate('home.menu.hotel')}
-                                        </p>
-                                        <p className="text-xs text-gray-500">{translate('home.menu.hotelDesc')}</p>
-                                    </div>
-                                </button>
+                                {/* Hotel portal removed */}
 
                                 <button 
-                                    onClick={() => handleItemClick(onVillaPortalClick)}
+                                    onClick={() => handleItemClick(onVillaPortalClick, 'villaLogin')}
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm transition-all border-l-4 border-black group"
                                 >
                                     <div className="p-2 bg-black rounded-lg">
@@ -217,7 +219,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                 </button>
 
                                 <button 
-                                    onClick={() => handleItemClick(onTherapistPortalClick)}
+                                    onClick={() => handleItemClick(onTherapistPortalClick, 'therapistLogin')}
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-teal-500 group transform hover:scale-105"
                                 >
                                     <div className="p-2 bg-gradient-to-br from-teal-500 to-teal-600 rounded-lg">
@@ -232,7 +234,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                 </button>
 
                                 <button 
-                                    onClick={() => handleItemClick(onMassagePlacePortalClick)}
+                                    onClick={() => handleItemClick(onMassagePlacePortalClick, 'massagePlaceLogin')}
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-indigo-500 group transform hover:scale-105"
                                 >
                                     <div className="p-2 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg">
@@ -246,20 +248,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                     </div>
                                 </button>
 
-                                <button 
-                                    onClick={() => handleItemClick(onAgentPortalClick)}
-                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-yellow-500 group transform hover:scale-105"
-                                >
-                                    <div className="p-2 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-lg">
-                                        <MapPin className="w-5 h-5 text-white" />
-                                    </div>
-                                    <div className="flex-grow">
-                                        <p className="font-semibold text-gray-800 group-hover:text-yellow-600 transition-colors">
-                                            {translate('home.menu.agent')}
-                                        </p>
-                                        <p className="text-xs text-gray-500">{translate('home.menu.agentDesc')}</p>
-                                    </div>
-                                </button>
+                                {/* Agent portal removed: consolidated into Indastreet Partners (villa) */}
 
                                 <button 
                                     onClick={() => handleItemClick(() => onNavigate?.('website-management'))}
@@ -276,22 +265,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                     </div>
                                 </button>
 
-                                {onCustomerPortalClick && (
-                                    <button 
-                                        onClick={() => handleItemClick(onCustomerPortalClick)}
-                                        className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-red-500 group transform hover:scale-105"
-                                    >
-                                        <div className="p-2 bg-gradient-to-br from-red-500 to-red-600 rounded-lg">
-                                            <Heart className="w-5 h-5 text-white" />
-                                        </div>
-                                        <div className="flex-grow">
-                                            <p className="font-semibold text-gray-800 group-hover:text-red-600 transition-colors">
-                                                {translate('home.menu.customer')}
-                                            </p>
-                                            <p className="text-xs text-gray-500">{translate('home.menu.customerDesc')}</p>
-                                        </div>
-                                    </button>
-                                )}
+                                {/* Guest/Customer entry removed as requested */}
                             </div>
                         </div>
 
@@ -302,7 +276,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                             </h3>
                             <div className="space-y-2">
                                 <button 
-                                    onClick={() => handleItemClick(() => onNavigate?.('about-us'))}
+                                    onClick={() => handleItemClick(undefined, 'about-us')}
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-cyan-500 group transform hover:scale-105"
                                 >
                                     <div className="p-2 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-lg">
@@ -317,7 +291,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                 </button>
 
                                 <button 
-                                    onClick={() => handleItemClick(() => onNavigate?.('how-it-works'))}
+                                    onClick={() => handleItemClick(undefined, 'how-it-works')}
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-cyan-500 group transform hover:scale-105"
                                 >
                                     <div className="p-2 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-lg">
@@ -332,7 +306,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                 </button>
 
                                 <button 
-                                    onClick={() => handleItemClick(() => onNavigate?.('blog'))}
+                                    onClick={() => handleItemClick(undefined, 'blog')}
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-cyan-500 group transform hover:scale-105"
                                 >
                                     <div className="p-2 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-lg">
@@ -347,7 +321,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                 </button>
 
                                 <button 
-                                    onClick={() => handleItemClick(() => onNavigate?.('indastreet-partners'))}
+                                    onClick={() => handleItemClick(undefined, 'indastreet-partners')}
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-orange-500 group transform hover:scale-105"
                                 >
                                     <div className="p-2 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg">
@@ -362,7 +336,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                 </button>
 
                                 <button 
-                                    onClick={() => handleItemClick(() => onNavigate?.('contact-us'))}
+                                    onClick={() => handleItemClick(undefined, 'contact-us')}
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-cyan-500 group transform hover:scale-105"
                                 >
                                     <div className="p-2 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-lg">
@@ -383,7 +357,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                             </h3>
                             <div className="space-y-2">
                                 <button 
-                                    onClick={() => handleItemClick(() => onNavigate?.('massage-bali'))}
+                                    onClick={() => handleItemClick(undefined, 'massage-bali')}
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-orange-500 group transform hover:scale-105"
                                 >
                                     <div className="p-2 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg">

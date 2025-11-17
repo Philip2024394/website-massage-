@@ -160,6 +160,41 @@ export const useAuthHandlers = ({
         setUser
     ]);
 
+    const handleVillaLogin = useCallback((villaId?: string) => {
+        console.log('🏡 handleVillaLogin called - setting villa logged in state');
+        // Clear other auth states
+        setIsVillaLoggedIn(true);
+        setIsHotelLoggedIn(false);
+        setIsAdminLoggedIn(false);
+        setLoggedInProvider(null);
+        setLoggedInAgent(null);
+        setLoggedInCustomer(null);
+
+        // Unified logged-in user context
+        setLoggedInUser({
+            id: villaId || 'villa-user',
+            type: 'villa',
+            email: '',
+            name: 'Villa User'
+        } as any);
+
+        setUser({
+            id: villaId || 'villa-user',
+            type: 'villa',
+            email: '',
+            name: 'Villa User'
+        });
+    }, [
+        setIsVillaLoggedIn,
+        setIsHotelLoggedIn,
+        setIsAdminLoggedIn,
+        setLoggedInProvider,
+        setLoggedInAgent,
+        setLoggedInCustomer,
+        setLoggedInUser,
+        setUser
+    ]);
+
     return {
         handleProviderLogout,
         handleHotelLogout,
@@ -169,5 +204,6 @@ export const useAuthHandlers = ({
         handleAgentLogout,
         handleAdminLogin,
         handleHotelLogin,
+        handleVillaLogin,
     };
 };

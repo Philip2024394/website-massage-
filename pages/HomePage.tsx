@@ -14,6 +14,7 @@ import FlyingButterfly from '../components/FlyingButterfly';
 import { getCustomerLocation, findNearbyTherapists, findNearbyPlaces } from '../lib/nearbyProvidersService';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
 import PageNumberBadge from '../components/PageNumberBadge';
+import { THERAPIST_MAIN_IMAGES } from '../lib/services/imageService';
 
 
 interface HomePageProps {
@@ -206,6 +207,28 @@ const HomePage: React.FC<HomePageProps> = ({
     const [nearbyTherapists, setNearbyTherapists] = useState<Therapist[]>([]);
     const [nearbyPlaces, setNearbyPlaces] = useState<Place[]>([]);
     const [isLocationDetecting, setIsLocationDetecting] = useState(false);
+    // Shuffled unique home page therapist images (no repeats until all 17 used)
+    const [shuffledHomeImages, setShuffledHomeImages] = useState<string[]>([]);
+
+    // Fisher-Yates shuffle to randomize array order
+    const shuffleArray = (arr: string[]) => {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    };
+
+    // Reshuffle images whenever user views the Home tab (requirement: random change each time)
+    useEffect(() => {
+        if (activeTab === 'home') {
+            // Take first 17 (spec requirement) then shuffle for unique cycle
+            const baseImages = [...THERAPIST_MAIN_IMAGES.slice(0, 17)];
+            const shuffled = shuffleArray(baseImages);
+            setShuffledHomeImages(shuffled);
+            console.log('🎲 HomePage shuffled therapist images for this view:', shuffled);
+        }
+    }, [activeTab]);
 
     // Ensure activeTab is always 'home' when HomePage loads (shows therapist cards)
     useEffect(() => {
@@ -652,10 +675,19 @@ const HomePage: React.FC<HomePageProps> = ({
                         </div>
                         
                         <div className="space-y-4">
-                        {nearbyTherapists
-                            .filter((t: any) => t.isLive === true) // Only show activated therapists
-                            .filter((t: any) => selectedMassageType === 'all' || (t.massageTypes && t.massageTypes.includes(selectedMassageType)))
-                            .map((therapist: any, index: number) => {
+                        {/* Build list with injected unique mainImage per view */}
+                        {(() => {
+                            const preparedTherapists = nearbyTherapists
+                                .filter((t: any) => t.isLive === true)
+                                .filter((t: any) => selectedMassageType === 'all' || (t.massageTypes && t.massageTypes.includes(selectedMassageType)))
+                                .map((therapist: any, index: number) => {
+                                    // Assign deterministic unique image from shuffled set; if more therapists than images, start second cycle
+                                    const assignedImage = shuffledHomeImages.length > 0 
+                                        ? shuffledHomeImages[index % shuffledHomeImages.length] 
+                                        : undefined; // undefined triggers fallback logic inside TherapistCard
+                                    return { ...therapist, mainImage: assignedImage || therapist.mainImage };
+                                });
+                            return preparedTherapists.map((therapist: any, index: number) => {
                                 // 🌐 Enhanced Debug: Comprehensive therapist data analysis
                                 console.log('🏠 HomePage passing to TherapistCard:', {
                                     id: therapist.$id || therapist.id,
@@ -679,24 +711,25 @@ const HomePage: React.FC<HomePageProps> = ({
                                 } : null;
                                 
                                 return (
-                                    <TherapistCard
-                                        key={therapist.$id || `therapist-${therapist.id}-${index}`}
-                                        therapist={therapist}
-                                        userLocation={autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null)}
-                                        onRate={() => handleOpenRatingModal(therapist)}
-                                        onBook={() => onBook(therapist, 'therapist')}
-                                        onQuickBookWithChat={onQuickBookWithChat ? () => onQuickBookWithChat(therapist, 'therapist') : undefined}
-                                        onChatWithBusyTherapist={onChatWithBusyTherapist}
-                                        onShowRegisterPrompt={onShowRegisterPrompt}
-                                        isCustomerLoggedIn={!!loggedInCustomer}
-                                        onIncrementAnalytics={(metric) => onIncrementAnalytics(therapist.id || therapist.$id, 'therapist', metric)}
-                                        loggedInProviderId={loggedInProvider?.id}
-                                            onNavigate={onNavigate}
-                                        activeDiscount={realDiscount}
-                                        t={t}
-                                    />
+                                <TherapistCard
+                                    key={therapist.$id || `therapist-${therapist.id}-${index}`}
+                                    therapist={therapist}
+                                    userLocation={autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null)}
+                                    onRate={() => handleOpenRatingModal(therapist)}
+                                    onBook={() => onBook(therapist, 'therapist')}
+                                    onQuickBookWithChat={onQuickBookWithChat ? () => onQuickBookWithChat(therapist, 'therapist') : undefined}
+                                    onChatWithBusyTherapist={onChatWithBusyTherapist}
+                                    onShowRegisterPrompt={onShowRegisterPrompt}
+                                    isCustomerLoggedIn={!!loggedInCustomer}
+                                    onIncrementAnalytics={(metric) => onIncrementAnalytics(therapist.id || therapist.$id, 'therapist', metric)}
+                                    loggedInProviderId={loggedInProvider?.id}
+                                    onNavigate={onNavigate}
+                                    activeDiscount={realDiscount}
+                                    t={t}
+                                />
                                 );
-                            })}
+                            });
+                        })()}
                         {nearbyTherapists.filter((t: any) => t.isLive === true).length === 0 && (
                             <div className="text-center py-12 bg-white rounded-lg">
                                 <p className="text-gray-500">Tidak ada terapis tersedia di area Anda saat ini.</p>

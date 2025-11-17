@@ -18,7 +18,7 @@ interface CoinHistoryPageProps {
     _isFromHotelDashboard?: boolean;
     isFromVillaDashboard?: boolean;
     _isFromVillaDashboard?: boolean;
-    dashboardType?: 'hotel' | 'villa' | 'therapist' | 'standalone';
+    dashboardType?: 'villa' | 'therapist' | 'standalone';
 }
 
 const CoinHistoryPage: React.FC<CoinHistoryPageProps> = ({ 
@@ -142,7 +142,7 @@ const CoinHistoryPage: React.FC<CoinHistoryPageProps> = ({
             <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
                 <div className="flex justify-between items-center">
                     <div className="flex items-center gap-3">
-                        {onBack && dashboardType !== 'hotel' && (
+                        {onBack && (
                             <button 
                                 onClick={onBack} 
                                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -154,16 +154,10 @@ const CoinHistoryPage: React.FC<CoinHistoryPageProps> = ({
                             </button>
                         )}
                         <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
-                            {dashboardType === 'hotel' && (
-                                <>
-                                    <span className="text-3xl">🏨</span>
-                                    <span>Hotel Dashboard</span>
-                                </>
-                            )}
                             {dashboardType === 'villa' && (
                                 <>
                                     <span className="text-3xl">🏡</span>
-                                    <span>Villa Dashboard</span>
+                                    <span>Indastreet Partners</span>
                                     <span className="text-sm text-gray-500">- Coin History</span>
                                 </>
                             )}
@@ -188,13 +182,12 @@ const CoinHistoryPage: React.FC<CoinHistoryPageProps> = ({
                                 console.log('🍔 CoinHistory burger menu clicked! dashboardType:', dashboardType);
                                 
                                 // Navigate back to appropriate dashboard instead of showing generic AppDrawer
-                                if (dashboardType === 'hotel' || dashboardType === 'villa' || dashboardType === 'therapist') {
+                                if (dashboardType === 'villa' || dashboardType === 'therapist') {
                                     if (onBack) {
                                         onBack(); // This will navigate back to the appropriate dashboard
                                     } else if (onNavigate) {
                                         // Fallback navigation
-                                        if (dashboardType === 'hotel') onNavigate('hotelDashboard');
-                                        else if (dashboardType === 'villa') onNavigate('villaDashboard');
+                                        if (dashboardType === 'villa') onNavigate('villaDashboard');
                                         else if (dashboardType === 'therapist') onNavigate('therapistDashboard');
                                     }
                                 } else {

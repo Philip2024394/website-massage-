@@ -1,0 +1,6 @@
+{
+  "_comment": "Replace this placeholder by running: pnpm schema:export:hotels (requires APPWRITE_ENDPOINT, APPWRITE_PROJECT_ID, APPWRITE_API_KEY, DATABASE_ID, HOTELS_COLLECTION_ID).",
+  "collectionId": "HOTELS_COLLECTION_ID_PLACEHOLDER",
+  "name": "Hotels",
+  "attributes": []
+}

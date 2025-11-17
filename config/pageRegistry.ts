@@ -35,7 +35,7 @@ export const PAGE_REGISTRY = {
     122: { name: 'JobPostingPaymentPage', file: 'pages/JobPostingPaymentPage.tsx', locked: false },
     
     // Hotel & Villa (141-160)
-    141: { name: 'HotelDashboardPage', file: 'pages/HotelDashboardPage.tsx', locked: false },
+    141: { name: 'HotelDashboardPage', file: 'deleted/hotel-dashboard/HotelDashboardPage.tsx', locked: true },
     142: { name: 'VillaDashboardPage', file: 'pages/VillaDashboardPage.tsx', locked: false },
     143: { name: 'HotelVillaMenuPage', file: 'pages/HotelVillaMenuPage.tsx', locked: false },
     

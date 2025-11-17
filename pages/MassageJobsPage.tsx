@@ -82,13 +82,15 @@ interface MassageJobsPageProps {
     onPostJob: () => void;
     onNavigateToPayment: () => void;
     onCreateTherapistProfile?: () => void;
+    onNavigate?: (page: string) => void;
 }
 
 const MassageJobsPage: React.FC<MassageJobsPageProps> = ({ 
     onBack, 
     onPostJob, 
     onNavigateToPayment, 
-    onCreateTherapistProfile
+    onCreateTherapistProfile,
+    onNavigate
 }) => {
     console.log('🔥 MassageJobsPage RENDERED - VERSION 2025-01-11-17:00:00');
     console.log('🔥 Props received:', {
@@ -235,6 +237,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                 <AppDrawer
                     isOpen={isMenuOpen}
                     onClose={() => setIsMenuOpen(false)}
+                    onNavigate={onNavigate}
                 />
             </React19SafeWrapper>
 

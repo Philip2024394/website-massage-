@@ -129,9 +129,7 @@ export default defineConfig({
             return 'dashboard-admin';
           }
           
-          if (id.includes('pages/AgentDashboardPage')) {
-            return 'dashboard-agent';
-          }
+          // Agent dashboard removed (consolidated into Indastreet Partner dashboard)
         },
       },
     },

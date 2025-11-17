@@ -23,12 +23,16 @@
     "lint:fix": "eslint . --ext ts,tsx --fix",
     "type-check": "tsc --noEmit",
     "save": "git add -A && git commit -m \"chore(save): workspace snapshot\" && git push origin main",
+    "setup:affiliates": "node scripts/setup-affiliate-collections.js",
+    "verify:affiliates": "node scripts/verify-affiliate-collections.js",
     "sync:translations": "tsx scripts/syncTranslations.ts",
     "migrate:images": "tsx scripts/migrateImagesToAppwrite.ts",
     "migrate:flags": "tsx scripts/migrateFlagImages.ts",
     "mobile:android": "cd mobile && npx react-native run-android",
     "mobile:ios": "cd mobile && npx react-native run-ios",
     "mobile:start": "cd mobile && npx react-native start"
+    ,"schema:export:hotels": "node scripts/exportHotelsSchema.cjs"
+    ,"schema:validate:hotels": "node scripts/validateHotelsPayloads.cjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.0.0",

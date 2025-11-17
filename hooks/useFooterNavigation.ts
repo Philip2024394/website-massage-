@@ -37,7 +37,8 @@ export const useFooterNavigation = ({
         } else if (loggedInCustomer) {
             setPage('home');
         } else if (isHotelLoggedIn) {
-            setPage('hotelDashboard');
+            // Redirect legacy hotel login to Partners dashboard
+            setPage('villaDashboard');
         } else {
             setPage('home');
         }
@@ -55,7 +56,8 @@ export const useFooterNavigation = ({
         } else if (loggedInCustomer) {
             setPage('customerDashboard');
         } else if (isHotelLoggedIn) {
-            setPage('hotelDashboard');
+            // Redirect legacy hotel path to Partners dashboard
+            setPage('villaDashboard');
         }
     };
 

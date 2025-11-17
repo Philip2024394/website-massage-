@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Building, Image as ImageIcon, LogOut, Menu, Phone, QrCode, Star, Tag, User, X, Bell, 
-    BarChart3, Percent, ClipboardList, MessageSquare, DollarSign, BellRing, CreditCard, Coins } from 'lucide-react';
+    BarChart3, Percent, ClipboardList, MessageSquare, DollarSign, BellRing, CreditCard, Coins, Link as LinkIcon, ShieldCheck } from 'lucide-react';
 import { Therapist, Place, HotelVillaServiceStatus } from '../types';
 import { parsePricing } from '../utils/appwriteHelpers';
 import { getAllTherapistImages } from '../utils/therapistImageUtils';
@@ -8,6 +8,7 @@ import { analyticsService } from '../services/analyticsService';
 import { databases, ID } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import QRCodeGenerator from 'qrcode';
+import PartnersDrawer from '../components/PartnersDrawer';
 import { useTranslations } from '../lib/useTranslations';
 import PushNotificationSettings from '../components/PushNotificationSettings';
 // import HotelVillaServicesSettingsPage from './HotelVillaServicesSettingsPage';
@@ -15,6 +16,8 @@ import HotelVillaBankDetailsPage from './HotelVillaBankDetailsPage';
 import HotelBookingModal from '../components/hotel/PropertyBookingModal';
 import HotelAnalyticsSection from '../components/hotel/PropertyAnalyticsSection';
 import { safeDownload } from '../utils/domSafeHelpers';
+import { affiliateAnalyticsService } from '../lib/affiliateAnalyticsService';
+import { getCode as getCapturedAffiliateCode } from '../lib/affiliateAttribution';
 
 
 // External component: DiscountCard
@@ -97,11 +100,17 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
     therapists = [], 
     places = [], 
     villaId = '1', 
-    initialTab = 'analytics',
+    initialTab = 'menu',
     setPage,
     onNavigate
 }) => {
     const { t } = useTranslations();
+    
+    // Derive affiliate code for this account (fallback to VILLA-<id>)
+    const affiliateCode = useMemo(() => {
+        const stored = (globalThis as any).my_affiliate_code as string | undefined;
+        return stored && stored.trim() ? stored.trim() : `VILLA-${villaId}`;
+    }, [villaId]);
     
     // State consolidation
     const [state, setState] = useState({
@@ -128,9 +137,79 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
     
     const [analytics, setAnalytics] = useState<any>(null);
     const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(true);
+    const [commissionSummary, setCommissionSummary] = useState<any>(null);
+    const [attributions, setAttributions] = useState<any[]>([]);
+    const [clicks, setClicks] = useState<any[]>([]);
+
+    // Commission structure (Indastreet Partners)
+    const NEW_MEMBER_RATE = 0.20; // 20% membership signup
+    const RENEWAL_RATE = 0.10;    // 10% recurring membership
+    const BONUS_RATE = 0.03;      // 3% account bonus
 
     const updateState = (updates: Partial<typeof state>) => {
         setState(prev => ({ ...prev, ...updates }));
+    };
+
+    // Export a fully-branded QR as an image (canvas render)
+    const downloadBrandedQR = (filename?: string) => {
+        try {
+            if (!state.qrCodeDataUrl) return;
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => {
+                const padding = 40; // outer padding
+                const header = 90;  // space for brand title
+                const footer = 120; // space for partner code + caption
+                const border = 12;  // orange border
+                const qrW = img.width;
+                const qrH = img.height;
+                const canvas = document.createElement('canvas');
+                canvas.width = qrW + padding * 2 + border * 2;
+                canvas.height = header + qrH + footer + padding * 2 + border * 2;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) return;
+
+                // Background
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Border frame
+                ctx.strokeStyle = '#f97316';
+                ctx.lineWidth = border;
+                ctx.strokeRect(border / 2, border / 2, canvas.width - border, canvas.height - border);
+
+                // Brand header
+                ctx.textAlign = 'center';
+                ctx.font = 'bold 28px Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial';
+                ctx.fillStyle = '#f97316';
+                ctx.fillText('Indastreet Partners', canvas.width / 2, border + padding + 28);
+
+                // Draw QR centered
+                const qrX = (canvas.width - qrW) / 2;
+                const qrY = border + padding + header - 20; // small optical adjustment
+                ctx.drawImage(img, qrX, qrY, qrW, qrH);
+
+                // Partner code
+                ctx.font = 'bold 20px Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial';
+                ctx.fillStyle = '#f97316';
+                ctx.fillText(`Partner Code: ${affiliateCode}`, canvas.width / 2, qrY + qrH + 36);
+
+                // Caption
+                ctx.font = '16px Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial';
+                ctx.fillStyle = '#6b7280';
+                ctx.fillText('Scan to view your live wellness menu', canvas.width / 2, qrY + qrH + 64);
+
+                // Save
+                const a = document.createElement('a');
+                a.href = canvas.toDataURL('image/png');
+                const base = (state.villaName || 'villa').replace(/\s+/g, '-');
+                a.download = filename || `${base}-menu-qr-branded.png`;
+                a.click();
+            };
+            img.src = state.qrCodeDataUrl;
+        } catch (e) {
+            console.error('QR export failed', e);
+        }
     };
 
     // Constants
@@ -144,9 +223,11 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
             const item = allProviders[index];
             const isTherapist = index < therapists.length;
             const status = item.hotelVillaServiceStatus ?? HotelVillaServiceStatus.NotOptedIn;
-            const discount = (item as any).hotelDiscount || 0;
+            const applicableDiscount = (
+                (item as any).villaDiscount ?? (item as any).hotelDiscount ?? 0
+            );
             
-            if (status === HotelVillaServiceStatus.OptedIn && discount > 0) {
+            if ((status === HotelVillaServiceStatus.OptedIn || status === HotelVillaServiceStatus.Active) && applicableDiscount > 0) {
                 const pricing = parsePricing(item.pricing) as unknown as Record<DurationKey, number>;
                 const massageTypes = JSON.parse(item.massageTypes || '[]');
                 const image = (item as any).mainImage || therapistBannerImages[Math.floor(Math.random() * therapistBannerImages.length)];
@@ -160,7 +241,7 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
                     rating: (item as any).rating,
                     reviewCount: (item as any).reviewCount,
                     pricing,
-                    discount,
+                    discount: applicableDiscount,
                     whatsappNumber: (item as any).whatsappNumber,
                     description: (item as any).description,
                     massageTypes,
@@ -204,18 +285,38 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
                 new Date().toISOString()
             ).then(setAnalytics).catch(console.error).finally(() => setIsLoadingAnalytics(false));
         }
+        if (state.activeTab === 'commissions' || state.activeTab === 'links' || state.activeTab === 'banners') {
+            (async () => {
+                try {
+                    const summary = await affiliateAnalyticsService.getSummary(affiliateCode);
+                    const [atts, cls] = await Promise.all([
+                        affiliateAnalyticsService.getAttributionsByCode(affiliateCode),
+                        affiliateAnalyticsService.getClicksByCode(affiliateCode)
+                    ]);
+                    setCommissionSummary(summary);
+                    setAttributions(atts);
+                    setClicks(cls);
+                } catch (e) {
+                    console.warn('Affiliate metrics load failed', e);
+                }
+            })();
+        }
     }, [state.activeTab]);
 
     useEffect(() => {
-        const qrLink = `${globalThis.location.origin}/?page=hotelVillaMenu&venueId=${villaId}&venueType=villa`;
+        const qrLink = `${globalThis.location.origin}/?page=hotelVillaMenu&venueId=${villaId}&venueType=villa&auto=1&aff=${encodeURIComponent(affiliateCode)}`;
         updateState({ qrLink });
-        
+
+        // High-contrast, high-resolution QR for reliable scanning
         QRCodeGenerator.toDataURL(qrLink, {
-            width: 500, margin: 2,
-            color: { dark: '#f97316', light: '#FFFFFF' },
+            width: 800,
+            margin: 4,
+            color: { dark: '#000000', light: '#FFFFFF' },
             errorCorrectionLevel: 'H'
-        }).then(url => updateState({ qrCodeDataUrl: url })).catch(console.error);
-    }, [villaId]);
+        })
+            .then(url => updateState({ qrCodeDataUrl: url }))
+            .catch(console.error);
+    }, [villaId, affiliateCode]);
 
     // Handlers (currently unused)
     // const handleSaveAndPreview = async () => {
@@ -352,11 +453,16 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
                                 Share Your Menu QR Code with Guests
                             </h3>
                             
-                            {/* QR Code Display */}
+                            {/* QR Code Display (Branded) */}
                             <div className="flex flex-col sm:flex-row gap-4 items-center">
-                                <div className="bg-white p-3 rounded-lg border-2 border-gray-200 shadow-sm">
+                                <div className="bg-white p-3 rounded-lg border-2 border-orange-500 shadow-sm">
+                                    <div className="text-xs font-bold text-orange-600 text-center mb-2">Inda<span className="text-black">street</span> Partners</div>
                                     {state.qrCodeDataUrl ? (
-                                        <img src={state.qrCodeDataUrl} alt="Villa Menu QR Code" className="w-24 h-24 object-contain" />
+                                        <>
+                                            <img src={state.qrCodeDataUrl} alt="Villa Menu QR Code" className="w-24 h-24 object-contain mx-auto" />
+                                            <div className="text-[11px] text-orange-600 font-mono text-center mt-2">Partner Code: {affiliateCode}</div>
+                                            <div className="text-[10px] text-gray-500 text-center">Scan to view menu</div>
+                                        </>
                                     ) : (
                                         <div className="w-24 h-24 bg-gray-100 rounded flex items-center justify-center">
                                             <QrCode className="w-8 h-8 text-gray-400" />
@@ -370,7 +476,7 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
                                     {/* Action Buttons for Villa Staff */}
                                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                                         <button 
-                                            onClick={() => safeDownload(`https://chart.googleapis.com/chart?chs=800x800&cht=qr&chl=${encodeURIComponent(state.qrLink)}`, `${state.villaName.replace(/\s+/g, '-')}-menu-qr.png`)}
+                                            onClick={() => downloadBrandedQR(`${(state.villaName || 'villa').replace(/\s+/g, '-')}-menu-qr.png`)}
                                             className="bg-green-600 text-white px-3 py-2 rounded-lg text-xs hover:bg-green-700 transition-colors flex items-center justify-center gap-1"
                                         >
                                             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -449,10 +555,15 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
                                 <h3 className="text-xl font-semibold text-gray-800">Share Your Live Menu with Guests</h3>
                                 
                                 <div className="flex flex-col lg:flex-row gap-8 items-center justify-center">
-                                    {/* Large QR Code */}
-                                    <div className="bg-white p-6 rounded-xl border-4 border-gray-200 shadow-lg">
+                                    {/* Large QR Code (Branded) */}
+                                    <div className="bg-white p-6 rounded-xl border-4 border-orange-500 shadow-lg">
+                                        <div className="text-base font-bold text-orange-600 text-center mb-3">Inda<span className="text-black">street</span> Partners</div>
                                         {state.qrCodeDataUrl ? (
-                                            <img src={state.qrCodeDataUrl} alt="Villa Menu QR Code" className="w-64 h-64 object-contain" />
+                                            <div className="flex flex-col items-center">
+                                                <img src={state.qrCodeDataUrl} alt="Villa Menu QR Code" className="w-64 h-64 object-contain" />
+                                                <div className="text-sm text-orange-600 font-mono text-center mt-3">Partner Code: {affiliateCode}</div>
+                                                <div className="text-xs text-gray-500 text-center">Scan to view your live wellness menu</div>
+                                            </div>
                                         ) : (
                                             <div className="w-64 h-64 bg-gray-100 rounded flex items-center justify-center">
                                                 <QrCode className="w-16 h-16 text-gray-400" />
@@ -496,7 +607,7 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
                                 {/* Action Buttons */}
                                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
                                     <button 
-                                        onClick={() => safeDownload(`https://chart.googleapis.com/chart?chs=1000x1000&cht=qr&chl=${encodeURIComponent(state.qrLink)}`, `${state.villaName.replace(/\s+/g, '-')}-menu-qr-large.png`)}
+                                        onClick={() => downloadBrandedQR(`${(state.villaName || 'villa').replace(/\s+/g, '-')}-menu-qr-large.png`)}
                                         className="bg-green-600 text-white px-6 py-4 rounded-lg hover:bg-green-700 transition-colors flex flex-col items-center gap-2"
                                     >
                                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -550,7 +661,16 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
                                 <div className="mt-8">
                                     <button 
                                         onClick={() => {
-                                            // Navigate to live menu using internal routing
+                                            // Ensure venueId is available to the router via URL params
+                                            try {
+                                                const url = new URL(window.location.href);
+                                                url.searchParams.set('page', 'hotelVillaMenu');
+                                                url.searchParams.set('venueId', String(villaId));
+                                                url.searchParams.set('venueType', 'villa');
+                                                window.history.replaceState({}, '', url.toString());
+                                            } catch {}
+
+                                            // Navigate to live menu using internal routing if available
                                             if (setPage) {
                                                 setPage('hotelVillaMenu');
                                             } else {
@@ -587,6 +707,102 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
                     </div>
                 );
 
+            case 'links': {
+                const origin = globalThis.location?.origin || '';
+                const shareLink = `${origin}/?aff=${affiliateCode}`;
+                const captured = getCapturedAffiliateCode() || 'none';
+                return (
+                    <div className="space-y-6">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                <LinkIcon className="w-5 h-5 text-blue-600" />
+                            </div>
+                            <div>
+                                <h2 className="text-2xl font-bold text-gray-900">Your Links</h2>
+                                <p className="text-xs text-gray-500">Share this link or QR. All clicks and bookings are tracked.</p>
+                            </div>
+                        </div>
+                        <div className="bg-white rounded-xl p-4 border space-y-3">
+                            <div className="text-xs text-gray-500">Affiliate code</div>
+                            <div className="font-mono text-sm">{affiliateCode}</div>
+                            <div className="text-xs text-gray-500">Share URL</div>
+                            <div className="flex items-center gap-2">
+                                <input className="flex-1 border rounded-lg px-3 py-2 text-sm" readOnly value={shareLink} />
+                                <button onClick={() => navigator.clipboard.writeText(shareLink)} className="px-3 py-2 bg-orange-500 text-white rounded-lg text-sm">Copy</button>
+                                <a href={`https://chart.googleapis.com/chart?chs=500x500&cht=qr&chl=${encodeURIComponent(shareLink)}`} target="_blank" className="px-3 py-2 bg-gray-700 text-white rounded-lg text-sm" rel="noreferrer">QR</a>
+                            </div>
+                            <div className="text-xs text-gray-400">Debug: current captured code = {captured}</div>
+                        </div>
+                        <div className="bg-white rounded-xl p-4 border">
+                            <div className="flex items-center justify-between mb-3">
+                                <h3 className="font-semibold text-gray-800">Recent Clicks</h3>
+                                <div className="text-xs text-gray-500">Last 500</div>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full text-sm">
+                                    <thead>
+                                        <tr className="text-left text-gray-500">
+                                            <th className="py-2 pr-4">Time</th>
+                                            <th className="py-2 pr-4">Path</th>
+                                            <th className="py-2 pr-4">Referrer</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {(clicks || []).map((c: any) => (
+                                            <tr key={c.$id} className="border-t">
+                                                <td className="py-2 pr-4">{new Date(c.createdAt || c.$createdAt).toLocaleString()}</td>
+                                                <td className="py-2 pr-4 font-mono text-xs">{c.path}</td>
+                                                <td className="py-2 pr-4 font-mono text-xs text-gray-500">{c.referrer || '-'}</td>
+                                            </tr>
+                                        ))}
+                                        {(!clicks || clicks.length === 0) && (
+                                            <tr><td colSpan={3} className="py-6 text-center text-gray-500">No clicks yet.</td></tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            case 'banners': {
+                const origin = globalThis.location?.origin || '';
+                const target = `${origin}/?aff=${affiliateCode}`;
+                const banners = [
+                    { id: 'wide', label: 'Wide 728x90', src: 'https://ik.imagekit.io/7grri5v7d/aff/wide-728x90.png', w: 728, h: 90 },
+                    { id: 'rect', label: 'Rectangle 300x250', src: 'https://ik.imagekit.io/7grri5v7d/aff/rect-300x250.png', w: 300, h: 250 },
+                    { id: 'square', label: 'Square 250x250', src: 'https://ik.imagekit.io/7grri5v7d/aff/sq-250x250.png', w: 250, h: 250 }
+                ];
+                return (
+                    <div className="space-y-6">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+                                <ImageIcon className="w-5 h-5 text-purple-600" />
+                            </div>
+                            <div>
+                                <h2 className="text-2xl font-bold text-gray-900">Banners & Creatives</h2>
+                                <p className="text-xs text-gray-500">Embed code includes your affiliate code automatically.</p>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {banners.map(b => (
+                                <div key={b.id} className="bg-white rounded-xl p-4 border space-y-3">
+                                    <div className="text-sm font-semibold">{b.label}</div>
+                                    <div className="border rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center" style={{height: b.h}}>
+                                        <img src={b.src} alt={b.label} className="object-contain" style={{maxWidth: '100%', maxHeight: '100%'}} />
+                                    </div>
+                                    <div>
+                                        <div className="text-xs text-gray-500 mb-1">Embed code</div>
+<pre className="text-xs bg-gray-900 text-green-200 rounded-lg p-3 overflow-x-auto"><code>{`<a href="${target}" target="_blank" rel="nofollow"><img src="${b.src}" width="${b.w}" height="${b.h}" alt="IndaStreet" /></a>`}</code></pre>
+                                        <button onClick={() => navigator.clipboard.writeText(`<a href="${target}" target="_blank" rel="nofollow"><img src="${b.src}" width="${b.w}" height="${b.h}" alt="IndaStreet" /></a>`)} className="mt-2 px-3 py-2 bg-orange-500 text-white rounded-lg text-sm">Copy Embed</button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+            }
 
 
             case 'commissions':
@@ -594,15 +810,123 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
                     <div className="space-y-6">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-                                <svg className="w-5 h-5 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+                                <DollarSign className="w-5 h-5 text-orange-600" />
                             </div>
-                            <h2 className="text-2xl font-bold text-gray-900">{t('dashboard.commissions')}</h2>
+                            <div>
+                                <h2 className="text-2xl font-bold text-gray-900">Commissions</h2>
+                                <p className="text-xs text-gray-500">Affiliate code: <span className="font-mono">{affiliateCode}</span></p>
+                            </div>
                         </div>
-                        <div className="text-center py-20">
-                            <h3 className="text-xl font-semibold text-gray-800">Commission Management</h3>
-                            <p className="text-gray-500 mt-2">Track earnings and commissions from bookings.</p>
+
+                        {/* Commission Structure */}
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <h3 className="font-bold text-blue-900 mb-2">Commission Structure</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                <div>
+                                    <p className="font-semibold text-blue-800">New Membership Signup</p>
+                                    <p className="text-blue-700">{Math.round(NEW_MEMBER_RATE * 100)}% of membership price</p>
+                                </div>
+                                <div>
+                                    <p className="font-semibold text-blue-800">Recurring Membership</p>
+                                    <p className="text-blue-700">{Math.round(RENEWAL_RATE * 100)}% per renewal</p>
+                                </div>
+                                <div>
+                                    <p className="font-semibold text-blue-800">Account Bonus</p>
+                                    <p className="text-blue-700">{Math.round(BONUS_RATE * 100)}% bonus on eligible totals</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <div className="bg-white rounded-xl p-4 border">
+                                <div className="text-xs text-gray-500">Clicks</div>
+                                <div className="text-2xl font-bold">{commissionSummary?.clicks ?? 0}</div>
+                            </div>
+                            <div className="bg-white rounded-xl p-4 border">
+                                <div className="text-xs text-gray-500">Bookings</div>
+                                <div className="text-2xl font-bold">{commissionSummary?.bookings ?? 0}</div>
+                            </div>
+                            <div className="bg-white rounded-xl p-4 border">
+                                <div className="text-xs text-gray-500">Conversion</div>
+                                <div className="text-2xl font-bold">{commissionSummary?.conversionRate ?? 0}%</div>
+                            </div>
+                            <div className="bg-white rounded-xl p-4 border">
+                                <div className="text-xs text-gray-500">Pending</div>
+                                <div className="text-2xl font-bold">Rp {(commissionSummary?.pendingAmount ?? 0).toLocaleString()}</div>
+                            </div>
+                            <div className="bg-white rounded-xl p-4 border">
+                                <div className="text-xs text-gray-500">Approved</div>
+                                <div className="text-2xl font-bold">Rp {(commissionSummary?.approvedAmount ?? 0).toLocaleString()}</div>
+                            </div>
+                            <div className="bg-white rounded-xl p-4 border">
+                                <div className="text-xs text-gray-500">Paid</div>
+                                <div className="text-2xl font-bold">Rp {(commissionSummary?.paidAmount ?? 0).toLocaleString()}</div>
+                            </div>
+                            <div className="bg-white rounded-xl p-4 border">
+                                <div className="text-xs text-gray-500">Projected Bonus (3%)</div>
+                                <div className="text-2xl font-bold">Rp {Math.round(((commissionSummary?.approvedAmount ?? 0) * BONUS_RATE)).toLocaleString()}</div>
+                            </div>
+                        </div>
+
+                        {/* Provider Registration Link (for membership signups) */}
+                        <div className="bg-white rounded-xl p-4 border">
+                            <div className="flex items-center justify-between mb-3">
+                                <h3 className="font-semibold text-gray-800">Invite Providers to Join</h3>
+                                <div className="text-xs text-gray-500">Earn {Math.round(NEW_MEMBER_RATE * 100)}% + {Math.round(RENEWAL_RATE * 100)}% recurring</div>
+                            </div>
+                            {(() => {
+                                const origin = globalThis.location?.origin || '';
+                                const regLink = `${origin}/?page=providerAuth&aff=${encodeURIComponent(affiliateCode)}`;
+                                return (
+                                    <div className="space-y-2">
+                                        <div className="text-xs text-gray-500">Registration link</div>
+                                        <div className="flex items-center gap-2">
+                                            <input className="flex-1 border rounded-lg px-3 py-2 text-sm" readOnly value={regLink} />
+                                            <button onClick={() => navigator.clipboard.writeText(regLink)} className="px-3 py-2 bg-orange-500 text-white rounded-lg text-sm">Copy</button>
+                                        </div>
+                                        <p className="text-xs text-gray-500">Share this link with therapists or massage places you refer.</p>
+                                    </div>
+                                );
+                            })()}
+                        </div>
+                        <div className="bg-white rounded-xl p-4 border">
+                            <div className="flex items-center justify-between mb-3">
+                                <h3 className="font-semibold text-gray-800">Attributed Bookings</h3>
+                                <div className="text-xs text-gray-500">Last 500</div>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full text-sm">
+                                    <thead>
+                                        <tr className="text-left text-gray-500">
+                                            <th className="py-2 pr-4">Date</th>
+                                            <th className="py-2 pr-4">Provider</th>
+                                            <th className="py-2 pr-4">Type</th>
+                                            <th className="py-2 pr-4">Amount</th>
+                                            <th className="py-2 pr-4">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {(attributions || []).map((a) => (
+                                            <tr key={a.$id} className="border-t">
+                                                <td className="py-2 pr-4 text-gray-700">{new Date(a.createdAt || a.$createdAt).toLocaleString()}</td>
+                                                <td className="py-2 pr-4">{a.providerName || a.providerId}</td>
+                                                <td className="py-2 pr-4 capitalize">{a.providerType}</td>
+                                                <td className="py-2 pr-4 font-medium">Rp {(a.commissionAmount || 0).toLocaleString()}</td>
+                                                <td className="py-2 pr-4">
+                                                    <span className={`px-2 py-1 rounded text-xs ${
+                                                        (a.commissionStatus === 'paid') ? 'bg-green-100 text-green-700' :
+                                                        (a.commissionStatus === 'approved') ? 'bg-blue-100 text-blue-700' :
+                                                        'bg-yellow-100 text-yellow-800'
+                                                    }`}>{a.commissionStatus || 'pending'}</span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {(!attributions || attributions.length === 0) && (
+                                            <tr><td colSpan={5} className="py-6 text-center text-gray-500">No attributed bookings yet.</td></tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 );
@@ -634,6 +958,34 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
                         }}
                         onBack={() => updateState({ activeTab: 'analytics' })}
                     />
+                );
+
+            case 'terms':
+                return (
+                    <div className="space-y-6">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                                <ShieldCheck className="w-5 h-5 text-emerald-600" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-gray-900">Terms & Conditions</h2>
+                        </div>
+                        <div className="bg-white rounded-xl border p-5 space-y-3">
+                            <p className="text-sm text-gray-700">Review Indastreet’s Terms of Service governing partner use of the platform, commissions, conduct, intellectual property, and dispute resolution.</p>
+                            <div className="flex flex-wrap gap-2">
+                                <button onClick={() => {
+                                    if (setPage) setPage('serviceTerms' as any);
+                                    else {
+                                        const origin = globalThis.location?.origin || '';
+                                        window.open(`${origin}/?page=serviceTerms`, '_blank');
+                                    }
+                                }} className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm">Open Full Terms</button>
+                                <button onClick={() => {
+                                    const origin = globalThis.location?.origin || '';
+                                    navigator.clipboard.writeText(`${origin}/?page=serviceTerms`);
+                                }} className="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg text-sm">Copy Terms Link</button>
+                            </div>
+                        </div>
+                    </div>
                 );
 
             case 'notifications':
@@ -668,21 +1020,24 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
         { id: 'menu', icon: ClipboardList, label: 'Menu', badge: providers.length, color: 'indigo', description: 'Service providers' },
         { id: 'qr-code', icon: QrCode, label: 'QR Code', color: 'purple', description: 'Share menu with guests' },
         { id: 'feedback', icon: MessageSquare, label: 'Feedback', color: 'yellow', description: 'Customer reviews' },
+        { id: 'links', icon: LinkIcon, label: 'Links', color: 'blue', description: 'Your referral links' },
+        { id: 'banners', icon: ImageIcon, label: 'Banners', color: 'purple', description: 'Creatives & embeds' },
         { id: 'commissions', icon: DollarSign, label: 'Commissions', color: 'orange', description: 'Payment tracking' },
         { id: 'coin-history', icon: BarChart3, label: 'Coin History', color: 'orange', description: 'View coin balance & transactions' },
         { id: 'coin-shop', icon: Coins, label: 'Coin Shop', color: 'yellow', description: 'Redeem rewards & cashout' },
         { id: 'bank-details', icon: CreditCard, label: 'Bank Details', color: 'green', description: 'Payment information' },
+        { id: 'terms', icon: ShieldCheck, label: 'Terms', color: 'emerald', description: 'View terms & conditions' },
         { id: 'notifications', icon: BellRing, label: 'Push Settings', color: 'red', description: 'Notification preferences' },
     ];
 
     return (
-        <div className="h-screen bg-gray-50 flex flex-col">
+        <div className="h-screen flex flex-col bg-white">
             {/* Dashboard-Specific Header */}
             <header className="bg-white shadow-sm px-4 py-3 z-30 flex-shrink-0">
                 <div className="flex items-center justify-between max-w-[430px] sm:max-w-5xl mx-auto">
                     <h1 className="text-xl font-bold text-gray-800 flex items-center gap-3">
                         <span className="text-2xl">🏡</span>
-                        <span>Villa Dashboard</span>
+                        <span>Indastreet Partners</span>
                     </h1>
                     <button 
                         onClick={() => updateState({ isSideDrawerOpen: true })} 
@@ -694,64 +1049,19 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
                 </div>
             </header>
 
-            {/* Side Drawer */}
-            {state.isSideDrawerOpen && (
-                <>
-                    <div 
-                        className="fixed inset-0 bg-black bg-opacity-50 z-40" 
-                        onClick={() => updateState({ isSideDrawerOpen: false })}
-                        onKeyDown={(e) => e.key === 'Escape' && updateState({ isSideDrawerOpen: false })}
-                        role="button"
-                        tabIndex={0}
-                        aria-label="Close side menu"
-                    />
-                    <div className="fixed top-0 right-0 h-full w-80 bg-white shadow-2xl z-50">
-                        <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4 flex justify-between items-center">
-                            <h2 className="text-xl font-bold text-white">Villa Menu</h2>
-                            <button 
-                                onClick={() => updateState({ isSideDrawerOpen: false })} 
-                                className="text-white hover:bg-orange-600 rounded-lg p-2"
-                                aria-label="Close side menu"
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-                        <nav className="p-4 space-y-2">
-                            {navItems.map((item) => (
-                                <button
-                                    key={item.id}
-                                    onClick={() => {
-                                        if (item.id === 'coin-history' && onNavigate) {
-                                            onNavigate('coinHistory');
-                                        } else if (item.id === 'coin-shop' && onNavigate) {
-                                            onNavigate('coin-shop');
-                                        } else {
-                                            updateState({ activeTab: item.id, isSideDrawerOpen: false });
-                                        }
-                                    }}
-                                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                                        state.activeTab === item.id ? 'bg-orange-500 text-white' : 'text-gray-700 hover:bg-gray-100'
-                                    }`}
-                                >
-                                    <item.icon className="w-5 h-5" />
-                                    <span className="font-medium">{item.label}</span>
-                                    {item.badge && item.badge > 0 && (
-                                        <span className="ml-auto bg-orange-500 text-white text-xs rounded-full px-2.5 py-0.5 font-bold">
-                                            {item.badge}
-                                        </span>
-                                    )}
-                                </button>
-                            ))}
-                        </nav>
-                        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gray-50 border-t">
-                            <button onClick={onLogout} className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">
-                                <LogOut className="w-5 h-5" />
-                                <span className="font-medium">{t('dashboard.logout')}</span>
-                            </button>
-                        </div>
-                    </div>
-                </>
-            )}
+            <PartnersDrawer 
+                isOpen={state.isSideDrawerOpen}
+                onClose={() => updateState({ isSideDrawerOpen: false })}
+                onLogout={onLogout}
+                items={navItems as any}
+                onSelect={(id) => {
+                    if ((id === 'coin-history' || id === 'coin-shop') && onNavigate) {
+                        onNavigate(id === 'coin-history' ? 'coinHistory' : 'coin-shop');
+                        return;
+                    }
+                    updateState({ activeTab: id, isSideDrawerOpen: false });
+                }}
+            />
 
             {/* Main Content */}
             <main className="flex-1 overflow-y-auto">
@@ -792,10 +1102,15 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
                         <div className="p-6 text-center">
                             {state.qrCodeDataUrl ? (
                                 <div className="space-y-4">
-                                    <img src={state.qrCodeDataUrl} alt="QR code" className="w-64 h-64 mx-auto object-contain" />
+                                    <div className="bg-white p-4 rounded-xl border-4 border-orange-500 shadow flex flex-col items-center">
+                                        <div className="text-base font-bold text-orange-600 text-center mb-2">Inda<span className="text-black">street</span> Partners</div>
+                                        <img src={state.qrCodeDataUrl} alt="QR code" className="w-64 h-64 mx-auto object-contain" />
+                                        <div className="text-sm text-orange-600 font-mono text-center mt-2">Partner Code: {affiliateCode}</div>
+                                        <div className="text-xs text-gray-500 text-center">Scan to view menu</div>
+                                    </div>
                                     <div className="space-y-2">
                                         <button 
-                                            onClick={() => safeDownload(`https://chart.googleapis.com/chart?chs=600x600&cht=qr&chl=${encodeURIComponent(state.qrLink)}`, `${state.villaName.replace(/\s+/g, '-')}-menu-qr.png`)}
+                                            onClick={() => downloadBrandedQR(`${(state.villaName || 'villa').replace(/\s+/g, '-')}-menu-qr.png`)}
                                             className="w-full bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600"
                                         >
                                             Download QR Code

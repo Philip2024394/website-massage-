@@ -71,16 +71,11 @@ const NotificationsPage: React.FC<NotificationsPageProps> = ({
                 <div className="flex justify-between items-center">
                     <div className="flex items-center gap-3">
                         <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
-                            {dashboardType === 'hotel' && (
-                                <>
-                                    <span className="text-3xl">🏨</span>
-                                    <span>Hotel Dashboard</span>
-                                </>
-                            )}
+                            {/* Hotel dashboard removed */}
                             {dashboardType === 'villa' && (
                                 <>
                                     <span className="text-3xl">🏡</span>
-                                    <span>Villa Dashboard</span>
+                                    <span>Indastreet Partners</span>
                                 </>
                             )}
                             {dashboardType === 'therapist' && (

@@ -8,7 +8,7 @@ import { validateDashboardAccess, clearAllAuthStates, createSecureDashboardRende
 
 // Page imports
 import LandingPage from './pages/LandingPage';
-import UnifiedLoginPage from './pages/UnifiedLoginPage';
+// UnifiedLoginPage removed from active routes; kept in deleted folder
 import TherapistLoginPage from './pages/TherapistLoginPage';
 import HomePage from './pages/HomePage';
 import CustomerProvidersPage from './pages/CustomerProvidersPage';
@@ -27,10 +27,7 @@ const TherapistProfilePage = React.lazy(() => import('./pages/TherapistProfilePa
 const TherapistStatusPage = React.lazy(() => import('./pages/TherapistStatusPage'));
 const PlaceDashboardPage = React.lazy(() => import('./pages/PlaceDashboardPage'));
 
-const AgentPage = React.lazy(() => import('./pages/AgentPage'));
-const AgentAuthPage = React.lazy(() => import('./pages/AgentAuthPage'));
-const AgentDashboardPage = React.lazy(() => import('./pages/AgentDashboardPage'));
-const AgentTermsPage = React.lazy(() => import('./pages/AgentTermsPage'));
+// Agent pages deprecated: routes now redirect to Indastreet Partner (villa) routes
 const ServiceTermsPage = React.lazy(() => import('./pages/ServiceTermsPage'));
 const PlaceTermsPage = React.lazy(() => import('./pages/PlaceTermsPage'));
 const PlaceDiscountBadgePage = React.lazy(() => import('./pages/PlaceDiscountBadgePage'));
@@ -41,10 +38,10 @@ const MembershipPage = React.lazy(() => import('./pages/MembershipPage'));
 const BookingPage = React.lazy(() => import('./pages/BookingPage'));
 const NotificationsPage = React.lazy(() => import('./pages/NotificationsPage'));
 import MassageTypesPage from './pages/MassageTypesPage';
-const HotelDashboardPage = React.lazy(() => import('./pages/HotelDashboardPage'));
-const VillaDashboardPage = React.lazy(() => import('./pages/VillaDashboardPage'));
-const HotelLoginPage = React.lazy(() => import('./pages/HotelLoginPage'));
-const VillaLoginPage = React.lazy(() => import('./pages/VillaLoginPage'));
+// HotelDashboardPage removed: route now redirects to Villa Dashboard
+import VillaDashboardPage from './pages/VillaDashboardPage';
+// Eager-load VillaLoginPage to avoid dev dynamic import fetch issues
+import VillaLoginPage from './pages/VillaLoginPage';
 const MassagePlaceLoginPage = React.lazy(() => import('./pages/MassagePlaceLoginPage'));
 const AcceptBookingPage = React.lazy(() => import('./pages/AcceptBookingPage'));
 const EmployerJobPostingPage = React.lazy(() => import('./pages/EmployerJobPostingPage'));
@@ -92,7 +89,8 @@ import CoinShopPage from './pages/CoinShopPage';
 const AdminShopManagementPage = React.lazy(() => import('./pages/AdminShopManagementPage'));
 const RewardBannersTestPage = React.lazy(() => import('./pages/RewardBannersTestPage'));
 const ReferralPage = React.lazy(() => import('./pages/ReferralPage'));
-const CoinHistoryPage = React.lazy(() => import('./pages/CoinHistoryPage'));
+// Eager-load CoinHistoryPage to avoid dynamic import fetch issues during dev
+import CoinHistoryPage from './pages/CoinHistoryPage';
 const CoinSystemTestPage = React.lazy(() => import('./pages/CoinSystemTestPage'));
 // Eager-load WebsiteManagementPage to avoid dev dynamic import fetch issue
 import WebsiteManagementPage from './pages/WebsiteManagementPage';
@@ -177,6 +175,7 @@ interface AppRouterProps {
     handleCustomerLogout: () => Promise<void>;
     handleAgentLogout: () => Promise<void>;
     handleHotelLogin: (hotelId?: string) => void; // Add hotel login handler
+    handleVillaLogin: (villaId?: string) => void; // Add villa login handler
     handleNavigateToNotifications: () => void;
     handleNavigateToAgentAuth: () => void;
 
@@ -262,12 +261,40 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         handleCustomerLogout,
         handleAgentLogout,
         handleHotelLogin, // Add hotel login handler
+        handleVillaLogin, // Add villa login handler
         handleNavigateToNotifications,
         handleNavigateToAgentAuth,
         setPage,
         setLoggedInProvider,
         setSelectedJobId
     } = props;
+    
+    // Capture affiliate code once on router mount
+    React.useEffect(() => {
+        (async () => {
+            try {
+                const { captureFromUrl } = await import('./lib/affiliateAttribution');
+                captureFromUrl();
+            } catch {}
+        })();
+    }, []);
+
+    // Track affiliate click if code present (URL or captured)
+    React.useEffect(() => {
+        (async () => {
+            try {
+                const { getCode } = await import('./lib/affiliateAttribution');
+                const codeFromUrl = new URLSearchParams(globalThis.location?.search || '').get('aff');
+                const code = codeFromUrl || getCode();
+                if (code) {
+                    const { affiliateAnalyticsService } = await import('./lib/affiliateAnalyticsService');
+                    await affiliateAnalyticsService.trackClick(code, globalThis.location?.pathname || '/', document.referrer);
+                }
+            } catch {}
+        })();
+        // Run only on first mount; downstream navigation within SPA won't change search
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
     
     // Build a translation adapter from the active language dictionary
     const { language: ctxLanguage } = useLanguage();
@@ -318,7 +345,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
     };
     // Ensure Agent Profile translations exist to prevent runtime errors on Profile tab
     t.profile = t.profile || {
-        title: isId ? 'Profil Agen' : 'Agent Profile',
+        title: isId ? 'Profil Mitra Indastreet' : 'Indastreet Partner Profile',
         bankName: isId ? 'Nama Bank' : 'Bank Name',
         accountNumber: isId ? 'Nomor Rekening' : 'Account Number',
         accountName: isId ? 'Nama Pemilik Rekening' : 'Account Name',
@@ -401,11 +428,10 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                     </svg>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Sign In Required</h2>
-                <p className="text-gray-600 mb-8 max-w-sm">To receive and view notifications, you need to create an account or sign in.</p>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Account Required</h2>
+                <p className="text-gray-600 mb-8 max-w-sm">Notifications are available for registered users. Guest access is currently limited.</p>
                 <div className="space-y-4 w-full max-w-xs">
-                    <button onClick={handleNavigateToRegistrationChoice} className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-orange-600 hover:to-orange-700 transition-all duration-300 shadow-lg">Create Account</button>
-                    <button onClick={() => setPage('unifiedLogin')} className="w-full bg-white text-gray-700 px-6 py-3 rounded-lg font-semibold border border-gray-300 hover:bg-gray-50 transition-colors">Sign In</button>
+                    <button onClick={handleBackToHome} className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-orange-600 hover:to-orange-700 transition-all duration-300 shadow-lg">Back to Home</button>
                 </div>
                 <div className="mt-8 bg-blue-50 rounded-lg p-4 max-w-sm">
                     <h3 className="font-semibold text-blue-900 mb-2">With an account, you'll get:</h3>
@@ -437,8 +463,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             setPage('massageJobs');
         },
         onHotelPortalClick: () => {
-            console.log('🔥 Navigating to hotelLogin');
-            setPage('hotelLogin');
+            console.log('🔥 Hotel portal deprecated → redirecting to villaLogin');
+            setPage('villaLogin');
         },
         onVillaPortalClick: () => {
             console.log('🔥 Navigating to villaLogin');
@@ -453,12 +479,12 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             setPage('massagePlaceLogin');
         },
         onAgentPortalClick: () => {
-            console.log('🔥 Navigating to agentAuth');
-            setPage('agentAuth');
+            console.log('🔥 Agent portal deprecated → redirecting to villaLogin');
+            setPage('villaLogin');
         },
         onCustomerPortalClick: () => {
-            console.log('🔥 Navigating to customerAuth');
-            setPage('customerAuth');
+            console.log('🔥 Customer portal disabled → redirecting to profile');
+            setPage('profile');
         },
         onAdminPortalClick: () => {
             console.log('🔥 Navigating to adminLogin');
@@ -584,7 +610,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onLogout={handleLogout}
                 onLoginClick={handleNavigateToTherapistLogin}
                 onCreateProfileClick={handleNavigateToRegistrationChoice}
-                onAgentPortalClick={loggedInAgent ? () => setPage('agentDashboard') : portalHandlers.onAgentPortalClick}
+                // Agent portal deprecated → use villa login/dashboard instead
+                onAgentPortalClick={portalHandlers.onVillaPortalClick}
                 onCustomerPortalClick={handleNavigateToCustomerDashboard}
                 onBook={handleNavigateToBooking}
                 onQuickBookWithChat={handleQuickBookWithChat}
@@ -677,7 +704,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onVillaPortalClick={handleNavigateToVillaLogin}
                 onTherapistPortalClick={handleNavigateToTherapistLogin}
                 onMassagePlacePortalClick={handleNavigateToMassagePlaceLogin}
-                onAgentPortalClick={loggedInAgent ? () => setPage('agentDashboard') : portalHandlers.onAgentPortalClick}
+                // Agent portal deprecated → use villa portal handler instead
+                onAgentPortalClick={portalHandlers.onVillaPortalClick}
                 onCustomerPortalClick={handleNavigateToCustomerDashboard}
                 onAdminPortalClick={handleNavigateToAdminLogin}
                 onNavigate={commonNavigateHandler}
@@ -761,30 +789,10 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             );
             
         case 'providerAuth': 
-            return providerAuthInfo && (
-                <UnifiedLoginPage 
-                    onNavigate={(page: string) => setPage(page as Page)}
-                    onTermsClick={handleNavigateToServiceTerms}
-                    onPrivacyClick={handleNavigateToPrivacyPolicy}
-                    onCustomerLoginSuccess={(customer: any) => {
-                        props.setLoggedInCustomer(customer);
-                        setPage('customerDashboard');
-                    }}
-                />
-            ) || null;
+            // Route provider auth to registration choice to avoid removed UnifiedLoginPage
+            return <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t} />;
         
-        case 'unifiedLogin':
-            return (
-                <UnifiedLoginPage 
-                    onNavigate={(page: string) => setPage(page as Page)}
-                    onTermsClick={handleNavigateToServiceTerms}
-                    onPrivacyClick={handleNavigateToPrivacyPolicy}
-                    onCustomerLoginSuccess={(customer: any) => {
-                        props.setLoggedInCustomer(customer);
-                        setPage('customerDashboard');
-                    }}
-                />
-            );
+        // unifiedLogin removed
             
         case 'placeDashboard': {
             // Find place or create basic object for dashboard loading
@@ -818,47 +826,21 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t} />;
         }
             
-        case 'agent': 
-            // Route legacy 'agent' path to the unified AgentAuthPage to avoid blank pages
-            return <AgentAuthPage onRegister={handleAgentRegister} onLogin={handleAgentLogin} onBack={handleBackToHome} t={t} />;
-            
-        case 'agentAuth': 
-            return <AgentAuthPage onRegister={handleAgentRegister} onLogin={handleAgentLogin} onBack={handleBackToHome} t={t} />;
-            
-        case 'agentTerms': 
-            return loggedInAgent ? <AgentTermsPage onAccept={handleAgentAcceptTerms} onLogout={handleAgentLogout} t={t} /> : null;
-            
-        case 'agentDashboard': 
-            // 🛡️ SECURE: Only render if authentication is valid
-            if (impersonatedAgent) {
-                return secureRenderer.renderAgentDashboard(
-                    <AgentDashboardPage 
-                        agent={impersonatedAgent} 
-                        onLogout={() => {}} 
-                        isAdminView={true}
-                        onStopImpersonating={handleStopImpersonating}
-                        messages={adminMessages}
-                        onSendMessage={handleSendAdminMessage}
-                        t={t} 
-                    />
-                );
-            }
-            if (loggedInAgent) {
-                if (!loggedInAgent.hasAcceptedTerms) {
-                    return <AgentTermsPage onAccept={handleAgentAcceptTerms} onLogout={handleAgentLogout} t={t} />;
-                }
-                return secureRenderer.renderAgentDashboard(
-                    <AgentDashboardPage 
-                        agent={loggedInAgent} 
-                        onLogout={handleAgentLogout} 
-                        messages={adminMessages}
-                        onMarkMessagesAsRead={handleMarkMessagesAsRead}
-                        onSaveProfile={handleSaveAgentProfile}
-                        t={t} 
-                    />
-                );
-            }
-            return null;
+        case 'agent':
+        case 'agentAuth':
+        case 'agentTerms':
+        case 'agentDashboard': {
+            // Redirect all deprecated agent routes to Indastreet Partner (villa) login/dashboard
+            const target = isVillaLoggedIn ? 'villaDashboard' : 'villaLogin';
+            setTimeout(() => setPage(target as Page), 0);
+            return (
+                <div className="p-6 max-w-xl mx-auto mt-10 bg-white border border-yellow-200 rounded-lg shadow">
+                    <h2 className="text-xl font-bold text-yellow-700 mb-2">Agent Portal Moved</h2>
+                    <p className="text-sm text-gray-700">We moved the Agent experience into the Indastreet Partner dashboard.</p>
+                    <p className="text-sm text-gray-700 mt-2">Redirecting you now…</p>
+                </div>
+            );
+        }
             
         case 'serviceTerms': 
             return <ServiceTermsPage onBack={handleBackToHome} t={(t as any)?.serviceTerms || t} contactNumber={APP_CONFIG.CONTACT_NUMBER} />;
@@ -893,19 +875,25 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return renderBackPage(CookiesPolicyPage);
             
         case 'customerAuth': 
-            // Route legacy customerAuth to UnifiedLoginPage for a single customer sign-in/up experience
-            return (
-                <UnifiedLoginPage 
-                    onNavigate={(page: string) => setPage(page as Page)}
-                    onTermsClick={handleNavigateToServiceTerms}
-                    onPrivacyClick={handleNavigateToPrivacyPolicy}
-                    forceCustomer={true}
-                    onCustomerLoginSuccess={(customer: any) => {
-                        props.setLoggedInCustomer(customer);
-                        setPage('customerDashboard');
-                    }}
-                />
-            );
+            // Legacy customerAuth disabled → direct to guest profile
+            return <GuestProfilePage 
+                onBack={handleBackToHome}
+                onRegisterClick={handleNavigateToRegistrationChoice}
+                t={t}
+                onMassageJobsClick={portalHandlers.onMassageJobsClick}
+                onHotelPortalClick={portalHandlers.onHotelPortalClick}
+                onVillaPortalClick={portalHandlers.onVillaPortalClick}
+                onTherapistPortalClick={portalHandlers.onTherapistPortalClick}
+                onMassagePlacePortalClick={portalHandlers.onMassagePlacePortalClick}
+                onAgentPortalClick={portalHandlers.onAgentPortalClick}
+                onCustomerPortalClick={portalHandlers.onCustomerPortalClick}
+                onAdminPortalClick={portalHandlers.onAdminPortalClick}
+                onNavigate={commonNavigateHandler}
+                onTermsClick={portalHandlers.onTermsClick}
+                onPrivacyClick={handleNavigateToPrivacyPolicy}
+                therapists={therapists}
+                places={places}
+            />;
             
         case 'customerDashboard': 
             // 🛡️ SECURE: Only render if authentication is valid
@@ -1039,20 +1027,29 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'massageTypes':
             return <MassageTypesPage _onBack={handleBackToHome} onNavigate={setPage} {...portalHandlers} onPrivacyClick={() => setPage('privacy')} therapists={therapists} places={places} t={t} />;
             
-        case 'hotelLogin':
-            return <HotelLoginPage 
-                onSuccess={(hotelId) => {
-                    handleHotelLogin(hotelId);
-                    // Defer navigation a tick to avoid concurrent DOM placement glitches
-                    setTimeout(() => setPage('hotelDashboard'), 0);
-                }} 
-                onBack={handleBackToHome} 
-                t={t} 
-            />;
+        // 'hotelLogin' route removed. Hotel login is deprecated; use 'villaLogin'.
             
         case 'villaLogin':
-            return renderBackPage(VillaLoginPage, t, { onSuccess: () => {} });
-            
+            return <VillaLoginPage 
+                onSuccess={(villaId: string) => {
+                    handleVillaLogin(villaId);
+                    setTimeout(() => setPage('villaDashboard'), 0);
+                }}
+                onBack={handleBackToHome}
+                t={t}
+                onMassageJobsClick={portalHandlers.onMassageJobsClick}
+                onHotelPortalClick={portalHandlers.onHotelPortalClick}
+                onVillaPortalClick={portalHandlers.onVillaPortalClick}
+                onTherapistPortalClick={portalHandlers.onTherapistPortalClick}
+                onMassagePlacePortalClick={portalHandlers.onMassagePlacePortalClick}
+                onAgentPortalClick={portalHandlers.onAgentPortalClick}
+                onCustomerPortalClick={portalHandlers.onCustomerPortalClick}
+                onAdminPortalClick={portalHandlers.onAdminPortalClick}
+                onTermsClick={portalHandlers.onTermsClick}
+                onPrivacyClick={handleNavigateToPrivacyPolicy}
+                onNavigate={(p: string) => setPage(p as any)}
+            />;
+
         case 'massagePlaceLogin': 
             return <MassagePlaceLoginPage 
                 onSuccess={(placeId) => {
@@ -1063,17 +1060,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 t={t}
             />;
             
-        case 'hotelDashboard': 
-            return secureRenderer.renderHotelDashboard(
-                <HotelDashboardPage 
-                    onLogout={handleHotelLogout} 
-                    therapists={therapists}
-                    places={places}
-                    hotelId={user?.id || '1'}
-                    setPage={createSecureNavHandler('Hotel')}
-                    onNavigate={createSecureNavHandler('Hotel')}
-                />
-            );
+        // 'hotelDashboard' route removed; any legacy navigation now redirects elsewhere at link source
             
         case 'villaDashboard': 
             return secureRenderer.renderVillaDashboard(
@@ -1093,7 +1080,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 }}
                 onNavigate={(page: Page) => setPage(page)}
                 onMassageJobsClick={navToMassageJobs}
-                onHotelPortalClick={handleHotelLogin}
+                onHotelPortalClick={portalHandlers.onHotelPortalClick}
                 onVillaPortalClick={portalHandlers.onVillaPortalClick}
                 onTherapistPortalClick={portalHandlers.onTherapistPortalClick}
                 onMassagePlacePortalClick={portalHandlers.onMassagePlacePortalClick}
@@ -1128,6 +1115,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onPostJob={navToEmployerJobPosting}
                 onNavigateToPayment={navToJobUnlockPayment}
                 onCreateTherapistProfile={navToTherapistJobRegistration}
+                onNavigate={commonNavigateHandler}
             />;
             
         case 'therapistJobs':
@@ -1221,41 +1209,40 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'guestAlerts': 
             return <GuestAlertsPage onBack={handleBackToHome} t={t} />;
             
-        case 'hotelVillaMenu': 
+        case 'hotelVillaMenu': {
+            const params = new URLSearchParams(globalThis.location?.search || '');
+            const qVenueId = params.get('venueId') || '';
+            const qVenueType = (params.get('venueType') as ('hotel' | 'villa' | null)) || null;
+            const resolvedVenueType = qVenueType || (isHotelLoggedIn ? 'hotel' : (isVillaLoggedIn ? 'villa' : 'hotel'));
             return <HotelVillaMenuPage 
-                venueId={venueMenuId || ''}
+                venueId={venueMenuId || qVenueId}
                 venueName={(() => {
-                    if (isHotelLoggedIn) return 'Hotel';
-                    if (isVillaLoggedIn) return 'Villa';
+                    if (resolvedVenueType === 'hotel') return 'Hotel';
+                    if (resolvedVenueType === 'villa') return 'Villa';
                     return 'Venue';
                 })()}
-                venueType={(() => {
-                    if (isHotelLoggedIn) return 'hotel';
-                    if (isVillaLoggedIn) return 'villa';
-                    return 'hotel'; // Default fallback
-                })()}
+                venueType={resolvedVenueType}
                 therapists={therapists}
                 places={places}
                 _onBook={handleNavigateToBooking}
                 setPage={setPage}
                 _onBookingSubmit={handleCreateBooking}
                 onBackToDashboard={() => {
-                    // Navigate back to appropriate dashboard
-                    if (isHotelLoggedIn) {
-                        setPage('hotelDashboard');
-                    } else if (isVillaLoggedIn) {
+                    // Navigate back to appropriate dashboard (hotel dashboard removed)
+                    if (isVillaLoggedIn) {
                         setPage('villaDashboard');
                     } else {
                         setPage('home'); // Fallback to home
                     }
                 }}
             />;
+        }
             
         case 'coin-shop': {
             // 🛡️ SECURITY + UX: Detect which dashboard type is accessing coin shop
             // If origin flagged as 'home', force standalone header regardless of session.
             let coinShopDashboardType = (() => {
-                if (isHotelLoggedIn) return 'hotel';
+                // Hotel dashboard removed
                 if (isVillaLoggedIn) return 'villa';
                 if (loggedInProvider) return 'therapist';
                 return 'standalone';
@@ -1272,14 +1259,13 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return <CoinShopPage 
                 onBack={() => {
                     // Navigate back to appropriate dashboard
-                    if (coinShopDashboardType === 'hotel') setPage('hotelDashboard');
-                    else if (coinShopDashboardType === 'villa') setPage('villaDashboard');  
+                    if (coinShopDashboardType === 'villa') setPage('villaDashboard');  
                     else if (coinShopDashboardType === 'therapist') setPage('therapistDashboard');
                     else handleBackToHome();
                 }}
                 onNavigate={commonNavigateHandler} 
                 isFromTherapistDashboard={!!loggedInProvider}
-                dashboardType={coinShopDashboardType as 'therapist' | 'hotel' | 'villa' | 'standalone'}
+                dashboardType={coinShopDashboardType as 'therapist' | 'villa' | 'standalone'}
                 t={t} 
             />;
         }
@@ -1296,7 +1282,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'coinHistory': {
             // 🛡️ SECURITY: Pass correct user ID based on who's logged in
             const currentUserId = (() => {
-                if (isHotelLoggedIn && user?.id) return user.id;
+                // Hotel dashboard removed
                 if (isVillaLoggedIn && user?.id) return user.id;  
                 if (loggedInProvider && loggedInProvider.id) return loggedInProvider.id.toString();
                 if (loggedInCustomer && loggedInCustomer.id) return loggedInCustomer.id;
@@ -1305,7 +1291,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             
             // 🛡️ SECURITY: Detect which dashboard type is accessing coin history
             const dashboardType = (() => {
-                if (isHotelLoggedIn) return 'hotel';
+                // Hotel dashboard removed
                 if (isVillaLoggedIn) return 'villa';
                 if (loggedInProvider) return 'therapist';
                 return 'standalone';
@@ -1315,14 +1301,13 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 userId={currentUserId}
                 onBack={() => {
                     // Navigate back to appropriate dashboard
-                    if (dashboardType === 'hotel') setPage('hotelDashboard');
-                    else if (dashboardType === 'villa') setPage('villaDashboard');  
+                    if (dashboardType === 'villa') setPage('villaDashboard');  
                     else if (dashboardType === 'therapist') setPage('therapistDashboard');
                     else handleBackToHome();
                 }}
                 onNavigate={commonNavigateHandler} 
                 isFromTherapistDashboard={!!loggedInProvider}
-                isFromHotelDashboard={isHotelLoggedIn}
+                isFromHotelDashboard={false}
                 isFromVillaDashboard={isVillaLoggedIn}
                 dashboardType={dashboardType}
                 t={t} 

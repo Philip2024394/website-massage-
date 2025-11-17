@@ -142,7 +142,7 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({
 
     return (
         <div className="h-screen bg-gray-50 flex flex-col overflow-hidden fixed inset-0">
-            <PageNumberBadge pageNumber={3} pageName="VillaLoginPage" isLocked={false} />
+            <PageNumberBadge pageNumber={3} pageName="Indastreet Partners" isLocked={false} />
             
             {/* Global Header */}
             <header className="bg-white p-4 shadow-md z-[9997] flex-shrink-0">
@@ -184,14 +184,14 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({
             <main 
                 className="flex-1 flex items-start justify-center px-4 py-2 overflow-hidden relative bg-cover bg-center bg-no-repeat min-h-0"
                 style={{
-                    backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/villa%20image.png?updatedAt=1763052495068)'
+                    backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/start%20your%20journey%20now.png?updatedAt=1763196560458)'
                 }}
             >
                 <div className="max-w-md w-full relative z-10 max-h-full overflow-y-auto pt-4 sm:pt-6" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                     {/* Header - Positioned right under header area */}
                     <div className="text-center mb-4 sm:mb-6">
-                        <h2 className="text-4xl sm:text-5xl font-bold mb-2 sm:mb-3 text-gray-800 drop-shadow-lg">Villa</h2>
-                        <p className="text-gray-600 text-xs sm:text-sm drop-shadow">Manage your massage services and bookings</p>
+                        <h2 className="text-4xl sm:text-5xl font-bold mb-2 sm:mb-3 text-gray-800 drop-shadow-lg">Indastreet Partners</h2>
+                        <p className="text-gray-600 text-xs sm:text-sm drop-shadow">Promote IndaStreet and earn commissions</p>
                     </div>
 
                     <div className="mb-3 sm:mb-4 min-h-[50px] flex items-center">
@@ -288,7 +288,7 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({
                             ) : (
                                 <div className="flex items-center justify-center">
                                     {isSignUp ? <UserPlus className="w-5 h-5 mr-2" /> : <LogIn className="w-5 h-5 mr-2" />}
-                                    {isSignUp ? 'Create Villa Account' : 'Sign In to Villa'}
+                                    {isSignUp ? 'Create Partner Account' : 'Sign In to Indastreet Partners'}
                                 </div>
                             )}
                         </button>

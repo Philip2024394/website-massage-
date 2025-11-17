@@ -47,6 +47,9 @@ export const APPWRITE_CONFIG = {
         referrals: 'referrals', // NEW: Referral tracking
         activeDiscounts: 'active_discounts', // NEW: Promotional discount system
         appConfig: 'app_config', // NEW: Global app configuration (membership toggle, etc.)
+        // NEW: Affiliate tracking
+        affiliateClicks: 'affiliate_clicks',
+        affiliateAttributions: 'affiliate_attributions',
     },
     
     // Storage bucket ID

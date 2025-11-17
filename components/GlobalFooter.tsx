@@ -21,7 +21,7 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
         const searchPages = ['search', 'therapists', 'places', 'massageTypes'];
         const notificationPages = ['notifications'];
         const shopPages = ['coin-shop', 'shop', 'membership'];
-        const profilePages = ['profile', 'customerDashboard', 'therapistDashboard', 'hotelDashboard', 'villaDashboard', 'agentDashboard', 'adminDashboard'];
+                const profilePages = ['profile', 'customerDashboard', 'therapistDashboard', 'villaDashboard', 'agentDashboard', 'adminDashboard'];
 
         switch (buttonType) {
             case 'home':
@@ -91,7 +91,7 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
                         onNavigate('therapistDashboard');
                         break;
                     case 'hotel':
-                        onNavigate('hotelDashboard');
+                        onNavigate('villaDashboard');
                         break;
                     case 'villa':
                         onNavigate('villaDashboard');

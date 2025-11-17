@@ -55,9 +55,9 @@ export const useDerivedState = ({
     // Base rule: hide on specific pages and when chat is open
     const baseShowFooter = !pagesWithoutFooter.includes(page) && !(page === 'chatList' && activeChatRoom);
 
-    // Standalone rule: always show footer on all pages when installed (PWA)
-    // Explicitly force footer on landing to avoid any regressions
-    const showFooter = page === 'landing' ? true : (isStandalone ? true : baseShowFooter);
+    // Hide footer explicitly on landing page, regardless of PWA standalone
+    // Otherwise: in standalone show on all pages, else follow base rules
+    const showFooter = page === 'landing' ? false : (isStandalone ? true : baseShowFooter);
 
     return {
         getUserRole,
