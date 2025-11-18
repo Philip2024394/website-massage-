@@ -9,7 +9,14 @@ Fastest to ship. Create a Payment Link in Stripe Dashboard and paste it into you
 2) Add to your Vite env (e.g., `.env.local`):
 
 ```
-VITE_STRIPE_PAYMENT_LINK_URL=https://buy.stripe.com/your_link_here
+VITE_STRIPE_PAYMENT_LINK_URL=https://buy.stripe.com/your_fallback_link
+
+# Region-specific monthly membership links (use any that apply)
+VITE_STRIPE_LINK_EU=https://buy.stripe.com/your_eu_monthly_link   # €10 / month
+VITE_STRIPE_LINK_ID=https://buy.stripe.com/your_id_monthly_link   # IDR 160.000 / month
+VITE_STRIPE_LINK_US=https://buy.stripe.com/your_us_monthly_link   # $15 / month
+VITE_STRIPE_LINK_UK=https://buy.stripe.com/your_uk_monthly_link   # £10 / month
+VITE_STRIPE_LINK_AU=https://buy.stripe.com/your_au_monthly_link   # A$20 / month
 ```
 
 3) Use the `CheckoutButton` component in your UI:

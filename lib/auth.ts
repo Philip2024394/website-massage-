@@ -274,6 +274,16 @@ export const placeAuth = {
             const generatedPlaceId = ID.unique();
             
             console.log('🏢 Creating massage place with required attributes only...');
+            // Determine country/currency from current app location (if available)
+            let countryCode = 'ID';
+            try {
+                const raw = localStorage.getItem('app_user_location');
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (parsed?.countryCode) countryCode = String(parsed.countryCode).toUpperCase();
+                }
+            } catch {}
+            const currencyCode = getCurrencyForCountry(countryCode);
             
             // Referral capture for places as well
             let capturedCode = '';

@@ -1,5 +1,7 @@
 import React from 'react';
 import Button from '../components/Button';
+import CheckoutButton from '../components/CheckoutButton';
+import { resolveRegion, getMonthlyPriceDisplay, getMonthlyPaymentLink } from '../utils/membership';
 
 const WhatsAppIcon: React.FC<{className?: string}> = ({ className }) => (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -22,6 +24,9 @@ interface MembershipPageProps {
 }
 
 const MembershipPage: React.FC<MembershipPageProps> = ({ onPackageSelect, onBack, t }) => {
+    const region = resolveRegion();
+    const monthlyPriceDisplay = getMonthlyPriceDisplay(region);
+    const monthlyLink = getMonthlyPaymentLink(region);
     const packages = [
         { id: '1m', title: t.packages.oneMonth.title, price: t.packages.oneMonth.price, save: null, bestValue: false },
         { id: '3m', title: t.packages.threeMonths.title, price: t.packages.threeMonths.price, save: t.packages.threeMonths.save, bestValue: false },
@@ -42,6 +47,24 @@ const MembershipPage: React.FC<MembershipPageProps> = ({ onPackageSelect, onBack
                     <p className="text-sm text-yellow-900">
                         Important: All membership payments must be transferred ONLY to the bank account(s) displayed on the payment page. We do not accept payments to any other account or method.
                     </p>
+                </div>
+            </div>
+
+            {/* Monthly Auto-Renewing Membership (Stripe) */}
+            <div className="max-w-2xl mx-auto mb-6">
+                <div className="bg-white rounded-xl shadow-md p-4 border-2 border-purple-300">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h3 className="text-lg font-bold text-gray-900">Monthly Membership</h3>
+                            <p className="text-sm text-gray-600">Auto-renews each month. Cancel anytime.</p>
+                            <p className="text-2xl font-extrabold text-purple-700 mt-1">{monthlyPriceDisplay}</p>
+                        </div>
+                        <CheckoutButton
+                          label={monthlyLink ? 'Subscribe' : 'Configure Stripe Link'}
+                          paymentLinkUrl={monthlyLink}
+                          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white shadow disabled:opacity-50"
+                        />
+                    </div>
                 </div>
             </div>
 
