@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { User, UserLocation, Agent, Place, Therapist, Analytics, UserCoins } from '../types';
 import TherapistCard from '../components/TherapistCard';
 import OrangeLocationModal from '../components/OrangeLocationModal';
@@ -207,6 +207,8 @@ const HomePage: React.FC<HomePageProps> = ({
     const [nearbyTherapists, setNearbyTherapists] = useState<Therapist[]>([]);
     const [nearbyPlaces, setNearbyPlaces] = useState<Place[]>([]);
     const [isLocationDetecting, setIsLocationDetecting] = useState(false);
+    const locationDetectedRef = useRef(false);
+    const filteringRef = useRef(false);
     // Shuffled unique home page therapist images (no repeats until all 17 used)
     const [shuffledHomeImages, setShuffledHomeImages] = useState<string[]>([]);
 
@@ -355,8 +357,9 @@ const HomePage: React.FC<HomePageProps> = ({
     // Automatic location detection (seamless, no UI)
     useEffect(() => {
         const detectLocationAutomatically = async () => {
-            if (isLocationDetecting || autoDetectedLocation) return;
+            if (locationDetectedRef.current || isLocationDetecting || autoDetectedLocation) return;
             
+            locationDetectedRef.current = true;
             setIsLocationDetecting(true);
             try {
                 console.log('🌍 Automatically detecting user location...');
@@ -377,20 +380,23 @@ const HomePage: React.FC<HomePageProps> = ({
             } catch (error) {
                 console.log('📍 Auto location detection failed (silent fallback):', error);
                 // Silent fallback - no error shown to user
+                locationDetectedRef.current = false;
             } finally {
                 setIsLocationDetecting(false);
             }
         };
 
         // Only auto-detect for regular users, not providers/agents
-        if (!loggedInProvider && !_loggedInAgent) {
+        if (!loggedInProvider && !_loggedInAgent && !locationDetectedRef.current) {
             detectLocationAutomatically();
         }
-    }, [loggedInProvider, _loggedInAgent, autoDetectedLocation, isLocationDetecting, userLocation, onSetUserLocation]);
+    }, [loggedInProvider, _loggedInAgent]);
 
     // Filter therapists and places by location automatically
     useEffect(() => {
         const filterByLocation = async () => {
+            if (filteringRef.current) return;
+            
             const locationToUse = autoDetectedLocation || userLocation;
             if (!locationToUse) {
                 // No location available, show all therapists
@@ -399,6 +405,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 return;
             }
 
+            filteringRef.current = true;
             try {
                 console.log('🔍 Filtering providers by location:', locationToUse);
                 
@@ -411,6 +418,7 @@ const HomePage: React.FC<HomePageProps> = ({
                     // No coordinates available, show all therapists
                     setNearbyTherapists(therapists);
                     setNearbyPlaces(places);
+                    filteringRef.current = false;
                     return;
                 }
 
@@ -430,6 +438,8 @@ const HomePage: React.FC<HomePageProps> = ({
                 // Silent fallback to all providers
                 setNearbyTherapists(therapists);
                 setNearbyPlaces(places);
+            } finally {
+                filteringRef.current = false;
             }
         };
 
