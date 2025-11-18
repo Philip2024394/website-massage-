@@ -591,7 +591,6 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             galleryImages: filteredGallery.length > 0 ? filteredGallery : undefined,
             whatsappNumber,
             pricing: JSON.stringify(pricing),
-            hotelVillaPricing: useSamePricing ? undefined : JSON.stringify(hotelVillaPricing),
             discountPercentage,
             discountDuration,
             isDiscountActive,
@@ -689,34 +688,6 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     const handlePriceChange = (duration: keyof Pricing, value: string) => {
         const numValue = parsePriceFromInput(value);
         setPricing(prev => ({ ...prev, [duration]: numValue }));
-        
-        // If "use same pricing" is checked, update hotel/villa pricing too
-        if (useSamePricing) {
-            setHotelVillaPricing(prev => ({ ...prev, [duration]: numValue }));
-        }
-    };
-    
-    const handleHotelVillaPriceChange = (duration: keyof Pricing, value: string) => {
-        let numValue = parsePriceFromInput(value);
-        
-        // Validate: Hotel/villa price cannot be more than 20% higher than regular price
-        const regularPrice = pricing[duration];
-        const maxAllowedPrice = regularPrice * 1.2; // 20% increase max
-        
-        if (numValue > maxAllowedPrice && regularPrice > 0) {
-            // Cap at 20% increase
-            numValue = Math.floor(maxAllowedPrice);
-        }
-        
-        setHotelVillaPricing(prev => ({ ...prev, [duration]: numValue }));
-    };
-    
-    const handleUseSamePricingChange = (checked: boolean) => {
-        setUseSamePricing(checked);
-        if (checked) {
-            // Copy regular pricing to hotel/villa pricing
-            setHotelVillaPricing({ ...pricing });
-        }
     };
     
     const handleGalleryImageChange = (index: number, imageUrl: string) => {
@@ -1736,7 +1707,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                             <h3 className="text-md font-medium text-gray-800">{t?.pricingTitle || 'Pricing'}</h3>
                             <p className="text-xs text-gray-500 mt-1">Enter prices as: 345k for 345,000 or full amount like 400000</p>
                             
-                            {/* 100% Income Notice */}
+                            {/* Pricing Information Notice */}
                             <div className="mb-4 p-3 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg mt-2">
                                 <div className="flex items-start space-x-3">
                                     <div className="flex-shrink-0">
@@ -1746,11 +1717,12 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                     </div>
                                     <div className="flex-1">
                                         <p className="text-sm font-semibold text-green-800">
-                                            💰 100% Your Income
+                                            💰 Pricing Information
                                         </p>
-                                        <p className="text-sm text-green-700 mt-1">
-                                            These prices are for <strong>direct bookings from the home page</strong>. You keep <strong>100% of the income</strong> - no commission deducted!
-                                        </p>
+                                        <div className="text-sm text-gray-700 mt-1 space-y-1">
+                                            <p><strong>Direct bookings from home page:</strong> You keep <strong>100% of the income</strong></p>
+                                            <p><strong>Promoter-referred bookings:</strong> <strong>20% commission</strong> goes to the promoter, you keep 80%</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1811,123 +1783,27 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                     )}
                                 </div>
                             </div>
-                        </div>
-
-                        {/* Partners Special Pricing Section */}
-                        <div className="border-t border-gray-200 pt-4">
-                            <div className="flex items-center justify-between mb-3">
-                                <div>
-                                    <h3 className="text-md font-medium text-gray-800">Partners Menu Pricing</h3>
-                                    <p className="text-xs text-gray-500 mt-1">
-                                        Set special prices for partner-attributed guests
-                                    </p>
-                                </div>
-                                <label className="flex items-center gap-2 cursor-pointer">
-                                    <input 
-                                        type="checkbox" 
-                                        checked={useSamePricing}
-                                        onChange={(e) => handleUseSamePricingChange(e.target.checked)}
-                                        className="w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500"
-                                    />
-                                    <span className="text-xs text-gray-600">Same as regular</span>
-                                </label>
-                            </div>
                             
                             {/* Commission Notice */}
-                            <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                                 <div className="flex items-start space-x-3">
                                     <div className="flex-shrink-0">
-                                        <svg className="w-5 h-5 text-yellow-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.99-.833-2.732 0L3.732 16c-.77.833.19 2.5 1.732 2.5z" />
+                                        <svg className="w-5 h-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                         </svg>
                                     </div>
                                     <div className="flex-1">
-                                        <p className="text-sm font-semibold text-yellow-800">⚠️ Commission Information</p>
-                                        <p className="text-sm text-yellow-700 mt-1"><strong>10% commission</strong> is owed to Indastreet Partners on bookings attributed via partner links.</p>
-                                        <p className="text-xs text-yellow-600 mt-2 font-medium">Example: If you charge IDR 250K, you owe IDR 25K.</p>
-                                        <p className="text-xs text-green-700 mt-2 font-bold bg-green-100 px-2 py-1 rounded">💡 Pay weekly by Friday 23:59 WIB to keep a healthy account.</p>
+                                        <p className="text-sm font-semibold text-blue-800">ℹ️ Promoter Commission Information</p>
+                                        <p className="text-sm text-blue-700 mt-1">
+                                            <strong>20% commission</strong> is owed to Indastreet Promoters on bookings attributed via promoter links.
+                                        </p>
+                                        <p className="text-xs text-blue-600 mt-2 font-medium">
+                                            Example: If customer pays IDR 300K, you receive IDR 240K (promoter gets IDR 60K).
+                                        </p>
+                                        <p className="text-xs text-green-700 mt-2 font-bold bg-green-100 px-2 py-1 rounded inline-block">
+                                            💡 These same prices apply to all bookings - promoter commission is automatically calculated
+                                        </p>
                                     </div>
-                                </div>
-                            </div>
-                            
-                            <div className="grid grid-cols-3 gap-2">
-                                <div>
-                                <label className="block text-xs font-medium text-gray-900">{t['60min']}</label>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
-                                    <input 
-                                        type="text" 
-                                        value={useSamePricing ? formatPriceForDisplay(pricing['60']) : formatPriceForDisplay(hotelVillaPricing['60'])} 
-                                        onChange={e => handleHotelVillaPriceChange('60', e.target.value)} 
-                                        disabled={useSamePricing}
-                                        placeholder="365k"
-                                        className={`mt-1 block w-full pl-9 pr-2 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 font-mono ${
-                                            useSamePricing ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
-                                        }`}
-                                    />
-                                </div>
-                                {!useSamePricing && pricing['60'] > 0 && (
-                                    <p className="text-xs text-gray-500 mt-1">
-                                        Max: {formatPriceForDisplay(Math.floor(pricing['60'] * 1.2))} (Rp {Math.floor(pricing['60'] * 1.2).toLocaleString('id-ID')})
-                                    </p>
-                                )}
-                                {hotelVillaPricing['60'] > 0 && (
-                                    <p className="text-xs text-green-600 mt-1">
-                                        = Rp {hotelVillaPricing['60'].toLocaleString('id-ID')}
-                                    </p>
-                                )}
-                                </div>
-                                <div>
-                                <label className="block text-xs font-medium text-gray-900">{t['90min']}</label>
-                                    <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
-                                    <input 
-                                        type="text" 
-                                        value={useSamePricing ? formatPriceForDisplay(pricing['90']) : formatPriceForDisplay(hotelVillaPricing['90'])} 
-                                        onChange={e => handleHotelVillaPriceChange('90', e.target.value)} 
-                                        disabled={useSamePricing}
-                                        placeholder="480k"
-                                        className={`mt-1 block w-full pl-9 pr-2 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 font-mono ${
-                                            useSamePricing ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
-                                        }`}
-                                    />
-                                    </div>
-                                    {!useSamePricing && pricing['90'] > 0 && (
-                                        <p className="text-xs text-gray-500 mt-1">
-                                            Max: {formatPriceForDisplay(Math.floor(pricing['90'] * 1.2))} (Rp {Math.floor(pricing['90'] * 1.2).toLocaleString('id-ID')})
-                                        </p>
-                                    )}
-                                    {hotelVillaPricing['90'] > 0 && (
-                                        <p className="text-xs text-green-600 mt-1">
-                                            = Rp {hotelVillaPricing['90'].toLocaleString('id-ID')}
-                                        </p>
-                                    )}
-                                </div>
-                                <div>
-                                <label className="block text-xs font-medium text-gray-900">{t['120min']}</label>
-                                    <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
-                                    <input 
-                                        type="text" 
-                                        value={useSamePricing ? formatPriceForDisplay(pricing['120']) : formatPriceForDisplay(hotelVillaPricing['120'])} 
-                                        onChange={e => handleHotelVillaPriceChange('120', e.target.value)} 
-                                        disabled={useSamePricing}
-                                        placeholder="650k"
-                                        className={`mt-1 block w-full pl-9 pr-2 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 font-mono ${
-                                            useSamePricing ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
-                                        }`}
-                                    />
-                                    </div>
-                                    {!useSamePricing && pricing['120'] > 0 && (
-                                        <p className="text-xs text-gray-500 mt-1">
-                                            Max: {formatPriceForDisplay(Math.floor(pricing['120'] * 1.2))} (Rp {Math.floor(pricing['120'] * 1.2).toLocaleString('id-ID')})
-                                        </p>
-                                    )}
-                                    {hotelVillaPricing['120'] > 0 && (
-                                        <p className="text-xs text-green-600 mt-1">
-                                            = Rp {hotelVillaPricing['120'].toLocaleString('id-ID')}
-                                        </p>
-                                    )}
                                 </div>
                             </div>
                         </div>
