@@ -78,30 +78,42 @@ export const therapistAuth = {
 
             // Prepare a conservative payload. We'll auto-prune unknown attributes on error.
             const basePayload: any = {
+                // Required string fields
                 id: therapistId,
                 therapistId: therapistId,
                 email,
                 name: email.split('@')[0],
-                whatsappNumber: '',
+                specialization: 'General Massage',
                 location: '',
-                pricing: JSON.stringify({ '60': 100, '90': 150, '120': 200 }),
+                pricing: '100',
+                coordinates: '0,0',
+                hotelId: '',
                 price60: '100',
                 price90: '150',
                 price120: '200',
-                status: 'available',
-                isLive: true,
+                
+                // Required integer/double fields
+                yearsOfExperience: 0,
                 hourlyRate: 100,
-                hotelId: '',
+                hotelDiscount: 0,
+                
+                // Required boolean fields
                 isLicensed: false,
-                specialization: 'General Massage',
-                availability: 'Available',
-                description: '',
+                isLive: true,
+                
+                // Required enum fields
+                status: 'offline',
+                availability: 'Offline',
+                
+                // Optional fields with defaults
+                whatsappNumber: '',
                 profilePicture: '',
                 mainImage: getRandomTherapistImage(therapistId),
-                yearsOfExperience: 0,
+                description: '',
                 massageTypes: '',
                 languages: '',
-                coordinates: JSON.stringify({ lat: 0, lng: 0 }),
+                password: '',
+                
                 // Referral/Attribution fields (will be pruned if collection doesn't support yet)
                 agentCode: normalizedAgentCode,
                 referralSource: hasReferral ? 'agent' : 'direct',
