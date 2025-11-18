@@ -294,7 +294,7 @@ export const placeAuth = {
                 isOnline: true,
                 openingTime: '09:00',
                 closingTime: '21:00',
-                coordinates: JSON.stringify({ lat: 0, lng: 0 }),
+                coordinates: '',
                 description: '',
                 mainImage: '',
                 profilePicture: '',
@@ -337,12 +337,12 @@ export const placeAuth = {
                         }
                         if (/Invalid type/i.test(msg)) {
                             if (/coordinates/i.test(msg)) {
-                                // Try stringified coordinates if array rejected
-                                current.coordinates = Array.isArray(current.coordinates)
-                                    ? JSON.stringify({ lat: 0, lng: 0 })
-                                    : current.coordinates;
-                                attempt++;
-                                continue;
+                                // Try empty string if JSON format rejected
+                                if (current.coordinates !== '') {
+                                    current.coordinates = '';
+                                    attempt++;
+                                    continue;
+                                }
                             }
                             if (/pricing/i.test(msg)) {
                                 current.pricing = typeof current.pricing === 'string' ? current.pricing : JSON.stringify(current.pricing);
@@ -355,12 +355,25 @@ export const placeAuth = {
                 }
                 const minimal: any = {
                     id: generatedPlaceId,
+                    therapistId: generatedPlaceId,
                     placeId: generatedPlaceId,
                     name: email.split('@')[0],
                     category: 'massage-place',
                     email,
-                    status: 'Closed',
-                    isLive: false
+                    specialization: 'Massage Place',
+                    yearsOfExperience: 5,
+                    isLicensed: true,
+                    hourlyRate: 100,
+                    hotelId: generatedPlaceId,
+                    pricing: JSON.stringify({ '60': 100, '90': 150, '120': 200 }),
+                    price60: '100',
+                    price90: '150',
+                    price120: '200',
+                    location: 'Location pending',
+                    status: 'Available',
+                    availability: 'Available',
+                    isLive: false,
+                    isOnline: true
                 };
                 return databases.createDocument(
                     DATABASE_ID,
@@ -437,7 +450,7 @@ export const placeAuth = {
                         isOnline: true,
                         openingTime: '09:00',
                         closingTime: '21:00',
-                        coordinates: JSON.stringify({ lat: 0, lng: 0 }),
+                        coordinates: '',
                         description: '',
                         mainImage: '',
                         profilePicture: '',
