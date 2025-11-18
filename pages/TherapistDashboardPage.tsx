@@ -927,7 +927,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                         {isLoading ? (
                             <div className="flex justify-center items-center py-12">
                                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
-                                <p className="ml-4 text-gray-600">{t.loading || 'Loading...'}</p>
+                                <p className="ml-4 text-gray-600">{String(t.loading || 'Loading...')}</p>
                             </div>
                         ) : (
                             <>
@@ -1432,7 +1432,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
 
                                 {activeTab === 'bookings' && (
                                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                                        <h2 className="text-xl font-bold text-gray-900 mb-6">{t.bookings || 'Bookings'}</h2>
+                                        <h2 className="text-xl font-bold text-gray-900 mb-6">{String(t.bookings || 'Bookings')}</h2>
                                         
                                         {bookings && bookings.length > 0 ? (
                                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -1450,7 +1450,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                 <div className="text-gray-400 mb-4">
                                                     <Calendar className="w-16 h-16 mx-auto" />
                                                 </div>
-                                                <p className="text-gray-600">{t.noBookings || 'No bookings yet'}</p>
+                                                <p className="text-gray-600">{String(t.noBookings || 'No bookings yet')}</p>
                                             </div>
                                         )}
                                     </div>
@@ -1458,7 +1458,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
 
                                 {activeTab === 'analytics' && (
                                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                                        <h2 className="text-xl font-bold text-gray-900 mb-6">{t.analytics || 'Analytics'}</h2>
+                                        <h2 className="text-xl font-bold text-gray-900 mb-6">{String(t.analytics || 'Analytics')}</h2>
                                         
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                             <AnalyticsCard
