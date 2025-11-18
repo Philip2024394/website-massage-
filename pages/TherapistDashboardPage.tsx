@@ -4,7 +4,7 @@ import type { Page } from '../types/pageTypes';
 import { AvailabilityStatus, BookingStatus } from '../types';
 import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages, stringifyPricing, stringifyCoordinates, stringifyMassageTypes, stringifyLanguages, stringifyAnalytics } from '../utils/appwriteHelpers';
 import { therapistService } from '../lib/appwriteService';
-import { databases } from '../lib/appwrite';
+import { databases, COLLECTIONS, DATABASE_ID } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import { Query } from 'appwrite';
 import { MASSAGE_TYPES_CATEGORIZED } from '../constants/rootConstants';
@@ -114,6 +114,12 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
     const [commissionPendingTotal, setCommissionPendingTotal] = useState(0);
     const [commissionWeekTotal, setCommissionWeekTotal] = useState(0);
     const [commissionNextFriday, setCommissionNextFriday] = useState<string>('');
+    
+    // Live bookings and analytics state
+    const [liveBookings, setLiveBookings] = useState<Booking[]>([]);
+    const [bookingsLoading, setBookingsLoading] = useState(false);
+    const [weeklyBookings, setWeeklyBookings] = useState(0);
+    const [monthlyBookings, setMonthlyBookings] = useState(0);
 
     const computeWeekWindow = () => {
         const now = new Date();
@@ -161,13 +167,71 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
         }
     }, [therapistId]);
 
+    const loadBookings = useCallback(async () => {
+        if (!therapistId) return;
+        setBookingsLoading(true);
+        try {
+            const res = await databases.listDocuments(
+                DATABASE_ID,
+                COLLECTIONS.BOOKINGS,
+                [
+                    Query.equal('providerId', String(therapistId)),
+                    Query.equal('providerType', 'therapist'),
+                    Query.orderDesc('$createdAt'),
+                    Query.limit(100)
+                ]
+            );
+            const bookingsData = (res.documents || []).map((doc: any) => ({
+                id: doc.$id,
+                customerId: doc.customerId || 0,
+                customerName: doc.customerName || '',
+                customerEmail: doc.customerEmail || '',
+                customerPhone: doc.customerPhone || '',
+                providerId: doc.providerId || 0,
+                providerType: doc.providerType || 'therapist',
+                providerName: doc.providerName || '',
+                date: doc.date || new Date().toISOString(),
+                time: doc.time || '',
+                duration: doc.duration || 60,
+                massageType: doc.massageType || '',
+                location: doc.location || '',
+                status: doc.status || BookingStatus.Pending,
+                totalPrice: doc.totalPrice || 0,
+                notes: doc.notes || '',
+                createdAt: doc.$createdAt || doc.createdAt || new Date().toISOString(),
+                updatedAt: doc.$updatedAt || doc.updatedAt || new Date().toISOString()
+            })) as Booking[];
+            
+            setLiveBookings(bookingsData);
+            
+            // Calculate weekly and monthly stats
+            const now = new Date();
+            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+            
+            const weekly = bookingsData.filter(b => new Date(b.createdAt) >= weekAgo).length;
+            const monthly = bookingsData.filter(b => new Date(b.createdAt) >= monthAgo).length;
+            
+            setWeeklyBookings(weekly);
+            setMonthlyBookings(monthly);
+        } catch (error) {
+            console.error('Failed to load bookings:', error);
+            setLiveBookings([]);
+        } finally {
+            setBookingsLoading(false);
+        }
+    }, [therapistId]);
+
     useEffect(() => {
         if (activeTab === 'hotel-villa') {
             loadCommissionSummary();
             const { nextFriday } = computeWeekWindow();
             setCommissionNextFriday(nextFriday.toLocaleDateString());
         }
-    }, [activeTab, loadCommissionSummary]);
+        if (activeTab === 'bookings' || activeTab === 'analytics') {
+            loadBookings();
+        }
+    }, [activeTab, loadCommissionSummary, loadBookings]);
     
     // Account Settings Modal States
     const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
@@ -541,17 +605,17 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
 
     // Menu items for navigation - Updated to match home drawer style with Lucide React icons
     const menuItems = [
-        { id: 'status', label: (t && t.availabilityStatus) || 'Availability Status', icon: <Activity className="w-5 h-5" />, gradientColor: 'from-green-500 to-green-600', borderColor: 'border-green-500', hoverColor: 'hover:border-green-300', textColor: 'text-green-800', bgColor: 'bg-green-100' },
+        { id: 'status', label: String((t && t.availabilityStatus) || 'Availability Status'), icon: <Activity className="w-5 h-5" />, gradientColor: 'from-green-500 to-green-600', borderColor: 'border-green-500', hoverColor: 'hover:border-green-300', textColor: 'text-green-800', bgColor: 'bg-green-100' },
         { id: 'notifications', label: 'Notifications', icon: <Bell className="w-5 h-5" />, gradientColor: 'from-red-500 to-red-600', borderColor: 'border-red-500', hoverColor: 'hover:border-red-300', textColor: 'text-red-800', bgColor: 'bg-red-100', badge: notifications.length > 0 ? (notifications.length > 9 ? '9+' : notifications.length.toString()) : null },
-        { id: 'bookings', label: (t && t.bookings) || 'Bookings', icon: <Calendar className="w-5 h-5" />, gradientColor: 'from-blue-500 to-blue-600', borderColor: 'border-blue-500', hoverColor: 'hover:border-blue-300', textColor: 'text-blue-800', bgColor: 'bg-blue-100' },
-        { id: 'profile', label: (t && t.profile) || 'Profile', icon: <User className="w-5 h-5" />, gradientColor: 'from-orange-500 to-orange-600', borderColor: 'border-orange-500', hoverColor: 'hover:border-orange-300', textColor: 'text-orange-800', bgColor: 'bg-orange-100' },
-        { id: 'analytics', label: (t && t.analytics) || 'Analytics', icon: <TrendingUp className="w-5 h-5" />, gradientColor: 'from-orange-500 to-orange-600', borderColor: 'border-orange-500', hoverColor: 'hover:border-orange-300', textColor: 'text-orange-800', bgColor: 'bg-orange-100' },
-        { id: 'membership', label: (t && t.membership) || 'Membership', icon: <Crown className="w-5 h-5" />, gradientColor: 'from-yellow-500 to-yellow-600', borderColor: 'border-yellow-500', hoverColor: 'hover:border-yellow-300', textColor: 'text-yellow-800', bgColor: 'bg-yellow-100' },
+        { id: 'bookings', label: String((t && t.bookings) || 'Bookings'), icon: <Calendar className="w-5 h-5" />, gradientColor: 'from-blue-500 to-blue-600', borderColor: 'border-blue-500', hoverColor: 'hover:border-blue-300', textColor: 'text-blue-800', bgColor: 'bg-blue-100' },
+        { id: 'profile', label: 'Profile', icon: <User className="w-5 h-5" />, gradientColor: 'from-orange-500 to-orange-600', borderColor: 'border-orange-500', hoverColor: 'hover:border-orange-300', textColor: 'text-orange-800', bgColor: 'bg-orange-100' },
+        { id: 'analytics', label: String((t && t.analytics) || 'Analytics'), icon: <TrendingUp className="w-5 h-5" />, gradientColor: 'from-orange-500 to-orange-600', borderColor: 'border-orange-500', hoverColor: 'hover:border-orange-300', textColor: 'text-orange-800', bgColor: 'bg-orange-100' },
+        { id: 'membership', label: String((t && t.membership) || 'Membership'), icon: <Crown className="w-5 h-5" />, gradientColor: 'from-yellow-500 to-yellow-600', borderColor: 'border-yellow-500', hoverColor: 'hover:border-yellow-300', textColor: 'text-yellow-800', bgColor: 'bg-yellow-100' },
         { id: 'hotel-villa', label: 'Indastreet Partners', icon: <Building className="w-5 h-5" />, gradientColor: 'from-pink-500 to-pink-600', borderColor: 'border-pink-500', hoverColor: 'hover:border-pink-300', textColor: 'text-pink-800', bgColor: 'bg-pink-100' },
         { id: 'bank-details', label: 'Bank Details', icon: <CreditCard className="w-5 h-5" />, gradientColor: 'from-green-500 to-green-600', borderColor: 'border-green-500', hoverColor: 'hover:border-green-300', textColor: 'text-green-800', bgColor: 'bg-green-100' },
         { id: 'discount-banners', label: 'Discount Banners', icon: <Tag className="w-5 h-5" />, gradientColor: 'from-orange-500 to-orange-600', borderColor: 'border-orange-500', hoverColor: 'hover:border-orange-300', textColor: 'text-orange-800', bgColor: 'bg-orange-100' },
-        { id: 'terms', label: (t && t.terms) || 'Terms', icon: <FileText className="w-5 h-5" />, gradientColor: 'from-indigo-500 to-indigo-600', borderColor: 'border-indigo-500', hoverColor: 'hover:border-indigo-300', textColor: 'text-indigo-800', bgColor: 'bg-indigo-100' },
-        { id: 'settings', label: (t && t.settings) || 'Settings', icon: <Settings className="w-5 h-5" />, gradientColor: 'from-gray-500 to-gray-600', borderColor: 'border-gray-500', hoverColor: 'hover:border-gray-300', textColor: 'text-gray-800', bgColor: 'bg-gray-100' }
+        { id: 'terms', label: String((t && t.terms) || 'Terms'), icon: <FileText className="w-5 h-5" />, gradientColor: 'from-indigo-500 to-indigo-600', borderColor: 'border-indigo-500', hoverColor: 'hover:border-indigo-300', textColor: 'text-indigo-800', bgColor: 'bg-indigo-100' },
+        { id: 'settings', label: String((t && t.settings) || 'Settings'), icon: <Settings className="w-5 h-5" />, gradientColor: 'from-gray-500 to-gray-600', borderColor: 'border-gray-500', hoverColor: 'hover:border-gray-300', textColor: 'text-gray-800', bgColor: 'bg-gray-100' }
     ];
 
     // Handle save with comprehensive data structure
@@ -1432,11 +1496,35 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
 
                                 {activeTab === 'bookings' && (
                                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                                        <h2 className="text-xl font-bold text-gray-900 mb-6">{String(t.bookings || 'Bookings')}</h2>
+                                        <div className="flex items-center justify-between mb-6">
+                                            <h2 className="text-xl font-bold text-gray-900">{String(t.bookings || 'Bookings')}</h2>
+                                            <button
+                                                onClick={loadBookings}
+                                                disabled={bookingsLoading}
+                                                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 transition-colors flex items-center gap-2"
+                                            >
+                                                {bookingsLoading ? (
+                                                    <>
+                                                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
+                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                                                        </svg>
+                                                        Loading...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                        </svg>
+                                                        Refresh
+                                                    </>
+                                                )}
+                                            </button>
+                                        </div>
                                         
-                                        {bookings && bookings.length > 0 ? (
+                                        {liveBookings && liveBookings.length > 0 ? (
                                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                                {bookings.map((booking) => (
+                                                {liveBookings.map((booking) => (
                                                     <BookingCard
                                                         key={booking.id}
                                                         booking={booking}
@@ -1458,29 +1546,75 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
 
                                 {activeTab === 'analytics' && (
                                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                                        <h2 className="text-xl font-bold text-gray-900 mb-6">{String(t.analytics || 'Analytics')}</h2>
+                                        <div className="flex items-center justify-between mb-6">
+                                            <h2 className="text-xl font-bold text-gray-900">{String(t.analytics || 'Analytics')}</h2>
+                                            <button
+                                                onClick={loadBookings}
+                                                disabled={bookingsLoading}
+                                                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 transition-colors flex items-center gap-2"
+                                            >
+                                                {bookingsLoading ? (
+                                                    <>
+                                                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
+                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                                                        </svg>
+                                                        Loading...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                        </svg>
+                                                        Refresh
+                                                    </>
+                                                )}
+                                            </button>
+                                        </div>
                                         
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                             <AnalyticsCard
                                                 title="Total Bookings"
-                                                value={bookings?.length || 0}
+                                                value={liveBookings?.length || 0}
                                                 description="All time bookings"
                                             />
                                             <AnalyticsCard
                                                 title="This Week"
-                                                value={0}
-                                                description="Weekly bookings"
+                                                value={weeklyBookings}
+                                                description="Last 7 days"
                                             />
                                             <AnalyticsCard
-                                                title="Rating"
+                                                title="This Month"
+                                                value={monthlyBookings}
+                                                description="Last 30 days"
+                                            />
+                                            <AnalyticsCard
+                                                title="Rating & Reviews"
                                                 value={therapist?.rating || 0}
-                                                description="Average rating"
+                                                description={`${therapist?.reviewCount || 0} reviews`}
                                             />
-                                            <AnalyticsCard
-                                                title="Reviews"
-                                                value={therapist?.reviewCount || 0}
-                                                description="Total reviews"
-                                            />
+                                        </div>
+
+                                        {/* Earnings Summary */}
+                                        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                                            <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-lg p-4">
+                                                <div className="text-sm text-green-600 mb-1">Weekly Revenue</div>
+                                                <div className="text-2xl font-bold text-green-900">
+                                                    Rp {(weeklyBookings * ((pricing[60] || 0) + (pricing[90] || 0) + (pricing[120] || 0)) / 3).toLocaleString()}
+                                                </div>
+                                            </div>
+                                            <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-4">
+                                                <div className="text-sm text-blue-600 mb-1">Monthly Revenue</div>
+                                                <div className="text-2xl font-bold text-blue-900">
+                                                    Rp {(monthlyBookings * ((pricing[60] || 0) + (pricing[90] || 0) + (pricing[120] || 0)) / 3).toLocaleString()}
+                                                </div>
+                                            </div>
+                                            <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-lg p-4">
+                                                <div className="text-sm text-purple-600 mb-1">Avg. Per Booking</div>
+                                                <div className="text-2xl font-bold text-purple-900">
+                                                    Rp {liveBookings.length > 0 ? Math.round(((pricing[60] || 0) + (pricing[90] || 0) + (pricing[120] || 0)) / 3).toLocaleString() : 0}
+                                                </div>
+                                            </div>
                                         </div>
 
                                         {/* Coin Rewards Section */}
