@@ -2458,6 +2458,85 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                             <p className="text-gray-600">Manage your premium membership status and rewards</p>
                                         </div>
 
+                                        {/* Renewal Reminder Banner - Shows 7 days before expiry */}
+                                        {therapist?.activeMembershipDate && (() => {
+                                            const expiryDate = new Date(therapist.activeMembershipDate);
+                                            const daysRemaining = Math.ceil((expiryDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+                                            
+                                            if (daysRemaining <= 7 && daysRemaining > 0) {
+                                                return (
+                                                    <div className="mb-6 bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-300 rounded-xl p-5 animate-pulse">
+                                                        <div className="flex items-start gap-4">
+                                                            <div className="p-3 bg-orange-500 rounded-full">
+                                                                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                                </svg>
+                                                            </div>
+                                                            <div className="flex-1">
+                                                                <h3 className="font-bold text-orange-900 mb-2">
+                                                                    ⚠️ Membership Renewal Required - {daysRemaining} {daysRemaining === 1 ? 'Day' : 'Days'} Remaining!
+                                                                </h3>
+                                                                <p className="text-sm text-orange-800 mb-3">
+                                                                    Your membership expires on <strong>{expiryDate.toLocaleDateString()}</strong>. 
+                                                                    Renew now to continue enjoying premium features and visibility on our platform.
+                                                                </p>
+                                                                <div className="bg-white border border-orange-200 rounded-lg p-4 mb-3">
+                                                                    <p className="text-sm text-gray-800 font-semibold mb-2">📋 Renewal Process:</p>
+                                                                    <ol className="text-sm text-gray-700 space-y-1 ml-4 list-decimal">
+                                                                        <li>Select your preferred membership package below</li>
+                                                                        <li>Transfer payment to the bank account shown on the payment page</li>
+                                                                        <li>Upload your payment screenshot as proof</li>
+                                                                        <li>Admin will verify and activate your membership within 24 hours</li>
+                                                                    </ol>
+                                                                </div>
+                                                                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+                                                                    <p className="text-xs text-yellow-900">
+                                                                        💡 <strong>Indastreet Direct Payment:</strong> We use direct bank transfers to reduce fees and provide the best value for our partners. 
+                                                                        Only transfer to bank accounts displayed on the official payment page. Never send payment to other accounts.
+                                                                    </p>
+                                                                </div>
+                                                                {onNavigate && (
+                                                                    <button
+                                                                        onClick={() => onNavigate('membership-payment' as any)}
+                                                                        className="px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg font-bold hover:from-orange-600 hover:to-red-600 transition-all shadow-lg"
+                                                                    >
+                                                                        🚀 Renew Membership Now
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            } else if (daysRemaining <= 0) {
+                                                return (
+                                                    <div className="mb-6 bg-red-50 border-2 border-red-400 rounded-xl p-5">
+                                                        <div className="flex items-start gap-4">
+                                                            <div className="p-3 bg-red-500 rounded-full">
+                                                                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                                                </svg>
+                                                            </div>
+                                                            <div className="flex-1">
+                                                                <h3 className="font-bold text-red-900 mb-2">🔴 Membership Expired!</h3>
+                                                                <p className="text-sm text-red-800 mb-3">
+                                                                    Your membership expired on {expiryDate.toLocaleDateString()}. Your profile may have reduced visibility. Renew immediately to restore full access.
+                                                                </p>
+                                                                {onNavigate && (
+                                                                    <button
+                                                                        onClick={() => onNavigate('membership-payment' as any)}
+                                                                        className="px-6 py-3 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition-all shadow-lg"
+                                                                    >
+                                                                        ⚡ Renew Now - Restore Access
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            }
+                                            return null;
+                                        })()}
+
                                         {/* Membership Status Cards */}
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                                             <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200 rounded-lg p-4">
@@ -2504,6 +2583,50 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-green-500">✓</span>
                                                     <span className="text-sm text-gray-700">Priority customer support</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Payment Instructions - Indastreet Direct Payment */}
+                                        <div className="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-5">
+                                            <div className="flex items-start gap-3 mb-4">
+                                                <div className="p-2 bg-blue-500 rounded-lg">
+                                                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                                                    </svg>
+                                                </div>
+                                                <div className="flex-1">
+                                                    <h3 className="font-bold text-blue-900 mb-2">💳 Indastreet Direct Payment System</h3>
+                                                    <p className="text-sm text-blue-800 mb-3">
+                                                        We use direct bank transfers to <strong>reduce transaction fees</strong> and provide the <strong>best payment solutions</strong> for our partners.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="bg-white rounded-lg p-4 mb-3">
+                                                <h4 className="font-semibold text-gray-900 mb-2">📝 How to Pay Your Membership:</h4>
+                                                <ol className="text-sm text-gray-700 space-y-2 ml-4 list-decimal">
+                                                    <li><strong>Select Package:</strong> Choose your preferred membership duration (1, 3, 6, or 12 months)</li>
+                                                    <li><strong>Get Bank Details:</strong> You'll see our official bank account information on the payment page</li>
+                                                    <li><strong>Transfer Payment:</strong> Send the exact amount to the displayed bank account only</li>
+                                                    <li><strong>Upload Proof:</strong> Take a screenshot of your payment receipt and upload it</li>
+                                                    <li><strong>Wait for Confirmation:</strong> Admin will verify and activate your membership within 24 hours</li>
+                                                </ol>
+                                            </div>
+
+                                            <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-3">
+                                                <div className="flex items-start gap-2">
+                                                    <svg className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                                    </svg>
+                                                    <div>
+                                                        <p className="text-xs font-semibold text-yellow-900 mb-1">⚠️ Important Security Notice:</p>
+                                                        <p className="text-xs text-yellow-800">
+                                                            <strong>ONLY</strong> transfer to bank accounts shown on the official payment page. 
+                                                            Indastreet will <strong>NEVER</strong> ask you to send payment to personal accounts, cash, or other methods. 
+                                                            If someone contacts you with different payment instructions, report it immediately.
+                                                        </p>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
