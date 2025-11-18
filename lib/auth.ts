@@ -248,8 +248,8 @@ export const therapistAuth = {
             
             if (!therapist) {
                 console.error('❌ [Therapist Sign-In] Therapist document not found for email:', email);
-                console.log('Available emails in collection:', therapists.documents.map((d: any) => d.email));
-                throw new Error('Therapist not found');
+                console.log('Available emails in collection:', therapists.documents.slice(0, 10).map((d: any) => d.email));
+                throw new Error(`Therapist profile not found. The account exists in Auth but there's no therapist document with email: ${email}. Please create a therapist profile first.`);
             }
             
             console.log('✅ [Therapist Sign-In] Therapist document found:', therapist.$id);
