@@ -611,6 +611,17 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             websiteDescription,
         } as any);
 
+        // Reload the saved data to display in the form
+        try {
+            const savedPlace = await placeService.getByProviderId(placeId);
+            if (savedPlace) {
+                console.log('✅ Reloaded saved place data:', savedPlace);
+                initializeWithPlaceData(savedPlace);
+            }
+        } catch (error) {
+            console.error('⚠️ Failed to reload place data after save:', error);
+        }
+
         // Show admin approval message
         const notification = document.createElement('div');
         notification.innerHTML = `
