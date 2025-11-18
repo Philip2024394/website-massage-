@@ -1,4 +1,5 @@
 import { Client, Databases, Account, Storage, ID, Permission, Role } from 'appwrite';
+import collectionsMap from './appwrite.collections.json';
 
 const client = new Client();
 
@@ -14,28 +15,34 @@ export { client, ID, Permission, Role };
 
 // Database and Collection IDs - REVERTED TO PRODUCTION DATABASE
 export const DATABASE_ID = '68f76ee1000e64ca8d05';
+
+const get = (key: string, fallback: string) => {
+    const map = (collectionsMap as Record<string, string>) || {};
+    return map[key] || fallback;
+};
+
 export const COLLECTIONS = {
-    THERAPISTS: 'therapists_collection_id',
-    PLACES: 'places_collection_id',
-    USERS: 'users_collection_id', 
-    AGENTS: 'agents_collection_id',
-    PROMOTERS: 'promoters_collection_id',
-    BOOKINGS: 'bookings_collection_id',
-    REVIEWS: 'reviews_collection_id',
-    ANALYTICS: 'analytics_collection_id',
-    ANALYTICS_EVENTS: 'Analytics Events',
-    ADMINS: '', // Disabled - collection doesn't exist
-    HOTELS: 'hotels_collection_id',
-    VILLAS: '', // Disabled - collection doesn't exist
-    NOTIFICATIONS: 'notifications_collection_id',
-    MASSAGE_TYPES: 'massage_types_collection_id',
-    MEMBERSHIP_PRICING: 'membership_pricing_collection_id',
-    CUSTOM_LINKS: 'custom_links_collection_id',
-    IMAGE_ASSETS: 'image_assets', 
-    LOGIN_BACKGROUNDS: 'login_backgrounds',
-    TRANSLATIONS: 'translations_collection_id',
-    COMMISSION_RECORDS: 'commission_records',
-    ATTRIBUTES: 'ATTRIBUTES',
-    PROMOTER_PAYOUT_REQUESTS: 'promoter_payout_requests',
-    PROMOTER_TABLE_STAND_ORDERS: 'promoter_table_stand_orders'
+    THERAPISTS: get('therapists', 'therapists_collection_id'),
+    PLACES: get('places', 'places_collection_id'),
+    USERS: get('users', 'users_collection_id'),
+    AGENTS: get('agents', 'agents_collection_id'),
+    PROMOTERS: get('promoters', 'promoters_collection_id'),
+    BOOKINGS: get('bookings', 'bookings_collection_id'),
+    REVIEWS: get('reviews', 'reviews_collection_id'),
+    ANALYTICS: get('analytics', 'analytics_collection_id'),
+    ANALYTICS_EVENTS: get('analytics_events', 'Analytics Events'),
+    ADMINS: get('admins', ''),
+    HOTELS: get('hotels', 'hotels_collection_id'),
+    VILLAS: get('villas', ''),
+    NOTIFICATIONS: get('notifications', 'notifications_collection_id'),
+    MASSAGE_TYPES: get('massage_types', 'massage_types_collection_id'),
+    MEMBERSHIP_PRICING: get('membership_pricing', 'membership_pricing_collection_id'),
+    CUSTOM_LINKS: get('custom_links', 'custom_links_collection_id'),
+    IMAGE_ASSETS: get('image_assets', 'image_assets'),
+    LOGIN_BACKGROUNDS: get('login_backgrounds', 'login_backgrounds'),
+    TRANSLATIONS: get('translations', 'translations_collection_id'),
+    COMMISSION_RECORDS: get('commission_records', 'commission_records'),
+    ATTRIBUTES: get('attributes', 'ATTRIBUTES'),
+    PROMOTER_PAYOUT_REQUESTS: get('promoter_payout_requests', 'promoter_payout_requests'),
+    PROMOTER_TABLE_STAND_ORDERS: get('promoter_table_stand_orders', 'promoter_table_stand_orders')
 };

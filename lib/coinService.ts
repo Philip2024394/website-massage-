@@ -97,13 +97,7 @@ class CoinService {
                 }
             );
 
-            // Award welcome bonus to new user
-            await this.awardCoins(
-                newUserId,
-                this.REFERRAL_WELCOME_BONUS,
-                'Welcome bonus from referral',
-                { referralCode }
-            );
+            // Customer welcome bonus disabled: do not award coins
 
             return referral as unknown as Referral;
         } catch (error) {
@@ -172,22 +166,14 @@ class CoinService {
 
             const referral = referrals.documents[0];
 
-            // Award coins to referrer
-            await this.awardCoins(
-                referral.referrerId,
-                this.REFERRAL_REWARD,
-                `Referral reward - ${referredUserId} completed first booking`,
-                { referredUserId, referralCode: referral.referralCode }
-            );
-
-            // Update referral status
+            // Update referral status (no customer coin reward)
             await databases.updateDocument(
                 APPWRITE_CONFIG.databaseId,
                 this.COLLECTION_REFERRALS,
                 referral.$id,
                 {
                     status: 'rewarded',
-                    coinsAwarded: this.REFERRAL_REWARD,
+                    coinsAwarded: 0,
                     firstBookingAt: new Date().toISOString(),
                 }
             );
@@ -608,23 +594,8 @@ class CoinService {
      * Award daily sign-in coins
      */
     async awardDailySignIn(userId: string, dayStreak: number): Promise<CoinTransaction | null> {
-        try {
-            let amount = 10; // Day 1
-            let reason = 'Daily sign-in - Day 1';
-
-            if (dayStreak === 7) {
-                amount = 15;
-                reason = 'Daily sign-in - Day 7 streak';
-            } else if (dayStreak === 30) {
-                amount = 50;
-                reason = 'Daily sign-in - Day 30 streak';
-            }
-
-            return await this.awardCoins(userId, amount, reason, { dayStreak });
-        } catch (error) {
-            console.error('Error awarding daily sign-in:', error);
-            return null;
-        }
+        // Customer daily sign-in rewards disabled
+        return null;
     }
 
     /**
@@ -635,26 +606,8 @@ class CoinService {
         bookingNumber: number,
         isFirstBooking: boolean = false
     ): Promise<CoinTransaction | null> {
-        try {
-            let amount = 50;
-            let reason = 'Booking completed';
-
-            if (isFirstBooking) {
-                amount = 100;
-                reason = 'First booking completed';
-            } else if (bookingNumber === 5) {
-                amount = 200;
-                reason = '5th booking milestone';
-            } else if (bookingNumber === 10) {
-                amount = 500;
-                reason = '10th booking milestone';
-            }
-
-            return await this.awardCoins(userId, amount, reason, { bookingNumber });
-        } catch (error) {
-            console.error('Error awarding booking completion:', error);
-            return null;
-        }
+        // Customer booking completion rewards disabled
+        return null;
     }
 }
 

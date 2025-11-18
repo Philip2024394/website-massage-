@@ -9,8 +9,8 @@ export const APPWRITE_CONFIG = {
     // Collection IDs from your Appwrite database  
     collections: {
         admins: '', // Disabled - collection doesn't exist
-        therapists: 'therapists', // Use simple collection name
-        places: 'therapists', // Same collection as therapists - APPWRITE ONLY
+        therapists: 'therapists_collection_id', // Correct collection ID
+        places: 'therapists_collection_id', // Same collection as therapists - APPWRITE ONLY
         agents: 'agents_collection_id', // REVERTED: Back to original ID
         bookings: 'bookings_collection_id', // REVERTED: Back to original ID  
         reviews: 'reviews_collection_id', // REVERTED: Back to original ID

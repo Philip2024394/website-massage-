@@ -6,6 +6,7 @@
   "packageManager": "pnpm@10.21.0",
   "scripts": {
     "dev": "cross-env VITE_PORT=3005 vite",
+    "dev:debug": "cross-env DEBUG=vite:* VITE_LOG_LEVEL=debug VITE_PORT=3005 vite --debug",
     "build": "cross-env ROLLUP_NO_NATIVE=1 tsc && vite build --config vite.config.deployment.ts",
     "build:netlify": "cross-env ROLLUP_NO_NATIVE=1 ROLLUP_NO_WASM=1 tsc && vite build",
     "build:npm": "npm run type-check && cross-env ROLLUP_NO_NATIVE=1 ROLLUP_NO_WASM=1 vite build",
@@ -32,7 +33,11 @@
     "mobile:ios": "cd mobile && npx react-native run-ios",
     "mobile:start": "cd mobile && npx react-native start",
     "schema:export:hotels": "node scripts/exportHotelsSchema.cjs",
-    "schema:validate:hotels": "node scripts/validateHotelsPayloads.cjs"
+    "schema:validate:hotels": "node scripts/validateHotelsPayloads.cjs",
+    "appwrite:verify": "node scripts/verify-core-collections.js",
+    "appwrite:schema": "node scripts/dump-collection-schemas.js",
+    "appwrite:map": "node scripts/generate-collections-config.js",
+    "appwrite:health": "node scripts/generate-collections-config.js && node scripts/verify-core-collections.js && node scripts/dump-collection-schemas.js"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.0.0",

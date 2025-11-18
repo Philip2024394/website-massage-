@@ -6,7 +6,7 @@ import 'react-calendar/dist/Calendar.css';
 import { getUserWallets, getTransactionHistory } from '../lib/loyaltyService';
 import { X, Calendar as CalendarIcon, Wallet, CreditCard, User, Coins, Camera, Users, History } from 'lucide-react';
 import { imageUploadService } from '../lib/services/imageService';
-import { WELCOME_BONUS, shouldShowWelcomePopup, markWelcomePopupSeen } from '../lib/deviceTracking';
+// Welcome popup disabled: no deviceTracking popup helpers needed
 
 interface CustomerDashboardPageProps {
   customer?: any;
@@ -51,7 +51,6 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
     customerPhoto: (user?.customerPhoto as string) || ''
   });
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [showWelcome, setShowWelcome] = useState(false);
 
   // Respect an initial tab request (e.g., from footer navigation)
   useEffect(() => {
@@ -193,16 +192,7 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
     };
   }, [user?.email]);
 
-  // Show welcome confetti/coins popup for first-time registration
-  useEffect(() => {
-    try {
-      const justRegistered = localStorage.getItem('just_registered') === 'true';
-      if (justRegistered || shouldShowWelcomePopup()) {
-        setShowWelcome(true);
-        localStorage.removeItem('just_registered');
-      }
-    } catch {}
-  }, []);
+  // Welcome bonus popup disabled for customers
 
   const loadBookings = async () => {
     setIsLoading(true);
@@ -633,7 +623,7 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors text-gray-700 hover:bg-gray-100"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-                Invite Friends (Get Coins)
+                Invite Friends
               </button>
 
               {/* Logout */}
@@ -1412,33 +1402,7 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
         </div>
       )}
 
-      {/* Welcome Bonus Celebration */}
-      {showWelcome && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => { setShowWelcome(false); try { markWelcomePopupSeen(); } catch {} }}>
-          {/* Falling coins */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            {Array.from({ length: 24 }).map((_, i) => (
-              <div key={i} className="absolute text-3xl animate-[fall_3s_linear_infinite]" style={{ left: `${(i * 37) % 100}%`, animationDelay: `${(i%6)*0.25}s` }}>🪙</div>
-            ))}
-            <style>{`@keyframes fall { 0% { transform: translateY(-10% ) rotate(0deg); opacity: 1;} 80% {opacity: 1;} 100% { transform: translateY(110%) rotate(360deg); opacity: 0;} }`}</style>
-          </div>
-          <div className="relative bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="text-center mb-4">
-              <div className="text-6xl mb-2">🎉</div>
-              <h3 className="text-2xl font-bold text-gray-900">Congratulations!</h3>
-              <p className="text-gray-600 mt-1">Your account was created successfully.</p>
-            </div>
-            <div className="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl p-5 text-white text-center shadow">
-              <div className="text-sm opacity-90">Welcome Bonus</div>
-              <div className="text-5xl font-extrabold my-2">+{WELCOME_BONUS.COINS} 🪙</div>
-              <div className="text-sm opacity-90">Use coins in Rewards</div>
-            </div>
-            <button className="w-full mt-5 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-xl" onClick={() => { setShowWelcome(false); try { markWelcomePopupSeen(); } catch {} }}>
-              Awesome! 🌟
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Welcome bonus celebration removed */}
     </div>
   );
 };

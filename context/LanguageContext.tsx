@@ -1,8 +1,9 @@
 import React, { createContext, useContext } from 'react';
+import type { Language } from '../types/pageTypes';
 
 export interface LanguageContextValue {
-  language: 'en' | 'id';
-  setLanguage: (lang: 'en' | 'id') => void;
+  language: Language;
+  setLanguage: (lang: Language) => void;
 }
 
 const defaultValue: LanguageContextValue = {

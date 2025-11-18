@@ -9,17 +9,28 @@ interface RateLimitConfig {
     backoffMultiplier: number;
 }
 
+// Read Vite env if available (works in browser and Vite dev)
+let __env: any = {};
+try {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore - import.meta is a Vite/ESM runtime feature
+    __env = (typeof import.meta !== 'undefined' && (import.meta as any).env) ? (import.meta as any).env : {};
+} catch {
+    __env = {};
+}
+const DISABLE_RATE_LIMIT = __env?.VITE_DISABLE_RATE_LIMIT === 'true';
+
 const DEFAULT_CONFIG: RateLimitConfig = {
-    maxRetries: 3,
-    baseDelay: 1000, // 1 second
-    maxDelay: 10000, // 10 seconds
-    backoffMultiplier: 2
+    maxRetries: DISABLE_RATE_LIMIT ? 0 : (Number(__env?.VITE_RATE_MAX_RETRIES) || 3),
+    baseDelay: Number(__env?.VITE_RATE_BASE_DELAY) || (DISABLE_RATE_LIMIT ? 50 : 1000), // ms
+    maxDelay: Number(__env?.VITE_RATE_MAX_DELAY) || 10000, // ms
+    backoffMultiplier: Number(__env?.VITE_RATE_BACKOFF_MULTIPLIER) || 2
 };
 
 // Track recent API calls to prevent flooding
 const apiCallTracker = new Map<string, number[]>();
-const MAX_CALLS_PER_MINUTE = 30;
-const CALL_WINDOW_MS = 60000; // 1 minute
+const MAX_CALLS_PER_MINUTE = DISABLE_RATE_LIMIT ? Number.MAX_SAFE_INTEGER : (Number(__env?.VITE_RATE_MAX_CALLS_PER_MIN) || 30);
+const CALL_WINDOW_MS = Number(__env?.VITE_RATE_CALL_WINDOW_MS) || 60000; // ms
 
 /**
  * Check if we're hitting rate limits
@@ -84,15 +95,15 @@ export async function retryWithBackoff<T>(
     let lastError: any;
 
     // Check rate limit before attempting
-    if (isRateLimited(endpoint)) {
+    if (!DISABLE_RATE_LIMIT && isRateLimited(endpoint)) {
         console.warn(`⚠️ Rate limited for endpoint: ${endpoint}. Waiting...`);
-        await sleep(5000); // Wait 5 seconds if rate limited
+        await sleep(Number(__env?.VITE_RATE_PREWAIT_MS) || 5000); // Wait before retry
     }
 
-    for (let attempt = 1; attempt <= config.maxRetries + 1; attempt++) {
+    for (let attempt = 1; attempt <= (config.maxRetries + 1); attempt++) {
         try {
             // Track the API call
-            trackApiCall(endpoint);
+            if (!DISABLE_RATE_LIMIT) trackApiCall(endpoint);
             
             const result = await operation();
             
@@ -106,7 +117,7 @@ export async function retryWithBackoff<T>(
             lastError = error;
             
             // Check if this is a rate limit error
-            if (isRateLimitError(error)) {
+            if (!DISABLE_RATE_LIMIT && isRateLimitError(error)) {
                 console.warn(`🚫 Rate limit hit for ${endpoint} (attempt ${attempt})`);
                 
                 if (attempt <= config.maxRetries) {

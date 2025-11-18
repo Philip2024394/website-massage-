@@ -10,8 +10,9 @@ const getFromLocalStorage = (key: string, defaultValue: any = null) => {
     if (!item) return defaultValue;
     
     // Special handling for simple string values that aren't JSON
-    if (key === 'app_language' && (item === 'en' || item === 'id')) {
-      return item;
+    if (key === 'app_language') {
+      const supported = ['en','id','zh-CN','ru','ja','ko'];
+      if (supported.includes(item)) return item;
     }
     
     return JSON.parse(item);

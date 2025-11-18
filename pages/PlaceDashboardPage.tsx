@@ -627,26 +627,19 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             password: place?.password || null,
             analytics: JSON.stringify(place?.analytics || { impressions: 0, profileViews: 0, whatsappClicks: 0 }).substring(0, 2040), // Max 2048 chars
             isLive: true, // Set to live when saved
-            rating: place?.rating || 0,
-            reviewCount: place?.reviewCount || 0,
-            
-            // Category field to distinguish places from therapists
-            category: 'massage-place',
-            
-            // Status fields
-            status: 'Available',
+
+            // Do not persist computed rating fields; backend calculates/doesn't support
+            // rating / reviewCount are intentionally omitted to match schema
+
+            // Do not send category; some deployments don't include this field
+
+            // Status fields — align with collection enums
+            status: 'available',
             availability: 'Available',
             isOnline: true
         };
 
-        // Validate collection ID before saving
-        if (!APPWRITE_CONFIG.collections.places) {
-            console.error('❌ No collection ID configured');
-            alert('Collection ID not configured. Please check appwrite.config.ts');
-            return;
-        }
-        
-        console.log('❌ Using collection ID:', APPWRITE_CONFIG.collections.places);
+        console.log('📋 Using collection ID:', APPWRITE_CONFIG.collections.places);
         
         console.log('💾 Saving to collection:', APPWRITE_CONFIG.collections.places);
         console.log('📄 Place data being saved:', JSON.stringify(placeData, null, 2));

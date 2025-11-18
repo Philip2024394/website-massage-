@@ -2,6 +2,7 @@ import { account, databases, DATABASE_ID, COLLECTIONS } from './appwrite';
 import { APPWRITE_CONFIG } from './appwrite.config.ts';
 import { ID } from 'appwrite';
 import { getRandomTherapistImage } from '../utils/therapistImageUtils';
+import { getCurrencyForCountry } from '../utils/currency';
 
 export interface AuthResponse {
     success: boolean;
@@ -77,6 +78,17 @@ export const therapistAuth = {
                 .slice(0, 12);
             const hasReferral = !!normalizedAgentCode;
 
+            // Determine country/currency from current app location (if available)
+            let countryCode = 'ID';
+            try {
+                const raw = localStorage.getItem('app_user_location');
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (parsed?.countryCode) countryCode = String(parsed.countryCode).toUpperCase();
+                }
+            } catch {}
+            const currencyCode = getCurrencyForCountry(countryCode);
+
             // Prepare a conservative payload. We'll auto-prune unknown attributes on error.
             const basePayload: any = {
                 id: therapistId,
@@ -89,6 +101,7 @@ export const therapistAuth = {
                 price60: '100',
                 price90: '150',
                 price120: '200',
+                // Availability status must match Appwrite enum: (available|busy|offline)
                 status: 'available',
                 isLive: true,
                 hourlyRate: 100,
@@ -112,7 +125,10 @@ export const therapistAuth = {
                 referralCampaignId: '',
                 bookingsCount: 0,
                 membershipRenewalsCount: 0,
-                agentAttributionLocked: false
+                agentAttributionLocked: false,
+                // Optional geo/currency context
+                countryCode,
+                currency: currencyCode
             };
 
             async function createWithPruning(payload: any): Promise<any> {
@@ -163,8 +179,10 @@ export const therapistAuth = {
                     price60: '100',
                     price90: '150',
                     price120: '200',
+                    // Minimal fallback keeps required enum lowercase
                     status: 'available',
-                    isLive: true
+                    isLive: true,
+                    coordinates: JSON.stringify({ lat: 0, lng: 0 })
                 };
                 return databases.createDocument(
                     DATABASE_ID,
@@ -272,9 +290,7 @@ export const placeAuth = {
             const basePayload: any = {
                 id: generatedPlaceId,
                 therapistId: generatedPlaceId, // Required field
-                placeId: generatedPlaceId,
                 name: email.split('@')[0],
-                category: 'massage-place',
                 email,
                 password: '',
                 // Required schema fields
@@ -289,7 +305,8 @@ export const placeAuth = {
                 price90: '150',
                 price120: '200',
                 location: 'Location pending setup',
-                status: 'Available',
+                // Normalize: status uses lowercase, availability uses capitalized enum
+                status: 'available',
                 availability: 'Available',
                 isLive: false,
                 isOnline: true,
@@ -311,7 +328,10 @@ export const placeAuth = {
                 referralCampaignId: '',
                 bookingsCount: 0,
                 membershipRenewalsCount: 0,
-                agentAttributionLocked: false
+                agentAttributionLocked: false,
+                // Optional geo/currency context
+                countryCode,
+                currency: currencyCode
             };
 
             async function createPlaceWithPruning(payload: any): Promise<any> {
@@ -380,9 +400,7 @@ export const placeAuth = {
                 const minimal: any = {
                     id: generatedPlaceId,
                     therapistId: generatedPlaceId,
-                    placeId: generatedPlaceId,
                     name: email.split('@')[0],
-                    category: 'massage-place',
                     email,
                     specialization: 'Massage Place',
                     yearsOfExperience: 5,
@@ -394,10 +412,11 @@ export const placeAuth = {
                     price90: '150',
                     price120: '200',
                     location: 'Location pending',
-                    status: 'Available',
+                    status: 'available',
                     availability: 'Available',
                     isLive: false,
-                    isOnline: true
+                    isOnline: true,
+                    coordinates: JSON.stringify({ lat: 0, lng: 0 })
                 };
                 return databases.createDocument(
                     APPWRITE_CONFIG.databaseId,
@@ -453,9 +472,7 @@ export const placeAuth = {
                     const placeData = {
                         id: generatedPlaceId,
                         therapistId: generatedPlaceId,
-                        placeId: generatedPlaceId,
                         name: email.split('@')[0],
-                        category: 'massage-place',
                         email,
                         password: '',
                         specialization: 'Massage Place',
@@ -468,7 +485,7 @@ export const placeAuth = {
                         price90: '150',
                         price120: '200',
                         location: 'Location pending setup',
-                        status: 'Available',
+                        status: 'available',
                         availability: 'Available',
                         isLive: false,
                         isOnline: true,

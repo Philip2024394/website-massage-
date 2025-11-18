@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import BurgerMenuIcon from './icons/BurgerMenuIcon';
 import type { Page } from '../types/pageTypes';
+import { useLanguageContext } from '../context/LanguageContext';
+import type { Language } from '../types/pageTypes';
 
 interface GlobalHeaderProps {
   page: Page;
@@ -42,11 +44,15 @@ const useHasPageHeader = (deps: any[]) => {
 const GlobalHeader: React.FC<GlobalHeaderProps> = ({ page, title }) => {
   const isStandalone = useMemo(detectStandalone, []);
   const hasPageHeader = useHasPageHeader([page]);
+  const { language, setLanguage } = useLanguageContext();
 
   if (!isStandalone) return null;
   if (hasPageHeader) return null;
 
   const resolvedTitle = title || 'Indastreet';
+  const languageLabel = (lang: string) => ({
+    'en': 'EN', 'id': 'ID', 'zh-CN': 'ZH', 'ru': 'RU', 'ja': 'JA', 'ko': 'KO'
+  } as Record<string,string>)[lang] || 'EN';
 
   return (
     <header className="bg-white p-3 shadow-md sticky top-0 z-[9998]">
@@ -71,8 +77,24 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({ page, title }) => {
             <span className="text-orange-500">street</span>
           </span>
         </div>
-        <div className="text-sm text-gray-500">
-          {resolvedTitle}
+        <div className="flex items-center gap-3">
+          <div className="text-sm text-gray-500 hidden sm:block">
+            {resolvedTitle}
+          </div>
+          <label className="sr-only" htmlFor="lang-select">Language</label>
+          <select
+            id="lang-select"
+            value={language}
+            onChange={(e) => setLanguage(e.target.value as Language)}
+            className="text-sm border border-gray-200 rounded-md px-2 py-1 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
+          >
+            <option value="en">EN</option>
+            <option value="id">ID</option>
+            <option value="zh-CN">ZH</option>
+            <option value="ru">RU</option>
+            <option value="ja">JA</option>
+            <option value="ko">KO</option>
+          </select>
         </div>
       </div>
     </header>

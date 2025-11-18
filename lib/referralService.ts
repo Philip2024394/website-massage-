@@ -172,7 +172,7 @@ export const enhancedReferralService = {
                 );
             }
 
-            const shareText = `🌟 Join me on our amazing massage booking platform! Get ${COIN_CONFIG.REFEREE_WELCOME_BONUS} welcome coins when you sign up with my link: ${referralLink}`;
+            const shareText = `🌟 Join me on our massage booking platform! Sign up with my link: ${referralLink}`;
 
             console.log(`🔗 Referral link created for ${referrerUserName}: ${referralCode}`);
 
@@ -286,8 +286,7 @@ export const enhancedReferralService = {
             return {
                 success: true,
                 isValidReferral: true,
-                referrerName: referral.referrerUserName,
-                welcomeBonus: COIN_CONFIG.REFEREE_WELCOME_BONUS
+                referrerName: referral.referrerUserName
             };
 
         } catch (error) {
@@ -420,23 +419,12 @@ export const enhancedReferralService = {
                 );
             }
 
-            // Award welcome bonus to referee
-            const { coinService } = await import('./appwriteService');
-            await coinService.addCoins(
-                refereeUserId,
-                'customer',
-                refereeUserName,
-                COIN_CONFIG.REFEREE_WELCOME_BONUS,
-                `Welcome bonus for joining through ${referral.referrerUserName}'s referral`,
-                referral.$id
-            );
-
-            console.log(`🎉 Referral signup processed: ${refereeUserName} (${formattedWhatsApp}) referred by ${referral.referrerUserName}`);
+            console.log(`🎉 Referral signup recorded (no user coin bonus): ${refereeUserName} (${formattedWhatsApp}) referred by ${referral.referrerUserName}`);
 
             return {
                 success: true,
-                welcomeBonusAwarded: true,
-                message: `Welcome! You've received ${COIN_CONFIG.REFEREE_WELCOME_BONUS} coins for joining through ${referral.referrerUserName}'s referral.`
+                welcomeBonusAwarded: false,
+                message: 'Referral recorded successfully.'
             };
 
         } catch (error) {
@@ -478,25 +466,12 @@ export const enhancedReferralService = {
                 referral.$id!,
                 {
                     status: 'completed',
-                    rewardClaimed: true,
-                    coinsAwarded: COIN_CONFIG.REFERRAL_BONUS,
+                    rewardClaimed: false,
+                    coinsAwarded: 0,
                     completedAt: new Date().toISOString()
                 }
             );
-
-            // Award coins to referrer
-            const { coinService } = await import('./appwriteService');
-            
-            await coinService.addCoins(
-                referral.referrerUserId,
-                'customer',
-                referral.referrerUserName,
-                COIN_CONFIG.REFERRAL_BONUS,
-                `Referral bonus - ${referral.refereeUserName} completed first booking`,
-                referral.$id
-            );
-
-            console.log(`🎉 Referral completed! ${referral.referrerUserName} earned ${COIN_CONFIG.REFERRAL_BONUS} coins for referring ${referral.refereeUserName}`);
+            console.log(`🎉 Referral completed (no user coin bonus to referrer): ${referral.referrerUserName} referred ${referral.refereeUserName}`);
 
         } catch (error) {
             console.error('Error completing referral:', error);

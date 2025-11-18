@@ -384,14 +384,14 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                     </div>
                 </div>
 
-                {/* Massage Prices Section with Background Image */}
+                {/* Massage Prices Section with Full Background Image */}
                 <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6 relative">
-                    {/* Background Image - Centered behind text */}
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    {/* Full-bleed Background Image */}
+                    <div className="absolute inset-0 pointer-events-none">
                         <img
                             src="https://ik.imagekit.io/7grri5v7d/massage%20oil.png?updatedAt=1760816872135"
                             alt="Massage Oil"
-                            className="w-48 h-48 md:w-64 md:h-64 object-contain opacity-100"
+                            className="w-full h-full object-cover opacity-100"
                         />
                     </div>
                     

@@ -1,0 +1,25 @@
+App.tsx(160,61): error TS2345: Argument of type 'Language' is not assignable to parameter of type '"en" | "id"'.
+  Type '"zh-CN"' is not assignable to type '"en" | "id"'.
+App.tsx(405,48): error TS2339: Property 'handleTherapistStatusChange' does not exist on type '{ handleSavePlace: (placeData: any) => Promise<void>; }'.
+App.tsx(406,53): error TS2339: Property 'handleTherapistStatusChange' does not exist on type '{ handleSavePlace: (placeData: any) => Promise<void>; }'.
+App.tsx(409,65): error TS2339: Property 'handleSaveTherapist' does not exist on type '{ handleSavePlace: (placeData: any) => Promise<void>; }'.
+App.tsx(411,65): error TS2339: Property 'handleAgentRegister' does not exist on type '{ handleSavePlace: (placeData: any) => Promise<void>; }'.
+App.tsx(412,62): error TS2339: Property 'handleAgentLogin' does not exist on type '{ handleSavePlace: (placeData: any) => Promise<void>; }'.
+App.tsx(413,68): error TS2339: Property 'handleAgentAcceptTerms' does not exist on type '{ handleSavePlace: (placeData: any) => Promise<void>; }'.
+App.tsx(414,68): error TS2339: Property 'handleSaveAgentProfile' does not exist on type '{ handleSavePlace: (placeData: any) => Promise<void>; }'.
+App.tsx(415,69): error TS2339: Property 'handleStopImpersonating' does not exist on type '{ handleSavePlace: (placeData: any) => Promise<void>; }'.
+App.tsx(416,68): error TS2339: Property 'handleSendAdminMessage' does not exist on type '{ handleSavePlace: (placeData: any) => Promise<void>; }'.
+App.tsx(417,70): error TS2339: Property 'handleMarkMessagesAsRead' does not exist on type '{ handleSavePlace: (placeData: any) => Promise<void>; }'.
+components/CookieConsent.tsx(59,13): error TS7053: Element implicitly has an 'any' type because expression of type 'Language' can't be used to index type '{ en: { title: string; message: string; learnMore: string; accept: string; decline: string; }; id: { title: string; message: string; learnMore: string; accept: string; decline: string; }; }'.
+  Property 'zh-CN' does not exist on type '{ en: { title: string; message: string; learnMore: string; accept: string; decline: string; }; id: { title: string; message: string; learnMore: string; accept: string; decline: string; }; }'.
+components/RegisterPromptPopup.tsx(48,15): error TS7053: Element implicitly has an 'any' type because expression of type 'Language' can't be used to index type '{ en: { booking: { title: string; message: string; }; chat: { title: string; message: string; }; registerButton: string; cancelButton: string; }; id: { booking: { title: string; message: string; }; chat: { title: string; message: string; }; registerButton: string; cancelButton: string; }; }'.
+  Property 'zh-CN' does not exist on type '{ en: { booking: { title: string; message: string; }; chat: { title: string; message: string; }; registerButton: string; cancelButton: string; }; id: { booking: { title: string; message: string; }; chat: { title: string; message: string; }; registerButton: string; cancelButton: string; }; }'.
+lib/useTranslations.ts(61,61): error TS2345: Argument of type 'Language' is not assignable to parameter of type '"en" | "id"'.
+  Type '"zh-CN"' is not assignable to type '"en" | "id"'.
+lib/vscodeTranslateService.ts(55,17): error TS2322: Type '"zh-CN" | "ru" | "ja" | "ko" | "en" | "id"' is not assignable to type '"en" | "id"'.
+  Type '"zh-CN"' is not assignable to type '"en" | "id"'.
+lib/vscodeTranslateService.ts(56,47): error TS2345: Argument of type '"en" | "id" | "zh-CN" | "ru" | "ja" | "ko"' is not assignable to parameter of type '"en" | "id"'.
+  Type '"zh-CN"' is not assignable to type '"en" | "id"'.
+pages/HomePage.tsx(1019,17): error TS2322: Type 'Language' is not assignable to type '"en" | "id" | undefined'.
+  Type '"zh-CN"' is not assignable to type '"en" | "id" | undefined'.
+

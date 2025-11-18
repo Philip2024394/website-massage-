@@ -319,20 +319,9 @@ export const awardWelcomeBonus = async (
             ipAddress
         );
 
-        // Award the welcome coins into the coin system with a transaction record
-        const coinsAwarded = WELCOME_BONUS.COINS;
-        let awarded = false;
-        try {
-            const tx = await historyCoinService.awardCoins(
-                userId,
-                coinsAwarded,
-                WELCOME_BONUS.DESCRIPTION,
-                { source: 'welcome_bonus', deviceId, ipAddress }
-            );
-            awarded = !!tx;
-        } catch (coinErr) {
-            console.error('Error persisting welcome coins to coin history system:', coinErr);
-        }
+        // Customer welcome coins disabled: do not award any coins
+        const coinsAwarded = 0;
+        const awarded = false;
 
         // Update registration record (best-effort)
         try {
@@ -359,17 +348,12 @@ export const awardWelcomeBonus = async (
         }
 
         // Store in localStorage only if awarded
-        if (awarded) {
-            localStorage.setItem('indastreet_welcome_bonus_received', 'true');
-            localStorage.setItem('indastreet_welcome_coins', coinsAwarded.toString());
-        }
+        // Do not set localStorage flags since no coins are awarded
 
         return {
-            success: awarded,
+            success: true,
             coinsAwarded,
-            message: awarded
-                ? `Congratulations! You've received ${coinsAwarded} IndaStreet coins!`
-                : 'Welcome bonus could not be recorded. Please contact support.',
+            message: 'Welcome bonus program is currently disabled for customers.',
             registrationId: registration.$id
         };
     } catch (error) {
