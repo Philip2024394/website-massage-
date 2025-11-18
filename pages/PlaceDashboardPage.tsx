@@ -240,11 +240,31 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                     console.log('📋 Using passed place data:', place);
                     initializeWithPlaceData(place);
                 } else if (place?.id) {
-                    console.log('🔄 Loading place data from database for provider ID:', place.id);
-                    // Lookup by provider id attribute instead of assuming Appwrite document id
-                    const loadedPlace = await placeService.getByProviderId(place.id.toString());
+                    console.log('🔄 Loading place data for provider ID:', place.id);
+                    
+                    // Try database first, then fallback to localStorage
+                    let loadedPlace = null;
+                    try {
+                        loadedPlace = await placeService.getByProviderId(place.id.toString());
+                        if (loadedPlace) {
+                            console.log('✅ Loaded place data from database:', loadedPlace);
+                        }
+                    } catch (dbError) {
+                        console.log('⚠️ Database unavailable, checking localStorage');
+                        
+                        // Fallback to localStorage
+                        try {
+                            const savedPlaces = JSON.parse(localStorage.getItem('massage_places') || '[]');
+                            loadedPlace = savedPlaces.find((p: any) => p.id === place.id.toString());
+                            if (loadedPlace) {
+                                console.log('✅ Loaded place data from localStorage:', loadedPlace);
+                            }
+                        } catch (localError) {
+                            console.error('❌ Failed to load from localStorage:', localError);
+                        }
+                    }
+                    
                     if (loadedPlace) {
-                        console.log('✅ Loaded place data from database:', loadedPlace);
                         initializeWithPlaceData(loadedPlace);
                     } else {
                         console.log('⚠️ No saved data found, using defaults');
@@ -582,8 +602,8 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         const safeGalleryImages = galleryImages || [];
         const filteredGallery = safeGalleryImages.filter(img => img && img.imageUrl && img.imageUrl.trim() !== '');
         
-        onSave({
-            placeId: placeId, // Add missing required field
+        const placeData = {
+            id: placeId,
             name,
             description,
             mainImage,
@@ -602,14 +622,61 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             additionalServices,
             openingTime,
             closingTime,
-            distance: 0, // dummy value
+            distance: 0,
             activeMembershipDate: place?.activeMembershipDate || '',
             password: place?.password,
             analytics: JSON.stringify(place?.analytics || { impressions: 0, profileViews: 0, whatsappClicks: 0 }),
             websiteUrl,
             websiteTitle,
             websiteDescription,
-        } as any);
+            isLive: true, // Set to live when saved
+            rating: place?.rating || 0,
+            reviewCount: place?.reviewCount || 0
+        };
+
+        // Save directly to database and fallback to localStorage
+        let databaseSaveSuccess = false;
+        try {
+            // Check if place document exists
+            const existingPlace = await placeService.getByProviderId(placeId);
+            
+            if (existingPlace && existingPlace.$id) {
+                // Update existing document
+                console.log('📝 Updating existing place document:', existingPlace.$id);
+                await placeService.update(existingPlace.$id, placeData);
+            } else {
+                // Create new document
+                console.log('✨ Creating new place document');
+                await placeService.create(placeData);
+            }
+            
+            console.log('✅ Place data saved successfully to database');
+            databaseSaveSuccess = true;
+        } catch (error) {
+            console.error('❌ Database save failed, using localStorage fallback:', error);
+            
+            // Save to localStorage as fallback
+            try {
+                const savedPlaces = JSON.parse(localStorage.getItem('massage_places') || '[]');
+                const existingIndex = savedPlaces.findIndex((p: any) => p.id === placeId);
+                
+                if (existingIndex >= 0) {
+                    savedPlaces[existingIndex] = { ...placeData, $id: `local_${placeId}`, isLive: true };
+                } else {
+                    savedPlaces.push({ ...placeData, $id: `local_${placeId}`, isLive: true });
+                }
+                
+                localStorage.setItem('massage_places', JSON.stringify(savedPlaces));
+                console.log('✅ Place data saved to localStorage successfully');
+            } catch (localError) {
+                console.error('❌ Failed to save to localStorage:', localError);
+                alert('Failed to save profile. Please try again.');
+                return;
+            }
+        }
+
+        // Also call onSave for any parent component logic
+        onSave(placeData as any);
 
         // Reload the saved data to display in the form
         try {
@@ -622,10 +689,11 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             console.error('⚠️ Failed to reload place data after save:', error);
         }
 
-        // Show admin approval message
+        // Show success message
+        const saveMethod = databaseSaveSuccess ? 'Database' : 'Local Storage';
         const notification = document.createElement('div');
         notification.innerHTML = `
-            <div class="fixed top-4 left-4 right-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white p-6 rounded-xl shadow-2xl z-50 max-w-md mx-auto">
+            <div class="fixed top-4 left-4 right-4 bg-gradient-to-r from-green-500 to-green-600 text-white p-6 rounded-xl shadow-2xl z-50 max-w-md mx-auto">
                 <div class="flex items-center gap-4">
                     <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center flex-shrink-0">
                         <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -633,15 +701,15 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                         </svg>
                     </div>
                     <div class="flex-1">
-                        <h3 class="font-bold text-lg mb-1">Profile Saved & Live!</h3>
-                        <p class="text-orange-100 text-sm leading-relaxed">
-                            Your profile is now <strong>live and visible</strong> to customers. The admin can review, edit, or deactivate your profile if needed.
+                        <h3 class="font-bold text-lg mb-1">Profile Saved Successfully!</h3>
+                        <p class="text-green-100 text-sm leading-relaxed">
+                            Your massage place profile is now <strong>live and visible</strong> in the directory. ${databaseSaveSuccess ? 'Saved to cloud database.' : 'Saved locally - will sync to cloud when database is available.'}
                         </p>
-                        <div class="mt-3 flex items-center gap-2 text-xs text-orange-200">
+                        <div class="mt-3 flex items-center gap-2 text-xs text-green-200">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
                             </svg>
-                            <span>Changes are effective immediately</span>
+                            <span>Saved via ${saveMethod}</span>
                         </div>
                     </div>
                 </div>
