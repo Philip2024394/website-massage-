@@ -11,6 +11,8 @@ import { MASSAGE_TYPES_CATEGORIZED } from '../constants/rootConstants';
 import { LogOut, Activity, Calendar, TrendingUp, Bell, User, Crown, Building, FileText, Settings, Phone, X, Tag, Share2, Download, Star, CreditCard } from 'lucide-react';
 import { ColoredHistoryIcon, ColoredCoinsIcon } from '../components/ColoredIcons';
 import { AnalyticsCard, ActivatedDiscountButton, LiveDiscountCountdown, BookingCard, BusyCountdownTimer } from '../components/therapist-dashboard';
+import CheckoutButton from '../components/CheckoutButton';
+import { resolveRegion, getMonthlyPaymentLink, getMonthlyPriceDisplay } from '../utils/membership';
 
 
 
@@ -109,6 +111,10 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
     const [showBusyTimerModal, setShowBusyTimerModal] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [busyUntil, setBusyUntil] = useState<Date | null>(null);
+    // Membership/Stripe values
+    const membershipRegion = resolveRegion();
+    const membershipPriceDisplay = getMonthlyPriceDisplay(membershipRegion);
+    const membershipPaymentLink = getMonthlyPaymentLink(membershipRegion);
     // Commission summary state
     const [commissionLoading, setCommissionLoading] = useState(false);
     const [commissionPendingTotal, setCommissionPendingTotal] = useState(0);
@@ -3717,7 +3723,16 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                     </div>
                 </div>
             )}
-
+            {/* Floating Membership Subscribe Button (Stripe) */}
+            {membershipPaymentLink && (
+                <div className="fixed right-4 bottom-24 sm:bottom-8 z-40">
+                    <CheckoutButton
+                        paymentLinkUrl={membershipPaymentLink}
+                        label={`Subscribe • ${membershipPriceDisplay}`}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-600 hover:bg-purple-700 text-white shadow-lg"
+                    />
+                </div>
+            )}
             </div>
         </div>
     );

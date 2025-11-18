@@ -8,6 +8,8 @@ import Button from '../components/Button';
 import DiscountSharePage from './DiscountSharePage';
 import MembershipPlansPage from './MembershipPlansPage';
 import ImageUpload from '../components/ImageUpload';
+import CheckoutButton from '../components/CheckoutButton';
+import { resolveRegion, getMonthlyPaymentLink, getMonthlyPriceDisplay } from '../utils/membership';
 // Hotel/Villa Opt-In removed
 
 import { placeService } from '../lib/appwriteService';
@@ -133,6 +135,10 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     const [languages, setLanguages] = useState<string[]>([]);
     const [additionalServices, setAdditionalServices] = useState<string[]>([]);
     const [coordinates, setCoordinates] = useState({ lat: 0, lng: 0 });
+    // Membership/Stripe values
+    const membershipRegion = resolveRegion();
+    const membershipPriceDisplay = getMonthlyPriceDisplay(membershipRegion);
+    const membershipPaymentLink = getMonthlyPaymentLink(membershipRegion);
 
     // Debug function to check location system status
     const debugLocationSystem = () => {
@@ -2331,6 +2337,17 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                 </div>
             </main>
 
+            {/* Floating Membership Subscribe Button (Stripe) */}
+            {membershipPaymentLink && (
+                <div className="fixed right-4 bottom-24 sm:bottom-8 z-40">
+                    <CheckoutButton
+                        paymentLinkUrl={membershipPaymentLink}
+                        label={`Subscribe • ${membershipPriceDisplay}`}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-600 hover:bg-purple-700 text-white shadow-lg"
+                    />
+                </div>
+            )}
+
 
 
             {/* Validation Popup */}
@@ -2341,6 +2358,15 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                 missingFields={validationMissingFields}
                 type="error"
             />
+            {membershipPaymentLink && (
+                <div className="fixed right-4 bottom-24 sm:bottom-8 z-40">
+                    <CheckoutButton
+                        paymentLinkUrl={membershipPaymentLink}
+                        label={`Subscribe • ${membershipPriceDisplay}`}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-600 hover:bg-purple-700 text-white shadow-lg"
+                    />
+                </div>
+            )}
         </div>
     );
 };
