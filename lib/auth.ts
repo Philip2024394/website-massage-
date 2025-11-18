@@ -294,13 +294,13 @@ export const placeAuth = {
                 isOnline: true,
                 openingTime: '09:00',
                 closingTime: '21:00',
-                coordinates: '',
+                coordinates: JSON.stringify({ lat: 0, lng: 0 }),
                 description: '',
                 mainImage: '',
                 profilePicture: '',
                 whatsappNumber: '',
-                massageTypes: JSON.stringify([]),
-                languages: JSON.stringify([]),
+                massageTypes: '',
+                languages: '',
                 // Referral/Attribution fields (pruned automatically if schema doesn't allow)
                 agentCode: normalizedAgentCode,
                 referralSource: hasReferral ? 'agent' : 'direct',
@@ -458,13 +458,13 @@ export const placeAuth = {
                         isOnline: true,
                         openingTime: '09:00',
                         closingTime: '21:00',
-                        coordinates: '',
+                        coordinates: JSON.stringify({ lat: 0, lng: 0 }),
                         description: '',
                         mainImage: '',
                         profilePicture: '',
                         whatsappNumber: '',
-                        massageTypes: JSON.stringify([]),
-                        languages: JSON.stringify([])
+                        massageTypes: '',
+                        languages: ''
                     };
                     
                     const newPlace = await databases.createDocument(
