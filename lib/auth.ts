@@ -204,12 +204,27 @@ export const therapistAuth = {
             }
             
             console.log('🔵 [Therapist Sign-In] Creating email/password session...');
-            const session = await account.createEmailPasswordSession(email, password);
-            console.log('✅ [Therapist Sign-In] Session created:', {
-                sessionId: session.$id,
-                userId: session.userId,
-                expire: session.expire
-            });
+            let session;
+            try {
+                session = await account.createEmailPasswordSession(email, password);
+                console.log('✅ [Therapist Sign-In] Session created:', {
+                    sessionId: session.$id,
+                    userId: session.userId,
+                    expire: session.expire
+                });
+            } catch (sessionError: any) {
+                console.error('❌ [Therapist Sign-In] Session creation failed!');
+                console.error('Error details:', {
+                    message: sessionError.message,
+                    code: sessionError.code,
+                    type: sessionError.type
+                });
+                
+                if (sessionError.code === 401) {
+                    throw new Error(`Login failed: Invalid email or password. Make sure the account exists in Appwrite Auth (not just the therapists collection).`);
+                }
+                throw sessionError;
+            }
             
             // Small delay to ensure session cookie is set
             await new Promise(resolve => setTimeout(resolve, 100));
