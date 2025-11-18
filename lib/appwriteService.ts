@@ -299,6 +299,7 @@ import { Client, Databases, Account, Query, Storage, ID, Permission, Role } from
 import { APPWRITE_CONFIG } from './appwrite.config';
 import { rateLimitedDb } from './rateLimitService';
 import type { AgentVisit } from '../types';
+import { detectUserCurrency } from '../utils/currency';
 
 
 // Initialize Appwrite Client
@@ -335,11 +336,23 @@ export const therapistService = {
     async getAll(): Promise<any[]> {
         try {
             console.log('📋 Fetching all therapists from collection:', APPWRITE_CONFIG.collections.therapists);
-            const response = await rateLimitedDb.listDocuments(
-                databases,
-                APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.therapists
-            );
+            const cc = (() => { try { return detectUserCurrency().countryCode?.toUpperCase() || 'ID'; } catch { return 'ID'; } })();
+            let response: any;
+            try {
+                response = await rateLimitedDb.listDocuments(
+                    databases,
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.therapists,
+                    [Query.equal('countryCode', cc)]
+                );
+            } catch (e) {
+                console.warn('Country filter failed (therapists), falling back to unfiltered list:', (e as any)?.message);
+                response = await rateLimitedDb.listDocuments(
+                    databases,
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.therapists
+                );
+            }
             console.log('✅ Fetched therapists:', response.documents.length);
             
             // Add random main images and normalize status to therapists
@@ -418,12 +431,24 @@ export const therapistService = {
             }
 
             console.log('🔍 Searching for therapist by email:', email);
-            const response = await rateLimitedDb.listDocuments(
-                databases,
-                APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.therapists,
-                [Query.equal('email', email)]
-            );
+            const cc = (() => { try { return detectUserCurrency().countryCode?.toUpperCase() || 'ID'; } catch { return 'ID'; } })();
+            let response: any;
+            try {
+                response = await rateLimitedDb.listDocuments(
+                    databases,
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.therapists,
+                    [Query.equal('email', email), Query.equal('countryCode', cc)]
+                );
+            } catch (e) {
+                console.warn('Country filter failed (therapists by email), retrying without it');
+                response = await rateLimitedDb.listDocuments(
+                    databases,
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.therapists,
+                    [Query.equal('email', email)]
+                );
+            }
             console.log('📋 Found therapists with email:', response.documents.length);
             
             // Normalize status for each therapist found
@@ -846,12 +871,14 @@ export const placeService = {
             // If collection not found, try to discover working one
             let response;
             try {
+                const cc = (() => { try { return detectUserCurrency().countryCode?.toUpperCase() || 'ID'; } catch { return 'ID'; } })();
                 response = await databases.listDocuments(
                     APPWRITE_CONFIG.databaseId,
                     collectionId,
                     [
                         Query.equal('category', 'massage-place'),
-                        Query.equal('isLive', true)
+                        Query.equal('isLive', true),
+                        Query.equal('countryCode', cc)
                     ]
                 );
             } catch (collectionError) {
@@ -864,21 +891,34 @@ export const placeService = {
                     
                     // Try again with discovered collection
                     try {
+                        const cc = (() => { try { return detectUserCurrency().countryCode?.toUpperCase() || 'ID'; } catch { return 'ID'; } })();
                         response = await databases.listDocuments(
                             APPWRITE_CONFIG.databaseId,
                             workingId,
                             [
                                 Query.equal('category', 'massage-place'),
-                                Query.equal('isLive', true)
+                                Query.equal('isLive', true),
+                                Query.equal('countryCode', cc)
                             ]
                         );
                     } catch (categoryError) {
                         console.log('⚠️ Category field may not exist, trying without category filter');
-                        response = await databases.listDocuments(
+                        // Try with country filter only
+                        try {
+                            const cc = (() => { try { return detectUserCurrency().countryCode?.toUpperCase() || 'ID'; } catch { return 'ID'; } })();
+                            response = await databases.listDocuments(
+                                APPWRITE_CONFIG.databaseId,
+                                workingId,
+                                [Query.equal('countryCode', cc), Query.limit(50)]
+                            );
+                        } catch (countryErr) {
+                            console.warn('Country filter failed (places), falling back to basic limit:', (countryErr as any)?.message);
+                            response = await databases.listDocuments(
                             APPWRITE_CONFIG.databaseId,
                             workingId,
                             [Query.limit(50)] // Just get some documents
-                        );
+                            );
+                        }
                     }
                 } else {
                     throw new Error('No working collection ID found');
@@ -898,7 +938,19 @@ export const placeService = {
                 code: (error as any)?.code || 'Unknown code',
                 type: (error as any)?.type || 'Unknown type'
             });
-            return [];
+            // Graceful fallback: attempt unfiltered fetch, then client-side filter by detected country
+            try {
+                const cc = (() => { try { return detectUserCurrency().countryCode?.toUpperCase() || 'ID'; } catch { return 'ID'; } })();
+                const raw = await databases.listDocuments(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.places,
+                    [Query.limit(100)]
+                );
+                const docs = (raw.documents || []).filter((d: any) => (d.countryCode || '').toUpperCase() === cc);
+                return docs;
+            } catch (e2) {
+                return [];
+            }
         }
     },
     async getById(id: string): Promise<any> {
