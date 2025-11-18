@@ -486,7 +486,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
         } finally {
             setIsLoading(false);
         }
-    }, [therapistId, existingTherapistData]);
+    }, [therapistId]);
 
     useEffect(() => {
         isMountedRef.current = true;
@@ -503,7 +503,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
             clearTimeout(loadingTimeout);
             isMountedRef.current = false;
         };
-    }, [therapistId, existingTherapistData]);
+    }, [therapistId]);
 
     // Auto-check discount expiration and busy timer
     useEffect(() => {
