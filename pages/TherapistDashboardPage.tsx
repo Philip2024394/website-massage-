@@ -862,7 +862,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                 status === AvailabilityStatus.Offline ? 'bg-red-500' :
                                 'bg-gray-500'
                             }`} />
-                            <span className="text-sm font-medium hidden sm:inline">{status}</span>
+                            <span className="text-sm font-medium hidden sm:inline">{String(status)}</span>
                         </button>
 
                         {/* Burger Menu - Same Icon as Home Page */}
