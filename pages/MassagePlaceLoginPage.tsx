@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { placeAuth } from '../lib/auth';
 import { saveSessionCache } from '../lib/sessionManager';
 import { checkRateLimit, handleAppwriteError, resetRateLimit } from '../lib/rateLimitUtils';
@@ -23,6 +23,7 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
     const [error, setError] = useState('');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const isSubmittingRef = React.useRef(false);
 
     // Make rate limit reset functions available in browser console for testing
     React.useEffect(() => {
@@ -85,8 +86,16 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
         console.log('   - createTestMassageSpa(email, password)');
     }, []);
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        // Prevent double submission using ref
+        if (isSubmittingRef.current) {
+            console.log('⚠️ Already processing, ignoring duplicate submit');
+            return;
+        }
+        
+        isSubmittingRef.current = true;
         setError('');
         setLoading(true);
 
@@ -94,13 +103,11 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
             // Validate inputs
             if (!email || !password) {
                 setError('Please enter both email and password');
-                setLoading(false);
                 return;
             }
 
             if (password.length < 8) {
                 setError('Password must be at least 8 characters');
-                setLoading(false);
                 return;
             }
 
@@ -111,7 +118,6 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
 
             if (!checkRateLimit(operation, maxAttempts, windowMs)) {
                 setError(`Too many ${isSignUp ? 'signup' : 'login'} attempts. Please wait before trying again.`);
-                setLoading(false);
                 return;
             }
 
@@ -185,8 +191,9 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
             setError(errorMessage);
         } finally {
             setLoading(false);
+            isSubmittingRef.current = false;
         }
-    };
+    }, [email, password, isSignUp, onSuccess]);
 
     return (
         <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
