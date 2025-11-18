@@ -2219,6 +2219,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                     </nav>
                 </div>
             </div>
+            )}
 
             {/* Content Area - with proper scrolling between header and footer */}
             <main className="flex-1 overflow-y-auto">

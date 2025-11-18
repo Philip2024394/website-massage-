@@ -25,7 +25,7 @@ const RegistrationChoicePage = React.lazy(() => import('./pages/RegistrationChoi
 const TherapistDashboardPage = React.lazy(() => import('./pages/TherapistDashboardPage'));
 const TherapistProfilePage = React.lazy(() => import('./pages/TherapistProfilePage'));
 const TherapistStatusPage = React.lazy(() => import('./pages/TherapistStatusPage'));
-const PlaceDashboardPage = React.lazy(() => import('./pages/PlaceDashboardPage'));
+import PlaceDashboardPage from './pages/PlaceDashboardPage';
 
 // Agent pages deprecated: routes now redirect to Indastreet Partner (villa) routes
 const ServiceTermsPage = React.lazy(() => import('./pages/ServiceTermsPage'));
