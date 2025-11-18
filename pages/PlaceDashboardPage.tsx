@@ -1721,7 +1721,6 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                         </p>
                                         <div className="text-sm text-gray-700 mt-1 space-y-1">
                                             <p><strong>Direct bookings from home page:</strong> You keep <strong>100% of the income</strong></p>
-                                            <p><strong>Promoter-referred bookings:</strong> <strong>20% commission</strong> goes to the promoter, you keep 80%</p>
                                         </div>
                                     </div>
                                 </div>
