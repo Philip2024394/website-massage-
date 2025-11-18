@@ -762,14 +762,28 @@ export const placeService = {
     async getByProviderId(providerId: string): Promise<any | null> {
         try {
             console.log('🔍 Searching for place by provider ID in Appwrite:', providerId);
-            const response = await databases.listDocuments(
-                APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.places,
-                [
-                    Query.equal('id', providerId),
-                    Query.equal('category', 'massage-place')
-                ]
-            );
+            
+            // Try with category filter first
+            let response;
+            try {
+                response = await databases.listDocuments(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.places,
+                    [
+                        Query.equal('id', providerId),
+                        Query.equal('category', 'massage-place')
+                    ]
+                );
+            } catch (categoryError) {
+                console.log('⚠️ Category field may not exist, trying without category filter');
+                // Fallback: try without category filter
+                response = await databases.listDocuments(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.places,
+                    [Query.equal('id', providerId)]
+                );
+            }
+            
             if (response.documents.length > 0) {
                 console.log('✅ Found place in Appwrite database:', response.documents[0].name);
                 return response.documents[0];
@@ -778,7 +792,8 @@ export const placeService = {
             return null;
         } catch (error) {
             console.error('❌ Error finding place by provider ID:', error);
-            throw error;
+            console.error('❌ Full error:', error);
+            return null; // Don't throw, return null instead
         }
     },
     async getPlaces(): Promise<any[]> {
@@ -788,14 +803,27 @@ export const placeService = {
     async getAll(): Promise<any[]> {
         try {
             console.log('📋 Fetching all places from Appwrite collection:', APPWRITE_CONFIG.collections.places);
-            const response = await databases.listDocuments(
-                APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.places,
-                [
-                    Query.equal('category', 'massage-place'),
-                    Query.equal('isLive', true)
-                ]
-            );
+            
+            // Try with category filter first
+            let response;
+            try {
+                response = await databases.listDocuments(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.places,
+                    [
+                        Query.equal('category', 'massage-place'),
+                        Query.equal('isLive', true)
+                    ]
+                );
+            } catch (categoryError) {
+                console.log('⚠️ Category field may not exist, trying without category filter');
+                // Fallback: try without category filter
+                response = await databases.listDocuments(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.places,
+                    [Query.equal('isLive', true)]
+                );
+            }
             
             console.log('✅ Fetched places from Appwrite:', response.documents.length);
             response.documents.forEach((p: any) => {

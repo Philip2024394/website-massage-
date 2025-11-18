@@ -11,8 +11,8 @@ import ImageUpload from '../components/ImageUpload';
 // Hotel/Villa Opt-In removed
 
 import { placeService } from '../lib/appwriteService';
-import { databases } from '../lib/appwrite';
-import { APPWRITE_CONFIG } from '../lib/appwrite.config';
+import { databases, account } from '../lib/appwrite';
+import { APPWRITE_CONFIG } from '../lib/appwrite.config.ts';
 import { Query } from 'appwrite';
 import TherapistTermsPage from './TherapistTermsPage';
 import UserSolidIcon from '../components/icons/UserSolidIcon';
@@ -639,6 +639,34 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             isOnline: true
         };
 
+        // Validate collection ID before saving
+        if (!APPWRITE_CONFIG.collections.places) {
+            console.error('❌ No collection ID configured');
+            alert('Collection ID not configured. Please check appwrite.config.ts');
+            return;
+        }
+        
+        console.log('❌ Using collection ID:', APPWRITE_CONFIG.collections.places);
+        
+        console.log('💾 Saving to collection:', APPWRITE_CONFIG.collections.places);
+        console.log('📄 Place data being saved:', JSON.stringify(placeData, null, 2));
+        
+        // Check authentication first
+        try {
+            const user = await account.get();
+            console.log('👤 Current user:', user?.$id);
+        } catch (authError) {
+            console.log('⚠️ No active session, creating anonymous session...');
+            try {
+                await account.createAnonymousSession();
+                console.log('✅ Anonymous session created');
+            } catch (anonError) {
+                console.error('❌ Failed to create session:', anonError);
+                alert('Unable to authenticate. Please refresh the page and try again.');
+                return;
+            }
+        }
+        
         // Save directly to Appwrite database
         try {
             // Check if place document exists
@@ -657,7 +685,26 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             console.log('✅ Place data saved successfully to Appwrite database');
         } catch (error) {
             console.error('❌ Failed to save place data to Appwrite:', error);
-            alert('Failed to save profile to database. Please check your connection and try again.');
+            console.error('❌ Error details:', {
+                message: error instanceof Error ? error.message : 'Unknown error',
+                code: (error as any)?.code || 'Unknown code',
+                type: (error as any)?.type || 'Unknown type',
+                collectionId: APPWRITE_CONFIG.collections.places,
+                databaseId: APPWRITE_CONFIG.databaseId
+            });
+            
+            let errorMessage = 'Failed to save profile to database.';
+            if (error instanceof Error) {
+                if (error.message.includes('Collection not found')) {
+                    errorMessage = 'Collection not found. Please check if the therapists collection exists in Appwrite.';
+                } else if (error.message.includes('Missing required attribute')) {
+                    errorMessage = 'Missing required fields. Please check the collection schema.';
+                } else if (error.message.includes('Invalid')) {
+                    errorMessage = `Invalid data: ${error.message}`;
+                }
+            }
+            
+            alert(errorMessage + ' Please check the console for details.');
             return;
         }
 
