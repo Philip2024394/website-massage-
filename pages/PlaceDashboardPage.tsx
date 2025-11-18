@@ -1943,9 +1943,9 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-20">
+        <div className="min-h-screen bg-gray-50 flex flex-col">
             {/* Header with Burger Menu */}
-            <header className="bg-white shadow-sm px-4 py-3 sticky top-0 z-40" data-page-header="true">
+            <header className="bg-white shadow-sm px-4 py-3 sticky top-0 z-40 flex-shrink-0" data-page-header="true">
                 <div className="max-w-7xl mx-auto flex justify-between items-center">
                     <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-3">
                         <span className="text-2xl">📍</span>
@@ -1984,235 +1984,371 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
 
             {/* Side Drawer */}
             {isSideDrawerOpen && (
-                <div className="fixed inset-0 z-50">
+                <div className="fixed inset-0" role="dialog" aria-modal="true" style={{ zIndex: 99999 }}>
                     {/* Overlay */}
                     <div 
-                        className="absolute inset-0 bg-black bg-opacity-50"
+                        className="absolute inset-0 bg-black bg-opacity-50 transition-opacity"
                         onClick={() => setIsSideDrawerOpen(false)}
                     ></div>
                     
-                    {/* Drawer */}
-                    <div className="absolute right-0 top-0 h-full w-80 bg-white shadow-xl">
-                        {/* Drawer Header */}
-                        <div className="bg-orange-500 px-6 py-4">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <h2 className="text-xl font-bold text-white">Menu</h2>
+                    {/* Drawer Panel */}
+                    <div 
+                        className="absolute right-0 top-0 bottom-0 w-[70%] sm:w-80 bg-white shadow-2xl flex flex-col transform transition-transform ease-in-out duration-300"
+                        style={{ zIndex: 99999 }}
+                    >
+                        {/* Header */}
+                        <div className="p-6 flex justify-between items-center border-b border-black">
+                            <h2 className="font-bold text-2xl">
+                                <span className="text-black">Inda</span>
+                                <span className="text-orange-500">Street</span>
+                            </h2>
+                            <button
+                                onClick={() => setIsSideDrawerOpen(false)}
+                                className="p-2 rounded-full transition-colors"
+                                aria-label="Close menu"
+                            >
+                                <X className="w-6 h-6 text-black" />
+                            </button>
+                        </div>
+
+                        {/* Scrollable Menu Content */}
+                        <nav className="flex-grow overflow-y-auto p-4">
+                            <div className="space-y-2">
+                                {/* DASHBOARD SECTION */}
+                                <div className="mb-6">
+                                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2">
+                                        Dashboard
+                                    </h3>
+                                    <div className="space-y-2">
+                                        <button
+                                            onClick={() => {
+                                                setActiveTab('profile');
+                                                setIsSideDrawerOpen(false);
+                                            }}
+                                            className={`flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 group transform hover:scale-105 ${
+                                                activeTab === 'profile' ? 'border-orange-500' : 'border-gray-300'
+                                            }`}
+                                        >
+                                            <div className={`p-2 rounded-lg ${activeTab === 'profile' ? 'bg-gradient-to-br from-orange-500 to-orange-600' : 'bg-gradient-to-br from-gray-400 to-gray-500'}`}>
+                                                <ColoredProfileIcon className="w-5 h-5 text-white" />
+                                            </div>
+                                            <div className="flex-grow">
+                                                <p className={`font-semibold transition-colors ${activeTab === 'profile' ? 'text-orange-600' : 'text-gray-800 group-hover:text-orange-600'}`}>
+                                                    Profile
+                                                </p>
+                                                <p className="text-xs text-gray-500">Manage your profile</p>
+                                            </div>
+                                        </button>
+
+                                        <button
+                                            onClick={() => {
+                                                setActiveTab('bookings');
+                                                setIsSideDrawerOpen(false);
+                                            }}
+                                            className={`flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 group transform hover:scale-105 ${
+                                                activeTab === 'bookings' ? 'border-blue-500' : 'border-gray-300'
+                                            }`}
+                                        >
+                                            <div className={`p-2 rounded-lg ${activeTab === 'bookings' ? 'bg-gradient-to-br from-blue-500 to-blue-600' : 'bg-gradient-to-br from-gray-400 to-gray-500'}`}>
+                                                <ColoredCalendarIcon className="w-5 h-5 text-white" />
+                                            </div>
+                                            <div className="flex-grow">
+                                                <p className={`font-semibold transition-colors ${activeTab === 'bookings' ? 'text-blue-600' : 'text-gray-800 group-hover:text-blue-600'}`}>
+                                                    Bookings
+                                                </p>
+                                                <p className="text-xs text-gray-500">View appointments</p>
+                                            </div>
+                                            {upcomingBookings.length > 0 && (
+                                                <span className="bg-orange-500 text-white text-xs rounded-full px-2.5 py-0.5 font-bold">
+                                                    {upcomingBookings.length}
+                                                </span>
+                                            )}
+                                        </button>
+
+                                        <button
+                                            onClick={() => {
+                                                setActiveTab('analytics');
+                                                setIsSideDrawerOpen(false);
+                                            }}
+                                            className={`flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 group transform hover:scale-105 ${
+                                                activeTab === 'analytics' ? 'border-purple-500' : 'border-gray-300'
+                                            }`}
+                                        >
+                                            <div className={`p-2 rounded-lg ${activeTab === 'analytics' ? 'bg-gradient-to-br from-purple-500 to-purple-600' : 'bg-gradient-to-br from-gray-400 to-gray-500'}`}>
+                                                <ColoredAnalyticsIcon className="w-5 h-5 text-white" />
+                                            </div>
+                                            <div className="flex-grow">
+                                                <p className={`font-semibold transition-colors ${activeTab === 'analytics' ? 'text-purple-600' : 'text-gray-800 group-hover:text-purple-600'}`}>
+                                                    Analytics
+                                                </p>
+                                                <p className="text-xs text-gray-500">View statistics</p>
+                                            </div>
+                                        </button>
+
+                                        <button
+                                            onClick={() => {
+                                                setActiveTab('hotelVilla');
+                                                setIsSideDrawerOpen(false);
+                                            }}
+                                            className={`flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 group transform hover:scale-105 ${
+                                                activeTab === 'hotelVilla' ? 'border-indigo-500' : 'border-gray-300'
+                                            }`}
+                                        >
+                                            <div className={`p-2 rounded-lg ${activeTab === 'hotelVilla' ? 'bg-gradient-to-br from-indigo-500 to-indigo-600' : 'bg-gradient-to-br from-gray-400 to-gray-500'}`}>
+                                                <ColoredHotelIcon className="w-5 h-5 text-white" />
+                                            </div>
+                                            <div className="flex-grow">
+                                                <p className={`font-semibold transition-colors ${activeTab === 'hotelVilla' ? 'text-indigo-600' : 'text-gray-800 group-hover:text-indigo-600'}`}>
+                                                    Indastreet Partners
+                                                </p>
+                                                <p className="text-xs text-gray-500">Partner management</p>
+                                            </div>
+                                        </button>
+                                    </div>
                                 </div>
-                                <button
-                                    onClick={() => setIsSideDrawerOpen(false)}
-                                    className="text-white hover:text-orange-200 transition-colors"
-                                >
-                                    <X size={24} />
-                                </button>
+
+                                {/* FEATURES SECTION */}
+                                <div className="mb-6">
+                                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2">
+                                        Features
+                                    </h3>
+                                    <div className="space-y-2">
+                                        <button
+                                            onClick={() => {
+                                                if (onNavigate) onNavigate('place-discount-system');
+                                                setIsSideDrawerOpen(false);
+                                            }}
+                                            className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-yellow-500 group transform hover:scale-105"
+                                        >
+                                            <div className="p-2 bg-gradient-to-br from-orange-400 to-yellow-500 rounded-lg flex items-center justify-center">
+                                                <span className="text-white text-sm font-bold">%</span>
+                                            </div>
+                                            <div className="flex-grow">
+                                                <p className="font-semibold text-gray-800 group-hover:text-yellow-600 transition-colors">
+                                                    Discount System
+                                                </p>
+                                                <p className="text-xs text-gray-500">Manage promotions</p>
+                                            </div>
+                                            <span className="bg-gradient-to-r from-orange-400 to-yellow-500 text-white text-xs px-2 py-1 rounded-full font-bold">
+                                                NEW
+                                            </span>
+                                        </button>
+
+                                        <button
+                                            onClick={() => {
+                                                setActiveTab('notifications');
+                                                setIsSideDrawerOpen(false);
+                                            }}
+                                            className={`flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 group transform hover:scale-105 ${
+                                                activeTab === 'notifications' ? 'border-red-500' : 'border-gray-300'
+                                            }`}
+                                        >
+                                            <div className={`p-2 rounded-lg ${activeTab === 'notifications' ? 'bg-gradient-to-br from-red-500 to-red-600' : 'bg-gradient-to-br from-gray-400 to-gray-500'}`}>
+                                                <ColoredBellIcon className="w-5 h-5 text-white" />
+                                            </div>
+                                            <div className="flex-grow">
+                                                <p className={`font-semibold transition-colors ${activeTab === 'notifications' ? 'text-red-600' : 'text-gray-800 group-hover:text-red-600'}`}>
+                                                    Notifications
+                                                </p>
+                                                <p className="text-xs text-gray-500">View alerts</p>
+                                            </div>
+                                            {(notifications || []).filter(n => !n.isRead).length > 0 && (
+                                                <span className="bg-orange-500 text-white text-xs rounded-full px-2.5 py-0.5 font-bold">
+                                                    {(notifications || []).filter(n => !n.isRead).length}
+                                                </span>
+                                            )}
+                                        </button>
+
+                                        <button
+                                            onClick={() => {
+                                                setActiveTab('discounts');
+                                                setIsSideDrawerOpen(false);
+                                            }}
+                                            className={`flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 group transform hover:scale-105 ${
+                                                activeTab === 'discounts' ? 'border-green-500' : 'border-gray-300'
+                                            }`}
+                                        >
+                                            <div className={`p-2 rounded-lg ${activeTab === 'discounts' ? 'bg-gradient-to-br from-green-500 to-green-600' : 'bg-gradient-to-br from-gray-400 to-gray-500'}`}>
+                                                <ColoredTagIcon className="w-5 h-5 text-white" />
+                                            </div>
+                                            <div className="flex-grow">
+                                                <p className={`font-semibold transition-colors ${activeTab === 'discounts' ? 'text-green-600' : 'text-gray-800 group-hover:text-green-600'}`}>
+                                                    Discounts
+                                                </p>
+                                                <p className="text-xs text-gray-500">Manage offers</p>
+                                            </div>
+                                        </button>
+                                        
+                                        {/* Discount Badge Management */}
+                                        {onNavigate && (
+                                            <button
+                                                onClick={() => {
+                                                    setIsSideDrawerOpen(false);
+                                                    onNavigate('placeDiscountBadge');
+                                                }}
+                                                className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-purple-500 group transform hover:scale-105"
+                                            >
+                                                <div className="p-2 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg">
+                                                    <ColoredTagIcon className="w-5 h-5 text-white" />
+                                                </div>
+                                                <div className="flex-grow">
+                                                    <p className="font-semibold text-gray-800 group-hover:text-purple-600 transition-colors">
+                                                        Discount Badges
+                                                    </p>
+                                                    <p className="text-xs text-gray-500">Badge management</p>
+                                                </div>
+                                            </button>
+                                        )}
+
+                                        {/* Verified Pro Badge */}
+                                        {onNavigate && (
+                                            <button
+                                                onClick={() => {
+                                                    setIsSideDrawerOpen(false);
+                                                    onNavigate('verifiedProBadge');
+                                                }}
+                                                className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-emerald-500 group transform hover:scale-105"
+                                            >
+                                                <div className="p-2 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg flex items-center justify-center">
+                                                    <span className="text-white text-sm font-bold">✓</span>
+                                                </div>
+                                                <div className="flex-grow">
+                                                    <p className="font-semibold text-gray-800 group-hover:text-emerald-600 transition-colors">
+                                                        Verified Pro Badge
+                                                    </p>
+                                                    <p className="text-xs text-gray-500">Get verified</p>
+                                                </div>
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* ACCOUNT SECTION */}
+                                <div className="mb-6">
+                                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2">
+                                        Account
+                                    </h3>
+                                    <div className="space-y-2">
+                                        <button
+                                            onClick={() => {
+                                                setActiveTab('membership');
+                                                setIsSideDrawerOpen(false);
+                                            }}
+                                            className={`flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 group transform hover:scale-105 ${
+                                                activeTab === 'membership' ? 'border-amber-500' : 'border-gray-300'
+                                            }`}
+                                        >
+                                            <div className={`p-2 rounded-lg ${activeTab === 'membership' ? 'bg-gradient-to-br from-amber-500 to-amber-600' : 'bg-gradient-to-br from-gray-400 to-gray-500'}`}>
+                                                <ColoredCrownIcon className="w-5 h-5 text-white" />
+                                            </div>
+                                            <div className="flex-grow">
+                                                <p className={`font-semibold transition-colors ${activeTab === 'membership' ? 'text-amber-600' : 'text-gray-800 group-hover:text-amber-600'}`}>
+                                                    Membership Plans
+                                                </p>
+                                                <p className="text-xs text-gray-500">Upgrade account</p>
+                                            </div>
+                                        </button>
+
+                                        <button
+                                            onClick={() => {
+                                                setIsSideDrawerOpen(false);
+                                                if (onNavigate) {
+                                                    onNavigate('placeTerms');
+                                                }
+                                            }}
+                                            className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-slate-500 group transform hover:scale-105"
+                                        >
+                                            <div className="p-2 bg-gradient-to-br from-slate-500 to-slate-600 rounded-lg">
+                                                <ColoredDocumentIcon className="w-5 h-5 text-white" />
+                                            </div>
+                                            <div className="flex-grow">
+                                                <p className="font-semibold text-gray-800 group-hover:text-slate-600 transition-colors">
+                                                    Terms & Conditions
+                                                </p>
+                                                <p className="text-xs text-gray-500">Legal terms</p>
+                                            </div>
+                                        </button>
+                                    </div>
+                                </div>
+
+                            {/* COIN REWARDS SECTION */}
+                            {onNavigate && (
+                                <div className="mb-6">
+                                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2">
+                                        Coin Rewards
+                                    </h3>
+                                    <div className="space-y-2">
+                                        <button
+                                            onClick={() => {
+                                                setIsSideDrawerOpen(false);
+                                                onNavigate('coin-history');
+                                            }}
+                                            className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-amber-500 group transform hover:scale-105"
+                                        >
+                                            <div className="p-2 bg-gradient-to-br from-amber-500 to-amber-600 rounded-lg">
+                                                <ColoredHistoryIcon className="w-5 h-5 text-white" />
+                                            </div>
+                                            <div className="flex-grow">
+                                                <p className="font-semibold text-gray-800 group-hover:text-amber-600 transition-colors">
+                                                    Coin History
+                                                </p>
+                                                <p className="text-xs text-gray-500">View coin transactions</p>
+                                            </div>
+                                        </button>
+
+                                        <button
+                                            onClick={() => {
+                                                setIsSideDrawerOpen(false);
+                                                onNavigate('coin-shop');
+                                            }}
+                                            className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-green-500 group transform hover:scale-105"
+                                        >
+                                            <div className="p-2 bg-gradient-to-br from-green-500 to-green-600 rounded-lg">
+                                                <ColoredCoinsIcon className="w-5 h-5 text-white" />
+                                            </div>
+                                            <div className="flex-grow">
+                                                <p className="font-semibold text-gray-800 group-hover:text-green-600 transition-colors">
+                                                    Coin Shop
+                                                </p>
+                                                <p className="text-xs text-gray-500">Redeem coins</p>
+                                            </div>
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* LOGOUT SECTION */}
+                            <div className="mb-6 pt-4 border-t border-gray-200">
+                                <div className="space-y-2">
+                                    <button
+                                        onClick={() => {
+                                            setIsSideDrawerOpen(false);
+                                            onLogout();
+                                        }}
+                                        className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-red-500 group transform hover:scale-105"
+                                    >
+                                        <div className="p-2 bg-gradient-to-br from-red-500 to-red-600 rounded-lg">
+                                            <LogOut className="w-5 h-5 text-white" />
+                                        </div>
+                                        <div className="flex-grow">
+                                            <p className="font-semibold text-gray-800 group-hover:text-red-600 transition-colors">
+                                                Log Out
+                                            </p>
+                                            <p className="text-xs text-gray-500">Sign out</p>
+                                        </div>
+                                    </button>
+                                </div>
                             </div>
                         </div>
-
-                        {/* Drawer Menu Items */}
-                        <div className="py-2">
-                            <button
-                                onClick={() => {
-                                    setActiveTab('profile');
-                                    setIsSideDrawerOpen(false);
-                                }}
-                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
-                                    activeTab === 'profile' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
-                                }`}
-                            >
-                                <ColoredProfileIcon className="w-6 h-6" />
-                                <span className="font-medium">Profile</span>
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setActiveTab('bookings');
-                                    setIsSideDrawerOpen(false);
-                                }}
-                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
-                                    activeTab === 'bookings' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
-                                }`}
-                            >
-                                <ColoredCalendarIcon className="w-6 h-6" />
-                                <span className="font-medium">Bookings</span>
-                                {upcomingBookings.length > 0 && (
-                                    <span className="ml-auto bg-orange-500 text-white text-xs rounded-full px-2.5 py-0.5 font-bold">
-                                        {upcomingBookings.length}
-                                    </span>
-                                )}
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setActiveTab('analytics');
-                                    setIsSideDrawerOpen(false);
-                                }}
-                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
-                                    activeTab === 'analytics' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
-                                }`}
-                            >
-                                <ColoredAnalyticsIcon className="w-6 h-6" />
-                                <span className="font-medium">Analytics</span>
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setActiveTab('hotelVilla');
-                                    setIsSideDrawerOpen(false);
-                                }}
-                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
-                                    activeTab === 'hotelVilla' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
-                                }`}
-                            >
-                                <ColoredHotelIcon className="w-6 h-6" />
-                                <span className="font-medium">Indastreet Partners</span>
-                            </button>
-                            <button
-                                onClick={() => {
-                                    if (onNavigate) onNavigate('place-discount-system');
-                                    setIsSideDrawerOpen(false);
-                                }}
-                                className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 border-transparent text-gray-700"
-                            >
-                                <div className="w-6 h-6 bg-gradient-to-br from-orange-400 to-yellow-500 rounded-lg flex items-center justify-center text-white text-sm font-bold">
-                                    %
-                                </div>
-                                <span className="font-medium">Discount System</span>
-                                <div className="ml-auto">
-                                    <span className="bg-gradient-to-r from-orange-400 to-yellow-500 text-white text-xs px-2 py-1 rounded-full font-bold">
-                                        NEW
-                                    </span>
-                                </div>
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setActiveTab('notifications');
-                                    setIsSideDrawerOpen(false);
-                                }}
-                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
-                                    activeTab === 'notifications' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
-                                }`}
-                            >
-                                <ColoredBellIcon className="w-6 h-6" />
-                                <span className="font-medium">Notifications</span>
-                                {(notifications || []).filter(n => !n.isRead).length > 0 && (
-                                    <span className="ml-auto bg-orange-500 text-white text-xs rounded-full px-2.5 py-0.5 font-bold">
-                                        {(notifications || []).filter(n => !n.isRead).length}
-                                    </span>
-                                )}
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setActiveTab('discounts');
-                                    setIsSideDrawerOpen(false);
-                                }}
-                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
-                                    activeTab === 'discounts' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
-                                }`}
-                            >
-                                <ColoredTagIcon className="w-6 h-6" />
-                                <span className="font-medium">Discounts</span>
-                            </button>
-                            
-                            {/* Discount Badge Management */}
-                            {onNavigate && (
-                                <button
-                                    onClick={() => {
-                                        setIsSideDrawerOpen(false);
-                                        onNavigate('placeDiscountBadge');
-                                    }}
-                                    className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-purple-50 transition-colors border-l-4 border-transparent hover:border-purple-500"
-                                >
-                                    <ColoredTagIcon className="w-6 h-6" />
-                                    <span className="font-medium">Discount Badges</span>
-                                </button>
-                            )}
-
-                            {/* Verified Pro Badge */}
-                            {onNavigate && (
-                                <button
-                                    onClick={() => {
-                                        setIsSideDrawerOpen(false);
-                                        onNavigate('verifiedProBadge');
-                                    }}
-                                    className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-emerald-50 transition-colors border-l-4 border-transparent hover:border-emerald-500"
-                                >
-                                    <div className="w-6 h-6 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg flex items-center justify-center text-white text-sm font-bold">✓</div>
-                                    <span className="font-medium">Verified Pro Badge</span>
-                                </button>
-                            )}
-                            
-                            <button
-                                onClick={() => {
-                                    setActiveTab('membership');
-                                    setIsSideDrawerOpen(false);
-                                }}
-                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
-                                    activeTab === 'membership' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
-                                }`}
-                            >
-                                <ColoredCrownIcon className="w-6 h-6" />
-                                <span className="font-medium">Membership Plans</span>
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setIsSideDrawerOpen(false);
-                                    if (onNavigate) {
-                                        onNavigate('placeTerms');
-                                    }
-                                }}
-                                className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 border-transparent hover:border-orange-500"
-                            >
-                                <ColoredDocumentIcon className="w-6 h-6" />
-                                <span className="font-medium">Terms & Conditions</span>
-                            </button>
-
-
-
-                            {/* Coin Rewards Menu Items */}
-                            {onNavigate && (
-                                <>
-                                    <button
-                                        onClick={() => {
-                                            setIsSideDrawerOpen(false);
-                                            onNavigate('coin-history');
-                                        }}
-                                        className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 border-transparent hover:border-orange-500"
-                                    >
-                                        <ColoredHistoryIcon className="w-6 h-6" />
-                                        <span className="font-medium">Coin History</span>
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            setIsSideDrawerOpen(false);
-                                            onNavigate('coin-shop');
-                                        }}
-                                        className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-green-50 transition-colors border-l-4 border-transparent hover:border-green-500"
-                                    >
-                                        <ColoredCoinsIcon className="w-6 h-6" />
-                                        <span className="font-medium">Coin Shop</span>
-                                    </button>
-                                </>
-                            )}
-
-                            {/* Divider */}
-                            <div className="my-2 border-t border-gray-200"></div>
-
-                            {/* Logout Button */}
-                            <button
-                                onClick={() => {
-                                    setIsSideDrawerOpen(false);
-                                    onLogout();
-                                }}
-                                className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-red-50 transition-colors text-red-600 border-l-4 border-transparent hover:border-red-500"
-                            >
-                                <LogOut className="w-5 h-5" />
-                                <span className="font-medium">Log Out</span>
-                            </button>
-                        </div>
-                    </div>
+                    </nav>
                 </div>
-            )}
+            </div>
 
-            {/* Content Area */}
-            <main className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-6 pb-20">
-                {renderContent()}
+            {/* Content Area - with proper scrolling between header and footer */}
+            <main className="flex-1 overflow-y-auto">
+                <div className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-6 pb-24">
+                    {renderContent()}
+                </div>
             </main>
 
 
