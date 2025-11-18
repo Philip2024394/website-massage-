@@ -327,13 +327,34 @@ export const placeAuth = {
                         );
                     } catch (e: any) {
                         const msg: string = e?.message || e?.response?.message || '';
+                        console.error('[Place Sign-Up] Attempt', attempt + 1, 'failed:', msg);
+                        console.error('[Place Sign-Up] Current payload keys:', Object.keys(current));
+                        console.error('[Place Sign-Up] Coordinates value:', current.coordinates);
                         
-                        // Handle missing required attribute by removing it (let schema defaults apply)
-                        if (/Missing required attribute[:\s]*"?coordinates"?/i.test(msg)) {
-                            console.warn('[Place Sign-Up] Removing coordinates field to let schema handle it');
-                            delete current.coordinates;
-                            attempt++;
-                            continue;
+                        // Handle missing or invalid coordinates
+                        if (/Missing required attribute[:\s]*"?coordinates"?/i.test(msg) || /coordinates/i.test(msg)) {
+                            console.warn('[Place Sign-Up] Coordinates error detected, trying alternatives...');
+                            
+                            // Try sequence of fixes
+                            if (current.coordinates === JSON.stringify({ lat: 0, lng: 0 })) {
+                                // Try empty string
+                                current.coordinates = '';
+                                console.warn('[Place Sign-Up] Trying empty string for coordinates');
+                                attempt++;
+                                continue;
+                            } else if (current.coordinates === '') {
+                                // Try removing it entirely
+                                delete current.coordinates;
+                                console.warn('[Place Sign-Up] Removing coordinates entirely');
+                                attempt++;
+                                continue;
+                            } else if (!current.hasOwnProperty('coordinates')) {
+                                // Add it back as JSON string
+                                current.coordinates = JSON.stringify({ lat: 0, lng: 0 });
+                                console.warn('[Place Sign-Up] Adding coordinates back as JSON string');
+                                attempt++;
+                                continue;
+                            }
                         }
                         
                         const m = /Unknown attribute[:\s]*"?([A-Za-z0-9_\-]+)"?/i.exec(msg);
@@ -344,20 +365,14 @@ export const placeAuth = {
                             attempt++;
                             continue;
                         }
-                        if (/Invalid type/i.test(msg)) {
-                            if (/coordinates/i.test(msg)) {
-                                // Try removing coordinates if type is wrong
-                                console.warn('[Place Sign-Up] Removing coordinates due to type error');
-                                delete current.coordinates;
-                                attempt++;
-                                continue;
-                            }
-                            if (/pricing/i.test(msg)) {
-                                current.pricing = typeof current.pricing === 'string' ? current.pricing : JSON.stringify(current.pricing);
-                                attempt++;
-                                continue;
-                            }
+                        
+                        if (/Invalid type/i.test(msg) && /pricing/i.test(msg)) {
+                            current.pricing = typeof current.pricing === 'string' ? current.pricing : JSON.stringify(current.pricing);
+                            attempt++;
+                            continue;
                         }
+                        
+                        console.error('[Place Sign-Up] All attempts failed, throwing error');
                         throw e;
                     }
                 }
