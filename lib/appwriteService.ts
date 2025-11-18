@@ -403,7 +403,41 @@ export const therapistService = {
                 APPWRITE_CONFIG.collections.therapists,
                 id
             );
-            return response;
+            
+            // Normalize status from database (lowercase) to enum format (capitalized)
+            const normalizeStatus = (status: string) => {
+                if (!status) return 'Offline';
+                const lowercaseStatus = status.toLowerCase();
+                if (lowercaseStatus === 'available') return 'Available';
+                if (lowercaseStatus === 'busy') return 'Busy';
+                if (lowercaseStatus === 'offline') return 'Offline';
+                return status; // Return as-is if unknown
+            };
+            
+            // Extract busy timer data from description if present
+            let extractedBusyTimer = null;
+            let cleanDescription = response.description || '';
+            
+            const timerMatch = cleanDescription.match(/\[TIMER:(.+?)\]/);
+            if (timerMatch) {
+                try {
+                    extractedBusyTimer = JSON.parse(timerMatch[1]);
+                    // Remove timer data from description for display
+                    cleanDescription = cleanDescription.replace(/\[TIMER:.+?\]/, '').trim();
+                } catch (e) {
+                    console.warn('Failed to parse timer data for therapist:', response.name);
+                }
+            }
+            
+            // Return normalized therapist data (consistent with getAll() and getByEmail())
+            return {
+                ...response,
+                status: normalizeStatus(response.status),
+                availability: normalizeStatus(response.availability || response.status),
+                description: cleanDescription,
+                busyUntil: extractedBusyTimer?.busyUntil || null,
+                busyDuration: extractedBusyTimer?.busyDuration || null
+            };
         } catch (error) {
             console.error('Error fetching therapist:', error);
             return null;
