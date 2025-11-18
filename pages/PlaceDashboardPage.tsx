@@ -1807,7 +1807,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                             </div>
                         </div>
 
-                        <div className="pt-4">
+                        <div className="pt-4 pb-8">
                             <Button onClick={handleSave} className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition-all">
                                 💾 Save Profile
                             </Button>
