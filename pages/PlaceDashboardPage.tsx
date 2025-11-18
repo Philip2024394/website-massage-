@@ -240,34 +240,21 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                     console.log('📋 Using passed place data:', place);
                     initializeWithPlaceData(place);
                 } else if (place?.id) {
-                    console.log('🔄 Loading place data for provider ID:', place.id);
+                    console.log('🔄 Loading place data from Appwrite for provider ID:', place.id);
                     
-                    // Try database first, then fallback to localStorage
-                    let loadedPlace = null;
+                    // Load from Appwrite database
                     try {
-                        loadedPlace = await placeService.getByProviderId(place.id.toString());
+                        const loadedPlace = await placeService.getByProviderId(place.id.toString());
                         if (loadedPlace) {
-                            console.log('✅ Loaded place data from database:', loadedPlace);
+                            console.log('✅ Loaded place data from Appwrite:', loadedPlace);
+                            initializeWithPlaceData(loadedPlace);
+                        } else {
+                            console.log('⚠️ No saved data found in Appwrite, using defaults');
+                            initializeWithDefaults();
                         }
-                    } catch (dbError) {
-                        console.log('⚠️ Database unavailable, checking localStorage');
-                        
-                        // Fallback to localStorage
-                        try {
-                            const savedPlaces = JSON.parse(localStorage.getItem('massage_places') || '[]');
-                            loadedPlace = savedPlaces.find((p: any) => p.id === place.id.toString());
-                            if (loadedPlace) {
-                                console.log('✅ Loaded place data from localStorage:', loadedPlace);
-                            }
-                        } catch (localError) {
-                            console.error('❌ Failed to load from localStorage:', localError);
-                        }
-                    }
-                    
-                    if (loadedPlace) {
-                        initializeWithPlaceData(loadedPlace);
-                    } else {
-                        console.log('⚠️ No saved data found, using defaults');
+                    } catch (error) {
+                        console.error('❌ Failed to load place data from Appwrite:', error);
+                        console.log('⚠️ Using default values due to database error');
                         initializeWithDefaults();
                     }
                 } else {
@@ -634,45 +621,28 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             reviewCount: place?.reviewCount || 0
         };
 
-        // Save directly to database and fallback to localStorage
+        // Save directly to Appwrite database
         let databaseSaveSuccess = false;
         try {
             // Check if place document exists
             const existingPlace = await placeService.getByProviderId(placeId);
             
             if (existingPlace && existingPlace.$id) {
-                // Update existing document
-                console.log('📝 Updating existing place document:', existingPlace.$id);
+                // Update existing document in Appwrite
+                console.log('📝 Updating existing place document in Appwrite:', existingPlace.$id);
                 await placeService.update(existingPlace.$id, placeData);
             } else {
-                // Create new document
-                console.log('✨ Creating new place document');
+                // Create new document in Appwrite
+                console.log('✨ Creating new place document in Appwrite');
                 await placeService.create(placeData);
             }
             
-            console.log('✅ Place data saved successfully to database');
+            console.log('✅ Place data saved successfully to Appwrite database');
             databaseSaveSuccess = true;
         } catch (error) {
-            console.error('❌ Database save failed, using localStorage fallback:', error);
-            
-            // Save to localStorage as fallback
-            try {
-                const savedPlaces = JSON.parse(localStorage.getItem('massage_places') || '[]');
-                const existingIndex = savedPlaces.findIndex((p: any) => p.id === placeId);
-                
-                if (existingIndex >= 0) {
-                    savedPlaces[existingIndex] = { ...placeData, $id: `local_${placeId}`, isLive: true };
-                } else {
-                    savedPlaces.push({ ...placeData, $id: `local_${placeId}`, isLive: true });
-                }
-                
-                localStorage.setItem('massage_places', JSON.stringify(savedPlaces));
-                console.log('✅ Place data saved to localStorage successfully');
-            } catch (localError) {
-                console.error('❌ Failed to save to localStorage:', localError);
-                alert('Failed to save profile. Please try again.');
-                return;
-            }
+            console.error('❌ Failed to save place data to Appwrite:', error);
+            alert('Failed to save profile to database. Please check your connection and try again.');
+            return;
         }
 
         // Also call onSave for any parent component logic
@@ -690,7 +660,6 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         }
 
         // Show success message
-        const saveMethod = databaseSaveSuccess ? 'Database' : 'Local Storage';
         const notification = document.createElement('div');
         notification.innerHTML = `
             <div class="fixed top-4 left-4 right-4 bg-gradient-to-r from-green-500 to-green-600 text-white p-6 rounded-xl shadow-2xl z-50 max-w-md mx-auto">
@@ -701,15 +670,15 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                         </svg>
                     </div>
                     <div class="flex-1">
-                        <h3 class="font-bold text-lg mb-1">Profile Saved Successfully!</h3>
+                        <h3 class="font-bold text-lg mb-1">Profile Saved to Appwrite!</h3>
                         <p class="text-green-100 text-sm leading-relaxed">
-                            Your massage place profile is now <strong>live and visible</strong> in the directory. ${databaseSaveSuccess ? 'Saved to cloud database.' : 'Saved locally - will sync to cloud when database is available.'}
+                            Your massage place profile is now <strong>live in the cloud database</strong> and visible in the directory. Changes will appear across all pages instantly.
                         </p>
                         <div class="mt-3 flex items-center gap-2 text-xs text-green-200">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
                             </svg>
-                            <span>Saved via ${saveMethod}</span>
+                            <span>Synced with Appwrite Database</span>
                         </div>
                     </div>
                 </div>

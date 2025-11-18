@@ -785,57 +785,37 @@ export const placeService = {
         return this.getAll();
     },
     async getAll(): Promise<any[]> {
-        let databasePlaces: any[] = [];
-        let localStoragePlaces: any[] = [];
-        
-        // Try to get from database first
         try {
-            // Check if places collection exists
-            if (!APPWRITE_CONFIG.collections.places || APPWRITE_CONFIG.collections.places === '') {
-                console.log('⚠️ Places collection disabled - skipping database');
-            } else {
-                console.log('📋 Fetching all PLACES from collection:', APPWRITE_CONFIG.collections.places);
-                console.log('🔧 Database ID:', APPWRITE_CONFIG.databaseId);
-                console.log('🌐 Endpoint:', APPWRITE_CONFIG.endpoint);
-                console.log('📦 Project ID:', APPWRITE_CONFIG.projectId);
-                
-                const response = await databases.listDocuments(
-                    APPWRITE_CONFIG.databaseId,
-                    APPWRITE_CONFIG.collections.places
-                );
-                databasePlaces = response.documents;
-                console.log('✅ Fetched PLACES from database:', databasePlaces.length);
-                databasePlaces.forEach((p: any) => {
-                    console.log(`  🏨 ${p.name} - isLive: ${p.isLive}, ID: ${p.$id}`);
-                });
-            }
-        } catch (error) {
-            console.error('❌ Error fetching places from database:', error);
-        }
-        
-        // Get from localStorage as fallback/supplement
-        try {
-            const savedPlaces = JSON.parse(localStorage.getItem('massage_places') || '[]');
-            localStoragePlaces = savedPlaces.filter((p: any) => p.isLive);
-            console.log('📱 Fetched PLACES from localStorage:', localStoragePlaces.length);
-            localStoragePlaces.forEach((p: any) => {
-                console.log(`  🏪 ${p.name} - isLive: ${p.isLive}, ID: ${p.$id}`);
+            console.log('📋 Fetching all PLACES from Appwrite collection:', APPWRITE_CONFIG.collections.places);
+            console.log('🔧 Database ID:', APPWRITE_CONFIG.databaseId);
+            console.log('🌐 Endpoint:', APPWRITE_CONFIG.endpoint);
+            console.log('📦 Project ID:', APPWRITE_CONFIG.projectId);
+            
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.places
+            );
+            
+            console.log('✅ Fetched PLACES from Appwrite:', response.documents.length);
+            response.documents.forEach((p: any) => {
+                console.log(`  🏨 ${p.name} - isLive: ${p.isLive}, ID: ${p.$id}`);
             });
+            
+            return response.documents;
         } catch (error) {
-            console.error('❌ Error fetching places from localStorage:', error);
-        }
-        
-        // Combine and deduplicate (database takes priority over localStorage)
-        const allPlaces = [...databasePlaces];
-        localStoragePlaces.forEach((localPlace: any) => {
-            const existsInDatabase = databasePlaces.some((dbPlace: any) => dbPlace.id === localPlace.id);
-            if (!existsInDatabase) {
-                allPlaces.push(localPlace);
+            console.error('❌ Error fetching places from Appwrite:', error);
+            console.error('❌ Error details:', {
+                message: error instanceof Error ? error.message : 'Unknown error',
+                code: (error as any)?.code || 'Unknown code',
+                type: (error as any)?.type || 'Unknown type'
+            });
+            
+            if (error instanceof Error && error.message.includes('Collection with the requested ID could not be found')) {
+                console.error('💡 Collection ID may be incorrect. Check lib/appwrite.config.ts');
             }
-        });
-        
-        console.log('🎯 Total PLACES returned:', allPlaces.length);
-        return allPlaces;
+            
+            return [];
+        }
     },
     async getById(id: string): Promise<any> {
         try {

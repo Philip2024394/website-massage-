@@ -149,36 +149,24 @@ export const useAllHooks = () => {
     const providerAgentHandlers = {
         handleSavePlace: async (placeData: any): Promise<void> => {
             try {
-                console.log('🔄 handleSavePlace called with data:', placeData);
+                console.log('🔄 handleSavePlace called - refreshing from Appwrite:', placeData.id);
                 
-                // Update the places array in the app state
-                const currentPlaces = state.places || [];
-                const existingIndex = currentPlaces.findIndex((p: any) => p.id === placeData.id);
+                // Always refresh places data from Appwrite after saving
+                // This ensures the home directory and all components show the latest data
+                const { places: freshPlaces } = await dataFetching.fetchPublicData();
+                state.setPlaces(freshPlaces);
+                console.log('✅ Refreshed places from Appwrite database, total:', freshPlaces.length);
                 
-                let updatedPlaces;
-                if (existingIndex >= 0) {
-                    // Update existing place
-                    updatedPlaces = [...currentPlaces];
-                    updatedPlaces[existingIndex] = { ...placeData, $id: placeData.$id || `local_${placeData.id}` };
+                // Log the saved place to verify it's in the data
+                const savedPlace = freshPlaces.find((p: any) => p.id === placeData.id);
+                if (savedPlace) {
+                    console.log('✅ Confirmed saved place appears in directory:', savedPlace.name);
                 } else {
-                    // Add new place
-                    updatedPlaces = [...currentPlaces, { ...placeData, $id: placeData.$id || `local_${placeData.id}` }];
-                }
-                
-                // Update the state
-                state.setPlaces(updatedPlaces);
-                console.log('✅ Updated places array in app state, total places:', updatedPlaces.length);
-                
-                // Optionally refresh the data from all sources
-                try {
-                    const { places: freshPlaces } = await dataFetching.fetchPublicData();
-                    state.setPlaces(freshPlaces);
-                    console.log('✅ Refreshed places from all data sources');
-                } catch (error) {
-                    console.log('⚠️ Could not refresh from data sources, using updated local state');
+                    console.log('⚠️ Saved place not yet visible in directory - may take a moment to sync');
                 }
             } catch (error) {
-                console.error('❌ Failed to handle save place:', error);
+                console.error('❌ Failed to refresh places after save:', error);
+                // Don't throw - the save was successful even if refresh failed
             }
         }
     };
