@@ -1,4 +1,5 @@
 import { account, databases, DATABASE_ID, COLLECTIONS } from './appwrite';
+import { APPWRITE_CONFIG } from './appwrite.config.ts';
 import { ID } from 'appwrite';
 import { getRandomTherapistImage } from '../utils/therapistImageUtils';
 
@@ -320,8 +321,8 @@ export const placeAuth = {
                 while (attempt < maxAttempts) {
                     try {
                         return await databases.createDocument(
-                            DATABASE_ID,
-                            COLLECTIONS.PLACES,
+                            APPWRITE_CONFIG.databaseId,
+                            APPWRITE_CONFIG.collections.places,
                             generatedPlaceId,
                             current
                         );
@@ -399,8 +400,8 @@ export const placeAuth = {
                     isOnline: true
                 };
                 return databases.createDocument(
-                    DATABASE_ID,
-                    COLLECTIONS.PLACES,
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.places,
                     generatedPlaceId,
                     minimal
                 );
@@ -432,8 +433,8 @@ export const placeAuth = {
             
             try {
                 const places = await databases.listDocuments(
-                    DATABASE_ID,
-                    COLLECTIONS.PLACES
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.places
                 );
                 
                 console.log('📊 Total places in database:', places.documents.length);
@@ -483,8 +484,8 @@ export const placeAuth = {
                     };
                     
                     const newPlace = await databases.createDocument(
-                        DATABASE_ID,
-                        COLLECTIONS.PLACES,
+                        APPWRITE_CONFIG.databaseId,
+                        APPWRITE_CONFIG.collections.places,
                         generatedPlaceId,
                         placeData
                     );
