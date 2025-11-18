@@ -89,7 +89,7 @@ const PromoterCommissionPage = React.lazy(() => import('./pages/PromoterCommissi
 import PromoterQRPage from './pages/PromoterQRPage';
 const PromoterBookingStatsPage = React.lazy(() => import('./pages/PromoterBookingStatsPage'));
 const PromoterShareBannersPage = React.lazy(() => import('./pages/PromoterShareBannersPage'));
-const ProviderCommissionPage = React.lazy(() => import('./pages/ProviderCommissionPage'));
+import ProviderCommissionPage from './pages/ProviderCommissionPage';
 // Eager-load PromoterLiveMenuPage to avoid dev dynamic import fetch issues
 import PromoterLiveMenuPage from './pages/PromoterLiveMenuPage';
 // Eager-load to avoid dev dynamic import fetch issue for this page
