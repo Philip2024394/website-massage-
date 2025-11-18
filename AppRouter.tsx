@@ -5,6 +5,7 @@ import type { Page, Language, LoggedInProvider } from './types/pageTypes';
 import type { User, Place, Therapist, UserLocation, Booking, Notification, Agent, AdminMessage, AvailabilityStatus } from './types';
 import { BookingStatus } from './types';
 import { validateDashboardAccess, clearAllAuthStates, createSecureDashboardRenderer, type AuthenticationState } from './utils/dashboardGuards';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Page imports
 import LandingPage from './pages/LandingPage';
@@ -749,27 +750,31 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             console.log('🎯 AppRouter: Found therapist:', !!existingTherapist, existingTherapist?.name);
             
             if (loggedInProvider?.type === 'therapist') {
-                return <TherapistDashboardPage 
-                    therapistId={loggedInProvider.id}
-                    existingTherapistData={existingTherapist}
-                    onSave={(data) => {
-                        console.log('TherapistDashboard onSave called:', data);
-                        // Handle save functionality here if needed
-                    }}
-                    onLogout={handleProviderLogout}
-                    onNavigateToNotifications={() => setPage('notifications')}
-                    onNavigate={setPage}
-                    onUpdateBookingStatus={(bookingId, status) => {
-                        console.log('Update booking status:', bookingId, status);
-                        // Handle booking status update here
-                    }}
-                    onStatusChange={async (status: AvailabilityStatus) => {
-                        await handleTherapistStatusChange(status as unknown as string);
-                    }}
-                    bookings={bookings}
-                    notifications={notifications || []}
-                    t={t}
-                />;
+                return (
+                    <ErrorBoundary>
+                        <TherapistDashboardPage 
+                            therapistId={loggedInProvider.id}
+                            existingTherapistData={existingTherapist}
+                            onSave={(data) => {
+                                console.log('TherapistDashboard onSave called:', data);
+                                // Handle save functionality here if needed
+                            }}
+                            onLogout={handleProviderLogout}
+                            onNavigateToNotifications={() => setPage('notifications')}
+                            onNavigate={setPage}
+                            onUpdateBookingStatus={(bookingId, status) => {
+                                console.log('Update booking status:', bookingId, status);
+                                // Handle booking status update here
+                            }}
+                            onStatusChange={async (status: AvailabilityStatus) => {
+                                await handleTherapistStatusChange(status as unknown as string);
+                            }}
+                            bookings={bookings}
+                            notifications={notifications || []}
+                            t={t}
+                        />
+                    </ErrorBoundary>
+                );
             }
             return null;
         }
@@ -1369,22 +1374,26 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             // If we should be on therapist dashboard but ended up in default, force it
             if (loggedInProvider?.type === 'therapist' && 
                 ['therapistDashboard', 'therapist-dashboard'].includes(page as string)) {
-                return <TherapistDashboardPage 
-                    onSave={handleSaveTherapist}
-                    onLogout={handleProviderLogout}
-                    {...commonDashboardProps}
-                    onStatusChange={async (status: AvailabilityStatus) => {
-                        await handleTherapistStatusChange(status as string);
-                    }}
-                    therapistId={loggedInProvider.id.toString()}
-                    existingTherapistData={therapists.find(t => 
-                        t.id === loggedInProvider.id || 
-                        t.$id === loggedInProvider.id ||
-                        (t as any).documentId === loggedInProvider.id
-                    ) || undefined}
-                    notifications={notifications.filter(n => n.providerId === loggedInProvider.id)}
-                    t={t}
-                />;
+                return (
+                    <ErrorBoundary>
+                        <TherapistDashboardPage 
+                            onSave={handleSaveTherapist}
+                            onLogout={handleProviderLogout}
+                            {...commonDashboardProps}
+                            onStatusChange={async (status: AvailabilityStatus) => {
+                                await handleTherapistStatusChange(status as string);
+                            }}
+                            therapistId={loggedInProvider.id.toString()}
+                            existingTherapistData={therapists.find(t => 
+                                t.id === loggedInProvider.id || 
+                                t.$id === loggedInProvider.id ||
+                                (t as any).documentId === loggedInProvider.id
+                            ) || undefined}
+                            notifications={notifications.filter(n => n.providerId === loggedInProvider.id)}
+                            t={t}
+                        />
+                    </ErrorBoundary>
+                );
             }
             
             return null;
