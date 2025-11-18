@@ -552,7 +552,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         }
     }, [placeId]); // Only depend on placeId to avoid infinite loops
 
-    const handleSave = () => {
+    const handleSave = async () => {
         // Comprehensive validation with detailed error messages
         const missingFields = [];
         
