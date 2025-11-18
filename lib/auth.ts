@@ -204,8 +204,15 @@ export const therapistAuth = {
             }
             
             console.log('🔵 [Therapist Sign-In] Creating email/password session...');
-            await account.createEmailPasswordSession(email, password);
-            console.log('✅ [Therapist Sign-In] Session created');
+            const session = await account.createEmailPasswordSession(email, password);
+            console.log('✅ [Therapist Sign-In] Session created:', {
+                sessionId: session.$id,
+                userId: session.userId,
+                expire: session.expire
+            });
+            
+            // Small delay to ensure session cookie is set
+            await new Promise(resolve => setTimeout(resolve, 100));
             
             console.log('🔵 [Therapist Sign-In] Getting user account...');
             const user = await account.get();
