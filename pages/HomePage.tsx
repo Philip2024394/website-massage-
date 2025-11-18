@@ -15,6 +15,7 @@ import { getCustomerLocation, findNearbyTherapists, findNearbyPlaces } from '../
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
 import PageNumberBadge from '../components/PageNumberBadge';
 import { THERAPIST_MAIN_IMAGES } from '../lib/services/imageService';
+import { useLanguageContext } from '../context/LanguageContext';
 
 
 interface HomePageProps {
@@ -53,7 +54,7 @@ interface HomePageProps {
     onNavigate?: (page: string) => void;
     isLoading: boolean;
     t: any;
-    language?: 'en' | 'id';
+    language?: import('../types/pageTypes').Language;
 }
 
 
@@ -97,6 +98,7 @@ const HomePage: React.FC<HomePageProps> = ({
     t,
     language
 }) => {
+    const { language: globalLanguage, setLanguage: setGlobalLanguage } = useLanguageContext();
     console.log('🏠 HomePage: Component is being called!');
     // Enhanced debug logging for translations
     console.log('🏠 HomePage received translations:', {
@@ -209,8 +211,11 @@ const HomePage: React.FC<HomePageProps> = ({
     const [isLocationDetecting, setIsLocationDetecting] = useState(false);
     const locationDetectedRef = useRef(false);
     const filteringRef = useRef(false);
+    const SEARCH_RADIUS_KM = 20;
     // Shuffled unique home page therapist images (no repeats until all 17 used)
     const [shuffledHomeImages, setShuffledHomeImages] = useState<string[]>([]);
+    const [showLanguagePrompt, setShowLanguagePrompt] = useState(false);
+    const [promptLang, setPromptLang] = useState<import('../types/pageTypes').Language>(globalLanguage || 'en');
 
     // Fisher-Yates shuffle to randomize array order
     const shuffleArray = (arr: string[]) => {
@@ -246,6 +251,25 @@ const HomePage: React.FC<HomePageProps> = ({
             document.body.classList.remove('is-home');
         };
     }, []);
+
+    // One-time language prompt when arriving from Landing
+    useEffect(() => {
+        try {
+            const flag = sessionStorage.getItem('show_language_prompt');
+            if (flag === '1') {
+                const suggestedRaw = sessionStorage.getItem('suggested_language');
+                const supported: Array<import('../types/pageTypes').Language> = ['en','id','zh-CN','ru','ja','ko'];
+                const suggested = (supported.includes(suggestedRaw as any) ? (suggestedRaw as any) : null) as import('../types/pageTypes').Language | null;
+                if (suggested) {
+                    setPromptLang(suggested);
+                } else {
+                    setPromptLang(globalLanguage || 'en');
+                }
+                setShowLanguagePrompt(true);
+                sessionStorage.removeItem('show_language_prompt');
+            }
+        } catch {}
+    }, [globalLanguage]);
 
     // Update selectedMassageType when prop changes - React 19 safe
     useEffect(() => {
@@ -422,9 +446,9 @@ const HomePage: React.FC<HomePageProps> = ({
                     return;
                 }
 
-                // Find nearby therapists and places (15km radius)
-                const nearbyTherapistsResult = await findNearbyTherapists('0', coords, 15);
-                const nearbyPlacesResult = await findNearbyPlaces('0', coords, 15);
+                // Find nearby therapists and places (20km radius)
+                const nearbyTherapistsResult = await findNearbyTherapists('0', coords, SEARCH_RADIUS_KM);
+                const nearbyPlacesResult = await findNearbyPlaces('0', coords, SEARCH_RADIUS_KM);
                 
                 console.log(`📍 Found ${nearbyTherapistsResult.length} nearby therapists`);
                 console.log(`📍 Found ${nearbyPlacesResult.length} nearby places`);
@@ -600,6 +624,37 @@ const HomePage: React.FC<HomePageProps> = ({
                     </span>
                 </div>
 
+                {/* Subtle location info line */}
+                <div className="text-center text-sm text-gray-600 mb-4">
+                    {(() => {
+                        const addr = userLocation?.address;
+                        const country = userLocation?.country;
+                        let label: string | null = null;
+                        if (addr && typeof addr === 'string') {
+                            // Try to display "City/Region, Country" if address contains Indonesia
+                            if (addr.includes('Indonesia')) {
+                                const parts = addr.split(',').map(p => p.trim());
+                                const idx = parts.findIndex(p => p.toLowerCase() === 'indonesia');
+                                if (idx > 0) {
+                                    const cityOrRegion = parts[idx - 1];
+                                    label = `${cityOrRegion}, Indonesia`;
+                                }
+                            }
+                        }
+                        if (!label && country) {
+                            label = country;
+                        }
+                        return (
+                            <>
+                                Showing therapists within {SEARCH_RADIUS_KM} km of {label || 'your location'}.{' '}
+                                <button onClick={handleLocationRequest} className="text-orange-600 hover:underline">
+                                    Change location
+                                </button>
+                            </>
+                        );
+                    })()}
+                </div>
+
                 <div className="flex bg-gray-200 rounded-full p-1 mb-4">
                     <button 
                         onClick={() => setActiveTab('home')} 
@@ -745,7 +800,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                 <p className="text-gray-500">Tidak ada terapis tersedia di area Anda saat ini.</p>
                                 {autoDetectedLocation && (
                                     <p className="text-gray-400 text-sm mt-2">
-                                        Showing providers within 15km of your location
+                                        Showing providers within {SEARCH_RADIUS_KM}km of your location
                                     </p>
                                 )}
                             </div>
@@ -850,13 +905,118 @@ const HomePage: React.FC<HomePageProps> = ({
 
                 {/* ...existing code for therapists/places rendering, modals, etc. should follow here... */}
             </main>
+
+            {/* Language Prompt Modal */}
+            {showLanguagePrompt && (
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 px-4">
+                    <div className="bg-white w-full max-w-sm rounded-xl shadow-lg p-5">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Language</h3>
+                        <p className="text-sm text-gray-600 mb-4">
+                            We set your app language to{' '}
+                            <span className="font-medium">
+                                {(() => {
+                                    const names: Record<string, string> = {
+                                        'en': 'English',
+                                        'id': 'Bahasa Indonesia',
+                                        'zh-CN': '简体中文',
+                                        'ru': 'Русский',
+                                        'ja': '日本語',
+                                        'ko': '한국어'
+                                    };
+                                    return names[promptLang] || 'English';
+                                })()}
+                            </span>{' '}based on your location. You can change it below.
+                        </p>
+                        <div className="mb-4">
+                            <div className="text-xs font-medium text-gray-500 mb-2">Recommended Languages</div>
+                            <div className="flex flex-wrap gap-2">
+                                <button
+                                    type="button"
+                                    className={`px-3 py-1.5 text-sm rounded-full border ${promptLang === 'en' ? 'bg-orange-50 text-orange-700 border-orange-200' : 'bg-white text-gray-700 border-gray-200'} hover:border-orange-300`}
+                                    onClick={() => setPromptLang('en')}
+                                >
+                                    EN • English
+                                </button>
+                                <button
+                                    type="button"
+                                    className={`px-3 py-1.5 text-sm rounded-full border ${promptLang === 'id' ? 'bg-orange-50 text-orange-700 border-orange-200' : 'bg-white text-gray-700 border-gray-200'} hover:border-orange-300`}
+                                    onClick={() => setPromptLang('id')}
+                                >
+                                    ID • Bahasa Indonesia
+                                </button>
+                                <button
+                                    type="button"
+                                    className={`px-3 py-1.5 text-sm rounded-full border ${promptLang === 'zh-CN' ? 'bg-orange-50 text-orange-700 border-orange-200' : 'bg-white text-gray-700 border-gray-200'} hover:border-orange-300`}
+                                    onClick={() => setPromptLang('zh-CN' as any)}
+                                >
+                                    ZH • 简体中文
+                                </button>
+                                <button
+                                    type="button"
+                                    className={`px-3 py-1.5 text-sm rounded-full border ${promptLang === 'ru' ? 'bg-orange-50 text-orange-700 border-orange-200' : 'bg-white text-gray-700 border-gray-200'} hover:border-orange-300`}
+                                    onClick={() => setPromptLang('ru' as any)}
+                                >
+                                    RU • Русский
+                                </button>
+                                <button
+                                    type="button"
+                                    className={`px-3 py-1.5 text-sm rounded-full border ${promptLang === 'ja' ? 'bg-orange-50 text-orange-700 border-orange-200' : 'bg-white text-gray-700 border-gray-200'} hover:border-orange-300`}
+                                    onClick={() => setPromptLang('ja' as any)}
+                                >
+                                    JA • 日本語
+                                </button>
+                                <button
+                                    type="button"
+                                    className={`px-3 py-1.5 text-sm rounded-full border ${promptLang === 'ko' ? 'bg-orange-50 text-orange-700 border-orange-200' : 'bg-white text-gray-700 border-gray-200'} hover:border-orange-300`}
+                                    onClick={() => setPromptLang('ko' as any)}
+                                >
+                                    KO • 한국어
+                                </button>
+                            </div>
+                        </div>
+                        <label className="block text-xs text-gray-500 mb-1" htmlFor="prompt-lang">Select language</label>
+                        <select
+                            id="prompt-lang"
+                            value={promptLang}
+                            onChange={(e) => setPromptLang(e.target.value as any)}
+                            className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-500 mb-4"
+                        >
+                            <option value="en">English</option>
+                            <option value="id">Bahasa Indonesia</option>
+                            <option value="zh-CN">简体中文</option>
+                            <option value="ru">Русский</option>
+                            <option value="ja">日本語</option>
+                            <option value="ko">한국어</option>
+                        </select>
+                        <div className="flex justify-end gap-2">
+                            <button
+                                type="button"
+                                className="px-3 py-2 text-sm text-gray-600 hover:text-gray-800"
+                                onClick={() => setShowLanguagePrompt(false)}
+                            >
+                                Not now
+                            </button>
+                            <button
+                                type="button"
+                                className="px-4 py-2 text-sm bg-orange-500 text-white rounded-md hover:bg-orange-600"
+                                onClick={() => {
+                                    try { setGlobalLanguage(promptLang as any); } catch {}
+                                    setShowLanguagePrompt(false);
+                                }}
+                            >
+                                Continue
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
             
             {/* Custom Orange Location Modal */}
             <OrangeLocationModal
                 isVisible={isLocationModalOpen}
                 onAllow={handleLocationAllow}
                 onDeny={handleLocationDeny}
-                language={language || 'en'}
+                language={language === 'id' ? 'id' : 'en'}
                 size="compact"
             />
             

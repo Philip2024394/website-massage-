@@ -56,7 +56,8 @@ const CookieConsent: React.FC<CookieConsentProps> = ({ language, hasLocation, on
     }
   };
 
-  const t = translations[language] || translations.en;
+  const langKey = language === 'id' ? 'id' : 'en';
+  const t = translations[langKey];
 
   return (
     <div 

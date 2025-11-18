@@ -4,6 +4,7 @@
  */
 
 import { LanguageCode } from '../services/autoTranslationService';
+import type { Language } from '../types/pageTypes';
 
 declare global {
     interface Window {
@@ -28,7 +29,7 @@ class VSCodeTranslateService {
         showPopup: false
     };
 
-    private currentGlobalLanguage: LanguageCode = 'en';
+    private currentGlobalLanguage: Language = 'en';
 
     /**
      * Initialize VS Code Google Translate integration
@@ -51,9 +52,9 @@ class VSCodeTranslateService {
         // Get stored language preference
         try {
             const stored = localStorage.getItem('vscode_current_language');
-            if (stored === 'en' || stored === 'id') {
-                this.currentGlobalLanguage = stored;
-                this.activateOnLanguageChange(stored);
+            if (stored === 'en' || stored === 'id' || stored === 'zh-CN' || stored === 'ru' || stored === 'ja' || stored === 'ko') {
+                this.currentGlobalLanguage = stored as Language;
+                this.activateOnLanguageChange(stored as Language);
             }
         } catch {
             console.log('No stored language preference found');
@@ -73,7 +74,7 @@ class VSCodeTranslateService {
     /**
      * Activate Google Translate extension when language is selected
      */
-    activateOnLanguageChange(selectedLanguage: LanguageCode) {
+    activateOnLanguageChange(selectedLanguage: Language) {
         console.log(`🌐 Language changed to: ${selectedLanguage}`);
         
         // Store globally for cross-component consistency
@@ -106,6 +107,14 @@ class VSCodeTranslateService {
                 showPopup: true
             };
             this.activateTranslation('English to Indonesian mode activated');
+        } else {
+            // Other languages default to English UI with no auto-translate (placeholder)
+            this.currentConfig = {
+                sourceLanguage: 'en',
+                targetLanguage: 'en',
+                autoActivate: false,
+                showPopup: false
+            };
         }
 
         // Store language preference for VS Code
@@ -215,14 +224,14 @@ class VSCodeTranslateService {
     /**
      * Get current global language
      */
-    getCurrentLanguage(): LanguageCode {
+    getCurrentLanguage(): Language {
         return this.currentGlobalLanguage;
     }
 
     /**
      * Notify other components of language change
      */
-    private notifyLanguageChange(language: LanguageCode) {
+    private notifyLanguageChange(language: Language) {
         // Dispatch custom event for other components to listen
         if (typeof window !== 'undefined') {
             window.dispatchEvent(new CustomEvent('vscode-language-changed', {
