@@ -590,47 +590,64 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         const filteredGallery = safeGalleryImages.filter(img => img && img.imageUrl && img.imageUrl.trim() !== '');
         
         const placeData = {
+            // Required schema fields
             id: placeId,
+            therapistId: placeId, // Use same as id for places
+            hotelId: placeId, // Use same as id for places
+            email: place?.email || `place_${placeId}@massage.com`, // Required email field
             name,
+            location,
+            hourlyRate: Number(pricing['60']) || 100, // Required hourly rate (use 60min price)
+            specialization: 'Massage Place', // Required specialization
+            yearsOfExperience: 5, // Required years (default for places)
+            isLicensed: true, // Required license status
+            
+            // Pricing fields (required schema format)
+            price60: String(pricing['60'] || 0),
+            price90: String(pricing['90'] || 0),
+            price120: String(pricing['120'] || 0),
+            
+            // Size-limited fields (keep within schema limits)
+            pricing: JSON.stringify(pricing).substring(0, 250), // Max 255 chars
+            coordinates: JSON.stringify(coordinates).substring(0, 500), // Max 512 chars
+            
+            // Optional fields
             description,
             mainImage,
             profilePicture,
-            galleryImages: filteredGallery.length > 0 ? filteredGallery : undefined,
             whatsappNumber,
-            pricing: JSON.stringify(pricing),
             discountPercentage,
             discountDuration,
             isDiscountActive,
             discountEndTime,
-            location,
-            coordinates: JSON.stringify(coordinates),
-            massageTypes: JSON.stringify(massageTypes),
-            languages,
-            additionalServices,
-            openingTime,
-            closingTime,
+            massageTypes: JSON.stringify(massageTypes || []).substring(0, 500), // Max 512 chars
+            languages: languages && languages.length > 0 ? JSON.stringify(languages).substring(0, 990) : null, // Max 1000 chars
             distance: 0,
-            activeMembershipDate: place?.activeMembershipDate || '',
-            password: place?.password,
-            analytics: JSON.stringify(place?.analytics || { impressions: 0, profileViews: 0, whatsappClicks: 0 }),
-            websiteUrl,
-            websiteTitle,
-            websiteDescription,
+            activeMembershipDate: place?.activeMembershipDate || null,
+            password: place?.password || null,
+            analytics: JSON.stringify(place?.analytics || { impressions: 0, profileViews: 0, whatsappClicks: 0 }).substring(0, 2040), // Max 2048 chars
             isLive: true, // Set to live when saved
             rating: place?.rating || 0,
-            reviewCount: place?.reviewCount || 0
+            reviewCount: place?.reviewCount || 0,
+            
+            // Category field to distinguish places from therapists
+            category: 'massage-place',
+            
+            // Status fields
+            status: 'Available',
+            availability: 'Available',
+            isOnline: true
         };
 
         // Save directly to Appwrite database
-        let databaseSaveSuccess = false;
         try {
             // Check if place document exists
-            const existingPlace = await placeService.getByProviderId(placeId);
+            const existingPlace = await placeService.getByProviderId(String(placeId));
             
             if (existingPlace && existingPlace.$id) {
                 // Update existing document in Appwrite
                 console.log('📝 Updating existing place document in Appwrite:', existingPlace.$id);
-                await placeService.update(existingPlace.$id, placeData);
+                await placeService.update(String(existingPlace.$id), placeData);
             } else {
                 // Create new document in Appwrite
                 console.log('✨ Creating new place document in Appwrite');
@@ -638,7 +655,6 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             }
             
             console.log('✅ Place data saved successfully to Appwrite database');
-            databaseSaveSuccess = true;
         } catch (error) {
             console.error('❌ Failed to save place data to Appwrite:', error);
             alert('Failed to save profile to database. Please check your connection and try again.');
@@ -650,7 +666,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
 
         // Reload the saved data to display in the form
         try {
-            const savedPlace = await placeService.getByProviderId(placeId);
+            const savedPlace = await placeService.getByProviderId(String(placeId));
             if (savedPlace) {
                 console.log('✅ Reloaded saved place data:', savedPlace);
                 initializeWithPlaceData(savedPlace);
@@ -672,13 +688,13 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                     <div class="flex-1">
                         <h3 class="font-bold text-lg mb-1">Profile Saved to Appwrite!</h3>
                         <p class="text-green-100 text-sm leading-relaxed">
-                            Your massage place profile is now <strong>live in the cloud database</strong> and visible in the directory. Changes will appear across all pages instantly.
+                            Your massage place profile is now <strong>live in the shared collection</strong> (${APPWRITE_CONFIG.collections.places}) and visible in the directory. All data stored in Appwrite cloud database.
                         </p>
                         <div class="mt-3 flex items-center gap-2 text-xs text-green-200">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
                             </svg>
-                            <span>Synced with Appwrite Database</span>
+                            <span>Appwrite Database Only</span>
                         </div>
                     </div>
                 </div>

@@ -745,39 +745,40 @@ export const therapistService = {
 export const placeService = {
     async create(place: any): Promise<any> {
         try {
-            if (!APPWRITE_CONFIG.collections.places || APPWRITE_CONFIG.collections.places === '') {
-                console.warn('⚠️ Places collection disabled - cannot create place');
-                throw new Error('Places collection not configured');
-            }
-            
+            console.log('🏢 Creating massage place in Appwrite collection:', APPWRITE_CONFIG.collections.places);
             const response = await databases.createDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.places,
                 'unique()',
                 place
             );
+            console.log('✅ Place created successfully in Appwrite database');
             return response;
         } catch (error) {
-            console.error('Error creating place:', error);
+            console.error('❌ Failed to create place in Appwrite:', error);
             throw error;
         }
     },
     async getByProviderId(providerId: string): Promise<any | null> {
-        // Find a place document by the provider's id field (stored in the document attributes)
         try {
-            // Try matching both as string and number to be safe
+            console.log('🔍 Searching for place by provider ID in Appwrite:', providerId);
             const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.places,
                 [
-                    // Appwrite equal can take an array of values
-                    Query.equal('id', [providerId, Number(providerId)])
+                    Query.equal('id', providerId),
+                    Query.equal('category', 'massage-place')
                 ]
             );
-            return response.documents.length > 0 ? response.documents[0] : null;
-        } catch (error) {
-            console.error('Error finding place by provider id:', error);
+            if (response.documents.length > 0) {
+                console.log('✅ Found place in Appwrite database:', response.documents[0].name);
+                return response.documents[0];
+            }
+            console.log('⚠️ No place found with provider ID:', providerId);
             return null;
+        } catch (error) {
+            console.error('❌ Error finding place by provider ID:', error);
+            throw error;
         }
     },
     async getPlaces(): Promise<any[]> {
@@ -786,17 +787,17 @@ export const placeService = {
     },
     async getAll(): Promise<any[]> {
         try {
-            console.log('📋 Fetching all PLACES from Appwrite collection:', APPWRITE_CONFIG.collections.places);
-            console.log('🔧 Database ID:', APPWRITE_CONFIG.databaseId);
-            console.log('🌐 Endpoint:', APPWRITE_CONFIG.endpoint);
-            console.log('📦 Project ID:', APPWRITE_CONFIG.projectId);
-            
+            console.log('📋 Fetching all places from Appwrite collection:', APPWRITE_CONFIG.collections.places);
             const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.places
+                APPWRITE_CONFIG.collections.places,
+                [
+                    Query.equal('category', 'massage-place'),
+                    Query.equal('isLive', true)
+                ]
             );
             
-            console.log('✅ Fetched PLACES from Appwrite:', response.documents.length);
+            console.log('✅ Fetched places from Appwrite:', response.documents.length);
             response.documents.forEach((p: any) => {
                 console.log(`  🏨 ${p.name} - isLive: ${p.isLive}, ID: ${p.$id}`);
             });
@@ -809,11 +810,6 @@ export const placeService = {
                 code: (error as any)?.code || 'Unknown code',
                 type: (error as any)?.type || 'Unknown type'
             });
-            
-            if (error instanceof Error && error.message.includes('Collection with the requested ID could not be found')) {
-                console.error('💡 Collection ID may be incorrect. Check lib/appwrite.config.ts');
-            }
-            
             return [];
         }
     },
@@ -832,15 +828,17 @@ export const placeService = {
     },
     async update(id: string, data: any): Promise<any> {
         try {
+            console.log('📝 Updating place in Appwrite database:', id);
             const response = await databases.updateDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.places,
                 id,
                 data
             );
+            console.log('✅ Place updated successfully in Appwrite database');
             return response;
         } catch (error) {
-            console.error('Error updating place:', error);
+            console.error('❌ Failed to update place in Appwrite:', error);
             throw error;
         }
     },
@@ -862,7 +860,10 @@ export const placeService = {
             const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.places,
-                [Query.equal('email', email)]
+                [
+                    Query.equal('email', email),
+                    Query.equal('category', 'massage-place')
+                ]
             );
             console.log('📋 Found massage places with email:', response.documents.length);
             return response.documents;
