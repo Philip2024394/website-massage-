@@ -327,6 +327,15 @@ export const placeAuth = {
                         );
                     } catch (e: any) {
                         const msg: string = e?.message || e?.response?.message || '';
+                        
+                        // Handle missing required attribute by removing it (let schema defaults apply)
+                        if (/Missing required attribute[:\s]*"?coordinates"?/i.test(msg)) {
+                            console.warn('[Place Sign-Up] Removing coordinates field to let schema handle it');
+                            delete current.coordinates;
+                            attempt++;
+                            continue;
+                        }
+                        
                         const m = /Unknown attribute[:\s]*"?([A-Za-z0-9_\-]+)"?/i.exec(msg);
                         if (m && m[1] && current.hasOwnProperty(m[1])) {
                             const badKey = m[1];
@@ -337,12 +346,11 @@ export const placeAuth = {
                         }
                         if (/Invalid type/i.test(msg)) {
                             if (/coordinates/i.test(msg)) {
-                                // Try empty string if JSON format rejected
-                                if (current.coordinates !== '') {
-                                    current.coordinates = '';
-                                    attempt++;
-                                    continue;
-                                }
+                                // Try removing coordinates if type is wrong
+                                console.warn('[Place Sign-Up] Removing coordinates due to type error');
+                                delete current.coordinates;
+                                attempt++;
+                                continue;
                             }
                             if (/pricing/i.test(msg)) {
                                 current.pricing = typeof current.pricing === 'string' ? current.pricing : JSON.stringify(current.pricing);
