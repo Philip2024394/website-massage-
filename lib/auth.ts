@@ -419,17 +419,18 @@ export const placeAuth = {
                         placeData
                     );
                     
-                    console.log('✅ Created place profile:', newPlace.$id);
-                    return { success: true, userId: user.$id, documentId: newPlace.$id };
+                    console.log('✅ Created place profile:', newPlace.$id, 'with place ID:', generatedPlaceId);
+                    return { success: true, userId: generatedPlaceId, documentId: newPlace.$id };
                 }
                 
-                console.log('✅ Found place profile:', place.$id);
-                return { success: true, userId: user.$id, documentId: place.$id };
+                console.log('✅ Found existing place profile:', place.$id, 'with place ID:', place.id);
+                return { success: true, userId: place.id, documentId: place.$id };
             } catch (dbError: any) {
                 console.error('Database error during place lookup:', dbError);
-                // If database lookup fails, still allow login but with user ID
-                console.log('⚠️ Proceeding with auth-only login');
-                return { success: true, userId: user.$id, documentId: user.$id };
+                // If database lookup fails, create a basic place ID from email
+                console.log('⚠️ Database lookup failed, generating place ID from email');
+                const fallbackPlaceId = email.replace('@', '_').replace(/[^a-zA-Z0-9_]/g, '');
+                return { success: true, userId: fallbackPlaceId, documentId: user.$id };
             }
         } catch (error: any) {
             console.error('Place sign in error:', error);
