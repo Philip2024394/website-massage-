@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import type { Therapist, Pricing, Booking, Notification } from '../types';
 import type { Page } from '../types/pageTypes';
 import { AvailabilityStatus, BookingStatus } from '../types';
@@ -74,6 +74,8 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
 
     const [therapist, setTherapist] = useState<Therapist | null>(null);
     const [isLoading, setIsLoading] = useState(false); // Start with false for debugging
+    const hasLoadedRef = useRef(false);
+    const isMountedRef = useRef(false);
 
     const [name, setName] = useState('');
     const [email] = useState('');
@@ -188,6 +190,12 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
     const [paymentInstructions, setPaymentInstructions] = useState('');
     
     const fetchTherapistData = useCallback(async () => {
+        // Prevent duplicate fetch causing flash
+        if (hasLoadedRef.current) {
+            console.log('⏭️ Skipping duplicate fetch - already loaded');
+            return;
+        }
+        
         setIsLoading(true);
         
         try {
@@ -426,6 +434,9 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                 // Set availability status
                 setStatus(existingTherapist.status || AvailabilityStatus.Offline);
                 
+                // Mark as successfully loaded
+                hasLoadedRef.current = true;
+                
                 // Handle busy timer
                 if (existingTherapist.busyUntil) {
                     const busyEndTime = new Date(existingTherapist.busyUntil);
@@ -466,6 +477,9 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                 setIsDiscountActive(false);
                 setBusyUntil(null);
                 
+                // Mark as loaded even for new profile
+                hasLoadedRef.current = true;
+                
             }
         } catch (error) {
             console.error('❌ Error fetching therapist data:', error);
@@ -475,6 +489,8 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
     }, [therapistId, existingTherapistData]);
 
     useEffect(() => {
+        isMountedRef.current = true;
+        setIsSideDrawerOpen(false);
         fetchTherapistData();
         
         // Fallback: Ensure loading completes within 5 seconds
@@ -483,8 +499,11 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
             setIsLoading(false);
         }, 5000);
         
-        return () => clearTimeout(loadingTimeout);
-    }, [fetchTherapistData]);
+        return () => {
+            clearTimeout(loadingTimeout);
+            isMountedRef.current = false;
+        };
+    }, [therapistId, existingTherapistData]);
 
     // Auto-check discount expiration and busy timer
     useEffect(() => {

@@ -3,6 +3,7 @@ import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { AppDrawer } from '../components/AppDrawer';
 import { account } from '../lib/appwrite';
 import { promoterService } from '../services/promoterService';
+import { qrUsageService } from '../lib/qrUsageService';
 
 const PromoterQRPage: React.FC<{ t?: any; onBack?: () => void; onNavigate?: (p: any) => void }> = ({ t, onBack, onNavigate }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -10,6 +11,9 @@ const PromoterQRPage: React.FC<{ t?: any; onBack?: () => void; onNavigate?: (p: 
   const [promotorCode, setPromotorCode] = useState<string>('');
   const [copied, setCopied] = useState(false);
   const [isActive, setIsActive] = useState(true);
+  const [usageType, setUsageType] = useState<string>('');
+  const [venueName, setVenueName] = useState<string>('');
+  const usageNeedsVenue = usageType === 'hotel' || usageType === 'villa';
 
   useEffect(() => {
     let mounted = true;
@@ -39,10 +43,12 @@ const PromoterQRPage: React.FC<{ t?: any; onBack?: () => void; onNavigate?: (p: 
       const origin = globalThis.location?.origin || '';
       const code = promotorCode || '';
       if (!origin || !code) return '';
-      // Canonical live menu URL
-      return `${origin}/live-menu?aff=${encodeURIComponent(code)}`;
+      const params: string[] = [`aff=${encodeURIComponent(code)}`];
+      if (usageType) params.push(`usageType=${encodeURIComponent(usageType)}`);
+      if (usageNeedsVenue && venueName.trim()) params.push(`venueName=${encodeURIComponent(venueName.trim())}`);
+      return `${origin}/live-menu?${params.join('&')}`;
     } catch { return ''; }
-  }, [promotorCode]);
+  }, [promotorCode, usageType, venueName, usageNeedsVenue]);
 
   const shortAliasUrl = useMemo(() => {
     try {
@@ -59,14 +65,36 @@ const PromoterQRPage: React.FC<{ t?: any; onBack?: () => void; onNavigate?: (p: 
     return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${data}`;
   }, [shareUrl]);
 
+  const ensureValid = (): boolean => {
+    if (!usageType) { alert('Please select where this QR will be used.'); return false; }
+    if (usageNeedsVenue && !venueName.trim()) { alert('Please enter the Hotel/Villa name.'); return false; }
+    return true;
+  };
+
+  const logUsage = async (actionType: string) => {
+    try {
+      await qrUsageService.logUsage({
+        userId,
+        affiliateCode: promotorCode,
+        usageType,
+        venueName: usageNeedsVenue ? venueName.trim() : '',
+        actionType,
+        shareUrl
+      });
+    } catch {}
+  };
+
   const handleCopy = async () => {
-    try { await navigator.clipboard.writeText(shareUrl); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch {}
+    if (!ensureValid()) return;
+    try { await navigator.clipboard.writeText(shareUrl); setCopied(true); setTimeout(() => setCopied(false), 1500); await logUsage('copy'); } catch {}
   };
 
   const handleShare = async () => {
+    if (!ensureValid()) return;
     try {
       if ((navigator as any).share && shareUrl) {
         await (navigator as any).share({ title: 'Indastreet', text: 'Book with my promoter link', url: shareUrl });
+        await logUsage('share');
       } else {
         await handleCopy();
         alert('Link copied to clipboard');
@@ -106,14 +134,48 @@ const PromoterQRPage: React.FC<{ t?: any; onBack?: () => void; onNavigate?: (p: 
                 Your promoter account is deactivated. Sharing is disabled.
               </div>
             )}
-            {!!qrSrc && (<img src={qrSrc} alt="Promoter QR" className={`w-64 h-64 ${!isActive ? 'opacity-50' : ''}`} />)}
+            {!!qrSrc && (
+              <div className="flex flex-col items-center">
+                <img src={qrSrc} alt="Promoter QR" className={`w-64 h-64 ${!isActive ? 'opacity-50' : ''}`} />
+                {usageNeedsVenue && venueName.trim() && (
+                  <div className="mt-2 text-sm font-medium text-gray-800" title="Venue Name">{venueName.trim()}</div>
+                )}
+                {usageType && (
+                  <div className="mt-1 text-xs uppercase tracking-wide text-gray-500" title="Usage Type">{usageType}</div>
+                )}
+              </div>
+            )}
+            <div className="mt-4 w-full space-y-3">
+              <div>
+                <label className="text-xs font-semibold text-gray-700">Where will this QR be used?</label>
+                <select value={usageType} onChange={e => setUsageType(e.target.value)} className="mt-1 w-full border border-gray-300 rounded px-2 py-2 text-sm bg-white">
+                  <option value="">Select location</option>
+                  <option value="hotel">Hotel</option>
+                  <option value="villa">Villa</option>
+                  <option value="social">Social Media</option>
+                  <option value="whatsapp">WhatsApp</option>
+                </select>
+              </div>
+              {usageNeedsVenue && (
+                <div>
+                  <label className="text-xs font-semibold text-gray-700">Hotel / Villa Name</label>
+                  <input value={venueName} onChange={e => setVenueName(e.target.value)} placeholder="e.g. Ocean View Resort" className="mt-1 w-full border border-gray-300 rounded px-3 py-2 text-sm" maxLength={80} />
+                </div>
+              )}
+              <p className="text-xs text-gray-500">Selecting accurate usage improves reporting & attribution. Hotel/Villa name will be saved.</p>
+            </div>
             <div className="mt-4 w-full space-y-2">
               <div className="bg-gray-50 text-gray-700 text-sm rounded px-3 py-2 break-all select-all" title="Canonical share URL">{shareUrl}</div>
               <div className="bg-gray-50 text-gray-500 text-xs rounded px-3 py-2 break-all select-all" title="Short alias URL">{shortAliasUrl}</div>
             </div>
             <div className="mt-4 grid grid-cols-3 gap-2 w-full">
               <button onClick={handleCopy} disabled={!isActive} className={`px-3 py-2 rounded-lg text-sm ${isActive ? 'bg-slate-800 text-white' : 'bg-gray-400 text-white cursor-not-allowed'}`}>{copied ? 'Copied' : 'Copy'}</button>
-              <a href={isActive ? (qrSrc || '#') : '#'} download={`indastreet-promoter-qr.png`} className={`px-3 py-2 rounded-lg text-sm text-center ${qrSrc && isActive ? 'bg-black text-white' : 'bg-gray-300 text-gray-600 pointer-events-none'}`}>Download</a>
+              <a
+                href={isActive && ensureValid() ? (qrSrc || '#') : '#'}
+                onClick={async (e) => { if (!ensureValid()) { e.preventDefault(); return; } if (isActive) { await logUsage('download'); } }}
+                download={`indastreet-promoter-qr.png`}
+                className={`px-3 py-2 rounded-lg text-sm text-center ${qrSrc && isActive ? 'bg-black text-white' : 'bg-gray-300 text-gray-600 pointer-events-none'}`}
+              >Download</a>
               <button onClick={handleShare} disabled={!isActive} className={`px-3 py-2 rounded-lg text-sm ${isActive ? 'bg-orange-500 text-white' : 'bg-gray-400 text-white cursor-not-allowed'}`}>Share</button>
             </div>
           </div>

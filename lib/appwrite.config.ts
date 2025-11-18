@@ -56,6 +56,8 @@ export const APPWRITE_CONFIG = {
         promoters: 'agents_collection_id',
         promoterPayoutRequests: 'promoter_payout_requests',
         promoterTableStandOrders: 'promoter_table_stand_orders',
+        // NEW: QR usage logging
+        qrUsageLogs: 'qr_usage_logs',
     },
     
     // Storage bucket ID

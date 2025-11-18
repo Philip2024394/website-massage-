@@ -44,9 +44,13 @@ const PromoterHotelVillaMassagePage: React.FC<{ t?: any; onBack?: () => void; on
       const origin = globalThis.location?.origin || '';
       const code = promotorCode || '';
       if (!origin || !code) return '';
-      return `${origin}/?aff=${encodeURIComponent(code)}`;
+      const url = new URL(`${origin}/`);
+      url.searchParams.set('aff', code);
+      if (hotelOrVillaName.trim()) url.searchParams.set('venueName', hotelOrVillaName.trim());
+      url.searchParams.set('source', 'table-stand');
+      return url.toString();
     } catch { return ''; }
-  }, [promotorCode]);
+  }, [promotorCode, hotelOrVillaName]);
 
   const qrSrc = useMemo(() => {
     if (!shareUrl) return '';

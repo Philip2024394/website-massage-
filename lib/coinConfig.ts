@@ -3,9 +3,9 @@
 
 export const COIN_CONFIG = {
     // Customer Earning Rates
-    BOOKING_COMPLETION: 25,     // Coins earned per completed booking
+    BOOKING_COMPLETION: 0,      // Guests disabled from earning (was 25)
     REFERRAL_BONUS: 50,         // Coins earned when someone uses your referral
-    DAILY_CHECK_IN: 5,          // Coins earned for daily check-in
+    DAILY_CHECK_IN: 0,          // Guests disabled from earning (was 5)
     
     // Therapist Earning Rates
     THERAPIST_BOOKING_COMPLETION: 15,  // Coins for completing a booking
@@ -46,6 +46,11 @@ export const COIN_CONFIG = {
     AGENT_VISIT_COMPLETION: 30,       // Coins for completing provider visits
     AGENT_MEMBERSHIP_SIGNUP: 100,     // Bonus when provider signs membership
     AGENT_MONTHLY_TARGET: 200,        // Bonus for meeting monthly visit targets
+
+    // Promoter / Partnership Earning Rates (new)
+    PROMOTER_TASK_COMPLETION: 10,     // Standard promoter task reward (was 5)
+    PROMOTER_BOOKING_ATTRIBUTION: 10, // Coins per attributed booking
+    PROMOTER_MONTHLY_TARGET: 150,     // Bonus for meeting monthly booking attribution target
     
     // Universal Bonuses
     LOYALTY_TIER_BONUS: {

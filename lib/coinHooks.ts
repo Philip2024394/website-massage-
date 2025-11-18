@@ -25,16 +25,20 @@ export async function trackDailySignIn(userId: string, currentStreak: number = 1
             return false; // Already signed in today
         }
 
-        // Award coins based on streak
-        await coinService.awardDailySignIn(userId, currentStreak);
+        // Skip guests (userType 'user') since guest rewards disabled
+        if (userType !== 'user') {
+            await coinService.awardDailySignIn(userId, currentStreak);
+        }
         
         // Queue reward banner for display
-        rewardBannerService.queueRewardBanner(
-            userType,
-            'daily-signin',
-            currentStreak >= 7 ? 25 : currentStreak >= 2 ? 15 : 10,
-            currentStreak
-        );
+        if (userType !== 'user') {
+            rewardBannerService.queueRewardBanner(
+                userType,
+                'daily-signin',
+                currentStreak >= 7 ? 25 : currentStreak >= 2 ? 15 : 10,
+                currentStreak
+            );
+        }
         
         // Update last sign-in
         localStorage.setItem(`lastSignIn_${userId}`, today);
@@ -63,25 +67,29 @@ export async function trackBookingCompletion(
             return false; // Already awarded
         }
 
-        // Award coins
+        // Award coins only for non-guest user types
         const isFirstBooking = totalBookings === 1;
-        await coinService.awardBookingCompletion(userId, totalBookings, isFirstBooking);
+        if (userType !== 'user') {
+            await coinService.awardBookingCompletion(userId, totalBookings, isFirstBooking);
+        }
         
         // Queue reward banner for display
-        const coinAmount = totalBookings >= 10 ? 100 : 50;
-        rewardBannerService.queueRewardBanner(
-            userType,
-            'booking-completion',
-            coinAmount,
-            undefined,
-            totalBookings
-        );
+        if (userType !== 'user') {
+            const coinAmount = totalBookings >= 10 ? 100 : 50;
+            rewardBannerService.queueRewardBanner(
+                userType,
+                'booking-completion',
+                coinAmount,
+                undefined,
+                totalBookings
+            );
+        }
         
         // Mark as awarded
         localStorage.setItem(awardedKey, 'true');
 
         // Check if this completes a referral (first booking)
-        if (isFirstBooking) {
+        if (isFirstBooking && userType !== 'user') {
             await coinService.processReferralReward(userId);
         }
         

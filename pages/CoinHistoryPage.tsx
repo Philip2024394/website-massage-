@@ -18,7 +18,7 @@ interface CoinHistoryPageProps {
     _isFromHotelDashboard?: boolean;
     isFromVillaDashboard?: boolean;
     _isFromVillaDashboard?: boolean;
-    dashboardType?: 'villa' | 'therapist' | 'standalone';
+    dashboardType?: 'villa' | 'therapist' | 'standalone' | 'promoter';
 }
 
 const CoinHistoryPage: React.FC<CoinHistoryPageProps> = ({ 
@@ -55,8 +55,14 @@ const CoinHistoryPage: React.FC<CoinHistoryPageProps> = ({
                     coinService.getTransactionHistory(userId, 100)
                 ]);
 
+                // Filter out guest-earned transactions if promoter view
+                let filtered = history;
+                if (dashboardType === 'promoter') {
+                    filtered = history.filter(h => h.metadata?.userType !== 'user');
+                }
+
                 setCoinBalance(balance);
-                setTransactions(history);
+                setTransactions(filtered);
             } catch (error) {
                 console.error('Error loading coin data:', error);
             }

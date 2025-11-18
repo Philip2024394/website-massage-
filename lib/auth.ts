@@ -64,41 +64,116 @@ export const therapistAuth = {
                 databaseId: DATABASE_ID
             });
             
-            const therapist = await databases.createDocument(
-                DATABASE_ID,
-                COLLECTIONS.THERAPISTS,
-                therapistId,
-                {
-                    // Required fields per schema
-                    id: therapistId, // Required by Appwrite schema - document ID
+            // Pull referral agent code from param or captured attribution (if available)
+            let capturedCode = '';
+            try {
+                const mod = await import('./affiliateAttribution');
+                capturedCode = (mod.getCode?.() || '').toString();
+            } catch {}
+            const normalizedAgentCode = (agentCode || capturedCode || '')
+                .toUpperCase()
+                .replace(/[^A-Z0-9]/g, '')
+                .slice(0, 12);
+            const hasReferral = !!normalizedAgentCode;
+
+            // Prepare a conservative payload. We'll auto-prune unknown attributes on error.
+            const basePayload: any = {
+                id: therapistId,
+                therapistId: therapistId,
+                email,
+                name: email.split('@')[0],
+                whatsappNumber: '',
+                location: '',
+                pricing: JSON.stringify({ '60': 100, '90': 150, '120': 200 }),
+                price60: '100',
+                price90: '150',
+                price120: '200',
+                status: 'available',
+                isLive: true,
+                hourlyRate: 100,
+                hotelId: '',
+                isLicensed: false,
+                specialization: 'General Massage',
+                availability: 'Available',
+                description: '',
+                profilePicture: '',
+                mainImage: getRandomTherapistImage(therapistId),
+                yearsOfExperience: 0,
+                massageTypes: '',
+                languages: '',
+                coordinates: JSON.stringify({ lat: 0, lng: 0 }),
+                // Referral/Attribution fields (will be pruned if collection doesn't support yet)
+                agentCode: normalizedAgentCode,
+                referralSource: hasReferral ? 'agent' : 'direct',
+                referralStatus: hasReferral ? 'pending' : 'validated',
+                referralAt: hasReferral ? new Date().toISOString() : null,
+                referredByAgentId: '',
+                referralCampaignId: '',
+                bookingsCount: 0,
+                membershipRenewalsCount: 0,
+                agentAttributionLocked: false
+            };
+
+            async function createWithPruning(payload: any): Promise<any> {
+                // Attempt create; if an unknown attribute is reported, remove it and retry
+                const maxAttempts = 10;
+                let attempt = 0;
+                let current = { ...payload };
+                while (attempt < maxAttempts) {
+                    try {
+                        return await databases.createDocument(
+                            DATABASE_ID,
+                            COLLECTIONS.THERAPISTS,
+                            therapistId,
+                            current
+                        );
+                    } catch (e: any) {
+                        const msg: string = e?.message || e?.response?.message || '';
+                        const m = /Unknown attribute[:\s]*"?([A-Za-z0-9_\-]+)"?/i.exec(msg);
+                        if (m && m[1] && current.hasOwnProperty(m[1])) {
+                            const badKey = m[1];
+                            console.warn('[Therapist Sign-Up] Removing unknown attribute:', badKey);
+                            delete current[badKey];
+                            attempt++;
+                            continue;
+                        }
+                        // Fallback: if invalid type errors occur for hourlyRate, cast to string/number variants
+                        if (/Invalid type/i.test(msg)) {
+                            if (/hourlyRate/i.test(msg)) {
+                                current.hourlyRate = Number(current.hourlyRate) || 100;
+                                attempt++;
+                                continue;
+                            }
+                            if (/pricing/i.test(msg)) {
+                                current.pricing = typeof current.pricing === 'string' ? current.pricing : JSON.stringify(current.pricing);
+                                attempt++;
+                                continue;
+                            }
+                        }
+                        throw e;
+                    }
+                }
+                // Final attempt without any optionals that are commonly problematic
+                const minimal: any = {
+                    id: therapistId,
+                    therapistId: therapistId,
                     email,
                     name: email.split('@')[0],
-                    whatsappNumber: '',
-                    location: '',
-                    pricing: JSON.stringify({ '60': 100, '90': 150, '120': 200 }),
-                    price60: '100', // Required string field for 60-minute massage
-                    price90: '150', // Required string field for 90-minute massage
-                    price120: '200', // Required string field for 120-minute massage
-                    status: 'available', // Valid enum: available, busy, offline
-                    isLive: true, // 🚀 AUTO-ACTIVE: New registrations are automatically live
-                    hourlyRate: 100, // Required by Appwrite schema (50-500 range)
-                    therapistId: therapistId, // Required by Appwrite schema
-                    hotelId: '', // Required by Appwrite schema - empty for independent therapists
-                    isLicensed: false, // Required by Appwrite schema - license verification
-                    specialization: 'General Massage', // Required by actual Appwrite collection
-                    availability: 'Available', // Valid enum: Available, Busy, Offline
-                    
-                    // Optional fields with defaults per schema
-                    description: '',
-                    profilePicture: '',
-                    mainImage: getRandomTherapistImage(therapistId), // Random Appwrite image for professional display
-                    yearsOfExperience: 0,
-                    massageTypes: '',
-                    languages: '',
-                    coordinates: JSON.stringify({ lat: 0, lng: 0 }),
-                    agentCode: agentCode || '', // Store referral agent code if provided
-                }
-            );
+                    price60: '100',
+                    price90: '150',
+                    price120: '200',
+                    status: 'available',
+                    isLive: true
+                };
+                return databases.createDocument(
+                    DATABASE_ID,
+                    COLLECTIONS.THERAPISTS,
+                    therapistId,
+                    minimal
+                );
+            }
+
+            const therapist = await createWithPruning(basePayload);
             
             console.log('✅ [Therapist Sign-Up] Therapist document created:', therapist.$id);
             console.log('🎉 [Therapist Sign-Up] SUCCESS! Returning response...');
@@ -181,33 +256,103 @@ export const placeAuth = {
             
             console.log('🏢 Creating massage place with required attributes only...');
             
-            const placeData = {
-                // CORE REQUIRED ATTRIBUTES (verified to exist in Appwrite)
-                id: generatedPlaceId,                          // ✅ Required: Document identifier
-                placeId: generatedPlaceId,                     // ✅ Required: Place-specific ID field
-                name: email.split('@')[0],                     // ✅ Required: Business name
-                category: 'massage-place',                     // ✅ Required: Business category
-                email,                                         // ✅ Required: Email address
-                password: '',                                  // ✅ Required: Managed by Appwrite auth
-                pricing: JSON.stringify({ '60': 100, '90': 150, '120': 200 }), // ✅ Required: Pricing structure
-                location: 'Location pending setup',           // ✅ Required: Address
-                status: 'Closed',                             // ✅ Required: Open/Closed status
-                isLive: false,                                // ✅ Required: Admin approval
-                openingTime: '09:00',                         // ✅ Required: Opening time
-                closingTime: '21:00',                         // ✅ Required: Closing time
-                coordinates: [106.8456, -6.2088],             // ✅ Required: Point format [lng, lat] for Jakarta
-                hotelId: '',                                  // ✅ Required: Empty for independent massage places
-                agentCode: agentCode || '',                   // Referral agent code if signup via agent
+            // Referral capture for places as well
+            let capturedCode = '';
+            try {
+                const mod = await import('./affiliateAttribution');
+                capturedCode = (mod.getCode?.() || '').toString();
+            } catch {}
+            const normalizedAgentCode = (agentCode || capturedCode || '')
+                .toUpperCase()
+                .replace(/[^A-Z0-9]/g, '')
+                .slice(0, 12);
+            const hasReferral = !!normalizedAgentCode;
+
+            const basePayload: any = {
+                id: generatedPlaceId,
+                placeId: generatedPlaceId,
+                name: email.split('@')[0],
+                category: 'massage-place',
+                email,
+                password: '',
+                pricing: JSON.stringify({ '60': 100, '90': 150, '120': 200 }),
+                location: 'Location pending setup',
+                status: 'Closed',
+                isLive: false,
+                openingTime: '09:00',
+                closingTime: '21:00',
+                coordinates: [106.8456, -6.2088],
+                hotelId: '',
+                // Referral/Attribution fields (pruned automatically if schema doesn't allow)
+                agentCode: normalizedAgentCode,
+                referralSource: hasReferral ? 'agent' : 'direct',
+                referralStatus: hasReferral ? 'pending' : 'validated',
+                referralAt: hasReferral ? new Date().toISOString() : null,
+                referredByAgentId: '',
+                referralCampaignId: '',
+                bookingsCount: 0,
+                membershipRenewalsCount: 0,
+                agentAttributionLocked: false
             };
-            
-            console.log('📊 Place data (required only):', placeData);
-            
-            const place = await databases.createDocument(
-                DATABASE_ID,
-                COLLECTIONS.PLACES,
-                generatedPlaceId,
-                placeData
-            );
+
+            async function createPlaceWithPruning(payload: any): Promise<any> {
+                const maxAttempts = 10;
+                let attempt = 0;
+                let current = { ...payload };
+                while (attempt < maxAttempts) {
+                    try {
+                        return await databases.createDocument(
+                            DATABASE_ID,
+                            COLLECTIONS.PLACES,
+                            generatedPlaceId,
+                            current
+                        );
+                    } catch (e: any) {
+                        const msg: string = e?.message || e?.response?.message || '';
+                        const m = /Unknown attribute[:\s]*"?([A-Za-z0-9_\-]+)"?/i.exec(msg);
+                        if (m && m[1] && current.hasOwnProperty(m[1])) {
+                            const badKey = m[1];
+                            console.warn('[Place Sign-Up] Removing unknown attribute:', badKey);
+                            delete current[badKey];
+                            attempt++;
+                            continue;
+                        }
+                        if (/Invalid type/i.test(msg)) {
+                            if (/coordinates/i.test(msg)) {
+                                // Try stringified coordinates if array rejected
+                                current.coordinates = Array.isArray(current.coordinates)
+                                    ? JSON.stringify({ lat: 0, lng: 0 })
+                                    : current.coordinates;
+                                attempt++;
+                                continue;
+                            }
+                            if (/pricing/i.test(msg)) {
+                                current.pricing = typeof current.pricing === 'string' ? current.pricing : JSON.stringify(current.pricing);
+                                attempt++;
+                                continue;
+                            }
+                        }
+                        throw e;
+                    }
+                }
+                const minimal: any = {
+                    id: generatedPlaceId,
+                    placeId: generatedPlaceId,
+                    name: email.split('@')[0],
+                    category: 'massage-place',
+                    email,
+                    status: 'Closed',
+                    isLive: false
+                };
+                return databases.createDocument(
+                    DATABASE_ID,
+                    COLLECTIONS.PLACES,
+                    generatedPlaceId,
+                    minimal
+                );
+            }
+
+            const place = await createPlaceWithPruning(basePayload);
             
             return { success: true, userId: user.$id, documentId: place.$id };
         } catch (error: any) {

@@ -34,6 +34,7 @@ interface AppDrawerProps {
 
     // Context flags
     promoterMode?: boolean;
+    isAdminLoggedIn?: boolean;
 }
 
 export const AppDrawer: React.FC<AppDrawerProps> = ({
@@ -54,7 +55,8 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
     onPrivacyClick,
     therapists = [],
     places = [],
-    promoterMode = false
+    promoterMode = false,
+    isAdminLoggedIn = false
 }) => {
     console.log('🚪 AppDrawer rendered with isOpen:', isOpen);
     console.log('🔤 AppDrawer t prop:', { t, tType: typeof t, tIsFunction: typeof t === 'function' });
@@ -438,6 +440,21 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                 </button>
 
                                 <button 
+                                    onClick={() => handleItemClick(() => onNavigate?.('promoterShareBanners'))}
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-orange-500 group transform hover:scale-105"
+                                >
+                                    <div className="p-2 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg">
+                                        <Home className="w-5 h-5 text-white" />
+                                    </div>
+                                    <div className="flex-grow">
+                                        <p className="font-semibold text-gray-800 group-hover:text-orange-600 transition-colors">
+                                            Share Banners
+                                        </p>
+                                        <p className="text-xs text-gray-500">Attach your code & share</p>
+                                    </div>
+                                </button>
+
+                                <button 
                                     onClick={() => handleItemClick(() => onNavigate?.('promoterMembershipSales'))}
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-orange-500 group transform hover:scale-105"
                                 >
@@ -468,6 +485,21 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                 </button>
 
                                 <button 
+                                    onClick={() => handleItemClick(() => onNavigate?.('promoterSettlement'))}
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-green-500 group transform hover:scale-105"
+                                >
+                                    <div className="p-2 bg-gradient-to-br from-green-500 to-green-600 rounded-lg">
+                                        <Briefcase className="w-5 h-5 text-white" />
+                                    </div>
+                                    <div className="flex-grow">
+                                        <p className="font-semibold text-gray-800 group-hover:text-green-600 transition-colors">
+                                            Settlement
+                                        </p>
+                                        <p className="text-xs text-gray-500">Gross, admin fee & net</p>
+                                    </div>
+                                </button>
+
+                                <button 
                                     onClick={() => handleItemClick(() => onNavigate?.('promoterBookingStats'))}
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-blue-500 group transform hover:scale-105"
                                 >
@@ -479,6 +511,21 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                             Booking Stats
                                         </p>
                                         <p className="text-xs text-gray-500">Bookings attributed to your code</p>
+                                    </div>
+                                </button>
+
+                                <button 
+                                    onClick={() => handleItemClick(() => onNavigate?.('coinHistory'))}
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-yellow-500 group transform hover:scale-105"
+                                >
+                                    <div className="p-2 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-lg">
+                                        <Users className="w-5 h-5 text-white" />
+                                    </div>
+                                    <div className="flex-grow">
+                                        <p className="font-semibold text-gray-800 group-hover:text-yellow-600 transition-colors">
+                                            Coin History
+                                        </p>
+                                        <p className="text-xs text-gray-500">All promoter coin rewards</p>
                                     </div>
                                 </button>
 
@@ -523,6 +570,45 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                                 {therapists.length + places.length}+ therapists
                                             </p>
                                         )}
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                        )}
+
+                        {/* ADMIN COMMISSIONS SECTION */}
+                        {isAdminLoggedIn && (
+                        <div className="mb-6">
+                            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2">
+                                Promoter Earnings
+                            </h3>
+                            <div className="space-y-2">
+                                <button 
+                                    onClick={() => handleItemClick(() => onNavigate?.('adminPromoterCommissions'))}
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-purple-500 group transform hover:scale-105"
+                                >
+                                    <div className="p-2 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg">
+                                        <Briefcase className="w-5 h-5 text-white" />
+                                    </div>
+                                    <div className="flex-grow">
+                                        <p className="font-semibold text-gray-800 group-hover:text-purple-600 transition-colors">
+                                            Promoter Commissions
+                                        </p>
+                                        <p className="text-xs text-gray-500">Admin share & totals</p>
+                                    </div>
+                                </button>
+                                <button 
+                                    onClick={() => handleItemClick(() => onNavigate?.('adminQrUsageReport'))}
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-purple-500 group transform hover:scale-105"
+                                >
+                                    <div className="p-2 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg">
+                                        <BookOpen className="w-5 h-5 text-white" />
+                                    </div>
+                                    <div className="flex-grow">
+                                        <p className="font-semibold text-gray-800 group-hover:text-purple-600 transition-colors">
+                                            QR Usage Report
+                                        </p>
+                                        <p className="text-xs text-gray-500">Hotel/Villa & source stats</p>
                                     </div>
                                 </button>
                             </div>

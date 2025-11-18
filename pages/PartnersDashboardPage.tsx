@@ -7,7 +7,6 @@ import { AppDrawer } from '../components/AppDrawer';
 
 const PartnersDashboardPage: React.FC<{ t?: any; setPage?: (p: any) => void }> = ({ t, setPage }) => {
   const [venueId, setVenueId] = useState('');
-  const [venueType, setVenueType] = useState<'hotel' | 'villa'>('villa');
   const [summary, setSummary] = useState<CommissionSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -20,9 +19,9 @@ const PartnersDashboardPage: React.FC<{ t?: any; setPage?: (p: any) => void }> =
   const liveMenuUrl = useMemo(() => {
     const aff = affiliateCode ? `&aff=${encodeURIComponent(affiliateCode)}` : '';
     const base = `${globalThis.location.origin}/?page=promoterLiveMenu`;
-    const params = `venueId=${encodeURIComponent(venueId || '')}&venueType=${venueType}`;
+    const params = `venueId=${encodeURIComponent(venueId || '')}`;
     return `${base}&${params}${aff}`;
-  }, [venueId, venueType, affiliateCode]);
+  }, [venueId, affiliateCode]);
 
   useEffect(() => {
     let mounted = true;
@@ -138,13 +137,7 @@ const PartnersDashboardPage: React.FC<{ t?: any; setPage?: (p: any) => void }> =
             <label className="text-xs text-gray-600">Venue ID</label>
             <input value={venueId} onChange={e => setVenueId(e.target.value)} className="w-full border rounded-lg px-3 py-2" placeholder="e.g., 101" />
           </div>
-          <div>
-            <label className="text-xs text-gray-600">Venue Type</label>
-            <select value={venueType} onChange={e => setVenueType(e.target.value as any)} className="w-full border rounded-lg px-3 py-2">
-              <option value="villa">Villa</option>
-              <option value="hotel">Hotel</option>
-            </select>
-          </div>
+          {/* Venue Type dropdown removed as not required */}
           <div className="flex gap-2">
             <button onClick={() => navigator.clipboard.writeText(liveMenuUrl)} className="flex-1 bg-gray-800 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2">
               <LinkIcon className="w-4 h-4" /> Copy Link
@@ -161,7 +154,6 @@ const PartnersDashboardPage: React.FC<{ t?: any; setPage?: (p: any) => void }> =
               const url = new URL(window.location.href);
               url.searchParams.set('page', 'promoterLiveMenu');
               url.searchParams.set('venueId', venueId || '');
-              url.searchParams.set('venueType', venueType);
               window.history.replaceState({}, '', url.toString());
             } catch {}
             if (setPage) setPage('promoterLiveMenu');

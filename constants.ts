@@ -297,3 +297,22 @@ export const ADDITIONAL_SERVICES = [
     'Acupressure', 'Reflexology', 'Aromatherapy', 'Yoga & Pilates', 
     'Cupping Therapy', 'Physical Therapy', 'Sauna', 'Jacuzzi', 'Steam Room'
 ];
+
+// Promoter booking commission configuration
+export const PROMOTER_BOOKING_COMMISSION_RATE = 0.20; // 20% of booking/service amount
+export const ADMIN_SHARE_OF_PROMOTER_COMMISSION = 0.10; // 10% of promoter commission (effective 2% of original amount)
+
+export interface PromoterSettlementBreakdown {
+    serviceAmount: number;
+    grossPromoterCommission: number; // 20% of serviceAmount
+    adminFee: number; // 10% of grossPromoterCommission
+    promoterNet: number; // grossPromoterCommission - adminFee
+}
+
+export function calculatePromoterSettlement(serviceAmount: number): PromoterSettlementBreakdown {
+    const safeAmount = Math.max(0, Number(serviceAmount) || 0);
+    const grossPromoterCommission = Math.round(safeAmount * PROMOTER_BOOKING_COMMISSION_RATE);
+    const adminFee = Math.round(grossPromoterCommission * ADMIN_SHARE_OF_PROMOTER_COMMISSION);
+    const promoterNet = grossPromoterCommission - adminFee;
+    return { serviceAmount: safeAmount, grossPromoterCommission, adminFee, promoterNet };
+}

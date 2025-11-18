@@ -88,6 +88,7 @@ import PromoterMembershipSalesPage from './pages/PromoterMembershipSalesPage';
 const PromoterCommissionPage = React.lazy(() => import('./pages/PromoterCommissionPage'));
 import PromoterQRPage from './pages/PromoterQRPage';
 const PromoterBookingStatsPage = React.lazy(() => import('./pages/PromoterBookingStatsPage'));
+const PromoterShareBannersPage = React.lazy(() => import('./pages/PromoterShareBannersPage'));
 const ProviderCommissionPage = React.lazy(() => import('./pages/ProviderCommissionPage'));
 // Eager-load PromoterLiveMenuPage to avoid dev dynamic import fetch issues
 import PromoterLiveMenuPage from './pages/PromoterLiveMenuPage';
@@ -95,6 +96,7 @@ import PromoterLiveMenuPage from './pages/PromoterLiveMenuPage';
 import PromoterHotelVillaMassagePage from './pages/PromoterHotelVillaMassagePage';
 const PromoterTermsPage = React.lazy(() => import('./pages/PromoterTermsPage'));
 const PromoterBankAccountPage = React.lazy(() => import('./pages/PromoterBankAccountPage'));
+const AdminQRUsageReportPage = React.lazy(() => import('./pages/AdminQRUsageReportPage'));
 // Eager-load CoinShopPage to avoid dynamic import fetch issues during dev
 import CoinShopPage from './pages/CoinShopPage';
 const AdminShopManagementPage = React.lazy(() => import('./pages/AdminShopManagementPage'));
@@ -299,7 +301,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 const code = codeFromUrl || getCode();
                 if (code) {
                     const { affiliateAnalyticsService } = await import('./lib/affiliateAnalyticsService');
-                    await affiliateAnalyticsService.trackClick(code, globalThis.location?.pathname || '/', document.referrer);
+                    const pathWithQuery = `${globalThis.location?.pathname || '/'}${globalThis.location?.search || ''}`;
+                    await affiliateAnalyticsService.trackClick(code, pathWithQuery, document.referrer);
                 }
             } catch {}
         })();
@@ -1216,11 +1219,19 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'promoterCommission': {
             return renderBackPage(PromoterCommissionPage, t);
         }
+        case 'promoterSettlement': {
+            const PromoterSettlementPage = React.lazy(() => import('./pages/PromoterSettlementPage'));
+            return renderBackPage(PromoterSettlementPage, t);
+        }
         case 'promoterQR': {
             return renderBackPage(PromoterQRPage, t);
         }
         case 'promoterBookingStats': {
             return renderBackPage(PromoterBookingStatsPage, t);
+        }
+
+        case 'promoterShareBanners': {
+            return renderBackPage(PromoterShareBannersPage, t);
         }
         case 'providerCommission': {
             return renderBackPage(ProviderCommissionPage, t, { loggedInProvider });
@@ -1233,6 +1244,13 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         }
         case 'promoterTerms': {
             return renderBackPage(PromoterTermsPage, t);
+        }
+        case 'adminPromoterCommissions': {
+            const AdminPromoterCommissionsPage = React.lazy(() => import('./pages/AdminPromoterCommissionsPage'));
+            return renderBackPage(AdminPromoterCommissionsPage, t);
+        }
+        case 'adminQrUsageReport': {
+            return renderBackPage(AdminQRUsageReportPage, t);
         }
         case 'promoterBankAccount': {
             return renderBackPage(PromoterBankAccountPage, t);
