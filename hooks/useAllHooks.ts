@@ -145,8 +145,43 @@ export const useAllHooks = () => {
 
     // Local database handlers removed - using Appwrite only
     
-    // Provider/Agent handlers removed with Agent/Hotel/Villa features.
-    const providerAgentHandlers = {} as any;
+    // Provider/Agent handlers 
+    const providerAgentHandlers = {
+        handleSavePlace: async (placeData: any): Promise<void> => {
+            try {
+                console.log('🔄 handleSavePlace called with data:', placeData);
+                
+                // Update the places array in the app state
+                const currentPlaces = state.places || [];
+                const existingIndex = currentPlaces.findIndex((p: any) => p.id === placeData.id);
+                
+                let updatedPlaces;
+                if (existingIndex >= 0) {
+                    // Update existing place
+                    updatedPlaces = [...currentPlaces];
+                    updatedPlaces[existingIndex] = { ...placeData, $id: placeData.$id || `local_${placeData.id}` };
+                } else {
+                    // Add new place
+                    updatedPlaces = [...currentPlaces, { ...placeData, $id: placeData.$id || `local_${placeData.id}` }];
+                }
+                
+                // Update the state
+                state.setPlaces(updatedPlaces);
+                console.log('✅ Updated places array in app state, total places:', updatedPlaces.length);
+                
+                // Optionally refresh the data from all sources
+                try {
+                    const { places: freshPlaces } = await dataFetching.fetchPublicData();
+                    state.setPlaces(freshPlaces);
+                    console.log('✅ Refreshed places from all data sources');
+                } catch (error) {
+                    console.log('⚠️ Could not refresh from data sources, using updated local state');
+                }
+            } catch (error) {
+                console.error('❌ Failed to handle save place:', error);
+            }
+        }
+    };
     
     // ALWAYS call footer navigation in the same order
     const footerNav = useFooterNavigation({
