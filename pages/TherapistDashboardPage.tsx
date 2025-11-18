@@ -537,7 +537,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
 
         const interval = setInterval(checkTimers, 1000); // Check every second for busy timer accuracy
         return () => clearInterval(interval);
-    }, [isDiscountActive, discountEndTime, busyUntil, status, onStatusChange]);
+    }, [isDiscountActive, discountEndTime, busyUntil, status]);
 
     // Menu items for navigation - Updated to match home drawer style with Lucide React icons
     const menuItems = [
@@ -915,7 +915,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                 <span className="font-medium">{item.label}</span>
                                 {item.badge && (
                                     <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                                        {item.badge}
+                                        {String(item.badge)}
                                     </span>
                                 )}
                             </button>
@@ -3289,7 +3289,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                     </div>
                                                     {item.badge && (
                                                         <span className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
-                                                            {item.badge}
+                                                            {String(item.badge)}
                                                         </span>
                                                     )}
                                                 </button>
