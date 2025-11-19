@@ -139,8 +139,9 @@ const ProductDetailPage: React.FC<Props> = ({ onBack, onNavigate }) => {
             <div className="font-semibold text-gray-900 truncate pr-2">{product.name}</div>
             <div className="text-xs sm:text-sm text-gray-700 whitespace-nowrap">
               {(() => {
-                const sold = (product as any)?.soldCount ?? (product as any)?.unitsSold ?? (product as any)?.sales ?? 0;
-                return <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100 border border-gray-200">Sold: <strong>{sold}</strong></span>;
+                const raw = (product as any)?.unitsSold ?? (product as any)?.soldCount ?? (product as any)?.sales ?? '0';
+                const sold = parseInt(raw?.toString() || '0', 10);
+                return <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100 border border-gray-200">Sold: <strong>{isNaN(sold) ? 0 : sold}</strong></span>;
               })()}
             </div>
           </div>

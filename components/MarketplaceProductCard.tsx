@@ -13,15 +13,23 @@ type Props = {
 const MarketplaceProductCard: React.FC<Props> = ({ product, viewerCountryCode, onView, onViewDetails }) => {
   const priceLabel = formatAmountForUser(product.price || 0, viewerCountryCode);
   
-  // Promo percent from schema (badge on the right)
-  const promoPercent = typeof (product as any).promoPercent === 'number' ? Math.max(0, Math.min(90, (product as any).promoPercent)) : 0;
+  // Promo percent from schema (string or number)
+  const promoPercent = (() => {
+    const raw = (product as any).promoPercent;
+    const n = typeof raw === 'number' ? raw : parseInt((raw || '0').toString(), 10);
+    return Math.max(0, Math.min(90, isNaN(n) ? 0 : n));
+  })();
   const hasPromo = promoPercent > 0;
   
   // Star rating (default to 4.5 if not set)
   const rating = product.rating || 4.5;
   
-  // Delivery days (mock for now, can be added to schema)
-  const deliveryDays = (product as any).deliveryDays || 6;
+  // Delivery days from schema (string), fallback 6
+  const deliveryDays = (() => {
+    const raw = (product as any).deliveryDays;
+    const n = parseInt((raw || '').toString(), 10);
+    return isNaN(n) ? 6 : n;
+  })();
 
   return (
     <div className="border border-gray-200 rounded-xl overflow-hidden bg-white hover:shadow-md transition-shadow">

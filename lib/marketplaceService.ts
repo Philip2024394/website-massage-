@@ -41,7 +41,9 @@ export type MarketplaceProduct = {
   stockLevel?: number;
   condition?: string; // 'New' or 'Used'
   rating?: number; // Product rating 0-5
-  promoPercent?: number; // 1-50 promo badge percent
+  promoPercent?: string | number; // percent string in Appwrite schema
+  unitsSold?: string; // total units sold (string in schema)
+  deliveryDays?: string; // estimated delivery days (string in schema)
   sellerId: string;
   countryCode?: string;
   lat?: string;
