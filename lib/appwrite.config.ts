@@ -58,6 +58,9 @@ export const APPWRITE_CONFIG = {
         promoterTableStandOrders: 'promoter_table_stand_orders',
         // NEW: QR usage logging
         qrUsageLogs: 'qr_usage_logs',
+        // Marketplace
+        marketplaceProducts: 'marketplace_products',
+        marketplaceSellers: 'marketplace_sellers',
     },
     
     // Storage bucket ID

@@ -776,9 +776,9 @@ const HomePage: React.FC<HomePageProps> = ({
                                 console.log('onNavigate function exists:', !!onNavigate);
                                 
                                 if (onNavigate) {
-                                    console.log('✅ Calling onNavigate with coin-shop');
+                                    console.log('✅ Calling onNavigate with marketplace');
                                     try {
-                                        onNavigate('coin-shop');
+                                        onNavigate('marketplace');
                                         console.log('✅ Navigation called successfully');
                                     } catch (error) {
                                         console.error('❌ Error calling onNavigate:', error);

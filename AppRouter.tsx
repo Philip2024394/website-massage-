@@ -99,6 +99,7 @@ const PromoterBankAccountPage = React.lazy(() => import('./pages/PromoterBankAcc
 const AdminQRUsageReportPage = React.lazy(() => import('./pages/AdminQRUsageReportPage'));
 // Eager-load CoinShopPage to avoid dynamic import fetch issues during dev
 import CoinShopPage from './pages/CoinShopPage';
+import MarketplacePage from './pages/MarketplacePage';
 const AdminShopManagementPage = React.lazy(() => import('./pages/AdminShopManagementPage'));
 const RewardBannersTestPage = React.lazy(() => import('./pages/RewardBannersTestPage'));
 const ReferralPage = React.lazy(() => import('./pages/ReferralPage'));
@@ -1258,6 +1259,9 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
 
         case 'hotelVillaMenu' as any:
             return renderComingSoon('Live Menu has been removed');
+        case 'marketplace': {
+            return <MarketplacePage onBack={handleBackToHome} t={t} userLocation={userLocation} />;
+        }
             
         case 'coin-shop': {
             // 🛡️ SECURITY + UX: Detect which dashboard type is accessing coin shop
