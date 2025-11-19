@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { marketplaceService, type MarketplaceProduct, type MarketplaceSeller } from '../lib/marketplaceService';
 import { getCountryConfig } from '../lib/countryConfig';
 import { convertCurrency, formatCurrency } from '../lib/currencyConversion';
+import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
+import { AppDrawer } from '../components/AppDrawer';
 
 type Props = {
   onBack: () => void;
@@ -14,6 +16,7 @@ const ProductDetailPage: React.FC<Props> = ({ onBack, onNavigate }) => {
   const [activeMedia, setActiveMedia] = useState<{ type: 'image' | 'video'; src: string } | null>(null);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -100,15 +103,47 @@ const ProductDetailPage: React.FC<Props> = ({ onBack, onNavigate }) => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white p-4 shadow-sm sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto flex items-center gap-3">
-          <button onClick={onBack} className="px-3 py-2 rounded-md bg-gray-100 hover:bg-gray-200">Back</button>
-          <h1 className="text-xl font-bold text-gray-900 flex-1 truncate">{product.name}</h1>
-          {seller?.tradingName && <div className="text-sm text-gray-600">{seller.tradingName}</div>}
+      {/* Marketplace Header (no country selector) */}
+      <header className="bg-white p-4 sm:p-5 shadow-lg sticky top-0 z-[9997] border-b border-gray-200">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <button onClick={onBack} className="px-3 py-2 rounded-md bg-gray-100 hover:bg-gray-200">Back</button>
+            <h1 className="text-2xl sm:text-3xl font-black text-gray-900">
+              <span className="text-black">Inda</span>
+              <span className="bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent">Street</span>
+              <span className="block text-xs sm:text-sm font-normal text-gray-500 mt-0.5">Marketplace</span>
+            </h1>
+          </div>
+          <div className="flex items-center gap-3 sm:gap-4">
+            <button 
+              onClick={() => setIsMenuOpen(true)} 
+              title="Menu" 
+              className="p-2.5 sm:p-3 hover:bg-orange-50 rounded-full transition-all duration-300 text-orange-500 border-2 border-transparent hover:border-orange-200 shadow-md hover:shadow-lg"
+            >
+              <BurgerMenuIcon className="w-6 h-6 sm:w-7 sm:h-7" />
+            </button>
+          </div>
         </div>
       </header>
+
+      <AppDrawer 
+        isOpen={isMenuOpen} 
+        isHome={true} 
+        onClose={() => setIsMenuOpen(false)} 
+        onNavigate={onNavigate || (() => {})}
+      />
       <main className="max-w-5xl mx-auto p-4 grid grid-cols-1 md:grid-cols-2 gap-6">
         <section className="bg-white rounded-xl p-4 shadow-sm">
+          {/* Media title row: product name left, sold count right */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="font-semibold text-gray-900 truncate pr-2">{product.name}</div>
+            <div className="text-xs sm:text-sm text-gray-700 whitespace-nowrap">
+              {(() => {
+                const sold = (product as any)?.soldCount ?? (product as any)?.unitsSold ?? (product as any)?.sales ?? 0;
+                return <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100 border border-gray-200">Sold: <strong>{sold}</strong></span>;
+              })()}
+            </div>
+          </div>
           <div className="flex gap-3">
             {/* Left thumbnails column */}
             <div className="flex flex-col gap-2 w-20">
