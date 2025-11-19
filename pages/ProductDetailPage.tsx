@@ -203,6 +203,12 @@ const ProductDetailPage: React.FC<Props> = ({ onBack, onNavigate }) => {
                   {hasVideo && (<span>{allImages.length>0 ? ' • ' : ''}1 video</span>)}
                 </div>
               )}
+              {/* Condition badge - bottom right */}
+              {product.condition && (
+                <div className="absolute bottom-2 right-2 z-10 bg-white/95 backdrop-blur-sm text-gray-800 text-xs font-semibold px-2 py-1 rounded-md shadow-md border border-gray-200">
+                  {product.condition}
+                </div>
+              )}
               {!activeMedia ? (
                 <div className="w-full h-80 bg-gray-100 rounded-lg" />
               ) : activeMedia.type === 'image' ? (
