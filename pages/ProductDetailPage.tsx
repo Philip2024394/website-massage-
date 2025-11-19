@@ -12,6 +12,8 @@ const ProductDetailPage: React.FC<Props> = ({ onBack, onNavigate }) => {
   const [product, setProduct] = useState<MarketplaceProduct | null>(null);
   const [seller, setSeller] = useState<MarketplaceSeller | null>(null);
   const [activeMedia, setActiveMedia] = useState<{ type: 'image' | 'video'; src: string } | null>(null);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -74,6 +76,8 @@ const ProductDetailPage: React.FC<Props> = ({ onBack, onNavigate }) => {
 
   // Up to 4 additional thumbnails (excluding main cover)
   const thumbImages: string[] = ((product.images || []).filter(Boolean)).slice(0, 4);
+  const coverImage = (product.image || '').trim() ? (product.image as string) : '';
+  const allImages: string[] = [coverImage, ...thumbImages].filter(Boolean);
   const hasVideo = typeof product.videoUrl === 'string' && product.videoUrl.trim().length > 0;
 
   const toYouTubeEmbed = (url: string): string | null => {
@@ -147,11 +151,28 @@ const ProductDetailPage: React.FC<Props> = ({ onBack, onNavigate }) => {
             </div>
 
             {/* Main media viewer */}
-            <div className="flex-1">
+            <div className="flex-1 relative">
+              {/* Media count badge */}
+              {(allImages.length > 0 || hasVideo) && (
+                <div className="absolute top-2 right-2 z-10 bg-black/60 text-white text-xs px-2 py-1 rounded-md">
+                  {allImages.length > 0 && (<span>{allImages.length} photos</span>)}
+                  {hasVideo && (<span>{allImages.length>0 ? ' • ' : ''}1 video</span>)}
+                </div>
+              )}
               {!activeMedia ? (
                 <div className="w-full h-80 bg-gray-100 rounded-lg" />
               ) : activeMedia.type === 'image' ? (
-                <img src={activeMedia.src} alt={product.name} className="w-full h-80 object-cover rounded-lg" />
+                <button
+                  onClick={() => {
+                    const idx = allImages.findIndex(i => i === activeMedia.src);
+                    setLightboxIndex(idx >= 0 ? idx : 0);
+                    setIsLightboxOpen(true);
+                  }}
+                  className="block w-full h-80"
+                  title="Click to enlarge"
+                >
+                  <img src={activeMedia.src} alt={product.name} className="w-full h-full object-cover rounded-lg" />
+                </button>
               ) : (
                 <div className="w-full h-80 rounded-lg overflow-hidden bg-black">
                   {toYouTubeEmbed(activeMedia.src) || activeMedia.src.includes('youtube.com') || activeMedia.src.includes('youtu.be') ? (
@@ -178,6 +199,10 @@ const ProductDetailPage: React.FC<Props> = ({ onBack, onNavigate }) => {
             </div>
           )}
           <div className="mb-4">
+
+        // Lightbox component injected at end of file to keep changes localized
+        // Note: Using minimal inline controls for prev/next/close
+
             <h2 className="font-semibold mb-2">Price</h2>
             <div className="text-2xl text-orange-600 font-bold mb-1">{formatCurrency(productPrice, sellerCurrency, product.countryCode)}</div>
             {needsConversion && (
@@ -215,6 +240,44 @@ const ProductDetailPage: React.FC<Props> = ({ onBack, onNavigate }) => {
           </div>
         </section>
       </main>
+
+      {/* Image Lightbox */}
+      {isLightboxOpen && allImages.length > 0 && (
+        <div
+          className="fixed inset-0 z-[10000] bg-black/80 flex items-center justify-center"
+          onClick={() => setIsLightboxOpen(false)}
+        >
+          <div className="absolute top-4 right-4">
+            <button
+              onClick={(e) => { e.stopPropagation(); setIsLightboxOpen(false); }}
+              className="px-3 py-1.5 rounded-md bg-white/90 hover:bg-white text-gray-900 font-semibold"
+            >
+              Close
+            </button>
+          </div>
+          {allImages.length > 1 && (
+            <button
+              onClick={(e) => { e.stopPropagation(); setLightboxIndex((lightboxIndex - 1 + allImages.length) % allImages.length); }}
+              className="absolute left-4 md:left-8 text-white/90 hover:text-white text-3xl select-none"
+              aria-label="Previous image"
+            >
+              ‹
+            </button>
+          )}
+          <div className="max-w-[90vw] max-h-[85vh] p-2" onClick={(e) => e.stopPropagation()}>
+            <img src={allImages[lightboxIndex]} className="max-w-full max-h-[85vh] rounded-lg shadow-2xl" />
+          </div>
+          {allImages.length > 1 && (
+            <button
+              onClick={(e) => { e.stopPropagation(); setLightboxIndex((lightboxIndex + 1) % allImages.length); }}
+              className="absolute right-4 md:right-8 text-white/90 hover:text-white text-3xl select-none"
+              aria-label="Next image"
+            >
+              ›
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 };
