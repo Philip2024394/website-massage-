@@ -11,7 +11,7 @@ type Props = {
 const ProductDetailPage: React.FC<Props> = ({ onBack, onNavigate }) => {
   const [product, setProduct] = useState<MarketplaceProduct | null>(null);
   const [seller, setSeller] = useState<MarketplaceSeller | null>(null);
-  const [activeImage, setActiveImage] = useState<string | null>(null);
+  const [activeMedia, setActiveMedia] = useState<{ type: 'image' | 'video'; src: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,8 +29,8 @@ const ProductDetailPage: React.FC<Props> = ({ onBack, onNavigate }) => {
           setProduct(p);
           const s = await marketplaceService.getSellerById(p.sellerId);
           setSeller(s);
-          const cover = (p.images && p.images[0]) || p.image || null;
-          setActiveImage(cover);
+          const cover = p.image || (p.images && p.images[0]) || '';
+          if (cover) setActiveMedia({ type: 'image', src: cover });
         }
       } finally {
         setLoading(false);
@@ -72,10 +72,27 @@ const ProductDetailPage: React.FC<Props> = ({ onBack, onNavigate }) => {
   if (loading) return <div className="min-h-screen bg-white flex items-center justify-center text-gray-600">Loading…</div>;
   if (!product) return <div className="min-h-screen bg-white flex items-center justify-center text-gray-600">Product not found.</div>;
 
-  const images: string[] = [
-    ...(product.image ? [product.image] : []),
-    ...((product.images || []).filter(Boolean))
-  ].slice(0,5);
+  // Up to 4 additional thumbnails (excluding main cover)
+  const thumbImages: string[] = ((product.images || []).filter(Boolean)).slice(0, 4);
+  const hasVideo = typeof product.videoUrl === 'string' && product.videoUrl.trim().length > 0;
+
+  const toYouTubeEmbed = (url: string): string | null => {
+    try {
+      const u = new URL(url);
+      if (u.hostname.includes('youtu.be')) {
+        const id = u.pathname.replace('/', '');
+        return `https://www.youtube.com/embed/${id}`;
+      }
+      if (u.hostname.includes('youtube.com')) {
+        const id = u.searchParams.get('v');
+        if (id) return `https://www.youtube.com/embed/${id}`;
+        // handle share links like /shorts/
+        const parts = u.pathname.split('/').filter(Boolean);
+        if (parts[0] === 'shorts' && parts[1]) return `https://www.youtube.com/embed/${parts[1]}`;
+      }
+    } catch {}
+    return null;
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -88,20 +105,70 @@ const ProductDetailPage: React.FC<Props> = ({ onBack, onNavigate }) => {
       </header>
       <main className="max-w-5xl mx-auto p-4 grid grid-cols-1 md:grid-cols-2 gap-6">
         <section className="bg-white rounded-xl p-4 shadow-sm">
-          {activeImage ? (
-            <img src={activeImage} alt={product.name} className="w-full h-80 object-cover rounded-lg" />
-          ) : (
-            <div className="w-full h-80 bg-gray-100 rounded-lg" />
-          )}
-          {images.length > 1 && (
-            <div className="mt-3 grid grid-cols-5 gap-2">
-              {images.map((src, idx) => (
-                <button key={idx} onClick={() => setActiveImage(src)} className={`h-16 rounded overflow-hidden border ${activeImage===src?'border-orange-500':'border-gray-200'}`}>
+          <div className="flex gap-3">
+            {/* Left thumbnails column */}
+            <div className="flex flex-col gap-2 w-20">
+              {/* Main cover thumbnail if exists */}
+              {(product.image || '').trim() && (
+                <button
+                  onClick={() => setActiveMedia({ type: 'image', src: product.image as string })}
+                  className={`h-16 w-20 rounded overflow-hidden border ${activeMedia?.type==='image' && activeMedia?.src===product.image ? 'border-orange-500' : 'border-gray-200'}`}
+                >
+                  <img src={product.image as string} className="w-full h-full object-cover" />
+                </button>
+              )}
+              {thumbImages.map((src, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setActiveMedia({ type: 'image', src })}
+                  className={`h-16 w-20 rounded overflow-hidden border ${activeMedia?.type==='image' && activeMedia?.src===src ? 'border-orange-500' : 'border-gray-200'}`}
+                >
                   <img src={src} className="w-full h-full object-cover" />
                 </button>
               ))}
+              {hasVideo && (
+                <button
+                  onClick={() => {
+                    const embed = toYouTubeEmbed(product.videoUrl as string);
+                    if (embed) setActiveMedia({ type: 'video', src: embed });
+                    else setActiveMedia({ type: 'video', src: product.videoUrl as string });
+                  }}
+                  className={`h-16 w-20 rounded overflow-hidden border ${activeMedia?.type==='video' ? 'border-orange-500' : 'border-gray-200'} relative bg-black text-white`}
+                  title="Play video"
+                >
+                  {/* Simple video thumbnail with play icon */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-6 h-6 bg-white/90 rounded-full flex items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-4 h-4 text-red-600"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
+                    </div>
+                  </div>
+                </button>
+              )}
             </div>
-          )}
+
+            {/* Main media viewer */}
+            <div className="flex-1">
+              {!activeMedia ? (
+                <div className="w-full h-80 bg-gray-100 rounded-lg" />
+              ) : activeMedia.type === 'image' ? (
+                <img src={activeMedia.src} alt={product.name} className="w-full h-80 object-cover rounded-lg" />
+              ) : (
+                <div className="w-full h-80 rounded-lg overflow-hidden bg-black">
+                  {toYouTubeEmbed(activeMedia.src) || activeMedia.src.includes('youtube.com') || activeMedia.src.includes('youtu.be') ? (
+                    <iframe
+                      className="w-full h-full"
+                      src={activeMedia.src}
+                      title="Product video"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <video className="w-full h-full" src={activeMedia.src} controls />
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
         </section>
         <section className="bg-white rounded-xl p-4 shadow-sm">
           {product.description && (

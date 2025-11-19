@@ -7,9 +7,10 @@ type Props = {
   viewerCountryCode?: string;
   viewerCoords?: { lat?: number; lng?: number };
   onView?: (productId: string) => void;
+  onViewDetails?: (productId: string) => void;
 };
 
-const MarketplaceProductCard: React.FC<Props> = ({ product, viewerCountryCode, onView }) => {
+const MarketplaceProductCard: React.FC<Props> = ({ product, viewerCountryCode, onView, onViewDetails }) => {
   const priceLabel = formatAmountForUser(product.price || 0, viewerCountryCode);
   
   // Calculate promo percentage if promo price exists
@@ -63,7 +64,7 @@ const MarketplaceProductCard: React.FC<Props> = ({ product, viewerCountryCode, o
         </div>
         
         {/* View Product Button */}
-        <button onClick={() => onView?.(product.$id)} className="w-full px-3 py-2 bg-orange-600 text-white rounded-lg text-sm font-semibold hover:bg-orange-700 transition-colors">View Product</button>
+        <button onClick={() => (onViewDetails ? onViewDetails(product.$id) : onView?.(product.$id))} className="w-full px-3 py-2 bg-orange-600 text-white rounded-lg text-sm font-semibold hover:bg-orange-700 transition-colors">View Product</button>
       </div>
     </div>
   );
