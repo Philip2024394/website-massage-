@@ -102,7 +102,7 @@ const ProductDetailPage: React.FC<Props> = ({ onBack, onNavigate }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 overflow-y-auto">
       {/* Marketplace Header (no country selector) */}
       <header className="bg-white p-4 sm:p-5 shadow-lg sticky top-0 z-[9997] border-b border-gray-200">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
