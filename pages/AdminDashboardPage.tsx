@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import type { Page } from '../types/pageTypes';
-import { BarChart, Users, Building, Settings, Percent, LogOut, CreditCard, DollarSign, ShoppingBag, UserCheck, Menu, X, Package, Briefcase, Globe, Bell } from 'lucide-react';
+import { BarChart, Users, Building, Settings, Percent, LogOut, CreditCard, DollarSign, ShoppingBag, UserCheck, Menu, X, Package, Briefcase, Globe, Bell, Shield } from 'lucide-react';
 import ConfirmTherapistsPage from './ConfirmTherapistsPage';
 import ConfirmPlacesPage from './ConfirmPlacesPage';
 import ConfirmAccountsPage from './ConfirmAccountsPage';
@@ -10,8 +10,10 @@ import ConfirmAccountsPage from './ConfirmAccountsPage';
 // import AdminChatListPage from './AdminChatListPage';
 import DrawerButtonsPage from './DrawerButtonsPage';
 import PlatformAnalyticsPage from './PlatformAnalyticsPage';
+const AdminMarketplaceModerationPage = React.lazy(() => import('./AdminMarketplaceModerationPage'));
 import GoogleMapsAPIStatus from '../components/GoogleMapsAPIStatus';
 import { adminAgentOverviewService } from '../lib/appwriteService';
+import { marketplaceService, type AdminNotification } from '../lib/marketplaceService';
 import { Users as UsersIcon, DollarSign as DollarIcon, Target, TrendingUp } from 'lucide-react';
 import BankDetailsManagementPage from './BankDetailsManagementPage';
 import PaymentTransactionsPage from './PaymentTransactionsPage';
@@ -31,7 +33,7 @@ interface AdminDashboardPageProps {
     initialTab?: DashboardPage;
     onNavigate?: (page: Page) => void;
 }
-type DashboardPage = 'platform-analytics' | 'confirm-therapists' | 'confirm-places' | 'confirm-accounts' | 'drawer-buttons' | 'bank-details' | 'payment-transactions' | 'shop-management' | 'membership-pricing' | 'job-postings' | 'translations' | 'therapist-translations' | 'place-activation-requests' | 'promoters' | 'membership-referrals';
+type DashboardPage = 'platform-analytics' | 'confirm-therapists' | 'confirm-places' | 'confirm-accounts' | 'drawer-buttons' | 'bank-details' | 'payment-transactions' | 'shop-management' | 'marketplace-moderation' | 'membership-pricing' | 'job-postings' | 'translations' | 'therapist-translations' | 'place-activation-requests' | 'promoters' | 'membership-referrals';
 const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'initialTab' | 'onNavigate'>> = ({ onLogout, initialTab, onNavigate }) => {
   const [activePage, setActivePage] = useState<DashboardPage>(initialTab || 'platform-analytics');
   const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
@@ -40,6 +42,9 @@ const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'i
   const [agentRows, setAgentRows] = useState<any[]>([]);
   const [agentLoading, setAgentLoading] = useState(false);
   const [agentError, setAgentError] = useState<string | null>(null);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
+  const [notifications, setNotifications] = useState<AdminNotification[]>([]);
+  const [showNotif, setShowNotif] = useState(false);
 
   useEffect(() => {
     const loadAgents = async () => {
@@ -68,6 +73,19 @@ const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'i
       }
     };
     initSession();
+  }, []);
+
+  useEffect(() => {
+    const loadNotifications = async () => {
+      try {
+        const unread = await marketplaceService.listAdminNotifications(true, 50);
+        setUnreadCount(unread.length);
+        // also keep a short recent list (mix of unread first)
+        const recent = await marketplaceService.listAdminNotifications(false, 20);
+        setNotifications(recent);
+      } catch {}
+    };
+    loadNotifications();
   }, []);
 
   return (
@@ -279,6 +297,21 @@ const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'i
             <span className="font-medium">Shop</span>
           </button>
 
+          <button
+            onClick={() => {
+              setActivePage('marketplace-moderation');
+              setIsSideDrawerOpen(false);
+            }}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+              activePage === 'marketplace-moderation'
+                ? 'bg-orange-500 text-white shadow-md'
+                : 'text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            <Shield className="w-5 h-5" />
+            <span className="font-medium">Marketplace</span>
+          </button>
+
           {/* Agent Commission removed */}
 
           <button
@@ -395,14 +428,52 @@ const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'i
               <span className="text-gray-900">Admin Dashboard</span>
             </h1>
           </div>
-          <button
-            onClick={() => setIsSideDrawerOpen(true)}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors force-show-menu"
-            aria-label="Open menu"
-            title="Menu"
-          >
-            <Menu className="w-5 h-5 text-gray-700" />
-          </button>
+          <div className="flex items-center gap-1">
+            <div className="relative">
+              <button
+                onClick={() => setShowNotif(v=>!v)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors relative"
+                aria-label="Notifications"
+                title="Notifications"
+              >
+                <Bell className="w-5 h-5 text-gray-700" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 bg-red-600 text-white text-[10px] leading-none px-1.5 py-0.5 rounded-full">{unreadCount}</span>
+                )}
+              </button>
+              {showNotif && (
+                <div className="absolute right-0 mt-2 w-80 max-w-[85vw] bg-white border shadow-lg rounded-lg z-50">
+                  <div className="px-3 py-2 border-b flex items-center justify-between">
+                    <div className="font-semibold text-gray-900 text-sm">Notifications</div>
+                    <button
+                      onClick={async()=>{ const n=await marketplaceService.markAllAdminNotificationsRead(); setUnreadCount(Math.max(0, unreadCount - n)); setShowNotif(false); }}
+                      className="text-xs text-blue-600 hover:underline"
+                    >Mark all read</button>
+                  </div>
+                  <div className="max-h-80 overflow-auto">
+                    {notifications.length === 0 && (
+                      <div className="p-3 text-sm text-gray-500">No notifications</div>
+                    )}
+                    {notifications.map(n => (
+                      <div key={n.$id} className="px-3 py-2 border-b last:border-0">
+                        <div className="text-sm text-gray-900">{n.message || 'Notification'}</div>
+                        <div className="text-xs text-gray-500 mt-0.5">{n.createdAt ? new Date(n.createdAt).toLocaleString() : ''}</div>
+                        {!n.isRead && <span className="inline-block mt-1 text-[10px] px-1.5 py-0.5 rounded bg-yellow-100 text-yellow-700">Unread</span>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            <button
+              onClick={() => setIsSideDrawerOpen(true)}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors force-show-menu"
+              aria-label="Open menu"
+              title="Menu"
+            >
+              <Menu className="w-5 h-5 text-gray-700" />
+            </button>
+          </div>
         </div>
       </header>
 
@@ -478,6 +549,18 @@ const AdminDashboardPage: React.FC<Pick<AdminDashboardPageProps, 'onLogout' | 'i
         {activePage === 'bank-details' && <BankDetailsManagementPage />}
         {activePage === 'payment-transactions' && <PaymentTransactionsPage />}
         {activePage === 'shop-management' && <AdminShopManagementPage onNavigate={() => {}} />}
+        {activePage === 'marketplace-moderation' && (
+          <div className="space-y-6">
+            {/* Lightweight moderation module for marketplace products */}
+            <div className="bg-white shadow-sm border rounded-xl p-4">
+              <h2 className="text-lg font-bold text-gray-900 mb-2">Marketplace</h2>
+              <p className="text-sm text-gray-600 mb-4">Activate or deactivate marketplace product listings. Deactivated items are hidden from public pages.</p>
+              <React.Suspense fallback={<div className="text-gray-600">Loading…</div>}>
+                <AdminMarketplaceModerationPage />
+              </React.Suspense>
+            </div>
+          </div>
+        )}
         {activePage === 'membership-pricing' && <MembershipPricingPage />}
         {activePage === 'drawer-buttons' && <DrawerButtonsPage />}
         {/* Agent Commission removed */}

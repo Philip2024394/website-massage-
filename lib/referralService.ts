@@ -3,7 +3,6 @@
 
 import { databases, ID } from './appwrite';
 import { Query } from 'appwrite';
-import { COIN_CONFIG } from './coinConfig';
 
 const REFERRAL_DATABASE_ID = '68f76ee1000e64ca8d05'; // Same as coin shop database
 const REFERRALS_COLLECTION_ID = 'referrals';

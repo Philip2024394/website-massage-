@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { providerRewardsService } from '../lib/providerRewardsService';
 
 interface CommissionConfirmationProps {
     bookingId: string;
@@ -33,24 +32,9 @@ const CommissionConfirmation: React.FC<CommissionConfirmationProps> = ({
         setError('');
 
         try {
-            const result = await providerRewardsService.confirmCommissionPayment(
-                bookingId,
-                hotelVillaId,
-                hotelVillaType,
-                hotelVillaName,
-                therapistId,
-                therapistName,
-                commissionAmount,
-                confirmedBy
-            );
-
-            if (result.success) {
-                setConfirmed(true);
-                onConfirmationComplete?.(true, result.message);
-            } else {
-                setError(result.message);
-                onConfirmationComplete?.(false, result.message);
-            }
+            // Coin rewards removed: mark as confirmed without rewards
+            setConfirmed(true);
+            onConfirmationComplete?.(true, 'Payment confirmed');
         } catch {
             const errorMessage = 'Failed to confirm commission payment';
             setError(errorMessage);
@@ -113,8 +97,7 @@ const CommissionConfirmation: React.FC<CommissionConfirmationProps> = ({
                 <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded">
                     <strong>What happens when you confirm:</strong>
                     <ul className="list-disc list-inside mt-1 space-y-1">
-                        <li>You earn 5 coins for confirming the payment</li>
-                        <li>Therapist status changes from "busy" to "available"</li>
+                        <li>Therapist status updates to available</li>
                         <li>Therapist can accept new bookings</li>
                         <li>Payment record is permanently logged</li>
                     </ul>

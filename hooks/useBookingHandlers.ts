@@ -413,31 +413,8 @@ export const useBookingHandlers = ({
             }
         }
         
-        // 🪙 LOYALTY COINS: Award coins when booking is completed
-        if (newStatus === BookingStatus.Completed && booking && loggedInCustomer) {
-            try {
-                console.log('🪙 Awarding loyalty coins for completed booking...');
-                
-                // Import awardCoins service
-                const { awardCoins } = await import('../lib/loyaltyService');
-                
-                const event = await awardCoins(
-                    loggedInCustomer.$id || (loggedInCustomer as any).userId,
-                    booking.providerId,
-                    booking.providerType,
-                    booking.providerName,
-                    booking.id
-                );
-                
-                // Show celebration popup with falling coins!
-                setLoyaltyEvent(event);
-                
-                console.log('✅ Loyalty coins awarded:', event);
-            } catch (error) {
-                console.error('❌ Error awarding loyalty coins:', error);
-                // Don't block the status update if coin awarding fails
-            }
-        }
+        // Loyalty coins disabled: no-op on booking completion
+        // Previously awarded coins on BookingStatus.Completed
     };
 
     return {

@@ -39,7 +39,8 @@
     "*-backup.*",
     "*-new.*",
     "*.full.tsx",
-    "*_COMPLETE.tsx"
+    "*_COMPLETE.tsx",
+    "functions/**"
   ],
   "references": [
     { "path": "./tsconfig.node.json" }

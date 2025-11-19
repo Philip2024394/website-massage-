@@ -99,7 +99,8 @@ self.addEventListener('notificationclick', (event) => {
                         targetUrl += `/chat/${data.chatId}`;
                         break;
                     case 'view_coins':
-                        targetUrl += '/coins';
+                        // Legacy action: route to marketplace instead
+                        targetUrl += '/marketplace';
                         break;
                     default:
                         targetUrl += '/';

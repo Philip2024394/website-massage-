@@ -21,7 +21,7 @@ export interface AppConfig {
 
 const DEFAULT_CONFIG: AppConfig = {
     membershipSystemEnabled: false, // 🚨 CRITICAL: Default to FALSE - free system
-    coinRewardsEnabled: true,
+    coinRewardsEnabled: false,
     referralSystemEnabled: true,
     promotionsEnabled: true,
     lastUpdated: new Date().toISOString(),
@@ -44,7 +44,7 @@ export const appConfigService = {
                 const config = response.documents[0];
                 return {
                     membershipSystemEnabled: config.membershipSystemEnabled ?? false,
-                    coinRewardsEnabled: config.coinRewardsEnabled ?? true,
+                    coinRewardsEnabled: config.coinRewardsEnabled ?? false,
                     referralSystemEnabled: config.referralSystemEnabled ?? true,
                     promotionsEnabled: config.promotionsEnabled ?? true,
                     lastUpdated: config.lastUpdated || config.$createdAt,

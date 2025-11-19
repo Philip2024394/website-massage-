@@ -61,6 +61,10 @@ export const APPWRITE_CONFIG = {
         // Marketplace
         marketplaceProducts: 'marketplace_products',
         marketplaceSellers: 'marketplace_sellers',
+        // Admin notifications for marketplace events
+        adminNotifications: 'admin_notifications',
+        // NEW: Memberships (user subscriptions)
+        memberships: 'memberships'
     },
     
     // Storage bucket ID

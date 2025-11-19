@@ -3,7 +3,6 @@ import GlobalFooter from '../GlobalFooter';
 import FloatingWebsiteButton from '../FloatingWebsiteButton';
 import CookieConsent from '../CookieConsent';
 import RegisterPromptPopup from '../RegisterPromptPopup';
-import { CoinEarnedCelebration } from '../CoinEarnedCelebration';
 // Removed chat import - chat system removed
 // import BookingChatWindow from '../BookingChatWindow';
 import type { Page, Language } from '../../types/pageTypes';
@@ -73,10 +72,7 @@ export const AppFooterLayout: React.FC<AppFooterLayoutProps> = ({
                 language={language}
                 context={registerPromptContext}
             />
-            <CoinEarnedCelebration 
-                event={loyaltyEvent}
-                onClose={() => setLoyaltyEvent(null)}
-            />
+            {/* Coin celebration removed */}
 
             {/* Chat system removed - using WhatsApp booking instead */}
             {/* Booking Chat Window - Removed

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { therapistAuth } from '../lib/auth';
-import { trackDailySignIn } from '../lib/coinHooks';
 import { Eye, EyeOff, Mail, Lock, LogIn, UserPlus } from 'lucide-react';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { AppDrawer } from '../components/AppDrawer';
@@ -67,13 +66,6 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({
             const response = await therapistAuth.signIn(email, password);
             
             if (response.success && response.userId) {
-                // Track daily sign-in for coin rewards
-                try {
-                    await trackDailySignIn(response.userId);
-                } catch (coinError) {
-                    console.warn('Daily sign-in tracking failed:', coinError);
-                }
-                
                 // Clear any cached data
                 sessionStorage.clear();
                 localStorage.removeItem('therapist-cache');

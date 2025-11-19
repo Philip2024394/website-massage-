@@ -3112,51 +3112,9 @@ export const hotelVillaBookingService = {
                 }
             }
 
-            // Award coins to provider (therapist or massage place)
-            if (bookingDetails?.providerId && bookingDetails?.providerType) {
-                try {
-                    const { providerRewardsService } = await import('./providerRewardsService');
-                    const isWeekend = this.isWeekend(new Date());
-                    
-                    if (bookingDetails.providerType === 'therapist') {
-                        await providerRewardsService.awardTherapistBookingCoins(
-                            bookingDetails.providerId.toString(),
-                            bookingDetails.providerName || 'Therapist',
-                            bookingId,
-                            bookingDetails.rating,
-                            isWeekend,
-                            bookingDetails.acceptedWithinMinutes
-                        );
-                    } else if (bookingDetails.providerType === 'place') {
-                        await providerRewardsService.awardPlaceBookingCoins(
-                            bookingDetails.providerId.toString(),
-                            bookingDetails.providerName || 'Massage Place',
-                            bookingId,
-                            bookingDetails.rating,
-                            parseInt(bookingDetails.service) || 60,
-                            bookingDetails.isReturnCustomer
-                        );
-                    }
-                } catch (providerError) {
-                    console.error('Error awarding provider coins:', providerError);
-                }
-            }
+            // Coin rewards disabled: skipping provider coin awards
 
-            // Award coins to hotel/villa if this is a hotel/villa booking
-            if (bookingDetails?.hotelVillaId && bookingDetails?.hotelVillaName) {
-                try {
-                    const { providerRewardsService } = await import('./providerRewardsService');
-                    await providerRewardsService.awardHotelVillaBookingCoins(
-                        bookingDetails.hotelVillaId.toString(),
-                        bookingDetails.hotelVillaName,
-                        bookingDetails.hotelVillaType || 'hotel',
-                        bookingId,
-                        bookingDetails.wasChatBooking || false
-                    );
-                } catch (hotelError) {
-                    console.error('Error awarding hotel/villa coins:', hotelError);
-                }
-            }
+            // Coin rewards disabled: skipping hotel/villa coin awards
             
             console.log('✅ Booking completed:', bookingId);
             return booking;

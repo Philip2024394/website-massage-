@@ -2,7 +2,6 @@ import React, { useState, useCallback } from 'react';
 import { placeAuth } from '../lib/auth';
 import { saveSessionCache } from '../lib/sessionManager';
 import { checkRateLimit, handleAppwriteError, resetRateLimit } from '../lib/rateLimitUtils';
-import { trackDailySignIn } from '../lib/coinHooks';
 import { LogIn, UserPlus, Eye, EyeOff } from 'lucide-react';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { AppDrawer } from '../components/AppDrawer';
@@ -147,15 +146,7 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
                         data: { $id: response.userId, email }
                     });
                     
-                    // Track daily sign-in for coin rewards (only for login, not signup)
-                    if (!isSignUp) {
-                        try {
-                            await trackDailySignIn(response.userId, 1, 'place');
-                        } catch (coinError) {
-                            console.warn('Daily sign-in tracking failed:', coinError);
-                        }
-                    }
-                    
+                    // Coin daily sign-in removed
                     console.log(`✅ Place login successful for ${email}`);
                     onSuccess(response.userId);
                 } else {

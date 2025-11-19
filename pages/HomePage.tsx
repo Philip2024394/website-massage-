@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { User, UserLocation, Agent, Place, Therapist, Analytics, UserCoins } from '../types';
 import TherapistCard from '../components/TherapistCard';
-import OrangeLocationModal from '../components/OrangeLocationModal';
 import MassagePlaceCard from '../components/MassagePlaceCard';
 import RatingModal from '../components/RatingModal';
 import { MASSAGE_TYPES_CATEGORIZED } from '../constants/rootConstants';
@@ -199,7 +198,6 @@ const HomePage: React.FC<HomePageProps> = ({
 
     const [activeTab, setActiveTab] = useState('home');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
     const [selectedMassageType, setSelectedMassageType] = useState(propSelectedMassageType || 'all');
     const [, setCustomLinks] = useState<any[]>([]);
     const [showRatingModal, setShowRatingModal] = useState(false);
@@ -341,61 +339,7 @@ const HomePage: React.FC<HomePageProps> = ({
         }
     };
 
-    // Function to show custom orange location modal
-    const handleLocationRequest = () => {
-        console.log('📍 Showing custom orange location modal...');
-        setIsLocationModalOpen(true);
-    };
-
-    // Function to handle when user allows location in custom modal
-    const handleLocationAllow = async () => {
-        setIsLocationModalOpen(false);
-        try {
-            console.log('📍 User allowed location, requesting via browser API...');
-            const location = await getCustomerLocation();
-            
-            console.log('✅ Location detected:', location);
-            
-            // Update the app's user location
-            if (onSetUserLocation) {
-                onSetUserLocation({
-                    address: 'Current location',
-                    lat: location.lat,
-                    lng: location.lng
-                });
-            }
-            
-            // Update auto-detected location state
-            setAutoDetectedLocation(location);
-            
-        } catch (error) {
-            console.log('❌ Location detection failed:', error);
-            // Show a user-friendly error message
-            alert('Unable to detect location. Please enable location permissions in your browser and try again.');
-        }
-    };
-
-    // Function to handle when user denies location in custom modal
-    const handleLocationDeny = () => {
-        console.log('📍 User denied location access');
-        setIsLocationModalOpen(false);
-        // App continues with default location (Jakarta, Indonesia)
-    };
-
-    // Show custom location modal for new users
-    useEffect(() => {
-        try {
-            // Show location modal for regular users (not providers/agents/customers) who don't have location set
-            if (!loggedInProvider && !_loggedInAgent && !loggedInCustomer && !userLocation && !autoDetectedLocation) {
-                // Small delay for better UX
-                setTimeout(() => {
-                    setIsLocationModalOpen(true);
-                }, 1000);
-            }
-        } catch (error) {
-            console.warn('HomePage location modal effect warning (safe to ignore in React 19):', error);
-        }
-    }, [loggedInProvider, _loggedInAgent, loggedInCustomer, userLocation, autoDetectedLocation]);
+    // Location is now set on landing page, no modal needed here
 
     // Automatic location detection (seamless, no UI)
     useEffect(() => {
@@ -717,14 +661,7 @@ const HomePage: React.FC<HomePageProps> = ({
                         }
                         return (
                             <>
-                                Showing therapists within {SEARCH_RADIUS_KM} km of {label || 'your location'}.{' '}
-                                <button onClick={handleLocationRequest} className="inline-flex items-center gap-1 text-orange-600 hover:underline" title="Change location">
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    </svg>
-                                    <span>Change location</span>
-                                </button>
+                                Showing therapists within {SEARCH_RADIUS_KM} km of {label || 'your location'}.
                             </>
                         );
                     })()}
@@ -1085,15 +1022,6 @@ const HomePage: React.FC<HomePageProps> = ({
                     </div>
                 </div>
             )}
-            
-            {/* Custom Orange Location Modal */}
-            <OrangeLocationModal
-                isVisible={isLocationModalOpen}
-                onAllow={handleLocationAllow}
-                onDeny={handleLocationDeny}
-                language={language === 'id' ? 'id' : 'en'}
-                size="compact"
-            />
             
             {/* Rating modal removed for design mock */}
             

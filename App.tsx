@@ -10,6 +10,7 @@ import BookingPopup from './components/BookingPopup';
 import BookingStatusTracker from './components/BookingStatusTracker';
 import ScheduleBookingPopup from './components/ScheduleBookingPopup';
 import { useState, useEffect, Suspense } from 'react';
+import React from 'react';
 import { bookingExpirationService } from './services/bookingExpirationService';
 // localStorage disabled globally
 import './utils/disableLocalStorage';
@@ -198,6 +199,14 @@ const App = () => {
             if (path.startsWith('/accept-booking/')) {
                 state.setPage('accept-booking');
             }
+            // Support direct navigation to Marketplace
+            if (path === '/marketplace' || path.startsWith('/marketplace/')) {
+                state.setPage('marketplace');
+            }
+            // Email verification callback route
+            if (path === '/verify-email' || path.startsWith('/verify-email')) {
+                state.setPage('verifyEmail');
+            }
             // Unified promoter live menu: /live-menu and short alias /r/:code
             if (path === '/live-menu') {
                 state.setPage('promoterLiveMenu');
@@ -340,6 +349,31 @@ const App = () => {
         state.setPage('home');
     };
 
+    // Simple runtime error boundary to avoid blank screen and show errors
+    class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; error?: any }>{
+        constructor(props: any) {
+            super(props);
+            this.state = { hasError: false };
+        }
+        static getDerivedStateFromError(error: any) {
+            return { hasError: true, error };
+        }
+        componentDidCatch(error: any, info: any) {
+            console.error('🧯 Caught render error:', error, info);
+        }
+        render() {
+            if (this.state.hasError) {
+                return (
+                    <div className="p-6 text-red-700">
+                        <div className="font-bold mb-2">A runtime error occurred.</div>
+                        <div className="text-sm break-words">{String(this.state.error?.message || this.state.error || 'Unknown error')}</div>
+                    </div>
+                );
+            }
+            return this.props.children as any;
+        }
+    }
+
     return (
         <LanguageProvider value={{ language: language as Language, setLanguage: handleLanguageSelect }}>
         <DeviceStylesProvider>
@@ -350,6 +384,7 @@ const App = () => {
             <GlobalHeader page={state.page} />
             <div className={state.isFullScreen ? "flex-grow" : "flex-1"}>
                 <Suspense fallback={<div className="p-6 text-gray-600">Loading…</div>}>
+                <ErrorBoundary>
                 <AppRouter
                     page={state.page}
                     isLoading={state.isLoading}
@@ -380,7 +415,7 @@ const App = () => {
                     impersonatedAgent={state.impersonatedAgent}
                     selectedTherapist={state.selectedTherapist}
                     handleLanguageSelect={handleLanguageSelect}
-                    handleEnterApp={navigation?.handleEnterApp || (() => Promise.resolve())}
+                    handleEnterApp={navigation?.handleEnterApp || ((lang: any, location: any) => Promise.resolve())}
                     handleSetUserLocation={navigation?.handleSetUserLocation || (() => {})}
                     handleSetSelectedPlace={navigation?.handleSetSelectedPlace || (() => {})}
                     handleSetSelectedTherapist={(therapist: any) => state.setSelectedTherapist(therapist)}
@@ -455,6 +490,7 @@ const App = () => {
 
                     setSelectedJobId={() => {}}
                 />
+                </ErrorBoundary>
                 </Suspense>
             </div>
 

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { bookingService, userService } from '../lib/appwriteService';
-import { Booking, BookingStatus, LoyaltyWallet, CoinTransaction } from '../types';
+import { Booking, BookingStatus } from '../types';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
-import { getUserWallets, getTransactionHistory } from '../lib/loyaltyService';
+// Loyalty wallet system is deprecated; stubbing data loaders
 import { X, Calendar as CalendarIcon, Wallet, CreditCard, User, Coins, Camera, Users, History } from 'lucide-react';
 import { imageUploadService } from '../lib/services/imageService';
 // Welcome popup disabled: no deviceTracking popup helpers needed
@@ -33,9 +33,9 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
   const [showProfilePrompt, setShowProfilePrompt] = useState(false);
   
   const [showConfirmLogout, setShowConfirmLogout] = useState(false);
-  const [wallets, setWallets] = useState<LoyaltyWallet[]>([]);
-  const [selectedWallet, setSelectedWallet] = useState<LoyaltyWallet | null>(null);
-  const [transactions, setTransactions] = useState<CoinTransaction[]>([]);
+  const [wallets, setWallets] = useState<any[]>([]);
+  const [selectedWallet, setSelectedWallet] = useState<any | null>(null);
+  const [transactions, setTransactions] = useState<any[]>([]);
   const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [bookingToCancel, setBookingToCancel] = useState<Booking | null>(null);
@@ -218,25 +218,13 @@ const CustomerDashboardPage: React.FC<CustomerDashboardPageProps> = ({
   };
 
   const loadWallets = async () => {
-    try {
-      setErrorMessage(null);
-      const userId = (user && (user.$id || (user as any).userId || user.id)) as string | undefined;
-      if (!userId) throw new Error('Missing user id for loading wallets');
-      const userWallets = await getUserWallets(userId);
-      setWallets(userWallets);
-    } catch (error) {
-      console.error('Error loading wallets:', error);
-      setErrorMessage('Failed to load updates. Please try again.');
-    }
+    // Loyalty wallets disabled; provide empty list
+    setWallets([]);
   };
 
-  const loadTransactions = async (walletId: string) => {
-    try {
-      const txHistory = await getTransactionHistory(walletId);
-      setTransactions(txHistory);
-    } catch (error) {
-      console.error('Error loading transactions:', error);
-    }
+  const loadTransactions = async (_walletId: string) => {
+    // Loyalty transactions disabled; provide empty list
+    setTransactions([]);
   };
 
   const upcomingBookings = bookings.filter(

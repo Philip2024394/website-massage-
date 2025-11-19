@@ -97,20 +97,22 @@ import PromoterHotelVillaMassagePage from './pages/PromoterHotelVillaMassagePage
 const PromoterTermsPage = React.lazy(() => import('./pages/PromoterTermsPage'));
 const PromoterBankAccountPage = React.lazy(() => import('./pages/PromoterBankAccountPage'));
 const AdminQRUsageReportPage = React.lazy(() => import('./pages/AdminQRUsageReportPage'));
-// Eager-load CoinShopPage to avoid dynamic import fetch issues during dev
-import CoinShopPage from './pages/CoinShopPage';
 import MarketplacePage from './pages/MarketplacePage';
-const AdminShopManagementPage = React.lazy(() => import('./pages/AdminShopManagementPage'));
-const RewardBannersTestPage = React.lazy(() => import('./pages/RewardBannersTestPage'));
+import SellerShopPage from './pages/SellerShopPage';
+import ProductDetailPage from './pages/ProductDetailPage';
+const SupplierAuthPage = React.lazy(() => import('./pages/SupplierAuthPage'));
+const SellerRegistrationPage = React.lazy(() => import('./pages/SellerRegistrationPage'));
+const SellerDashboardPage = React.lazy(() => import('./pages/SellerDashboardPage'));
+const VerifyEmailPage = React.lazy(() => import('./pages/VerifyEmailPage'));
 const ReferralPage = React.lazy(() => import('./pages/ReferralPage'));
-// Eager-load CoinHistoryPage to avoid dynamic import fetch issues during dev
-import CoinHistoryPage from './pages/CoinHistoryPage';
-const CoinSystemTestPage = React.lazy(() => import('./pages/CoinSystemTestPage'));
+import MemberPlansPage from './pages/MemberPlansPage';
+import MemberDashboardPage from './pages/MemberDashboardPage';
 // Eager-load WebsiteManagementPage to avoid dev dynamic import fetch issue
 import WebsiteManagementPage from './pages/WebsiteManagementPage';
 import TodaysDiscountsPage from './pages/TodaysDiscountsPage';
 import GuestProfilePage from './pages/GuestProfilePage'; // 🎯 NEW: Guest profile for non-registered users
 import { APP_CONFIG } from './config/appConfig';
+import { getCountryConfig } from './lib/countryConfig';
 
 interface AppRouterProps {
     page: Page;
@@ -123,83 +125,74 @@ interface AppRouterProps {
     therapists: Therapist[];
     places: Place[];
     userLocation: UserLocation | null;
-    selectedMassageType: string | null;
+    selectedMassageType?: string | null;
     selectedPlace: Place | null;
-    selectedTherapist: Therapist | null; // 🎯 NEW: Selected therapist for profile view
-
+    selectedTherapist: Therapist | null;
     isAdminLoggedIn: boolean;
     isHotelLoggedIn: boolean;
     isVillaLoggedIn: boolean;
-
     bookings: Booking[];
     notifications: Notification[];
-    impersonatedAgent: Agent | null;
-    adminMessages: AdminMessage[];
-    providerForBooking: { provider: Therapist | Place; type: 'therapist' | 'place' } | null;
-    providerAuthInfo: { type: 'therapist' | 'place'; mode: 'login' | 'register' } | null;
-
-    selectedJobId: string | null;
-    venueMenuId: string | null;
-    hotelVillaLogo: string | null;
-    // Handlers
-    handleLanguageSelect: (lang: Language) => Promise<void>;
+    impersonatedAgent?: Agent | null;
+    adminMessages?: AdminMessage[];
+    providerForBooking?: { provider: Therapist | Place; type: 'therapist' | 'place' } | null;
+    providerAuthInfo?: any;
+    selectedJobId?: string | null;
+    venueMenuId?: string | null;
+    hotelVillaLogo?: string | null;
+    handleLanguageSelect: (lang: Language) => void;
     handleEnterApp: (lang: Language, location: UserLocation) => Promise<void>;
-    handleSetUserLocation: (location: UserLocation) => void;
-    handleSetSelectedPlace: (place: Place) => void;
-    handleSetSelectedTherapist: (therapist: Therapist) => void; // 🎯 NEW: Set selected therapist
+    handleSetUserLocation: (loc: UserLocation) => void;
+    handleSetSelectedPlace: (place: Place | null) => void;
+    handleSetSelectedTherapist?: (therapist: Therapist | null) => void;
     handleLogout: () => Promise<void>;
     handleNavigateToTherapistLogin: () => void;
     handleNavigateToRegistrationChoice: () => void;
     handleNavigateToBooking: (provider: Therapist | Place, type: 'therapist' | 'place') => void;
-    handleQuickBookWithChat: (provider: Therapist | Place, type: 'therapist' | 'place') => Promise<void>;
-    handleChatWithBusyTherapist: (therapist: Therapist) => Promise<void>;
+    handleQuickBookWithChat: (provider: Therapist | Place, type: 'therapist' | 'place') => Promise<void> | void;
+    handleChatWithBusyTherapist: (provider: Therapist | Place) => Promise<void> | void;
     handleShowRegisterPromptForChat: () => void;
-    handleIncrementAnalytics: (providerId: string | number, providerType: 'therapist' | 'place', metric: 'whatsapp_clicks' | 'phone_clicks' | 'directions_clicks' | 'views' | 'bookings') => Promise<void>;
-    handleNavigateToHotelLogin: () => void;
+    handleIncrementAnalytics: (id: string | number, type: 'therapist' | 'place', metric: any) => Promise<void> | void;
     handleNavigateToVillaLogin: () => void;
+    handleNavigateToHotelLogin: () => void;
     handleNavigateToMassagePlaceLogin: () => void;
     handleNavigateToAdminLogin: () => void;
     handleNavigateToServiceTerms: () => void;
     handleNavigateToPrivacyPolicy: () => void;
     handleNavigateToCustomerDashboard: () => void;
     handleBackToHome: () => void;
-    handleSelectRegistration: (type: 'therapist' | 'place') => void;
-    handleTherapistStatusChange: (status: string) => Promise<void>;
-    handleSaveTherapist: (therapistData: any) => Promise<void>;
-    handleSavePlace: (placeData: any) => Promise<void>;
-    handleAgentRegister: (name: string, email: string) => Promise<{ success: boolean; message: string }>;
-    handleAgentLogin: (email: string) => Promise<{ success: boolean; message: string }>;
-    handleAgentAcceptTerms: () => Promise<void>;
-    handleSaveAgentProfile: (agentData: Partial<Agent>) => Promise<void>;
+    handleSelectRegistration: (role: any) => void;
+    handleTherapistStatusChange: (status: string) => Promise<void> | void;
+    handleSaveTherapist: (data: any) => Promise<void> | void;
+    handleSavePlace: (data: any) => Promise<void> | void;
+    handleAgentRegister: () => Promise<{ success: boolean; message: string }>;
+    handleAgentLogin: () => Promise<{ success: boolean; message: string }>;
+    handleAgentAcceptTerms: () => Promise<void> | void;
+    handleSaveAgentProfile: () => Promise<void> | void;
     handleStopImpersonating: () => void;
-    handleSendAdminMessage: (message: string) => Promise<void>;
-    handleMarkMessagesAsRead: () => Promise<void>;
+    handleSendAdminMessage: () => Promise<void> | void;
+    handleMarkMessagesAsRead: () => Promise<void> | void;
     handleSelectMembershipPackage: (packageName: string, price: string) => void;
-
-
-    handleCreateBooking: (bookingData: any) => Promise<void>;
-    handleUpdateBookingStatus: (bookingId: number, newStatus: BookingStatus) => Promise<void>;
-    handleMarkNotificationAsRead: (notificationId: number) => void;
+    handleCreateBooking: (data: any) => Promise<void>;
+    handleUpdateBookingStatus: (bookingId: string | number, status: BookingStatus | string) => Promise<void> | void;
+    handleMarkNotificationAsRead: (id: number | string) => void;
     handleAdminLogin: () => void;
-    handleCustomerAuthSuccess: (customer: any, isNewUser?: boolean) => Promise<void>;
+    handleCustomerAuthSuccess: () => Promise<void> | void;
     handleProviderLogout: () => Promise<void>;
     handleHotelLogout: () => Promise<void>;
+    // coin-shop, coinHistory, reward banners, and admin shop routes removed
     handleVillaLogout: () => Promise<void>;
     handleAdminLogout: () => Promise<void>;
     handleCustomerLogout: () => Promise<void>;
     handleAgentLogout: () => Promise<void>;
-    handleHotelLogin: (hotelId?: string) => void; // Add hotel login handler
-    handleVillaLogin: (villaId?: string) => void; // Add villa login handler
+    handleHotelLogin: (hotelId?: string) => void;
+    handleVillaLogin: (villaId?: string) => void;
     handleNavigateToNotifications: () => void;
     handleNavigateToAgentAuth: () => void;
-
 
     setPage: (page: Page) => void;
     setLoggedInProvider: (provider: LoggedInProvider | null) => void;
     setLoggedInCustomer: (customer: any) => void;
-
-
-
     setSelectedJobId: (id: string | null) => void;
 }
 
@@ -602,6 +595,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             
         case 'home':
             console.log('🏠 AppRouter: Rendering HomePage component');
+            const viewerCountryCode = userLocation?.countryCode;
+            const countryConfig = getCountryConfig(viewerCountryCode);
             return <HomePage 
                 user={user} 
                 language={activeLanguage as 'en' | 'id'}
@@ -621,7 +616,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onLoginClick={handleNavigateToTherapistLogin}
                 onCreateProfileClick={handleNavigateToRegistrationChoice}
                 // Agent portal deprecated → use villa login/dashboard instead
-                onAgentPortalClick={portalHandlers.onVillaPortalClick}
+                onAgentPortalClick={countryConfig.features.agents ? portalHandlers.onVillaPortalClick : (() => setPage('home'))}
                 onCustomerPortalClick={handleNavigateToCustomerDashboard}
                 onBook={handleNavigateToBooking}
                 onQuickBookWithChat={handleQuickBookWithChat}
@@ -691,7 +686,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return selectedPlace && <PlaceDetailPage 
                 place={selectedPlace} 
                 onBack={handleBackToHome} 
-                onBook={(place) => handleNavigateToBooking(place, 'place')} 
+                onBook={(place: Place) => handleNavigateToBooking(place, 'place')} 
                 onIncrementAnalytics={(metric: any) => handleIncrementAnalytics(selectedPlace.id, 'place', metric)} 
                 loggedInProviderId={loggedInProvider?.id} 
                 t={t} 
@@ -840,7 +835,20 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'agentAuth' as any:
         case 'agentTerms' as any:
         case 'agentDashboard' as any: {
-            // Redirect all deprecated agent routes to Home
+            const viewerCountryCode = userLocation?.countryCode;
+            const countryConfig = getCountryConfig(viewerCountryCode);
+            if (!countryConfig.features.agents) {
+                const target: Page = 'home';
+                setTimeout(() => setPage(target), 0);
+                return (
+                    <div className="p-6 max-w-xl mx-auto mt-10 bg-white border border-yellow-200 rounded-lg shadow">
+                        <h2 className="text-xl font-bold text-yellow-700 mb-2">Agents Unavailable</h2>
+                        <p className="text-sm text-gray-700">Agent features are not available in your selected country.</p>
+                        <p className="text-sm text-gray-700 mt-2">Redirecting you to home…</p>
+                    </div>
+                );
+            }
+            // If enabled, fall back to existing behavior (currently unified)
             const target: Page = 'home';
             setTimeout(() => setPage(target), 0);
             return (
@@ -999,7 +1007,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         <p className="text-gray-500">{t('bookings.noBookings')}</p>
                     ) : (
                         <div className="space-y-4">
-                            {bookings.map(booking => (
+                            {bookings.map((booking: Booking) => (
                                 <div key={booking.id} className="bg-white p-4 rounded shadow">
                                     <p className="font-bold">{booking.providerName}</p>
                                     <p className="text-sm text-gray-600">{booking.status}</p>
@@ -1260,88 +1268,62 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'hotelVillaMenu' as any:
             return renderComingSoon('Live Menu has been removed');
         case 'marketplace': {
-            return <MarketplacePage onBack={handleBackToHome} t={t} userLocation={userLocation} />;
+            return <MarketplacePage onBack={handleBackToHome} t={t} userLocation={userLocation} onNavigate={(p: string) => setPage(p as Page)} onSetUserLocation={handleSetUserLocation} />;
+        }
+        case 'sellerInfo': {
+            const SellerInfoPage = React.lazy(() => import('./pages/SellerInfoPage'));
+            return (
+                <React.Suspense fallback={<div className="p-4">Loading…</div>}>
+                    <SellerInfoPage onBack={() => setPage('marketplace')} onNavigate={(p: string) => setPage(p as Page)} />
+                </React.Suspense>
+            );
+        }
+        case 'productDetail': {
+            return <ProductDetailPage onBack={() => setPage('marketplace')} onNavigate={(p: string) => setPage(p as Page)} />;
+        }
+        case 'sellerShop': {
+            return <SellerShopPage onBack={handleBackToHome} onNavigate={(p: string) => setPage(p as Page)} />;
+        }
+        case 'memberPlans': {
+            return <MemberPlansPage onNavigate={(p: string) => setPage(p as Page)} />;
+        }
+        case 'memberDashboard': {
+            return <MemberDashboardPage onNavigate={(p: string) => setPage(p as Page)} />;
+        }
+        case 'supplierAuth': {
+            return (
+                <React.Suspense fallback={<div className="p-4">Loading…</div>}>
+                    <SupplierAuthPage onBack={handleBackToHome} onNavigate={(p: string) => setPage(p as Page)} t={t} />
+                </React.Suspense>
+            );
+        }
+        case 'verifyEmail': {
+            return (
+                <React.Suspense fallback={<div className="p-4">Loading…</div>}>
+                    <VerifyEmailPage onBack={handleBackToHome} onNavigate={(p: string) => setPage(p as Page)} />
+                </React.Suspense>
+            );
+        }
+        case 'sellerRegistration': {
+            return (
+                <React.Suspense fallback={<div className="p-4">Loading…</div>}>
+                    <SellerRegistrationPage onBack={handleBackToHome} onNavigate={(p: string) => setPage(p as Page)} t={t} />
+                </React.Suspense>
+            );
+        }
+        case 'sellerDashboard': {
+            return (
+                <React.Suspense fallback={<div className="p-4">Loading…</div>}>
+                    <SellerDashboardPage onBack={handleBackToHome} onNavigate={(p: string) => setPage(p as Page)} t={t} />
+                </React.Suspense>
+            );
         }
             
-        case 'coin-shop': {
-            // 🛡️ SECURITY + UX: Detect which dashboard type is accessing coin shop
-            // If origin flagged as 'home', force standalone header regardless of session.
-            let coinShopDashboardType = (() => {
-                // Hotel dashboard removed
-                if (isVillaLoggedIn) return 'villa';
-                if (loggedInProvider) return 'therapist';
-                return 'standalone';
-            })();
-
-            try {
-                const origin = sessionStorage.getItem('coin_shop_origin');
-                if (origin === 'home') {
-                    coinShopDashboardType = 'standalone';
-                    sessionStorage.removeItem('coin_shop_origin');
-                }
-            } catch {}
-            
-            return <CoinShopPage 
-                onBack={() => {
-                    // Navigate back to appropriate dashboard
-                    if (coinShopDashboardType === 'villa') setPage('home');  
-                    else if (coinShopDashboardType === 'therapist') setPage('therapistDashboard');
-                    else handleBackToHome();
-                }}
-                onNavigate={commonNavigateHandler} 
-                isFromTherapistDashboard={!!loggedInProvider}
-                dashboardType={coinShopDashboardType as 'therapist' | 'villa' | 'standalone'}
-                t={t} 
-            />;
-        }
-            
-        case 'adminShopManagement': 
-            return isAdminLoggedIn && <AdminShopManagementPage onBack={() => setPage('adminDashboard')} t={t} /> || null;
-            
-        case 'rewardBannersTest': 
-            return <RewardBannersTestPage onBack={handleBackToHome} t={t} />;
-            
+        
         case 'referral': 
             return <ReferralPage onBack={handleBackToHome} t={t} user={loggedInCustomer || {}} />;
             
-        case 'coinHistory': {
-            // 🛡️ SECURITY: Pass correct user ID based on who's logged in
-            const currentUserId = (() => {
-                // Hotel dashboard removed
-                if (isVillaLoggedIn && user?.id) return user.id;  
-                if (loggedInProvider && loggedInProvider.id) return loggedInProvider.id.toString();
-                if (loggedInCustomer && loggedInCustomer.id) return loggedInCustomer.id;
-                return '12345'; // fallback
-            })();
-            
-            // 🛡️ SECURITY: Detect which dashboard type is accessing coin history
-            const dashboardType = (() => {
-                // Hotel dashboard removed
-                if (isVillaLoggedIn) return 'villa';
-                if (loggedInProvider) return 'therapist';
-                return 'standalone';
-            })();
-            
-            return <CoinHistoryPage 
-                userId={currentUserId}
-                onBack={() => {
-                    // Navigate back to appropriate dashboard
-                    if (dashboardType === 'villa') setPage('home');  
-                    else if (dashboardType === 'therapist') setPage('therapistDashboard');
-                    else handleBackToHome();
-                }}
-                onNavigate={commonNavigateHandler} 
-                isFromTherapistDashboard={!!loggedInProvider}
-                isFromHotelDashboard={false}
-                isFromVillaDashboard={isVillaLoggedIn}
-                dashboardType={dashboardType}
-                t={t} 
-            />;
-        }
-            
-        case 'coinSystemTest': 
-            return <CoinSystemTestPage onBack={handleBackToHome} t={t} />;
-            
+        
         case 'todaysDiscounts': 
             return <TodaysDiscountsPage onBack={handleBackToHome} onNavigate={(page: Page) => setPage(page)} t={t} />;
             
@@ -1386,7 +1368,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         t.$id === loggedInProvider.id ||
                         (t as any).documentId === loggedInProvider.id
                     ) || undefined}
-                    notifications={notifications.filter(n => n.providerId === loggedInProvider.id)}
+                    notifications={notifications.filter((n: Notification) => n.providerId === loggedInProvider.id)}
                     t={t}
                 />;
             }
