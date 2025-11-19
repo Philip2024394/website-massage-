@@ -269,7 +269,12 @@ const ProductDetailPage: React.FC<Props> = ({ onBack, onNavigate }) => {
         </section>
         <section className="min-h-fit">
           <div className="mb-4">
-            <h2 className="font-semibold mb-2">Price</h2>
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="font-semibold">Price</h2>
+              <div className="text-xs sm:text-sm px-2 py-1 rounded-full bg-gray-100 border border-gray-300 text-gray-700">
+                {(product as any)?.importDuty === 'seller' ? 'Seller Pays Import' : 'Buyer Pays Import'}
+              </div>
+            </div>
             <div className="text-2xl text-orange-600 font-bold mb-1">{formatCurrency(productPrice, sellerCurrency, product.countryCode)}</div>
             {needsConversion && (
               <div className="mb-1">
