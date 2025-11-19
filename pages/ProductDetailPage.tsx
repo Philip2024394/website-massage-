@@ -245,11 +245,20 @@ const ProductDetailPage: React.FC<Props> = ({ onBack, onNavigate }) => {
           <div className="mt-6">
             <div className="flex items-center justify-between mb-3">
               <h2 className="font-semibold text-lg text-gray-900">Description</h2>
-              {product.condition && (
-                <div className="text-xs sm:text-sm font-semibold px-3 py-1 rounded-full bg-gray-100 border border-gray-300 text-gray-700">
-                  Condition: {product.condition}
+              <div className="flex items-center gap-3">
+                <div className="text-xs sm:text-sm text-gray-700">
+                  {(() => {
+                    const raw = (product as any)?.deliveryDays;
+                    const days = parseInt((raw || '').toString(), 10);
+                    return <span className="inline-flex items-center gap-1">🚚 <strong>{isNaN(days) ? 6 : days} days delivery</strong></span>;
+                  })()}
                 </div>
-              )}
+                {product.condition && (
+                  <div className="text-xs sm:text-sm font-semibold px-3 py-1 rounded-full bg-gray-100 border border-gray-300 text-gray-700">
+                    Condition: {product.condition}
+                  </div>
+                )}
+              </div>
             </div>
             {product.description && (
               <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
