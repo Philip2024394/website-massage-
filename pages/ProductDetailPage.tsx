@@ -102,7 +102,7 @@ const ProductDetailPage: React.FC<Props> = ({ onBack, onNavigate }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 overflow-y-auto pb-20">
+    <div className="h-screen bg-gray-50 overflow-y-scroll pb-32">
       {/* Marketplace Header (no country selector) */}
       <header className="bg-white p-4 sm:p-5 shadow-lg sticky top-0 z-[9997] border-b border-gray-200">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
@@ -140,8 +140,8 @@ const ProductDetailPage: React.FC<Props> = ({ onBack, onNavigate }) => {
         onClose={() => setIsMenuOpen(false)} 
         onNavigate={onNavigate || (() => {})}
       />
-      <main className="max-w-5xl mx-auto p-4 pb-16 grid grid-cols-1 md:grid-cols-2 gap-6">
-        <section className="bg-white rounded-xl p-4 shadow-sm">
+      <main className="max-w-5xl mx-auto p-4 pb-24 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <section className="bg-white rounded-xl p-4 shadow-sm min-h-fit">
           {/* Media title row: product name left, sold count right */}
           <div className="flex items-center justify-between mb-3">
             <div className="font-semibold text-gray-900 truncate pr-2">{product.name}</div>
