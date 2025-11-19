@@ -276,6 +276,7 @@ const ProductDetailPage: React.FC<Props> = ({ onBack, onNavigate }) => {
               </div>
             </div>
             <div className="text-2xl text-orange-600 font-bold mb-1">{formatCurrency(productPrice, sellerCurrency, product.countryCode)}</div>
+            <div className="text-xs text-gray-600 mb-2">Delivery Cost Included</div>
             {needsConversion && (
               <div className="mb-1">
                 <div className="text-sm text-gray-700">
