@@ -107,11 +107,10 @@ const ProductDetailPage: React.FC<Props> = ({ onBack, onNavigate }) => {
       <header className="bg-white p-4 sm:p-5 shadow-lg sticky top-0 z-[9997] border-b border-gray-200">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <button onClick={onBack} className="px-3 py-2 rounded-md bg-gray-100 hover:bg-gray-200">Back</button>
             <h1 className="text-2xl sm:text-3xl font-black text-gray-900">
               <span className="text-black">Inda</span>
               <span className="bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent">Street</span>
-              <span className="block text-xs sm:text-sm font-normal text-gray-500 mt-0.5">Marketplace</span>
+              <span className="block text-xs sm:text-sm font-normal text-gray-500 mt-0.5">Marketplace {viewerCountryCode}</span>
             </h1>
           </div>
           <div className="flex items-center gap-3 sm:gap-4">
@@ -225,6 +224,23 @@ const ProductDetailPage: React.FC<Props> = ({ onBack, onNavigate }) => {
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Description Section */}
+          <div className="mt-6">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-semibold text-lg text-gray-900">Description</h2>
+              {product.condition && (
+                <div className="text-xs sm:text-sm font-semibold px-3 py-1 rounded-full bg-gray-100 border border-gray-300 text-gray-700">
+                  Condition: {product.condition}
+                </div>
+              )}
+            </div>
+            {product.description && (
+              <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
+                {product.description.slice(0, 3000)}
+              </p>
+            )}
           </div>
         </section>
         <section className="bg-white rounded-xl p-4 shadow-sm">
