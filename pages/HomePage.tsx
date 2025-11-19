@@ -16,6 +16,7 @@ import { React19SafeWrapper } from '../components/React19SafeWrapper';
 import PageNumberBadge from '../components/PageNumberBadge';
 import { THERAPIST_MAIN_IMAGES } from '../lib/services/imageService';
 import { useLanguageContext } from '../context/LanguageContext';
+import { COUNTRIES } from '../countries';
 
 
 interface HomePageProps {
@@ -216,6 +217,41 @@ const HomePage: React.FC<HomePageProps> = ({
     const [shuffledHomeImages, setShuffledHomeImages] = useState<string[]>([]);
     const [showLanguagePrompt, setShowLanguagePrompt] = useState(false);
     const [promptLang, setPromptLang] = useState<import('../types/pageTypes').Language>(globalLanguage || 'en');
+    const [isCountrySelectorOpen, setIsCountrySelectorOpen] = useState(false);
+    const [countrySearch, setCountrySearch] = useState('');
+
+    const countryCodeToFlag = (code?: string) => {
+        if (!code || code.length !== 2) return '🌐';
+        const cc = code.toUpperCase();
+        const A = 0x1F1E6;
+        return String.fromCodePoint(A + (cc.charCodeAt(0) - 65)) + String.fromCodePoint(A + (cc.charCodeAt(1) - 65));
+    };
+
+    // Default city coordinates by country (for better UX on switch)
+    const COUNTRY_DEFAULT_COORDS: Record<string, {lat: number, lng: number, city: string}> = {
+        ID: { lat: -6.2088, lng: 106.8456, city: 'Jakarta' },
+        IE: { lat: 53.3498, lng: -6.2603, city: 'Dublin' },
+        GB: { lat: 51.5074, lng: -0.1278, city: 'London' },
+        US: { lat: 40.7128, lng: -74.0060, city: 'New York' },
+        AU: { lat: -33.8688, lng: 151.2093, city: 'Sydney' },
+        SG: { lat: 1.3521, lng: 103.8198, city: 'Singapore' },
+        MY: { lat: 3.1390, lng: 101.6869, city: 'Kuala Lumpur' }
+    };
+
+    const handleSelectCountry = (code: string, name: string) => {
+        const prev = userLocation || undefined;
+        const def = COUNTRY_DEFAULT_COORDS[code];
+        const lat = def?.lat ?? prev?.lat ?? -6.2088;
+        const lng = def?.lng ?? prev?.lng ?? 106.8456;
+        const address = def ? `${def.city}, ${name}` : (prev?.address || name);
+        onSetUserLocation({ address, lat, lng, countryCode: code, country: name });
+        try {
+            // Persist immediately for currency/utils that read localStorage directly
+            localStorage.setItem('app_user_location', JSON.stringify({ address, lat, lng, countryCode: code, country: name }));
+        } catch {}
+        setIsCountrySelectorOpen(false);
+        setCountrySearch('');
+    };
 
     // Fisher-Yates shuffle to randomize array order
     const shuffleArray = (arr: string[]) => {
@@ -576,6 +612,18 @@ const HomePage: React.FC<HomePageProps> = ({
                             </svg>
                         </button>
 
+                        {/* Country switcher - small round flag near burger */}
+                        <button
+                            onClick={() => setIsCountrySelectorOpen(true)}
+                            className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center bg-white hover:bg-orange-50"
+                            title={userLocation?.country || userLocation?.countryCode || 'Choose country'}
+                            aria-label="Choose country"
+                        >
+                            <span className="text-base">
+                                {countryCodeToFlag(userLocation?.countryCode || 'ID')}
+                            </span>
+                        </button>
+
                         <button onClick={() => {
                             console.log('🍔 Burger menu clicked! Current isMenuOpen:', isMenuOpen);
                             console.log('🍔 Setting isMenuOpen to true');
@@ -587,6 +635,58 @@ const HomePage: React.FC<HomePageProps> = ({
                     </div>
                 </div>
             </header>
+
+            {/* Country Selector Hero Overlay */}
+            {isCountrySelectorOpen && (
+                <div className="fixed inset-0 z-[9998] flex items-start sm:items-center justify-center bg-black/60">
+                    <div className="w-full max-w-2xl bg-white rounded-none sm:rounded-2xl shadow-2xl overflow-hidden mt-0 sm:mt-8">
+                        {/* Hero Header */}
+                        <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-5 text-white">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h2 className="text-xl font-bold">Choose your country</h2>
+                                    <p className="text-white/80 text-sm">See therapists and places in your selected country</p>
+                                </div>
+                                <button
+                                    onClick={() => setIsCountrySelectorOpen(false)}
+                                    className="p-2 rounded-full hover:bg-white/10"
+                                    aria-label="Close"
+                                >
+                                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                </button>
+                            </div>
+                            <div className="mt-3">
+                                <input
+                                    value={countrySearch}
+                                    onChange={(e) => setCountrySearch(e.target.value)}
+                                    placeholder="Search country..."
+                                    className="w-full rounded-md px-3 py-2 text-gray-900 placeholder:text-gray-400"
+                                />
+                            </div>
+                        </div>
+                        {/* List */}
+                        <div className="max-h-[70vh] overflow-y-auto p-4 sm:p-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {COUNTRIES
+                                    .filter(c => (c.name || '').toLowerCase().includes(countrySearch.toLowerCase()))
+                                    .map(c => (
+                                        <button
+                                            key={c.code}
+                                            onClick={() => handleSelectCountry(c.code, c.name)}
+                                            className={`flex items-center gap-3 border rounded-xl p-3 hover:border-orange-400 text-left transition-colors ${userLocation?.countryCode === c.code ? 'border-orange-500 bg-orange-50' : 'border-gray-200 bg-white'}`}
+                                        >
+                                            <span className="text-2xl">{countryCodeToFlag(c.code)}</span>
+                                            <div className="flex-1">
+                                                <div className="text-sm text-gray-500">Indastreet Massage</div>
+                                                <div className="font-semibold text-gray-900">{c.name}</div>
+                                            </div>
+                                        </button>
+                                    ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
             
             {/* Global App Drawer - Chrome Safe Rendering */}
             <React19SafeWrapper condition={isMenuOpen}>
