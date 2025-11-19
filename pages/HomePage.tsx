@@ -583,17 +583,7 @@ const HomePage: React.FC<HomePageProps> = ({
                         <span className="text-orange-500">Street</span>
                     </h1>
                     <div className="flex items-center gap-3 text-gray-600">
-                        {/* Location Update Button - Orange Color */}
-                        <button 
-                            onClick={handleLocationRequest} 
-                            className="p-2 hover:bg-orange-50 rounded-full transition-colors text-orange-500" 
-                            title="Update Location"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                        </button>
+                        {/* Location Update moved beside 'Change location' below */}
 
                         {/* Country switcher - small round flag near burger */}
                         <button
@@ -728,8 +718,12 @@ const HomePage: React.FC<HomePageProps> = ({
                         return (
                             <>
                                 Showing therapists within {SEARCH_RADIUS_KM} km of {label || 'your location'}.{' '}
-                                <button onClick={handleLocationRequest} className="text-orange-600 hover:underline">
-                                    Change location
+                                <button onClick={handleLocationRequest} className="inline-flex items-center gap-1 text-orange-600 hover:underline" title="Change location">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    <span>Change location</span>
                                 </button>
                             </>
                         );
