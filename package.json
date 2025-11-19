@@ -37,7 +37,8 @@
     "appwrite:verify": "node scripts/verify-core-collections.js",
     "appwrite:schema": "node scripts/dump-collection-schemas.js",
     "appwrite:map": "node scripts/generate-collections-config.js",
-    "appwrite:health": "node scripts/generate-collections-config.js && node scripts/verify-core-collections.js && node scripts/dump-collection-schemas.js"
+    "appwrite:health": "node scripts/generate-collections-config.js && node scripts/verify-core-collections.js && node scripts/dump-collection-schemas.js",
+    "backfill:countryCodes": "node scripts/backfill-country-codes.mjs"
   },
   "dependencies": {
     "@stripe/react-stripe-js": "^2.8.0",
@@ -49,6 +50,7 @@
     "clsx": "^2.0.0",
     "date-fns": "^3.0.0",
     "express": "^5.1.0",
+    "flag-icons": "^7.5.0",
     "framer-motion": "^11.18.2",
     "lucide-react": "^0.546.0",
     "node-appwrite": "^20.3.0",

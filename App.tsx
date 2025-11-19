@@ -15,6 +15,8 @@ import { bookingExpirationService } from './services/bookingExpirationService';
 import './utils/disableLocalStorage';
 // (Former cleanupLocalStorage import removed as localStorage persisted data is no longer used)
 import './lib/globalErrorHandler'; // Initialize global error handling
+// Flag icons CSS (for SVG country flags)
+import 'flag-icons/css/flag-icons.min.css';
 import { LanguageProvider } from './context/LanguageContext';
 import { agentShareAnalyticsService } from './lib/appwriteService';
 import { resolveDefaultLanguage } from './lib/languageResolver';

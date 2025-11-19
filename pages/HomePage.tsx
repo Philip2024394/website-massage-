@@ -16,7 +16,8 @@ import { React19SafeWrapper } from '../components/React19SafeWrapper';
 import PageNumberBadge from '../components/PageNumberBadge';
 import { THERAPIST_MAIN_IMAGES } from '../lib/services/imageService';
 import { useLanguageContext } from '../context/LanguageContext';
-import { COUNTRIES } from '../countries';
+import { COUNTRIES, COUNTRY_DEFAULT_COORDS } from '../countries';
+import FlagIcon from '../components/FlagIcon';
 
 
 interface HomePageProps {
@@ -219,24 +220,6 @@ const HomePage: React.FC<HomePageProps> = ({
     const [promptLang, setPromptLang] = useState<import('../types/pageTypes').Language>(globalLanguage || 'en');
     const [isCountrySelectorOpen, setIsCountrySelectorOpen] = useState(false);
     const [countrySearch, setCountrySearch] = useState('');
-
-    const countryCodeToFlag = (code?: string) => {
-        if (!code || code.length !== 2) return '🌐';
-        const cc = code.toUpperCase();
-        const A = 0x1F1E6;
-        return String.fromCodePoint(A + (cc.charCodeAt(0) - 65)) + String.fromCodePoint(A + (cc.charCodeAt(1) - 65));
-    };
-
-    // Default city coordinates by country (for better UX on switch)
-    const COUNTRY_DEFAULT_COORDS: Record<string, {lat: number, lng: number, city: string}> = {
-        ID: { lat: -6.2088, lng: 106.8456, city: 'Jakarta' },
-        IE: { lat: 53.3498, lng: -6.2603, city: 'Dublin' },
-        GB: { lat: 51.5074, lng: -0.1278, city: 'London' },
-        US: { lat: 40.7128, lng: -74.0060, city: 'New York' },
-        AU: { lat: -33.8688, lng: 151.2093, city: 'Sydney' },
-        SG: { lat: 1.3521, lng: 103.8198, city: 'Singapore' },
-        MY: { lat: 3.1390, lng: 101.6869, city: 'Kuala Lumpur' }
-    };
 
     const handleSelectCountry = (code: string, name: string) => {
         const prev = userLocation || undefined;
@@ -619,9 +602,7 @@ const HomePage: React.FC<HomePageProps> = ({
                             title={userLocation?.country || userLocation?.countryCode || 'Choose country'}
                             aria-label="Choose country"
                         >
-                            <span className="text-base">
-                                {countryCodeToFlag(userLocation?.countryCode || 'ID')}
-                            </span>
+                            <FlagIcon code={(userLocation?.countryCode || 'ID')} className="text-lg" />
                         </button>
 
                         <button onClick={() => {
@@ -660,7 +641,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                     value={countrySearch}
                                     onChange={(e) => setCountrySearch(e.target.value)}
                                     placeholder="Search country..."
-                                    className="w-full rounded-md px-3 py-2 text-gray-900 placeholder:text-gray-400"
+                                    className="w-full rounded-md px-3 py-2 text-gray-900 placeholder:text-gray-400 bg-white/95 focus:outline-none focus:ring-2 focus:ring-white/60 focus:border-transparent"
                                 />
                             </div>
                         </div>
@@ -673,9 +654,9 @@ const HomePage: React.FC<HomePageProps> = ({
                                         <button
                                             key={c.code}
                                             onClick={() => handleSelectCountry(c.code, c.name)}
-                                            className={`flex items-center gap-3 border rounded-xl p-3 hover:border-orange-400 text-left transition-colors ${userLocation?.countryCode === c.code ? 'border-orange-500 bg-orange-50' : 'border-gray-200 bg-white'}`}
+                                            className={`flex items-center gap-3 border rounded-xl p-3 hover:border-orange-400 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-orange-400/50 ${userLocation?.countryCode === c.code ? 'border-orange-500 bg-orange-50' : 'border-gray-200 bg-white'}`}
                                         >
-                                            <span className="text-2xl">{countryCodeToFlag(c.code)}</span>
+                                            <FlagIcon code={c.code} className="text-2xl" />
                                             <div className="flex-1">
                                                 <div className="text-sm text-gray-500">Indastreet Massage</div>
                                                 <div className="font-semibold text-gray-900">{c.name}</div>
