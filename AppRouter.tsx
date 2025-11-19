@@ -25,7 +25,7 @@ const RegistrationChoicePage = React.lazy(() => import('./pages/RegistrationChoi
 const TherapistDashboardPage = React.lazy(() => import('./pages/TherapistDashboardPage'));
 const TherapistProfilePage = React.lazy(() => import('./pages/TherapistProfilePage'));
 const TherapistStatusPage = React.lazy(() => import('./pages/TherapistStatusPage'));
-const PlaceDashboardPage = React.lazy(() => import('./pages/PlaceDashboardPage'));
+import PlaceDashboardPage from './pages/PlaceDashboardPage';
 
 // Agent pages deprecated: routes now redirect to Indastreet Partner (villa) routes
 const ServiceTermsPage = React.lazy(() => import('./pages/ServiceTermsPage'));
@@ -89,7 +89,7 @@ const PromoterCommissionPage = React.lazy(() => import('./pages/PromoterCommissi
 import PromoterQRPage from './pages/PromoterQRPage';
 const PromoterBookingStatsPage = React.lazy(() => import('./pages/PromoterBookingStatsPage'));
 const PromoterShareBannersPage = React.lazy(() => import('./pages/PromoterShareBannersPage'));
-const ProviderCommissionPage = React.lazy(() => import('./pages/ProviderCommissionPage'));
+import ProviderCommissionPage from './pages/ProviderCommissionPage';
 // Eager-load PromoterLiveMenuPage to avoid dev dynamic import fetch issues
 import PromoterLiveMenuPage from './pages/PromoterLiveMenuPage';
 // Eager-load to avoid dev dynamic import fetch issue for this page

@@ -299,6 +299,7 @@ import { Client, Databases, Account, Query, Storage, ID, Permission, Role } from
 import { APPWRITE_CONFIG } from './appwrite.config';
 import { rateLimitedDb } from './rateLimitService';
 import type { AgentVisit } from '../types';
+import { detectUserCurrency } from '../utils/currency';
 
 
 // Initialize Appwrite Client
@@ -335,11 +336,23 @@ export const therapistService = {
     async getAll(): Promise<any[]> {
         try {
             console.log('📋 Fetching all therapists from collection:', APPWRITE_CONFIG.collections.therapists);
-            const response = await rateLimitedDb.listDocuments(
-                databases,
-                APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.therapists
-            );
+            const cc = (() => { try { return detectUserCurrency().countryCode?.toUpperCase() || 'ID'; } catch { return 'ID'; } })();
+            let response: any;
+            try {
+                response = await rateLimitedDb.listDocuments(
+                    databases,
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.therapists,
+                    [Query.equal('countryCode', cc)]
+                );
+            } catch (e) {
+                console.warn('Country filter failed (therapists), falling back to unfiltered list:', (e as any)?.message);
+                response = await rateLimitedDb.listDocuments(
+                    databases,
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.therapists
+                );
+            }
             console.log('✅ Fetched therapists:', response.documents.length);
             
             // Add random main images and normalize status to therapists
@@ -418,12 +431,24 @@ export const therapistService = {
             }
 
             console.log('🔍 Searching for therapist by email:', email);
-            const response = await rateLimitedDb.listDocuments(
-                databases,
-                APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.therapists,
-                [Query.equal('email', email)]
-            );
+            const cc = (() => { try { return detectUserCurrency().countryCode?.toUpperCase() || 'ID'; } catch { return 'ID'; } })();
+            let response: any;
+            try {
+                response = await rateLimitedDb.listDocuments(
+                    databases,
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.therapists,
+                    [Query.equal('email', email), Query.equal('countryCode', cc)]
+                );
+            } catch (e) {
+                console.warn('Country filter failed (therapists by email), retrying without it');
+                response = await rateLimitedDb.listDocuments(
+                    databases,
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.therapists,
+                    [Query.equal('email', email)]
+                );
+            }
             console.log('📋 Found therapists with email:', response.documents.length);
             
             // Normalize status for each therapist found
@@ -742,42 +767,96 @@ export const therapistService = {
     }
 };
 
+// Collection ID discovery function
+const discoverWorkingCollectionId = async (): Promise<string | null> => {
+    const patterns = [
+        'therapists_collection_id', // Correct collection ID
+        '68f76ee1001758526d84', // From working file patterns
+        '68f76ee10021eaa2f758', // Previous attempt
+        'therapists',
+        'providers', 
+        'users',
+        'documents'
+    ];
+    
+    for (const pattern of patterns) {
+        try {
+            console.log(`🧪 Testing collection ID: ${pattern}`);
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                pattern,
+                [Query.limit(1)]
+            );
+            console.log(`✅ WORKING collection found: ${pattern}`);
+            return pattern;
+        } catch (error) {
+            console.log(`❌ ${pattern} failed: ${(error as any)?.message}`);
+        }
+    }
+    return null;
+};
+
 export const placeService = {
     async create(place: any): Promise<any> {
         try {
-            if (!APPWRITE_CONFIG.collections.places || APPWRITE_CONFIG.collections.places === '') {
-                console.warn('⚠️ Places collection disabled - cannot create place');
-                throw new Error('Places collection not configured');
-            }
-            
+            console.log('🏢 Creating massage place in Appwrite collection:', APPWRITE_CONFIG.collections.places);
+            // Sanitize payload: remove attributes not present in shared schema
+            const sanitized: any = { ...place };
+            if ('placeId' in sanitized) delete sanitized.placeId;
+            if ('category' in sanitized) delete sanitized.category;
+            if ('rating' in sanitized) delete sanitized.rating;
+            if ('reviewCount' in sanitized) delete sanitized.reviewCount;
+            // Normalize status/availability casing
+            if (typeof sanitized.status === 'string') sanitized.status = sanitized.status.toLowerCase();
+            if (typeof sanitized.availability === 'string') sanitized.availability = sanitized.availability.charAt(0).toUpperCase() + sanitized.availability.slice(1).toLowerCase();
             const response = await databases.createDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.places,
                 'unique()',
-                place
+                sanitized
             );
+            console.log('✅ Place created successfully in Appwrite database');
             return response;
         } catch (error) {
-            console.error('Error creating place:', error);
+            console.error('❌ Failed to create place in Appwrite:', error);
             throw error;
         }
     },
     async getByProviderId(providerId: string): Promise<any | null> {
-        // Find a place document by the provider's id field (stored in the document attributes)
         try {
-            // Try matching both as string and number to be safe
-            const response = await databases.listDocuments(
-                APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.places,
-                [
-                    // Appwrite equal can take an array of values
-                    Query.equal('id', [providerId, Number(providerId)])
-                ]
-            );
-            return response.documents.length > 0 ? response.documents[0] : null;
-        } catch (error) {
-            console.error('Error finding place by provider id:', error);
+            console.log('🔍 Searching for place by provider ID in Appwrite:', providerId);
+            
+            // Try with category filter first
+            let response;
+            try {
+                response = await databases.listDocuments(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.places,
+                    [
+                        Query.equal('id', providerId),
+                        Query.equal('category', 'massage-place')
+                    ]
+                );
+            } catch (categoryError) {
+                console.log('⚠️ Category field may not exist, trying without category filter');
+                // Fallback: try without category filter
+                response = await databases.listDocuments(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.places,
+                    [Query.equal('id', providerId)]
+                );
+            }
+            
+            if (response.documents.length > 0) {
+                console.log('✅ Found place in Appwrite database:', response.documents[0].name);
+                return response.documents[0];
+            }
+            console.log('⚠️ No place found with provider ID:', providerId);
             return null;
+        } catch (error) {
+            console.error('❌ Error finding place by provider ID:', error);
+            console.error('❌ Full error:', error);
+            return null; // Don't throw, return null instead
         }
     },
     async getPlaces(): Promise<any[]> {
@@ -786,34 +865,92 @@ export const placeService = {
     },
     async getAll(): Promise<any[]> {
         try {
-            // Check if places collection exists
-            if (!APPWRITE_CONFIG.collections.places || APPWRITE_CONFIG.collections.places === '') {
-                console.log('⚠️ Places collection disabled - returning empty array');
-                return [];
+            let collectionId = APPWRITE_CONFIG.collections.places;
+            console.log('📋 Fetching all places from Appwrite collection:', collectionId);
+            
+            // If collection not found, try to discover working one
+            let response;
+            try {
+                const cc = (() => { try { return detectUserCurrency().countryCode?.toUpperCase() || 'ID'; } catch { return 'ID'; } })();
+                response = await databases.listDocuments(
+                    APPWRITE_CONFIG.databaseId,
+                    collectionId,
+                    [
+                        Query.equal('category', 'massage-place'),
+                        Query.equal('isLive', true),
+                        Query.equal('countryCode', cc)
+                    ]
+                );
+            } catch (collectionError) {
+                console.log('❌ Collection not found, discovering working collection...');
+                const workingId = await discoverWorkingCollectionId();
+                if (workingId) {
+                    console.log(`✅ Using discovered collection: ${workingId}`);
+                    APPWRITE_CONFIG.collections.places = workingId;
+                    APPWRITE_CONFIG.collections.therapists = workingId;
+                    
+                    // Try again with discovered collection
+                    try {
+                        const cc = (() => { try { return detectUserCurrency().countryCode?.toUpperCase() || 'ID'; } catch { return 'ID'; } })();
+                        response = await databases.listDocuments(
+                            APPWRITE_CONFIG.databaseId,
+                            workingId,
+                            [
+                                Query.equal('category', 'massage-place'),
+                                Query.equal('isLive', true),
+                                Query.equal('countryCode', cc)
+                            ]
+                        );
+                    } catch (categoryError) {
+                        console.log('⚠️ Category field may not exist, trying without category filter');
+                        // Try with country filter only
+                        try {
+                            const cc = (() => { try { return detectUserCurrency().countryCode?.toUpperCase() || 'ID'; } catch { return 'ID'; } })();
+                            response = await databases.listDocuments(
+                                APPWRITE_CONFIG.databaseId,
+                                workingId,
+                                [Query.equal('countryCode', cc), Query.limit(50)]
+                            );
+                        } catch (countryErr) {
+                            console.warn('Country filter failed (places), falling back to basic limit:', (countryErr as any)?.message);
+                            response = await databases.listDocuments(
+                            APPWRITE_CONFIG.databaseId,
+                            workingId,
+                            [Query.limit(50)] // Just get some documents
+                            );
+                        }
+                    }
+                } else {
+                    throw new Error('No working collection ID found');
+                }
             }
             
-            console.log('📋 Fetching all PLACES from collection:', APPWRITE_CONFIG.collections.places);
-            console.log('🔧 Database ID:', APPWRITE_CONFIG.databaseId);
-            console.log('🌐 Endpoint:', APPWRITE_CONFIG.endpoint);
-            console.log('📦 Project ID:', APPWRITE_CONFIG.projectId);
-            
-            const response = await databases.listDocuments(
-                APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.places
-            );
-            console.log('✅ Fetched PLACES:', response.documents.length);
+            console.log('✅ Fetched places from Appwrite:', response.documents.length);
             response.documents.forEach((p: any) => {
                 console.log(`  🏨 ${p.name} - isLive: ${p.isLive}, ID: ${p.$id}`);
             });
+            
             return response.documents;
         } catch (error) {
-            console.error('❌ Error fetching places (collection might not exist):', error);
+            console.error('❌ Error fetching places from Appwrite:', error);
             console.error('❌ Error details:', {
                 message: error instanceof Error ? error.message : 'Unknown error',
                 code: (error as any)?.code || 'Unknown code',
                 type: (error as any)?.type || 'Unknown type'
             });
-            return [];
+            // Graceful fallback: attempt unfiltered fetch, then client-side filter by detected country
+            try {
+                const cc = (() => { try { return detectUserCurrency().countryCode?.toUpperCase() || 'ID'; } catch { return 'ID'; } })();
+                const raw = await databases.listDocuments(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.places,
+                    [Query.limit(100)]
+                );
+                const docs = (raw.documents || []).filter((d: any) => (d.countryCode || '').toUpperCase() === cc);
+                return docs;
+            } catch (e2) {
+                return [];
+            }
         }
     },
     async getById(id: string): Promise<any> {
@@ -831,15 +968,25 @@ export const placeService = {
     },
     async update(id: string, data: any): Promise<any> {
         try {
+            console.log('📝 Updating place in Appwrite database:', id);
+            // Sanitize payload for update as well
+            const sanitized: any = { ...data };
+            if ('placeId' in sanitized) delete sanitized.placeId;
+            if ('category' in sanitized) delete sanitized.category;
+            if ('rating' in sanitized) delete sanitized.rating;
+            if ('reviewCount' in sanitized) delete sanitized.reviewCount;
+            if (typeof sanitized.status === 'string') sanitized.status = sanitized.status.toLowerCase();
+            if (typeof sanitized.availability === 'string') sanitized.availability = sanitized.availability.charAt(0).toUpperCase() + sanitized.availability.slice(1).toLowerCase();
             const response = await databases.updateDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.places,
                 id,
-                data
+                sanitized
             );
+            console.log('✅ Place updated successfully in Appwrite database');
             return response;
         } catch (error) {
-            console.error('Error updating place:', error);
+            console.error('❌ Failed to update place in Appwrite:', error);
             throw error;
         }
     },
@@ -861,7 +1008,10 @@ export const placeService = {
             const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.places,
-                [Query.equal('email', email)]
+                [
+                    Query.equal('email', email),
+                    Query.equal('category', 'massage-place')
+                ]
             );
             console.log('📋 Found massage places with email:', response.documents.length);
             return response.documents;
@@ -2951,48 +3101,14 @@ export const hotelVillaBookingService = {
                 completedAt: new Date().toISOString()
             });
             
-            // Award coins to customer for completing booking
+            // Customer coin rewards disabled: no coins awarded on booking completion
+            // Still complete any pending referral for this user (no coins granted)
             if (bookingDetails?.userId) {
                 try {
-                    // Import coin configuration
-                    const { calculateBookingCoins, getLoyaltyTier } = await import('./coinConfig');
-                    
-                    // Get customer's booking history to determine tier and bonuses
-                    const customerBookings = await bookingService.getByUser(bookingDetails.userId);
-                    const completedBookings = customerBookings.filter((b: any) => b.status === 'Completed').length;
-                    const isFirstBooking = completedBookings === 0; // This will be their first completed booking
-                    
-                    // Determine loyalty tier
-                    const loyaltyTier = getLoyaltyTier(completedBookings + 1); // +1 because this booking is now completed
-                    
-                    // Calculate total coins to award
-                    const coinsToAward = calculateBookingCoins(isFirstBooking, loyaltyTier, false);
-                    
-                    // Award coins through coin service
-                    await coinService.addCoins(
-                        bookingDetails.userId,
-                        'customer',
-                        bookingDetails.userName || 'Customer',
-                        coinsToAward,
-                        `Booking completed - ${coinsToAward} coins earned`,
-                        bookingId
-                    );
-                    
-                    // Check if this is their first booking and complete any pending referral
-                    if (isFirstBooking) {
-                        try {
-                            const { enhancedReferralService } = await import('./referralService');
-                            await enhancedReferralService.completeReferral(bookingDetails.userId);
-                        } catch (referralError) {
-                            console.error('Error processing referral completion:', referralError);
-                        }
-                    }
-                    
-                    console.log(`💰 Awarded ${coinsToAward} coins to customer ${bookingDetails.userId} for booking completion`);
-                    
-                } catch (coinError) {
-                    console.error('Error awarding coins for booking completion:', coinError);
-                    // Don't fail the booking completion if coin awarding fails
+                    const { enhancedReferralService } = await import('./referralService');
+                    await enhancedReferralService.completeReferral(bookingDetails.userId);
+                } catch (referralError) {
+                    console.error('Error processing referral completion:', referralError);
                 }
             }
 

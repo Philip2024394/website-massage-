@@ -16,6 +16,15 @@ const rateLimitTracker: RateLimitTracker = {};
  * Check if an operation should be rate limited
  */
 export function checkRateLimit(operation: string, maxAttempts: number = 5, windowMs: number = 60000): boolean {
+    // Dev bypass via Vite env flag
+    try {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore - import.meta.env exists in Vite runtime
+        if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_DISABLE_RATE_LIMIT === 'true') {
+            return true;
+        }
+    } catch {}
+
     const now = Date.now();
     const key = operation;
     
@@ -128,9 +137,27 @@ export async function retryWithBackoff<T>(
     maxRetries: number = 3,
     baseDelay: number = 1000
 ): Promise<T> {
+    // Dev bypass and tuning via Vite env
+    let effectiveMaxRetries = maxRetries;
+    let effectiveBaseDelay = baseDelay;
+    try {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore - import.meta.env exists in Vite runtime
+        const env = (typeof import.meta !== 'undefined' && import.meta.env) ? import.meta.env : undefined;
+        if (env) {
+            if (env.VITE_DISABLE_RATE_LIMIT === 'true') {
+                effectiveMaxRetries = 0;
+                effectiveBaseDelay = 50;
+            } else {
+                if (env.VITE_RATE_MAX_RETRIES) effectiveMaxRetries = Number(env.VITE_RATE_MAX_RETRIES) || effectiveMaxRetries;
+                if (env.VITE_RATE_BASE_DELAY) effectiveBaseDelay = Number(env.VITE_RATE_BASE_DELAY) || effectiveBaseDelay;
+            }
+        }
+    } catch {}
+
     let lastError: any;
     
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    for (let attempt = 0; attempt <= effectiveMaxRetries; attempt++) {
         try {
             return await operation();
         } catch (error: any) {
@@ -142,13 +169,13 @@ export async function retryWithBackoff<T>(
             }
             
             // If this was the last attempt, throw the error
-            if (attempt === maxRetries) {
+            if (attempt === effectiveMaxRetries) {
                 throw error;
             }
             
             // Wait before retrying (exponential backoff)
-            const delayMs = baseDelay * Math.pow(2, attempt);
-            console.log(`Retrying operation in ${delayMs}ms (attempt ${attempt + 1}/${maxRetries + 1})`);
+            const delayMs = effectiveBaseDelay * Math.pow(2, attempt);
+            console.log(`Retrying operation in ${delayMs}ms (attempt ${attempt + 1}/${effectiveMaxRetries + 1})`);
             await delay(delayMs);
         }
     }

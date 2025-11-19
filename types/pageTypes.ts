@@ -131,7 +131,8 @@ export type Page =
     | 'customerReviews'
     | 'customerSupport';
 
-export type Language = 'en' | 'id';
+// Global language codes supported by the app
+export type Language = 'en' | 'id' | 'zh-CN' | 'ru' | 'ja' | 'ko';
 
 export type LoggedInProvider = { 
     id: number | string; 

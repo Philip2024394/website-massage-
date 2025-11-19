@@ -3,6 +3,7 @@ import { LanguageContext } from '../context/LanguageContext';
 import { translationsService } from './appwriteService';
 import { translations as fallbackTranslations } from '../translations/index';
 import { vscodeTranslateService } from './vscodeTranslateService';
+import type { Language } from '../types/pageTypes';
 
 const CACHE_KEY = 'indostreet_translations';
 const CACHE_EXPIRY_MS = 1000 * 60 * 60; // 1 hour
@@ -35,14 +36,15 @@ const cacheTranslations = (data: any) => {
     }
 };
 
-export function useTranslations(language?: 'en' | 'id') {
+export function useTranslations(language?: Language) {
     // Allow implicit language from context when param not provided
     const ctx = useContext(LanguageContext);
     // Get stored language preference if no language is provided
-    const getStoredLanguage = (): 'en' | 'id' => {
+    const SUPPORTED: Language[] = ['en','id','zh-CN','ru','ja','ko'];
+    const getStoredLanguage = (): Language => {
         try {
             const stored = localStorage.getItem('app_language');
-            return (stored === 'id' || stored === 'en') ? stored : 'en';
+            return (stored && (SUPPORTED as string[]).includes(stored)) ? (stored as Language) : 'en';
         } catch {
             return 'en';
         }

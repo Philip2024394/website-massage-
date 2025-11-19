@@ -8,11 +8,13 @@ import Button from '../components/Button';
 import DiscountSharePage from './DiscountSharePage';
 import MembershipPlansPage from './MembershipPlansPage';
 import ImageUpload from '../components/ImageUpload';
+import CheckoutButton from '../components/CheckoutButton';
+import { resolveRegion, getMonthlyPaymentLink, getMonthlyPriceDisplay } from '../utils/membership';
 // Hotel/Villa Opt-In removed
 
 import { placeService } from '../lib/appwriteService';
-import { databases } from '../lib/appwrite';
-import { APPWRITE_CONFIG } from '../lib/appwrite.config';
+import { databases, account } from '../lib/appwrite';
+import { APPWRITE_CONFIG } from '../lib/appwrite.config.ts';
 import { Query } from 'appwrite';
 import TherapistTermsPage from './TherapistTermsPage';
 import UserSolidIcon from '../components/icons/UserSolidIcon';
@@ -133,6 +135,10 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     const [languages, setLanguages] = useState<string[]>([]);
     const [additionalServices, setAdditionalServices] = useState<string[]>([]);
     const [coordinates, setCoordinates] = useState({ lat: 0, lng: 0 });
+    // Membership/Stripe values
+    const membershipRegion = resolveRegion();
+    const membershipPriceDisplay = getMonthlyPriceDisplay(membershipRegion);
+    const membershipPaymentLink = getMonthlyPaymentLink(membershipRegion);
 
     // Debug function to check location system status
     const debugLocationSystem = () => {
@@ -240,14 +246,21 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                     console.log('📋 Using passed place data:', place);
                     initializeWithPlaceData(place);
                 } else if (place?.id) {
-                    console.log('🔄 Loading place data from database for provider ID:', place.id);
-                    // Lookup by provider id attribute instead of assuming Appwrite document id
-                    const loadedPlace = await placeService.getByProviderId(place.id.toString());
-                    if (loadedPlace) {
-                        console.log('✅ Loaded place data from database:', loadedPlace);
-                        initializeWithPlaceData(loadedPlace);
-                    } else {
-                        console.log('⚠️ No saved data found, using defaults');
+                    console.log('🔄 Loading place data from Appwrite for provider ID:', place.id);
+                    
+                    // Load from Appwrite database
+                    try {
+                        const loadedPlace = await placeService.getByProviderId(place.id.toString());
+                        if (loadedPlace) {
+                            console.log('✅ Loaded place data from Appwrite:', loadedPlace);
+                            initializeWithPlaceData(loadedPlace);
+                        } else {
+                            console.log('⚠️ No saved data found in Appwrite, using defaults');
+                            initializeWithDefaults();
+                        }
+                    } catch (error) {
+                        console.error('❌ Failed to load place data from Appwrite:', error);
+                        console.log('⚠️ Using default values due to database error');
                         initializeWithDefaults();
                     }
                 } else {
@@ -552,7 +565,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         }
     }, [placeId]); // Only depend on placeId to avoid infinite loops
 
-    const handleSave = () => {
+    const handleSave = async () => {
         // Comprehensive validation with detailed error messages
         const missingFields = [];
         
@@ -582,40 +595,136 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         const safeGalleryImages = galleryImages || [];
         const filteredGallery = safeGalleryImages.filter(img => img && img.imageUrl && img.imageUrl.trim() !== '');
         
-        onSave({
-            placeId: placeId, // Add missing required field
+        const placeData = {
+            // Required schema fields
+            id: placeId,
+            therapistId: placeId, // Use same as id for places
+            hotelId: placeId, // Use same as id for places
+            email: place?.email || `place_${placeId}@massage.com`, // Required email field
             name,
+            location,
+            hourlyRate: Number(pricing['60']) || 100, // Required hourly rate (use 60min price)
+            specialization: 'Massage Place', // Required specialization
+            yearsOfExperience: 5, // Required years (default for places)
+            isLicensed: true, // Required license status
+            
+            // Pricing fields (required schema format)
+            price60: String(pricing['60'] || 0),
+            price90: String(pricing['90'] || 0),
+            price120: String(pricing['120'] || 0),
+            
+            // Size-limited fields (keep within schema limits)
+            pricing: JSON.stringify(pricing).substring(0, 250), // Max 255 chars
+            coordinates: JSON.stringify(coordinates).substring(0, 500), // Max 512 chars
+            
+            // Optional fields
             description,
             mainImage,
             profilePicture,
-            galleryImages: filteredGallery.length > 0 ? filteredGallery : undefined,
             whatsappNumber,
-            pricing: JSON.stringify(pricing),
-            hotelVillaPricing: useSamePricing ? undefined : JSON.stringify(hotelVillaPricing),
             discountPercentage,
             discountDuration,
             isDiscountActive,
             discountEndTime,
-            location,
-            coordinates: JSON.stringify(coordinates),
-            massageTypes: JSON.stringify(massageTypes),
-            languages,
-            additionalServices,
-            openingTime,
-            closingTime,
-            distance: 0, // dummy value
-            activeMembershipDate: place?.activeMembershipDate || '',
-            password: place?.password,
-            analytics: JSON.stringify(place?.analytics || { impressions: 0, profileViews: 0, whatsappClicks: 0 }),
-            websiteUrl,
-            websiteTitle,
-            websiteDescription,
-        } as any);
+            massageTypes: JSON.stringify(massageTypes || []).substring(0, 500), // Max 512 chars
+            languages: languages && languages.length > 0 ? JSON.stringify(languages).substring(0, 990) : null, // Max 1000 chars
+            distance: 0,
+            activeMembershipDate: place?.activeMembershipDate || null,
+            password: place?.password || null,
+            analytics: JSON.stringify(place?.analytics || { impressions: 0, profileViews: 0, whatsappClicks: 0 }).substring(0, 2040), // Max 2048 chars
+            isLive: true, // Set to live when saved
 
-        // Show admin approval message
+            // Do not persist computed rating fields; backend calculates/doesn't support
+            // rating / reviewCount are intentionally omitted to match schema
+
+            // Do not send category; some deployments don't include this field
+
+            // Status fields — align with collection enums
+            status: 'available',
+            availability: 'Available',
+            isOnline: true
+        };
+
+        console.log('📋 Using collection ID:', APPWRITE_CONFIG.collections.places);
+        
+        console.log('💾 Saving to collection:', APPWRITE_CONFIG.collections.places);
+        console.log('📄 Place data being saved:', JSON.stringify(placeData, null, 2));
+        
+        // Check authentication first
+        try {
+            const user = await account.get();
+            console.log('👤 Current user:', user?.$id);
+        } catch (authError) {
+            console.log('⚠️ No active session, creating anonymous session...');
+            try {
+                await account.createAnonymousSession();
+                console.log('✅ Anonymous session created');
+            } catch (anonError) {
+                console.error('❌ Failed to create session:', anonError);
+                alert('Unable to authenticate. Please refresh the page and try again.');
+                return;
+            }
+        }
+        
+        // Save directly to Appwrite database
+        try {
+            // Check if place document exists
+            const existingPlace = await placeService.getByProviderId(String(placeId));
+            
+            if (existingPlace && existingPlace.$id) {
+                // Update existing document in Appwrite
+                console.log('📝 Updating existing place document in Appwrite:', existingPlace.$id);
+                await placeService.update(String(existingPlace.$id), placeData);
+            } else {
+                // Create new document in Appwrite
+                console.log('✨ Creating new place document in Appwrite');
+                await placeService.create(placeData);
+            }
+            
+            console.log('✅ Place data saved successfully to Appwrite database');
+        } catch (error) {
+            console.error('❌ Failed to save place data to Appwrite:', error);
+            console.error('❌ Error details:', {
+                message: error instanceof Error ? error.message : 'Unknown error',
+                code: (error as any)?.code || 'Unknown code',
+                type: (error as any)?.type || 'Unknown type',
+                collectionId: APPWRITE_CONFIG.collections.places,
+                databaseId: APPWRITE_CONFIG.databaseId
+            });
+            
+            let errorMessage = 'Failed to save profile to database.';
+            if (error instanceof Error) {
+                if (error.message.includes('Collection not found')) {
+                    errorMessage = 'Collection not found. Please check if the therapists collection exists in Appwrite.';
+                } else if (error.message.includes('Missing required attribute')) {
+                    errorMessage = 'Missing required fields. Please check the collection schema.';
+                } else if (error.message.includes('Invalid')) {
+                    errorMessage = `Invalid data: ${error.message}`;
+                }
+            }
+            
+            alert(errorMessage + ' Please check the console for details.');
+            return;
+        }
+
+        // Also call onSave for any parent component logic
+        onSave(placeData as any);
+
+        // Reload the saved data to display in the form
+        try {
+            const savedPlace = await placeService.getByProviderId(String(placeId));
+            if (savedPlace) {
+                console.log('✅ Reloaded saved place data:', savedPlace);
+                initializeWithPlaceData(savedPlace);
+            }
+        } catch (error) {
+            console.error('⚠️ Failed to reload place data after save:', error);
+        }
+
+        // Show success message
         const notification = document.createElement('div');
         notification.innerHTML = `
-            <div class="fixed top-4 left-4 right-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white p-6 rounded-xl shadow-2xl z-50 max-w-md mx-auto">
+            <div class="fixed top-4 left-4 right-4 bg-gradient-to-r from-green-500 to-green-600 text-white p-6 rounded-xl shadow-2xl z-50 max-w-md mx-auto">
                 <div class="flex items-center gap-4">
                     <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center flex-shrink-0">
                         <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -623,15 +732,15 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                         </svg>
                     </div>
                     <div class="flex-1">
-                        <h3 class="font-bold text-lg mb-1">Profile Saved Successfully!</h3>
-                        <p class="text-orange-100 text-sm leading-relaxed">
-                            Thank you for updating your profile. The <strong>IndaStreet Team</strong> will review and confirm your changes for approval soon.
+                        <h3 class="font-bold text-lg mb-1">Profile Saved to Appwrite!</h3>
+                        <p class="text-green-100 text-sm leading-relaxed">
+                            Your massage place profile is now <strong>live in the shared collection</strong> (${APPWRITE_CONFIG.collections.places}) and visible in the directory. All data stored in Appwrite cloud database.
                         </p>
-                        <div class="mt-3 flex items-center gap-2 text-xs text-orange-200">
+                        <div class="mt-3 flex items-center gap-2 text-xs text-green-200">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
                             </svg>
-                            <span>Usually processed within 24 hours</span>
+                            <span>Appwrite Database Only</span>
                         </div>
                     </div>
                 </div>
@@ -689,34 +798,6 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     const handlePriceChange = (duration: keyof Pricing, value: string) => {
         const numValue = parsePriceFromInput(value);
         setPricing(prev => ({ ...prev, [duration]: numValue }));
-        
-        // If "use same pricing" is checked, update hotel/villa pricing too
-        if (useSamePricing) {
-            setHotelVillaPricing(prev => ({ ...prev, [duration]: numValue }));
-        }
-    };
-    
-    const handleHotelVillaPriceChange = (duration: keyof Pricing, value: string) => {
-        let numValue = parsePriceFromInput(value);
-        
-        // Validate: Hotel/villa price cannot be more than 20% higher than regular price
-        const regularPrice = pricing[duration];
-        const maxAllowedPrice = regularPrice * 1.2; // 20% increase max
-        
-        if (numValue > maxAllowedPrice && regularPrice > 0) {
-            // Cap at 20% increase
-            numValue = Math.floor(maxAllowedPrice);
-        }
-        
-        setHotelVillaPricing(prev => ({ ...prev, [duration]: numValue }));
-    };
-    
-    const handleUseSamePricingChange = (checked: boolean) => {
-        setUseSamePricing(checked);
-        if (checked) {
-            // Copy regular pricing to hotel/villa pricing
-            setHotelVillaPricing({ ...pricing });
-        }
     };
     
     const handleGalleryImageChange = (index: number, imageUrl: string) => {
@@ -1182,14 +1263,14 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                         <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
                             <h3 className="font-semibold text-orange-800 mb-1">Payment Policy</h3>
                             <ul className="list-disc ml-5 text-sm text-orange-800 space-y-1">
-                                <li>Rate: 10% commission on bookings attributed via partner links.</li>
+                                <li>Rate: 20% commission on bookings attributed via promoter links.</li>
                                 <li>Due date: Every Friday by 23:59 WIB.</li>
                                 <li>Keep a healthy account by paying on time; late payments may reduce visibility until settled.</li>
                             </ul>
                         </div>
                         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                             <h3 className="font-semibold text-gray-800 mb-1">What shows here</h3>
-                            <p className="text-sm text-gray-700">We will show your weekly outstanding commission summary here. For now, please keep your own record of bookings generated by partner links and pay the 10% by Friday.</p>
+                            <p className="text-sm text-gray-700">We will show your weekly outstanding commission summary here. For now, please keep your own record of bookings generated by promoter links and pay the 20% by Friday.</p>
                         </div>
                     </div>
                 );
@@ -1736,7 +1817,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                             <h3 className="text-md font-medium text-gray-800">{t?.pricingTitle || 'Pricing'}</h3>
                             <p className="text-xs text-gray-500 mt-1">Enter prices as: 345k for 345,000 or full amount like 400000</p>
                             
-                            {/* 100% Income Notice */}
+                            {/* Pricing Information Notice */}
                             <div className="mb-4 p-3 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg mt-2">
                                 <div className="flex items-start space-x-3">
                                     <div className="flex-shrink-0">
@@ -1746,11 +1827,11 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                     </div>
                                     <div className="flex-1">
                                         <p className="text-sm font-semibold text-green-800">
-                                            💰 100% Your Income
+                                            💰 Pricing Information
                                         </p>
-                                        <p className="text-sm text-green-700 mt-1">
-                                            These prices are for <strong>direct bookings from the home page</strong>. You keep <strong>100% of the income</strong> - no commission deducted!
-                                        </p>
+                                        <div className="text-sm text-gray-700 mt-1 space-y-1">
+                                            <p><strong>Direct bookings from home page:</strong> You keep <strong>100% of the income</strong></p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1811,128 +1892,32 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                     )}
                                 </div>
                             </div>
-                        </div>
-
-                        {/* Partners Special Pricing Section */}
-                        <div className="border-t border-gray-200 pt-4">
-                            <div className="flex items-center justify-between mb-3">
-                                <div>
-                                    <h3 className="text-md font-medium text-gray-800">Partners Menu Pricing</h3>
-                                    <p className="text-xs text-gray-500 mt-1">
-                                        Set special prices for partner-attributed guests
-                                    </p>
-                                </div>
-                                <label className="flex items-center gap-2 cursor-pointer">
-                                    <input 
-                                        type="checkbox" 
-                                        checked={useSamePricing}
-                                        onChange={(e) => handleUseSamePricingChange(e.target.checked)}
-                                        className="w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500"
-                                    />
-                                    <span className="text-xs text-gray-600">Same as regular</span>
-                                </label>
-                            </div>
                             
                             {/* Commission Notice */}
-                            <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                                 <div className="flex items-start space-x-3">
                                     <div className="flex-shrink-0">
-                                        <svg className="w-5 h-5 text-yellow-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.99-.833-2.732 0L3.732 16c-.77.833.19 2.5 1.732 2.5z" />
+                                        <svg className="w-5 h-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                         </svg>
                                     </div>
                                     <div className="flex-1">
-                                        <p className="text-sm font-semibold text-yellow-800">⚠️ Commission Information</p>
-                                        <p className="text-sm text-yellow-700 mt-1"><strong>10% commission</strong> is owed to Indastreet Partners on bookings attributed via partner links.</p>
-                                        <p className="text-xs text-yellow-600 mt-2 font-medium">Example: If you charge IDR 250K, you owe IDR 25K.</p>
-                                        <p className="text-xs text-green-700 mt-2 font-bold bg-green-100 px-2 py-1 rounded">💡 Pay weekly by Friday 23:59 WIB to keep a healthy account.</p>
+                                        <p className="text-sm font-semibold text-blue-800">ℹ️ Promoter Commission Information</p>
+                                        <p className="text-sm text-blue-700 mt-1">
+                                            <strong>20% commission</strong> is owed to Indastreet Promoters on bookings attributed via promoter links.
+                                        </p>
+                                        <p className="text-xs text-blue-600 mt-2 font-medium">
+                                            Example: If customer pays IDR 300K, you receive IDR 240K (promoter gets IDR 60K).
+                                        </p>
+                                        <p className="text-xs text-green-700 mt-2 font-bold bg-green-100 px-2 py-1 rounded inline-block">
+                                            💡 These same prices apply to all bookings - promoter commission is automatically calculated
+                                        </p>
                                     </div>
-                                </div>
-                            </div>
-                            
-                            <div className="grid grid-cols-3 gap-2">
-                                <div>
-                                <label className="block text-xs font-medium text-gray-900">{t['60min']}</label>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
-                                    <input 
-                                        type="text" 
-                                        value={useSamePricing ? formatPriceForDisplay(pricing['60']) : formatPriceForDisplay(hotelVillaPricing['60'])} 
-                                        onChange={e => handleHotelVillaPriceChange('60', e.target.value)} 
-                                        disabled={useSamePricing}
-                                        placeholder="365k"
-                                        className={`mt-1 block w-full pl-9 pr-2 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 font-mono ${
-                                            useSamePricing ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
-                                        }`}
-                                    />
-                                </div>
-                                {!useSamePricing && pricing['60'] > 0 && (
-                                    <p className="text-xs text-gray-500 mt-1">
-                                        Max: {formatPriceForDisplay(Math.floor(pricing['60'] * 1.2))} (Rp {Math.floor(pricing['60'] * 1.2).toLocaleString('id-ID')})
-                                    </p>
-                                )}
-                                {hotelVillaPricing['60'] > 0 && (
-                                    <p className="text-xs text-green-600 mt-1">
-                                        = Rp {hotelVillaPricing['60'].toLocaleString('id-ID')}
-                                    </p>
-                                )}
-                                </div>
-                                <div>
-                                <label className="block text-xs font-medium text-gray-900">{t['90min']}</label>
-                                    <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
-                                    <input 
-                                        type="text" 
-                                        value={useSamePricing ? formatPriceForDisplay(pricing['90']) : formatPriceForDisplay(hotelVillaPricing['90'])} 
-                                        onChange={e => handleHotelVillaPriceChange('90', e.target.value)} 
-                                        disabled={useSamePricing}
-                                        placeholder="480k"
-                                        className={`mt-1 block w-full pl-9 pr-2 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 font-mono ${
-                                            useSamePricing ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
-                                        }`}
-                                    />
-                                    </div>
-                                    {!useSamePricing && pricing['90'] > 0 && (
-                                        <p className="text-xs text-gray-500 mt-1">
-                                            Max: {formatPriceForDisplay(Math.floor(pricing['90'] * 1.2))} (Rp {Math.floor(pricing['90'] * 1.2).toLocaleString('id-ID')})
-                                        </p>
-                                    )}
-                                    {hotelVillaPricing['90'] > 0 && (
-                                        <p className="text-xs text-green-600 mt-1">
-                                            = Rp {hotelVillaPricing['90'].toLocaleString('id-ID')}
-                                        </p>
-                                    )}
-                                </div>
-                                <div>
-                                <label className="block text-xs font-medium text-gray-900">{t['120min']}</label>
-                                    <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
-                                    <input 
-                                        type="text" 
-                                        value={useSamePricing ? formatPriceForDisplay(pricing['120']) : formatPriceForDisplay(hotelVillaPricing['120'])} 
-                                        onChange={e => handleHotelVillaPriceChange('120', e.target.value)} 
-                                        disabled={useSamePricing}
-                                        placeholder="650k"
-                                        className={`mt-1 block w-full pl-9 pr-2 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 font-mono ${
-                                            useSamePricing ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
-                                        }`}
-                                    />
-                                    </div>
-                                    {!useSamePricing && pricing['120'] > 0 && (
-                                        <p className="text-xs text-gray-500 mt-1">
-                                            Max: {formatPriceForDisplay(Math.floor(pricing['120'] * 1.2))} (Rp {Math.floor(pricing['120'] * 1.2).toLocaleString('id-ID')})
-                                        </p>
-                                    )}
-                                    {hotelVillaPricing['120'] > 0 && (
-                                        <p className="text-xs text-green-600 mt-1">
-                                            = Rp {hotelVillaPricing['120'].toLocaleString('id-ID')}
-                                        </p>
-                                    )}
                                 </div>
                             </div>
                         </div>
 
-                        <div className="pt-4">
+                        <div className="pt-4 pb-32">
                             <Button onClick={handleSave} className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition-all">
                                 💾 Save Profile
                             </Button>
@@ -1943,9 +1928,9 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-20">
+        <div className="min-h-screen bg-gray-50 flex flex-col">
             {/* Header with Burger Menu */}
-            <header className="bg-white shadow-sm px-4 py-3 sticky top-0 z-40" data-page-header="true">
+            <header className="bg-white shadow-sm px-4 py-3 sticky top-0 z-40 flex-shrink-0" data-page-header="true">
                 <div className="max-w-7xl mx-auto flex justify-between items-center">
                     <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-3">
                         <span className="text-2xl">📍</span>
@@ -1984,236 +1969,384 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
 
             {/* Side Drawer */}
             {isSideDrawerOpen && (
-                <div className="fixed inset-0 z-50">
+                <div className="fixed inset-0" role="dialog" aria-modal="true" style={{ zIndex: 99999 }}>
                     {/* Overlay */}
                     <div 
-                        className="absolute inset-0 bg-black bg-opacity-50"
+                        className="absolute inset-0 bg-black bg-opacity-50 transition-opacity"
                         onClick={() => setIsSideDrawerOpen(false)}
                     ></div>
                     
-                    {/* Drawer */}
-                    <div className="absolute right-0 top-0 h-full w-80 bg-white shadow-xl">
-                        {/* Drawer Header */}
-                        <div className="bg-orange-500 px-6 py-4">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <h2 className="text-xl font-bold text-white">Menu</h2>
+                    {/* Drawer Panel */}
+                    <div 
+                        className="absolute right-0 top-0 bottom-0 w-[70%] sm:w-80 bg-white shadow-2xl flex flex-col transform transition-transform ease-in-out duration-300"
+                        style={{ zIndex: 99999 }}
+                    >
+                        {/* Header */}
+                        <div className="p-6 flex justify-between items-center border-b border-black">
+                            <h2 className="font-bold text-2xl">
+                                <span className="text-black">Inda</span>
+                                <span className="text-orange-500">Street</span>
+                            </h2>
+                            <button
+                                onClick={() => setIsSideDrawerOpen(false)}
+                                className="p-2 rounded-full transition-colors"
+                                aria-label="Close menu"
+                            >
+                                <X className="w-6 h-6 text-black" />
+                            </button>
+                        </div>
+
+                        {/* Scrollable Menu Content */}
+                        <nav className="flex-grow overflow-y-auto p-4">
+                            <div className="space-y-2">
+                                {/* DASHBOARD SECTION */}
+                                <div className="mb-6">
+                                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2">
+                                        Dashboard
+                                    </h3>
+                                    <div className="space-y-2">
+                                        <button
+                                            onClick={() => {
+                                                setActiveTab('profile');
+                                                setIsSideDrawerOpen(false);
+                                            }}
+                                            className={`flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 group transform hover:scale-105 ${
+                                                activeTab === 'profile' ? 'border-orange-500' : 'border-gray-300'
+                                            }`}
+                                        >
+                                            <div className={`p-2 rounded-lg ${activeTab === 'profile' ? 'bg-gradient-to-br from-orange-500 to-orange-600' : 'bg-gradient-to-br from-gray-400 to-gray-500'}`}>
+                                                <ColoredProfileIcon className="w-5 h-5 text-white" />
+                                            </div>
+                                            <div className="flex-grow">
+                                                <p className={`font-semibold transition-colors ${activeTab === 'profile' ? 'text-orange-600' : 'text-gray-800 group-hover:text-orange-600'}`}>
+                                                    Profile
+                                                </p>
+                                                <p className="text-xs text-gray-500">Manage your profile</p>
+                                            </div>
+                                        </button>
+
+                                        <button
+                                            onClick={() => {
+                                                setActiveTab('bookings');
+                                                setIsSideDrawerOpen(false);
+                                            }}
+                                            className={`flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 group transform hover:scale-105 ${
+                                                activeTab === 'bookings' ? 'border-blue-500' : 'border-gray-300'
+                                            }`}
+                                        >
+                                            <div className={`p-2 rounded-lg ${activeTab === 'bookings' ? 'bg-gradient-to-br from-blue-500 to-blue-600' : 'bg-gradient-to-br from-gray-400 to-gray-500'}`}>
+                                                <ColoredCalendarIcon className="w-5 h-5 text-white" />
+                                            </div>
+                                            <div className="flex-grow">
+                                                <p className={`font-semibold transition-colors ${activeTab === 'bookings' ? 'text-blue-600' : 'text-gray-800 group-hover:text-blue-600'}`}>
+                                                    Bookings
+                                                </p>
+                                                <p className="text-xs text-gray-500">View appointments</p>
+                                            </div>
+                                            {upcomingBookings.length > 0 && (
+                                                <span className="bg-orange-500 text-white text-xs rounded-full px-2.5 py-0.5 font-bold">
+                                                    {upcomingBookings.length}
+                                                </span>
+                                            )}
+                                        </button>
+
+                                        <button
+                                            onClick={() => {
+                                                setActiveTab('analytics');
+                                                setIsSideDrawerOpen(false);
+                                            }}
+                                            className={`flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 group transform hover:scale-105 ${
+                                                activeTab === 'analytics' ? 'border-purple-500' : 'border-gray-300'
+                                            }`}
+                                        >
+                                            <div className={`p-2 rounded-lg ${activeTab === 'analytics' ? 'bg-gradient-to-br from-purple-500 to-purple-600' : 'bg-gradient-to-br from-gray-400 to-gray-500'}`}>
+                                                <ColoredAnalyticsIcon className="w-5 h-5 text-white" />
+                                            </div>
+                                            <div className="flex-grow">
+                                                <p className={`font-semibold transition-colors ${activeTab === 'analytics' ? 'text-purple-600' : 'text-gray-800 group-hover:text-purple-600'}`}>
+                                                    Analytics
+                                                </p>
+                                                <p className="text-xs text-gray-500">View statistics</p>
+                                            </div>
+                                        </button>
+
+                                        <button
+                                            onClick={() => {
+                                                setActiveTab('hotelVilla');
+                                                setIsSideDrawerOpen(false);
+                                            }}
+                                            className={`flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 group transform hover:scale-105 ${
+                                                activeTab === 'hotelVilla' ? 'border-indigo-500' : 'border-gray-300'
+                                            }`}
+                                        >
+                                            <div className={`p-2 rounded-lg ${activeTab === 'hotelVilla' ? 'bg-gradient-to-br from-indigo-500 to-indigo-600' : 'bg-gradient-to-br from-gray-400 to-gray-500'}`}>
+                                                <ColoredHotelIcon className="w-5 h-5 text-white" />
+                                            </div>
+                                            <div className="flex-grow">
+                                                <p className={`font-semibold transition-colors ${activeTab === 'hotelVilla' ? 'text-indigo-600' : 'text-gray-800 group-hover:text-indigo-600'}`}>
+                                                    Indastreet Partners
+                                                </p>
+                                                <p className="text-xs text-gray-500">Partner management</p>
+                                            </div>
+                                        </button>
+                                    </div>
                                 </div>
-                                <button
-                                    onClick={() => setIsSideDrawerOpen(false)}
-                                    className="text-white hover:text-orange-200 transition-colors"
-                                >
-                                    <X size={24} />
-                                </button>
+
+                                {/* FEATURES SECTION */}
+                                <div className="mb-6">
+                                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2">
+                                        Features
+                                    </h3>
+                                    <div className="space-y-2">
+                                        <button
+                                            onClick={() => {
+                                                if (onNavigate) onNavigate('place-discount-system');
+                                                setIsSideDrawerOpen(false);
+                                            }}
+                                            className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-yellow-500 group transform hover:scale-105"
+                                        >
+                                            <div className="p-2 bg-gradient-to-br from-orange-400 to-yellow-500 rounded-lg flex items-center justify-center">
+                                                <span className="text-white text-sm font-bold">%</span>
+                                            </div>
+                                            <div className="flex-grow">
+                                                <p className="font-semibold text-gray-800 group-hover:text-yellow-600 transition-colors">
+                                                    Discount System
+                                                </p>
+                                                <p className="text-xs text-gray-500">Manage promotions</p>
+                                            </div>
+                                            <span className="bg-gradient-to-r from-orange-400 to-yellow-500 text-white text-xs px-2 py-1 rounded-full font-bold">
+                                                NEW
+                                            </span>
+                                        </button>
+
+                                        <button
+                                            onClick={() => {
+                                                setActiveTab('notifications');
+                                                setIsSideDrawerOpen(false);
+                                            }}
+                                            className={`flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 group transform hover:scale-105 ${
+                                                activeTab === 'notifications' ? 'border-red-500' : 'border-gray-300'
+                                            }`}
+                                        >
+                                            <div className={`p-2 rounded-lg ${activeTab === 'notifications' ? 'bg-gradient-to-br from-red-500 to-red-600' : 'bg-gradient-to-br from-gray-400 to-gray-500'}`}>
+                                                <ColoredBellIcon className="w-5 h-5 text-white" />
+                                            </div>
+                                            <div className="flex-grow">
+                                                <p className={`font-semibold transition-colors ${activeTab === 'notifications' ? 'text-red-600' : 'text-gray-800 group-hover:text-red-600'}`}>
+                                                    Notifications
+                                                </p>
+                                                <p className="text-xs text-gray-500">View alerts</p>
+                                            </div>
+                                            {(notifications || []).filter(n => !n.isRead).length > 0 && (
+                                                <span className="bg-orange-500 text-white text-xs rounded-full px-2.5 py-0.5 font-bold">
+                                                    {(notifications || []).filter(n => !n.isRead).length}
+                                                </span>
+                                            )}
+                                        </button>
+
+                                        <button
+                                            onClick={() => {
+                                                setActiveTab('discounts');
+                                                setIsSideDrawerOpen(false);
+                                            }}
+                                            className={`flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 group transform hover:scale-105 ${
+                                                activeTab === 'discounts' ? 'border-green-500' : 'border-gray-300'
+                                            }`}
+                                        >
+                                            <div className={`p-2 rounded-lg ${activeTab === 'discounts' ? 'bg-gradient-to-br from-green-500 to-green-600' : 'bg-gradient-to-br from-gray-400 to-gray-500'}`}>
+                                                <ColoredTagIcon className="w-5 h-5 text-white" />
+                                            </div>
+                                            <div className="flex-grow">
+                                                <p className={`font-semibold transition-colors ${activeTab === 'discounts' ? 'text-green-600' : 'text-gray-800 group-hover:text-green-600'}`}>
+                                                    Discounts
+                                                </p>
+                                                <p className="text-xs text-gray-500">Manage offers</p>
+                                            </div>
+                                        </button>
+                                        
+                                        {/* Discount Badge Management */}
+                                        {onNavigate && (
+                                            <button
+                                                onClick={() => {
+                                                    setIsSideDrawerOpen(false);
+                                                    onNavigate('placeDiscountBadge');
+                                                }}
+                                                className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-purple-500 group transform hover:scale-105"
+                                            >
+                                                <div className="p-2 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg">
+                                                    <ColoredTagIcon className="w-5 h-5 text-white" />
+                                                </div>
+                                                <div className="flex-grow">
+                                                    <p className="font-semibold text-gray-800 group-hover:text-purple-600 transition-colors">
+                                                        Discount Badges
+                                                    </p>
+                                                    <p className="text-xs text-gray-500">Badge management</p>
+                                                </div>
+                                            </button>
+                                        )}
+
+                                        {/* Verified Pro Badge */}
+                                        {onNavigate && (
+                                            <button
+                                                onClick={() => {
+                                                    setIsSideDrawerOpen(false);
+                                                    onNavigate('verifiedProBadge');
+                                                }}
+                                                className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-emerald-500 group transform hover:scale-105"
+                                            >
+                                                <div className="p-2 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg flex items-center justify-center">
+                                                    <span className="text-white text-sm font-bold">✓</span>
+                                                </div>
+                                                <div className="flex-grow">
+                                                    <p className="font-semibold text-gray-800 group-hover:text-emerald-600 transition-colors">
+                                                        Verified Pro Badge
+                                                    </p>
+                                                    <p className="text-xs text-gray-500">Get verified</p>
+                                                </div>
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* ACCOUNT SECTION */}
+                                <div className="mb-6">
+                                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2">
+                                        Account
+                                    </h3>
+                                    <div className="space-y-2">
+                                        <button
+                                            onClick={() => {
+                                                setActiveTab('membership');
+                                                setIsSideDrawerOpen(false);
+                                            }}
+                                            className={`flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 group transform hover:scale-105 ${
+                                                activeTab === 'membership' ? 'border-amber-500' : 'border-gray-300'
+                                            }`}
+                                        >
+                                            <div className={`p-2 rounded-lg ${activeTab === 'membership' ? 'bg-gradient-to-br from-amber-500 to-amber-600' : 'bg-gradient-to-br from-gray-400 to-gray-500'}`}>
+                                                <ColoredCrownIcon className="w-5 h-5 text-white" />
+                                            </div>
+                                            <div className="flex-grow">
+                                                <p className={`font-semibold transition-colors ${activeTab === 'membership' ? 'text-amber-600' : 'text-gray-800 group-hover:text-amber-600'}`}>
+                                                    Membership Plans
+                                                </p>
+                                                <p className="text-xs text-gray-500">Upgrade account</p>
+                                            </div>
+                                        </button>
+
+                                        <button
+                                            onClick={() => {
+                                                setIsSideDrawerOpen(false);
+                                                if (onNavigate) {
+                                                    onNavigate('placeTerms');
+                                                }
+                                            }}
+                                            className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-slate-500 group transform hover:scale-105"
+                                        >
+                                            <div className="p-2 bg-gradient-to-br from-slate-500 to-slate-600 rounded-lg">
+                                                <ColoredDocumentIcon className="w-5 h-5 text-white" />
+                                            </div>
+                                            <div className="flex-grow">
+                                                <p className="font-semibold text-gray-800 group-hover:text-slate-600 transition-colors">
+                                                    Terms & Conditions
+                                                </p>
+                                                <p className="text-xs text-gray-500">Legal terms</p>
+                                            </div>
+                                        </button>
+                                    </div>
+                                </div>
+
+                            {/* COIN REWARDS SECTION */}
+                            {onNavigate && (
+                                <div className="mb-6">
+                                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2">
+                                        Coin Rewards
+                                    </h3>
+                                    <div className="space-y-2">
+                                        <button
+                                            onClick={() => {
+                                                setIsSideDrawerOpen(false);
+                                                onNavigate('coin-history');
+                                            }}
+                                            className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-amber-500 group transform hover:scale-105"
+                                        >
+                                            <div className="p-2 bg-gradient-to-br from-amber-500 to-amber-600 rounded-lg">
+                                                <ColoredHistoryIcon className="w-5 h-5 text-white" />
+                                            </div>
+                                            <div className="flex-grow">
+                                                <p className="font-semibold text-gray-800 group-hover:text-amber-600 transition-colors">
+                                                    Coin History
+                                                </p>
+                                                <p className="text-xs text-gray-500">View coin transactions</p>
+                                            </div>
+                                        </button>
+
+                                        <button
+                                            onClick={() => {
+                                                setIsSideDrawerOpen(false);
+                                                onNavigate('coin-shop');
+                                            }}
+                                            className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-green-500 group transform hover:scale-105"
+                                        >
+                                            <div className="p-2 bg-gradient-to-br from-green-500 to-green-600 rounded-lg">
+                                                <ColoredCoinsIcon className="w-5 h-5 text-white" />
+                                            </div>
+                                            <div className="flex-grow">
+                                                <p className="font-semibold text-gray-800 group-hover:text-green-600 transition-colors">
+                                                    Coin Shop
+                                                </p>
+                                                <p className="text-xs text-gray-500">Redeem coins</p>
+                                            </div>
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* LOGOUT SECTION */}
+                            <div className="mb-6 pt-4 border-t border-gray-200">
+                                <div className="space-y-2">
+                                    <button
+                                        onClick={() => {
+                                            setIsSideDrawerOpen(false);
+                                            onLogout();
+                                        }}
+                                        className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-red-500 group transform hover:scale-105"
+                                    >
+                                        <div className="p-2 bg-gradient-to-br from-red-500 to-red-600 rounded-lg">
+                                            <LogOut className="w-5 h-5 text-white" />
+                                        </div>
+                                        <div className="flex-grow">
+                                            <p className="font-semibold text-gray-800 group-hover:text-red-600 transition-colors">
+                                                Log Out
+                                            </p>
+                                            <p className="text-xs text-gray-500">Sign out</p>
+                                        </div>
+                                    </button>
+                                </div>
                             </div>
                         </div>
-
-                        {/* Drawer Menu Items */}
-                        <div className="py-2">
-                            <button
-                                onClick={() => {
-                                    setActiveTab('profile');
-                                    setIsSideDrawerOpen(false);
-                                }}
-                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
-                                    activeTab === 'profile' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
-                                }`}
-                            >
-                                <ColoredProfileIcon className="w-6 h-6" />
-                                <span className="font-medium">Profile</span>
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setActiveTab('bookings');
-                                    setIsSideDrawerOpen(false);
-                                }}
-                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
-                                    activeTab === 'bookings' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
-                                }`}
-                            >
-                                <ColoredCalendarIcon className="w-6 h-6" />
-                                <span className="font-medium">Bookings</span>
-                                {upcomingBookings.length > 0 && (
-                                    <span className="ml-auto bg-orange-500 text-white text-xs rounded-full px-2.5 py-0.5 font-bold">
-                                        {upcomingBookings.length}
-                                    </span>
-                                )}
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setActiveTab('analytics');
-                                    setIsSideDrawerOpen(false);
-                                }}
-                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
-                                    activeTab === 'analytics' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
-                                }`}
-                            >
-                                <ColoredAnalyticsIcon className="w-6 h-6" />
-                                <span className="font-medium">Analytics</span>
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setActiveTab('hotelVilla');
-                                    setIsSideDrawerOpen(false);
-                                }}
-                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
-                                    activeTab === 'hotelVilla' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
-                                }`}
-                            >
-                                <ColoredHotelIcon className="w-6 h-6" />
-                                <span className="font-medium">Indastreet Partners</span>
-                            </button>
-                            <button
-                                onClick={() => {
-                                    if (onNavigate) onNavigate('place-discount-system');
-                                    setIsSideDrawerOpen(false);
-                                }}
-                                className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 border-transparent text-gray-700"
-                            >
-                                <div className="w-6 h-6 bg-gradient-to-br from-orange-400 to-yellow-500 rounded-lg flex items-center justify-center text-white text-sm font-bold">
-                                    %
-                                </div>
-                                <span className="font-medium">Discount System</span>
-                                <div className="ml-auto">
-                                    <span className="bg-gradient-to-r from-orange-400 to-yellow-500 text-white text-xs px-2 py-1 rounded-full font-bold">
-                                        NEW
-                                    </span>
-                                </div>
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setActiveTab('notifications');
-                                    setIsSideDrawerOpen(false);
-                                }}
-                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
-                                    activeTab === 'notifications' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
-                                }`}
-                            >
-                                <ColoredBellIcon className="w-6 h-6" />
-                                <span className="font-medium">Notifications</span>
-                                {(notifications || []).filter(n => !n.isRead).length > 0 && (
-                                    <span className="ml-auto bg-orange-500 text-white text-xs rounded-full px-2.5 py-0.5 font-bold">
-                                        {(notifications || []).filter(n => !n.isRead).length}
-                                    </span>
-                                )}
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setActiveTab('discounts');
-                                    setIsSideDrawerOpen(false);
-                                }}
-                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
-                                    activeTab === 'discounts' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
-                                }`}
-                            >
-                                <ColoredTagIcon className="w-6 h-6" />
-                                <span className="font-medium">Discounts</span>
-                            </button>
-                            
-                            {/* Discount Badge Management */}
-                            {onNavigate && (
-                                <button
-                                    onClick={() => {
-                                        setIsSideDrawerOpen(false);
-                                        onNavigate('placeDiscountBadge');
-                                    }}
-                                    className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-purple-50 transition-colors border-l-4 border-transparent hover:border-purple-500"
-                                >
-                                    <ColoredTagIcon className="w-6 h-6" />
-                                    <span className="font-medium">Discount Badges</span>
-                                </button>
-                            )}
-
-                            {/* Verified Pro Badge */}
-                            {onNavigate && (
-                                <button
-                                    onClick={() => {
-                                        setIsSideDrawerOpen(false);
-                                        onNavigate('verifiedProBadge');
-                                    }}
-                                    className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-emerald-50 transition-colors border-l-4 border-transparent hover:border-emerald-500"
-                                >
-                                    <div className="w-6 h-6 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg flex items-center justify-center text-white text-sm font-bold">✓</div>
-                                    <span className="font-medium">Verified Pro Badge</span>
-                                </button>
-                            )}
-                            
-                            <button
-                                onClick={() => {
-                                    setActiveTab('membership');
-                                    setIsSideDrawerOpen(false);
-                                }}
-                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
-                                    activeTab === 'membership' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
-                                }`}
-                            >
-                                <ColoredCrownIcon className="w-6 h-6" />
-                                <span className="font-medium">Membership Plans</span>
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setIsSideDrawerOpen(false);
-                                    if (onNavigate) {
-                                        onNavigate('placeTerms');
-                                    }
-                                }}
-                                className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 border-transparent hover:border-orange-500"
-                            >
-                                <ColoredDocumentIcon className="w-6 h-6" />
-                                <span className="font-medium">Terms & Conditions</span>
-                            </button>
-
-
-
-                            {/* Coin Rewards Menu Items */}
-                            {onNavigate && (
-                                <>
-                                    <button
-                                        onClick={() => {
-                                            setIsSideDrawerOpen(false);
-                                            onNavigate('coin-history');
-                                        }}
-                                        className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 border-transparent hover:border-orange-500"
-                                    >
-                                        <ColoredHistoryIcon className="w-6 h-6" />
-                                        <span className="font-medium">Coin History</span>
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            setIsSideDrawerOpen(false);
-                                            onNavigate('coin-shop');
-                                        }}
-                                        className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-green-50 transition-colors border-l-4 border-transparent hover:border-green-500"
-                                    >
-                                        <ColoredCoinsIcon className="w-6 h-6" />
-                                        <span className="font-medium">Coin Shop</span>
-                                    </button>
-                                </>
-                            )}
-
-                            {/* Divider */}
-                            <div className="my-2 border-t border-gray-200"></div>
-
-                            {/* Logout Button */}
-                            <button
-                                onClick={() => {
-                                    setIsSideDrawerOpen(false);
-                                    onLogout();
-                                }}
-                                className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-red-50 transition-colors text-red-600 border-l-4 border-transparent hover:border-red-500"
-                            >
-                                <LogOut className="w-5 h-5" />
-                                <span className="font-medium">Log Out</span>
-                            </button>
-                        </div>
-                    </div>
+                    </nav>
                 </div>
+            </div>
             )}
 
-            {/* Content Area */}
-            <main className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-6 pb-20">
-                {renderContent()}
+            {/* Content Area - with proper scrolling between header and footer */}
+            <main className="flex-1 overflow-y-auto">
+                <div className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-6 pb-24">
+                    {renderContent()}
+                </div>
             </main>
+
+            {/* Floating Membership Subscribe Button (Stripe) */}
+            {membershipPaymentLink && (
+                <div className="fixed right-4 bottom-24 sm:bottom-8 z-40">
+                    <CheckoutButton
+                        paymentLinkUrl={membershipPaymentLink}
+                        label={`Subscribe • ${membershipPriceDisplay}`}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-600 hover:bg-purple-700 text-white shadow-lg"
+                    />
+                </div>
+            )}
 
 
 
@@ -2225,6 +2358,15 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                 missingFields={validationMissingFields}
                 type="error"
             />
+            {membershipPaymentLink && (
+                <div className="fixed right-4 bottom-24 sm:bottom-8 z-40">
+                    <CheckoutButton
+                        paymentLinkUrl={membershipPaymentLink}
+                        label={`Subscribe • ${membershipPriceDisplay}`}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-600 hover:bg-purple-700 text-white shadow-lg"
+                    />
+                </div>
+            )}
         </div>
     );
 };

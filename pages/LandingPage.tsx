@@ -32,10 +32,11 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
     const [imageLoaded, setImageLoaded] = useState(false);
     // Require explicit user selection (no prefilled language)
     const [selectedLanguage, setSelectedLanguage] = useState<Language | null>(null);
-    const [mustSelectLanguage, setMustSelectLanguage] = useState(true);
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [locationReady, setLocationReady] = useState(false);
     const { setLanguage: setGlobalLanguage } = useLanguage();
     const [isDetectingLocation, setIsDetectingLocation] = useState(false);
+    const [detectedCountryCode, setDetectedCountryCode] = useState<string | undefined>(undefined);
+    const [detectedCountry, setDetectedCountry] = useState<string | undefined>(undefined);
     // PWA install hook
     const { requestInstall, isInstalled, isIOS, showIOSInstructions, setShowIOSInstructions } = usePWAInstall();
     
@@ -58,6 +59,18 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
         }
         console.log('  - Fallback text will be used for missing translations');
     }, [selectedLanguage, hasLanguage, translationsLoading, t]);
+
+    // Initialize default language from browser on first load
+    useEffect(() => {
+        try {
+            const saved = localStorage.getItem('app_language') as Language | null;
+            const browserLang = (navigator.language || 'en').toLowerCase();
+            const auto = (saved || (browserLang.startsWith('id') ? 'id' : 'en')) as Language;
+            setSelectedLanguage(auto);
+            setGlobalLanguage(auto as 'en' | 'id');
+            localStorage.setItem('app_language', auto);
+        } catch {}
+    }, [setGlobalLanguage]);
 
     // Effect to refresh translations when language changes
     useEffect(() => {
@@ -129,12 +142,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
             return;
         }
 
-        // Enforce explicit language selection
-        if (!selectedLanguage) {
-            console.warn('❌ Cannot enter app: language not selected');
-            setMustSelectLanguage(true);
-            return;
-        }
+        // Choose language automatically if not set
+        const lang: Language = (selectedLanguage || ((navigator.language || 'en').toLowerCase().startsWith('id') ? 'id' : 'en')) as Language;
         
         // Get comprehensive device information
         const deviceInfo = deviceService.getDeviceInfo();
@@ -161,14 +170,17 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
             
             // Automatically get user's GPS location with device optimization
             const userLocation = await locationService.requestLocationWithFallback();
+            setLocationReady(true);
             
             console.log('✅ Location detected:', userLocation);
             console.log('🚀 About to call onEnterApp with language:', selectedLanguage, 'and location:', userLocation);
             console.log('🚀 Current selectedLanguage state:', selectedLanguage);
             console.log('🚀 Current localStorage language:', localStorage.getItem('app_language'));
+            setDetectedCountryCode(userLocation.countryCode);
+            setDetectedCountry(userLocation.country);
             
             // Call the function immediately
-            await onEnterApp(selectedLanguage, userLocation);
+            await onEnterApp(lang, userLocation);
             console.log('✅ onEnterApp called successfully with language:', selectedLanguage);
 
             // Attempt PWA install prompt right after successful enter
@@ -191,7 +203,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
             
             console.log('📍 Using fallback location:', defaultLocation);
             try {
-                await onEnterApp(selectedLanguage, defaultLocation);
+                await onEnterApp(lang, defaultLocation);
                 console.log('✅ onEnterApp called successfully with fallback location');
                 try {
                     const installResult = await requestInstall();
@@ -213,6 +225,51 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
     const selectedLang = selectedLanguage
         ? (languages.find(lang => lang.code === selectedLanguage) || languages[0])
         : null;
+
+    const handleSetDeviceLocation = async () => {
+        if (isDetectingLocation) return;
+        setIsDetectingLocation(true);
+        try {
+            const loc = await locationService.requestLocationWithFallback();
+            console.log('✅ Device location set:', loc);
+            setDetectedCountryCode(loc.countryCode);
+            setDetectedCountry(loc.country);
+            setLocationReady(true);
+
+            // Determine language (use selected or browser-based default)
+            const lang: Language = (selectedLanguage || ((navigator.language || 'en').toLowerCase().startsWith('id') ? 'id' : 'en')) as Language;
+            try {
+                sessionStorage.setItem('show_language_prompt', '1');
+                sessionStorage.setItem('suggested_language', lang);
+            } catch {}
+            // Immediately enter app and navigate to Home with detected location
+            await onEnterApp(lang, loc);
+        } catch (e) {
+            console.warn('⚠️ Failed to set device location:', e);
+            setLocationReady(false);
+            // Fallback: enter app with default Jakarta location
+            try {
+                const fallback: UserLocation = { address: 'Jakarta, Indonesia', lat: -6.2088, lng: 106.8456 };
+                const lang: Language = (selectedLanguage || ((navigator.language || 'en').toLowerCase().startsWith('id') ? 'id' : 'en')) as Language;
+                try {
+                    sessionStorage.setItem('show_language_prompt', '1');
+                    sessionStorage.setItem('suggested_language', lang);
+                } catch {}
+                await onEnterApp(lang, fallback);
+            } catch (enterErr) {
+                console.error('❌ Failed to enter app with fallback location:', enterErr);
+            }
+        } finally {
+            setIsDetectingLocation(false);
+        }
+    };
+
+    const countryCodeToFlag = (code?: string) => {
+        if (!code || code.length !== 2) return '🌐';
+        const cc = code.toUpperCase();
+        const A = 0x1F1E6; // Regional Indicator Symbol Letter A
+        return String.fromCodePoint(A + (cc.charCodeAt(0) - 65)) + String.fromCodePoint(A + (cc.charCodeAt(1) - 65));
+    };
 
     return (
         <div className="relative min-h-screen w-full flex overflow-hidden">
@@ -239,127 +296,18 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
                 <div className="w-full max-w-sm sm:max-w-md px-2 space-y-3 sm:space-y-4">
                     <h2 className="text-sm sm:text-base lg:text-lg font-semibold mb-3">{t('landing.getStarted') || 'Get Started'}</h2>
                     
-                    {/* Language Dropdown */}
-                    <div className="relative">
-                        <label className="block text-xs sm:text-sm font-medium mb-2 text-left">{t('landing.selectLanguage') || 'Select Language'}</label>
-                        <button
-                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                            className="w-full bg-black text-white rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between hover:bg-gray-900 transition-colors shadow-lg border border-gray-800"
-                        >
-                            <div className="flex items-center gap-2 sm:gap-3">
-                                <span className="text-xl sm:text-2xl w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center bg-orange-600 text-white rounded-full">
-                                    {selectedLang ? selectedLang.flag : '🟠'}
-                                </span>
-                                <span className="font-medium text-sm sm:text-base">
-                                    {selectedLang ? selectedLang.name : (t('landing.selectLanguage') || 'Select Language')}
-                                </span>
-                            </div>
-                            <svg
-                                className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </button>
-
-                        {/* Dropdown Menu */}
-                        {isDropdownOpen && (
-                            <>
-                                {/* Backdrop to close dropdown when clicking outside */}
-                                <div 
-                                    className="fixed inset-0 z-40" 
-                                    onClick={() => {
-                                        console.log('Dropdown backdrop clicked - closing dropdown');
-                                        setIsDropdownOpen(false);
-                                    }}
-                                />
-                                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-2xl max-h-64 overflow-y-auto z-50">
-                                    {languages.map((lang) => (
-                                        <button
-                                            key={lang.code}
-                                            onClick={() => {
-                                                console.log('🌐 Language selected in dropdown:', lang.name, '→', lang.code);
-                                                console.log('🌐 Previous selectedLanguage was:', selectedLanguage);
-                                                const newLanguage = lang.code as Language;
-                                                setSelectedLanguage(newLanguage);
-                                                setMustSelectLanguage(false);
-                                                setGlobalLanguage(newLanguage as 'en' | 'id');
-                                                
-                                                // Save to localStorage for persistence
-                                                try {
-                                                    localStorage.setItem('app_language', newLanguage);
-                                                    console.log('🌐 ✅ Saved to localStorage:', newLanguage);
-                                                } catch (error) {
-                                                    console.warn('❌ Failed to save language to localStorage:', error);
-                                                }
-                                                
-                                                // Activate VS Code Google Translate for selected language
-                                                vscodeTranslateService.activateOnLanguageChange(newLanguage as 'en' | 'id');
-                                                
-                                                // Also call the parent's language select handler
-                                                if (onLanguageSelect) {
-                                                    console.log('🌐 ✅ Calling parent onLanguageSelect with:', newLanguage);
-                                                    onLanguageSelect(newLanguage);
-                                                } else {
-                                                    console.warn('🌐 ❌ No onLanguageSelect prop provided!');
-                                                }
-                                                
-                                                setIsDropdownOpen(false);
-                                            }}
-                                            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3 hover:bg-orange-50 transition-colors text-left"
-                                        >
-                                            <span className="text-xl sm:text-2xl w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center bg-orange-50 rounded-full">
-                                                {lang.flag}
-                                            </span>
-                                            <span className="text-gray-800 font-medium text-sm sm:text-base">{lang.name}</span>
-                                            {lang.code === selectedLanguage && (
-                                                <svg className="w-5 h-5 ml-auto text-orange-500" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                                </svg>
-                                            )}
-                                        </button>
-                                    ))}
-                                </div>
-                            </>
-                        )}
-                        {/* Require selection message */}
-                        {mustSelectLanguage && (
-                            <p className="mt-2 text-xs text-orange-300 text-left">Please select your language to continue.</p>
-                        )}
-                    </div>
-
-                    {/* Enter App Button */}
+                    {/* View Massage Therapists: sets location then navigates to Home */}
                     <Button
                         type="button"
-                        onClick={(e) => {
-                            console.log('🔘 Enter button CLICKED event triggered!');
-                            console.log('Event:', e);
-                            console.log('Dropdown open?', isDropdownOpen);
-                            
-                            // Prevent event bubbling to avoid conflicts
-                            e.preventDefault();
-                            e.stopPropagation();
-                            
-                            // Close dropdown if open but don't let it interfere with navigation
-                            if (isDropdownOpen) {
-                                console.log('⚠️ Dropdown is open, closing it...');
-                                setIsDropdownOpen(false);
-                            }
-                            
-                            // Always proceed with navigation regardless of dropdown state
-                            console.log('🚀 Proceeding with handleEnterApp...');
-                            handleEnterApp();
-                        }}
+                        onClick={handleSetDeviceLocation}
                         variant="primary"
-                        disabled={isDetectingLocation || !selectedLanguage}
-                        className="!py-2.5 sm:!py-4 !text-base sm:!text-lg font-bold relative z-10"
+                        disabled={isDetectingLocation}
+                        className="!py-2.5 sm:!py-3 !text-sm sm:!text-base font-semibold w-[240px] sm:w-[260px] mx-auto"
                     >
                         <div className="flex items-center justify-center gap-2">
                             {isDetectingLocation ? (
                                 <>
-                                    <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <svg className="animate-spin -ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                     </svg>
@@ -367,14 +315,21 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
                                 </>
                             ) : (
                                 <>
-                                    {t('landing.enter') || 'Enter'}
-                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                                    </svg>
+                                    {'View Massage Therapists'}
                                 </>
                             )}
                         </div>
                     </Button>
+
+                    {/* Detected location indicator */}
+                    {detectedCountryCode && (
+                        <div className="flex items-center justify-center gap-2 mt-2 text-sm text-white/90">
+                            <span className="text-lg" aria-label={`Detected ${detectedCountry || 'country'}`}>{countryCodeToFlag(detectedCountryCode)}</span>
+                            <span>{detectedCountry || detectedCountryCode}</span>
+                        </div>
+                    )}
+
+                    {/* Removed separate Enter button per request */}
                 </div>
                 <PWAInstallIOSModal
                     visible={

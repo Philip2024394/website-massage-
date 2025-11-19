@@ -859,8 +859,15 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
                     <span className="text-orange-500">Street</span>
                 </h2>
                 <p className="text-gray-600 text-base max-w-2xl mx-auto">
-                    Let's Cash in your coins for awesome products dispatched within 48 hours. Delivery times may vary across Indonesia
+                    {typeof t === 'function' 
+                        ? t('coinShop.header.description') 
+                        : "Let's Cash in your coins for awesome products dispatched within 48 hours. Delivery times may vary across Indonesia"}
                 </p>
+                <div className="text-xs text-gray-600 mt-2 max-w-2xl mx-auto">
+                    {typeof t === 'function' 
+                        ? t('coinShop.notice.internationalShipping') 
+                        : 'For countries outside Indonesia, recipients pay postal costs for cash-in gifts at local postal rates. Delivery times vary by destination.'}
+                </div>
                 <div className="text-xs text-gray-500 mt-2">
                     By cashing in, you agree to our
                     {' '}
@@ -956,6 +963,11 @@ const CoinShopPage: React.FC<CoinShopPageProps> = ({
                         </div>
 
                         <div className="border-t border-gray-200 pt-4 mb-4">
+                            <div className="mb-3 rounded-lg border border-orange-200 bg-orange-50 p-3 text-xs text-orange-700">
+                                {typeof t === 'function' 
+                                    ? t('coinShop.notice.internationalShipping') 
+                                    : 'For countries outside Indonesia, recipients pay postal costs for cash-in gifts at local postal rates. Delivery times vary by destination.'}
+                            </div>
                             <h3 className="font-semibold text-gray-800 mb-3">Delivery Information</h3>
                             <div className="space-y-4">
                                 <div>

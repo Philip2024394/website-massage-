@@ -5,7 +5,7 @@ import { homeTranslations } from './home';
 import { dashboardTranslations } from './dashboard';
 
 type LangDict = Record<string, any>;
-type Translations = { en: LangDict; id: LangDict };
+type Translations = { en: LangDict; id: LangDict } & Record<string, LangDict>;
 
 // Function to deep merge translation objects
 function mergeTranslations(...translationObjects: Translations[]): Translations {
@@ -51,6 +51,15 @@ translations.en.registrationChoice = {
 };
 translations.en.app = {
   mapsApiKeyWarning: 'Google Maps API key is missing. Please configure it in the Admin Dashboard to enable location features.',
+};
+// Coin shop notices
+translations.en.coinShop = {
+  header: {
+    description: "Let's cash in your coins for awesome products dispatched within 48 hours. Delivery times may vary across Indonesia.",
+  },
+  notice: {
+    internationalShipping: 'For countries outside Indonesia, recipients pay postal costs for cash-in gifts at local postal rates. Delivery times vary by destination.'
+  }
 };
 translations.en.membershipPage = {
   title: 'Choose Membership',
@@ -298,6 +307,126 @@ translations.id.registrationChoice = {
   therapistButton: 'Saya Terapis',
   placeButton: 'Saya Tempat Pijat',
 };
+
+// Seed additional languages with minimal UI labels (fallback to English for others)
+translations['zh-CN'] = translations['zh-CN'] || {};
+translations['ru'] = translations['ru'] || {};
+translations['ja'] = translations['ja'] || {};
+translations['ko'] = translations['ko'] || {};
+
+// Minimal UI namespace for language modal and basic labels
+const uiCommon = {
+  en: {
+    ui: {
+      language: 'Language',
+      recommended: 'Recommended Languages',
+      selectLanguage: 'Select language',
+      continue: 'Continue',
+      notNow: 'Not now',
+      names: {
+        en: 'English',
+        id: 'Bahasa Indonesia',
+        'zh-CN': '简体中文',
+        ru: 'Русский',
+        ja: '日本語',
+        ko: '한국어'
+      }
+    }
+  },
+  id: {
+    ui: {
+      language: 'Bahasa',
+      recommended: 'Bahasa yang Disarankan',
+      selectLanguage: 'Pilih bahasa',
+      continue: 'Lanjut',
+      notNow: 'Nanti saja',
+      names: {
+        en: 'English',
+        id: 'Bahasa Indonesia',
+        'zh-CN': '简体中文',
+        ru: 'Русский',
+        ja: '日本語',
+        ko: '한국어'
+      }
+    }
+  },
+  'zh-CN': {
+    ui: {
+      language: '语言',
+      recommended: '推荐语言',
+      selectLanguage: '选择语言',
+      continue: '继续',
+      notNow: '稍后',
+      names: {
+        en: 'English',
+        id: '印尼语',
+        'zh-CN': '简体中文',
+        ru: '俄语',
+        ja: '日语',
+        ko: '韩语'
+      }
+    }
+  },
+  ru: {
+    ui: {
+      language: 'Язык',
+      recommended: 'Рекомендуемые языки',
+      selectLanguage: 'Выберите язык',
+      continue: 'Продолжить',
+      notNow: 'Не сейчас',
+      names: {
+        en: 'Английский',
+        id: 'Индонезийский',
+        'zh-CN': 'Китайский (упрощенный)',
+        ru: 'Русский',
+        ja: 'Японский',
+        ko: 'Корейский'
+      }
+    }
+  },
+  ja: {
+    ui: {
+      language: '言語',
+      recommended: 'おすすめの言語',
+      selectLanguage: '言語を選択',
+      continue: '続行',
+      notNow: '後で',
+      names: {
+        en: '英語',
+        id: 'インドネシア語',
+        'zh-CN': '簡体字中国語',
+        ru: 'ロシア語',
+        ja: '日本語',
+        ko: '韓国語'
+      }
+    }
+  },
+  ko: {
+    ui: {
+      language: '언어',
+      recommended: '추천 언어',
+      selectLanguage: '언어 선택',
+      continue: '계속',
+      notNow: '나중에',
+      names: {
+        en: '영어',
+        id: '인도네시아어',
+        'zh-CN': '중국어(간체)',
+        ru: '러시아어',
+        ja: '일본어',
+        ko: '한국어'
+      }
+    }
+  }
+} as Record<string, any>;
+
+// Merge minimal UI translations into each language bucket
+translations.en = { ...translations.en, ...uiCommon.en };
+translations.id = { ...translations.id, ...uiCommon.id };
+translations['zh-CN'] = { ...(translations['zh-CN'] || {}), ...(uiCommon['zh-CN'] || {}) };
+translations['ru'] = { ...(translations['ru'] || {}), ...(uiCommon['ru'] || {}) };
+translations['ja'] = { ...(translations['ja'] || {}), ...(uiCommon['ja'] || {}) };
+translations['ko'] = { ...(translations['ko'] || {}), ...(uiCommon['ko'] || {}) };
 translations.id.app = {
   mapsApiKeyWarning: 'Kunci API Google Maps tidak ada. Silakan konfigurasi di Admin Dashboard untuk mengaktifkan fitur lokasi.',
 };
@@ -310,6 +439,15 @@ translations.id.membershipPage = {
   oneYear: '1 Tahun - Rp 800,000',
   contactAdmin: 'Silakan hubungi admin kami di {number} untuk menyelesaikan pembayaran.',
   whatsappButton: 'Hubungi Admin',
+};
+// Coin shop notices (ID)
+translations.id.coinShop = {
+  header: {
+    description: 'Tukar koin Anda dengan produk menarik yang dikirim dalam 48 jam. Waktu pengiriman dapat berbeda di seluruh Indonesia.',
+  },
+  notice: {
+    internationalShipping: 'Untuk negara di luar Indonesia, biaya pos untuk hadiah penukaran ditanggung penerima sesuai tarif pos setempat. Waktu pengiriman bervariasi tergantung tujuan.'
+  }
 };
 translations.id.bookingPage = {
   title: 'Buat Janji',

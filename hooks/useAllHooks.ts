@@ -145,8 +145,31 @@ export const useAllHooks = () => {
 
     // Local database handlers removed - using Appwrite only
     
-    // Provider/Agent handlers removed with Agent/Hotel/Villa features.
-    const providerAgentHandlers = {} as any;
+    // Provider/Agent handlers 
+    const providerAgentHandlers = {
+        handleSavePlace: async (placeData: any): Promise<void> => {
+            try {
+                console.log('🔄 handleSavePlace called - refreshing from Appwrite:', placeData.id);
+                
+                // Always refresh places data from Appwrite after saving
+                // This ensures the home directory and all components show the latest data
+                const { places: freshPlaces } = await dataFetching.fetchPublicData();
+                state.setPlaces(freshPlaces);
+                console.log('✅ Refreshed places from Appwrite database, total:', freshPlaces.length);
+                
+                // Log the saved place to verify it's in the data
+                const savedPlace = freshPlaces.find((p: any) => p.id === placeData.id);
+                if (savedPlace) {
+                    console.log('✅ Confirmed saved place appears in directory:', savedPlace.name);
+                } else {
+                    console.log('⚠️ Saved place not yet visible in directory - may take a moment to sync');
+                }
+            } catch (error) {
+                console.error('❌ Failed to refresh places after save:', error);
+                // Don't throw - the save was successful even if refresh failed
+            }
+        }
+    };
     
     // ALWAYS call footer navigation in the same order
     const footerNav = useFooterNavigation({

@@ -1,6 +1,8 @@
 import { account, databases, DATABASE_ID, COLLECTIONS } from './appwrite';
+import { APPWRITE_CONFIG } from './appwrite.config.ts';
 import { ID } from 'appwrite';
 import { getRandomTherapistImage } from '../utils/therapistImageUtils';
+import { getCurrencyForCountry } from '../utils/currency';
 
 export interface AuthResponse {
     success: boolean;
@@ -76,6 +78,17 @@ export const therapistAuth = {
                 .slice(0, 12);
             const hasReferral = !!normalizedAgentCode;
 
+            // Determine country/currency from current app location (if available)
+            let countryCode = 'ID';
+            try {
+                const raw = localStorage.getItem('app_user_location');
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (parsed?.countryCode) countryCode = String(parsed.countryCode).toUpperCase();
+                }
+            } catch {}
+            const currencyCode = getCurrencyForCountry(countryCode);
+
             // Prepare a conservative payload. We'll auto-prune unknown attributes on error.
             const basePayload: any = {
                 id: therapistId,
@@ -88,6 +101,7 @@ export const therapistAuth = {
                 price60: '100',
                 price90: '150',
                 price120: '200',
+                // Availability status must match Appwrite enum: (available|busy|offline)
                 status: 'available',
                 isLive: true,
                 hourlyRate: 100,
@@ -111,7 +125,10 @@ export const therapistAuth = {
                 referralCampaignId: '',
                 bookingsCount: 0,
                 membershipRenewalsCount: 0,
-                agentAttributionLocked: false
+                agentAttributionLocked: false,
+                // Optional geo/currency context
+                countryCode,
+                currency: currencyCode
             };
 
             async function createWithPruning(payload: any): Promise<any> {
@@ -162,8 +179,10 @@ export const therapistAuth = {
                     price60: '100',
                     price90: '150',
                     price120: '200',
+                    // Minimal fallback keeps required enum lowercase
                     status: 'available',
-                    isLive: true
+                    isLive: true,
+                    coordinates: JSON.stringify({ lat: 0, lng: 0 })
                 };
                 return databases.createDocument(
                     DATABASE_ID,
@@ -255,6 +274,16 @@ export const placeAuth = {
             const generatedPlaceId = ID.unique();
             
             console.log('🏢 Creating massage place with required attributes only...');
+            // Determine country/currency from current app location (if available)
+            let countryCode = 'ID';
+            try {
+                const raw = localStorage.getItem('app_user_location');
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (parsed?.countryCode) countryCode = String(parsed.countryCode).toUpperCase();
+                }
+            } catch {}
+            const currencyCode = getCurrencyForCountry(countryCode);
             
             // Referral capture for places as well
             let capturedCode = '';
@@ -270,19 +299,36 @@ export const placeAuth = {
 
             const basePayload: any = {
                 id: generatedPlaceId,
-                placeId: generatedPlaceId,
+                therapistId: generatedPlaceId, // Required field
                 name: email.split('@')[0],
-                category: 'massage-place',
                 email,
                 password: '',
+                // Required schema fields
+                specialization: 'Massage Place',
+                yearsOfExperience: 5,
+                isLicensed: true,
+                hourlyRate: 100,
+                hotelId: generatedPlaceId,
+                // Pricing
                 pricing: JSON.stringify({ '60': 100, '90': 150, '120': 200 }),
+                price60: '100',
+                price90: '150',
+                price120: '200',
                 location: 'Location pending setup',
-                status: 'Closed',
+                // Normalize: status uses lowercase, availability uses capitalized enum
+                status: 'available',
+                availability: 'Available',
                 isLive: false,
+                isOnline: true,
                 openingTime: '09:00',
                 closingTime: '21:00',
-                coordinates: [106.8456, -6.2088],
-                hotelId: '',
+                coordinates: JSON.stringify({ lat: 0, lng: 0 }),
+                description: '',
+                mainImage: '',
+                profilePicture: '',
+                whatsappNumber: '',
+                massageTypes: '',
+                languages: '',
                 // Referral/Attribution fields (pruned automatically if schema doesn't allow)
                 agentCode: normalizedAgentCode,
                 referralSource: hasReferral ? 'agent' : 'direct',
@@ -292,7 +338,10 @@ export const placeAuth = {
                 referralCampaignId: '',
                 bookingsCount: 0,
                 membershipRenewalsCount: 0,
-                agentAttributionLocked: false
+                agentAttributionLocked: false,
+                // Optional geo/currency context
+                countryCode,
+                currency: currencyCode
             };
 
             async function createPlaceWithPruning(payload: any): Promise<any> {
@@ -302,13 +351,43 @@ export const placeAuth = {
                 while (attempt < maxAttempts) {
                     try {
                         return await databases.createDocument(
-                            DATABASE_ID,
-                            COLLECTIONS.PLACES,
+                            APPWRITE_CONFIG.databaseId,
+                            APPWRITE_CONFIG.collections.places,
                             generatedPlaceId,
                             current
                         );
                     } catch (e: any) {
                         const msg: string = e?.message || e?.response?.message || '';
+                        console.error('[Place Sign-Up] Attempt', attempt + 1, 'failed:', msg);
+                        console.error('[Place Sign-Up] Current payload keys:', Object.keys(current));
+                        console.error('[Place Sign-Up] Coordinates value:', current.coordinates);
+                        
+                        // Handle missing or invalid coordinates
+                        if (/Missing required attribute[:\s]*"?coordinates"?/i.test(msg) || /coordinates/i.test(msg)) {
+                            console.warn('[Place Sign-Up] Coordinates error detected, trying alternatives...');
+                            
+                            // Try sequence of fixes
+                            if (current.coordinates === JSON.stringify({ lat: 0, lng: 0 })) {
+                                // Try empty string
+                                current.coordinates = '';
+                                console.warn('[Place Sign-Up] Trying empty string for coordinates');
+                                attempt++;
+                                continue;
+                            } else if (current.coordinates === '') {
+                                // Try removing it entirely
+                                delete current.coordinates;
+                                console.warn('[Place Sign-Up] Removing coordinates entirely');
+                                attempt++;
+                                continue;
+                            } else if (!current.hasOwnProperty('coordinates')) {
+                                // Add it back as JSON string
+                                current.coordinates = JSON.stringify({ lat: 0, lng: 0 });
+                                console.warn('[Place Sign-Up] Adding coordinates back as JSON string');
+                                attempt++;
+                                continue;
+                            }
+                        }
+                        
                         const m = /Unknown attribute[:\s]*"?([A-Za-z0-9_\-]+)"?/i.exec(msg);
                         if (m && m[1] && current.hasOwnProperty(m[1])) {
                             const badKey = m[1];
@@ -317,36 +396,41 @@ export const placeAuth = {
                             attempt++;
                             continue;
                         }
-                        if (/Invalid type/i.test(msg)) {
-                            if (/coordinates/i.test(msg)) {
-                                // Try stringified coordinates if array rejected
-                                current.coordinates = Array.isArray(current.coordinates)
-                                    ? JSON.stringify({ lat: 0, lng: 0 })
-                                    : current.coordinates;
-                                attempt++;
-                                continue;
-                            }
-                            if (/pricing/i.test(msg)) {
-                                current.pricing = typeof current.pricing === 'string' ? current.pricing : JSON.stringify(current.pricing);
-                                attempt++;
-                                continue;
-                            }
+                        
+                        if (/Invalid type/i.test(msg) && /pricing/i.test(msg)) {
+                            current.pricing = typeof current.pricing === 'string' ? current.pricing : JSON.stringify(current.pricing);
+                            attempt++;
+                            continue;
                         }
+                        
+                        console.error('[Place Sign-Up] All attempts failed, throwing error');
                         throw e;
                     }
                 }
                 const minimal: any = {
                     id: generatedPlaceId,
-                    placeId: generatedPlaceId,
+                    therapistId: generatedPlaceId,
                     name: email.split('@')[0],
-                    category: 'massage-place',
                     email,
-                    status: 'Closed',
-                    isLive: false
+                    specialization: 'Massage Place',
+                    yearsOfExperience: 5,
+                    isLicensed: true,
+                    hourlyRate: 100,
+                    hotelId: generatedPlaceId,
+                    pricing: JSON.stringify({ '60': 100, '90': 150, '120': 200 }),
+                    price60: '100',
+                    price90: '150',
+                    price120: '200',
+                    location: 'Location pending',
+                    status: 'available',
+                    availability: 'Available',
+                    isLive: false,
+                    isOnline: true,
+                    coordinates: JSON.stringify({ lat: 0, lng: 0 })
                 };
                 return databases.createDocument(
-                    DATABASE_ID,
-                    COLLECTIONS.PLACES,
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.places,
                     generatedPlaceId,
                     minimal
                 );
@@ -378,8 +462,8 @@ export const placeAuth = {
             
             try {
                 const places = await databases.listDocuments(
-                    DATABASE_ID,
-                    COLLECTIONS.PLACES
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.places
                 );
                 
                 console.log('📊 Total places in database:', places.documents.length);
@@ -397,39 +481,54 @@ export const placeAuth = {
                     
                     const placeData = {
                         id: generatedPlaceId,
-                        placeId: generatedPlaceId,
+                        therapistId: generatedPlaceId,
                         name: email.split('@')[0],
-                        category: 'massage-place',
                         email,
                         password: '',
+                        specialization: 'Massage Place',
+                        yearsOfExperience: 5,
+                        isLicensed: true,
+                        hourlyRate: 100,
+                        hotelId: generatedPlaceId,
                         pricing: JSON.stringify({ '60': 100, '90': 150, '120': 200 }),
+                        price60: '100',
+                        price90: '150',
+                        price120: '200',
                         location: 'Location pending setup',
-                        status: 'Closed',
+                        status: 'available',
+                        availability: 'Available',
                         isLive: false,
+                        isOnline: true,
                         openingTime: '09:00',
                         closingTime: '21:00',
-                        coordinates: [106.8456, -6.2088],
-                        hotelId: '',
+                        coordinates: JSON.stringify({ lat: 0, lng: 0 }),
+                        description: '',
+                        mainImage: '',
+                        profilePicture: '',
+                        whatsappNumber: '',
+                        massageTypes: '',
+                        languages: ''
                     };
                     
                     const newPlace = await databases.createDocument(
-                        DATABASE_ID,
-                        COLLECTIONS.PLACES,
+                        APPWRITE_CONFIG.databaseId,
+                        APPWRITE_CONFIG.collections.places,
                         generatedPlaceId,
                         placeData
                     );
                     
-                    console.log('✅ Created place profile:', newPlace.$id);
-                    return { success: true, userId: user.$id, documentId: newPlace.$id };
+                    console.log('✅ Created place profile:', newPlace.$id, 'with place ID:', generatedPlaceId);
+                    return { success: true, userId: generatedPlaceId, documentId: newPlace.$id };
                 }
                 
-                console.log('✅ Found place profile:', place.$id);
-                return { success: true, userId: user.$id, documentId: place.$id };
+                console.log('✅ Found existing place profile:', place.$id, 'with place ID:', place.id);
+                return { success: true, userId: place.id, documentId: place.$id };
             } catch (dbError: any) {
                 console.error('Database error during place lookup:', dbError);
-                // If database lookup fails, still allow login but with user ID
-                console.log('⚠️ Proceeding with auth-only login');
-                return { success: true, userId: user.$id, documentId: user.$id };
+                // If database lookup fails, create a basic place ID from email
+                console.log('⚠️ Database lookup failed, generating place ID from email');
+                const fallbackPlaceId = email.replace('@', '_').replace(/[^a-zA-Z0-9_]/g, '');
+                return { success: true, userId: fallbackPlaceId, documentId: user.$id };
             }
         } catch (error: any) {
             console.error('Place sign in error:', error);

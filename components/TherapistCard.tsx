@@ -6,6 +6,7 @@ import { notificationService } from '../lib/appwriteService';
 import { getRandomTherapistImage } from '../utils/therapistImageUtils';
 import { getDisplayRating, getDisplayReviewCount, formatRating } from '../utils/ratingUtils';
 import DistanceDisplay from './DistanceDisplay';
+import { formatAmountForUser, detectUserCurrency, normalizeIdrAmount } from '../utils/currency';
 import BookingConfirmationPopup from './BookingConfirmationPopup';
 import BusyCountdownTimer from './BusyCountdownTimer';
 
@@ -292,27 +293,10 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     }
     const massageTypes = parseMassageTypes(therapist.massageTypes) || [];
     
-    // Helper function to format price in 4-character format: "280k"
-    const formatPrice = (price: number | string): string => {
-        const numPrice = typeof price === 'string' ? parseFloat(price) : price;
-        
-        if (!numPrice || numPrice === 0 || isNaN(numPrice)) {
-            return "Contact"; // Show "Contact" instead of "0k" when no price is set
-        }
-        
-        // Convert to thousands and ensure 3-digit format (100-999)
-        let priceInThousands = Math.round(numPrice / 1000);
-        
-        // Ensure 3-digit display (100k-999k range)
-        if (priceInThousands < 100) {
-            priceInThousands = 100; // Minimum 100k
-        } else if (priceInThousands > 999) {
-            priceInThousands = 999; // Maximum 999k for 4-char display
-        }
-        
-        // Always return exactly 4 characters: 3 digits + "k"
-        return `${priceInThousands}k`;
-    };
+    // Currency/country detection for amount display
+    const providerCountryCode = (therapist as any).countryCode as string | undefined;
+    const { countryCode: userCountryCode } = typeof window !== 'undefined' ? detectUserCurrency() : { countryCode: 'ID' } as any;
+    const currencyCountryCode = (providerCountryCode && providerCountryCode.length >= 2) ? providerCountryCode : userCountryCode;
     
     // Get main image from therapist data - use mainImage for background, profilePicture for overlay
     const mainImage = (therapist as any).mainImage;
@@ -856,19 +840,18 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         : 'bg-gray-100 border-gray-200'
                 }`}>
                     <p className="text-gray-600 text-xs mb-1">60 min</p>
-                    {isDiscountActive(therapist) ? (
-                        <>
-                            {/* Discounted price - what customer will actually pay */}
-                            <p className="font-bold text-gray-800 text-sm leading-tight">
-                                Rp {formatPrice(Math.round(Number(pricing["60"]) * (1 - (therapist.discountPercentage || 0) / 100)))}
-                            </p>
-
-                        </>
-                    ) : (
-                        <p className="font-bold text-gray-800 text-sm leading-tight">
-                            Rp {formatPrice(Number(pricing["60"]))}
-                        </p>
-                    )}
+                    {(() => {
+                        const baseIdr = normalizeIdrAmount(Number(pricing["60"]));
+                        const discountedIdr = isDiscountActive(therapist)
+                          ? Math.round(baseIdr * (1 - (therapist.discountPercentage || 0) / 100))
+                          : baseIdr;
+                        if (!discountedIdr) return <p className="font-bold text-gray-800 text-sm leading-tight">Contact</p>;
+                        return (
+                          <p className="font-bold text-gray-800 text-sm leading-tight">
+                            {formatAmountForUser(discountedIdr, currencyCountryCode)}
+                          </p>
+                        );
+                    })()}
                 </div>
                 
                 {/* 90 min pricing */}
@@ -878,15 +861,18 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         : 'bg-gray-100 border-gray-200'
                 }`}>
                     <p className="text-gray-600 text-xs mb-1">90 min</p>
-                    {isDiscountActive(therapist) ? (
-                        <p className="font-bold text-gray-800 text-sm leading-tight">
-                            Rp {formatPrice(Math.round(Number(pricing["90"]) * (1 - (therapist.discountPercentage || 0) / 100)))}
-                        </p>
-                    ) : (
-                        <p className="font-bold text-gray-800 text-sm leading-tight">
-                            Rp {formatPrice(Number(pricing["90"]))}
-                        </p>
-                    )}
+                                        {(() => {
+                                                const baseIdr = normalizeIdrAmount(Number(pricing["90"]));
+                                                const discountedIdr = isDiscountActive(therapist)
+                                                    ? Math.round(baseIdr * (1 - (therapist.discountPercentage || 0) / 100))
+                                                    : baseIdr;
+                                                if (!discountedIdr) return <p className="font-bold text-gray-800 text-sm leading-tight">Contact</p>;
+                                                return (
+                                                    <p className="font-bold text-gray-800 text-sm leading-tight">
+                                                        {formatAmountForUser(discountedIdr, currencyCountryCode)}
+                                                    </p>
+                                                );
+                                        })()}
                 </div>
                 
                 {/* 120 min pricing */}
@@ -896,15 +882,18 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         : 'bg-gray-100 border-gray-200'
                 }`}>
                     <p className="text-gray-600 text-xs mb-1">120 min</p>
-                    {isDiscountActive(therapist) ? (
-                        <p className="font-bold text-gray-800 text-sm leading-tight">
-                            Rp {formatPrice(Math.round(Number(pricing["120"]) * (1 - (therapist.discountPercentage || 0) / 100)))}
-                        </p>
-                    ) : (
-                        <p className="font-bold text-gray-800 text-sm leading-tight">
-                            Rp {formatPrice(Number(pricing["120"]))}
-                        </p>
-                    )}
+                                        {(() => {
+                                                const baseIdr = normalizeIdrAmount(Number(pricing["120"]));
+                                                const discountedIdr = isDiscountActive(therapist)
+                                                    ? Math.round(baseIdr * (1 - (therapist.discountPercentage || 0) / 100))
+                                                    : baseIdr;
+                                                if (!discountedIdr) return <p className="font-bold text-gray-800 text-sm leading-tight">Contact</p>;
+                                                return (
+                                                    <p className="font-bold text-gray-800 text-sm leading-tight">
+                                                        {formatAmountForUser(discountedIdr, currencyCountryCode)}
+                                                    </p>
+                                                );
+                                        })()}
                 </div>
             </div>
 
@@ -1040,28 +1029,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4" onClick={() => setShowReferModal(false)}>
                     <div className="bg-white rounded-xl shadow-2xl w-full max-w-[88vw] max-h-[80vh] sm:max-w-xs md:max-w-sm p-3 sm:p-4 overflow-y-auto" onClick={(e) => e.stopPropagation()}>
                         <div className="text-center">
-                            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3">
-                                {/* Main coin image - Increased by 20% */}
-                                <img 
-                                    src="https://ik.imagekit.io/7grri5v7d/INDASTREET_coins_new-removebg-preview.png?updatedAt=1762338892035"
-                                    alt="IndaStreet Coins"
-                                    className="w-14 h-14 sm:w-20 sm:h-20 object-contain"
-                                />
-                            </div>
-                            
                             <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-1 sm:mb-2">Refer a Friend</h3>
-                            <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">Share IndaStreet with friends and earn coins! 🎁</p>
-                            
-                            <div className="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg p-2 sm:p-3 mb-3 sm:mb-4">
-                                <div className="flex items-center justify-center gap-1 sm:gap-2 mb-1">
-                                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
-                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" />
-                                    </svg>
-                                    <span className="text-lg sm:text-xl font-bold text-orange-600">50 Coins</span>
-                                </div>
-                                <p className="text-xs text-gray-700">For each friend who signs up!</p>
-                            </div>
+                            <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">Share IndaStreet with friends.</p>
                             
                             <div className="space-y-2 mb-3 sm:mb-4">
                                 <p className="text-xs text-gray-600 text-left">

@@ -15,8 +15,12 @@ import { bookingExpirationService } from './services/bookingExpirationService';
 import './utils/disableLocalStorage';
 // (Former cleanupLocalStorage import removed as localStorage persisted data is no longer used)
 import './lib/globalErrorHandler'; // Initialize global error handling
+// Flag icons CSS (for SVG country flags)
+import 'flag-icons/css/flag-icons.min.css';
 import { LanguageProvider } from './context/LanguageContext';
 import { agentShareAnalyticsService } from './lib/appwriteService';
+import { resolveDefaultLanguage } from './lib/languageResolver';
+import type { Language } from './types/pageTypes';
 // Temporarily removed: import { useSimpleLanguage } from './context/SimpleLanguageContext';
 // Temporarily removed: import SimpleLanguageSelector from './components/SimpleLanguageSelector';
 
@@ -147,7 +151,8 @@ const App = () => {
 
     // All hooks combined - ALWAYS call this hook at the same point
     const hooks = useAllHooks();
-    const { state, navigation, authHandlers, providerAgentHandlers, derived } = hooks;
+    const { state, navigation, authHandlers, providerAgentHandlers: _providerAgentHandlers, derived } = hooks;
+    const providerAgentHandlers: any = _providerAgentHandlers as any;
     
     // Use the actual language from hooks, not hardcoded
     const { language, setLanguage } = state;
@@ -158,9 +163,33 @@ const App = () => {
             vscodeTranslateService.activateOnLanguageChange(language);
         }
     }, [language]);
+
+    // Persist language preference
+    useEffect(() => {
+        try { if (language) localStorage.setItem('app_language', language as any); } catch {}
+    }, [language]);
     
     // Get translations using the actual language state - provide to AppRouter
     const { t: _t, dict } = useTranslations(language);
+
+    // Resolve default language once we have enough signals (stored pref, browser, country)
+    useEffect(() => {
+        try {
+            const stored = ((): Language | null => {
+                try { return (localStorage.getItem('app_language') as Language) || null; } catch { return null; }
+            })();
+            const navLangs = (navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language]).filter(Boolean) as string[];
+            const countryCode = state.userLocation?.countryCode;
+            const resolved = resolveDefaultLanguage(['en','id','zh-CN','ru','ja','ko'], stored as any, navLangs, countryCode);
+            if (resolved && resolved !== language) {
+                setLanguage(resolved);
+                try { localStorage.setItem('app_language', resolved); } catch {}
+            }
+        } catch (e) {
+            console.warn('Language resolve failed:', e);
+        }
+        // Re-evaluate when country changes (e.g., after landing location set)
+    }, [state.userLocation?.countryCode]);
 
     // Detect direct path navigation for accept-booking links and switch to that page
     useEffect(() => {
@@ -225,7 +254,7 @@ const App = () => {
     }, [state.therapists, state.places]);
 
     // Use the actual language handler from hooks
-    const handleLanguageSelect = async (lang: 'en' | 'id') => {
+    const handleLanguageSelect = async (lang: Language) => {
         console.log('🌍 App.tsx: handleLanguageSelect called with:', lang);
         setLanguage(lang);
         return Promise.resolve();
@@ -312,7 +341,7 @@ const App = () => {
     };
 
     return (
-        <LanguageProvider value={{ language: language as 'en' | 'id', setLanguage: handleLanguageSelect }}>
+        <LanguageProvider value={{ language: language as Language, setLanguage: handleLanguageSelect }}>
         <DeviceStylesProvider>
             <AppLayout
                 isFullScreen={state.page === 'landing' || state.isFullScreen}

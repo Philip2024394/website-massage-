@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Copy, Share2, Gift, Users, CheckCircle, TrendingUp } from 'lucide-react';
+import { Copy, Share2, CheckCircle } from 'lucide-react';
 import { enhancedReferralService } from '../lib/referralService';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { AppDrawer } from '../components/AppDrawer';
@@ -12,7 +12,6 @@ interface ReferralPageProps {
         name: string;
         phone?: string;
     };
-    userCoins?: number;
     onNavigate?: (page: string) => void;
     onBack?: () => void;
     t?: any;
@@ -35,7 +34,6 @@ interface ReferralPageProps {
 
 const ReferralPage: React.FC<ReferralPageProps> = ({ 
     user, 
-    userCoins: _userCoins = 245, 
     onNavigate: _onNavigate,
     onAgentPortalClick,
     onCustomerPortalClick,
@@ -80,7 +78,7 @@ const ReferralPage: React.FC<ReferralPageProps> = ({
                 setReferralData({
                     referralCode: existingReferral.referralCode,
                     referralLink: existingReferral.referralLink,
-                    shareText: `🌟 Join me on our amazing massage booking platform! Get 25 welcome coins when you sign up with my link: ${existingReferral.referralLink}`
+                    shareText: `🌟 Join me on our massage booking platform! Sign up with my link: ${existingReferral.referralLink}`
                 });
                 setWhatsappNumber(existingReferral.referrerWhatsApp || user.phone || '');
             } else {
@@ -225,10 +223,7 @@ const ReferralPage: React.FC<ReferralPageProps> = ({
                             </svg>
                         </button>
 
-                        {/* Coins Display */}
-                        <div className="text-sm font-semibold text-orange-600">
-                            🪙 {_userCoins || 0}
-                        </div>
+                        {/* Coins display removed */}
 
                         <button onClick={() => setIsMenuOpen(true)} title="Menu">
                            <BurgerMenuIcon className="w-6 h-6" />
@@ -256,70 +251,16 @@ const ReferralPage: React.FC<ReferralPageProps> = ({
             <div className="bg-gradient-to-b from-orange-50 to-white min-h-screen">
             <div className="max-w-4xl mx-auto p-4 pb-20">
                 {/* Hero Section */}
-                <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-3xl p-8 text-white mb-6 shadow-lg">
-                    <div className="text-center mb-6">
-                        {/* Title Above Image */}
-                        <h2 className="text-3xl font-bold mb-6">Invite Friends</h2>
-                        
-                        {/* Invite Friends Image - Full Size with Rounded Corners */}
-                        <div className="mb-6">
-                            <img 
-                                src="https://ik.imagekit.io/7grri5v7d/INDASTREET%20INVITE%20FRIENDS.png?updatedAt=1762146851297"
-                                alt="Invite Friends - IndaStreet"
-                                className="w-full h-auto mx-auto object-contain rounded-3xl drop-shadow-lg hover:scale-105 transition-transform duration-300"
-                            />
-                        </div>
-                        
-                        {/* Subtitle Below Image */}
-                        <h3 className="text-2xl font-semibold mb-4">Earn Coins Together!</h3>
-                        <p className="text-orange-100 text-lg">
-                            Get 100 coins for each friend who signs up + 50 coins for them!
-                        </p>
-                    </div>
-
-                    {/* Reward Breakdown */}
-                    <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="text-center">
-                                <p className="text-orange-100 text-sm mb-1">You Get</p>
-                                <p className="text-4xl font-bold">100 🪙</p>
-                                <p className="text-orange-100 text-xs mt-1">per referral</p>
-                            </div>
-                            <div className="text-center">
-                                <p className="text-orange-100 text-sm mb-1">They Get</p>
-                                <p className="text-4xl font-bold">50 🪙</p>
-                                <p className="text-orange-100 text-xs mt-1">welcome bonus</p>
-                            </div>
-                        </div>
-                    </div>
+                <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-3xl p-8 text-white mb-6 shadow-lg text-center">
+                    <h2 className="text-3xl font-bold mb-4">Invite Friends</h2>
+                    <p className="text-orange-100 text-lg max-w-xl mx-auto">Share your personal link so friends can sign up quickly. No customer coin rewards.</p>
                 </div>
 
-                {/* Stats Cards */}
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                    <div className="bg-white rounded-2xl p-6 shadow-md border border-orange-100">
-                        <div className="flex items-center gap-3 mb-2">
-                            <Users className="w-5 h-5 text-orange-600" />
-                            <p className="text-gray-600 text-sm">Total Referrals</p>
-                        </div>
-                        <p className="text-3xl font-bold text-gray-900">{referralStats.totalReferrals}</p>
-                        <p className="text-xs text-green-600 mt-1">↑ {referralStats.completedReferrals} completed</p>
-                    </div>
-                    <div className="bg-white rounded-2xl p-6 shadow-md border border-orange-100">
-                        <div className="flex items-center gap-3 mb-2">
-                            <TrendingUp className="w-5 h-5 text-orange-600" />
-                            <p className="text-gray-600 text-sm">Coins Earned</p>
-                        </div>
-                        <p className="text-3xl font-bold text-gray-900">{referralStats.totalCoinsEarned}</p>
-                        <p className="text-xs text-orange-600 mt-1">+{referralStats.pendingReferrals} pending</p>
-                    </div>
-                </div>
+                {/* Stats removed (no customer rewards) */}
 
                 {/* Referral Code Section */}
                 <div className="bg-white rounded-2xl p-6 shadow-md mb-6 border border-orange-100">
-                    <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                        <Gift className="w-5 h-5 text-orange-600" />
-                        Your Referral Code
-                    </h3>
+                    <h3 className="font-bold text-gray-900 mb-4">Your Referral Code</h3>
                     
                     <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl p-4 mb-4 border-2 border-orange-200 border-dashed">
                         <div className="text-center">
@@ -407,52 +348,9 @@ const ReferralPage: React.FC<ReferralPageProps> = ({
                     </div>
                 </div>
 
-                {/* How It Works */}
-                <div className="bg-white rounded-2xl p-6 shadow-md mb-6 border border-orange-100">
-                    <h3 className="font-bold text-gray-900 mb-4">How It Works</h3>
-                    <div className="space-y-4">
-                        <div className="flex gap-4">
-                            <div className="flex-shrink-0 w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 font-bold">
-                                1
-                            </div>
-                            <div>
-                                <p className="font-semibold text-gray-900">Share Your Code</p>
-                                <p className="text-sm text-gray-600">Send your referral code or link to friends</p>
-                            </div>
-                        </div>
-                        <div className="flex gap-4">
-                            <div className="flex-shrink-0 w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 font-bold">
-                                2
-                            </div>
-                            <div>
-                                <p className="font-semibold text-gray-900">Friend Signs Up</p>
-                                <p className="text-sm text-gray-600">They create account using your code & get 50 coins</p>
-                            </div>
-                        </div>
-                        <div className="flex gap-4">
-                            <div className="flex-shrink-0 w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 font-bold">
-                                3
-                            </div>
-                            <div>
-                                <p className="font-semibold text-gray-900">You Earn Coins!</p>
-                                <p className="text-sm text-gray-600">Get 100 coins instantly when they complete first booking</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                {/* How It Works removed (no customer coin incentives) */}
 
-                {/* Terms */}
-                <div className="bg-orange-50 rounded-xl p-4 border border-orange-200">
-                    <h4 className="font-semibold text-gray-900 mb-2 text-sm">📋 Terms & Conditions</h4>
-                    <ul className="text-xs text-gray-600 space-y-1">
-                        <li>• You earn 100 coins when referred friend completes first booking</li>
-                        <li>• New user gets 50 coins welcome bonus</li>
-                        <li>• Referral coins expire after 12 months of inactivity</li>
-                        <li>• Limit: 50 referrals per month</li>
-                        <li>• Fraudulent referrals will result in account suspension</li>
-                        <li>• Coins cannot be transferred or exchanged for cash</li>
-                    </ul>
-                </div>
+                {/* Terms removed (user coin program discontinued) */}
             </div>
             </div>
             

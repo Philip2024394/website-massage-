@@ -413,6 +413,8 @@ export interface UserLocation {
     address: string;
     lat: number;
     lng: number;
+    countryCode?: string; // ISO 3166-1 alpha-2 (e.g., 'ID', 'US')
+    country?: string;     // Human-readable country name
 }
 
 
