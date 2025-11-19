@@ -141,7 +141,7 @@ const ProductDetailPage: React.FC<Props> = ({ onBack, onNavigate }) => {
         onNavigate={onNavigate || (() => {})}
       />
       <main className="max-w-5xl mx-auto p-4 pb-24 grid grid-cols-1 md:grid-cols-2 gap-6">
-        <section className="bg-white rounded-xl p-4 shadow-sm min-h-fit">
+        <section className="min-h-fit">
           {/* Media title row: product name left, sold count right */}
           <div className="flex items-center justify-between mb-3">
             <div className="font-semibold text-gray-900 truncate pr-2">{product.name}</div>
@@ -267,7 +267,7 @@ const ProductDetailPage: React.FC<Props> = ({ onBack, onNavigate }) => {
             )}
           </div>
         </section>
-        <section className="bg-white rounded-xl p-4 shadow-sm">
+        <section className="min-h-fit">
           <div className="mb-4">
             <h2 className="font-semibold mb-2">Price</h2>
             <div className="text-2xl text-orange-600 font-bold mb-1">{formatCurrency(productPrice, sellerCurrency, product.countryCode)}</div>
