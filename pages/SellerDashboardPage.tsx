@@ -30,7 +30,8 @@ const SellerDashboardPage: React.FC<Props> = ({ onBack, onNavigate }) => {
   const [images, setImages] = useState<(File | null)[]>([null, null, null, null, null]);
   const [uploading, setUploading] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [price, setPrice] = useState<number>(0);
+  const [localPrice, setLocalPrice] = useState<number>(0);
+  const [internationalPrices, setInternationalPrices] = useState<Record<string, number>>({});
   const [stock, setStock] = useState<number>(0);
   const [promoPercent, setPromoPercent] = useState<number>(0);
   const [countrySearch, setCountrySearch] = useState('');
@@ -202,7 +203,8 @@ const SellerDashboardPage: React.FC<Props> = ({ onBack, onNavigate }) => {
         videoUrl: videoUrl.trim() || undefined,
         image: image || undefined,
         images: galleryUrls,
-        price: Math.round(price),
+        price: Math.round(localPrice),
+        internationalPrices: JSON.stringify(internationalPrices),
         stockLevel: Math.max(0, Math.round(stock)),
         condition: condition,
         promoPercent: Math.max(0, Math.min(50, Math.round(promoPercent || 0))),
@@ -212,7 +214,7 @@ const SellerDashboardPage: React.FC<Props> = ({ onBack, onNavigate }) => {
       } as any);
       console.log('Product created:', created);
       if (created) {
-        setName(''); setDesc(''); setWhatYouWillReceive(''); setVideoUrl(''); setImage(''); setMainImageFile(null); setImages([null,null,null,null,null]); setPrice(0); setStock(0); setCondition('New'); setPromoPercent(0);
+        setName(''); setDesc(''); setWhatYouWillReceive(''); setVideoUrl(''); setImage(''); setMainImageFile(null); setImages([null,null,null,null,null]); setLocalPrice(0); setInternationalPrices({}); setStock(0); setCondition('New'); setPromoPercent(0);
         alert('Product created successfully!');
         const list = await marketplaceService.listProductsBySeller(seller.$id);
         setMyProducts(list);
@@ -389,9 +391,60 @@ const SellerDashboardPage: React.FC<Props> = ({ onBack, onNavigate }) => {
               <input value={videoUrl} onChange={e=>setVideoUrl(e.target.value)} className="w-full border rounded-md px-3 py-2" placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..." />
               <p className="text-xs text-gray-500 mt-1">Only YouTube links are allowed</p>
             </div>
-            <div>
-              <label className="block text-sm mb-1">Price</label>
-              <input type="number" value={price || ''} onChange={e=>setPrice(e.target.value === '' ? 0 : Number(e.target.value))} className="w-full border rounded-md px-3 py-2" placeholder="0" />
+            <div className="sm:col-span-2">
+              <label className="block text-sm mb-1">Pricing by Country</label>
+              <div className="space-y-3">
+                {/* Local Country Price */}
+                <div className="p-3 border rounded-lg bg-blue-50">
+                  <label className="block text-xs font-semibold text-blue-800 mb-1">
+                    Local Price ({seller?.countryCode || 'Your Country'})
+                  </label>
+                  <input 
+                    type="number" 
+                    value={localPrice || ''} 
+                    onChange={e=>setLocalPrice(e.target.value === '' ? 0 : Number(e.target.value))} 
+                    className="w-full border rounded-md px-3 py-2" 
+                    placeholder="0" 
+                  />
+                  <p className="text-xs text-blue-700 mt-1">Price in your local currency</p>
+                </div>
+
+                {/* International Prices */}
+                {Object.keys(shippingRates).length > 0 && (
+                  <div className="space-y-2">
+                    <h4 className="text-xs font-semibold text-gray-700">International Prices</h4>
+                    <p className="text-xs text-orange-600 bg-orange-50 p-2 rounded border">
+                      <strong>Important:</strong> Convert your price to each country's currency. For example: if your local price is $100 USD and you ship to Indonesia, enter the equivalent amount in Indonesian Rupiah (IDR).
+                    </p>
+                    {Object.keys(shippingRates).map(countryCode => {
+                      const country = COUNTRIES.find(c => c.code === countryCode);
+                      return (
+                        <div key={countryCode} className="p-3 border rounded-lg bg-gray-50">
+                          <label className="block text-xs font-semibold text-gray-700 mb-1">
+                            Price for {country?.name || countryCode} ({countryCode})
+                          </label>
+                          <input
+                            type="number"
+                            value={internationalPrices[countryCode] || ''}
+                            onChange={e => {
+                              const value = e.target.value === '' ? 0 : Number(e.target.value);
+                              setInternationalPrices(prev => ({
+                                ...prev,
+                                [countryCode]: value
+                              }));
+                            }}
+                            className="w-full border rounded-md px-3 py-2"
+                            placeholder={`Price in ${countryCode} currency`}
+                          />
+                          <p className="text-xs text-gray-600 mt-1">
+                            Enter price converted to {countryCode} currency (shipping rate: ${shippingRates[countryCode]})
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
             <div>
               <label className="block text-sm mb-1">Stock</label>
