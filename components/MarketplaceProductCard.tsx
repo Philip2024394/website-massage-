@@ -13,9 +13,9 @@ type Props = {
 const MarketplaceProductCard: React.FC<Props> = ({ product, viewerCountryCode, onView, onViewDetails }) => {
   const priceLabel = formatAmountForUser(product.price || 0, viewerCountryCode);
   
-  // Calculate promo percentage if promo price exists
-  const hasPromo = typeof product.promoPrice === 'number' && product.promoPrice > 0 && product.promoPrice < (product.price || 0);
-  const promoPercent = hasPromo ? Math.round((((product.price || 0) - product.promoPrice!) / (product.price || 0)) * 100) : 0;
+  // Promo percent from schema (badge on the right)
+  const promoPercent = typeof (product as any).promoPercent === 'number' ? Math.max(0, Math.min(90, (product as any).promoPercent)) : 0;
+  const hasPromo = promoPercent > 0;
   
   // Star rating (default to 4.5 if not set)
   const rating = product.rating || 4.5;
