@@ -64,7 +64,17 @@ const MarketplaceProductCard: React.FC<Props> = ({ product, viewerCountryCode, o
         </div>
         
         {/* View Product Button */}
-        <button onClick={() => (onViewDetails ? onViewDetails(product.$id) : onView?.(product.$id))} className="w-full px-3 py-2 bg-orange-600 text-white rounded-lg text-sm font-semibold hover:bg-orange-700 transition-colors">View Product</button>
+        <button
+          type="button"
+          onClick={() => {
+            try { sessionStorage.setItem('marketplace_selected_product', product.$id); } catch {}
+            if (onViewDetails) return onViewDetails(product.$id);
+            return onView?.(product.$id);
+          }}
+          className="w-full px-3 py-2 bg-orange-600 text-white rounded-lg text-sm font-semibold hover:bg-orange-700 transition-colors"
+        >
+          View Product
+        </button>
       </div>
     </div>
   );
