@@ -211,7 +211,13 @@ const PromoterCommissionPage: React.FC<{ t?: any; onBack?: () => void; onNavigat
                   link.download = `promoter_attributions_${affiliateCode}.csv`;
                   document.body.appendChild(link);
                   link.click();
-                  document.body.removeChild(link);
+                  try {
+                    if (link && link.parentNode === document.body) {
+                      document.body.removeChild(link);
+                    } else if (link && link.parentNode) {
+                      link.parentNode.removeChild(link);
+                    }
+                  } catch {}
                   URL.revokeObjectURL(url);
                 } catch (e) {
                   alert('Failed to export CSV');

@@ -11,14 +11,14 @@ export class DOMErrorHandler {
         (Node.prototype.removeChild as any) = function(this: Node, child: Node): Node {
             try {
                 // Check if the child is actually a child of this node
-                if (this.contains(child)) {
+                if (child && this.contains(child)) {
                     return originalRemoveChild.call(this, child);
                 } else {
-                    console.warn('Attempted to remove a node that is not a child of this node');
+                    // Silently handle - this is expected behavior during React updates
                     return child;
                 }
             } catch (error) {
-                console.warn('DOM removeChild error caught and handled:', error);
+                // Silent handling - no console spam
                 return child;
             }
         };
@@ -28,9 +28,11 @@ export class DOMErrorHandler {
         // Add global error handler for uncaught DOM errors
         window.addEventListener('error', (event) => {
             if (event.error && event.error.message && 
-                event.error.message.includes('removeChild')) {
-                console.warn('RemoveChild error caught globally:', event.error);
-                event.preventDefault(); // Prevent the error from being thrown
+                (event.error.message.includes('removeChild') || 
+                 event.error.message.includes('not a child of this node'))) {
+                // Silently prevent the error from being thrown
+                event.preventDefault();
+                event.stopPropagation();
                 return true;
             }
         });
@@ -38,8 +40,8 @@ export class DOMErrorHandler {
         // Handle unhandled promise rejections that might contain DOM errors
         window.addEventListener('unhandledrejection', (event) => {
             if (event.reason && event.reason.message && 
-                event.reason.message.includes('removeChild')) {
-                console.warn('RemoveChild promise rejection caught:', event.reason);
+                (event.reason.message.includes('removeChild') ||
+                 event.reason.message.includes('not a child of this node'))) {
                 event.preventDefault();
             }
         });
@@ -50,11 +52,11 @@ export class DOMErrorHandler {
         this.handleRemoveChildError();
         this.addGlobalErrorHandler();
         
-        console.log('✅ Chrome DOM error handling initialized');
+        console.log('✅ DOM error handling initialized');
     }
 }
 
-// Auto-initialize if running in Chrome
-if (typeof window !== 'undefined' && navigator.userAgent.includes('Chrome')) {
+// Auto-initialize if running in browser (not just Chrome - affects all browsers)
+if (typeof window !== 'undefined') {
     DOMErrorHandler.initializeForChrome();
 }

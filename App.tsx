@@ -85,22 +85,19 @@ const App = () => {
                 
                 const { account } = await import('./lib/appwrite');
                 
-                // Enhanced session management with timeout protection
+                // Enhanced session management - only check, don't create
                 try {
-                    // Best-effort check; if unauthorized, continue as guest without creating anonymous session
                     const currentUser = await Promise.race([
                         account.get(),
                         new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
                     ]) as any;
                     console.log('✅ Session active:', currentUser?.email || 'guest');
                 } catch {
-                    console.log('ℹ️ No Appwrite session; continuing as guest');
+                    console.log('ℹ️ No Appwrite session; continuing as guest (no anonymous session created)');
+                    // Don't create anonymous sessions - they cause rate limiting
                 }
             } catch (error: any) {
-                // Session might already exist, which is fine
-                if (!error.message?.includes('already exists')) {
-                    console.log('Session initialization:', error.message);
-                }
+                console.log('Session check skipped:', error.message);
             }
         };
 

@@ -5,6 +5,9 @@ import { Query } from 'appwrite';
 class BookingExpirationService {
   private intervalId: NodeJS.Timeout | null = null;
   private checkIntervalMs = 60000; // Check every minute
+  private hasValidSession = false;
+  private lastSessionCheck = 0;
+  private sessionCheckCooldown = 30000; // Check session every 30 seconds
 
   start() {
     if (this.intervalId) {
@@ -31,26 +34,28 @@ class BookingExpirationService {
     try {
       // 🔧 Check if bookings collection is configured
       if (!APPWRITE_CONFIG.collections.bookings || APPWRITE_CONFIG.collections.bookings === '') {
-        console.log('⚠️ Bookings collection not configured - skipping expiration check');
+        // Silent skip - no logging spam
         return;
       }
 
-      // Check if user is already logged in before creating anonymous session
-      try {
-        const currentUser = await account.get();
-        console.log('✅ Using existing user session for booking checks:', currentUser.email);
-      } catch {
-        // No user session, try anonymous (but this might be disabled)
+      // Only check session periodically to avoid spamming 401 errors
+      const now = Date.now();
+      if (now - this.lastSessionCheck > this.sessionCheckCooldown) {
+        this.lastSessionCheck = now;
         try {
-          await account.createAnonymousSession();
-          console.log('✅ Anonymous session created for booking expiration check');
-        } catch (error: any) {
-          console.log('⚠️ Could not create session for booking checks:', error.message);
-          return; // Skip this check if we can't get permissions
+          const user = await account.get();
+          this.hasValidSession = !!(user && user.$id);
+        } catch {
+          this.hasValidSession = false;
         }
       }
 
-      const now = new Date().toISOString();
+      // Skip if no valid session
+      if (!this.hasValidSession) {
+        return;
+      }
+
+      const currentTime = new Date().toISOString();
       
       console.log('🔍 Checking expired bookings with collection ID:', APPWRITE_CONFIG.collections.bookings);
 
@@ -60,7 +65,7 @@ class BookingExpirationService {
         APPWRITE_CONFIG.collections.bookings,
         [
           Query.equal('status', 'pending'),
-          Query.lessThan('responseDeadline', now)
+          Query.lessThan('responseDeadline', currentTime)
         ]
       );
 

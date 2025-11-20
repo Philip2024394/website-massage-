@@ -100,6 +100,9 @@ const AdminQRUsageReportPage = React.lazy(() => import('./pages/AdminQRUsageRepo
 import MarketplacePage from './pages/MarketplacePage';
 import SellerShopPage from './pages/SellerShopPage';
 import ProductDetailPage from './pages/ProductDetailPage';
+import SafeTradeInfoPage from './pages/SafeTradeInfoPage';
+import TermsOfPurchasePage from './pages/TermsOfPurchasePage';
+import CustomerServicePage from './pages/CustomerServicePage';
 const SupplierAuthPage = React.lazy(() => import('./pages/SupplierAuthPage'));
 const SellerRegistrationPage = React.lazy(() => import('./pages/SellerRegistrationPage'));
 const SellerDashboardPage = React.lazy(() => import('./pages/SellerDashboardPage'));
@@ -1280,6 +1283,15 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         }
         case 'productDetail': {
             return <ProductDetailPage onBack={() => setPage('marketplace')} onNavigate={(p: string) => setPage(p as Page)} />;
+        }
+        case 'safeTradeInfo': {
+            return <SafeTradeInfoPage onBack={() => setPage('productDetail')} onNavigate={(p: string) => setPage(p as Page)} />;
+        }
+        case 'termsOfPurchase': {
+            return <TermsOfPurchasePage onBack={() => setPage('productDetail')} />;
+        }
+        case 'customerService': {
+            return <CustomerServicePage onBack={() => setPage('productDetail')} />;
         }
         case 'sellerShop': {
             return <SellerShopPage onBack={handleBackToHome} onNavigate={(p: string) => setPage(p as Page)} />;

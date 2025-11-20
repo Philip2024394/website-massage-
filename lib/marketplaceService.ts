@@ -26,6 +26,7 @@ export type MarketplaceSeller = {
   planTier?: string;
   subscriptionStatus?: string;
   trialEndsAt?: string;
+  priceRequestType?: string; // 'Wholesale' or 'Retail'
 };
 
 export type MarketplaceProduct = {
@@ -37,6 +38,9 @@ export type MarketplaceProduct = {
   whatYouWillReceive?: string; // optional long text
   videoUrl?: string; // optional YouTube link
   price: number;
+  quantity?: number; // quantity of pieces for the price
+  priceUnit?: string; // 'Each', 'Joblot', 'Pallet', 'Set', 'Box', 'Container', 'Wholesale Lot'
+  productColors?: string[]; // Array of color hex codes, max 5
   currency?: string;
   stockLevel?: number;
   condition?: string; // 'New' or 'Used'
@@ -105,7 +109,7 @@ export const marketplaceService = {
 
   async createSeller(input: {
     tradingName: string;
-    whatsapp?: string;
+    whatsapp?: string; // schema requires; we'll enforce non-empty below
     contactEmail?: string;
     countryCode: string;
     salesMode?: 'local' | 'global';
@@ -130,6 +134,12 @@ export const marketplaceService = {
       // default trial window
       const trialEndsAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
       const joinDate = new Date().toISOString();
+      // Normalize whatsapp (required by schema)
+      const whatsapp = (input.whatsapp || '').trim();
+      if (!whatsapp) {
+        throw new Error('whatsapp is required');
+      }
+
       // Create with conservative payload (exclude optional fields that may not exist in schema)
       const payload: any = {
         sellerId: ownerUserId,
@@ -140,7 +150,7 @@ export const marketplaceService = {
         isVerified: false,
         categories: '',
         tradingName: input.tradingName,
-        whatsapp: input.whatsapp || '',
+        whatsapp,
         profileImage: input.profileImage || '',
         countryCode: input.countryCode || '',
         lat: input.lat?.toString() || '',
@@ -158,8 +168,21 @@ export const marketplaceService = {
       // Best-effort update for optional fields if the schema supports them
       try {
         const optionalPatch: any = {};
-        if (Array.isArray(input.acceptedPayments)) optionalPatch.acceptedPayments = JSON.stringify(input.acceptedPayments);
-        if (typeof input.websiteUrl === 'string') optionalPatch.websiteUrl = input.websiteUrl;
+        if (Array.isArray(input.acceptedPayments)) {
+          // Limit list to keep JSON under small schema size (100 chars)
+          const list = input.acceptedPayments.filter(Boolean).map(s => String(s)).slice(0, 5);
+          let ap = JSON.stringify(list);
+          while (ap.length > 100 && list.length > 0) {
+            list.pop();
+            ap = JSON.stringify(list);
+          }
+          optionalPatch.acceptedPayments = ap;
+        }
+        if (typeof input.websiteUrl === 'string') {
+          const raw = input.websiteUrl.trim();
+          const withScheme = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+          optionalPatch.websiteUrl = withScheme.slice(0, 50);
+        }
         if (Object.keys(optionalPatch).length > 0) {
           await databases.updateDocument(dbId, colId, (doc as any).$id, optionalPatch);
         }
@@ -220,7 +243,7 @@ export const marketplaceService = {
     }
   },
 
-  async createProduct(input: Omit<MarketplaceProduct, '$id'> & { name: string; price: number; sellerId: string }): Promise<MarketplaceProduct | null> {
+  async createProduct(input: Omit<MarketplaceProduct, '$id'> & { name: string; price: number; sellerId: string; deliveryDays?: string | number; promoPercent?: string | number }): Promise<MarketplaceProduct | null> {
     try {
       const dbId = APPWRITE_CONFIG.databaseId;
       const colId = (APPWRITE_CONFIG.collections as any).marketplaceProducts;
@@ -250,13 +273,20 @@ export const marketplaceService = {
         name: input.name,
         description: input.description || '',
         image: input.image || (input.images && input.images.length > 0 ? input.images[0] : '') || '',
-        price: input.price,
+        // Schema expects integer; coerce safely
+        price: typeof input.price === 'number' ? Math.round(input.price) : parseInt(String(input.price || 0), 10) || 0,
         currency: input.currency || '',
         stockLevel: typeof input.stockLevel === 'number' ? input.stockLevel : 0,
-        promoPercent: typeof input.promoPercent === 'number' ? Math.max(0, Math.min(50, Math.round(input.promoPercent))) : 0,
+        // Schema shows promoPercent as string; store as string
+        promoPercent: (() => {
+          const n = typeof input.promoPercent === 'number' ? Math.max(0, Math.min(50, Math.round(input.promoPercent))) : parseInt(String(input.promoPercent || '0'), 10) || 0;
+          return String(n);
+        })(),
         sellerId: input.sellerId,
         countryCode: input.countryCode || (seller.countryCode || ''),
-        isActive: true
+        isActive: true,
+        // Required by schema (string). Default to 6 days if not provided.
+        deliveryDays: (typeof input.deliveryDays === 'number' ? String(Math.max(1, Math.min(60, Math.round(input.deliveryDays)))) : (String(input.deliveryDays || '').trim())) || '6'
       };
       
       // Only add optional fields if they have values
@@ -283,8 +313,13 @@ export const marketplaceService = {
         payload.lng = input.lng;
       } else if (typeof input.lng === 'number' && !isNaN(input.lng)) {
         payload.lng = input.lng.toString();
-      } else if (seller.lng) {
-        payload.lng = seller.lng;
+      } else if ((seller as any).lng) {
+        payload.lng = (seller as any).lng;
+      }
+
+      // Some schemas use a typo 'ing' instead of 'lng'; write both defensively
+      if (payload.lng) {
+        payload.ing = payload.lng;
       }
       
       console.log('Final payload:', payload);
@@ -456,6 +491,32 @@ export const marketplaceService = {
       }
       return count;
     } catch { return 0; }
+  },
+
+  async incrementSoldCounter(productId: string): Promise<boolean> {
+    try {
+      const dbId = APPWRITE_CONFIG.databaseId;
+      const colId = (APPWRITE_CONFIG.collections as any).marketplaceProducts;
+      if (!colId) return false;
+      
+      // Get current product
+      const product = await this.getProductById(productId);
+      if (!product) return false;
+      
+      // Parse current unitsSold (stored as string)
+      const currentSold = parseInt(String(product.unitsSold || '0'), 10);
+      const newSold = isNaN(currentSold) ? 1 : currentSold + 1;
+      
+      // Update the product
+      await databases.updateDocument(dbId, colId, productId, {
+        unitsSold: String(newSold)
+      } as any);
+      
+      return true;
+    } catch (e) {
+      console.error('incrementSoldCounter failed:', e);
+      return false;
+    }
   }
 };
 

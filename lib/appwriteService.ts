@@ -353,7 +353,23 @@ export const therapistService = {
                     APPWRITE_CONFIG.collections.therapists
                 );
             }
-            console.log('✅ Fetched therapists:', response.documents.length);
+            console.log('✅ Fetched therapists (country-filtered):', response?.documents?.length || 0);
+            if (!response?.documents || response.documents.length === 0) {
+                try {
+                    const unf = await rateLimitedDb.listDocuments(
+                        databases,
+                        APPWRITE_CONFIG.databaseId,
+                        APPWRITE_CONFIG.collections.therapists
+                    );
+                    if (unf?.documents?.length) {
+                        console.log('↩️ Fallback to unfiltered therapists:', unf.documents.length);
+                        response = unf;
+                    }
+                } catch (e2) {
+                    console.warn('Unfiltered fallback failed:', (e2 as any)?.message);
+                }
+            }
+            console.log('✅ Final therapists count:', response?.documents?.length || 0);
             
             // Add random main images and normalize status to therapists
             const therapistsWithImages = response.documents.map((therapist: any, index: number) => {

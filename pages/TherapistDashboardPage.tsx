@@ -749,7 +749,13 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
             link.download = `therapist-data-${new Date().toISOString().split('T')[0]}.json`;
             document.body.appendChild(link);
             link.click();
-            document.body.removeChild(link);
+            try {
+                if (link && link.parentNode === document.body) {
+                    document.body.removeChild(link);
+                } else if (link && link.parentNode) {
+                    link.parentNode.removeChild(link);
+                }
+            } catch {}
             URL.revokeObjectURL(url);
 
             setToast({ message: 'Data exported successfully!', type: 'success' });

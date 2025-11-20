@@ -1,4 +1,42 @@
 // Appwrite Configuration
+import collectionsMap from './appwrite.collections.json';
+
+const envGet = (name: string): string | undefined => {
+    try {
+        // Vite client env
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const viteEnv = (import.meta as any)?.env;
+        if (viteEnv && typeof viteEnv[name] !== 'undefined') return String(viteEnv[name]);
+    } catch {}
+    try {
+        // Node env (scripts or SSR paths)
+        if (typeof process !== 'undefined' && process.env && name in process.env) return String(process.env[name]);
+    } catch {}
+    return undefined;
+};
+
+const mapGet = (key: string, fallback: string): string => {
+    const map = (collectionsMap as Record<string, string>) || {};
+    return map[key] || fallback;
+};
+
+const resolveCollectionId = (opts: { envVar: string; mapKey: string; fallback: string }): string => {
+    return envGet(opts.envVar) || mapGet(opts.mapKey, opts.fallback);
+};
+
+const THERAPISTS_ID = resolveCollectionId({
+    envVar: 'VITE_APPWRITE_THERAPISTS_COLLECTION_ID',
+    mapKey: 'therapists',
+    fallback: 'therapists_collection_id'
+});
+
+const PLACES_ID = resolveCollectionId({
+    envVar: 'VITE_APPWRITE_PLACES_COLLECTION_ID',
+    mapKey: 'places',
+    // Default to therapists if places map not provided (shared collection in some setups)
+    fallback: THERAPISTS_ID || 'therapists_collection_id'
+});
+
 export const APPWRITE_CONFIG = {
     endpoint: 'https://syd.cloud.appwrite.io/v1',
     projectId: '68f23b11000d25eb3664',
@@ -9,8 +47,8 @@ export const APPWRITE_CONFIG = {
     // Collection IDs from your Appwrite database  
     collections: {
         admins: '', // Disabled - collection doesn't exist
-        therapists: 'therapists_collection_id', // Correct collection ID
-        places: 'therapists_collection_id', // Same collection as therapists - APPWRITE ONLY
+        therapists: THERAPISTS_ID,
+        places: PLACES_ID,
         agents: 'agents_collection_id', // REVERTED: Back to original ID
         bookings: 'bookings_collection_id', // REVERTED: Back to original ID  
         reviews: 'reviews_collection_id', // REVERTED: Back to original ID

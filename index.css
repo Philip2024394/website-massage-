@@ -72,6 +72,16 @@ html, body {
   }
 }
 
+/* Neon Border Spark Animation */
+@keyframes border-spark {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
 .status-dot-satellite {
   position: relative;
 }

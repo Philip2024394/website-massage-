@@ -44,12 +44,44 @@ export const stringifyAnalytics = (analytics: Analytics): string => {
 };
 
 // Coordinates helpers
-export const parseCoordinates = (coordinatesString: string): { lat: number; lng: number } => {
+export const parseCoordinates = (input: any): { lat: number; lng: number } => {
   try {
-    return JSON.parse(coordinatesString);
-  } catch {
-    return { lat: 0, lng: 0 };
-  }
+    // String JSON like '{"lat":-8.6,"lng":115.2}'
+    if (typeof input === 'string') {
+      const parsed = JSON.parse(input);
+      return parseCoordinates(parsed);
+    }
+    // Already an object with lat/lng
+    if (input && typeof input === 'object') {
+      // Appwrite GeoJSON Point: { type: 'Point', coordinates: [lng, lat] }
+      if (
+        (input.type === 'Point' || input.$type === 'Point') &&
+        Array.isArray(input.coordinates) &&
+        input.coordinates.length === 2 &&
+        typeof input.coordinates[0] === 'number' &&
+        typeof input.coordinates[1] === 'number'
+      ) {
+        const [lng, lat] = input.coordinates;
+        return { lat, lng };
+      }
+      // Object with {lat, lng}
+      if (typeof input.lat === 'number' && typeof input.lng === 'number') {
+        return { lat: input.lat, lng: input.lng };
+      }
+      // Some apis use {latitude, longitude}
+      if (typeof input.latitude === 'number' && typeof input.longitude === 'number') {
+        return { lat: input.latitude, lng: input.longitude };
+      }
+      // Array [lat, lng]
+      if (
+        Array.isArray(input) && input.length === 2 &&
+        typeof input[0] === 'number' && typeof input[1] === 'number'
+      ) {
+        return { lat: input[0], lng: input[1] };
+      }
+    }
+  } catch {}
+  return { lat: 0, lng: 0 };
 };
 
 export const stringifyCoordinates = (coordinates: { lat: number; lng: number }): string => {

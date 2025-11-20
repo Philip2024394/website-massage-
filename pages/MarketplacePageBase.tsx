@@ -7,6 +7,7 @@ import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { AppDrawer } from '../components/AppDrawer';
 import FlagIcon from '../components/FlagIcon';
 import { COUNTRIES, COUNTRY_DEFAULT_COORDS } from '../countries';
+import { getCurrencyForCountry } from '../utils/currency';
 
 // Map of country codes to their flag colors (primary colors from flags)
 const COUNTRY_FLAG_COLORS: Record<string, string[]> = {
@@ -76,11 +77,45 @@ export const MarketplacePageBase: React.FC<Props> = ({ onBack, t, userLocation, 
   const [countrySearch, setCountrySearch] = useState('');
   const [page, setPage] = useState(1);
   const pageSize = 20;
-  const pageCount = Math.max(1, Math.ceil(products.length / pageSize));
+
+  // Filter states
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
+  const [maxDistance, setMaxDistance] = useState<number>(100); // km
+  const [minRating, setMinRating] = useState<number>(0);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [showFilters, setShowFilters] = useState(false);
 
   const currentCountryCode = userLocation?.countryCode || 'ID';
   const currentCountryName = userLocation?.country || 'Indonesia';
   const flagColors = getFlagColors(currentCountryCode);
+  
+  // Get currency symbol for the current country
+  const getCurrencySymbol = (countryCode: string): string => {
+    const currency = getCurrencyForCountry(countryCode);
+    switch (currency) {
+      case 'IDR': return 'IDR ';
+      case 'USD': return '$';
+      case 'EUR': return '€';
+      case 'GBP': return '£';
+      case 'AUD': return 'A$';
+      case 'SGD': return 'S$';
+      case 'MYR': return 'RM ';
+      case 'THB': return '฿';
+      case 'VND': return '₫';
+      case 'JPY': return '¥';
+      case 'CNY': return '¥';
+      case 'KRW': return '₩';
+      case 'RUB': return '₽';
+      case 'AED': return 'د.إ ';
+      case 'HKD': return 'HK$';
+      case 'CAD': return 'CA$';
+      case 'CHF': return 'CHF ';
+      case 'INR': return '₹';
+      default: return '$';
+    }
+  };
+  
+  const currencySymbol = getCurrencySymbol(currentCountryCode);
 
   const handleSelectCountry = (code: string, name: string) => {
     if (!onSetUserLocation) {
@@ -120,8 +155,39 @@ export const MarketplacePageBase: React.FC<Props> = ({ onBack, t, userLocation, 
     loadProducts();
   }, [loadProducts]);
 
+  // Filter products based on user selections
+  const filteredProducts = products.filter((p) => {
+    // Price filter
+    const price = p.price || 0;
+    if (price < priceRange[0] || price > priceRange[1]) return false;
+
+    // Rating filter
+    const rating = p.rating || 0;
+    if (rating < minRating) return false;
+
+    // Category filter (basic implementation - you can expand this based on your data model)
+    if (selectedCategory !== 'all') {
+      const productName = (p.name || '').toLowerCase();
+      const productDesc = (p.description || '').toLowerCase();
+      const categoryKeywords: Record<string, string[]> = {
+        oils: ['oil', 'lotion', 'cream', 'balm'],
+        equipment: ['table', 'chair', 'bed', 'equipment'],
+        tools: ['tool', 'stone', 'roller', 'cupping'],
+        accessories: ['towel', 'sheet', 'pillow', 'cushion', 'accessory'],
+        supplies: ['supply', 'paper', 'wax', 'sanitizer', 'disinfect']
+      };
+      const keywords = categoryKeywords[selectedCategory] || [];
+      const matchesCategory = keywords.some(kw => productName.includes(kw) || productDesc.includes(kw));
+      if (!matchesCategory) return false;
+    }
+
+    return true;
+  });
+
+  const pageCount = Math.max(1, Math.ceil(filteredProducts.length / pageSize));
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-orange-50/20 to-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-orange-50/20 to-gray-50 overflow-x-hidden">
       <style>{`
         @keyframes gradientFlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -130,8 +196,8 @@ export const MarketplacePageBase: React.FC<Props> = ({ onBack, t, userLocation, 
         .fade-in { animation: fadeIn 0.6s ease-out forwards; }
       `}</style>
       
-      <header className="bg-white p-4 sm:p-5 shadow-lg sticky top-0 z-[9997] border-b border-gray-200">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
+      <header className="bg-white px-4 py-4 sm:p-5 shadow-lg sticky top-0 z-[9997] border-b border-gray-200 w-full box-border">
+        <div className="max-w-7xl mx-auto flex justify-between items-center w-full">
           <h1 className="text-2xl sm:text-3xl font-black text-gray-900">
             <span className="text-black">Inda</span>
             <span className="bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent">Street</span>
@@ -218,38 +284,43 @@ export const MarketplacePageBase: React.FC<Props> = ({ onBack, t, userLocation, 
       )}
 
       {/* Premium Hero Section with 3D Effect */}
-      <div className="relative w-full h-56 sm:h-72 md:h-96 overflow-hidden hero-gradient shadow-2xl rounded-lg sm:rounded-2xl sm:mx-6 lg:mx-8 sm:mt-6 mb-6 sm:mb-8">
+      <div className="relative w-full h-64 sm:h-80 md:h-[28rem] overflow-hidden hero-gradient shadow-2xl sm:rounded-2xl sm:mx-6 lg:mx-8 sm:mt-6 mb-6 sm:mb-8">
         <div className="absolute inset-0 bg-[url('https://ik.imagekit.io/7grri5v7d/massage%20shops.png')] bg-cover bg-center opacity-20 mix-blend-overlay"></div>
         
         {/* Decorative Gradient Orbs */}
         <div className="absolute top-10 left-10 w-64 h-64 bg-orange-400/30 rounded-full blur-3xl"></div>
         <div className="absolute bottom-10 right-10 w-80 h-80 bg-yellow-400/20 rounded-full blur-3xl"></div>
         
-        <div className="absolute inset-0 flex flex-col items-center justify-start pt-8 sm:pt-12 md:pt-16 px-4 sm:px-6 text-center z-10">
-          <h2 className="fade-in text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black mb-3 sm:mb-4" style={{ animationDelay: '0.1s', opacity: 0 }}>
-            <span className="block text-white drop-shadow-2xl mb-1 sm:mb-2">Massage</span>
-            <span className="block text-amber-100 drop-shadow-2xl text-4xl sm:text-5xl md:text-7xl lg:text-8xl">Warehouse</span>
-          </h2>
+        <div className="absolute inset-0 flex flex-col items-center justify-between pt-8 sm:pt-12 md:pt-16 pb-6 sm:pb-8 px-4 sm:px-6 text-center z-10">
+          <div className="flex-1 flex flex-col items-center justify-start">
+            <h2 className="fade-in text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black mb-3 sm:mb-4" style={{ animationDelay: '0.1s', opacity: 0 }}>
+              <span className="block text-white drop-shadow-2xl mb-1 sm:mb-2">Massage</span>
+              <span className="block text-amber-100 drop-shadow-2xl text-4xl sm:text-5xl md:text-7xl lg:text-8xl">Warehouse</span>
+            </h2>
+            
+            <p className="fade-in text-white/90 text-sm sm:text-base md:text-lg max-w-2xl font-medium drop-shadow-lg px-4" style={{ animationDelay: '0.2s', opacity: 0 }}>
+              Discover premium massage equipment, tables, oils & supplies
+            </p>
+            <p className="fade-in text-white/90 text-sm sm:text-base md:text-lg max-w-2xl font-medium drop-shadow-lg px-4 mt-1" style={{ animationDelay: '0.25s', opacity: 0 }}>
+              Shop trusted suppliers worldwide
+            </p>
+          </div>
           
-          <p className="fade-in text-white/90 text-sm sm:text-base md:text-lg max-w-2xl font-medium drop-shadow-lg px-4" style={{ animationDelay: '0.2s', opacity: 0 }}>
-            Discover premium massage equipment, tables, oils & supplies from trusted sellers worldwide
-          </p>
-        </div>
-        
-        {/* Start Selling CTA - Bottom Right */}
-        <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 z-20 fade-in" style={{ animationDelay: '0.3s', opacity: 0 }}>
-          <button
-            onClick={() => onNavigate?.('sellerInfo')}
-            className="inline-flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 bg-white text-orange-600 rounded-xl font-semibold shadow-xl border border-white/50 hover:shadow-orange-200 hover:scale-105 transition-all text-xs sm:text-sm"
-            title="Learn how to sell on IndaStreet Massage Warehouse"
-          >
-            <span>Start Selling</span>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M13.5 4.5L21 12l-7.5 7.5m6-7.5H3" /></svg>
-          </button>
+          {/* Start Selling CTA - Bottom right with safe spacing */}
+          <div className="fade-in w-full flex justify-center sm:justify-end px-4 sm:px-8 md:px-12" style={{ animationDelay: '0.3s', opacity: 0 }}>
+            <button
+              onClick={() => onNavigate?.('sellerInfo')}
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 sm:px-5 sm:py-3 bg-white text-orange-600 rounded-xl font-semibold shadow-xl border border-white/50 hover:shadow-orange-200 hover:scale-105 transition-all text-sm sm:text-base"
+              title="Learn how to sell on IndaStreet Massage Warehouse"
+            >
+              <span>Start Selling</span>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M13.5 4.5L21 12l-7.5 7.5m6-7.5H3" /></svg>
+            </button>
+          </div>
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto p-3 sm:p-6 lg:p-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-6 w-full box-border">
 
         {showDebug && (
           <div className="mb-3 p-2 rounded border text-xs text-gray-700 bg-white">
@@ -278,8 +349,148 @@ export const MarketplacePageBase: React.FC<Props> = ({ onBack, t, userLocation, 
           </div>
         )}
 
-        <div className="mb-2 sm:mb-3 text-[10px] sm:text-xs text-gray-600 leading-tight">
-          Browse massage supplies from retail and wholesale suppliers that ship directly to your door.
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Your Marketplace for Wellness</h2>
+        <div className="mb-4 sm:mb-6 text-[10px] sm:text-xs text-gray-600 leading-tight">
+          Discover premium massage essentials delivered straight to you—shop trusted suppliers worldwide.
+        </div>
+
+        {/* Professional Filters Section */}
+        <div className="mb-6 bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden max-w-full">
+          {/* Filter Toggle Button */}
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
+          >
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              </svg>
+              <span className="font-semibold text-sm sm:text-base text-gray-900">Filters</span>
+              <span className="text-[10px] sm:text-xs text-gray-500">({filteredProducts.length} of {products.length})</span>
+            </div>
+            <svg 
+              className={`w-4 h-4 sm:w-5 sm:h-5 text-gray-400 transition-transform ${showFilters ? 'rotate-180' : ''}`} 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {/* Filter Panel */}
+          {showFilters && (
+            <div className="px-3 sm:px-4 py-3 sm:py-4 border-t border-gray-200 bg-gray-50 space-y-3 sm:space-y-4">
+              {/* Price Range Filter */}
+              <div>
+                <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
+                  Price Range: {currencySymbol}{priceRange[0]} - {currencySymbol}{priceRange[1]}
+                </label>
+                <div className="flex gap-2 sm:gap-3 items-center">
+                  <input
+                    type="number"
+                    value={priceRange[0]}
+                    onChange={(e) => setPriceRange([Math.max(0, parseInt(e.target.value) || 0), priceRange[1]])}
+                    placeholder="Min"
+                    className="flex-1 min-w-0 px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg text-xs sm:text-sm focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  />
+                  <span className="text-gray-400 text-sm flex-shrink-0">—</span>
+                  <input
+                    type="number"
+                    value={priceRange[1]}
+                    onChange={(e) => setPriceRange([priceRange[0], Math.max(priceRange[0], parseInt(e.target.value) || 10000)])}
+                    placeholder="Max"
+                    className="flex-1 min-w-0 px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg text-xs sm:text-sm focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              {/* Distance Filter */}
+              <div>
+                <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
+                  Maximum Distance: {maxDistance === 1000 ? 'Any' : `${maxDistance} km`}
+                </label>
+                <input
+                  type="range"
+                  min="1"
+                  max="1000"
+                  step="10"
+                  value={maxDistance}
+                  onChange={(e) => setMaxDistance(parseInt(e.target.value))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-orange-600"
+                />
+                <div className="flex justify-between text-[10px] sm:text-xs text-gray-500 mt-1">
+                  <span>1 km</span>
+                  <span>500 km</span>
+                  <span>Any</span>
+                </div>
+              </div>
+
+              {/* Rating Filter */}
+              <div>
+                <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
+                  Minimum Rating
+                </label>
+                <div className="flex gap-1.5 sm:gap-2">
+                  {[0, 3, 4, 4.5].map((rating) => (
+                    <button
+                      key={rating}
+                      onClick={() => setMinRating(rating)}
+                      className={`flex-1 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${
+                        minRating === rating
+                          ? 'bg-orange-600 text-white shadow-md'
+                          : 'bg-white text-gray-700 border border-gray-300 hover:border-orange-300'
+                      }`}
+                    >
+                      {rating === 0 ? 'All' : `${rating}+ ★`}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Category Filter */}
+              <div>
+                <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
+                  Category
+                </label>
+                <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
+                  {[
+                    { value: 'all', label: 'All Products' },
+                    { value: 'oils', label: '🧴 Oils & Lotions' },
+                    { value: 'equipment', label: '🛏️ Equipment' },
+                    { value: 'tools', label: '🔧 Tools' },
+                    { value: 'accessories', label: '✨ Accessories' },
+                    { value: 'supplies', label: '📦 Supplies' }
+                  ].map((cat) => (
+                    <button
+                      key={cat.value}
+                      onClick={() => setSelectedCategory(cat.value)}
+                      className={`px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all text-left ${
+                        selectedCategory === cat.value
+                          ? 'bg-orange-600 text-white shadow-md'
+                          : 'bg-white text-gray-700 border border-gray-300 hover:border-orange-300'
+                      }`}
+                    >
+                      {cat.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Clear Filters Button */}
+              <button
+                onClick={() => {
+                  setPriceRange([0, 10000]);
+                  setMaxDistance(100);
+                  setMinRating(0);
+                  setSelectedCategory('all');
+                }}
+                className="w-full px-3 sm:px-4 py-1.5 sm:py-2 bg-gray-200 text-gray-700 rounded-lg text-xs sm:text-sm font-medium hover:bg-gray-300 transition-colors"
+              >
+                Clear All Filters
+              </button>
+            </div>
+          )}
         </div>
 
         {loading ? (
@@ -314,8 +525,26 @@ export const MarketplacePageBase: React.FC<Props> = ({ onBack, t, userLocation, 
             {/* Product Grid - Premium Layout (ID showcase) - temporarily disabled for stability */}
 
             {/* Real Products Grid (live data) */}
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 md:gap-6">
-              {products.slice((page - 1) * pageSize, (page - 1) * pageSize + pageSize).map((p) => {
+            {filteredProducts.length === 0 ? (
+              <div className="bg-orange-50 border-2 border-orange-200 rounded-2xl p-12 text-center">
+                <div className="text-6xl mb-4">🔍</div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">No Products Match Your Filters</h3>
+                <p className="text-gray-600 mb-6">Try adjusting your filters to see more results</p>
+                <button
+                  onClick={() => {
+                    setPriceRange([0, 10000]);
+                    setMaxDistance(100);
+                    setMinRating(0);
+                    setSelectedCategory('all');
+                  }}
+                  className="px-6 py-3 rounded-xl bg-orange-600 text-white font-bold hover:bg-orange-700 transition-all duration-300 shadow-lg"
+                >
+                  Clear All Filters
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:gap-6">
+                {filteredProducts.slice((page - 1) * pageSize, (page - 1) * pageSize + pageSize).map((p) => {
                 const hasValidCoords =
                   typeof userLocation?.lat === 'number' &&
                   typeof userLocation?.lng === 'number' &&
@@ -344,6 +573,7 @@ export const MarketplacePageBase: React.FC<Props> = ({ onBack, t, userLocation, 
                 );
               })}
             </div>
+            )}
 
             {/* Premium Pagination */}
             <div className="mt-10 flex items-center justify-center gap-2 sm:gap-3 flex-wrap">

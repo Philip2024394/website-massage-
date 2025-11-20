@@ -181,11 +181,18 @@ export function initializeGlobalErrorHandling() {
             try {
                 const response = await originalFetch.apply(window, args);
                 
+                // Suppress expected 401 errors for account checks (user not logged in)
+                const url = typeof args[0] === 'string' ? args[0] : 
+                           args[0] instanceof URL ? args[0].toString() :
+                           args[0] instanceof Request ? args[0].url : 'unknown';
+                
+                if (response.status === 401 && url.includes('/account')) {
+                    // Silent - this is expected when user is not logged in
+                    return response;
+                }
+                
                 // Check for rate limit response
                 if (response.status === 429) {
-                    const url = typeof args[0] === 'string' ? args[0] : 
-                               args[0] instanceof URL ? args[0].toString() :
-                               args[0] instanceof Request ? args[0].url : 'unknown';
                     console.warn('🚫 Rate limit detected in fetch:', url);
                     handleAppwriteError({ code: 429, message: 'Rate limit exceeded' }, `fetch: ${url}`);
                 }

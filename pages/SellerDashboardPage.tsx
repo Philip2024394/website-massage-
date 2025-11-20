@@ -16,10 +16,12 @@ const SellerDashboardPage: React.FC<Props> = ({ onBack, onNavigate }) => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [salesMode, setSalesMode] = useState<'local'|'global'>('local');
-  const [shippingRates, setShippingRates] = useState<Record<string, number>>({});
+    const [shippingRates, setShippingRates] = useState<Record<string, any>>({});
   const [planStatus, setPlanStatus] = useState<{ label: string; warn?: string } | null>(null);
   const [contactEmail, setContactEmail] = useState('');
   const [websiteUrl, setWebsiteUrl] = useState('');
+  const [whatsAppNumber, setWhatsAppNumber] = useState('');
+  const [priceRequestType, setPriceRequestType] = useState('');
 
   const [name, setName] = useState('');
   const [desc, setDesc] = useState('');
@@ -31,7 +33,11 @@ const SellerDashboardPage: React.FC<Props> = ({ onBack, onNavigate }) => {
   const [uploading, setUploading] = useState(false);
   const [creating, setCreating] = useState(false);
   const [localPrice, setLocalPrice] = useState<number>(0);
+  const [quantity, setQuantity] = useState<number>(1);
+  const [priceUnit, setPriceUnit] = useState<string>('Each');
+  const [productColors, setProductColors] = useState<string[]>([]);
   const [internationalPrices, setInternationalPrices] = useState<Record<string, number>>({});
+  const [localDeliveryDays, setLocalDeliveryDays] = useState<number>(6);
   const [stock, setStock] = useState<number>(0);
   const [promoPercent, setPromoPercent] = useState<number>(0);
   const [countrySearch, setCountrySearch] = useState('');
@@ -41,6 +47,22 @@ const SellerDashboardPage: React.FC<Props> = ({ onBack, onNavigate }) => {
   const [acceptedPayments, setAcceptedPayments] = useState<string[]>([]);
   const [emailVerified, setEmailVerified] = useState<boolean>(true);
   const [verifyingAction, setVerifyingAction] = useState<boolean>(false);
+  const [productDetails, setProductDetails] = useState<Record<string, string>>({});
+
+  const productDetailOptions = [
+    'Material',
+    'Size',
+    'Batteries',
+    'Electric',
+    'Foam Padding',
+    'Adjustable',
+    'Fold Up',
+    'Height Adjustable',
+    'Weight',
+    'Color',
+    'Warranty',
+    'Brand'
+  ];
 
   const countryOptions = useMemo(() => COUNTRIES.map(c => ({ code: c.code, name: c.name })), []);
 
@@ -69,6 +91,8 @@ const SellerDashboardPage: React.FC<Props> = ({ onBack, onNavigate }) => {
         setSalesMode((s.salesMode as any) || 'local');
         setContactEmail((s.ownerEmail || '').toLowerCase());
         setWebsiteUrl(s.websiteUrl || '');
+        setWhatsAppNumber(s.whatsapp || '');
+        setPriceRequestType(s.priceRequestType || '');
         try {
           const parsed = s.shippingRates ? JSON.parse(s.shippingRates) : {};
           setShippingRates(parsed);
@@ -113,12 +137,46 @@ const SellerDashboardPage: React.FC<Props> = ({ onBack, onNavigate }) => {
     const trimmed = value.trim();
     const num = Number(trimmed);
     setShippingRates(prev => {
-      const copy = { ...prev } as Record<string, number>;
+      const copy: any = { ...prev };
       if (trimmed === '' || isNaN(num)) {
+        // clear fee (and possibly days) for this code
         delete copy[code];
         return copy;
       }
-      copy[code] = Math.max(0, Math.round(num));
+      const fee = Math.max(0, Math.round(num));
+      const existing = copy[code];
+      if (existing && typeof existing === 'object') {
+        copy[code] = { ...(existing as any), fee };
+      } else {
+        copy[code] = { fee };
+      }
+      return copy;
+    });
+  };
+
+  const handleSetDays = (code: string, value: string) => {
+    const trimmed = value.trim();
+    const num = Number(trimmed);
+    setShippingRates(prev => {
+      const copy: any = { ...prev };
+      if (trimmed === '' || isNaN(num)) {
+        // if exists as object, remove days only
+        const existing = copy[code];
+        if (existing && typeof existing === 'object') {
+          delete existing.days;
+          copy[code] = existing;
+        }
+        return copy;
+      }
+      const days = Math.max(1, Math.min(60, Math.round(num)));
+      const existing = copy[code];
+      if (existing && typeof existing === 'object') {
+        copy[code] = { ...(existing as any), days };
+      } else if (existing != null) {
+        copy[code] = { fee: Number(existing) || 0, days };
+      } else {
+        copy[code] = { fee: 0, days };
+      }
       return copy;
     });
   };
@@ -136,14 +194,25 @@ const SellerDashboardPage: React.FC<Props> = ({ onBack, onNavigate }) => {
       const ratesStr = salesMode === 'global' ? JSON.stringify(shippingRates) : '{}';
       let normalizedWebsite = websiteUrl.trim();
       if (normalizedWebsite && !/^https?:\/\//i.test(normalizedWebsite)) normalizedWebsite = `https://${normalizedWebsite}`;
+      
+      console.log('💾 Saving seller settings:', { 
+        acceptedPayments, 
+        stringified: JSON.stringify(acceptedPayments) 
+      });
+      
       const updated = await marketplaceService.updateSeller(seller.$id, { 
         salesMode, 
         shippingRates: ratesStr,
         acceptedPayments: JSON.stringify(acceptedPayments),
         ownerEmail: contactEmail.trim(),
-        websiteUrl: normalizedWebsite
+        websiteUrl: normalizedWebsite,
+        whatsapp: whatsAppNumber.trim(),
+        priceRequestType: priceRequestType
       } as any);
-      if (updated) setSeller(updated);
+      if (updated) {
+        console.log('✅ Seller updated, acceptedPayments:', updated.acceptedPayments);
+        setSeller(updated);
+      }
     } finally { setSaving(false); }
   };
 
@@ -204,17 +273,22 @@ const SellerDashboardPage: React.FC<Props> = ({ onBack, onNavigate }) => {
         image: image || undefined,
         images: galleryUrls,
         price: Math.round(localPrice),
+        quantity: quantity || 1,
+        priceUnit: priceUnit || 'Each',
+        productColors: productColors.filter(c => c).length > 0 ? productColors.filter(c => c) : ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8'],
         internationalPrices: JSON.stringify(internationalPrices),
         stockLevel: Math.max(0, Math.round(stock)),
         condition: condition,
         promoPercent: Math.max(0, Math.min(50, Math.round(promoPercent || 0))),
         sellerId: seller.$id,
         countryCode: seller.countryCode || 'ID',
-        currency: ''
+        currency: '',
+        deliveryDays: localDeliveryDays,
+        productDetails: JSON.stringify(productDetails)
       } as any);
       console.log('Product created:', created);
       if (created) {
-        setName(''); setDesc(''); setWhatYouWillReceive(''); setVideoUrl(''); setImage(''); setMainImageFile(null); setImages([null,null,null,null,null]); setLocalPrice(0); setInternationalPrices({}); setStock(0); setCondition('New'); setPromoPercent(0);
+        setName(''); setDesc(''); setWhatYouWillReceive(''); setVideoUrl(''); setImage(''); setMainImageFile(null); setImages([null,null,null,null,null]); setLocalPrice(0); setQuantity(1); setPriceUnit('Each'); setProductColors([]); setInternationalPrices({}); setStock(0); setCondition('New'); setPromoPercent(0); setProductDetails({});
         alert('Product created successfully!');
         const list = await marketplaceService.listProductsBySeller(seller.$id);
         setMyProducts(list);
@@ -270,6 +344,20 @@ const SellerDashboardPage: React.FC<Props> = ({ onBack, onNavigate }) => {
             <input value={websiteUrl} onChange={e=>setWebsiteUrl(e.target.value)} placeholder="www.example.com or https://example.com" className="w-full border rounded-md px-3 py-2" />
             <p className="text-xs text-gray-500 mt-1">Shown as a Website button on your product cards and shop.</p>
           </div>
+          <div className="mb-3">
+            <label className="block text-sm font-medium mb-1">WhatsApp Number (optional)</label>
+            <input value={whatsAppNumber} onChange={e=>setWhatsAppNumber(e.target.value)} placeholder="+1234567890" className="w-full border rounded-md px-3 py-2" />
+            <p className="text-xs text-gray-500 mt-1">Include country code (e.g., +1 for US, +44 for UK). Buyers can contact you via WhatsApp from product pages.</p>
+          </div>
+          <div className="mb-3">
+            <label className="block text-sm font-medium mb-1">Price Request Display (optional)</label>
+            <select value={priceRequestType} onChange={e=>setPriceRequestType(e.target.value)} className="w-full border rounded-md px-3 py-2">
+              <option value="">None</option>
+              <option value="Wholesale">Wholesale Prices on Request</option>
+              <option value="Retail">Retail Prices on Request</option>
+            </select>
+            <p className="text-xs text-gray-500 mt-1">Show a badge above Contact Us section indicating customers can request special pricing.</p>
+          </div>
           <div className="flex gap-4 text-sm mb-3">
             <label className="flex items-center gap-2"><input type="radio" checked={salesMode==='local'} onChange={() => setSalesMode('local')} /> Local</label>
             <label className="flex items-center gap-2"><input type="radio" checked={salesMode==='global'} onChange={() => setSalesMode('global')} /> Global</label>
@@ -311,7 +399,7 @@ const SellerDashboardPage: React.FC<Props> = ({ onBack, onNavigate }) => {
                           <input
                             type="number"
                             min={0}
-                            value={(shippingRates as any)[c.code] ?? ''}
+                            value={(() => { const r:any=(shippingRates as any)[c.code]; return typeof r==='object' ? (r?.fee ?? '') : (r ?? ''); })()}
                             onChange={(e)=>handleSetRate(c.code, e.target.value)}
                             placeholder="Fee"
                             className="w-24 border rounded-md px-2 py-1 text-sm"
@@ -382,6 +470,38 @@ const SellerDashboardPage: React.FC<Props> = ({ onBack, onNavigate }) => {
               <div className="text-xs text-gray-500 text-right">{desc.length}/500</div>
             </div>
             <div className="sm:col-span-2">
+              <label className="block text-sm mb-1">Product Colors (up to 5)</label>
+              <p className="text-xs text-gray-600 mb-2">Select colors that represent your product. These will be displayed on the product page.</p>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {[0, 1, 2, 3, 4].map(index => (
+                  <div key={index} className="flex flex-col items-center gap-1">
+                    <input
+                      type="color"
+                      value={productColors[index] || '#000000'}
+                      onChange={(e) => {
+                        const newColors = [...productColors];
+                        newColors[index] = e.target.value;
+                        setProductColors(newColors);
+                      }}
+                      className="w-12 h-12 rounded-full border-2 border-gray-300 cursor-pointer"
+                    />
+                    {productColors[index] && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newColors = productColors.filter((_, i) => i !== index);
+                          setProductColors(newColors);
+                        }}
+                        className="text-xs text-red-600 hover:text-red-800"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="sm:col-span-2">
               <label className="block text-sm mb-1">What You Will Receive (optional)</label>
               <p className="text-xs text-gray-600 mb-1">Explain clearly what the buyer receives when purchasing (e.g., color, shape, size, specifications, warranty/guarantee, inclusions). This helps resolve any issues after delivery.</p>
               <textarea value={whatYouWillReceive} onChange={e=>setWhatYouWillReceive(e.target.value)} className="w-full border rounded-md px-3 py-2" rows={6} placeholder="Full details of included items, variants, sizes, materials, care instructions, guarantee, etc." />
@@ -391,6 +511,43 @@ const SellerDashboardPage: React.FC<Props> = ({ onBack, onNavigate }) => {
               <input value={videoUrl} onChange={e=>setVideoUrl(e.target.value)} className="w-full border rounded-md px-3 py-2" placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..." />
               <p className="text-xs text-gray-500 mt-1">Only YouTube links are allowed</p>
             </div>
+            
+            <div className="sm:col-span-2">
+              <label className="block text-sm mb-2 font-semibold">Product Details (Optional)</label>
+              <p className="text-xs text-gray-600 mb-3">Add specific product attributes that will be displayed on the product page.</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {productDetailOptions.map(option => (
+                  <div key={option} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id={`detail-${option}`}
+                      checked={!!productDetails[option]}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setProductDetails(prev => ({ ...prev, [option]: '' }));
+                        } else {
+                          const copy = { ...productDetails };
+                          delete copy[option];
+                          setProductDetails(copy);
+                        }
+                      }}
+                      className="w-4 h-4"
+                    />
+                    <label htmlFor={`detail-${option}`} className="text-sm flex-1">{option}</label>
+                    {productDetails[option] !== undefined && (
+                      <input
+                        type="text"
+                        value={productDetails[option]}
+                        onChange={(e) => setProductDetails(prev => ({ ...prev, [option]: e.target.value }))}
+                        placeholder="Value"
+                        className="border rounded px-2 py-1 text-xs w-32"
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
             <div className="sm:col-span-2">
               <label className="block text-sm mb-1">Pricing by Country</label>
               <div className="space-y-3">
@@ -407,6 +564,50 @@ const SellerDashboardPage: React.FC<Props> = ({ onBack, onNavigate }) => {
                     placeholder="0" 
                   />
                   <p className="text-xs text-blue-700 mt-1">Price in your local currency</p>
+                  <div className="mt-2">
+                    <label className="block text-xs font-semibold text-blue-800 mb-1">Price Unit</label>
+                    <select
+                      value={priceUnit}
+                      onChange={e=>setPriceUnit(e.target.value)}
+                      className="w-full border rounded-md px-3 py-2"
+                    >
+                      <option value="Each">Each</option>
+                      <option value="Joblot">Joblot</option>
+                      <option value="Pallet">Pallet</option>
+                      <option value="Set">Set</option>
+                      <option value="Box">Box</option>
+                      <option value="Container">Container</option>
+                      <option value="Wholesale Lot">Wholesale Lot</option>
+                      <option value="Bundle">Bundle</option>
+                      <option value="Pack">Pack</option>
+                    </select>
+                    <p className="text-xs text-blue-700 mt-1">Select the unit for this price</p>
+                  </div>
+                  <div className="mt-2">
+                    <label className="block text-xs font-semibold text-blue-800 mb-1">Quantity (pcs)</label>
+                    <input
+                      type="number"
+                      min={1}
+                      value={quantity || ''}
+                      onChange={e=>setQuantity(e.target.value === '' ? 1 : Number(e.target.value))}
+                      className="w-full border rounded-md px-3 py-2"
+                      placeholder="1"
+                    />
+                    <p className="text-xs text-blue-700 mt-1">Number of pieces for this price</p>
+                  </div>
+                  <div className="mt-2">
+                    <label className="block text-xs font-semibold text-blue-800 mb-1">Local Delivery Days</label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={60}
+                      value={localDeliveryDays || ''}
+                      onChange={e=>setLocalDeliveryDays(e.target.value === '' ? 6 : Number(e.target.value))}
+                      className="w-full border rounded-md px-3 py-2"
+                      placeholder="e.g. 6"
+                    />
+                    <p className="text-xs text-blue-700 mt-1">Estimated delivery time for your local country.</p>
+                  </div>
                 </div>
 
                 {/* International Prices */}
@@ -437,8 +638,41 @@ const SellerDashboardPage: React.FC<Props> = ({ onBack, onNavigate }) => {
                             placeholder={`Price in ${countryCode} currency`}
                           />
                           <p className="text-xs text-gray-600 mt-1">
-                            Enter price converted to {countryCode} currency (shipping rate: ${shippingRates[countryCode]})
+                            {(() => {
+                              const rate: any = (shippingRates as any)[countryCode];
+                              const fee = typeof rate === 'object' ? rate?.fee : rate;
+                              const days = typeof rate === 'object' ? rate?.days : undefined;
+                              return (
+                                <span>
+                                  Enter price converted to {countryCode} currency (shipping fee: ${'{'}fee{'}'}{days?`, ${'{'}days{'}'} days`:''})
+                                </span>
+                              );
+                            })()}
                           </p>
+                          <div className="mt-2 grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="block text-xs font-semibold text-gray-700 mb-1">Delivery Fee</label>
+                              <input
+                                type="number"
+                                value={(() => { const r:any=(shippingRates as any)[countryCode]; return typeof r==='object'? (r?.fee||0): (r||0); })()}
+                                onChange={e=>handleSetRate(countryCode, e.target.value)}
+                                className="w-full border rounded-md px-2 py-1 text-sm"
+                                placeholder="Fee"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-semibold text-gray-700 mb-1">Delivery Days</label>
+                              <input
+                                type="number"
+                                min={1}
+                                max={60}
+                                value={(() => { const r:any=(shippingRates as any)[countryCode]; return typeof r==='object' ? (r?.days || '') : ''; })()}
+                                onChange={e=>handleSetDays(countryCode, e.target.value)}
+                                className="w-full border rounded-md px-2 py-1 text-sm"
+                                placeholder="e.g. 6"
+                              />
+                            </div>
+                          </div>
                         </div>
                       );
                     })}

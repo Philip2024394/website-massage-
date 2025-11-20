@@ -4,7 +4,11 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import { SimpleLanguageProvider } from './context/SimpleLanguageContext';
 import ErrorBoundary from './components/ErrorBoundary';
+import { DOMErrorHandler } from './utils/domErrorHandler';
 import './index.css';
+
+// Initialize DOM error handler BEFORE React renders
+DOMErrorHandler.initializeForChrome();
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {

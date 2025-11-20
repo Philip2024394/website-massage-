@@ -435,7 +435,11 @@ const HomePage: React.FC<HomePageProps> = ({
 
     // Log therapist display info with location filtering
     useEffect(() => {
-        const liveTherapists = nearbyTherapists.filter((t: any) => t.isLive === true);
+        const isLiveNow = (t: any) => {
+            const s = (t.status || t.availability || '').toString().toLowerCase();
+            return t.isLive === true || (s && s !== 'offline');
+        };
+        const liveTherapists = nearbyTherapists.filter(isLiveNow);
         const filteredTherapists = liveTherapists.filter((t: any) => 
             selectedMassageType === 'all' || (t.massageTypes && t.massageTypes.includes(selectedMassageType))
         );
@@ -449,7 +453,10 @@ const HomePage: React.FC<HomePageProps> = ({
         console.log('  🎨 Selected massage type:', selectedMassageType);
         
         // Also log places
-        const livePlaces = nearbyPlaces.filter((p: any) => p.isLive === true);
+        const livePlaces = nearbyPlaces.filter((p: any) => {
+            const s = (p.status || p.availability || '').toString().toLowerCase();
+            return p.isLive === true || (s && s !== 'offline');
+        });
         console.log('  🏢 Total places prop:', places.length);
         console.log('  📍 Nearby places (location-filtered):', nearbyPlaces.length);
         console.log('  🔴 Live nearby places:', livePlaces.length);
@@ -670,25 +677,25 @@ const HomePage: React.FC<HomePageProps> = ({
                 <div className="flex bg-gray-200 rounded-full p-1 mb-4">
                     <button 
                         onClick={() => setActiveTab('home')} 
-                        className={`w-1/2 py-2 px-4 rounded-full flex items-center justify-center gap-2 text-sm font-semibold transition-colors duration-300 ${activeTab === 'home' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
+                        className={`flex-1 py-2 px-4 rounded-full flex items-center justify-center gap-2 text-sm font-semibold transition-colors duration-300 ${activeTab === 'home' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
                     >
-                        <HomeIcon className="w-4 h-4" />
-                        {t.home.homeServiceTab}
+                        <HomeIcon className="w-4 h-4 flex-shrink-0" />
+                        <span className="truncate">{t.home.homeServiceTab}</span>
                     </button>
                     <button 
                         onClick={() => setActiveTab('places')} 
-                        className={`w-1/2 py-2 px-4 rounded-full flex items-center justify-center gap-2 text-sm font-semibold transition-colors duration-300 ${activeTab === 'places' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
+                        className={`flex-1 py-2 px-4 rounded-full flex items-center justify-center gap-2 text-sm font-semibold transition-colors duration-300 ${activeTab === 'places' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
                     >
-                        <Building className="w-4 h-4" />
-                        {t.home.massagePlacesTab}
+                        <Building className="w-4 h-4 flex-shrink-0" />
+                        <span className="truncate">{t.home.massagePlacesTab}</span>
                     </button>
                 </div>
 
 
                 <div className="space-y-3 mb-6">
                     <div className="flex items-center w-full gap-3">
-                        <div className="relative flex-1 min-w-0 basis-0">
-                            <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"/>
+                        <div className="relative flex-1 min-w-0">
+                            <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 flex-shrink-0"/>
                             <select 
                                 className="w-full pl-10 pr-8 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 appearance-none focus:outline-none focus:ring-2 focus:ring-green-600"
                                 value={selectedMassageType}
@@ -725,7 +732,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                     alert('Navigation function not available. Please refresh the page.');
                                 }
                             }} 
-                            className="ml-auto inline-flex p-0 bg-transparent border-0 outline-none focus:outline-none active:outline-none ring-0 focus:ring-0 cursor-pointer items-center justify-center flex-shrink-0"
+                            className="flex-shrink-0 inline-flex p-0 bg-transparent border-0 outline-none focus:outline-none active:outline-none ring-0 focus:ring-0 cursor-pointer items-center justify-center"
                             style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                             type="button"
                             title="Click to go to Online Shop"
@@ -733,7 +740,7 @@ const HomePage: React.FC<HomePageProps> = ({
                             <img 
                                 src="https://ik.imagekit.io/7grri5v7d/online%20shop.png"
                                 alt="Online Shop"
-                                className="select-none transition-opacity hover:opacity-90 h-10 w-auto sm:h-16 md:h-[88px] lg:h-[108px]"
+                                className="select-none transition-opacity hover:opacity-90 w-auto h-10 sm:h-12 md:h-14"
                                 loading="lazy"
                                 draggable={false}
                             />
@@ -755,7 +762,10 @@ const HomePage: React.FC<HomePageProps> = ({
                         {/* Build list with injected unique mainImage per view */}
                         {(() => {
                             const preparedTherapists = nearbyTherapists
-                                .filter((t: any) => t.isLive === true)
+                                .filter((t: any) => {
+                                    const s = (t.status || t.availability || '').toString().toLowerCase();
+                                    return t.isLive === true || (s && s !== 'offline');
+                                })
                                 .filter((t: any) => selectedMassageType === 'all' || (t.massageTypes && t.massageTypes.includes(selectedMassageType)))
                                 .map((therapist: any, index: number) => {
                                     // Assign deterministic unique image from shuffled set; if more therapists than images, start second cycle
@@ -807,7 +817,10 @@ const HomePage: React.FC<HomePageProps> = ({
                                 );
                             });
                         })()}
-                        {nearbyTherapists.filter((t: any) => t.isLive === true).length === 0 && (
+                        {nearbyTherapists.filter((t: any) => {
+                            const s = (t.status || t.availability || '').toString().toLowerCase();
+                            return t.isLive === true || (s && s !== 'offline');
+                        }).length === 0 && (
                             <div className="text-center py-12 bg-white rounded-lg">
                                 <p className="text-gray-500">Tidak ada terapis tersedia di area Anda saat ini.</p>
                                 {autoDetectedLocation && (
@@ -857,7 +870,10 @@ const HomePage: React.FC<HomePageProps> = ({
                                 places: places
                             });
                             
-                            const livePlaces = nearbyPlaces?.filter(place => place.isLive) || [];
+                            const livePlaces = (nearbyPlaces || []).filter((place: any) => {
+                                const s = (place.status || place.availability || '').toString().toLowerCase();
+                                return place.isLive === true || (s && s !== 'offline');
+                            });
                             
                             if (livePlaces.length === 0) {
                                 return (

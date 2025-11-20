@@ -56,23 +56,33 @@ const calculateEnhancedDistance = async (
 const parseCoordinates = (coordinates: any): { lat: number; lng: number } | null => {
     try {
         let coords = coordinates;
-        
-        // If it's a string, parse it
-        if (typeof coordinates === 'string') {
-            coords = JSON.parse(coordinates);
+        if (typeof coords === 'string') {
+            coords = JSON.parse(coords);
         }
-        
-        // Handle object format: {lat: number, lng: number}
+        // GeoJSON Point from Appwrite: { type: 'Point', coordinates: [lng, lat] }
+        if (
+            coords && typeof coords === 'object' &&
+            (coords.type === 'Point' || coords.$type === 'Point') &&
+            Array.isArray(coords.coordinates) &&
+            coords.coordinates.length === 2 &&
+            typeof coords.coordinates[0] === 'number' &&
+            typeof coords.coordinates[1] === 'number'
+        ) {
+            const [lng, lat] = coords.coordinates;
+            return { lat, lng };
+        }
+        // Object {lat,lng}
         if (coords && typeof coords.lat === 'number' && typeof coords.lng === 'number') {
-            return coords;
+            return { lat: coords.lat, lng: coords.lng };
         }
-        
-        // Handle array format: [lat, lng]
-        if (Array.isArray(coords) && coords.length === 2 && 
-            typeof coords[0] === 'number' && typeof coords[1] === 'number') {
+        // Object {latitude, longitude}
+        if (coords && typeof coords.latitude === 'number' && typeof coords.longitude === 'number') {
+            return { lat: coords.latitude, lng: coords.longitude };
+        }
+        // Array [lat, lng]
+        if (Array.isArray(coords) && coords.length === 2 && typeof coords[0] === 'number' && typeof coords[1] === 'number') {
             return { lat: coords[0], lng: coords[1] };
         }
-        
         console.warn('Coordinates format not recognized:', coords);
     } catch (error) {
         console.warn('Failed to parse coordinates:', coordinates, error);
