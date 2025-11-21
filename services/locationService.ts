@@ -300,7 +300,9 @@ class LocationService {
                 timestamp: this.lastLocationUpdate
             }));
             // Save country code separately for Appwrite filtering
-            if (location.countryCode) {
+            // BUT don't override if user manually selected a country
+            const manualSelection = localStorage.getItem('manual_country_selection');
+            if (location.countryCode && manualSelection !== 'true') {
                 localStorage.setItem('cached_countryCode', location.countryCode);
             }
         } catch (error) {
