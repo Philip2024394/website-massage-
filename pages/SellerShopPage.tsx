@@ -1,7 +1,7 @@
 import React from 'react';
 import { marketplaceService, type MarketplaceSeller, type MarketplaceProduct } from '../lib/marketplaceService';
 import { COUNTRIES } from '../countries';
-import { Star, Home } from 'lucide-react';
+import { Star, Home, BadgePercent } from 'lucide-react';
 
 interface Props {
   onNavigate?: (page: string) => void;
@@ -83,6 +83,20 @@ const SellerShopPage: React.FC<Props> = ({ onNavigate, onBack }) => {
     return products.slice(0, 3);
   }, [products]);
 
+  // Pagination state (12 per page)
+  const pageSize = 12;
+  const [page, setPage] = React.useState(1);
+  const totalPages = Math.max(1, Math.ceil(products.length / pageSize));
+  const pagedProducts = React.useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return products.slice(start, start + pageSize);
+  }, [products, page]);
+
+  // Ensure page stays within bounds if products list updates
+  React.useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [totalPages, page]);
+
   const viewProduct = (productId: string) => {
     try {
       sessionStorage.setItem('marketplace_selected_product', productId);
@@ -91,8 +105,17 @@ const SellerShopPage: React.FC<Props> = ({ onNavigate, onBack }) => {
   };
 
   return (
-    <div className="w-full min-h-screen bg-white">
-      {/* Removed background image and screen cover for clean solid backdrop */}
+    <div
+      className="w-full min-h-screen"
+      style={{
+        backgroundImage: "url('https://ik.imagekit.io/7grri5v7d/massage%20store.png?updatedAt=1763544249725')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed'
+      }}
+    >
+      {/* Seller shop background image applied (reduced overlay for clarity) */}
+      <div className="w-full min-h-screen bg-white/50">
       
       {/* Round Home Button - Fixed Top Left */}
       <button
@@ -172,53 +195,68 @@ const SellerShopPage: React.FC<Props> = ({ onNavigate, onBack }) => {
                 <div className="text-center text-gray-500 py-12 bg-white/70 backdrop-blur-sm rounded-2xl border border-gray-200">No products available yet.</div>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
-                  {products.map(product => (
+                  {pagedProducts.map(product => (
                     <div 
                       key={product.$id} 
                       className="flex flex-col items-center group cursor-pointer relative z-30"
                       onClick={() => viewProduct(product.$id)}
                     >
-                      {/* Round Product Image with Star Rating and Curved Text on Left Side */}
-                      <div className="relative w-full aspect-square mb-3 z-30">
-                        <div
-                          className={
-                            `w-full h-full rounded-full overflow-hidden shadow-lg group-hover:shadow-2xl group-hover:scale-105 transition-all duration-300 ring-4 ring-white relative z-30 bg-white ` +
-                            (!((product.images && product.images[0]) || product.image) ? 'bg-gradient-to-br from-gray-200 to-gray-300' : '')
-                          }
-                        >
-                          {(product.images && product.images[0]) || product.image ? (
-                            <img
-                              src={(product.images && product.images[0]) || product.image || ''}
-                              alt={product.name}
-                              className="w-full h-full object-cover object-center relative z-30"
-                              loading="lazy"
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-orange-200 to-orange-400" />
-                          )}
+                      {/* Round Product Image with Star Rating */}
+                      <div className="relative w-full aspect-square mb-3 z-30 overflow-visible">
+                        {/* Centered shrink wrapper to create margin for outside text */}
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div
+                            className={
+                              `w-[82%] h-[82%] rounded-full overflow-hidden shadow-lg group-hover:shadow-2xl group-hover:scale-105 transition-all duration-300 ring-4 ring-white bg-white ` +
+                              (!((product.images && product.images[0]) || product.image) ? 'bg-gradient-to-br from-gray-200 to-gray-300' : '')
+                            }
+                          >
+                            {(product.images && product.images[0]) || product.image ? (
+                              <img
+                                src={(product.images && product.images[0]) || product.image || ''}
+                                alt={product.name}
+                                className="w-full h-full object-cover object-center"
+                                loading="lazy"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gradient-to-br from-orange-200 to-orange-400" />
+                            )}
+                          </div>
                         </div>
                         
-                        {/* Star Rating Badge - Top Right Edge */}
-                        <div className="absolute top-0 right-0 bg-white rounded-full px-1.5 py-0.5 flex items-center gap-0.5 shadow-md border border-orange-200 z-40">
-                          <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-yellow-500 fill-yellow-500" />
-                          <span className="text-[10px] sm:text-xs font-bold text-gray-900">{(product.rating || 4.5).toFixed(1)}</span>
-                        </div>
+                        {/* Star Rating or Discount Badge - Top Right Edge */}
+                        {(() => {
+                          const raw = (product as any).promoPercent;
+                          let promo = 0;
+                          if (typeof raw === 'number') promo = raw;
+                          else if (typeof raw === 'string') {
+                            const parsed = parseFloat(raw);
+                            if (!isNaN(parsed)) promo = parsed;
+                          }
+                          if (promo > 0) {
+                            return (
+                              <div className="absolute top-0 right-0 bg-gradient-to-br from-orange-600 to-orange-500 rounded-full px-2 py-1 flex items-center gap-1 shadow-lg border border-orange-300 z-40 discount-flash">
+                                <BadgePercent className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" />
+                                <span className="text-[10px] sm:text-xs font-extrabold text-white tracking-wide">-{Math.round(promo)}%</span>
+                              </div>
+                            );
+                          }
+                          return (
+                            <div className="absolute top-0 right-0 bg-white rounded-full px-1.5 py-0.5 flex items-center gap-0.5 shadow-md border border-orange-200 z-40">
+                              <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-yellow-500 fill-yellow-500" />
+                              <span className="text-[10px] sm:text-xs font-bold text-gray-900">{(product.rating || 4.5).toFixed(1)}</span>
+                            </div>
+                          );
+                        })()}
 
-                        {/* Curved Product Name - Left Inner Arc */}
-                        <svg className="absolute inset-0 w-full h-full pointer-events-none z-40" viewBox="0 0 110 100" aria-hidden="true">
-                          <defs>
-                            <path
-                              id={`curve-${product.$id}`}
-                              d="M 55,5 A 45,45 0 0,0 55,95" /* Left side arc matching circle (center 55,50 radius 45) */
-                              fill="none"
-                            />
-                          </defs>
-                          <text className="text-[6px] sm:text-[7px] font-bold text-gray-900 group-hover:text-orange-600 transition-colors tracking-wide" style={{ letterSpacing: '0.15em' }}>
-                            <textPath href={`#curve-${product.$id}`} startOffset="50%" textAnchor="middle">
-                              {product.name.toUpperCase()}
-                            </textPath>
-                          </text>
-                        </svg>
+                        {/* (Brand arc removed per request) */}
+                      </div>
+
+                      {/* Straight Product Name Under Image */}
+                      <div className="-mt-1 mb-2 text-center w-full">
+                        <div className="text-[11px] sm:text-[12px] font-black tracking-wide text-gray-900 group-hover:text-orange-600 transition-colors leading-tight">
+                          {product.name.toUpperCase().slice(0, 36)}
+                        </div>
                       </div>
 
                       {/* View Button with Price */}
@@ -227,22 +265,55 @@ const SellerShopPage: React.FC<Props> = ({ onNavigate, onBack }) => {
                           e.stopPropagation();
                           viewProduct(product.$id);
                         }}
-                        className="px-5 py-2.5 bg-orange-500 text-white rounded-full text-xs sm:text-sm font-bold hover:bg-orange-600 transition-all hover:scale-105 shadow-lg hover:shadow-xl relative z-30 flex flex-col items-center gap-0.5"
+                        className="px-4 py-1 bg-orange-500 text-white rounded-full text-[11px] sm:text-xs font-bold hover:bg-orange-600 transition-all hover:scale-105 shadow-md hover:shadow-lg relative z-30 flex flex-row items-center gap-2 leading-none"
                       >
-                        <div className="flex items-center gap-1">
-                          <span className="text-xs sm:text-sm font-semibold">{currencySymbol}</span>
-                          <span className="text-sm sm:text-base font-bold">{product.price}</span>
-                        </div>
-                        <span className="text-[10px] sm:text-xs font-semibold">View</span>
+                        <span className="font-extrabold tracking-wide">{currencySymbol}{product.price}</span>
+                        <span className="text-[10px] sm:text-[11px] font-semibold">View</span>
                       </button>
                     </div>
                   ))}
+                </div>
+              )}
+
+              {/* Pagination Controls */}
+              {products.length > pageSize && (
+                <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all shadow ${page === 1 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-orange-500 hover:bg-orange-600 text-white hover:scale-105'}`}
+                    aria-label="Previous page"
+                  >
+                    ‹
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => setPage(p)}
+                      className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all shadow ${p === page ? 'bg-orange-600 text-white scale-110 ring-2 ring-orange-300' : 'bg-orange-100 text-orange-700 hover:bg-orange-400 hover:text-white hover:scale-105'}`}
+                      aria-label={`Go to page ${p}`}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                    disabled={page === totalPages}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all shadow ${page === totalPages ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-orange-500 hover:bg-orange-600 text-white hover:scale-105'}`}
+                    aria-label="Next page"
+                  >
+                    ›
+                  </button>
                 </div>
               )}
             </div>
           </>
         )}
       </main>
+      </div>
     </div>
   );
 };

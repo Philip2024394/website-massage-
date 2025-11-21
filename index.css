@@ -158,6 +158,15 @@ html, body {
 }
 
 /* Small mobile screens */
+/* Discount badge subtle flash */
+@keyframes discount-flash {
+  0% { box-shadow: 0 0 0 0 rgba(255,140,0,0.55); transform: scale(1); }
+  50% { box-shadow: 0 0 0 6px rgba(255,140,0,0); transform: scale(1.05); }
+  100% { box-shadow: 0 0 0 0 rgba(255,140,0,0); transform: scale(1); }
+}
+.discount-flash {
+  animation: discount-flash 1.6s ease-in-out infinite;
+}
 @media (max-width: 375px) {
   .modal-small-mobile {
     max-width: calc(100vw - 0.5rem) !important;

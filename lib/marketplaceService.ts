@@ -243,7 +243,17 @@ export const marketplaceService = {
     }
   },
 
-  async createProduct(input: Omit<MarketplaceProduct, '$id'> & { name: string; price: number; sellerId: string; deliveryDays?: string | number; promoPercent?: string | number }): Promise<MarketplaceProduct | null> {
+  async createProduct(
+    input: Omit<MarketplaceProduct, '$id' | 'lat' | 'lng' | 'deliveryDays' | 'promoPercent'> & {
+      name: string;
+      price: number;
+      sellerId: string;
+      deliveryDays?: string | number;
+      promoPercent?: string | number;
+      lat?: string | number;
+      lng?: string | number;
+    }
+  ): Promise<MarketplaceProduct | null> {
     try {
       const dbId = APPWRITE_CONFIG.databaseId;
       const colId = (APPWRITE_CONFIG.collections as any).marketplaceProducts;
@@ -398,6 +408,45 @@ export const marketplaceService = {
       const doc = await databases.getDocument(dbId, colId, id);
       return doc as any as MarketplaceProduct;
     } catch { return null; }
+  },
+
+  async updateProduct(id: string, patch: {
+    name?: string;
+    description?: string;
+    price?: number;
+    stockLevel?: number;
+    promoPercent?: string | number;
+    isActive?: boolean;
+    image?: string;
+    images?: string[];
+    deliveryDays?: string | number;
+    productDetails?: string | Record<string, string>;
+  }): Promise<MarketplaceProduct | null> {
+    try {
+      const dbId = APPWRITE_CONFIG.databaseId;
+      const colId = (APPWRITE_CONFIG.collections as any).marketplaceProducts;
+      if (!colId) return null;
+      const payload: any = {};
+      if (typeof patch.name === 'string') payload.name = patch.name;
+      if (typeof patch.description === 'string') payload.description = patch.description;
+      if (typeof patch.price !== 'undefined') payload.price = typeof patch.price === 'number' ? Math.round(patch.price) : parseInt(String(patch.price || 0), 10) || 0;
+      if (typeof patch.stockLevel !== 'undefined') payload.stockLevel = Math.max(0, Number(patch.stockLevel) || 0);
+      if (typeof patch.promoPercent !== 'undefined') {
+        const n = typeof patch.promoPercent === 'number' ? Math.max(0, Math.min(50, Math.round(patch.promoPercent))) : parseInt(String(patch.promoPercent || '0'), 10) || 0;
+        payload.promoPercent = String(n);
+      }
+      if (typeof patch.isActive === 'boolean') payload.isActive = !!patch.isActive;
+      if (typeof patch.image === 'string') payload.image = patch.image;
+      if (Array.isArray(patch.images)) payload.images = patch.images.slice(0, 5);
+      if (typeof patch.deliveryDays !== 'undefined') payload.deliveryDays = (typeof patch.deliveryDays === 'number' ? String(Math.max(1, Math.min(60, Math.round(patch.deliveryDays)))) : (String(patch.deliveryDays || '').trim())) || '6';
+      if (typeof patch.productDetails !== 'undefined') payload.productDetails = typeof patch.productDetails === 'string' ? patch.productDetails : JSON.stringify(patch.productDetails || {});
+
+      const doc = await databases.updateDocument(dbId, colId, id, payload);
+      return doc as any as MarketplaceProduct;
+    } catch (e) {
+      console.error('updateProduct failed:', e);
+      return null;
+    }
   },
 
   // DEV utility: ensure a seller for current user and create a simple test product

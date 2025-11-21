@@ -49,6 +49,52 @@ const SellerDashboardPage: React.FC<Props> = ({ onBack, onNavigate }) => {
   const [verifyingAction, setVerifyingAction] = useState<boolean>(false);
   const [productDetails, setProductDetails] = useState<Record<string, string>>({});
 
+  // Edit modal state
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editPrice, setEditPrice] = useState<number>(0);
+  const [editStock, setEditStock] = useState<number>(0);
+  const [editPromo, setEditPromo] = useState<number>(0);
+  const [editActive, setEditActive] = useState<boolean>(true);
+  const [editSaving, setEditSaving] = useState<boolean>(false);
+
+  const openEdit = (p: MarketplaceProduct) => {
+    setEditingId(p.$id);
+    setEditName(p.name || '');
+    setEditPrice(typeof p.price === 'number' ? p.price : Number(p.price) || 0);
+    setEditStock(typeof p.stockLevel === 'number' ? p.stockLevel : 0);
+    const promo = parseInt(String((p as any).promoPercent || '0'), 10) || 0;
+    setEditPromo(promo);
+    setEditActive(p.isActive !== false);
+  };
+
+  const closeEdit = () => {
+    setEditingId(null);
+    setEditSaving(false);
+  };
+
+  const saveEdit = async () => {
+    if (!editingId) return;
+    setEditSaving(true);
+    try {
+      const updated = await marketplaceService.updateProduct(editingId, {
+        name: editName.trim(),
+        price: Math.max(0, Math.round(editPrice)),
+        stockLevel: Math.max(0, Math.round(editStock)),
+        promoPercent: Math.max(0, Math.min(50, Math.round(editPromo))),
+        isActive: !!editActive,
+      });
+      if (!updated) {
+        alert('Failed to update product.');
+      } else {
+        setMyProducts(prev => prev.map(p => (p.$id === updated.$id ? { ...p, ...updated } : p)));
+        closeEdit();
+      }
+    } catch (e) {
+      alert('Error updating product');
+    } finally { setEditSaving(false); }
+  };
+
   const productDetailOptions = [
     'Material',
     'Size',
@@ -251,7 +297,7 @@ const SellerDashboardPage: React.FC<Props> = ({ onBack, onNavigate }) => {
     console.log('Create product clicked');
     if (!seller) { console.log('No seller'); return; }
     if (!name.trim()) { alert('Enter product name'); return; }
-    if (price < 0) { alert('Price cannot be negative'); return; }
+    if (localPrice < 0) { alert('Price cannot be negative'); return; }
     if (desc.length > 500) { alert('Description must be 500 characters or less'); return; }
     if (videoUrl.trim()) {
       const v = videoUrl.trim();
@@ -263,7 +309,7 @@ const SellerDashboardPage: React.FC<Props> = ({ onBack, onNavigate }) => {
     try {
       console.log('Uploading gallery images...');
       const galleryUrls = await uploadImagesAndGetUrls();
-      console.log('Creating product...', { name, price, image });
+      console.log('Creating product...', { name, price: localPrice, image });
       const created = await marketplaceService.createProduct({
         $id: '' as any,
         name: name.trim(),
@@ -708,7 +754,6 @@ const SellerDashboardPage: React.FC<Props> = ({ onBack, onNavigate }) => {
               />
               <p className="text-xs text-gray-500 mt-1">Set a promo percentage to show an orange badge on your product card.</p>
             </div>
-            </div>
           </div>
           <div className="pt-3">
             <button disabled={uploading || creating} onClick={createProduct} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50">
@@ -739,12 +784,55 @@ const SellerDashboardPage: React.FC<Props> = ({ onBack, onNavigate }) => {
                     </div>
                     <div className="text-xs text-gray-500 truncate">Stock: {typeof p.stockLevel==='number'? p.stockLevel: 0}</div>
                   </div>
-                  <div className="text-sm text-gray-700">{p.price}</div>
+                  <div className="flex items-center gap-2">
+                    <div className="text-sm text-gray-700">{p.price}</div>
+                    <button onClick={()=>openEdit(p)} className="text-xs px-2 py-1 rounded bg-orange-100 text-orange-700 hover:bg-orange-200">Edit</button>
+                  </div>
                 </div>
               ))}
             </div>
           )}
         </section>
+        {editingId && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4" onClick={closeEdit}>
+            <div className="w-full max-w-md bg-white rounded-xl shadow-xl p-4" onClick={e=>e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-semibold">Edit Product</h3>
+                <button onClick={closeEdit} className="text-gray-500 hover:text-gray-700">✕</button>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Name</label>
+                  <input value={editName} onChange={e=>setEditName(e.target.value)} className="w-full border rounded px-3 py-2" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Price</label>
+                    <input type="number" value={editPrice} onChange={e=>setEditPrice(Number(e.target.value)||0)} className="w-full border rounded px-3 py-2" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Stock</label>
+                    <input type="number" value={editStock} onChange={e=>setEditStock(Number(e.target.value)||0)} className="w-full border rounded px-3 py-2" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Promo %</label>
+                    <input type="number" min={0} max={50} value={editPromo} onChange={e=>setEditPromo(Number(e.target.value)||0)} className="w-full border rounded px-3 py-2" />
+                  </div>
+                  <div className="flex items-center gap-2 mt-6">
+                    <input id="edit-active" type="checkbox" checked={editActive} onChange={e=>setEditActive(e.target.checked)} />
+                    <label htmlFor="edit-active" className="text-sm">Active</label>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-4 flex items-center justify-end gap-2">
+                <button onClick={closeEdit} className="px-3 py-2 rounded bg-gray-100 hover:bg-gray-200">Cancel</button>
+                <button disabled={editSaving} onClick={saveEdit} className="px-4 py-2 rounded bg-orange-600 text-white hover:bg-orange-700 disabled:opacity-50">{editSaving? 'Saving…':'Save Changes'}</button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
