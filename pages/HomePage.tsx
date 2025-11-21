@@ -657,76 +657,44 @@ const HomePage: React.FC<HomePageProps> = ({
                     </span>
                 </div>
 
-                {/* Subtle location info line */}
-                <div className="text-center text-sm text-gray-600 mb-4">
+                {/* Location display line */}
+                <div className="text-center text-base font-semibold text-orange-600 mb-4">
                     {(() => {
-                        const addr = userLocation?.address;
-                        const country = userLocation?.country;
-                        let label: string | null = null;
-                        if (addr && typeof addr === 'string') {
-                            // Try to display "City/Region, Country" if address contains Indonesia
-                            if (addr.includes('Indonesia')) {
-                                const parts = addr.split(',').map(p => p.trim());
-                                const idx = parts.findIndex(p => p.toLowerCase() === 'indonesia');
-                                if (idx > 0) {
-                                    const cityOrRegion = parts[idx - 1];
-                                    label = `${cityOrRegion}, Indonesia`;
-                                }
+                        try {
+                            const raw = localStorage.getItem('app_user_location');
+                            const parsed = raw ? JSON.parse(raw) : null;
+                            
+                            if (!parsed) {
+                                return '📍 Set Your Location';
                             }
+                            
+                            // Extract city/area name from address
+                            let locationText = '';
+                            if (parsed.address) {
+                                const addressParts = parsed.address.split(',').map((s: string) => s.trim());
+                                // Get first meaningful part (usually city/district)
+                                const cityPart = addressParts[0] || '';
+                                
+                                // Get country name
+                                const countryName = parsed.country || 'Unknown';
+                                
+                                locationText = `📍 Your Location: ${cityPart}, ${countryName}`;
+                            } else if (parsed.country) {
+                                locationText = `📍 Your Location: ${parsed.country}`;
+                            } else {
+                                locationText = '📍 Location Set';
+                            }
+                            
+                            return locationText;
+                        } catch {
+                            return '📍 Set Your Location';
                         }
-                        if (!label && country) {
-                            label = country;
-                        }
-                        return (
-                            <>
-                                                                {(() => {
-                                                                    try {
-                                                                        const raw = localStorage.getItem('app_user_location');
-                                                                        const parsed = raw ? JSON.parse(raw) : null;
-                                                                        
-                                                                        if (!parsed) {
-                                                                            return 'Showing All Available Therapists & Places';
-                                                                        }
-                                                                        
-                                                                        // Extract city name from address
-                                                                        let cityName = '';
-                                                                        if (parsed.address) {
-                                                                            const addressParts = parsed.address.split(',').map((s: string) => s.trim());
-                                                                            // Try to get city name (usually first or second part)
-                                                                            cityName = addressParts.length > 1 ? addressParts[0] : parsed.address;
-                                                                        }
-                                                                        
-                                                                        // Get country name
-                                                                        const cc = (parsed?.countryCode || '').toUpperCase();
-                                                                        let countryName = parsed?.country;
-                                                                        
-                                                                        if (!countryName && cc) {
-                                                                            const countryObj = COUNTRIES.find(c => c.code === cc);
-                                                                            countryName = countryObj?.name;
-                                                                            
-                                                                            if (countryName) {
-                                                                                try {
-                                                                                    const updated = { ...parsed, country: countryName };
-                                                                                    localStorage.setItem('app_user_location', JSON.stringify(updated));
-                                                                                } catch {}
-                                                                            }
-                                                                        }
-                                                                        
-                                                                        // Show location info
-                                                                        if (cityName && countryName) {
-                                                                            return `Showing Therapists & Places Near ${cityName}, ${countryName}`;
-                                                                        } else if (countryName) {
-                                                                            return `Showing Therapists & Places in ${countryName}`;
-                                                                        } else {
-                                                                            return 'Showing Nearby Therapists & Places';
-                                                                        }
-                                                                    } catch {
-                                                                        return 'Showing All Available Therapists & Places';
-                                                                    }
-                                                                })()}
-                            </>
-                        );
                     })()}
+                </div>
+
+                {/* Search radius info */}
+                <div className="text-center text-sm text-gray-500 mb-6">
+                    Showing therapists within 50km of your location
                 </div>
 
                 <div className="flex bg-gray-200 rounded-full p-1 mb-4">
