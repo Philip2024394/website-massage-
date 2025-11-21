@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { Home } from 'lucide-react';
 import { marketplaceService, type MarketplaceProduct } from '../lib/marketplaceService';
 import { useLanguageContext } from '../context/LanguageContext';
 import MarketplaceProductCard from '../components/MarketplaceProductCard';
@@ -204,6 +205,14 @@ export const MarketplacePageBase: React.FC<Props> = ({ onBack, t, userLocation, 
             <span className="block text-xs sm:text-sm font-normal text-gray-500 mt-0.5">Marketplace {currentCountryName}</span>
           </h1>
           <div className="flex items-center gap-3 sm:gap-4">
+            <button
+              onClick={() => onNavigate?.('home')}
+              className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-orange-200 flex items-center justify-center bg-white hover:bg-orange-50 hover:border-orange-400 transition-all duration-300 shadow-md hover:shadow-lg"
+              title="Home"
+              aria-label="Go to home page"
+            >
+              <Home className="w-6 h-6 sm:w-7 sm:h-7 text-orange-500" />
+            </button>
             <button
               onClick={() => setIsCountrySelectorOpen(true)}
               className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-orange-200 flex items-center justify-center bg-white hover:bg-orange-50 hover:border-orange-400 transition-all duration-300 shadow-md hover:shadow-lg"
