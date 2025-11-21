@@ -394,6 +394,8 @@ const HomePage: React.FC<HomePageProps> = ({
             filteringRef.current = true;
             try {
                 console.log('🔍 Filtering providers by GPS location:', locationToUse);
+                console.log(`📊 Total therapists available: ${therapists.length}`);
+                console.log(`📊 Total places available: ${places.length}`);
                 
                 // Get location coordinates (required for distance calculation)
                 const coords = 'lat' in locationToUse 

@@ -66,10 +66,18 @@ export const parseCoordinates = (input: any): { lat: number; lng: number } => {
       }
       // Object with {lat, lng}
       if (typeof input.lat === 'number' && typeof input.lng === 'number') {
+        // Skip invalid coordinates (0,0 is in the ocean off Africa, clearly invalid)
+        if (input.lat === 0 && input.lng === 0) {
+          return null as any;
+        }
         return { lat: input.lat, lng: input.lng };
       }
       // Some apis use {latitude, longitude}
       if (typeof input.latitude === 'number' && typeof input.longitude === 'number') {
+        // Skip invalid coordinates
+        if (input.latitude === 0 && input.longitude === 0) {
+          return null as any;
+        }
         return { lat: input.latitude, lng: input.longitude };
       }
       // Array [lat, lng]
@@ -77,11 +85,16 @@ export const parseCoordinates = (input: any): { lat: number; lng: number } => {
         Array.isArray(input) && input.length === 2 &&
         typeof input[0] === 'number' && typeof input[1] === 'number'
       ) {
+        // Skip invalid coordinates
+        if (input[0] === 0 && input[1] === 0) {
+          return null as any;
+        }
         return { lat: input[0], lng: input[1] };
       }
     }
   } catch {}
-  return { lat: 0, lng: 0 };
+  // Return null for invalid/missing coordinates so they're properly filtered out
+  return null as any;
 };
 
 export const stringifyCoordinates = (coordinates: { lat: number; lng: number }): string => {
