@@ -1,7 +1,6 @@
 import { AppLayout } from './components/layout/AppLayout';
 import { AppFooterLayout } from './components/layout/AppFooterLayout';
 import GlobalHeader from './components/GlobalHeader';
-import GlobalHomeButton from './components/GlobalHomeButton';
 import AppRouter from './AppRouter';
 import { useAllHooks } from './hooks/useAllHooks';
 import { useTranslations } from './lib/useTranslations';
@@ -379,9 +378,7 @@ const App = () => {
                 isFullScreen={state.page === 'landing' || state.isFullScreen}
             >
             {/* Global Header only in PWA standalone and when page lacks its own header */}
-            <GlobalHeader page={state.page} />
-            {/* Global Home Button on all non-home pages to replace hidden burger */}
-            <GlobalHomeButton hidden={state.page === 'home'} onClick={() => state.setPage('home')} />
+            <GlobalHeader page={state.page} onHomeClick={() => state.setPage('home')} />
             <div className={state.isFullScreen ? "flex-grow" : "flex-1"}>
                 <Suspense fallback={<div className="p-6 text-gray-600">Loading…</div>}>
                 <ErrorBoundary>

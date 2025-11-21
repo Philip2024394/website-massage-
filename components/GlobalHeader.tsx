@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import BurgerMenuIcon from './icons/BurgerMenuIcon';
+import { Home } from 'lucide-react';
 import type { Page } from '../types/pageTypes';
 import { useLanguageContext } from '../context/LanguageContext';
 import type { Language } from '../types/pageTypes';
@@ -7,6 +8,7 @@ import type { Language } from '../types/pageTypes';
 interface GlobalHeaderProps {
   page: Page;
   title?: string;
+  onHomeClick?: () => void;
 }
 
 const detectStandalone = () => {
@@ -41,7 +43,7 @@ const useHasPageHeader = (deps: any[]) => {
   return hasHeader;
 };
 
-const GlobalHeader: React.FC<GlobalHeaderProps> = ({ page, title }) => {
+const GlobalHeader: React.FC<GlobalHeaderProps> = ({ page, title, onHomeClick }) => {
   const isStandalone = useMemo(detectStandalone, []);
   const hasPageHeader = useHasPageHeader([page]);
   const { language, setLanguage } = useLanguageContext();
@@ -81,6 +83,18 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({ page, title }) => {
           <div className="text-sm text-gray-500 hidden sm:block">
             {resolvedTitle}
           </div>
+          {/* Home button shown when burger is not active (i.e., not on Home page) */}
+          {page !== 'home' && (
+            <button
+              type="button"
+              aria-label="Home"
+              onClick={onHomeClick}
+              className="p-2 rounded-md hover:bg-gray-50 active:bg-gray-100 transition-colors"
+              style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+            >
+              <Home className="w-6 h-6 text-gray-700" />
+            </button>
+          )}
           <label className="sr-only" htmlFor="lang-select">Language</label>
           <select
             id="lang-select"
