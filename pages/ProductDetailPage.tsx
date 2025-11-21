@@ -5,6 +5,7 @@ import { convertCurrency, formatCurrency } from '../lib/currencyConversion';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import CountryAppDrawer from '../components/CountryAppDrawer';
 import { COUNTRIES } from '../countries';
+import RatingModal from '../components/RatingModal';
 
 type Props = {
   onBack: () => void;
@@ -28,8 +29,6 @@ const ProductDetailPage: React.FC<Props> = ({ onBack, onNavigate }) => {
   const [buyerCountryCode, setBuyerCountryCode] = useState('');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
-  const [reviewRating, setReviewRating] = useState(0);
-  const [reviewComment, setReviewComment] = useState('');
 
   useEffect(() => {
     (async () => {
@@ -837,89 +836,38 @@ const ProductDetailPage: React.FC<Props> = ({ onBack, onNavigate }) => {
         </div>
       )}
 
-      {/* Review Modal */}
-      {isReviewModalOpen && (
-        <div
-          className="fixed inset-0 z-[10000] bg-black/50 flex items-center justify-center p-4"
-          onClick={() => setIsReviewModalOpen(false)}
-        >
-          <div
-            className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 animate-fadeIn"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-gray-900">Leave a Review</h3>
-              <button
-                onClick={() => setIsReviewModalOpen(false)}
-                className="text-gray-500 hover:text-gray-700 text-2xl leading-none"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Rating
-              </label>
-              <div className="flex gap-2">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    type="button"
-                    onClick={() => setReviewRating(star)}
-                    className="text-3xl focus:outline-none transition-transform hover:scale-110"
-                  >
-                    <span className={star <= reviewRating ? 'text-yellow-400' : 'text-gray-300'}>
-                      ★
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Your Review (Optional)
-              </label>
-              <textarea
-                value={reviewComment}
-                onChange={(e) => setReviewComment(e.target.value)}
-                rows={4}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                placeholder="Share your experience with this product..."
-              />
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  setIsReviewModalOpen(false);
-                  setReviewRating(0);
-                  setReviewComment('');
-                }}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  if (reviewRating === 0) {
-                    alert('Please select a rating');
-                    return;
-                  }
-                  // TODO: Save review to database using reviewService
-                  alert('✅ Thank you for your review!');
-                  setIsReviewModalOpen(false);
-                  setReviewRating(0);
-                  setReviewComment('');
-                }}
-                className="flex-1 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-medium transition-colors"
-              >
-                Submit Review
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* Review Modal - Enhanced */}
+      {isReviewModalOpen && seller && (
+        <RatingModal
+          onClose={() => setIsReviewModalOpen(false)}
+          onSubmit={() => {
+            setIsReviewModalOpen(false);
+            alert('✅ Thank you for your review!');
+          }}
+          itemName={seller.storeName || seller.tradingName || 'Shop'}
+          itemType="place"
+          itemId={seller.$id || ''}
+          provider={{
+            ...seller,
+            id: seller.$id || '',
+            name: seller.storeName || seller.tradingName || 'Shop',
+            profilePicture: seller.profileImage || '/default-shop.png',
+            rating: 0,
+            reviewCount: 0,
+            isLicensed: false,
+            isVerified: seller.isVerified || false
+          } as any}
+          t={{
+            title: 'Rate this seller',
+            prompt: 'How was your experience?',
+            whatsappLabel: 'WhatsApp Number',
+            whatsappPlaceholder: 'Enter your WhatsApp number',
+            submitButton: 'Submit Review',
+            selectRatingError: 'Please select a rating',
+            whatsappRequiredError: 'WhatsApp number is required',
+            confirmationV2: 'Thank you for your review! It will be visible once approved by admin.'
+          }}
+        />
       )}
 
       {/* WhatsApp Contact Modal */}
