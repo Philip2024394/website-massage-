@@ -379,7 +379,7 @@ const HomePage: React.FC<HomePageProps> = ({
         }
     }, [loggedInProvider, _loggedInAgent]);
 
-    // Filter therapists and places by location automatically
+    // Filter therapists and places by location automatically (by country)
     useEffect(() => {
         const filterByLocation = async () => {
             if (filteringRef.current) return;
@@ -394,31 +394,40 @@ const HomePage: React.FC<HomePageProps> = ({
 
             filteringRef.current = true;
             try {
-                console.log('🔍 Filtering providers by location:', locationToUse);
+                console.log('🔍 Filtering providers by country:', locationToUse);
                 
-                // Get location coordinates
-                const coords = 'lat' in locationToUse 
-                    ? { lat: locationToUse.lat, lng: locationToUse.lng }
-                    : autoDetectedLocation;
-
-                if (!coords) {
-                    // No coordinates available, show all therapists
+                // Get country code from location (handle both UserLocation and {lat, lng} types)
+                const countryCode = ('countryCode' in locationToUse && typeof locationToUse.countryCode === 'string') 
+                    ? locationToUse.countryCode.toUpperCase()
+                    : undefined;
+                
+                if (!countryCode) {
+                    // No country code, show all therapists
+                    console.log('⚠️ No country code found, showing all providers');
                     setNearbyTherapists(therapists);
                     setNearbyPlaces(places);
                     filteringRef.current = false;
                     return;
                 }
 
-                // Find nearby therapists and places (20km radius)
-                const nearbyTherapistsResult = await findNearbyTherapists('0', coords, SEARCH_RADIUS_KM);
-                const nearbyPlacesResult = await findNearbyPlaces('0', coords, SEARCH_RADIUS_KM);
+                // Filter therapists by country
+                const filteredTherapists = therapists.filter((t: any) => {
+                    const therapistCountry = t.country?.toUpperCase() || t.countryCode?.toUpperCase();
+                    return therapistCountry === countryCode;
+                });
                 
-                console.log(`📍 Found ${nearbyTherapistsResult.length} nearby therapists`);
-                console.log(`📍 Found ${nearbyPlacesResult.length} nearby places`);
+                // Filter places by country
+                const filteredPlaces = places.filter((p: any) => {
+                    const placeCountry = p.country?.toUpperCase() || p.countryCode?.toUpperCase();
+                    return placeCountry === countryCode;
+                });
                 
-                // If no nearby providers found, fallback to all therapists
-                setNearbyTherapists(nearbyTherapistsResult.length > 0 ? nearbyTherapistsResult : therapists);
-                setNearbyPlaces(nearbyPlacesResult.length > 0 ? nearbyPlacesResult : places);
+                console.log(`📍 Found ${filteredTherapists.length} therapists in ${countryCode}`);
+                console.log(`📍 Found ${filteredPlaces.length} places in ${countryCode}`);
+                
+                // If no providers found in this country, fallback to all
+                setNearbyTherapists(filteredTherapists.length > 0 ? filteredTherapists : therapists);
+                setNearbyPlaces(filteredPlaces.length > 0 ? filteredPlaces : places);
                 
             } catch (error) {
                 console.log('📍 Location filtering failed (silent fallback):', error);
