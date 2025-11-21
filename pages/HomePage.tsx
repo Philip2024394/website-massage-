@@ -675,7 +675,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                                                         const cc = (parsed?.countryCode || '').toUpperCase();
                                                                         // Find actual country name from COUNTRIES array
                                                                         const countryObj = COUNTRIES.find(c => c.code === cc);
-                                                                        const countryName = countryObj?.name || cc || 'Your Location';
+                                                                        const countryName = countryObj?.name || 'Unknown Country';
                                                                         return `Displaying 20 km of Your ${countryName} Location.`;
                                                                     } catch {
                                                                         return 'Displaying 20 km of Your Location.';
