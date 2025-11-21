@@ -197,7 +197,7 @@ export const useNavigation = ({
             
             console.log('🚀 Setting user location to:', location);
             setUserLocation(location);
-            localStorage.setItem('user_location', JSON.stringify(location));
+            localStorage.setItem('app_user_location', JSON.stringify(location));
             
             // Navigate to home page immediately
             console.log('🚀 Navigating to home page');
@@ -212,7 +212,7 @@ export const useNavigation = ({
             // Ensure navigation happens even if other operations fail
             setLanguage(lang);
             setUserLocation(location);
-            localStorage.setItem('user_location', JSON.stringify(location));
+            localStorage.setItem('app_user_location', JSON.stringify(location));
             sessionStorage.setItem('has_entered_app', 'true');
             setPage('home');
         }
@@ -222,7 +222,7 @@ export const useNavigation = ({
 
     const handleSetUserLocation = useCallback((location: UserLocation) => {
         setUserLocation(location);
-        localStorage.setItem('user_location', JSON.stringify(location));
+        localStorage.setItem('app_user_location', JSON.stringify(location));
     }, [setUserLocation]);
 
     const handleSetSelectedPlace = useCallback((place: Place | null) => {
