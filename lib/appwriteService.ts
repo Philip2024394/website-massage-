@@ -335,14 +335,17 @@ export const therapistService = {
     },
     async getAll(): Promise<any[]> {
         try {
-            console.log('📋 Fetching all therapists from collection:', APPWRITE_CONFIG.collections.therapists);
-            // Removed country filter - GPS distance filtering handles location-based filtering
+            const cc = localStorage.getItem('cached_countryCode') || 'ID';
+            console.log('📋 Fetching therapists for country:', cc);
             let response: any;
             response = await rateLimitedDb.listDocuments(
                 databases,
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.therapists,
-                [Query.limit(100)] // Get all therapists, filter by GPS distance later
+                [
+                    Query.equal('countryCode', cc),
+                    Query.limit(100)
+                ]
             );
             console.log('✅ Fetched therapists from Appwrite:', response?.documents?.length || 0);
             console.log('✅ Final therapists count:', response?.documents?.length || 0);
@@ -863,11 +866,13 @@ export const placeService = {
             // If collection not found, try to discover working one
             let response;
             try {
-                // Removed country filter - GPS distance filtering handles location
+                const cc = localStorage.getItem('cached_countryCode') || 'ID';
+                console.log('📋 Fetching places for country:', cc);
                 response = await databases.listDocuments(
                     APPWRITE_CONFIG.databaseId,
                     collectionId,
                     [
+                        Query.equal('countryCode', cc),
                         Query.equal('category', 'massage-place'),
                         Query.equal('isLive', true),
                         Query.limit(100)

@@ -228,6 +228,7 @@ const HomePage: React.FC<HomePageProps> = ({
         try {
             // Persist immediately for currency/utils that read localStorage directly
             localStorage.setItem('app_user_location', JSON.stringify({ address, lat, lng, countryCode: code, country: name }));
+            localStorage.setItem('cached_countryCode', code); // For Appwrite country filtering
         } catch {}
         setIsCountrySelectorOpen(false);
         setCountrySearch('');

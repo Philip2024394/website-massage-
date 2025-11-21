@@ -299,6 +299,10 @@ class LocationService {
                 location,
                 timestamp: this.lastLocationUpdate
             }));
+            // Save country code separately for Appwrite filtering
+            if (location.countryCode) {
+                localStorage.setItem('cached_countryCode', location.countryCode);
+            }
         } catch (error) {
             console.warn('Failed to cache location to localStorage:', error);
         }
