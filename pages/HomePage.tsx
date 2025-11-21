@@ -560,7 +560,13 @@ const HomePage: React.FC<HomePageProps> = ({
 
                         {/* Country switcher - small round flag near burger */}
                         <button
-                            onClick={() => setIsCountrySelectorOpen(true)}
+                            onClick={() => {
+                                console.log('🏳️ Current userLocation:', userLocation);
+                                console.log('🏳️ localStorage app_user_location:', localStorage.getItem('app_user_location'));
+                                console.log('🏳️ localStorage cached_countryCode:', localStorage.getItem('cached_countryCode'));
+                                console.log('🏳️ localStorage manual_country_selection:', localStorage.getItem('manual_country_selection'));
+                                setIsCountrySelectorOpen(true);
+                            }}
                             className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center bg-white hover:bg-orange-50"
                             title={userLocation?.country || userLocation?.countryCode || 'Choose country'}
                             aria-label="Choose country"

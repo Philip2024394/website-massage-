@@ -336,7 +336,8 @@ export const therapistService = {
     async getAll(): Promise<any[]> {
         try {
             const cc = localStorage.getItem('cached_countryCode') || 'ID';
-            console.log('📋 Fetching therapists for country:', cc);
+            const manualSelection = localStorage.getItem('manual_country_selection') === 'true';
+            console.log('📋 Fetching therapists for country:', cc, '| manual selection:', manualSelection);
             let response: any;
             response = await rateLimitedDb.listDocuments(
                 databases,
@@ -349,16 +350,21 @@ export const therapistService = {
             );
             console.log('✅ Fetched therapists with country filter:', response?.documents?.length || 0);
             
-            // If no therapists found with country filter, try without it (fallback for therapists without countryCode)
-            if (!response?.documents || response.documents.length === 0) {
-                console.log('⚠️ No therapists found with country filter, trying without country filter...');
+            // If manual selection active and none found, do NOT fallback – enforce strict country view
+            if ((!response?.documents || response.documents.length === 0) && manualSelection) {
+                console.log('🚫 Strict country mode active - not falling back to all therapists');
+                return [];
+            }
+            // Automatic fallback only if NOT manual selection (helps legacy records missing countryCode)
+            if ((!response?.documents || response.documents.length === 0) && !manualSelection) {
+                console.log('⚠️ No therapists found with country filter, fallback enabled (no manual selection) - loading all therapists');
                 response = await rateLimitedDb.listDocuments(
                     databases,
                     APPWRITE_CONFIG.databaseId,
                     APPWRITE_CONFIG.collections.therapists,
                     [Query.limit(100)]
                 );
-                console.log('✅ Fetched therapists without country filter:', response?.documents?.length || 0);
+                console.log('✅ Fallback therapists loaded:', response?.documents?.length || 0);
             }
             
             console.log('✅ Final therapists count:', response?.documents?.length || 0);
@@ -880,7 +886,8 @@ export const placeService = {
             let response;
             try {
                 const cc = localStorage.getItem('cached_countryCode') || 'ID';
-                console.log('📋 Fetching places for country:', cc);
+                const manualSelection = localStorage.getItem('manual_country_selection') === 'true';
+                console.log('📋 Fetching places for country:', cc, '| manual selection:', manualSelection);
                 response = await databases.listDocuments(
                     APPWRITE_CONFIG.databaseId,
                     collectionId,
@@ -893,9 +900,14 @@ export const placeService = {
                 );
                 console.log('✅ Fetched places with country filter:', response?.documents?.length || 0);
                 
-                // If no places found with country filter, try without it (fallback for places without countryCode)
-                if (!response?.documents || response.documents.length === 0) {
-                    console.log('⚠️ No places found with country filter, trying without country filter...');
+                // Strict mode: if manual selection active and no results, do not fallback
+                if ((!response?.documents || response.documents.length === 0) && manualSelection) {
+                    console.log('🚫 Strict country mode active - not falling back to all places');
+                    return [];
+                }
+                // Fallback only when NOT manual selection
+                if ((!response?.documents || response.documents.length === 0) && !manualSelection) {
+                    console.log('⚠️ No places found with country filter, fallback enabled (no manual selection) - loading all places');
                     response = await databases.listDocuments(
                         APPWRITE_CONFIG.databaseId,
                         collectionId,
@@ -905,7 +917,7 @@ export const placeService = {
                             Query.limit(100)
                         ]
                     );
-                    console.log('✅ Fetched places without country filter:', response?.documents?.length || 0);
+                    console.log('✅ Fallback places loaded:', response?.documents?.length || 0);
                 }
             } catch (collectionError) {
                 console.log('❌ Collection not found, discovering working collection...');
