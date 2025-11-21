@@ -217,6 +217,26 @@ const HomePage: React.FC<HomePageProps> = ({
     const [promptLang, setPromptLang] = useState<import('../types/pageTypes').Language>(globalLanguage || 'en');
     const [isCountrySelectorOpen, setIsCountrySelectorOpen] = useState(false);
     const [countrySearch, setCountrySearch] = useState('');
+    const [manualCountryMode, setManualCountryMode] = useState<boolean>(() => {
+        if (typeof window === 'undefined') return false;
+        try { return localStorage.getItem('manual_country_selection') === 'true'; } catch { return false; }
+    });
+
+    // Track current viewing country code separately for badge
+    const [viewingCountryCode, setViewingCountryCode] = useState<string | undefined>(() => {
+        if (typeof window === 'undefined') return undefined;
+        try {
+            const raw = localStorage.getItem('app_user_location');
+            if (raw) return (JSON.parse(raw).countryCode || undefined);
+        } catch {}
+        return userLocation?.countryCode;
+    });
+
+    useEffect(() => {
+        // Sync after any rerender when userLocation changes
+        if (userLocation?.countryCode) setViewingCountryCode(userLocation.countryCode);
+        try { setManualCountryMode(localStorage.getItem('manual_country_selection') === 'true'); } catch {}
+    }, [userLocation?.countryCode]);
 
     const handleSelectCountry = (code: string, name: string) => {
         const prev = userLocation || undefined;
@@ -230,6 +250,8 @@ const HomePage: React.FC<HomePageProps> = ({
             localStorage.setItem('app_user_location', JSON.stringify({ address, lat, lng, countryCode: code, country: name }));
             localStorage.setItem('cached_countryCode', code); // For Appwrite country filtering
             localStorage.setItem('manual_country_selection', 'true'); // Flag to prevent GPS override
+            setManualCountryMode(true);
+            setViewingCountryCode(code);
         } catch {}
         setIsCountrySelectorOpen(false);
         setCountrySearch('');
@@ -583,6 +605,30 @@ const HomePage: React.FC<HomePageProps> = ({
                            <BurgerMenuIcon className="w-6 h-6" />
                         </button>
                     </div>
+                </div>
+                {/* Viewing Country Badge */}
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-orange-50 text-orange-700 border border-orange-200">
+                        <FlagIcon code={(viewingCountryCode || userLocation?.countryCode || 'ID')} className="text-base" />
+                        Viewing: {userLocation?.country || viewingCountryCode || 'Indonesia'}
+                        <span className="ml-1 text-xs font-medium uppercase">{manualCountryMode ? 'Manual' : 'Auto'}</span>
+                    </span>
+                    {manualCountryMode && (
+                        <button
+                            onClick={() => {
+                                try {
+                                    localStorage.removeItem('manual_country_selection');
+                                    // Optional: keep last location but allow GPS to override next time
+                                    setManualCountryMode(false);
+                                    // Force reload to re-run auto detection logic
+                                    window.location.reload();
+                                } catch {}
+                            }}
+                            className="px-3 py-1 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs border border-gray-300"
+                        >
+                            Revert to My Location
+                        </button>
+                    )}
                 </div>
             </header>
 
