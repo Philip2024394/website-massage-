@@ -5,7 +5,7 @@ import { useLanguageContext } from '../context/LanguageContext';
 import MarketplaceProductCard from '../components/MarketplaceProductCard';
 import type { UserLocation } from '../types';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
-import { AppDrawer } from '../components/AppDrawer';
+import CountryAppDrawer from '../components/CountryAppDrawer';
 import FlagIcon from '../components/FlagIcon';
 import { COUNTRIES, COUNTRY_DEFAULT_COORDS } from '../countries';
 import { getCurrencyForCountry } from '../utils/currency';
@@ -233,7 +233,8 @@ export const MarketplacePageBase: React.FC<Props> = ({ onBack, t, userLocation, 
         </div>
       </header>
 
-      <AppDrawer 
+      <CountryAppDrawer 
+        countryCode={userLocation?.countryCode}
         isOpen={isMenuOpen} 
         isHome={true} 
         onClose={() => setIsMenuOpen(false)} 
