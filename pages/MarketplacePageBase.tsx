@@ -280,7 +280,9 @@ export const MarketplacePageBase: React.FC<Props> = ({ onBack, t, userLocation, 
                         userLocation?.countryCode === c.code ? 'border-orange-500 bg-orange-50' : 'border-gray-200 bg-white'
                       }`}
                     >
-                      <FlagIcon code={c.code} className="text-2xl" />
+                      <span className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-100 overflow-hidden border border-gray-200">
+                        <FlagIcon code={c.code} className="text-2xl" />
+                      </span>
                       <div className="flex-1">
                         <div className="text-sm text-gray-500">Indastreet Marketplace</div>
                         <div className="font-semibold text-gray-900">{c.name}</div>
@@ -314,10 +316,10 @@ export const MarketplacePageBase: React.FC<Props> = ({ onBack, t, userLocation, 
             <p className="fade-in text-white/90 text-sm sm:text-base md:text-lg max-w-2xl font-medium drop-shadow-lg px-4 mt-1" style={{ animationDelay: '0.25s', opacity: 0 }}>
               Shop trusted suppliers worldwide
             </p>
-          </div>
-          
-          {/* Start Selling CTA - Bottom right with safe spacing */}
-          <div className="fade-in w-full flex justify-center sm:justify-end px-4 sm:px-8 md:px-12" style={{ animationDelay: '0.3s', opacity: 0 }}>
+                <div>
+                  <h2 className="text-xl font-bold">Choose your country</h2>
+                  <p className="text-white/80 text-sm">See therapists and spa places in any country</p>
+                </div>
             <button
               onClick={() => onNavigate?.('sellerInfo')}
               className="inline-flex items-center gap-1.5 px-4 py-2.5 sm:px-5 sm:py-3 bg-white text-orange-600 rounded-xl font-semibold shadow-xl border border-white/50 hover:shadow-orange-200 hover:scale-105 transition-all text-sm sm:text-base"
