@@ -7,7 +7,7 @@ import { MASSAGE_TYPES_CATEGORIZED } from '../constants/rootConstants';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { customLinksService, reviewService } from '../lib/appwriteService';
 import { AppDrawer } from '../components/AppDrawer';
-import { Users, Building, Sparkles } from 'lucide-react';
+import { Building, Sparkles } from 'lucide-react';
 import HomeIcon from '../components/icons/HomeIcon';
 import FlyingButterfly from '../components/FlyingButterfly';
 import { getCustomerLocation, findNearbyTherapists, findNearbyPlaces } from '../lib/nearbyProvidersService';
@@ -520,9 +520,6 @@ const HomePage: React.FC<HomePageProps> = ({
 
     // Removed unused processedTherapists and processedPlaces
 
-    // Count of online therapists (example: status === 'online')
-    const onlineTherapistsCount = 0;
-
     // Rating modal handlers removed for design mock
 
     // ...existing code...
@@ -651,14 +648,6 @@ const HomePage: React.FC<HomePageProps> = ({
 
 
             <main className="p-4 pb-24">
-                <div className="flex items-center justify-center gap-2 text-gray-500 mb-4">
-                    <Users className="w-5 h-5"/>
-                    <span className="font-medium">{(t.home.therapistsOnline || "{count} of {total} therapists online")
-                            .replace('{count}', onlineTherapistsCount.toString())
-                            .replace('{total}', therapists.length.toString())}
-                    </span>
-                </div>
-
                 {/* Location display line - Live from GPS/IP with Google Maps */}
                 <div className="text-center text-base font-semibold text-orange-600 mb-4">
                     {(() => {
