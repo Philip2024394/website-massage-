@@ -2,6 +2,7 @@ import React from 'react';
 import { AppDrawer } from './AppDrawer';
 import type { ComponentProps } from 'react';
 import { DRAWER_LOCKED_COUNTRIES, ALLOW_DRAWER_OVERRIDES } from '../config/countryLocks';
+import { useCountryContext } from '../context/CountryContext';
 
 // Dynamically discover country-specific drawer override components located at:
 //   country/<CODE>/drawer/AppDrawerOverride.tsx
@@ -17,7 +18,8 @@ export interface CountryAppDrawerProps extends ComponentProps<typeof AppDrawer> 
 }
 
 const CountryAppDrawer: React.FC<CountryAppDrawerProps> = ({ countryCode, ...rest }) => {
-  const code = (countryCode || '').toUpperCase();
+  const { activeCountry } = useCountryContext();
+  const code = (countryCode || activeCountry || '').toUpperCase();
   const isLocked = !ALLOW_DRAWER_OVERRIDES || !code || DRAWER_LOCKED_COUNTRIES.includes(code);
   if (!isLocked) {
     const key = getOverrideKey(code);

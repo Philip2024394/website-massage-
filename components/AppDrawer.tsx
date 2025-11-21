@@ -5,6 +5,7 @@ import {
     Info, BookOpen, Phone, HelpCircle,
     X as CloseIcon
 } from 'lucide-react';
+import { useCountryContext } from '../context/CountryContext';
 
 interface AppDrawerProps {
     isOpen: boolean;
@@ -58,6 +59,8 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
     promoterMode = false,
     isAdminLoggedIn = false
 }) => {
+    const { activeCountry } = useCountryContext();
+    const isIndonesia = activeCountry === 'ID';
     console.log('🚪 AppDrawer rendered with isOpen:', isOpen);
     console.log('🔤 AppDrawer t prop:', { t, tType: typeof t, tIsFunction: typeof t === 'function' });
     // Enforce drawer availability only on HomePage
@@ -177,8 +180,8 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                 {/* Scrollable Menu Content */}
                 <nav className="flex-grow overflow-y-auto p-4">
                     <div className="space-y-2">
-                        {/* JOB POSTING SECTION */}
-                        {!promoterMode && (
+                        {/* JOB POSTING SECTION - Indonesia only */}
+                        {!promoterMode && isIndonesia && (
                         <div className="mb-6">
                             <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2">
                                 {translate('home.menu.sections.jobPosting')}
@@ -211,6 +214,8 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                             <div className="space-y-2">
                                 {/* Hotel portal removed */}
 
+                                {/* Indastreet Promoter - Indonesia only */}
+                                {isIndonesia && (
                                 <button 
                                     onClick={() => handleItemClick(onVillaPortalClick, 'promoterAuth')}
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm transition-all border-l-4 border-black group"
@@ -225,6 +230,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                         <p className="text-xs text-gray-500">{translate('home.menu.villaDesc')}</p>
                                     </div>
                                 </button>
+                                )}
 
                                 <button 
                                     onClick={() => handleItemClick(onTherapistPortalClick, 'therapistLogin')}
@@ -547,8 +553,8 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                         </div>
                         )}
 
-                        {/* LOCATIONS SECTION */}
-                        {!promoterMode && (
+                        {/* LOCATIONS SECTION - Indonesia only */}
+                        {!promoterMode && isIndonesia && (
                         <div className="mb-6">
                             <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2">
                                 Locations
@@ -615,8 +621,8 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                         </div>
                         )}
 
-                        {/* SERVICES SECTION */}
-                        {!promoterMode && (
+                        {/* SERVICES SECTION - Indonesia only */}
+                        {!promoterMode && isIndonesia && (
                         <div className="mb-6">
                             <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2">
                                 Services

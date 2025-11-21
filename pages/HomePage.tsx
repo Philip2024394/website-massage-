@@ -668,7 +668,18 @@ const HomePage: React.FC<HomePageProps> = ({
                         }
                         return (
                             <>
-                                Showing therapists within {SEARCH_RADIUS_KM} km of {label || 'your location'}.
+                                                                {(() => {
+                                                                    try {
+                                                                        const raw = localStorage.getItem('app_user_location');
+                                                                        const parsed = raw ? JSON.parse(raw) : null;
+                                                                        const cc = (parsed?.countryCode || '').toUpperCase();
+                                                                        const countryName = parsed?.country || cc || 'Your Location';
+                                                                        if (cc === 'GB') return 'Displaying 20 km of Your United Kingdom Location.';
+                                                                        return `Displaying 20 km of Your ${countryName} Location.`;
+                                                                    } catch {
+                                                                        return 'Displaying 20 km of Your Location.';
+                                                                    }
+                                                                })()}
                             </>
                         );
                     })()}

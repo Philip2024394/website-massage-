@@ -19,6 +19,7 @@ import './lib/globalErrorHandler'; // Initialize global error handling
 // Flag icons CSS (for SVG country flags)
 import 'flag-icons/css/flag-icons.min.css';
 import { LanguageProvider } from './context/LanguageContext';
+import { CountryProvider } from './context/CountryContext';
 import { agentShareAnalyticsService } from './lib/appwriteService';
 import { resolveDefaultLanguage } from './lib/languageResolver';
 import type { Language } from './types/pageTypes';
@@ -372,6 +373,7 @@ const App = () => {
     }
 
     return (
+        <CountryProvider>
         <LanguageProvider value={{ language: language as Language, setLanguage: handleLanguageSelect }}>
         <DeviceStylesProvider>
             <AppLayout
@@ -555,6 +557,7 @@ const App = () => {
             />
         </DeviceStylesProvider>
         </LanguageProvider>
+        </CountryProvider>
     );
 };
 

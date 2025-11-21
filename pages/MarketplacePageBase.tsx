@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Home } from 'lucide-react';
 import { marketplaceService, type MarketplaceProduct } from '../lib/marketplaceService';
+import { useCountryContext } from '../context/CountryContext';
 import { useLanguageContext } from '../context/LanguageContext';
 import MarketplaceProductCard from '../components/MarketplaceProductCard';
 import type { UserLocation } from '../types';
@@ -86,7 +87,8 @@ export const MarketplacePageBase: React.FC<Props> = ({ onBack, t, userLocation, 
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [showFilters, setShowFilters] = useState(false);
 
-  const currentCountryCode = userLocation?.countryCode || 'ID';
+  const { activeCountry } = useCountryContext();
+  const currentCountryCode = activeCountry || userLocation?.countryCode || 'ID';
   const currentCountryName = userLocation?.country || 'Indonesia';
   const flagColors = getFlagColors(currentCountryCode);
   
@@ -139,8 +141,8 @@ export const MarketplacePageBase: React.FC<Props> = ({ onBack, t, userLocation, 
   const loadProducts = useCallback(async () => {
     setLoading(true);
     try {
-      const countryCode = userLocation?.countryCode;
-      const list = await marketplaceService.listProductsByCountry(countryCode);
+      // Enforce isolation: always use activeCountry from context, ignore viewer override
+      const list = await marketplaceService.listProductsByCountry(currentCountryCode);
       setProducts(list);
       setPage(1);
       setErrorMsg(null);
@@ -150,7 +152,7 @@ export const MarketplacePageBase: React.FC<Props> = ({ onBack, t, userLocation, 
     } finally {
       setLoading(false);
     }
-  }, [userLocation?.countryCode, userLocation?.lat, userLocation?.lng, language]);
+  }, [currentCountryCode, language]);
 
   useEffect(() => {
     loadProducts();

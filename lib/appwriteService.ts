@@ -338,37 +338,13 @@ export const therapistService = {
             console.log('📋 Fetching all therapists from collection:', APPWRITE_CONFIG.collections.therapists);
             const cc = (() => { try { return detectUserCurrency().countryCode?.toUpperCase() || 'ID'; } catch { return 'ID'; } })();
             let response: any;
-            try {
-                response = await rateLimitedDb.listDocuments(
-                    databases,
-                    APPWRITE_CONFIG.databaseId,
-                    APPWRITE_CONFIG.collections.therapists,
-                    [Query.equal('countryCode', cc)]
-                );
-            } catch (e) {
-                console.warn('Country filter failed (therapists), falling back to unfiltered list:', (e as any)?.message);
-                response = await rateLimitedDb.listDocuments(
-                    databases,
-                    APPWRITE_CONFIG.databaseId,
-                    APPWRITE_CONFIG.collections.therapists
-                );
-            }
-            console.log('✅ Fetched therapists (country-filtered):', response?.documents?.length || 0);
-            if (!response?.documents || response.documents.length === 0) {
-                try {
-                    const unf = await rateLimitedDb.listDocuments(
-                        databases,
-                        APPWRITE_CONFIG.databaseId,
-                        APPWRITE_CONFIG.collections.therapists
-                    );
-                    if (unf?.documents?.length) {
-                        console.log('↩️ Fallback to unfiltered therapists:', unf.documents.length);
-                        response = unf;
-                    }
-                } catch (e2) {
-                    console.warn('Unfiltered fallback failed:', (e2 as any)?.message);
-                }
-            }
+            response = await rateLimitedDb.listDocuments(
+                databases,
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.therapists,
+                [Query.equal('countryCode', cc)]
+            );
+            console.log('✅ Fetched therapists (strict country filter):', response?.documents?.length || 0);
             console.log('✅ Final therapists count:', response?.documents?.length || 0);
             
             // Add random main images and normalize status to therapists
@@ -928,12 +904,8 @@ export const placeService = {
                                 [Query.equal('countryCode', cc), Query.limit(50)]
                             );
                         } catch (countryErr) {
-                            console.warn('Country filter failed (places), falling back to basic limit:', (countryErr as any)?.message);
-                            response = await databases.listDocuments(
-                            APPWRITE_CONFIG.databaseId,
-                            workingId,
-                            [Query.limit(50)] // Just get some documents
-                            );
+                            console.warn('Country filter failed (places) – enforcing isolation, returning empty list. Error:', (countryErr as any)?.message);
+                            return [];
                         }
                     }
                 } else {
@@ -954,19 +926,8 @@ export const placeService = {
                 code: (error as any)?.code || 'Unknown code',
                 type: (error as any)?.type || 'Unknown type'
             });
-            // Graceful fallback: attempt unfiltered fetch, then client-side filter by detected country
-            try {
-                const cc = (() => { try { return detectUserCurrency().countryCode?.toUpperCase() || 'ID'; } catch { return 'ID'; } })();
-                const raw = await databases.listDocuments(
-                    APPWRITE_CONFIG.databaseId,
-                    APPWRITE_CONFIG.collections.places,
-                    [Query.limit(100)]
-                );
-                const docs = (raw.documents || []).filter((d: any) => (d.countryCode || '').toUpperCase() === cc);
-                return docs;
-            } catch (e2) {
-                return [];
-            }
+            // Strict isolation: on error, do not attempt unfiltered fallback
+            return [];
         }
     },
     async getById(id: string): Promise<any> {

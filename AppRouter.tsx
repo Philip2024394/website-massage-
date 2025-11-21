@@ -1,6 +1,7 @@
  
 import { useTranslations } from './lib/useTranslations';
 import { useLanguage } from './hooks/useLanguage';
+import { useCountryContext } from './context/CountryContext';
 import type { Page, Language, LoggedInProvider } from './types/pageTypes';
 import type { User, Place, Therapist, UserLocation, Booking, Notification, Agent, AdminMessage, AvailabilityStatus } from './types';
 import { BookingStatus } from './types';
@@ -200,6 +201,8 @@ interface AppRouterProps {
 }
 
 export const AppRouter: React.FC<AppRouterProps> = (props) => {
+    const { activeCountry } = useCountryContext();
+    const isIndonesia = activeCountry === 'ID';
     const {
         page,
         isLoading,
@@ -1117,7 +1120,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'browseJobs':
             return <BrowseJobsPage onBack={handleBackToHome} onPostJob={navToMassageJobs} t={t} />;
             
-        case 'massageJobs': 
+        case 'massageJobs':
+            if (!isIndonesia) return renderComingSoon('This page is only available in Indonesia');
             return <MassageJobsPage 
                 onBack={handleBackToHome} 
                 onPostJob={navToEmployerJobPosting}
@@ -1161,6 +1165,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'how-it-works':
             return renderSimplePage(HowItWorksPage);
         case 'massage-bali':
+            if (!isIndonesia) return renderComingSoon('This page is only available in Indonesia');
             return renderSimplePage(MassageBaliPage);
         case 'blog':
             return renderSimplePage(BlogIndexPage);
@@ -1168,9 +1173,11 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return renderSimplePage(FAQPage);
             
         case 'balinese-massage':
+            if (!isIndonesia) return renderComingSoon('This page is only available in Indonesia');
             return <BalineseMassagePage onNavigate={commonNavigateHandler} t={t} />;
             
         case 'deep-tissue-massage':
+            if (!isIndonesia) return renderComingSoon('This page is only available in Indonesia');
             return <DeepTissueMassagePage onNavigate={commonNavigateHandler} {...portalHandlers} {...commonDataProps} />;
             
         case 'press-media':
@@ -1222,6 +1229,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         }
 
         case 'promoterAuth': {
+            if (!isIndonesia) return renderComingSoon('This feature is only available in Indonesia');
             return renderBackPage(IndastreetPromoterAuthPage, t);
         }
 
