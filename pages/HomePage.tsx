@@ -673,9 +673,15 @@ const HomePage: React.FC<HomePageProps> = ({
                                                                         const raw = localStorage.getItem('app_user_location');
                                                                         const parsed = raw ? JSON.parse(raw) : null;
                                                                         const cc = (parsed?.countryCode || '').toUpperCase();
-                                                                        // Find actual country name from COUNTRIES array
-                                                                        const countryObj = COUNTRIES.find(c => c.code === cc);
-                                                                        const countryName = countryObj?.name || 'Unknown Country';
+                                                                        // First try to use the stored country name
+                                                                        let countryName = parsed?.country;
+                                                                        // If not found, lookup from COUNTRIES array
+                                                                        if (!countryName) {
+                                                                            const countryObj = COUNTRIES.find(c => c.code === cc);
+                                                                            countryName = countryObj?.name;
+                                                                        }
+                                                                        // Final fallback
+                                                                        countryName = countryName || 'Unknown Country';
                                                                         return `Displaying 20 km of Your ${countryName} Location.`;
                                                                     } catch {
                                                                         return 'Displaying 20 km of Your Location.';

@@ -346,7 +346,9 @@ class LocationService {
         return {
             address: 'Jakarta, Indonesia',
             lat: -6.2088,
-            lng: 106.8456
+            lng: 106.8456,
+            countryCode: 'ID',
+            country: 'Indonesia'
         };
     }
     
