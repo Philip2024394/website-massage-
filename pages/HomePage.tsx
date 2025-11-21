@@ -211,7 +211,6 @@ const HomePage: React.FC<HomePageProps> = ({
     const [isLocationDetecting, setIsLocationDetecting] = useState(false);
     const locationDetectedRef = useRef(false);
     const filteringRef = useRef(false);
-    const SEARCH_RADIUS_KM = 20;
     // Shuffled unique home page therapist images (no repeats until all 17 used)
     const [shuffledHomeImages, setShuffledHomeImages] = useState<string[]>([]);
     const [showLanguagePrompt, setShowLanguagePrompt] = useState(false);
@@ -379,7 +378,7 @@ const HomePage: React.FC<HomePageProps> = ({
         }
     }, [loggedInProvider, _loggedInAgent]);
 
-    // Filter therapists and places by location automatically (by country)
+    // Filter therapists and places by location automatically (by GPS distance within city/region)
     useEffect(() => {
         const filterByLocation = async () => {
             if (filteringRef.current) return;
@@ -394,40 +393,43 @@ const HomePage: React.FC<HomePageProps> = ({
 
             filteringRef.current = true;
             try {
-                console.log('🔍 Filtering providers by country:', locationToUse);
+                console.log('🔍 Filtering providers by GPS location:', locationToUse);
                 
-                // Get country code from location (handle both UserLocation and {lat, lng} types)
-                const countryCode = ('countryCode' in locationToUse && typeof locationToUse.countryCode === 'string') 
-                    ? locationToUse.countryCode.toUpperCase()
-                    : undefined;
+                // Get location coordinates (required for distance calculation)
+                const coords = 'lat' in locationToUse 
+                    ? { lat: locationToUse.lat, lng: locationToUse.lng }
+                    : null;
                 
-                if (!countryCode) {
-                    // No country code, show all therapists
-                    console.log('⚠️ No country code found, showing all providers');
+                if (!coords) {
+                    // No coordinates available, show all therapists
+                    console.log('⚠️ No coordinates found, showing all providers');
                     setNearbyTherapists(therapists);
                     setNearbyPlaces(places);
                     filteringRef.current = false;
                     return;
                 }
 
-                // Filter therapists by country
-                const filteredTherapists = therapists.filter((t: any) => {
-                    const therapistCountry = t.country?.toUpperCase() || t.countryCode?.toUpperCase();
-                    return therapistCountry === countryCode;
-                });
+                // Find nearby therapists and places using GPS distance (50km radius for city/region)
+                const nearbyTherapistsResult = await findNearbyTherapists('0', coords, 50);
+                const nearbyPlacesResult = await findNearbyPlaces('0', coords, 50);
                 
-                // Filter places by country
-                const filteredPlaces = places.filter((p: any) => {
-                    const placeCountry = p.country?.toUpperCase() || p.countryCode?.toUpperCase();
-                    return placeCountry === countryCode;
-                });
+                console.log(`📍 Found ${nearbyTherapistsResult.length} therapists within 50km`);
+                console.log(`📍 Found ${nearbyPlacesResult.length} places within 50km`);
                 
-                console.log(`📍 Found ${filteredTherapists.length} therapists in ${countryCode}`);
-                console.log(`📍 Found ${filteredPlaces.length} places in ${countryCode}`);
-                
-                // If no providers found in this country, fallback to all
-                setNearbyTherapists(filteredTherapists.length > 0 ? filteredTherapists : therapists);
-                setNearbyPlaces(filteredPlaces.length > 0 ? filteredPlaces : places);
+                // If no providers found within 50km, expand to 100km
+                if (nearbyTherapistsResult.length === 0 && nearbyPlacesResult.length === 0) {
+                    console.log('🔍 Expanding search to 100km...');
+                    const expandedTherapists = await findNearbyTherapists('0', coords, 100);
+                    const expandedPlaces = await findNearbyPlaces('0', coords, 100);
+                    console.log(`📍 Found ${expandedTherapists.length} therapists within 100km`);
+                    console.log(`📍 Found ${expandedPlaces.length} places within 100km`);
+                    
+                    setNearbyTherapists(expandedTherapists.length > 0 ? expandedTherapists : therapists);
+                    setNearbyPlaces(expandedPlaces.length > 0 ? expandedPlaces : places);
+                } else {
+                    setNearbyTherapists(nearbyTherapistsResult.length > 0 ? nearbyTherapistsResult : therapists);
+                    setNearbyPlaces(nearbyPlacesResult.length > 0 ? nearbyPlacesResult : places);
+                }
                 
             } catch (error) {
                 console.log('📍 Location filtering failed (silent fallback):', error);
@@ -683,20 +685,25 @@ const HomePage: React.FC<HomePageProps> = ({
                                                                         const parsed = raw ? JSON.parse(raw) : null;
                                                                         
                                                                         if (!parsed) {
-                                                                            return 'Displaying 20 km of Your Location.';
+                                                                            return 'Showing All Available Therapists & Places';
                                                                         }
                                                                         
-                                                                        const cc = (parsed?.countryCode || '').toUpperCase();
+                                                                        // Extract city name from address
+                                                                        let cityName = '';
+                                                                        if (parsed.address) {
+                                                                            const addressParts = parsed.address.split(',').map((s: string) => s.trim());
+                                                                            // Try to get city name (usually first or second part)
+                                                                            cityName = addressParts.length > 1 ? addressParts[0] : parsed.address;
+                                                                        }
                                                                         
-                                                                        // First try to use the stored country name
+                                                                        // Get country name
+                                                                        const cc = (parsed?.countryCode || '').toUpperCase();
                                                                         let countryName = parsed?.country;
                                                                         
-                                                                        // If not found, lookup from COUNTRIES array using countryCode
                                                                         if (!countryName && cc) {
                                                                             const countryObj = COUNTRIES.find(c => c.code === cc);
                                                                             countryName = countryObj?.name;
                                                                             
-                                                                            // If we found the country, update localStorage to include it
                                                                             if (countryName) {
                                                                                 try {
                                                                                     const updated = { ...parsed, country: countryName };
@@ -705,14 +712,16 @@ const HomePage: React.FC<HomePageProps> = ({
                                                                             }
                                                                         }
                                                                         
-                                                                        // Only show country if we have it, otherwise show generic text
-                                                                        if (countryName) {
-                                                                            return `Displaying 20 km of Your ${countryName} Location.`;
+                                                                        // Show location info
+                                                                        if (cityName && countryName) {
+                                                                            return `Showing Therapists & Places Near ${cityName}, ${countryName}`;
+                                                                        } else if (countryName) {
+                                                                            return `Showing Therapists & Places in ${countryName}`;
                                                                         } else {
-                                                                            return 'Displaying 20 km of Your Location.';
+                                                                            return 'Showing Nearby Therapists & Places';
                                                                         }
                                                                     } catch {
-                                                                        return 'Displaying 20 km of Your Location.';
+                                                                        return 'Showing All Available Therapists & Places';
                                                                     }
                                                                 })()}
                             </>
@@ -869,9 +878,9 @@ const HomePage: React.FC<HomePageProps> = ({
                         }).length === 0 && (
                             <div className="text-center py-12 bg-white rounded-lg">
                                 <p className="text-gray-500">Tidak ada terapis tersedia di area Anda saat ini.</p>
-                                {autoDetectedLocation && (
+                                {userLocation?.address && (
                                     <p className="text-gray-400 text-sm mt-2">
-                                        Showing providers within {SEARCH_RADIUS_KM}km of your location
+                                        Showing providers near {userLocation.address.split(',')[0]}
                                     </p>
                                 )}
                             </div>
