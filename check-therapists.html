@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Check Therapist Coordinates - Appwrite Database</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #ff6b35;
+            padding-bottom: 10px;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .stat-box h2 {
+            margin: 0;
+            font-size: 32px;
+            color: #ff6b35;
+        }
+        .stat-box p {
+            margin: 5px 0 0 0;
+            color: #666;
+        }
+        .therapist-card {
+            background: white;
+            margin: 15px 0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 4px solid #ddd;
+        }
+        .therapist-card.valid {
+            border-left-color: #22c55e;
+        }
+        .therapist-card.invalid {
+            border-left-color: #ef4444;
+        }
+        .therapist-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+        .therapist-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+        .status-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-valid {
+            background: #22c55e;
+            color: white;
+        }
+        .status-invalid {
+            background: #ef4444;
+            color: white;
+        }
+        .therapist-details {
+            color: #666;
+            line-height: 1.8;
+        }
+        .fix-suggestion {
+            background: #fef3c7;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            border-left: 3px solid #f59e0b;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .code {
+            background: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Therapist Coordinates Check</h1>
+    <div id="loading" class="loading">Loading therapists from Appwrite...</div>
+    <div id="stats" class="stats" style="display: none;"></div>
+    <div id="results"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@16.0.2"></script>
+    <script>
+        const { Client, Databases, Query } = Appwrite;
+
+        // Initialize Appwrite client
+        const client = new Client()
+            .setEndpoint('https://syd.cloud.appwrite.io/v1')
+            .setProject('68f23b11000d25eb3664');
+
+        const databases = new Databases(client);
+        const databaseId = '68f76ee1000e64ca8d05';
+        const therapistsCollectionId = 'therapists_collection_id';
+
+        // Jogja coordinates for reference
+        const JOGJA_COORDS = { lat: -7.7956, lng: 110.3695 };
+
+        async function checkTherapists() {
+            try {
+                console.log('Fetching therapists...');
+                
+                const response = await databases.listDocuments(
+                    databaseId,
+                    therapistsCollectionId,
+                    [Query.limit(100)]
+                );
+
+                console.log('Therapists loaded:', response.documents.length);
+                
+                document.getElementById('loading').style.display = 'none';
+                
+                let validCount = 0;
+                let invalidCount = 0;
+                const therapists = response.documents;
+
+                // Generate stats
+                therapists.forEach(t => {
+                    const coords = parseCoords(t.coordinates);
+                    if (coords && coords.lat !== 0 && coords.lng !== 0) {
+                        validCount++;
+                    } else {
+                        invalidCount++;
+                    }
+                });
+
+                // Display stats
+                const statsHtml = `
+                    <div class="stat-box">
+                        <h2>${therapists.length}</h2>
+                        <p>Total Therapists</p>
+                    </div>
+                    <div class="stat-box">
+                        <h2>${validCount}</h2>
+                        <p>✅ Valid Coordinates</p>
+                    </div>
+                    <div class="stat-box">
+                        <h2>${invalidCount}</h2>
+                        <p>❌ Invalid/Missing</p>
+                    </div>
+                `;
+                document.getElementById('stats').innerHTML = statsHtml;
+                document.getElementById('stats').style.display = 'grid';
+
+                // Display therapists
+                let html = '';
+                therapists.forEach(therapist => {
+                    const name = therapist.name || 'Unknown';
+                    const location = therapist.location || 'Not set';
+                    const coordinatesStr = therapist.coordinates || '';
+                    const coords = parseCoords(coordinatesStr);
+                    const isValid = coords && coords.lat !== 0 && coords.lng !== 0;
+                    
+                    html += `
+                        <div class="therapist-card ${isValid ? 'valid' : 'invalid'}">
+                            <div class="therapist-header">
+                                <div class="therapist-name">${name}</div>
+                                <div class="status-badge ${isValid ? 'status-valid' : 'status-invalid'}">
+                                    ${isValid ? '✅ VALID' : '❌ INVALID'}
+                                </div>
+                            </div>
+                            <div class="therapist-details">
+                                <div><strong>ID:</strong> ${therapist.$id}</div>
+                                <div><strong>Location Text:</strong> ${location}</div>
+                                <div><strong>Coordinates:</strong> <span class="code">${coordinatesStr || '(empty)'}</span></div>
+                                ${coords ? `<div><strong>Parsed:</strong> lat=${coords.lat}, lng=${coords.lng}</div>` : ''}
+                                ${!isValid ? `
+                                    <div class="fix-suggestion">
+                                        <strong>💡 Why not showing:</strong> Coordinates are ${coordinatesStr ? '0,0 (invalid)' : 'missing'}. 
+                                        Therapists need valid GPS coordinates to show in location-based searches.
+                                        <br><br>
+                                        <strong>How to fix:</strong>
+                                        <ol style="margin: 10px 0 0 20px; padding: 0;">
+                                            <li>Login as this therapist on your website</li>
+                                            <li>Go to Dashboard → Profile tab</li>
+                                            <li>Click "Use My Current Location" button (GPS)</li>
+                                            <li>Or manually set: <span class="code">{"lat":-7.7956,"lng":110.3695}</span> for Jogja in Appwrite Console</li>
+                                        </ol>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                if (invalidCount > 0) {
+                    html = `
+                        <div class="error">
+                            <strong>⚠️ Problem Found!</strong><br>
+                            ${invalidCount} therapist(s) have invalid or missing coordinates. 
+                            This is why they don't appear when users search by location.
+                            <br><br>
+                            Scroll down to see which therapists need fixing and how to fix them.
+                        </div>
+                    ` + html;
+                }
+
+                document.getElementById('results').innerHTML = html;
+
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('results').innerHTML = `
+                    <div class="error">
+                        <strong>❌ Error loading therapists:</strong><br>
+                        ${error.message}
+                        <br><br>
+                        Make sure you're logged in to your website in another tab (this uses your browser session).
+                    </div>
+                `;
+            }
+        }
+
+        function parseCoords(str) {
+            try {
+                if (!str) return null;
+                return JSON.parse(str);
+            } catch {
+                return null;
+            }
+        }
+
+        // Run check on page load
+        checkTherapists();
+    </script>
+</body>
+</html>

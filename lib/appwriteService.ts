@@ -336,15 +336,15 @@ export const therapistService = {
     async getAll(): Promise<any[]> {
         try {
             console.log('📋 Fetching all therapists from collection:', APPWRITE_CONFIG.collections.therapists);
-            const cc = (() => { try { return detectUserCurrency().countryCode?.toUpperCase() || 'ID'; } catch { return 'ID'; } })();
+            // Removed country filter - GPS distance filtering handles location-based filtering
             let response: any;
             response = await rateLimitedDb.listDocuments(
                 databases,
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.therapists,
-                [Query.equal('countryCode', cc)]
+                [Query.limit(100)] // Get all therapists, filter by GPS distance later
             );
-            console.log('✅ Fetched therapists (strict country filter):', response?.documents?.length || 0);
+            console.log('✅ Fetched therapists from Appwrite:', response?.documents?.length || 0);
             console.log('✅ Final therapists count:', response?.documents?.length || 0);
             
             // Add random main images and normalize status to therapists
@@ -863,14 +863,14 @@ export const placeService = {
             // If collection not found, try to discover working one
             let response;
             try {
-                const cc = (() => { try { return detectUserCurrency().countryCode?.toUpperCase() || 'ID'; } catch { return 'ID'; } })();
+                // Removed country filter - GPS distance filtering handles location
                 response = await databases.listDocuments(
                     APPWRITE_CONFIG.databaseId,
                     collectionId,
                     [
                         Query.equal('category', 'massage-place'),
                         Query.equal('isLive', true),
-                        Query.equal('countryCode', cc)
+                        Query.limit(100)
                     ]
                 );
             } catch (collectionError) {
@@ -883,30 +883,23 @@ export const placeService = {
                     
                     // Try again with discovered collection
                     try {
-                        const cc = (() => { try { return detectUserCurrency().countryCode?.toUpperCase() || 'ID'; } catch { return 'ID'; } })();
                         response = await databases.listDocuments(
                             APPWRITE_CONFIG.databaseId,
                             workingId,
                             [
                                 Query.equal('category', 'massage-place'),
                                 Query.equal('isLive', true),
-                                Query.equal('countryCode', cc)
+                                Query.limit(100)
                             ]
                         );
                     } catch (categoryError) {
                         console.log('⚠️ Category field may not exist, trying without category filter');
-                        // Try with country filter only
-                        try {
-                            const cc = (() => { try { return detectUserCurrency().countryCode?.toUpperCase() || 'ID'; } catch { return 'ID'; } })();
-                            response = await databases.listDocuments(
-                                APPWRITE_CONFIG.databaseId,
-                                workingId,
-                                [Query.equal('countryCode', cc), Query.limit(50)]
-                            );
-                        } catch (countryErr) {
-                            console.warn('Country filter failed (places) – enforcing isolation, returning empty list. Error:', (countryErr as any)?.message);
-                            return [];
-                        }
+                        // Try without category filter
+                        response = await databases.listDocuments(
+                            APPWRITE_CONFIG.databaseId,
+                            workingId,
+                            [Query.limit(100)]
+                        );
                     }
                 } else {
                     throw new Error('No working collection ID found');
