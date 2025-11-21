@@ -740,7 +740,7 @@ const HomePage: React.FC<HomePageProps> = ({
                             <img 
                                 src="https://ik.imagekit.io/7grri5v7d/online%20shop.png"
                                 alt="Online Shop"
-                                className="select-none transition-opacity hover:opacity-90 w-auto h-10 sm:h-12 md:h-14"
+                                className="select-none transition-opacity hover:opacity-90 w-auto h-12 sm:h-14 md:h-16"
                                 loading="lazy"
                                 draggable={false}
                             />
