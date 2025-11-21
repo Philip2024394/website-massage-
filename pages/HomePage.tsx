@@ -229,6 +229,7 @@ const HomePage: React.FC<HomePageProps> = ({
             // Persist immediately for currency/utils that read localStorage directly
             localStorage.setItem('app_user_location', JSON.stringify({ address, lat, lng, countryCode: code, country: name }));
             localStorage.setItem('cached_countryCode', code); // For Appwrite country filtering
+            localStorage.setItem('manual_country_selection', 'true'); // Flag to prevent GPS override
         } catch {}
         setIsCountrySelectorOpen(false);
         setCountrySearch('');
@@ -348,6 +349,13 @@ const HomePage: React.FC<HomePageProps> = ({
     useEffect(() => {
         const detectLocationAutomatically = async () => {
             if (locationDetectedRef.current || isLocationDetecting || autoDetectedLocation) return;
+            
+            // Don't auto-detect if user manually selected a country
+            const manualSelection = localStorage.getItem('manual_country_selection');
+            if (manualSelection === 'true') {
+                console.log('⏭️ Skipping GPS detection - user manually selected country');
+                return;
+            }
             
             locationDetectedRef.current = true;
             setIsLocationDetecting(true);

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check Therapist CountryCode</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@14.0.1"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        .therapist {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            background: #fafafa;
+        }
+        .therapist h3 {
+            margin: 0 0 10px 0;
+            color: #ff6b35;
+        }
+        .field {
+            margin: 5px 0;
+            padding: 5px;
+        }
+        .label {
+            font-weight: bold;
+            display: inline-block;
+            width: 150px;
+        }
+        .value {
+            color: #555;
+        }
+        .missing {
+            color: red;
+            font-weight: bold;
+        }
+        .present {
+            color: green;
+            font-weight: bold;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: #666;
+        }
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .summary {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Check Therapist CountryCode Field</h1>
+        <div id="output" class="loading">Loading therapists...</div>
+    </div>
+
+    <script>
+        const { Client, Databases, Query } = Appwrite;
+
+        const client = new Client()
+            .setEndpoint('https://cloud.appwrite.io/v1')
+            .setProject('675c76a8000be7507024');
+
+        const databases = new Databases(client);
+        const databaseId = '675c76c4001e2ea95a2e';
+        const therapistsCollectionId = '675c7709000592d8a24f';
+
+        async function checkTherapists() {
+            const output = document.getElementById('output');
+            
+            try {
+                console.log('Fetching therapists from collection:', therapistsCollectionId);
+                
+                const response = await databases.listDocuments(
+                    databaseId,
+                    therapistsCollectionId,
+                    [Query.limit(100)]
+                );
+
+                console.log('Response:', response);
+
+                if (!response.documents || response.documents.length === 0) {
+                    output.innerHTML = `
+                        <div class="error">
+                            ❌ No therapists found in collection: ${therapistsCollectionId}
+                        </div>
+                    `;
+                    return;
+                }
+
+                let withCountryCode = 0;
+                let withoutCountryCode = 0;
+                let countryCodeID = 0;
+
+                let html = `
+                    <div class="summary">
+                        <h2>Summary</h2>
+                        <p><strong>Total Therapists:</strong> ${response.documents.length}</p>
+                        <p id="summary-details">Analyzing...</p>
+                    </div>
+                    <h2>Therapist Details:</h2>
+                `;
+
+                response.documents.forEach((therapist, index) => {
+                    const hasCountryCode = therapist.countryCode !== undefined && therapist.countryCode !== null;
+                    const isID = therapist.countryCode === 'ID';
+                    
+                    if (hasCountryCode) withCountryCode++;
+                    else withoutCountryCode++;
+                    
+                    if (isID) countryCodeID++;
+
+                    html += `
+                        <div class="therapist">
+                            <h3>${index + 1}. ${therapist.fullName || therapist.name || 'Unnamed'}</h3>
+                            <div class="field">
+                                <span class="label">Document ID:</span>
+                                <span class="value">${therapist.$id}</span>
+                            </div>
+                            <div class="field">
+                                <span class="label">CountryCode:</span>
+                                <span class="${hasCountryCode ? 'present' : 'missing'}">
+                                    ${hasCountryCode ? therapist.countryCode : '❌ MISSING'}
+                                </span>
+                            </div>
+                            <div class="field">
+                                <span class="label">Email:</span>
+                                <span class="value">${therapist.email || 'N/A'}</span>
+                            </div>
+                            <div class="field">
+                                <span class="label">Phone:</span>
+                                <span class="value">${therapist.phoneNumber || therapist.contactNumber || 'N/A'}</span>
+                            </div>
+                            <div class="field">
+                                <span class="label">Address:</span>
+                                <span class="value">${therapist.address || 'N/A'}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                // Update summary
+                const summaryDetails = `
+                    <p><strong>✅ With CountryCode:</strong> ${withCountryCode}</p>
+                    <p><strong>❌ Without CountryCode:</strong> ${withoutCountryCode}</p>
+                    <p><strong>🇮🇩 CountryCode = 'ID':</strong> ${countryCodeID}</p>
+                `;
+
+                html = html.replace('<p id="summary-details">Analyzing...</p>', summaryDetails);
+                output.innerHTML = html;
+
+            } catch (error) {
+                console.error('Error:', error);
+                output.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Error fetching therapists:</h3>
+                        <p><strong>Message:</strong> ${error.message}</p>
+                        <p><strong>Code:</strong> ${error.code || 'N/A'}</p>
+                        <p><strong>Type:</strong> ${error.type || 'N/A'}</p>
+                        <pre>${JSON.stringify(error, null, 2)}</pre>
+                    </div>
+                `;
+            }
+        }
+
+        // Run check on page load
+        checkTherapists();
+    </script>
+</body>
+</html>

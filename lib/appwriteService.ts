@@ -347,7 +347,20 @@ export const therapistService = {
                     Query.limit(100)
                 ]
             );
-            console.log('✅ Fetched therapists from Appwrite:', response?.documents?.length || 0);
+            console.log('✅ Fetched therapists with country filter:', response?.documents?.length || 0);
+            
+            // If no therapists found with country filter, try without it (fallback for therapists without countryCode)
+            if (!response?.documents || response.documents.length === 0) {
+                console.log('⚠️ No therapists found with country filter, trying without country filter...');
+                response = await rateLimitedDb.listDocuments(
+                    databases,
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.therapists,
+                    [Query.limit(100)]
+                );
+                console.log('✅ Fetched therapists without country filter:', response?.documents?.length || 0);
+            }
+            
             console.log('✅ Final therapists count:', response?.documents?.length || 0);
             
             // Add random main images and normalize status to therapists
@@ -878,6 +891,22 @@ export const placeService = {
                         Query.limit(100)
                     ]
                 );
+                console.log('✅ Fetched places with country filter:', response?.documents?.length || 0);
+                
+                // If no places found with country filter, try without it (fallback for places without countryCode)
+                if (!response?.documents || response.documents.length === 0) {
+                    console.log('⚠️ No places found with country filter, trying without country filter...');
+                    response = await databases.listDocuments(
+                        APPWRITE_CONFIG.databaseId,
+                        collectionId,
+                        [
+                            Query.equal('category', 'massage-place'),
+                            Query.equal('isLive', true),
+                            Query.limit(100)
+                        ]
+                    );
+                    console.log('✅ Fetched places without country filter:', response?.documents?.length || 0);
+                }
             } catch (collectionError) {
                 console.log('❌ Collection not found, discovering working collection...');
                 const workingId = await discoverWorkingCollectionId();
