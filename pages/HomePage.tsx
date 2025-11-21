@@ -673,8 +673,9 @@ const HomePage: React.FC<HomePageProps> = ({
                                                                         const raw = localStorage.getItem('app_user_location');
                                                                         const parsed = raw ? JSON.parse(raw) : null;
                                                                         const cc = (parsed?.countryCode || '').toUpperCase();
-                                                                        const countryName = parsed?.country || cc || 'Your Location';
-                                                                        if (cc === 'GB') return 'Displaying 20 km of Your United Kingdom Location.';
+                                                                        // Find actual country name from COUNTRIES array
+                                                                        const countryObj = COUNTRIES.find(c => c.code === cc);
+                                                                        const countryName = countryObj?.name || cc || 'Your Location';
                                                                         return `Displaying 20 km of Your ${countryName} Location.`;
                                                                     } catch {
                                                                         return 'Displaying 20 km of Your Location.';

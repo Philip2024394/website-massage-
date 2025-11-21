@@ -373,7 +373,10 @@ const App = () => {
     }
 
     return (
-        <CountryProvider>
+        <CountryProvider onLanguageChange={(lang) => {
+            console.log(`🌍 Auto-switching language to ${lang} based on country`);
+            setLanguage(lang);
+        }}>
         <LanguageProvider value={{ language: language as Language, setLanguage: handleLanguageSelect }}>
         <DeviceStylesProvider>
             <AppLayout

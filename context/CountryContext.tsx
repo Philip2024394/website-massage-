@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import type { Language } from '../types/pageTypes';
 
 export interface CountryContextValue {
   activeCountry: string; // ISO alpha-2 uppercase
@@ -6,6 +7,28 @@ export interface CountryContextValue {
 }
 
 const CountryContext = createContext<CountryContextValue | undefined>(undefined);
+
+// Map country codes to preferred languages
+const COUNTRY_TO_LANGUAGE: Record<string, Language> = {
+  'ID': 'id', // Indonesia → Indonesian
+  'CN': 'zh-CN', // China → Simplified Chinese
+  'RU': 'ru', // Russia → Russian
+  'JP': 'ja', // Japan → Japanese
+  'KR': 'ko', // Korea → Korean
+  'GB': 'en', // United Kingdom → English
+  'US': 'en', // United States → English
+  'AU': 'en', // Australia → English
+  'CA': 'en', // Canada → English
+  'SG': 'en', // Singapore → English
+  'MY': 'en', // Malaysia → English
+  'TH': 'en', // Thailand → English (add 'th' when available)
+  'PH': 'en', // Philippines → English
+  'IN': 'en', // India → English
+};
+
+function getLanguageForCountry(countryCode: string): Language {
+  return COUNTRY_TO_LANGUAGE[countryCode.toUpperCase()] || 'en';
+}
 
 function readInitialCountry(): string {
   try {
@@ -19,7 +42,11 @@ function readInitialCountry(): string {
   return 'ID';
 }
 
-export const CountryProvider: React.FC<{ children: ReactNode; initialCountry?: string }> = ({ children, initialCountry }) => {
+export const CountryProvider: React.FC<{ 
+  children: ReactNode; 
+  initialCountry?: string;
+  onLanguageChange?: (language: Language) => void;
+}> = ({ children, initialCountry, onLanguageChange }) => {
   const [activeCountry, setActiveCountry] = useState<string>(initialCountry ? initialCountry.toUpperCase() : readInitialCountry());
 
   useEffect(() => {
@@ -47,6 +74,13 @@ export const CountryProvider: React.FC<{ children: ReactNode; initialCountry?: s
         const next = { ...prev, countryCode: cc, country: prev.country || cc };
         localStorage.setItem('app_user_location', JSON.stringify(next));
       } catch {}
+      
+      // Auto-switch language when country changes
+      if (onLanguageChange) {
+        const suggestedLanguage = getLanguageForCountry(cc);
+        console.log(`🌍 Country changed to ${cc}, auto-switching language to ${suggestedLanguage}`);
+        onLanguageChange(suggestedLanguage);
+      }
     }
   };
 
