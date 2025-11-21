@@ -983,11 +983,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 )}
                 <button
                     onClick={() => {
-                        if (!isCustomerLoggedIn) {
-                            setShowLoginRequiredModal(true);
-                        } else {
-                            onRate(therapist);
-                        }
+                        // No login required - directly open review modal
+                        onRate(therapist);
                     }}
                     className="flex items-center gap-1 text-xs text-gray-700 hover:text-gray-900 font-semibold transition-colors"
                 >

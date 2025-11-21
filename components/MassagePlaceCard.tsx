@@ -546,11 +546,8 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                     )}
                     <button
                         onClick={() => {
-                            if (!isCustomerLoggedIn) {
-                                setShowLoginRequiredModal(true);
-                            } else {
-                                onRate(place);
-                            }
+                            // No login required - directly open review modal
+                            onRate(place);
                         }}
                         className="flex items-center gap-1.5 text-sm text-gray-700 hover:text-gray-900 font-semibold transition-colors"
                     >

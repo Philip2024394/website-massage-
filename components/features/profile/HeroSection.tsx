@@ -467,9 +467,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     </button>
                     <button
                         onClick={() => {
-                            if (!isCustomerLoggedIn) {
-                                setShowLoginRequiredModal(true);
-                            } else if (onRate) {
+                            // No login required - directly open review modal
+                            if (onRate) {
                                 onRate(place);
                             }
                         }}
