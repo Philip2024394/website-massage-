@@ -318,10 +318,6 @@ export const MarketplacePageBase: React.FC<Props> = ({ onBack, t, userLocation, 
             <p className="fade-in text-white/90 text-sm sm:text-base md:text-lg max-w-2xl font-medium drop-shadow-lg px-4 mt-1" style={{ animationDelay: '0.25s', opacity: 0 }}>
               Shop trusted suppliers worldwide
             </p>
-                <div>
-                  <h2 className="text-xl font-bold">Choose your country</h2>
-                  <p className="text-white/80 text-sm">See therapists and spa places in any country</p>
-                </div>
             <button
               onClick={() => onNavigate?.('sellerInfo')}
               className="inline-flex items-center gap-1.5 px-4 py-2.5 sm:px-5 sm:py-3 bg-white text-orange-600 rounded-xl font-semibold shadow-xl border border-white/50 hover:shadow-orange-200 hover:scale-105 transition-all text-sm sm:text-base"
