@@ -255,6 +255,18 @@ class ReviewService {
     }
 
     /**
+     * Get reviews for a specific provider
+     */
+    getReviews(
+        providerId: string | number,
+        providerType: 'therapist' | 'place'
+    ): Review[] {
+        return this.reviews
+            .filter(r => r.providerId === providerId && r.providerType === providerType)
+            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    }
+
+    /**
      * Check if user can review a provider
      */
     canUserReview(

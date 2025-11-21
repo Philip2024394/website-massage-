@@ -86,6 +86,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
     const [yearsOfExperience, setYearsOfExperience] = useState<number>(0);
     const [massageTypes, setMassageTypes] = useState<string[]>([]);
     const [languages, setLanguages] = useState<string[]>([]);
+    const [isLicensed, setIsLicensed] = useState(false); // Licensed massage therapist status
     const [pricing, setPricing] = useState<Pricing>({ 60: 0, 90: 0, 120: 0 });
     const [hotelVillaPricing, setHotelVillaPricing] = useState<Pricing>({ 60: 0, 90: 0, 120: 0 });
     const [discountPercentage, setDiscountPercentage] = useState<number>(0);
@@ -314,6 +315,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                 setWhatsappNumber(existingTherapist.whatsappNumber || '');
                 setYearsOfExperience(existingTherapist.yearsOfExperience || 0);
                 setLocation(existingTherapist.location || '');
+                setIsLicensed(existingTherapist.isLicensed || false);
 
                 // Load bank details
                 setBankName(existingTherapist.bankName || '');
@@ -579,6 +581,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
             discountDuration,
             discountEndTime: discountEndTime?.toISOString() || undefined,
             isDiscountActive,
+            isLicensed, // Include licensed status
             distance: 0, // Add required field
             analytics: stringifyAnalytics({ 
                 impressions: 0, 
@@ -628,7 +631,7 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
         name, description, profilePicture, whatsappNumber, yearsOfExperience,
         massageTypes, languages, pricing, hotelVillaPricing, location,
         coordinates, serviceRadius, status, discountPercentage,
-        discountDuration, discountEndTime, isDiscountActive, onSave
+        discountDuration, discountEndTime, isDiscountActive, isLicensed, onSave
     ]);
 
     // Handle busy timer confirmation
@@ -1611,6 +1614,29 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                                         {yearsOfExperience >= 5 && yearsOfExperience < 10 && "Experienced! 👍"}
                                                                     </p>
                                                                 )}
+                                                            </div>
+
+                                                            {/* Licensed Therapist Checkbox */}
+                                                            <div className="md:col-span-2">
+                                                                <label className="flex items-center gap-3 cursor-pointer p-4 bg-green-50 border-2 border-green-200 rounded-lg hover:bg-green-100 transition-colors">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={isLicensed}
+                                                                        onChange={(e) => setIsLicensed(e.target.checked)}
+                                                                        className="w-5 h-5 text-green-600 border-green-300 rounded focus:ring-2 focus:ring-green-500 cursor-pointer"
+                                                                    />
+                                                                    <div className="flex-1">
+                                                                        <span className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                                                                            <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                                                            </svg>
+                                                                            I am a Licensed Massage Therapist
+                                                                        </span>
+                                                                        <p className="text-xs text-gray-600 mt-1">
+                                                                            Check this if you hold a valid massage therapy license. This badge will be displayed on your profile.
+                                                                        </p>
+                                                                    </div>
+                                                                </label>
                                                             </div>
 
                                                             {/* Professional Description */}

@@ -335,6 +335,7 @@ export interface Place {
     verificationBadge?: 'verified' | null;
     verificationRevokedAt?: string;
     verificationRevokedReason?: string;
+    isLicensed?: boolean; // Whether shop/place is verified seller
     
     // Dynamic pricing support
     hasPackages?: boolean;

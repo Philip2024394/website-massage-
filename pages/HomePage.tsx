@@ -854,6 +854,7 @@ const HomePage: React.FC<HomePageProps> = ({
                         itemName={selectedRatingItem.item.name}
                         itemType={selectedRatingItem.type}
                         itemId={selectedRatingItem.item.id || (selectedRatingItem.item as any).$id}
+                        provider={selectedRatingItem.item} // Pass full provider object
                         t={{
                             title: t.ratingModal?.title || 'Rate {itemName}',
                             prompt: t.ratingModal?.prompt || 'How was your experience?',
