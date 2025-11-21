@@ -657,38 +657,24 @@ const HomePage: React.FC<HomePageProps> = ({
                     </span>
                 </div>
 
-                {/* Location display line */}
+                {/* Location display line - Live from GPS/IP with Google Maps */}
                 <div className="text-center text-base font-semibold text-orange-600 mb-4">
                     {(() => {
-                        try {
-                            const raw = localStorage.getItem('app_user_location');
-                            const parsed = raw ? JSON.parse(raw) : null;
-                            
-                            if (!parsed) {
-                                return '📍 Set Your Location';
-                            }
-                            
-                            // Extract city/area name from address
-                            let locationText = '';
-                            if (parsed.address) {
-                                const addressParts = parsed.address.split(',').map((s: string) => s.trim());
-                                // Get first meaningful part (usually city/district)
-                                const cityPart = addressParts[0] || '';
-                                
-                                // Get country name
-                                const countryName = parsed.country || 'Unknown';
-                                
-                                locationText = `📍 Your Location: ${cityPart}, ${countryName}`;
-                            } else if (parsed.country) {
-                                locationText = `📍 Your Location: ${parsed.country}`;
-                            } else {
-                                locationText = '📍 Location Set';
-                            }
-                            
-                            return locationText;
-                        } catch {
-                            return '📍 Set Your Location';
+                        // Use live userLocation from props (detected by GPS/IP via Google Maps API)
+                        const location = userLocation;
+                        
+                        if (!location) {
+                            return '📍 Detecting your location...';
                         }
+                        
+                        // Show full address from Google Maps for exact location
+                        if (location.address) {
+                            return `📍 ${location.address}`;
+                        } else if (location.country) {
+                            return `📍 ${location.country}`;
+                        }
+                        
+                        return '📍 Location detected';
                     })()}
                 </div>
 
