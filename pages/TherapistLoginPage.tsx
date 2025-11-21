@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { therapistAuth } from '../lib/auth';
 import { Eye, EyeOff, Mail, Lock, LogIn, UserPlus } from 'lucide-react';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
-import { AppDrawer } from '../components/AppDrawer';
+import CountryAppDrawer from '../components/CountryAppDrawer';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
 import PageNumberBadge from '../components/PageNumberBadge';
 
@@ -129,7 +129,8 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({
 
             {/* Global App Drawer */}
             <React19SafeWrapper condition={isMenuOpen}>
-                <AppDrawer
+                <CountryAppDrawer
+                    countryCode={(() => { try { const raw = localStorage.getItem('app_user_location'); if (raw) return JSON.parse(raw).countryCode; } catch {} return undefined; })()}
                     isOpen={isMenuOpen}
                     onClose={() => setIsMenuOpen(false)}
                     t={t}

@@ -17,3 +17,11 @@ export const DRAWER_LOCKED_COUNTRIES: string[] = [
 
 // Global flag to enable/disable all drawer overrides quickly.
 export const ALLOW_DRAWER_OVERRIDES: boolean = true;
+
+// Service override safety locks (prevent country-specific service logic loading)
+export const SERVICE_LOCKED_COUNTRIES: string[] = [];
+export const ALLOW_SERVICE_OVERRIDES: boolean = true;
+
+// Translation override safety locks
+export const TRANSLATION_LOCKED_COUNTRIES: string[] = [];
+export const ALLOW_TRANSLATION_OVERRIDES: boolean = true;

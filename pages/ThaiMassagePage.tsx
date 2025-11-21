@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AppDrawer } from '../components/AppDrawer';
+import CountryAppDrawer from '../components/CountryAppDrawer';
 
 interface ThaiMassagePageProps {
     onBack?: () => void;
@@ -63,7 +63,8 @@ const ThaiMassagePage: React.FC<ThaiMassagePageProps> = ({
             </header>
             
             {/* App Drawer */}
-            <AppDrawer
+            <CountryAppDrawer
+                countryCode={(() => { try { const raw = localStorage.getItem('app_user_location'); if (raw) return JSON.parse(raw).countryCode; } catch {} return undefined; })()}
                 isOpen={isMenuOpen}
                 onClose={() => setIsMenuOpen(false)}
                 onMassageJobsClick={onMassageJobsClick}

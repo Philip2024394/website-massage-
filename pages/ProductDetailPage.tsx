@@ -3,7 +3,7 @@ import { marketplaceService, type MarketplaceProduct, type MarketplaceSeller } f
 import { getCountryConfig } from '../lib/countryConfig';
 import { convertCurrency, formatCurrency } from '../lib/currencyConversion';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
-import { AppDrawer } from '../components/AppDrawer';
+import CountryAppDrawer from '../components/CountryAppDrawer';
 import { COUNTRIES } from '../countries';
 
 type Props = {
@@ -250,7 +250,8 @@ const ProductDetailPage: React.FC<Props> = ({ onBack, onNavigate }) => {
         </div>
       </header>
 
-      <AppDrawer 
+      <CountryAppDrawer 
+        countryCode={viewerCountryCode}
         isOpen={isMenuOpen} 
         isHome={true} 
         onClose={() => setIsMenuOpen(false)} 

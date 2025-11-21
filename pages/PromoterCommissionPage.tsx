@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
-import { AppDrawer } from '../components/AppDrawer';
+import CountryAppDrawer from '../components/CountryAppDrawer';
 import { membershipReferralService } from '../lib/membershipReferralService';
 import { account } from '../lib/appwrite';
 import { promoterService } from '../services/promoterService';
@@ -108,7 +108,7 @@ const PromoterCommissionPage: React.FC<{ t?: any; onBack?: () => void; onNavigat
         </div>
       </header>
 
-      <AppDrawer isOpen={isMenuOpen} isHome={true} onClose={() => setIsMenuOpen(false)} t={t} onNavigate={onNavigate} promoterMode={true} />
+      <CountryAppDrawer countryCode={(() => { try { const raw = localStorage.getItem('app_user_location'); if (raw) return JSON.parse(raw).countryCode; } catch {} return undefined; })()} isOpen={isMenuOpen} isHome={true} onClose={() => setIsMenuOpen(false)} t={t} onNavigate={onNavigate} promoterMode={true} />
 
       <main className="max-w-3xl mx-auto p-4 md:p-6 pb-24">
         {!isActive && (

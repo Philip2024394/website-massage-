@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
-import { AppDrawer } from '../components/AppDrawer';
+import CountryAppDrawer from '../components/CountryAppDrawer';
 
 type Props = {
   onBack: () => void;
@@ -40,7 +40,8 @@ const SafeTradeInfoPage: React.FC<Props> = ({ onBack, onNavigate }) => {
         </div>
       </header>
 
-      <AppDrawer 
+      <CountryAppDrawer 
+        countryCode={(() => { try { const raw = localStorage.getItem('app_user_location'); if (raw) return JSON.parse(raw).countryCode; } catch {} return undefined; })()}
         isOpen={isMenuOpen} 
         isHome={true} 
         onClose={() => setIsMenuOpen(false)} 
