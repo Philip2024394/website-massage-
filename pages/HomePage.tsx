@@ -232,6 +232,9 @@ const HomePage: React.FC<HomePageProps> = ({
         } catch {}
         setIsCountrySelectorOpen(false);
         setCountrySearch('');
+        
+        // Refresh page to reload therapists/places with new country filter
+        window.location.reload();
     };
 
     // Fisher-Yates shuffle to randomize array order
