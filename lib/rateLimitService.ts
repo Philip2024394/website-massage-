@@ -21,7 +21,7 @@ try {
 const DISABLE_RATE_LIMIT = __env?.VITE_DISABLE_RATE_LIMIT === 'true';
 
 const DEFAULT_CONFIG: RateLimitConfig = {
-    maxRetries: DISABLE_RATE_LIMIT ? 0 : (Number(__env?.VITE_RATE_MAX_RETRIES) || 3),
+    maxRetries: DISABLE_RATE_LIMIT ? 0 : 0, // Changed from 3 to 0 - no retries to prevent request flood
     baseDelay: Number(__env?.VITE_RATE_BASE_DELAY) || (DISABLE_RATE_LIMIT ? 50 : 1000), // ms
     maxDelay: Number(__env?.VITE_RATE_MAX_DELAY) || 10000, // ms
     backoffMultiplier: Number(__env?.VITE_RATE_BACKOFF_MULTIPLIER) || 2

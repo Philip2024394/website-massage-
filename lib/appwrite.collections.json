@@ -1,1 +1,4 @@
-{}
+{
+  "therapists": "therapists_collection_id",
+  "places": "therapists_collection_id"
+}

@@ -300,6 +300,11 @@ export interface Therapist {
     // Busy timer functionality
     busyUntil?: string; // ISO timestamp when therapist becomes available again
     busyDuration?: number; // Duration in minutes for the busy period
+
+    // Geo fields for refined locality filtering (city + country)
+    city?: string; // Parsed city/locality from reverse geocode
+    countryCode?: string; // ISO 3166-1 alpha-2
+    country?: string; // Human readable country name
 }
 
 export interface Place {
@@ -352,6 +357,11 @@ export interface Place {
     discountDuration?: number; // Duration in hours for discount period
     discountEndTime?: string; // ISO string for when discount ends
     isDiscountActive?: boolean; // Whether discount is currently active
+
+    // Geo fields for refined locality filtering (city + country)
+    city?: string; // Parsed city/locality from reverse geocode
+    countryCode?: string; // ISO 3166-1 alpha-2
+    country?: string; // Human readable country name
 }
 
 export interface User {
@@ -416,6 +426,7 @@ export interface UserLocation {
     lng: number;
     countryCode?: string; // ISO 3166-1 alpha-2 (e.g., 'ID', 'US')
     country?: string;     // Human-readable country name
+    city?: string;        // Parsed city/locality for finer filtering
 }
 
 

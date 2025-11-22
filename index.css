@@ -1,6 +1,3 @@
-/* Footer fixes - must come before Tailwind */
-@import url('./footer-fix.css');
-
 /* EMERGENCY FOOTER OVERRIDE - BEHIND DRAWERS */
 footer, 
 .HomePage footer,

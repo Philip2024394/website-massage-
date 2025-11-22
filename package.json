@@ -8,6 +8,7 @@
     "dev": "cross-env VITE_PORT=3005 vite",
     "dev:3000": "vite --port 3000 --strictPort",
     "dev:debug": "cross-env DEBUG=vite:* VITE_LOG_LEVEL=debug VITE_PORT=3005 vite --debug",
+    "dev:chrome": "node scripts/open-chrome.cjs",
     "build": "cross-env ROLLUP_NO_NATIVE=1 tsc && vite build --config vite.config.deployment.ts",
     "build:netlify": "cross-env ROLLUP_NO_NATIVE=1 ROLLUP_NO_WASM=1 tsc && vite build",
     "build:npm": "npm run type-check && cross-env ROLLUP_NO_NATIVE=1 ROLLUP_NO_WASM=1 vite build",
@@ -40,7 +41,11 @@
     "appwrite:map": "node scripts/generate-collections-config.js",
     "appwrite:health": "node scripts/generate-collections-config.js && node scripts/verify-core-collections.js && node scripts/dump-collection-schemas.js",
     "backfill:countryCodes": "node scripts/backfill-country-codes.mjs",
-    "seed:marketplace": "tsx scripts/seedMarketplace.ts"
+    "seed:marketplace": "tsx scripts/seedMarketplace.ts",
+    "seed:countries": "node scripts/seed-countries.cjs",
+    "generate:sitemap": "node scripts/generate-sitemap.cjs",
+    "generate:mockdata": "node scripts/generate-mock-data.cjs",
+    "schema:place": "tsx scripts/checkPlaceSchema.ts"
   },
   "dependencies": {
     "@stripe/react-stripe-js": "^2.8.0",

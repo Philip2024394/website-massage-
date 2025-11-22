@@ -20,7 +20,7 @@ export async function robustApiCall<T>(
 ): Promise<T | null> {
     const {
         timeout = 10000, // 10 seconds
-        retries = 2,
+        retries = 0, // Changed from 2 to 0 - no retries to prevent request flood
         context = 'API call'
     } = options;
 
@@ -32,9 +32,9 @@ export async function robustApiCall<T>(
             }, timeout);
         });
 
-        // Race the API call against timeout
+        // Race the API call against timeout - NO RETRY WRAPPER
         const result = await Promise.race([
-            retryWithBackoff(apiCall, context),
+            apiCall(), // Direct call, no retryWithBackoff
             timeoutPromise
         ]);
 

@@ -132,6 +132,15 @@ export const useSessionRestore = (props: UseSessionRestoreProps) => {
                     return;
                 }
 
+                // Prevent repeated restore attempts across remounts in the same session.
+                // A 401 from account.get() when not logged in is expected; we only need one check.
+                const alreadyChecked = sessionStorage.getItem('session_checked');
+                if (alreadyChecked) {
+                    console.log('🛑 Session already checked this run - skipping duplicate restore');
+                    return;
+                }
+                sessionStorage.setItem('session_checked', 'true');
+
                 if (isMounted) {
                     await restoreUserSession();
                 }

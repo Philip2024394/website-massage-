@@ -215,14 +215,16 @@ export const MarketplacePageBase: React.FC<Props> = ({ onBack, t, userLocation, 
             >
               <Home className="w-6 h-6 sm:w-7 sm:h-7 text-orange-500" />
             </button>
-            <button
-              onClick={() => setIsCountrySelectorOpen(true)}
-              className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-orange-200 flex items-center justify-center bg-white hover:bg-orange-50 hover:border-orange-400 transition-all duration-300 shadow-md hover:shadow-lg"
-              title={userLocation?.country || userLocation?.countryCode || 'Choose country'}
-              aria-label="Choose country"
-            >
-              <FlagIcon code={userLocation?.countryCode || 'ID'} className="text-xl sm:text-2xl" />
-            </button>
+            {((userLocation?.countryCode || '').toUpperCase() !== 'GB') && (
+              <button
+                onClick={() => setIsCountrySelectorOpen(true)}
+                className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-orange-200 flex items-center justify-center bg-white hover:bg-orange-50 hover:border-orange-400 transition-all duration-300 shadow-md hover:shadow-lg"
+                title={userLocation?.country || userLocation?.countryCode || 'Choose country'}
+                aria-label="Choose country"
+              >
+                <FlagIcon code={userLocation?.countryCode || 'ID'} className="text-xl sm:text-2xl" />
+              </button>
+            )}
 
             <button 
               onClick={() => setIsMenuOpen(true)} 

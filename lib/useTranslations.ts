@@ -102,18 +102,22 @@ export function useTranslations(language?: Language) {
         fallbackTranslations.en ||
         fallbackTranslations;
     
-    console.log(`🧭 useTranslations Debug for ${currentLanguage}:`);
-    console.log(`  📦 translations[${currentLanguage}] exists:`, !!translations[currentLanguage]);
-    console.log(`  📦 translations[${currentLanguage}] keys:`, translations[currentLanguage] ? Object.keys(translations[currentLanguage]) : 'none');
-    console.log(`  📦 translations[${currentLanguage}] has content:`, hasTranslationContent(translations[currentLanguage]));
-    console.log(`  🏠 translations[${currentLanguage}].home exists:`, !!(translations[currentLanguage] && translations[currentLanguage].home));
-    console.log(`  📦 fallbackTranslations[${currentLanguage}] exists:`, !!((fallbackTranslations as any)[currentLanguage]));
-    console.log(`  📦 fallbackTranslations[${currentLanguage}] keys:`, (fallbackTranslations as any)[currentLanguage] ? Object.keys((fallbackTranslations as any)[currentLanguage]) : 'none');
-    console.log(`  📦 fallbackTranslations[${currentLanguage}] has content:`, hasTranslationContent((fallbackTranslations as any)[currentLanguage]));
-    console.log(`  🏠 fallbackTranslations[${currentLanguage}].home exists:`, !!((fallbackTranslations as any)[currentLanguage] && (fallbackTranslations as any)[currentLanguage].home));
-    console.log(`  ✅ Final translation keys:`, Object.keys(finalTranslations || {}));
-    console.log(`  🏠 Final translation has home:`, !!(finalTranslations && finalTranslations.home));
-    console.log(`  🎯 Translation source: ${hasTranslationContent(translations[currentLanguage]) ? 'Appwrite' : hasTranslationContent((fallbackTranslations as any)[currentLanguage]) ? 'Fallback' : 'Default'}`);
+    // Debug logs disabled for production - only enable when troubleshooting
+    const DEBUG_TRANSLATIONS = false;
+    if (DEBUG_TRANSLATIONS) {
+        console.log(`🧭 useTranslations Debug for ${currentLanguage}:`);
+        console.log(`  📦 translations[${currentLanguage}] exists:`, !!translations[currentLanguage]);
+        console.log(`  📦 translations[${currentLanguage}] keys:`, translations[currentLanguage] ? Object.keys(translations[currentLanguage]) : 'none');
+        console.log(`  📦 translations[${currentLanguage}] has content:`, hasTranslationContent(translations[currentLanguage]));
+        console.log(`  🏠 translations[${currentLanguage}].home exists:`, !!(translations[currentLanguage] && translations[currentLanguage].home));
+        console.log(`  📦 fallbackTranslations[${currentLanguage}] exists:`, !!((fallbackTranslations as any)[currentLanguage]));
+        console.log(`  📦 fallbackTranslations[${currentLanguage}] keys:`, (fallbackTranslations as any)[currentLanguage] ? Object.keys((fallbackTranslations as any)[currentLanguage]) : 'none');
+        console.log(`  📦 fallbackTranslations[${currentLanguage}] has content:`, hasTranslationContent((fallbackTranslations as any)[currentLanguage]));
+        console.log(`  🏠 fallbackTranslations[${currentLanguage}].home exists:`, !!((fallbackTranslations as any)[currentLanguage] && (fallbackTranslations as any)[currentLanguage].home));
+        console.log(`  ✅ Final translation keys:`, Object.keys(finalTranslations || {}));
+        console.log(`  🏠 Final translation has home:`, !!(finalTranslations && finalTranslations.home));
+        console.log(`  🎯 Translation source: ${hasTranslationContent(translations[currentLanguage]) ? 'Appwrite' : hasTranslationContent((fallbackTranslations as any)[currentLanguage]) ? 'Fallback' : 'Default'}`);
+    }
 
     // Helper function to get nested translation values
     const getNestedValue = (obj: any, path: string): string => {
@@ -136,9 +140,12 @@ export function useTranslations(language?: Language) {
     return {
         t: (key: string) => {
             const result = getNestedValue(finalTranslations, key);
-            console.log(`🔑 Translation lookup: "${key}" => "${result}" (from ${Object.keys(finalTranslations || {}).length} keys)`);
-            if (key.includes('home.')) {
-                console.log(`🏠 Home section debug:`, finalTranslations?.home ? Object.keys(finalTranslations.home) : 'no home section');
+            // Remove noisy per-lookup logs to prevent perceived flicker; enable only when debugging
+            if (DEBUG_TRANSLATIONS) {
+                console.log(`🔑 Translation lookup: "${key}" => "${result}" (from ${Object.keys(finalTranslations || {}).length} keys)`);
+                if (key.includes('home.')) {
+                    console.log(`🏠 Home section debug:`, finalTranslations?.home ? Object.keys(finalTranslations.home) : 'no home section');
+                }
             }
             return result;
         },

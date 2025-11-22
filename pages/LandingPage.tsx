@@ -16,7 +16,15 @@ interface LandingPageProps {
     onEnterApp: (language: Language, location: UserLocation) => void;
 }
 
-const imageSrc = 'https://ik.imagekit.io/7grri5v7d/indastreet%20massage.png?updatedAt=1761978080830';
+// PERMANENT FIX: Bright orange gradient that's ALWAYS visible (never black!)
+const PLACEHOLDER_BASE64 = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwMCIgaGVpZ2h0PSIxMDAwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxkZWZzPjxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNlYTU4MGM7c3RvcC1vcGFjaXR5OjEiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNjMjQxMGM7c3RvcC1vcGFjaXR5OjEiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwMCIgaGVpZ2h0PSIxMDAwIiBmaWxsPSJ1cmwoI2cpIi8+PC9zdmc+';
+
+// Primary remote image and fallback URLs
+const IMAGE_SOURCES = [
+    'https://ik.imagekit.io/7grri5v7d/indastreet%20massage.png?updatedAt=1761978080830',
+    'https://ik.imagekit.io/7grri5v7d/indastreet%20massage.png',
+    'https://ik.imagekit.io/7grri5v7d/tr:w-1920/indastreet%20massage.png'
+];
 
 // Language options with flags - Indonesian first, then English, then others
 const languages = [
@@ -25,11 +33,37 @@ const languages = [
 ];
 
 const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect }) => {
-    console.log('🎨 LandingPage: Component rendering');
-    console.log('🎨 LandingPage: Props received:', { onEnterApp: !!onEnterApp, onLanguageSelect: !!onLanguageSelect });
-    console.log('onEnterApp prop received:', !!onEnterApp);
+    const DEBUG_LANDING = false; // Disabled - works reliably now
+    
+    // Check if user already entered - if so, show loading state (prevents bounce back)
+    const [hasEntered, setHasEntered] = useState(() => {
+        try {
+            return sessionStorage.getItem('has_entered_app') === '1';
+        } catch {
+            return false;
+        }
+    });
+    
+    if (DEBUG_LANDING) {
+        console.log('🎨 LandingPage: Component rendering');
+        console.log('🎨 LandingPage: Props received:', { onEnterApp: !!onEnterApp, onLanguageSelect: !!onLanguageSelect });
+        console.log('🎨 LandingPage: onEnterApp type:', typeof onEnterApp);
+        console.log('🎨 LandingPage: Current timestamp:', new Date().toISOString());
+        console.log('🎨 LandingPage: Has already entered:', hasEntered);
+    }
     
     const [imageLoaded, setImageLoaded] = useState(false);
+    const [imageError, setImageError] = useState(false);
+    // Start with actual image URL to prevent orange flash
+    const [activeImage, setActiveImage] = useState<string | null>(IMAGE_SOURCES[0]);
+    const [bgStyle, setBgStyle] = useState<React.CSSProperties>({
+        backgroundImage: `url("${IMAGE_SOURCES[0]}")`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+    });
+    // Stabilize initial text render: start visible to avoid flashing
+    const [contentVisible, setContentVisible] = useState(true);
     // Require explicit user selection (no prefilled language)
     const [selectedLanguage, setSelectedLanguage] = useState<Language | null>(null);
     const [locationReady, setLocationReady] = useState(false);
@@ -37,6 +71,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
     const [isDetectingLocation, setIsDetectingLocation] = useState(false);
     const [detectedCountryCode, setDetectedCountryCode] = useState<string | undefined>(undefined);
     const [detectedCountry, setDetectedCountry] = useState<string | undefined>(undefined);
+    // Track auto-enter fallback attempts
+    const [autoEnterAttempted, setAutoEnterAttempted] = useState(false);
     // PWA install hook
     const { requestInstall, isInstalled, isIOS, showIOSInstructions, setShowIOSInstructions } = usePWAInstall();
     
@@ -45,19 +81,21 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
 
     // Debug logging
     useEffect(() => {
-        console.log('🔍 LandingPage Debug:');
-        console.log('  - Selected Language:', selectedLanguage);
-        console.log('  - Has Language in Translations:', hasLanguage);
-        console.log('  - Translation Loading:', translationsLoading);
-        console.log('  - Translation function type:', typeof t);
-        console.log('  - Testing landing translation:', t ? t('landing.welcome') : 'No translation function');
-        console.log('  - Testing common translation:', t ? t('common.loading') : 'No translation function');
-        if (t && typeof t === 'function') {
-            console.log('  - ✅ Translation function is available');
-        } else {
-            console.log('  - ❌ No translation function found');
+        if (DEBUG_LANDING) {
+            console.log('🔍 LandingPage Debug:');
+            console.log('  - Selected Language:', selectedLanguage);
+            console.log('  - Has Language in Translations:', hasLanguage);
+            console.log('  - Translation Loading:', translationsLoading);
+            console.log('  - Translation function type:', typeof t);
+            console.log('  - Testing landing translation:', t ? t('landing.welcome') : 'No translation function');
+            console.log('  - Testing common translation:', t ? t('common.loading') : 'No translation function');
+            if (t && typeof t === 'function') {
+                console.log('  - ✅ Translation function is available');
+            } else {
+                console.log('  - ❌ No translation function found');
+            }
+            console.log('  - Fallback text will be used for missing translations');
         }
-        console.log('  - Fallback text will be used for missing translations');
     }, [selectedLanguage, hasLanguage, translationsLoading, t]);
 
     // Initialize default language from browser on first load
@@ -87,20 +125,22 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
             const deviceInfo = deviceService.getDeviceInfo();
             
             if (deviceInfo.type === 'mobile' && deviceInfo.supportsGPS) {
-                console.log('📱 Mobile device detected with GPS, pre-loading location...');
-                console.log('📊 Device details:', {
-                    platform: deviceInfo.platform,
-                    browser: deviceInfo.browser,
-                    connectionType: deviceInfo.connectionType,
-                    hasTouch: deviceInfo.hasTouch
-                });
+                if (DEBUG_LANDING) {
+                    console.log('📱 Mobile device detected with GPS, pre-loading location...');
+                    console.log('📊 Device details:', {
+                        platform: deviceInfo.platform,
+                        browser: deviceInfo.browser,
+                        connectionType: deviceInfo.connectionType,
+                        hasTouch: deviceInfo.hasTouch
+                    });
+                }
                 
                 try {
                     // Pre-load location silently in the background
                     await locationService.requestLocationWithFallback();
-                    console.log('✅ Location pre-loaded successfully');
+                    if (DEBUG_LANDING) console.log('✅ Location pre-loaded successfully');
                 } catch (error) {
-                    console.warn('⚠️ Failed to pre-load location:', error);
+                    if (DEBUG_LANDING) console.warn('⚠️ Failed to pre-load location:', error);
                 }
             }
         };
@@ -110,20 +150,68 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
         return () => clearTimeout(timer);
     }, []);
 
+    // PERMANENT FIX: Simple image preloader without flash
     useEffect(() => {
-        console.log('🖼️ LandingPage: Attempting to load image:', imageSrc);
-        const img = new Image();
-        img.src = imageSrc;
-        img.onload = () => {
-            console.log('✅ LandingPage: Image loaded successfully');
-            setImageLoaded(true);
+        let cancelled = false;
+        let fallbackTimeout: NodeJS.Timeout | null = null;
+        const img = new window.Image();
+        let triedOnce = false;
+
+        const showFallback = () => {
+            if (!cancelled) {
+                setBgStyle({
+                    backgroundImage: `url("${PLACEHOLDER_BASE64}")`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat'
+                });
+                setImageLoaded(true);
+                setImageError(true);
+            }
         };
-        img.onerror = (error) => {
-            console.error(`❌ LandingPage: Failed to load image at: ${imageSrc}`, error);
-            console.error('Image might be unavailable, blocked by CORS, or URL is incorrect.');
-            setImageLoaded(true);
+
+        img.onload = () => {
+            if (!cancelled) {
+                setImageLoaded(true);
+                setImageError(false);
+                if (fallbackTimeout) clearTimeout(fallbackTimeout);
+            }
+        };
+        img.onerror = () => {
+            if (!cancelled && !triedOnce) {
+                // Retry once after short delay
+                triedOnce = true;
+                setTimeout(() => {
+                    img.src = IMAGE_SOURCES[1];
+                }, 500);
+            } else {
+                showFallback();
+            }
+        };
+        // Wait longer before showing fallback (2.5s)
+        fallbackTimeout = setTimeout(showFallback, 2500);
+        img.src = IMAGE_SOURCES[0];
+        return () => {
+            cancelled = true;
+            if (fallbackTimeout) clearTimeout(fallbackTimeout);
         };
     }, []);
+
+    // Show content after initial mounting/render turbulence settles
+    useEffect(() => {
+        // Immediately show content on mount
+        setContentVisible(true);
+        // Use RAF for smoother first paint sequencing
+        const raf = requestAnimationFrame(() => setContentVisible(true));
+        // Failsafe: always show content after 1.5s
+        const timeout = setTimeout(() => setContentVisible(true), 1500);
+        return () => {
+            cancelAnimationFrame(raf);
+            clearTimeout(timeout);
+        };
+    }, []);
+
+    // Auto-enter removed - user must explicitly click button to continue
 
     const handleEnterApp = async () => {
         // Prevent multiple rapid clicks
@@ -179,6 +267,11 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
             setDetectedCountryCode(userLocation.countryCode);
             setDetectedCountry(userLocation.country);
             
+            // Set session flag to mark entry
+            try {
+                sessionStorage.setItem('has_entered_app', '1');
+            } catch {}
+            
             // Call the function immediately
             await onEnterApp(lang, userLocation);
             console.log('✅ onEnterApp called successfully with language:', selectedLanguage);
@@ -203,6 +296,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
             
             console.log('📍 Using fallback location:', defaultLocation);
             try {
+                // Set session flag
+                try { sessionStorage.setItem('has_entered_app', '1'); } catch {}
                 await onEnterApp(lang, defaultLocation);
                 console.log('✅ onEnterApp called successfully with fallback location');
                 try {
@@ -227,9 +322,33 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
         : null;
 
     const handleSetDeviceLocation = async () => {
-        if (isDetectingLocation) return;
+        console.log('🔘 View Massage Therapists button clicked!');
+        console.log('🔘 isDetectingLocation state:', isDetectingLocation);
+        console.log('🔘 onEnterApp available:', !!onEnterApp);
+        console.log('🔘 onEnterApp type:', typeof onEnterApp);
+        
+        if (isDetectingLocation) {
+            console.log('🚫 Already detecting location - ignoring click');
+            return;
+        }
+        
+        if (!onEnterApp) {
+            console.error('❌ onEnterApp is not defined!');
+            alert('Error: onEnterApp function is missing. Please refresh the page.');
+            return;
+        }
+        
+        console.log('🔄 Starting location detection...');
         setIsDetectingLocation(true);
+        
+        // Failsafe: auto-reset after 10 seconds if stuck
+        const resetTimeout = setTimeout(() => {
+            console.warn('⚠️ Location detection timeout - resetting state');
+            setIsDetectingLocation(false);
+        }, 10000);
+        
         try {
+            console.log('📍 Requesting location with fallback...');
             const loc = await locationService.requestLocationWithFallback();
             console.log('✅ Device location set:', loc);
             setDetectedCountryCode(loc.countryCode);
@@ -238,14 +357,21 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
 
             // Determine language (use selected or browser-based default)
             const lang: Language = (selectedLanguage || ((navigator.language || 'en').toLowerCase().startsWith('id') ? 'id' : 'en')) as Language;
+            console.log('🌍 Using language:', lang);
+            
             try {
                 sessionStorage.setItem('show_language_prompt', '1');
                 sessionStorage.setItem('suggested_language', lang);
+                sessionStorage.setItem('has_entered_app', '1');
             } catch {}
+            
             // Immediately enter app and navigate to Home with detected location
+            console.log('🚀 Calling onEnterApp with location:', loc);
             await onEnterApp(lang, loc);
+            console.log('✅ Successfully entered app');
+            clearTimeout(resetTimeout);
         } catch (e) {
-            console.warn('⚠️ Failed to set device location:', e);
+            console.error('❌ Failed to set device location:', e);
             setLocationReady(false);
             // Fallback: enter app with default Jakarta location
             try {
@@ -255,10 +381,61 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
                     sessionStorage.setItem('show_language_prompt', '1');
                     sessionStorage.setItem('suggested_language', lang);
                 } catch {}
+                console.log('🚀 Calling onEnterApp with fallback location');
                 await onEnterApp(lang, fallback);
+                clearTimeout(resetTimeout);
             } catch (enterErr) {
                 console.error('❌ Failed to enter app with fallback location:', enterErr);
+                alert('Failed to enter app. Please try refreshing the page.');
+                clearTimeout(resetTimeout);
             }
+        } finally {
+            setIsDetectingLocation(false);
+        }
+    };
+
+    // Fallback entry without performing a fresh GPS detect
+    const handleEnterWithoutGPS = async () => {
+        console.log('🔘 Enter Without GPS button clicked!');
+        if (isDetectingLocation) {
+            console.log('🚫 Already processing - ignoring click');
+            return;
+        }
+        
+        console.log('🔄 Entering without GPS detection...');
+        setIsDetectingLocation(true);
+        
+        try {
+            let cached: UserLocation | null = null;
+            try {
+                const raw = localStorage.getItem('app_user_location');
+                if (raw) {
+                    cached = JSON.parse(raw);
+                    console.log('📍 Using cached location:', cached);
+                }
+            } catch {}
+            
+            const fallback: UserLocation = cached || { address: 'Jakarta, Indonesia', lat: -6.2088, lng: 106.8456 };
+            const lang: Language = (selectedLanguage || ((navigator.language || 'en').toLowerCase().startsWith('id') ? 'id' : 'en')) as Language;
+            
+            console.log('🌍 Using language:', lang);
+            console.log('📍 Using location:', fallback);
+            
+            try {
+                sessionStorage.setItem('show_language_prompt', '1');
+                sessionStorage.setItem('suggested_language', lang);
+                sessionStorage.setItem('has_entered_app', '1');
+            } catch {}
+            
+            console.log('🚀 Calling onEnterApp...');
+            if (!onEnterApp) {
+                console.error('❌ onEnterApp is not defined!');
+                return;
+            }
+            await onEnterApp(lang, fallback);
+            console.log('✅ Successfully entered app');
+        } catch (e) {
+            console.error('❌ Fallback enter failed:', e);
         } finally {
             setIsDetectingLocation(false);
         }
@@ -271,21 +448,34 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
         return String.fromCodePoint(A + (cc.charCodeAt(0) - 65)) + String.fromCodePoint(A + (cc.charCodeAt(1) - 65));
     };
 
+    // Debug current state
+    if (DEBUG_LANDING) {
+        console.log('🎨 Render state:', { imageLoaded, imageError, activeImage: activeImage?.substring(0, 50) });
+        console.log('🎨 Background style:', bgStyle);
+    }
+
     return (
-        <div className="relative min-h-screen w-full flex overflow-hidden">
+        <div
+            className="relative min-h-screen w-full flex overflow-hidden"
+            style={{
+                ...bgStyle,
+                minHeight: '100vh',
+                width: '100%',
+                backgroundColor: '#2a1514'
+            }}
+        >
+            {/* Debug overlay removed for production clarity */}
             <PageNumberBadge pageNumber={1} pageName="LandingPage" />
+            {/* Removed duplicate img layer to prevent double photo rendering */}
+            {/* Overlay always mounted; opacity transitions prevent sudden flash */}
             <div
-                className="absolute inset-0 z-0 w-full h-full bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ease-in-out"
-                style={{
-                    backgroundImage: `url('${imageSrc}')`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center center',
-                    opacity: imageLoaded ? 1 : 0,
-                }}
+                className="absolute inset-0 z-10 pointer-events-none bg-black/10 transition-opacity duration-300"
+                style={{ opacity: imageLoaded && !imageError ? 1 : 0 }}
             />
-            {/* Extra gradient overlay for readability */}
-            <div className="absolute inset-0 z-10 bg-gradient-to-b from-black/60 via-black/40 to-black/60 pointer-events-none" />
-            <div className="relative z-20 flex-grow flex flex-col items-center justify-center text-white px-4 text-center w-full min-h-screen">
+            <div
+                className="relative z-20 flex-grow flex flex-col items-center justify-center text-white px-4 text-center w-full min-h-screen"
+                style={{ opacity: contentVisible ? 1 : 0, transition: 'opacity 400ms ease' }}
+            >
                 <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
                     <span className="text-white">Inda</span><span className="text-orange-400">street</span>
                 </h1>
@@ -296,7 +486,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
                 <div className="w-full max-w-sm sm:max-w-md px-2 space-y-3 sm:space-y-4">
                     <h2 className="text-sm sm:text-base lg:text-lg font-semibold mb-3">{t('landing.getStarted') || 'Get Started'}</h2>
                     
-                    {/* View Massage Therapists: sets location then navigates to Home */}
+                    {/* Single button: sets location then navigates to Home */}
                     <Button
                         type="button"
                         onClick={handleSetDeviceLocation}
@@ -328,8 +518,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLanguageSelect 
                             <span>{detectedCountry || detectedCountryCode}</span>
                         </div>
                     )}
-
-                    {/* Removed separate Enter button per request */}
                 </div>
                 <PWAInstallIOSModal
                     visible={

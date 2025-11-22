@@ -135,13 +135,15 @@ class LocationService {
         let address = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`; // Default to coordinates
         let countryCode: string | undefined;
         let country: string | undefined;
+        let city: string | undefined;
 
         try {
             const details = await this.reverseGeocodeDetails(latitude, longitude);
             address = details.address || address;
             countryCode = details.countryCode;
             country = details.country;
-            console.log('📍 Address resolved:', address, 'Country:', countryCode, country);
+            city = details.city;
+            console.log('📍 Address resolved:', address, 'Country:', countryCode, country, 'City:', city);
         } catch (error) {
             console.warn('⚠️ Reverse geocoding failed, using coordinates:', error);
         }
@@ -151,14 +153,15 @@ class LocationService {
             lat: latitude,
             lng: longitude,
             countryCode,
-            country
+            country,
+            city
         };
     }
     
     /**
      * Reverse geocode coordinates to human-readable address
      */
-    private async reverseGeocodeDetails(lat: number, lng: number): Promise<{ address: string; countryCode?: string; country?: string; }> {
+    private async reverseGeocodeDetails(lat: number, lng: number): Promise<{ address: string; countryCode?: string; country?: string; city?: string; }> {
         // Prefer Google Maps if available for richer data
         if (typeof window !== 'undefined' && (window as any).google?.maps?.Geocoder) {
             console.log('📍 Using Google Maps for reverse geocoding');
@@ -171,7 +174,7 @@ class LocationService {
     /**
      * Google Maps reverse geocoding
      */
-    private async googleMapsReverseGeocode(lat: number, lng: number): Promise<{ address: string; countryCode?: string; country?: string; }> {
+    private async googleMapsReverseGeocode(lat: number, lng: number): Promise<{ address: string; countryCode?: string; country?: string; city?: string; }> {
         return new Promise((resolve, reject) => {
             const geocoder = new (window as any).google.maps.Geocoder();
             const latlng = { lat, lng };
@@ -181,15 +184,21 @@ class LocationService {
                     const address = results[0].formatted_address as string;
                     let countryCode: string | undefined;
                     let country: string | undefined;
+                    let city: string | undefined;
                     const components: any[] = results[0].address_components || [];
                     for (const c of components) {
+                        if ((c.types || []).includes('locality')) {
+                            city = c.long_name;
+                        }
+                        if ((c.types || []).includes('administrative_area_level_2') && !city) {
+                            city = c.long_name; // fallback
+                        }
                         if ((c.types || []).includes('country')) {
                             country = c.long_name;
                             countryCode = (c.short_name || '').toUpperCase();
-                            break;
                         }
                     }
-                    resolve({ address, countryCode, country });
+                    resolve({ address, countryCode, country, city });
                 } else {
                     reject(new Error(`Google Maps geocoding failed: ${status}`));
                 }
@@ -200,7 +209,7 @@ class LocationService {
     /**
      * Fallback reverse geocoding using OpenStreetMap Nominatim
      */
-    private async fallbackReverseGeocode(lat: number, lng: number): Promise<{ address: string; countryCode?: string; country?: string; }> {
+    private async fallbackReverseGeocode(lat: number, lng: number): Promise<{ address: string; countryCode?: string; country?: string; city?: string; }> {
         try {
             const response = await fetch(
                 `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=16&addressdetails=1`,
@@ -220,8 +229,9 @@ class LocationService {
             const a = data.address || {};
             const countryCode = (a.country_code ? String(a.country_code).toUpperCase() : undefined) as string | undefined;
             const country = (a.country as string | undefined) || undefined;
+            const city = (a.city || a.town || a.village || a.hamlet || a.county || undefined) as string | undefined;
             if (address) {
-                return { address, countryCode, country };
+                return { address, countryCode, country, city };
             } else {
                 throw new Error('No address found');
             }

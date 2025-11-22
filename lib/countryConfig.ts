@@ -1,19 +1,10 @@
-import { DEFAULT_COUNTRY_CONFIG, type CountryAppConfig } from '../config/countries/defaults';
+// Simplified Indonesia-only configuration
+import type { CountryAppConfig } from '../config/countries/defaults';
+import ID from '../config/countries/ID';
 
-// Vite glob for available country configs
-const configs = import.meta.glob('../config/countries/*.ts', { eager: true }) as Record<string, any>;
-
-const byCode = new Map<string, CountryAppConfig>();
-for (const [path, mod] of Object.entries(configs)) {
-  // Expect default export
-  const cfg = mod.default as CountryAppConfig | undefined;
-  if (cfg && cfg.code) {
-    byCode.set(cfg.code.toUpperCase(), cfg);
-  }
+// Always return Indonesian config; parameter ignored for single-country deployment
+export function getCountryConfig(_countryCode?: string | null): CountryAppConfig {
+  return ID;
 }
 
-export function getCountryConfig(countryCode?: string | null): CountryAppConfig {
-  if (!countryCode) return DEFAULT_COUNTRY_CONFIG;
-  const cfg = byCode.get(countryCode.toUpperCase());
-  return cfg || DEFAULT_COUNTRY_CONFIG;
-}
+export const ACTIVE_COUNTRY_CONFIG: CountryAppConfig = ID;

@@ -595,53 +595,38 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         const filteredGallery = safeGalleryImages.filter(img => img && img.imageUrl && img.imageUrl.trim() !== '');
         
         const placeData = {
-            // Required schema fields
+            // Required schema fields for PLACES collection
             id: placeId,
-            therapistId: placeId, // Use same as id for places
-            hotelId: placeId, // Use same as id for places
-            email: place?.email || `place_${placeId}@massage.com`, // Required email field
             name,
+            email: place?.email || `place_${placeId}@massage.com`,
+            password: place?.password || null,
+            whatsappNumber,
             location,
-            hourlyRate: Number(pricing['60']) || 100, // Required hourly rate (use 60min price)
-            specialization: 'Massage Place', // Required specialization
-            yearsOfExperience: 5, // Required years (default for places)
-            isLicensed: true, // Required license status
-            
-            // Pricing fields (required schema format)
-            price60: String(pricing['60'] || 0),
-            price90: String(pricing['90'] || 0),
-            price120: String(pricing['120'] || 0),
+            pricing: JSON.stringify(pricing).substring(0, 250), // Max 255 chars - required
+            status: 'Open', // Open/Closed for places
+            isLive: true, // Set to live when saved
             
             // Size-limited fields (keep within schema limits)
-            pricing: JSON.stringify(pricing).substring(0, 250), // Max 255 chars
             coordinates: JSON.stringify(coordinates).substring(0, 500), // Max 512 chars
             
             // Optional fields
             description,
             mainImage,
             profilePicture,
-            whatsappNumber,
-            discountPercentage,
-            discountDuration,
-            isDiscountActive,
-            discountEndTime,
+            operatingHours: place?.operatingHours || null,
             massageTypes: JSON.stringify(massageTypes || []).substring(0, 500), // Max 512 chars
-            languages: languages && languages.length > 0 ? JSON.stringify(languages).substring(0, 990) : null, // Max 1000 chars
-            distance: 0,
             activeMembershipDate: place?.activeMembershipDate || null,
-            password: place?.password || null,
             analytics: JSON.stringify(place?.analytics || { impressions: 0, profileViews: 0, whatsappClicks: 0 }).substring(0, 2040), // Max 2048 chars
-            isLive: true, // Set to live when saved
-
-            // Do not persist computed rating fields; backend calculates/doesn't support
-            // rating / reviewCount are intentionally omitted to match schema
-
-            // Do not send category; some deployments don't include this field
-
-            // Status fields — align with collection enums
-            status: 'available',
-            availability: 'Available',
-            isOnline: true
+            
+            // Discount fields (optional)
+            discountPercentage: discountPercentage || null,
+            discountDuration: discountDuration || null,
+            isDiscountActive: isDiscountActive || false,
+            discountEndTime: discountEndTime || null,
+            
+            // Do not send therapist-specific fields (therapistId, hotelId, hourlyRate, specialization, yearsOfExperience, isLicensed)
+            // Do not send category field (not in schema)
+            // Do not send computed fields (rating, reviewCount)
         };
 
         console.log('📋 Using collection ID:', APPWRITE_CONFIG.collections.places);
@@ -1269,31 +1254,31 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                 {t?.uploadProfilePicture || "Upload Profile Picture (Circular Logo)"}
                             </label>
                             
-                            {/* Image Requirement Modal - Compact Mobile Design */}
+                            {/* Image Requirement Modal - Ultra Compact Mobile Design */}
                             {showImageRequirementModal && (
-                                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
-                                    <div className="bg-white rounded-xl max-w-sm sm:max-w-md w-full shadow-2xl overflow-hidden max-h-[85vh] overflow-y-auto">
+                                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-3">
+                                    <div className="bg-white rounded-lg max-w-[340px] sm:max-w-md w-full shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
                                         {/* Header */}
-                                        <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-3 sm:px-4 py-2 sm:py-3">
+                                        <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-3 py-2">
                                             <div className="flex items-center gap-2">
-                                                <div className="w-7 h-7 sm:w-8 sm:h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center flex-shrink-0">
-                                                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <div className="w-6 h-6 sm:w-7 sm:h-7 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center flex-shrink-0">
+                                                    <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                                     </svg>
                                                 </div>
                                                 <div>
-                                                    <h3 className="text-sm sm:text-lg font-bold text-white">Logo Requirements</h3>
-                                                    <p className="text-orange-100 text-xs sm:text-sm">Read before uploading</p>
+                                                    <h3 className="text-xs sm:text-base font-bold text-white">Logo Requirements</h3>
+                                                    <p className="text-orange-100 text-[10px] sm:text-xs">Read before uploading</p>
                                                 </div>
                                             </div>
                                         </div>
                                         
                                         {/* Content */}
-                                        <div className="p-3 sm:p-4 space-y-2 sm:space-y-3">
+                                        <div className="p-2.5 sm:p-4 space-y-2">
                                             {/* Important Notice */}
-                                            <div className="bg-orange-50 border border-orange-200 rounded-lg p-2 sm:p-3">
-                                                <p className="font-semibold text-orange-900 text-xs sm:text-sm flex items-center gap-1 sm:gap-2">
-                                                    <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <div className="bg-orange-50 border border-orange-200 rounded p-2">
+                                                <p className="font-semibold text-orange-900 text-[11px] sm:text-sm flex items-center gap-1">
+                                                    <svg className="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                                         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                                                     </svg>
                                                     Required for Profile
@@ -1301,23 +1286,23 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                             </div>
                                             
                                             {/* Requirements Section */}
-                                            <div className="bg-gray-50 rounded-lg p-2 sm:p-3 space-y-1 sm:space-y-2">
-                                                <p className="font-semibold text-gray-900 text-xs sm:text-sm">✓ Logo requirements:</p>
-                                                <ul className="space-y-1">
-                                                    <li className="flex items-start gap-1 sm:gap-2 text-xs sm:text-sm text-gray-700">
-                                                        <svg className="w-3 h-3 sm:w-4 sm:h-4 text-green-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                            <div className="bg-gray-50 rounded p-2 space-y-1">
+                                                <p className="font-semibold text-gray-900 text-[11px] sm:text-sm">✓ Logo requirements:</p>
+                                                <ul className="space-y-0.5">
+                                                    <li className="flex items-start gap-1 text-[10px] sm:text-xs text-gray-700">
+                                                        <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-green-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                                         </svg>
-                                                        <span>Clear, professional business logo</span>
+                                                        <span>Clear, professional logo</span>
                                                     </li>
-                                                    <li className="flex items-start gap-1 sm:gap-2 text-xs sm:text-sm text-gray-700">
-                                                        <svg className="w-3 h-3 sm:w-4 sm:h-4 text-green-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                    <li className="flex items-start gap-1 text-[10px] sm:text-xs text-gray-700">
+                                                        <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-green-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                                         </svg>
-                                                        <span>High quality (min 400x400px)</span>
+                                                        <span>Min 400x400px quality</span>
                                                     </li>
-                                                    <li className="flex items-start gap-1 sm:gap-2 text-xs sm:text-sm text-gray-700">
-                                                        <svg className="w-3 h-3 sm:w-4 sm:h-4 text-green-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                    <li className="flex items-start gap-1 text-[10px] sm:text-xs text-gray-700">
+                                                        <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-green-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                                         </svg>
                                                         <span>Authentic business image</span>
@@ -1326,14 +1311,14 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                             </div>
                                             
                                             {/* Warning Section */}
-                                            <div className="bg-red-50 border border-red-200 rounded-lg p-2 sm:p-3 space-y-1">
-                                                <p className="font-semibold text-red-900 text-xs sm:text-sm flex items-center gap-1">
-                                                    <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <div className="bg-red-50 border border-red-200 rounded p-2 space-y-1">
+                                                <p className="font-semibold text-red-900 text-[11px] sm:text-sm flex items-center gap-1">
+                                                    <svg className="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                                         <path fillRule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clipRule="evenodd" />
                                                     </svg>
                                                     Suspension Policy
                                                 </p>
-                                                <ul className="space-y-0.5 text-xs text-red-800">
+                                                <ul className="space-y-0.5 text-[10px] sm:text-xs text-red-800">
                                                     <li className="flex items-start gap-1">
                                                         <span className="text-red-600">•</span>
                                                         <span>Fake business info</span>
@@ -1347,28 +1332,28 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                                         <span>Inappropriate images</span>
                                                     </li>
                                                 </ul>
-                                                <p className="text-xs text-red-900 font-semibold pt-0.5">
+                                                <p className="text-[10px] sm:text-xs text-red-900 font-semibold pt-0.5">
                                                     May cause suspension
                                                 </p>
                                             </div>
                                             
                                             {/* Confirmation Text */}
-                                            <p className="text-xs text-gray-500 italic text-center pt-1">
-                                                Confirming verifies this is your authentic business logo
+                                            <p className="text-[9px] sm:text-xs text-gray-500 italic text-center">
+                                                Confirming verifies authentic logo
                                             </p>
                                         </div>
                                         
                                         {/* Footer Buttons */}
-                                        <div className="bg-gray-50 px-3 sm:px-4 py-2 sm:py-3 flex gap-2">
+                                        <div className="bg-gray-50 px-2.5 py-2 flex gap-2">
                                             <button
                                                 onClick={handleRejectImageRequirement}
-                                                className="flex-1 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors min-h-[32px] sm:min-h-[36px]"
+                                                className="flex-1 px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                                             >
                                                 Cancel
                                             </button>
                                             <button
                                                 onClick={handleAcceptImageRequirement}
-                                                className="flex-1 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-green-600 to-green-700 rounded-lg hover:from-green-700 hover:to-green-800 shadow-md transition-all min-h-[32px] sm:min-h-[36px]"
+                                                className="flex-1 px-3 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-green-600 to-green-700 rounded-lg hover:from-green-700 hover:to-green-800 shadow-md transition-all"
                                             >
                                                 Confirm
                                             </button>

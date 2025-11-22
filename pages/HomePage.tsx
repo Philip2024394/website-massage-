@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import type { User, UserLocation, Agent, Place, Therapist, Analytics, UserCoins } from '../types';
 import TherapistCard from '../components/TherapistCard';
 import MassagePlaceCard from '../components/MassagePlaceCard';
@@ -11,10 +11,12 @@ import { Building, Sparkles } from 'lucide-react';
 import HomeIcon from '../components/icons/HomeIcon';
 import FlyingButterfly from '../components/FlyingButterfly';
 import { getCustomerLocation, findNearbyTherapists, findNearbyPlaces } from '../lib/nearbyProvidersService';
+import { locationService } from '../services/locationService';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
 import PageNumberBadge from '../components/PageNumberBadge';
 import { THERAPIST_MAIN_IMAGES } from '../lib/services/imageService';
 import { useLanguageContext } from '../context/LanguageContext';
+import { useCountryContext } from '../context/CountryContext';
 import { COUNTRIES, COUNTRY_DEFAULT_COORDS } from '../countries';
 import FlagIcon from '../components/FlagIcon';
 
@@ -100,14 +102,27 @@ const HomePage: React.FC<HomePageProps> = ({
     language
 }) => {
     const { language: globalLanguage, setLanguage: setGlobalLanguage } = useLanguageContext();
-    console.log('🏠 HomePage: Component is being called!');
+    const { activeCountry, setActiveCountry } = useCountryContext();
+    
+    const DEBUG_HOME = false;
+    if (DEBUG_HOME) console.log('🏠 HomePage: Component is being called!');
+    
+    // Set Indonesia as default country on mount (no URL sync needed)
+    useEffect(() => {
+        if (!activeCountry || activeCountry !== 'ID') {
+            setActiveCountry('ID');
+        }
+    }, []);
+    
     // Enhanced debug logging for translations
-    console.log('🏠 HomePage received translations:', {
-        tExists: !!t,
-        tType: typeof t,
-        tIsFunction: typeof t === 'function',
-        tKeys: t && typeof t === 'object' ? Object.keys(t) : 'not an object',
-    });
+    if (DEBUG_HOME) {
+        console.log('🏠 HomePage received translations:', {
+            tExists: !!t,
+            tType: typeof t,
+            tIsFunction: typeof t === 'function',
+            tKeys: t && typeof t === 'object' ? Object.keys(t) : 'not an object',
+        });
+    }
     
     // Create a safe translation function
     const safeT = typeof t === 'function' ? t : (key: string) => {
@@ -117,7 +132,7 @@ const HomePage: React.FC<HomePageProps> = ({
 
     // Adapter: Convert translation function to object structure for HomePage compatibility
     if (t && typeof t === 'function') {
-        console.log('🔄 Converting translation function to object structure for HomePage');
+        if (DEBUG_HOME) console.log('🔄 Converting translation function to object structure for HomePage');
         const homeTranslations = {
             homeServiceTab: t('home.homeServiceTab'),
             massagePlacesTab: t('home.massagePlacesTab'),
@@ -139,12 +154,12 @@ const HomePage: React.FC<HomePageProps> = ({
 
             common: {}
         };
-        console.log('✅ Converted function-based translations to object structure for HomePage');
+        if (DEBUG_HOME) console.log('✅ Converted function-based translations to object structure for HomePage');
     }
 
     // Safety check for translations - use fallback if needed
     if (!t || !t.home) {
-        console.warn('HomePage: Missing translations object or t.home, using fallback', { 
+        if (DEBUG_HOME) console.warn('HomePage: Missing translations object or t.home, using fallback', { 
             t, 
             hasT: !!t, 
             tKeys: t ? Object.keys(t) : [],
@@ -191,7 +206,7 @@ const HomePage: React.FC<HomePageProps> = ({
             ...(t || {})
         };
         
-        console.log('✅ Using fallback translations for HomePage');
+        if (DEBUG_HOME) console.log('✅ Using fallback translations for HomePage');
         // Continue with fallback instead of showing error
         t = fallbackT;
     }
@@ -215,50 +230,6 @@ const HomePage: React.FC<HomePageProps> = ({
     const [shuffledHomeImages, setShuffledHomeImages] = useState<string[]>([]);
     const [showLanguagePrompt, setShowLanguagePrompt] = useState(false);
     const [promptLang, setPromptLang] = useState<import('../types/pageTypes').Language>(globalLanguage || 'en');
-    const [isCountrySelectorOpen, setIsCountrySelectorOpen] = useState(false);
-    const [countrySearch, setCountrySearch] = useState('');
-    const [manualCountryMode, setManualCountryMode] = useState<boolean>(() => {
-        if (typeof window === 'undefined') return false;
-        try { return localStorage.getItem('manual_country_selection') === 'true'; } catch { return false; }
-    });
-
-    // Track current viewing country code separately for badge
-    const [viewingCountryCode, setViewingCountryCode] = useState<string | undefined>(() => {
-        if (typeof window === 'undefined') return undefined;
-        try {
-            const raw = localStorage.getItem('app_user_location');
-            if (raw) return (JSON.parse(raw).countryCode || undefined);
-        } catch {}
-        return userLocation?.countryCode;
-    });
-
-    useEffect(() => {
-        // Sync after any rerender when userLocation changes
-        if (userLocation?.countryCode) setViewingCountryCode(userLocation.countryCode);
-        try { setManualCountryMode(localStorage.getItem('manual_country_selection') === 'true'); } catch {}
-    }, [userLocation?.countryCode]);
-
-    const handleSelectCountry = (code: string, name: string) => {
-        const prev = userLocation || undefined;
-        const def = COUNTRY_DEFAULT_COORDS[code];
-        const lat = def?.lat ?? prev?.lat ?? -6.2088;
-        const lng = def?.lng ?? prev?.lng ?? 106.8456;
-        const address = def ? `${def.city}, ${name}` : (prev?.address || name);
-        onSetUserLocation({ address, lat, lng, countryCode: code, country: name });
-        try {
-            // Persist immediately for currency/utils that read localStorage directly
-            localStorage.setItem('app_user_location', JSON.stringify({ address, lat, lng, countryCode: code, country: name }));
-            localStorage.setItem('cached_countryCode', code); // For Appwrite country filtering
-            localStorage.setItem('manual_country_selection', 'true'); // Flag to prevent GPS override
-            setManualCountryMode(true);
-            setViewingCountryCode(code);
-        } catch {}
-        setIsCountrySelectorOpen(false);
-        setCountrySearch('');
-        
-        // Refresh page to reload therapists/places with new country filter
-        window.location.reload();
-    };
 
     // Fisher-Yates shuffle to randomize array order
     const shuffleArray = (arr: string[]) => {
@@ -276,7 +247,7 @@ const HomePage: React.FC<HomePageProps> = ({
             const baseImages = [...THERAPIST_MAIN_IMAGES.slice(0, 17)];
             const shuffled = shuffleArray(baseImages);
             setShuffledHomeImages(shuffled);
-            console.log('🎲 HomePage shuffled therapist images for this view:', shuffled);
+            if (DEBUG_HOME) console.log('🎲 HomePage shuffled therapist images for this view:', shuffled);
         }
     }, [activeTab]);
 
@@ -314,56 +285,120 @@ const HomePage: React.FC<HomePageProps> = ({
         } catch {}
     }, [globalLanguage]);
 
-    // Update selectedMassageType when prop changes - React 19 safe
     useEffect(() => {
-        try {
-            if (propSelectedMassageType) {
-                setSelectedMassageType(propSelectedMassageType);
+        let debounceTimeout: NodeJS.Timeout | null = null;
+        const filterByLocation = async () => {
+            if (filteringRef.current) return;
+            const locationToUse = autoDetectedLocation || userLocation;
+            if (!locationToUse) {
+                if (nearbyTherapists.length !== therapists.length || nearbyPlaces.length !== places.length) {
+                    setNearbyTherapists(therapists);
+                    setNearbyPlaces(places);
+                }
+                return;
             }
-        } catch (error) {
-            console.warn('HomePage effect warning (safe to ignore in React 19):', error);
-        }
-    }, [propSelectedMassageType]);
+            filteringRef.current = true;
+            try {
+                if (DEBUG_HOME) {
+                    console.log('🔍 Filtering providers by GPS location:', locationToUse);
+                    console.log(`📊 Total therapists available: ${therapists.length}`);
+                    console.log(`📊 Total places available: ${places.length}`);
+                }
+                
+                // Get location coordinates (required for distance calculation)
+                const coords = 'lat' in locationToUse 
+                    ? { lat: locationToUse.lat, lng: locationToUse.lng }
+                    : null;
+                
+                if (!coords) {
+                    // No coordinates available, show all therapists
+                    if (DEBUG_HOME) console.log('⚠️ No coordinates found, showing all providers');
+                    setNearbyTherapists(therapists);
+                    setNearbyPlaces(places);
+                    filteringRef.current = false;
+                    return;
+                }
 
-    const handleOpenRatingModal = (item: any, type: 'therapist' | 'place' = 'therapist') => {
-        // Check if customer is logged in before allowing review
-        if (!loggedInCustomer) {
-            if (onShowRegisterPrompt) {
-                onShowRegisterPrompt();
+                // Lightweight in-memory distance filtering (Haversine) using already loaded props to prevent freeze
+                const haversine = (lat1: number, lng1: number, lat2: number, lng2: number) => {
+                    const R = 6371;
+                    const dLat = (lat2 - lat1) * Math.PI / 180;
+                    const dLng = (lng2 - lng1) * Math.PI / 180;
+                    const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2) * Math.sin(dLng/2);
+                    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                    return R * c;
+                };
+                const parseCoords = (val: any): {lat:number; lng:number} | null => {
+                    try {
+                        if (!val) return null;
+                        let v = val;
+                        if (typeof v === 'string') v = JSON.parse(v);
+                        if (v && typeof v === 'object') {
+                            if (v.type === 'Point' && Array.isArray(v.coordinates)) return { lat: v.coordinates[1], lng: v.coordinates[0] };
+                            if (typeof v.lat === 'number' && typeof v.lng === 'number') return { lat: v.lat, lng: v.lng };
+                            if (typeof v.latitude === 'number' && typeof v.longitude === 'number') return { lat: v.latitude, lng: v.longitude };
+                            if (Array.isArray(v) && v.length === 2) return { lat: v[0], lng: v[1] };
+                        }
+                    } catch {}
+                    return null;
+                };
+                const radiusKmPrimary = 50;
+                const radiusKmExtended = 100;
+                const filterList = <T extends any>(list: T[], radius: number, isTherapist: boolean): T[] => {
+                    const result: T[] = [];
+                    for (const item of list) {
+                        const coordsItem = parseCoords((item as any).coordinates);
+                        if (!coordsItem) continue;
+                        const dist = haversine(coords.lat, coords.lng, coordsItem.lat, coordsItem.lng);
+                        (item as any).distance = dist;
+                        // Availability filter
+                        const sRaw = ((item as any).status || (item as any).availability || '').toString().toLowerCase();
+                        const isLive = (item as any).isLive === true || (sRaw && sRaw !== 'offline');
+                        if (!isLive) continue;
+                        if (dist <= radius) result.push(item);
+                        // Early stop to keep UI responsive
+                        if (result.length >= 200) break; // safety cap
+                    }
+                    // Sort closest first
+                    return result.sort((a: any, b: any) => (a.distance || 0) - (b.distance || 0));
+                };
+                let nearbyTherapistsResult = filterList(therapists, radiusKmPrimary, true);
+                let nearbyPlacesResult = filterList(places, radiusKmPrimary, false);
+                
+                if (DEBUG_HOME) {
+                    console.log(`📍 Found ${nearbyTherapistsResult.length} therapists within 50km`);
+                    console.log(`📍 Found ${nearbyPlacesResult.length} places within 50km`);
+                }
+                
+                // If none found in primary radius, extend to 100km before fallback
+                if (nearbyTherapistsResult.length === 0 && nearbyPlacesResult.length === 0) {
+                    if (DEBUG_HOME) console.log('🔍 Extending search radius to 100km (local)');
+                    nearbyTherapistsResult = filterList(therapists, radiusKmExtended, true);
+                    nearbyPlacesResult = filterList(places, radiusKmExtended, false);
+                }
+                const finalTherapists = nearbyTherapistsResult.length > 0 ? nearbyTherapistsResult : therapists;
+                const finalPlaces = nearbyPlacesResult.length > 0 ? nearbyPlacesResult : places;
+                // Only update state if it actually changed (length or first ids) to avoid render thrash/freezes
+                const changedTherapists = finalTherapists.length !== nearbyTherapists.length || finalTherapists.some((t:any, i:number) => (nearbyTherapists[i]?.id || nearbyTherapists[i]?.$id) !== (t.id || t.$id));
+                const changedPlaces = finalPlaces.length !== nearbyPlaces.length || finalPlaces.some((p:any, i:number) => (nearbyPlaces[i]?.id || nearbyPlaces[i]?.$id) !== (p.id || p.$id));
+                if (changedTherapists) setNearbyTherapists(finalTherapists);
+                if (changedPlaces) setNearbyPlaces(finalPlaces);
+                
+            } catch (error) {
+                if (DEBUG_HOME) console.log('📍 Location filtering failed (silent fallback):', error);
+                // Silent fallback to all providers
+                setNearbyTherapists(therapists);
+                setNearbyPlaces(places);
+            } finally {
+                filteringRef.current = false;
             }
-            return;
-        }
-        setSelectedRatingItem({ item, type });
-        if (type === 'therapist') {
-            setSelectedTherapist(item);
-        }
-        setShowRatingModal(true);
-    };
-
-    const handleCloseRatingModal = () => {
-        setShowRatingModal(false);
-        setSelectedTherapist(null);
-        setSelectedRatingItem(null);
-    };
-
-    const handleSubmitReview = async () => {
-        if (!selectedRatingItem) return;
-
-        try {
-            const itemId = selectedRatingItem.item.id || (selectedRatingItem.item as any).$id;
-            await reviewService.create({
-                providerId: Number(itemId),
-                providerType: selectedRatingItem.type,
-                providerName: selectedRatingItem.item.name,
-                rating: 0, // Will be set by RatingModal
-                whatsapp: '', // Will be set by RatingModal
-                status: 'pending'
-            });
-            handleCloseRatingModal();
-        } catch (error) {
-            console.error('Error submitting review:', error);
-        }
-    };
+        };
+        if (debounceTimeout) clearTimeout(debounceTimeout);
+        debounceTimeout = setTimeout(filterByLocation, 350);
+        return () => {
+            if (debounceTimeout) clearTimeout(debounceTimeout);
+        };
+    }, [autoDetectedLocation, userLocation]);
 
     // Location is now set on landing page, no modal needed here
 
@@ -375,30 +410,38 @@ const HomePage: React.FC<HomePageProps> = ({
             // Don't auto-detect if user manually selected a country
             const manualSelection = localStorage.getItem('manual_country_selection');
             if (manualSelection === 'true') {
-                console.log('⏭️ Skipping GPS detection - user manually selected country');
+                if (DEBUG_HOME) console.log('⏭️ Skipping GPS detection - user manually selected country');
                 return;
             }
             
             locationDetectedRef.current = true;
             setIsLocationDetecting(true);
             try {
-                console.log('🌍 Automatically detecting user location...');
-                const location = await getCustomerLocation();
-                setAutoDetectedLocation(location);
-                
-                console.log('✅ Location detected:', location);
-                
-                // Automatically update the app's user location if not set
-                if (!userLocation && onSetUserLocation) {
-                    onSetUserLocation({
-                        address: 'Auto-detected location',
-                        lat: location.lat,
-                        lng: location.lng
-                    });
+                if (DEBUG_HOME) console.log('🌍 Automatically detecting user location (with reverse geocode)...');
+                const richLocation = await locationService.requestLocationWithFallback();
+                setAutoDetectedLocation({ lat: richLocation.lat, lng: richLocation.lng });
+                if (DEBUG_HOME) console.log('✅ Rich location detected:', richLocation);
+
+                if (onSetUserLocation) {
+                    const finalLoc: UserLocation = {
+                        address: richLocation.address || 'Auto-detected location',
+                        lat: richLocation.lat,
+                        lng: richLocation.lng,
+                        countryCode: richLocation.countryCode,
+                        country: richLocation.country
+                    };
+                    onSetUserLocation(finalLoc);
+                    try {
+                        localStorage.setItem('app_user_location', JSON.stringify(finalLoc));
+                        // Set cached_countryCode if manual not active
+                        if (localStorage.getItem('manual_country_selection') !== 'true' && finalLoc.countryCode) {
+                            localStorage.setItem('cached_countryCode', finalLoc.countryCode);
+                        }
+                    } catch {}
                 }
                 
             } catch (error) {
-                console.log('📍 Auto location detection failed (silent fallback):', error);
+                    if (DEBUG_HOME) console.log('📍 Auto location detection failed (silent fallback):', error);
                 // Silent fallback - no error shown to user
                 locationDetectedRef.current = false;
             } finally {
@@ -412,73 +455,27 @@ const HomePage: React.FC<HomePageProps> = ({
         }
     }, [loggedInProvider, _loggedInAgent]);
 
-    // Filter therapists and places by location automatically (by GPS distance within city/region)
-    useEffect(() => {
-        const filterByLocation = async () => {
-            if (filteringRef.current) return;
-            
-            const locationToUse = autoDetectedLocation || userLocation;
-            if (!locationToUse) {
-                // No location available, show all therapists
-                setNearbyTherapists(therapists);
-                setNearbyPlaces(places);
-                return;
-            }
+    // Memoize filtered + image-assigned therapists to prevent heavy recalculation each render
+    const preparedTherapists = useMemo(() => {
+        const live = nearbyTherapists
+            .filter((t: any) => {
+                const s = (t.status || t.availability || '').toString().toLowerCase();
+                return t.isLive === true || (s && s !== 'offline');
+            })
+            .filter((t: any) => selectedMassageType === 'all' || (t.massageTypes && t.massageTypes.includes(selectedMassageType)))
+            .map((therapist: any, index: number) => {
+                const assignedImage = shuffledHomeImages.length > 0 ? shuffledHomeImages[index % shuffledHomeImages.length] : undefined;
+                return { ...therapist, mainImage: assignedImage || therapist.mainImage };
+            });
+        return live;
+    }, [nearbyTherapists, selectedMassageType, shuffledHomeImages]);
 
-            filteringRef.current = true;
-            try {
-                console.log('🔍 Filtering providers by GPS location:', locationToUse);
-                console.log(`📊 Total therapists available: ${therapists.length}`);
-                console.log(`📊 Total places available: ${places.length}`);
-                
-                // Get location coordinates (required for distance calculation)
-                const coords = 'lat' in locationToUse 
-                    ? { lat: locationToUse.lat, lng: locationToUse.lng }
-                    : null;
-                
-                if (!coords) {
-                    // No coordinates available, show all therapists
-                    console.log('⚠️ No coordinates found, showing all providers');
-                    setNearbyTherapists(therapists);
-                    setNearbyPlaces(places);
-                    filteringRef.current = false;
-                    return;
-                }
-
-                // Find nearby therapists and places using GPS distance (50km radius for city/region)
-                const nearbyTherapistsResult = await findNearbyTherapists('0', coords, 50);
-                const nearbyPlacesResult = await findNearbyPlaces('0', coords, 50);
-                
-                console.log(`📍 Found ${nearbyTherapistsResult.length} therapists within 50km`);
-                console.log(`📍 Found ${nearbyPlacesResult.length} places within 50km`);
-                
-                // If no providers found within 50km, expand to 100km
-                if (nearbyTherapistsResult.length === 0 && nearbyPlacesResult.length === 0) {
-                    console.log('🔍 Expanding search to 100km...');
-                    const expandedTherapists = await findNearbyTherapists('0', coords, 100);
-                    const expandedPlaces = await findNearbyPlaces('0', coords, 100);
-                    console.log(`📍 Found ${expandedTherapists.length} therapists within 100km`);
-                    console.log(`📍 Found ${expandedPlaces.length} places within 100km`);
-                    
-                    setNearbyTherapists(expandedTherapists.length > 0 ? expandedTherapists : therapists);
-                    setNearbyPlaces(expandedPlaces.length > 0 ? expandedPlaces : places);
-                } else {
-                    setNearbyTherapists(nearbyTherapistsResult.length > 0 ? nearbyTherapistsResult : therapists);
-                    setNearbyPlaces(nearbyPlacesResult.length > 0 ? nearbyPlacesResult : places);
-                }
-                
-            } catch (error) {
-                console.log('📍 Location filtering failed (silent fallback):', error);
-                // Silent fallback to all providers
-                setNearbyTherapists(therapists);
-                setNearbyPlaces(places);
-            } finally {
-                filteringRef.current = false;
-            }
-        };
-
-        filterByLocation();
-    }, [therapists, places, autoDetectedLocation, userLocation]);
+    const livePlacesMemo = useMemo(() => {
+        return (nearbyPlaces || []).filter((place: any) => {
+            const s = (place.status || place.availability || '').toString().toLowerCase();
+            return place.isLive === true || (s && s !== 'offline');
+        });
+    }, [nearbyPlaces]);
 
     // Log therapist display info with location filtering
     useEffect(() => {
@@ -491,22 +488,26 @@ const HomePage: React.FC<HomePageProps> = ({
             selectedMassageType === 'all' || (t.massageTypes && t.massageTypes.includes(selectedMassageType))
         );
         
-        console.log('🏠 HomePage Therapist Display Debug (Location-Filtered):');
-        console.log('  📊 Total therapists prop:', therapists.length);
-        console.log('  � Nearby therapists (location-filtered):', nearbyTherapists.length);
-        console.log('  🔴 Live nearby therapists (isLive=true):', liveTherapists.length);
-        console.log('  🎯 Final filtered therapists (massage type + location):', filteredTherapists.length);
-        console.log('  📍 Auto-detected location:', autoDetectedLocation);
-        console.log('  🎨 Selected massage type:', selectedMassageType);
+        if (DEBUG_HOME) {
+            if (DEBUG_HOME) console.log('🏠 HomePage Therapist Display Debug (Location-Filtered):');
+            if (DEBUG_HOME) console.log('  📊 Total therapists prop:', therapists.length);
+            if (DEBUG_HOME) console.log('  Nearby therapists (location-filtered):', nearbyTherapists.length);
+            if (DEBUG_HOME) console.log('  🔴 Live nearby therapists (isLive=true):', liveTherapists.length);
+            if (DEBUG_HOME) console.log('  🎯 Final filtered therapists (massage type + location):', filteredTherapists.length);
+            if (DEBUG_HOME) console.log('  📍 Auto-detected location:', autoDetectedLocation);
+            if (DEBUG_HOME) console.log('  🎨 Selected massage type:', selectedMassageType);
+        }
         
         // Also log places
         const livePlaces = nearbyPlaces.filter((p: any) => {
             const s = (p.status || p.availability || '').toString().toLowerCase();
             return p.isLive === true || (s && s !== 'offline');
         });
-        console.log('  🏢 Total places prop:', places.length);
-        console.log('  📍 Nearby places (location-filtered):', nearbyPlaces.length);
-        console.log('  🔴 Live nearby places:', livePlaces.length);
+        if (DEBUG_HOME) {
+            if (DEBUG_HOME) console.log('  🏢 Total places prop:', places.length);
+            if (DEBUG_HOME) console.log('  📍 Nearby places (location-filtered):', nearbyPlaces.length);
+            if (DEBUG_HOME) console.log('  🔴 Live nearby places:', livePlaces.length);
+        }
     }, [therapists, nearbyTherapists, places, nearbyPlaces, selectedMassageType, autoDetectedLocation]);
 
     useEffect(() => {
@@ -578,111 +579,19 @@ const HomePage: React.FC<HomePageProps> = ({
                         <span className="text-orange-500">Street</span>
                     </h1>
                     <div className="flex items-center gap-3 text-gray-600">
-                        {/* Location Update moved beside 'Change location' below */}
-
-                        {/* Country switcher - small round flag near burger */}
-                        <button
-                            onClick={() => {
-                                console.log('🏳️ Current userLocation:', userLocation);
-                                console.log('🏳️ localStorage app_user_location:', localStorage.getItem('app_user_location'));
-                                console.log('🏳️ localStorage cached_countryCode:', localStorage.getItem('cached_countryCode'));
-                                console.log('🏳️ localStorage manual_country_selection:', localStorage.getItem('manual_country_selection'));
-                                setIsCountrySelectorOpen(true);
-                            }}
-                            className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center bg-white hover:bg-orange-50"
-                            title={userLocation?.country || userLocation?.countryCode || 'Choose country'}
-                            aria-label="Choose country"
-                        >
-                            <FlagIcon code={(userLocation?.countryCode || 'ID')} className="text-lg" />
-                        </button>
-
                         <button onClick={() => {
-                            console.log('🍔 Burger menu clicked! Current isMenuOpen:', isMenuOpen);
-                            console.log('🍔 Setting isMenuOpen to true');
+                            if (DEBUG_HOME) console.log('🍔 Burger menu clicked! Current isMenuOpen:', isMenuOpen);
+                            if (DEBUG_HOME) console.log('🍔 Setting isMenuOpen to true');
                             setIsMenuOpen(true);
-                            console.log('🍔 After setting - isMenuOpen should be true');
+                            if (DEBUG_HOME) console.log('🍔 After setting - isMenuOpen should be true');
                         }} title="Menu" className="p-2 hover:bg-orange-50 rounded-full transition-colors text-orange-500">
                            <BurgerMenuIcon className="w-6 h-6" />
                         </button>
                     </div>
                 </div>
-                {/* Viewing Country Badge */}
-                <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
-                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-orange-50 text-orange-700 border border-orange-200">
-                        <FlagIcon code={(viewingCountryCode || userLocation?.countryCode || 'ID')} className="text-base" />
-                        Viewing: {userLocation?.country || viewingCountryCode || 'Indonesia'}
-                        <span className="ml-1 text-xs font-medium uppercase">{manualCountryMode ? 'Manual' : 'Auto'}</span>
-                    </span>
-                    {manualCountryMode && (
-                        <button
-                            onClick={() => {
-                                try {
-                                    localStorage.removeItem('manual_country_selection');
-                                    // Optional: keep last location but allow GPS to override next time
-                                    setManualCountryMode(false);
-                                    // Force reload to re-run auto detection logic
-                                    window.location.reload();
-                                } catch {}
-                            }}
-                            className="px-3 py-1 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs border border-gray-300"
-                        >
-                            Revert to My Location
-                        </button>
-                    )}
-                </div>
             </header>
 
-            {/* Country Selector Hero Overlay */}
-            {isCountrySelectorOpen && (
-                <div className="fixed inset-0 z-[9998] flex items-start sm:items-center justify-center bg-black/60">
-                    <div className="w-full max-w-2xl bg-white rounded-none sm:rounded-2xl shadow-2xl overflow-hidden mt-0 sm:mt-8">
-                        {/* Hero Header */}
-                        <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-5 text-white">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <h2 className="text-xl font-bold">Choose your country</h2>
-                                    <p className="text-white/80 text-sm">See therapists and places in your selected country</p>
-                                </div>
-                                <button
-                                    onClick={() => setIsCountrySelectorOpen(false)}
-                                    className="p-2 rounded-full hover:bg-white/10"
-                                    aria-label="Close"
-                                >
-                                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                                </button>
-                            </div>
-                            <div className="mt-3">
-                                <input
-                                    value={countrySearch}
-                                    onChange={(e) => setCountrySearch(e.target.value)}
-                                    placeholder="Search country..."
-                                    className="w-full rounded-md px-3 py-2 text-gray-900 placeholder:text-gray-400 bg-white/95 focus:outline-none focus:ring-2 focus:ring-white/60 focus:border-transparent"
-                                />
-                            </div>
-                        </div>
-                        {/* List */}
-                        <div className="max-h-[70vh] overflow-y-auto p-4 sm:p-6">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                {COUNTRIES
-                                    .filter(c => (c.name || '').toLowerCase().includes(countrySearch.toLowerCase()))
-                                    .map(c => (
-                                        <button
-                                            key={c.code}
-                                            onClick={() => handleSelectCountry(c.code, c.name)}
-                                            className={`flex items-center gap-3 border rounded-xl p-3 hover:border-orange-400 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-orange-400/50 ${userLocation?.countryCode === c.code ? 'border-orange-500 bg-orange-50' : 'border-gray-200 bg-white'}`}
-                                        >
-                                            <FlagIcon code={c.code} className="text-2xl" />
-                                            <div className="flex-1">
-                                                <div className="text-sm text-gray-500">Indastreet Massage</div>
-                                                <div className="font-semibold text-gray-900">{c.name}</div>
-                                            </div>
-                                        </button>
-                                    ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
+
             
             {/* Global App Drawer - Chrome Safe Rendering */}
             <React19SafeWrapper condition={isMenuOpen}>
@@ -690,7 +599,7 @@ const HomePage: React.FC<HomePageProps> = ({
                     isHome={true}
                     isOpen={isMenuOpen}
                     onClose={() => {
-                        console.log('🍔 AppDrawer onClose called');
+                        if (DEBUG_HOME) console.log('🍔 AppDrawer onClose called');
                         setIsMenuOpen(false);
                     }}
                     t={safeT}
@@ -780,19 +689,19 @@ const HomePage: React.FC<HomePageProps> = ({
                             onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                console.log('🛒 Online Shop button clicked!');
-                                console.log('onNavigate function exists:', !!onNavigate);
+                                if (DEBUG_HOME) console.log('🛒 Online Shop button clicked!');
+                                if (DEBUG_HOME) console.log('onNavigate function exists:', !!onNavigate);
                                 
                                 if (onNavigate) {
-                                    console.log('✅ Calling onNavigate with marketplace');
+                                    if (DEBUG_HOME) console.log('✅ Calling onNavigate with marketplace');
                                     try {
                                         onNavigate('marketplace');
-                                        console.log('✅ Navigation called successfully');
+                                        if (DEBUG_HOME) console.log('✅ Navigation called successfully');
                                     } catch (error) {
-                                        console.error('❌ Error calling onNavigate:', error);
+                                        if (DEBUG_HOME) console.error('❌ Error calling onNavigate:', error);
                                     }
                                 } else {
-                                    console.error('❌ onNavigate is not available!');
+                                    if (DEBUG_HOME) console.error('❌ onNavigate is not available!');
                                     alert('Navigation function not available. Please refresh the page.');
                                 }
                             }} 
@@ -824,37 +733,7 @@ const HomePage: React.FC<HomePageProps> = ({
                         
                         <div className="space-y-4">
                         {/* Build list with injected unique mainImage per view */}
-                        {(() => {
-                            const preparedTherapists = nearbyTherapists
-                                .filter((t: any) => {
-                                    const s = (t.status || t.availability || '').toString().toLowerCase();
-                                    return t.isLive === true || (s && s !== 'offline');
-                                })
-                                .filter((t: any) => selectedMassageType === 'all' || (t.massageTypes && t.massageTypes.includes(selectedMassageType)))
-                                .map((therapist: any, index: number) => {
-                                    // Assign deterministic unique image from shuffled set; if more therapists than images, start second cycle
-                                    const assignedImage = shuffledHomeImages.length > 0 
-                                        ? shuffledHomeImages[index % shuffledHomeImages.length] 
-                                        : undefined; // undefined triggers fallback logic inside TherapistCard
-                                    return { ...therapist, mainImage: assignedImage || therapist.mainImage };
-                                });
-                            return preparedTherapists.map((therapist: any, index: number) => {
-                                // 🌐 Enhanced Debug: Comprehensive therapist data analysis
-                                console.log('🏠 HomePage passing to TherapistCard:', {
-                                    id: therapist.$id || therapist.id,
-                                    name: therapist.name,
-                                    languages: therapist.languages,
-                                    languagesType: typeof therapist.languages,
-                                    languagesLength: therapist.languages ? therapist.languages.length : 0,
-                                    languagesEmpty: therapist.languages === '',
-                                    languagesNull: therapist.languages === null,
-                                    languagesUndefined: therapist.languages === undefined,
-                                    languagesParsed: therapist.languages ? JSON.parse(therapist.languages || '[]') : [],
-                                    isLive: therapist.isLive,
-                                    massageTypes: therapist.massageTypes,
-                                    allFields: Object.keys(therapist)
-                                });
-                                
+                        {preparedTherapists.map((therapist: any, index: number) => {
                                 // Real discount data - check if therapist has active discount
                                 const realDiscount = (therapist.discountPercentage && therapist.discountPercentage > 0 && therapist.discountEndTime) ? {
                                     percentage: therapist.discountPercentage,
@@ -879,12 +758,8 @@ const HomePage: React.FC<HomePageProps> = ({
                                     t={t}
                                 />
                                 );
-                            });
-                        })()}
-                        {nearbyTherapists.filter((t: any) => {
-                            const s = (t.status || t.availability || '').toString().toLowerCase();
-                            return t.isLive === true || (s && s !== 'offline');
-                        }).length === 0 && (
+                        })}
+                        {preparedTherapists.length === 0 && (
                             <div className="text-center py-12 bg-white rounded-lg">
                                 <p className="text-gray-500">Tidak ada terapis tersedia di area Anda saat ini.</p>
                                 {userLocation?.address && (
@@ -929,18 +804,7 @@ const HomePage: React.FC<HomePageProps> = ({
                         
                         {/* Show places from Appwrite */}
                         {(() => {
-                            console.log('🏨 Massage Places Tab:', {
-                                totalPlaces: places?.length,
-                                livePlaces: places?.filter(p => p.isLive).length,
-                                places: places
-                            });
-                            
-                            const livePlaces = (nearbyPlaces || []).filter((place: any) => {
-                                const s = (place.status || place.availability || '').toString().toLowerCase();
-                                return place.isLive === true || (s && s !== 'offline');
-                            });
-                            
-                            if (livePlaces.length === 0) {
+                            if (livePlacesMemo.length === 0) {
                                 return (
                                     <div className="text-center py-12">
                                         <div className="mb-4">
@@ -955,14 +819,14 @@ const HomePage: React.FC<HomePageProps> = ({
                                                 Showing places within 15km of your location
                                             </p>
                                         )}
-                                        <p className="text-xs text-gray-300 mt-4">Total places in DB: {places?.length || 0} | Nearby: {nearbyPlaces.length} | Live: {livePlaces.length}</p>
+                                        <p className="text-xs text-gray-300 mt-4">Total places in DB: {places?.length || 0} | Nearby: {nearbyPlaces.length} | Live: {livePlacesMemo.length}</p>
                                     </div>
                                 );
                             }
                             
                             return (
                                 <div className="space-y-4">
-                                    {livePlaces
+                                    {livePlacesMemo
                                         .slice(0, 9) // Show maximum 9 places
                                         .map((place, index) => {
                                             const placeId = place.id || (place as any).$id;

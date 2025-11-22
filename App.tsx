@@ -23,6 +23,8 @@ import { CountryProvider } from './context/CountryContext';
 import { agentShareAnalyticsService } from './lib/appwriteService';
 import { resolveDefaultLanguage } from './lib/languageResolver';
 import type { Language } from './types/pageTypes';
+import { getCountryConfig } from './lib/countryConfig';
+import { initializeSEO } from './lib/seoHelpers';
 // Temporarily removed: import { useSimpleLanguage } from './context/SimpleLanguageContext';
 // Temporarily removed: import SimpleLanguageSelector from './components/SimpleLanguageSelector';
 
@@ -93,8 +95,13 @@ const App = () => {
                         new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
                     ]) as any;
                     console.log('✅ Session active:', currentUser?.email || 'guest');
-                } catch {
-                    console.log('ℹ️ No Appwrite session; continuing as guest (no anonymous session created)');
+                } catch (error: any) {
+                    // Silently handle 401 (unauthorized) - expected for guests
+                    if (error?.code === 401 || error?.message?.includes('401')) {
+                        // Silent - no log needed for expected guest state
+                    } else {
+                        console.log('ℹ️ No Appwrite session; continuing as guest');
+                    }
                     // Don't create anonymous sessions - they cause rate limiting
                 }
             } catch (error: any) {
@@ -167,6 +174,28 @@ const App = () => {
     useEffect(() => {
         try { if (language) localStorage.setItem('app_language', language as any); } catch {}
     }, [language]);
+
+    // Initialize dynamic SEO for Indonesia-only mode
+    useEffect(() => {
+        try {
+            const countryCode = 'ID'; // Fixed to Indonesia
+            const config = getCountryConfig(countryCode);
+            
+            if (config.seo) {
+                const baseUrl = window.location.origin;
+                const availableCountries = [
+                    { code: 'ID', lang: 'id' }
+                ];
+
+                initializeSEO(countryCode, {
+                    ...config.seo,
+                    canonicalUrl: baseUrl,
+                }, availableCountries);
+            }
+        } catch (e) {
+            console.warn('SEO initialization failed:', e);
+        }
+    }, []);
     
     // Get translations using the actual language state - provide to AppRouter
     const { t: _t, dict } = useTranslations(language);

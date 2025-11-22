@@ -172,17 +172,17 @@ export const useNavigation = ({
 
     const handleEnterApp = useCallback(async (lang: Language, location: UserLocation) => {
         console.log('🚀 handleEnterApp called with language:', lang, 'location:', location);
-        console.log('🚀 localStorage before enter:', localStorage.getItem('app_language'));
         
         try {
-            console.log('🚀 Starting app entry process...');
-            
-            // Set flag to start fresh (prevent session restore)
+            // Set session flags
             sessionStorage.setItem('start_fresh', 'true');
-            // Mark that user has entered the app for this session
             sessionStorage.setItem('has_entered_app', 'true');
             
-            // Clear all dashboard sessions when entering from landing page
+            // Store location and language immediately
+            localStorage.setItem('app_user_location', JSON.stringify(location));
+            localStorage.setItem('app_language', lang);
+            
+            // Clear all dashboard sessions
             setIsAdminLoggedIn(false);
             setIsHotelLoggedIn(false);
             setIsVillaLoggedIn(false);
@@ -191,29 +191,24 @@ export const useNavigation = ({
             setImpersonatedAgent(null);
             setLoggedInCustomer(null);
             
-            // Set user preferences immediately (no delays)
-            console.log('🚀 Setting language to:', lang);
+            // Set language and location
             setLanguage(lang);
-            
-            console.log('🚀 Setting user location to:', location);
             setUserLocation(location);
-            localStorage.setItem('app_user_location', JSON.stringify(location));
             
-            // Navigate to home page immediately
-            console.log('🚀 Navigating to home page');
+            // Navigate to home page immediately - no setTimeout
             setPage('home');
             
-            // Clean up session in background (non-blocking)
-            logout().catch(error => console.warn('Background logout failed:', error));
+            // Clean up session in background
+            logout().catch(() => {});
             
-            console.log('✅ App entry completed successfully');
+            console.log('✅ App entry completed');
         } catch (error) {
-            console.error('❌ Navigation error during app entry:', error);
-            // Ensure navigation happens even if other operations fail
+            console.error('❌ Navigation error:', error);
+            // Fallback - still navigate even if error
+            localStorage.setItem('app_user_location', JSON.stringify(location));
+            localStorage.setItem('app_language', lang);
             setLanguage(lang);
             setUserLocation(location);
-            localStorage.setItem('app_user_location', JSON.stringify(location));
-            sessionStorage.setItem('has_entered_app', 'true');
             setPage('home');
         }
     }, [setIsAdminLoggedIn, setIsHotelLoggedIn, setIsVillaLoggedIn, setLoggedInProvider, 

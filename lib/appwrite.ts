@@ -44,5 +44,6 @@ export const COLLECTIONS = {
     COMMISSION_RECORDS: get('commission_records', 'commission_records'),
     ATTRIBUTES: get('attributes', 'ATTRIBUTES'),
     PROMOTER_PAYOUT_REQUESTS: get('promoter_payout_requests', 'promoter_payout_requests'),
-    PROMOTER_TABLE_STAND_ORDERS: get('promoter_table_stand_orders', 'promoter_table_stand_orders')
+    PROMOTER_TABLE_STAND_ORDERS: get('promoter_table_stand_orders', 'promoter_table_stand_orders'),
+    COUNTRIES: get('countries', 'countries')
 };

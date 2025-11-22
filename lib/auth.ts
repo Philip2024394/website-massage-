@@ -128,7 +128,7 @@ export const therapistAuth = {
                 agentAttributionLocked: false,
                 // Optional geo/currency context
                 countryCode,
-                currency: currencyCode
+                currencyCode // renamed from currency
             };
 
             async function createWithPruning(payload: any): Promise<any> {
@@ -339,9 +339,8 @@ export const placeAuth = {
                 bookingsCount: 0,
                 membershipRenewalsCount: 0,
                 agentAttributionLocked: false,
-                // Optional geo/currency context
-                countryCode,
-                currency: currencyCode
+                // Optional geo context (currency derived at runtime; not stored)
+                countryCode
             };
 
             async function createPlaceWithPruning(payload: any): Promise<any> {
@@ -389,12 +388,15 @@ export const placeAuth = {
                         }
                         
                         const m = /Unknown attribute[:\s]*"?([A-Za-z0-9_\-]+)"?/i.exec(msg);
-                        if (m && m[1] && current.hasOwnProperty(m[1])) {
+                        if (m && m[1]) {
                             const badKey = m[1];
-                            console.warn('[Place Sign-Up] Removing unknown attribute:', badKey);
-                            delete current[badKey];
-                            attempt++;
-                            continue;
+                            if (current.hasOwnProperty(badKey)) {
+                                console.warn('[Place Sign-Up] Removing unknown attribute:', badKey);
+                                delete current[badKey];
+                                attempt++;
+                                continue;
+                            }
+                            // Currency fields removed from payload; no rename attempts
                         }
                         
                         if (/Invalid type/i.test(msg) && /pricing/i.test(msg)) {
@@ -426,7 +428,8 @@ export const placeAuth = {
                     availability: 'Available',
                     isLive: false,
                     isOnline: true,
-                    coordinates: JSON.stringify({ lat: 0, lng: 0 })
+                    coordinates: JSON.stringify({ lat: 0, lng: 0 }),
+                    countryCode
                 };
                 return databases.createDocument(
                     APPWRITE_CONFIG.databaseId,

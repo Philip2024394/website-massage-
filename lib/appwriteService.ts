@@ -322,7 +322,13 @@ export const therapistService = {
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.therapists,
                 'unique()',
-                therapist
+                {
+                    ...therapist,
+                    // Normalize location-related fields
+                    city: therapist.city || therapist.location?.split(',')[0]?.trim() || '',
+                    countryCode: therapist.countryCode || (typeof therapist.location_countryCode === 'string' ? therapist.location_countryCode : undefined),
+                    country: therapist.country || therapist.location_country || undefined
+                }
             );
             return response;
         } catch (error) {
@@ -367,10 +373,122 @@ export const therapistService = {
                 console.log('✅ Fallback therapists loaded:', response?.documents?.length || 0);
             }
             
-            console.log('✅ Final therapists count:', response?.documents?.length || 0);
+            console.log('✅ Final therapists count before radius filter:', response?.documents?.length || 0);
+            // ---------------- City + Radius Filtering (50km) ----------------
+            const userLocRaw = localStorage.getItem('app_user_location');
+            let userLat: number | null = null;
+            let userLng: number | null = null;
+            let userCity: string | null = null;
+            const RADIUS_KM = 50;
+            
+            console.log('📍 User location data:', userLocRaw);
+            const deriveCity = (doc: any) => {
+                const explicit = (doc.city || '').toString().trim();
+                if (explicit) return explicit.toLowerCase();
+                const addr = (doc.location || '').toString();
+                if (!addr) return '';
+                return addr.split(',')[0].trim().toLowerCase();
+            };
+            try {
+                if (userLocRaw) {
+                    const parsed = JSON.parse(userLocRaw);
+                    userLat = typeof parsed.lat === 'number' ? parsed.lat : null;
+                    userLng = typeof parsed.lng === 'number' ? parsed.lng : null;
+                    // City from parsed.city first else derive from address
+                    userCity = (parsed.city ? String(parsed.city).toLowerCase() : '') || (parsed.address ? parsed.address.split(',')[0].trim().toLowerCase() : '');
+                }
+            } catch (e) {
+                console.warn('⚠️ Failed to parse user location for radius filter', e);
+            }
+            const haversine = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+                const toRad = (v: number) => v * Math.PI / 180;
+                const R = 6371; // Earth radius km
+                const dLat = toRad(lat2 - lat1);
+                const dLon = toRad(lon2 - lon1);
+                const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                return R * c;
+            };
+            let filteredDocs = response.documents;
+            if (userLat !== null && userLng !== null) {
+                console.log(`🔍 Applying radius filter: User at [${userLat}, ${userLng}], city: ${userCity || 'unknown'}`);
+                
+                const beforeCount = filteredDocs.length;
+                const withValidCoords: any[] = [];
+                const withoutCoords: any[] = [];
+                
+                // Separate therapists into those with and without valid coordinates
+                filteredDocs.forEach((t: any) => {
+                    const tCity = deriveCity(t);
+                    let tLat: number | null = null;
+                    let tLng: number | null = null;
+                    
+                    // Parse coordinates
+                    if (t.coordinates) {
+                        if (typeof t.coordinates === 'string') {
+                            const parts = t.coordinates.split(',').map(p => p.trim());
+                            if (parts.length === 2) {
+                                const latNum = parseFloat(parts[0]);
+                                const lngNum = parseFloat(parts[1]);
+                                if (!isNaN(latNum) && !isNaN(lngNum)) { tLat = latNum; tLng = lngNum; }
+                            }
+                        } else if (typeof t.coordinates === 'object' && t.coordinates.lat && t.coordinates.lng) {
+                            tLat = Number(t.coordinates.lat);
+                            tLng = Number(t.coordinates.lng);
+                        }
+                    }
+                    
+                    if (tLat !== null && tLng !== null && tLat !== 0 && tLng !== 0) {
+                        // Has valid coordinates - calculate distance
+                        const dist = haversine(userLat!, userLng!, tLat, tLng);
+                        t.distance = dist;
+                        
+                        // Check if within radius
+                        if (dist <= RADIUS_KM) {
+                            // Also check city match for precision
+                            const cityMatches = !userCity || !tCity || tCity === userCity;
+                            if (cityMatches) {
+                                withValidCoords.push(t);
+                            }
+                        }
+                    } else {
+                        // No valid coordinates - save for potential fallback
+                        withoutCoords.push(t);
+                    }
+                });
+                
+                // Sort therapists with coords by distance (nearest first)
+                withValidCoords.sort((a, b) => (a.distance || 0) - (b.distance || 0));
+                
+                console.log(`📍 Location-based filtering results:`);
+                console.log(`   - Total therapists: ${beforeCount}`);
+                console.log(`   - With valid coordinates within ${RADIUS_KM}km: ${withValidCoords.length}`);
+                console.log(`   - Without coordinates: ${withoutCoords.length}`);
+                
+                // Strategy: Show nearby therapists first, then add some without coords as fallback
+                if (withValidCoords.length > 0) {
+                    // We have nearby therapists - prioritize them
+                    filteredDocs = withValidCoords;
+                    console.log(`✅ Showing ${withValidCoords.length} therapists within ${RADIUS_KM}km (sorted by distance)`);
+                    
+                    // If we have few results, add some therapists without coordinates as fallback
+                    if (withValidCoords.length < 5 && withoutCoords.length > 0) {
+                        const fallbackCount = Math.min(5 - withValidCoords.length, withoutCoords.length);
+                        filteredDocs = [...withValidCoords, ...withoutCoords.slice(0, fallbackCount)];
+                        console.log(`   + Added ${fallbackCount} therapists without coordinates as fallback`);
+                    }
+                } else {
+                    // No nearby therapists found - show all from country (without coords filter)
+                    console.warn(`⚠️ No therapists found within ${RADIUS_KM}km radius`);
+                    console.log(`   Showing all ${withoutCoords.length} therapists from country (no location data available)`);
+                    filteredDocs = withoutCoords;
+                }
+            } else {
+                console.log('📍 No user coordinates available - showing all therapists from country without radius filter');
+            }
             
             // Add random main images and normalize status to therapists
-            const therapistsWithImages = response.documents.map((therapist: any, index: number) => {
+            const therapistsWithImages = filteredDocs.map((therapist: any, index: number) => {
                 const assignedMainImage = therapist.mainImage || getNonRepeatingMainImage(index);
                 
                 // Normalize status from database (lowercase) to enum format (capitalized)
@@ -639,6 +757,9 @@ export const therapistService = {
             if (data.massageTypes) mappedData.massageTypes = data.massageTypes;
             if (data.languages) mappedData.languages = data.languages;
             if (data.coordinates) mappedData.coordinates = data.coordinates;
+            if (data.city) mappedData.city = data.city;
+            if (data.countryCode) mappedData.countryCode = data.countryCode;
+            if (data.country) mappedData.country = data.country;
             if (data.isLive !== undefined) mappedData.isLive = data.isLive;
             if (data.hourlyRate) mappedData.hourlyRate = data.hourlyRate;
             if (data.specialization) mappedData.specialization = data.specialization;
@@ -827,7 +948,12 @@ export const placeService = {
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.places,
                 'unique()',
-                sanitized
+                {
+                    ...sanitized,
+                    city: sanitized.city || sanitized.location?.split(',')[0]?.trim() || '',
+                    countryCode: sanitized.countryCode || (typeof sanitized.location_countryCode === 'string' ? sanitized.location_countryCode : undefined),
+                    country: sanitized.country || sanitized.location_country || undefined
+                }
             );
             console.log('✅ Place created successfully in Appwrite database');
             return response;
@@ -956,8 +1082,71 @@ export const placeService = {
             response.documents.forEach((p: any) => {
                 console.log(`  🏨 ${p.name} - isLive: ${p.isLive}, ID: ${p.$id}`);
             });
-            
-            return response.documents;
+            // ---------------- City + Radius Filtering (50km) for Places ----------------
+            const userLocRaw = localStorage.getItem('app_user_location');
+            let userLat: number | null = null;
+            let userLng: number | null = null;
+            let userCity: string | null = null;
+            const RADIUS_KM = 50;
+            const deriveCity = (doc: any) => {
+                const explicit = (doc.city || '').toString().trim();
+                if (explicit) return explicit.toLowerCase();
+                const addr = (doc.location || '').toString();
+                if (!addr) return '';
+                return addr.split(',')[0].trim().toLowerCase();
+            };
+            try {
+                if (userLocRaw) {
+                    const parsed = JSON.parse(userLocRaw);
+                    userLat = typeof parsed.lat === 'number' ? parsed.lat : null;
+                    userLng = typeof parsed.lng === 'number' ? parsed.lng : null;
+                    userCity = (parsed.city ? String(parsed.city).toLowerCase() : '') || (parsed.address ? parsed.address.split(',')[0].trim().toLowerCase() : '');
+                }
+            } catch (e) {
+                console.warn('⚠️ Failed to parse user location for places radius filter', e);
+            }
+            const haversine = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+                const toRad = (v: number) => v * Math.PI / 180;
+                const R = 6371;
+                const dLat = toRad(lat2 - lat1);
+                const dLon = toRad(lon2 - lon1);
+                const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                return R * c;
+            };
+            let filteredPlaces = response.documents;
+            if (userLat !== null && userLng !== null) {
+                filteredPlaces = filteredPlaces.filter((pl: any) => {
+                    const pCity = deriveCity(pl);
+                    let pLat: number | null = null;
+                    let pLng: number | null = null;
+                    if (pl.coordinates) {
+                        if (typeof pl.coordinates === 'string') {
+                            const parts = pl.coordinates.split(',').map(p => p.trim());
+                            if (parts.length === 2) {
+                                const latNum = parseFloat(parts[0]);
+                                const lngNum = parseFloat(parts[1]);
+                                if (!isNaN(latNum) && !isNaN(lngNum)) { pLat = latNum; pLng = lngNum; }
+                            }
+                        } else if (typeof pl.coordinates === 'object' && pl.coordinates.lat && pl.coordinates.lng) {
+                            pLat = Number(pl.coordinates.lat);
+                            pLng = Number(pl.coordinates.lng);
+                        }
+                    }
+                    let withinRadius = true;
+                    if (pLat !== null && pLng !== null) {
+                        const dist = haversine(userLat!, userLng!, pLat, pLng);
+                        pl.distance = dist;
+                        withinRadius = dist <= RADIUS_KM;
+                    } else {
+                        withinRadius = false;
+                    }
+                    const cityMatches = !userCity || !pCity || pCity === userCity;
+                    return withinRadius && cityMatches;
+                });
+                console.log(`📍 Places radius filter applied (<=${RADIUS_KM}km). Remaining places:`, filteredPlaces.length);
+            }
+            return filteredPlaces;
         } catch (error) {
             console.error('❌ Error fetching places from Appwrite:', error);
             console.error('❌ Error details:', {
@@ -993,6 +1182,9 @@ export const placeService = {
             if ('reviewCount' in sanitized) delete sanitized.reviewCount;
             if (typeof sanitized.status === 'string') sanitized.status = sanitized.status.toLowerCase();
             if (typeof sanitized.availability === 'string') sanitized.availability = sanitized.availability.charAt(0).toUpperCase() + sanitized.availability.slice(1).toLowerCase();
+            if (sanitized.city) sanitized.city = sanitized.city;
+            if (sanitized.countryCode) sanitized.countryCode = sanitized.countryCode;
+            if (sanitized.country) sanitized.country = sanitized.country;
             const response = await databases.updateDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.places,

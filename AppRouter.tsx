@@ -87,6 +87,8 @@ const PartnersDashboardPage = React.lazy(() => import('./pages/PartnersDashboard
 const IndastreetPromoterAuthPage = React.lazy(() => import('./pages/IndastreetPromoterAuthPage'));
 import PromoterMembershipSalesPage from './pages/PromoterMembershipSalesPage';
 const PromoterCommissionPage = React.lazy(() => import('./pages/PromoterCommissionPage'));
+// Agent commission page (Indonesia only)
+const AgentCommissionPage = React.lazy(() => import('./pages/AgentCommissionPage'));
 import PromoterQRPage from './pages/PromoterQRPage';
 const PromoterBookingStatsPage = React.lazy(() => import('./pages/PromoterBookingStatsPage'));
 const PromoterShareBannersPage = React.lazy(() => import('./pages/PromoterShareBannersPage'));
@@ -841,29 +843,9 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'agentAuth' as any:
         case 'agentTerms' as any:
         case 'agentDashboard' as any: {
-            const viewerCountryCode = userLocation?.countryCode;
-            const countryConfig = getCountryConfig(viewerCountryCode);
-            if (!countryConfig.features.agents) {
-                const target: Page = 'home';
-                setTimeout(() => setPage(target), 0);
-                return (
-                    <div className="p-6 max-w-xl mx-auto mt-10 bg-white border border-yellow-200 rounded-lg shadow">
-                        <h2 className="text-xl font-bold text-yellow-700 mb-2">Agents Unavailable</h2>
-                        <p className="text-sm text-gray-700">Agent features are not available in your selected country.</p>
-                        <p className="text-sm text-gray-700 mt-2">Redirecting you to home…</p>
-                    </div>
-                );
-            }
-            // If enabled, fall back to existing behavior (currently unified)
-            const target: Page = 'home';
-            setTimeout(() => setPage(target), 0);
-            return (
-                <div className="p-6 max-w-xl mx-auto mt-10 bg-white border border-yellow-200 rounded-lg shadow">
-                    <h2 className="text-xl font-bold text-yellow-700 mb-2">Agent Portal Moved</h2>
-                    <p className="text-sm text-gray-700">We moved the Agent experience into the Indastreet Partner dashboard.</p>
-                    <p className="text-sm text-gray-700 mt-2">Redirecting you to home…</p>
-                </div>
-            );
+            // Unified to AgentCommissionPage for Indonesia-only deployment
+            if (!isIndonesia) return renderComingSoon('Agents only available in Indonesia');
+            return renderBackPage(AgentCommissionPage, t);
         }
             
         case 'serviceTerms': 
@@ -1255,6 +1237,10 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         }
         case 'providerCommission': {
             return renderBackPage(ProviderCommissionPage, t, { loggedInProvider });
+        }
+        case 'agentCommission': {
+            if (!isIndonesia) return renderComingSoon('This feature is only available in Indonesia');
+            return renderBackPage(AgentCommissionPage, t);
         }
         case 'promoterLiveMenu': {
             return renderBackPage(PromoterLiveMenuPage, t);

@@ -1,250 +1,2244 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  
-  <!-- Main Pages -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://www.indastreetmassage.com/</loc>
-    <lastmod>2025-11-14</lastmod>
+    <loc>https://www.indastreetmassage.com/id</loc>
+    <lastmod>2025-11-21</lastmod>
     <changefreq>daily</changefreq>
-    <priority>1.0</priority>
+    <priority>1</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in"/>
   </url>
-  
   <url>
-    <loc>https://www.indastreetmassage.com/home</loc>
-    <lastmod>2025-11-14</lastmod>
+    <loc>https://www.indastreetmassage.com/gb</loc>
+    <lastmod>2025-11-21</lastmod>
     <changefreq>daily</changefreq>
-    <priority>0.9</priority>
+    <priority>1</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in"/>
   </url>
-
-  <!-- Information Pages -->
   <url>
-    <loc>https://www.indastreetmassage.com/therapist-info</loc>
-    <lastmod>2025-11-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <url>
-    <loc>https://www.indastreetmassage.com/hotel-info</loc>
-    <lastmod>2025-11-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <url>
-    <loc>https://www.indastreetmassage.com/employer-info</loc>
-    <lastmod>2025-11-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <!-- Registration & Auth Pages -->
-  <url>
-    <loc>https://www.indastreetmassage.com/registration-choice</loc>
-    <lastmod>2025-11-14</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://www.indastreetmassage.com/therapist-auth</loc>
-    <lastmod>2025-11-14</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://www.indastreetmassage.com/provider-auth</loc>
-    <lastmod>2025-11-14</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://www.indastreetmassage.com/massage-place-auth</loc>
-    <lastmod>2025-11-14</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://www.indastreetmassage.com/hotel-login</loc>
-    <lastmod>2025-11-14</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://www.indastreetmassage.com/admin-login</loc>
-    <lastmod>2025-11-14</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-
-  <!-- Job & Employer Pages -->
-  <url>
-    <loc>https://www.indastreetmassage.com/massage-jobs</loc>
-    <lastmod>2025-11-14</lastmod>
+    <loc>https://www.indastreetmassage.com/us</loc>
+    <lastmod>2025-11-21</lastmod>
     <changefreq>daily</changefreq>
-    <priority>0.9</priority>
+    <priority>1</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in"/>
   </url>
-
   <url>
-    <loc>https://www.indastreetmassage.com/employer-job-posting</loc>
-    <lastmod>2025-11-14</lastmod>
-    <changefreq>weekly</changefreq>
+    <loc>https://www.indastreetmassage.com/au</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/sg</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/my</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/th</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/ph</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/cn</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/jp</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/kr</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/ru</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/ca</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/in</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/id/about</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/about"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/about"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/about"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/about"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/about"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/about"/>
   </url>
-
-  <!-- Membership & Services -->
   <url>
-    <loc>https://www.indastreetmassage.com/membership</loc>
-    <lastmod>2025-11-14</lastmod>
-    <changefreq>weekly</changefreq>
+    <loc>https://www.indastreetmassage.com/gb/about</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/about"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/about"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/about"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/about"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/about"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/about"/>
   </url>
-
   <url>
-    <loc>https://www.indastreetmassage.com/massage-types</loc>
-    <lastmod>2025-11-14</lastmod>
+    <loc>https://www.indastreetmassage.com/us/about</loc>
+    <lastmod>2025-11-21</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <!-- Agent Pages -->
-  <url>
-    <loc>https://www.indastreetmassage.com/join-indastreet</loc>
-    <lastmod>2025-11-14</lastmod>
-    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/about"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/about"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/about"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/about"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/about"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/about"/>
   </url>
-
   <url>
-    <loc>https://www.indastreetmassage.com/agent-auth</loc>
-    <lastmod>2025-11-14</lastmod>
+    <loc>https://www.indastreetmassage.com/au/about</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/about"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/about"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/about"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/about"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/about"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/about"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/sg/about</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/about"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/about"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/about"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/about"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/about"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/about"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/my/about</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/about"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/about"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/about"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/about"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/about"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/about"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/th/about</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/about"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/about"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/about"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/about"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/about"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/about"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/ph/about</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/about"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/about"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/about"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/about"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/about"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/about"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/cn/about</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/about"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/about"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/about"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/about"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/about"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/about"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/jp/about</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/about"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/about"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/about"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/about"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/about"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/about"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/kr/about</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/about"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/about"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/about"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/about"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/about"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/about"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/ru/about</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/about"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/about"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/about"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/about"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/about"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/about"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/ca/about</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/about"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/about"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/about"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/about"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/about"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/about"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/in/about</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/about"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/about"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/about"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/about"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/about"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/about"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/id/contact</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/contact"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/contact"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/contact"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/contact"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/contact"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/contact"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/gb/contact</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/contact"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/contact"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/contact"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/contact"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/contact"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/contact"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/us/contact</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/contact"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/contact"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/contact"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/contact"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/contact"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/contact"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/au/contact</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/contact"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/contact"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/contact"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/contact"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/contact"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/contact"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/sg/contact</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/contact"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/contact"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/contact"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/contact"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/contact"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/contact"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/my/contact</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/contact"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/contact"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/contact"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/contact"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/contact"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/contact"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/th/contact</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/contact"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/contact"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/contact"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/contact"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/contact"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/contact"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/ph/contact</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/contact"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/contact"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/contact"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/contact"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/contact"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/contact"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/cn/contact</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/contact"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/contact"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/contact"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/contact"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/contact"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/contact"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/jp/contact</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/contact"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/contact"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/contact"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/contact"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/contact"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/contact"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/kr/contact</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/contact"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/contact"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/contact"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/contact"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/contact"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/contact"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/ru/contact</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/contact"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/contact"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/contact"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/contact"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/contact"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/contact"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/ca/contact</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/contact"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/contact"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/contact"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/contact"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/contact"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/contact"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/in/contact</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/contact"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/contact"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/contact"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/contact"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/contact"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/contact"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/id/faq</loc>
+    <lastmod>2025-11-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/faq"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/faq"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/faq"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/faq"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/faq"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/faq"/>
   </url>
-
-  <!-- Legal Pages -->
   <url>
-    <loc>https://www.indastreetmassage.com/privacy-policy</loc>
-    <lastmod>2025-11-14</lastmod>
+    <loc>https://www.indastreetmassage.com/gb/faq</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/faq"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/faq"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/faq"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/faq"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/faq"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/faq"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/us/faq</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/faq"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/faq"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/faq"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/faq"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/faq"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/faq"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/au/faq</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/faq"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/faq"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/faq"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/faq"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/faq"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/faq"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/sg/faq</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/faq"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/faq"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/faq"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/faq"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/faq"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/faq"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/my/faq</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/faq"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/faq"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/faq"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/faq"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/faq"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/faq"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/th/faq</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/faq"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/faq"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/faq"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/faq"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/faq"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/faq"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/ph/faq</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/faq"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/faq"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/faq"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/faq"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/faq"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/faq"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/cn/faq</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/faq"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/faq"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/faq"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/faq"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/faq"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/faq"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/jp/faq</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/faq"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/faq"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/faq"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/faq"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/faq"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/faq"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/kr/faq</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/faq"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/faq"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/faq"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/faq"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/faq"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/faq"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/ru/faq</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/faq"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/faq"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/faq"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/faq"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/faq"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/faq"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/ca/faq</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/faq"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/faq"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/faq"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/faq"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/faq"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/faq"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/in/faq</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/faq"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/faq"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/faq"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/faq"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/faq"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/faq"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/faq"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/id/how-it-works</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/how-it-works"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/gb/how-it-works</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/how-it-works"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/us/how-it-works</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/how-it-works"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/au/how-it-works</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/how-it-works"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/sg/how-it-works</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/how-it-works"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/my/how-it-works</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/how-it-works"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/th/how-it-works</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/how-it-works"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/ph/how-it-works</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/how-it-works"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/cn/how-it-works</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/how-it-works"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/jp/how-it-works</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/how-it-works"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/kr/how-it-works</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/how-it-works"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/ru/how-it-works</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/how-it-works"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/ca/how-it-works</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/how-it-works"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/in/how-it-works</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/how-it-works"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/how-it-works"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/id/massage-types</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/massage-types"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/gb/massage-types</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/massage-types"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/us/massage-types</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/massage-types"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/au/massage-types</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/massage-types"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/sg/massage-types</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/massage-types"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/my/massage-types</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/massage-types"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/th/massage-types</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/massage-types"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/ph/massage-types</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/massage-types"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/cn/massage-types</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/massage-types"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/jp/massage-types</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/massage-types"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/kr/massage-types</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/massage-types"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/ru/massage-types</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/massage-types"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/ca/massage-types</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/massage-types"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/in/massage-types</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/massage-types"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/massage-types"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/id/service-terms</loc>
+    <lastmod>2025-11-21</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/service-terms"/>
   </url>
-
   <url>
-    <loc>https://www.indastreetmassage.com/service-terms</loc>
-    <lastmod>2025-11-14</lastmod>
+    <loc>https://www.indastreetmassage.com/gb/service-terms</loc>
+    <lastmod>2025-11-21</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/service-terms"/>
   </url>
-
   <url>
-    <loc>https://www.indastreetmassage.com/therapist-terms</loc>
-    <lastmod>2025-11-14</lastmod>
+    <loc>https://www.indastreetmassage.com/us/service-terms</loc>
+    <lastmod>2025-11-21</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/service-terms"/>
   </url>
-
   <url>
-    <loc>https://www.indastreetmassage.com/place-terms</loc>
-    <lastmod>2025-11-14</lastmod>
+    <loc>https://www.indastreetmassage.com/au/service-terms</loc>
+    <lastmod>2025-11-21</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/service-terms"/>
   </url>
-
   <url>
-    <loc>https://www.indastreetmassage.com/agent-terms</loc>
-    <lastmod>2025-11-14</lastmod>
+    <loc>https://www.indastreetmassage.com/sg/service-terms</loc>
+    <lastmod>2025-11-21</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/service-terms"/>
   </url>
-
-  <!-- Blog Posts -->
   <url>
-    <loc>https://www.indastreetmassage.com/blog/balinese-massage</loc>
-    <lastmod>2025-11-14</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <loc>https://www.indastreetmassage.com/my/service-terms</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/service-terms"/>
   </url>
-
   <url>
-    <loc>https://www.indastreetmassage.com/blog/swedish-massage</loc>
-    <lastmod>2025-11-14</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <loc>https://www.indastreetmassage.com/th/service-terms</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/service-terms"/>
   </url>
-
   <url>
-    <loc>https://www.indastreetmassage.com/blog/thai-massage</loc>
-    <lastmod>2025-11-14</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <loc>https://www.indastreetmassage.com/ph/service-terms</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/service-terms"/>
   </url>
-
   <url>
-    <loc>https://www.indastreetmassage.com/blog/deep-tissue</loc>
-    <lastmod>2025-11-14</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <loc>https://www.indastreetmassage.com/cn/service-terms</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/service-terms"/>
   </url>
-
   <url>
-    <loc>https://www.indastreetmassage.com/blog/aromatherapy</loc>
-    <lastmod>2025-11-14</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <loc>https://www.indastreetmassage.com/jp/service-terms</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/service-terms"/>
   </url>
-
   <url>
-    <loc>https://www.indastreetmassage.com/blog/hot-stone</loc>
-    <lastmod>2025-11-14</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <loc>https://www.indastreetmassage.com/kr/service-terms</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/service-terms"/>
   </url>
-
   <url>
-    <loc>https://www.indastreetmassage.com/blog/reflexology</loc>
-    <lastmod>2025-11-14</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <loc>https://www.indastreetmassage.com/ru/service-terms</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/service-terms"/>
   </url>
-
   <url>
-    <loc>https://www.indastreetmassage.com/blog/sports-massage</loc>
-    <lastmod>2025-11-14</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <loc>https://www.indastreetmassage.com/ca/service-terms</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/service-terms"/>
   </url>
-
   <url>
-    <loc>https://www.indastreetmassage.com/blog/prenatal-massage</loc>
-    <lastmod>2025-11-14</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <loc>https://www.indastreetmassage.com/in/service-terms</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/service-terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/service-terms"/>
   </url>
-
   <url>
-    <loc>https://www.indastreetmassage.com/blog/shiatsu</loc>
-    <lastmod>2025-11-14</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <loc>https://www.indastreetmassage.com/id/privacy-policy</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/privacy-policy"/>
   </url>
-
   <url>
-    <loc>https://www.indastreetmassage.com/blog/couples-massage</loc>
-    <lastmod>2025-11-14</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <loc>https://www.indastreetmassage.com/gb/privacy-policy</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/privacy-policy"/>
   </url>
-
   <url>
-    <loc>https://www.indastreetmassage.com/blog/traditional-javanese</loc>
-    <lastmod>2025-11-14</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <loc>https://www.indastreetmassage.com/us/privacy-policy</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/privacy-policy"/>
   </url>
-
+  <url>
+    <loc>https://www.indastreetmassage.com/au/privacy-policy</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/privacy-policy"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/sg/privacy-policy</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/privacy-policy"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/my/privacy-policy</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/privacy-policy"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/th/privacy-policy</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/privacy-policy"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/ph/privacy-policy</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/privacy-policy"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/cn/privacy-policy</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/privacy-policy"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/jp/privacy-policy</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/privacy-policy"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/kr/privacy-policy</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/privacy-policy"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/ru/privacy-policy</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/privacy-policy"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/ca/privacy-policy</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/privacy-policy"/>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/in/privacy-policy</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/gb/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/us/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/au/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/sg/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/my/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.indastreetmassage.com/th/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.indastreetmassage.com/cn/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.indastreetmassage.com/jp/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.indastreetmassage.com/kr/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.indastreetmassage.com/ru/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ca/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/in/privacy-policy"/>
+  </url>
 </urlset>
