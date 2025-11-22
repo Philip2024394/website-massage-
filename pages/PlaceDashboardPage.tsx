@@ -1867,7 +1867,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                             {/* Commission Notice */}
                         </div>
 
-                        <div className="pt-4 pb-32">
+                        <div className="pt-4 pb-48">
                             <Button onClick={handleSave} className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition-all">
                                 💾 Save Profile
                             </Button>
@@ -1883,9 +1883,6 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             <header className="bg-white shadow-sm px-4 py-3 sticky top-0 z-40 flex-shrink-0" data-page-header="true">
                 <div className="max-w-7xl mx-auto flex justify-between items-center">
                     <div className="flex items-center gap-3">
-                        <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
-                            <span className="text-2xl">📍</span>
-                        </h1>
                         <div className="flex items-center gap-1 text-sm">
                             <span className="text-gray-900 font-semibold">Inda</span>
                             <span className="text-orange-500 font-semibold">street</span>
@@ -2234,7 +2231,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
 
             {/* Content Area - with proper scrolling between header and footer */}
             <main className="flex-1 overflow-y-auto">
-                <div className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-6 pb-24">
+                <div className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-6 pb-40">
                     {renderContent()}
                 </div>
             </main>

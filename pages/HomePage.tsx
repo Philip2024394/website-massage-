@@ -573,7 +573,7 @@ const HomePage: React.FC<HomePageProps> = ({
             <FlyingButterfly />
             
             {/* Scrollable Content Container */}
-            <div className="flex-1 overflow-y-auto" style={{ paddingBottom: '80px' }}>
+            <div className="flex-1 overflow-y-auto" style={{ paddingBottom: '120px' }}>
                 <header className="bg-white p-4 shadow-md sticky top-0 z-[9997]">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">
@@ -623,7 +623,7 @@ const HomePage: React.FC<HomePageProps> = ({
             </React19SafeWrapper>
 
 
-            <main className="p-4 pb-24">
+            <main className="p-4 pb-32">
                 {/* Location display line - Live from GPS/IP with Google Maps */}
                 <div className="text-center text-base font-semibold text-orange-600 mb-4">
                     {(() => {
