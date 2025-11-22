@@ -2,7 +2,7 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { 
     Home, Briefcase, Users, Building, MapPin, Heart, 
-    Info, BookOpen, Phone, HelpCircle,
+    Info, BookOpen, Phone, HelpCircle, ShoppingBag,
     X as CloseIcon
 } from 'lucide-react';
 import { useCountryContext } from '../context/CountryContext';
@@ -84,6 +84,8 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
             'home.menu.sections.jobPosting': 'Job Posting',
             'home.menu.sections.loginCreateAccount': 'Login / Create Account',
             'home.menu.sections.company': 'Company',
+            'home.menu.marketplace': 'Online Shop',
+            'home.menu.marketplaceDesc': 'Browse products & services',
             'home.menu.massageJobs': 'Massage Jobs',
             'home.menu.massageJobsDesc': 'Find opportunities',
             'home.menu.hotel': 'Hotel',
@@ -307,6 +309,22 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                 {translate('home.menu.sections.company')}
                             </h3>
                             <div className="space-y-2">
+                                {/* Marketplace / Online Shop */}
+                                <button 
+                                    onClick={() => handleItemClick(() => onNavigate?.('marketplace'))}
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-green-500 group transform hover:scale-105"
+                                >
+                                    <div className="p-2 bg-gradient-to-br from-green-500 to-green-600 rounded-lg">
+                                        <ShoppingBag className="w-5 h-5 text-white" />
+                                    </div>
+                                    <div className="flex-grow">
+                                        <p className="font-semibold text-gray-800 group-hover:text-green-600 transition-colors">
+                                            {translate('home.menu.marketplace')}
+                                        </p>
+                                        <p className="text-xs text-gray-500">{translate('home.menu.marketplaceDesc')}</p>
+                                    </div>
+                                </button>
+
                                 <button 
                                     onClick={() => handleItemClick(undefined, 'about-us')}
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-cyan-500 group transform hover:scale-105"

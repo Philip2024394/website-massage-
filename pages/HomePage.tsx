@@ -289,6 +289,7 @@ const HomePage: React.FC<HomePageProps> = ({
         let debounceTimeout: NodeJS.Timeout | null = null;
         const filterByLocation = async () => {
             if (filteringRef.current) return;
+            
             const locationToUse = autoDetectedLocation || userLocation;
             if (!locationToUse) {
                 if (nearbyTherapists.length !== therapists.length || nearbyPlaces.length !== places.length) {
@@ -297,6 +298,8 @@ const HomePage: React.FC<HomePageProps> = ({
                 }
                 return;
             }
+            
+            // Prevent multiple simultaneous runs
             filteringRef.current = true;
             try {
                 if (DEBUG_HOME) {
@@ -394,7 +397,7 @@ const HomePage: React.FC<HomePageProps> = ({
             }
         };
         if (debounceTimeout) clearTimeout(debounceTimeout);
-        debounceTimeout = setTimeout(filterByLocation, 350);
+        debounceTimeout = setTimeout(filterByLocation, 500); // Increased from 350ms to 500ms
         return () => {
             if (debounceTimeout) clearTimeout(debounceTimeout);
         };

@@ -605,6 +605,12 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             pricing: JSON.stringify(pricing).substring(0, 250), // Max 255 chars - required
             status: 'Open', // Open/Closed for places
             isLive: true, // Set to live when saved
+            createdAt: place?.createdAt || new Date().toISOString(), // Required field - use existing or create new
+            
+            // Location-related fields (may be required in actual collection)
+            city: place?.city || location?.split(',')[0]?.trim() || '',
+            countryCode: place?.countryCode || localStorage.getItem('cached_countryCode') || 'ID',
+            country: place?.country || localStorage.getItem('cached_country') || 'Indonesia',
             
             // Size-limited fields (keep within schema limits)
             coordinates: JSON.stringify(coordinates).substring(0, 500), // Max 512 chars
@@ -673,15 +679,20 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                 code: (error as any)?.code || 'Unknown code',
                 type: (error as any)?.type || 'Unknown type',
                 collectionId: APPWRITE_CONFIG.collections.places,
-                databaseId: APPWRITE_CONFIG.databaseId
+                databaseId: APPWRITE_CONFIG.databaseId,
+                fullError: error
             });
+            console.error('❌ PlaceData that failed to save:', placeData);
             
             let errorMessage = 'Failed to save profile to database.';
             if (error instanceof Error) {
                 if (error.message.includes('Collection not found')) {
                     errorMessage = 'Collection not found. Please check if the therapists collection exists in Appwrite.';
                 } else if (error.message.includes('Missing required attribute')) {
-                    errorMessage = 'Missing required fields. Please check the collection schema.';
+                    const match = error.message.match(/attribute[s]?\s+["']?([^"'\s]+)["']?/i);
+                    const missingField = match ? match[1] : 'unknown';
+                    errorMessage = `Missing required field: ${missingField}. Please check the collection schema.`;
+                    console.error('❌ Missing field identified:', missingField);
                 } else if (error.message.includes('Invalid')) {
                     errorMessage = `Invalid data: ${error.message}`;
                 }
@@ -1593,13 +1604,6 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                         </div>
                                     )}
                                 </div>
-                                {/* Debug Button - Remove in production */}
-                                <button 
-                                    onClick={debugLocationSystem}
-                                    className="mt-2 text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
-                                >
-                                    🔍 Debug Location System
-                                </button>
                             </div>
                             
                             {mapsApiLoaded ? (
@@ -1717,15 +1721,36 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                 </>
                             ) : (
                                 <div className="space-y-3">
-                                    <div className="p-4 bg-yellow-100 border border-yellow-300 text-yellow-800 text-sm rounded-lg">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                            </svg>
-                                            <span className="font-medium">Google Maps Not Available</span>
-                                        </div>
-                                        <p className="text-xs mb-3">
-                                            Google Maps API is required for location features. Please configure the API key in the admin settings or enter your address manually below.
+                                    {/* Simple location button - works without Google Maps */}
+                                    <Button 
+                                        onClick={handleSetLocation} 
+                                        disabled={isGettingLocation}
+                                        variant="secondary" 
+                                        className={`w-full flex items-center justify-center gap-3 py-4 text-base font-semibold rounded-xl transition-all duration-200 ${
+                                            isGettingLocation
+                                                ? 'bg-gray-400 text-white cursor-not-allowed'
+                                                : coordinates.lat !== 0 || coordinates.lng !== 0
+                                                ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg' 
+                                                : 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg'
+                                        }`}
+                                    >
+                                        <MapPinIcon className="w-6 h-6" />
+                                        <span>
+                                            {isGettingLocation
+                                                ? 'Getting Location...'
+                                                : coordinates.lat !== 0 || coordinates.lng !== 0 
+                                                ? '✅ Location Set - Click to Update' 
+                                                : '📍 Set My Location'
+                                            }
+                                        </span>
+                                    </Button>
+                                    
+                                    <div className="text-center mt-2">
+                                        <p className="text-xs text-gray-500">
+                                            {coordinates.lat !== 0 || coordinates.lng !== 0 
+                                                ? '✅ Your location is set and customers can find you'
+                                                : '💡 Click button to automatically detect your location'
+                                            }
                                         </p>
                                     </div>
                                     
@@ -1774,6 +1799,9 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                         </p>
                                         <div className="text-sm text-gray-700 mt-1 space-y-1">
                                             <p><strong>Direct bookings from home page:</strong> You keep <strong>100% of the income</strong></p>
+                                            <p className="text-xs text-blue-700 mt-2">
+                                                Promoters receive <strong>20% commission</strong> if booking you received from their shared Indastreet special link. Payable direct to their listed bank account.
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -1837,27 +1865,6 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                             </div>
                             
                             {/* Commission Notice */}
-                            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                                <div className="flex items-start space-x-3">
-                                    <div className="flex-shrink-0">
-                                        <svg className="w-5 h-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className="text-sm font-semibold text-blue-800">ℹ️ Promoter Commission Information</p>
-                                        <p className="text-sm text-blue-700 mt-1">
-                                            <strong>20% commission</strong> is owed to Indastreet Promoters on bookings attributed via promoter links.
-                                        </p>
-                                        <p className="text-xs text-blue-600 mt-2 font-medium">
-                                            Example: If customer pays IDR 300K, you receive IDR 240K (promoter gets IDR 60K).
-                                        </p>
-                                        <p className="text-xs text-green-700 mt-2 font-bold bg-green-100 px-2 py-1 rounded inline-block">
-                                            💡 These same prices apply to all bookings - promoter commission is automatically calculated
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
 
                         <div className="pt-4 pb-32">
@@ -1875,21 +1882,17 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             {/* Header with Burger Menu */}
             <header className="bg-white shadow-sm px-4 py-3 sticky top-0 z-40 flex-shrink-0" data-page-header="true">
                 <div className="max-w-7xl mx-auto flex justify-between items-center">
-                    <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-3">
-                        <span className="text-2xl">📍</span>
-                        <span className="text-gray-900">Place Dashboard</span>
-                    </h1>
+                    <div className="flex items-center gap-3">
+                        <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+                            <span className="text-2xl">📍</span>
+                        </h1>
+                        <div className="flex items-center gap-1 text-sm">
+                            <span className="text-gray-900 font-semibold">Inda</span>
+                            <span className="text-orange-500 font-semibold">street</span>
+                        </div>
+                    </div>
                     <div className="flex items-center gap-2">
                         <NotificationBell count={unreadNotificationsCount} onClick={onNavigateToNotifications} />
-                                                {onNavigate && (
-                                                    <button
-                                                        onClick={() => onNavigate('providerCommission' as any)}
-                                                        className="px-3 py-1.5 rounded-lg text-sm bg-emerald-600 text-white hover:bg-emerald-700"
-                                                        title="View Commissions"
-                                                    >
-                                                        Commissions
-                                                    </button>
-                                                )}
                         <button
                             onClick={() => setIsSideDrawerOpen(true)}
                             className="p-2 text-gray-700 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-colors force-show-menu"
