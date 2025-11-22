@@ -26,6 +26,7 @@ interface TherapistDashboardPageProps {
     existingTherapistData?: Therapist;
     bookings?: Booking[];
     notifications: Notification[];
+    userLocation?: UserLocation | null;
     t?: any;
 }
 
@@ -47,7 +48,8 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
     onUpdateBookingStatus, 
     onStatusChange, 
     therapistId, 
-    existingTherapistData, 
+    existingTherapistData,
+    userLocation, 
     bookings, 
     notifications, 
     t 
@@ -238,7 +240,19 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                 setProfilePicture(existingTherapist.profilePicture || '');
                 setWhatsappNumber(existingTherapist.whatsappNumber || '');
                 setYearsOfExperience(existingTherapist.yearsOfExperience || 0);
-                setLocation(existingTherapist.location || '');
+                
+                // Auto-fill location from userLocation if therapist location is empty
+                if (existingTherapist.location) {
+                    setLocation(existingTherapist.location);
+                } else if (userLocation?.address) {
+                    console.log('📍 Auto-filling location from landing page:', userLocation.address);
+                    setLocation(userLocation.address);
+                    if (userLocation.lat && userLocation.lng) {
+                        setCoordinates({ lat: userLocation.lat, lng: userLocation.lng });
+                    }
+                } else {
+                    setLocation('');
+                }
 
                 // Load bank details
                 setBankName(existingTherapist.bankName || '');
@@ -1604,28 +1618,6 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                     Service Location & Coverage Area <span className="text-red-500">*</span>
                                                 </label>
                                                 
-                                                {/* Coordinates Display */}
-                                                <div className="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-xl">
-                                                    <div className="flex items-center gap-2 text-xs text-gray-600">
-                                                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                                        </svg>
-                                                        <span className="font-medium">GPS Coordinates:</span>
-                                                        <span className="font-mono">
-                                                            {coordinates.lat !== 0 || coordinates.lng !== 0 
-                                                                ? `${coordinates.lat.toFixed(6)}, ${coordinates.lng.toFixed(6)}`
-                                                                : 'Not set'
-                                                            }
-                                                        </span>
-                                                        {(coordinates.lat !== 0 || coordinates.lng !== 0) && (
-                                                            <div className="ml-auto flex items-center gap-1">
-                                                                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                                                <span className="text-green-600 font-medium">Live</span>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                                
                                                 {/* Current Location Display */}
                                                 <div className="bg-gradient-to-r from-blue-50 to-green-50 p-4 rounded-xl border border-blue-200 mb-4">
                                                     <div className="flex items-center justify-between">
@@ -2285,22 +2277,9 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
 
                                 {activeTab === 'hotel-villa' && (
                                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                                        <div className="mb-4">
-                                            <h2 className="text-xl font-bold text-gray-900 mb-1">Commission Due (Partners)</h2>
-                                            <p className="text-gray-600 text-sm">All therapist bookings attributed via partner links include a 10% commission to Indastreet Partners.</p>
-                                        </div>
-                                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-4">
-                                            <h3 className="font-semibold text-orange-800 mb-1">Payment Policy</h3>
-                                            <ul className="list-disc ml-5 text-sm text-orange-800 space-y-1">
-                                                <li>Rate: 10% commission on attributed bookings.</li>
-                                                <li>Due date: Every Friday by 23:59 WIB.</li>
-                                                <li>Keep a healthy account by paying on time; late payments may reduce visibility until settled.</li>
-                                            </ul>
-                                        </div>
-                                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                                            <h3 className="font-semibold text-gray-800 mb-1">What shows here</h3>
-                                            <p className="text-sm text-gray-700">We will show your weekly outstanding commission summary here. For now, please keep your own record of bookings generated by partner links and pay the 10% by Friday.</p>
-                                        </div>
+                                        <p className="text-gray-700 text-base">
+                                            Promotors Receive 20% commission from their shared links and advertisement.
+                                        </p>
                                     </div>
                                 )}
 

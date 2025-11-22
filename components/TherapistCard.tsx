@@ -860,13 +860,13 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         <>
                             {/* Discounted price - what customer will actually pay */}
                             <p className="font-bold text-gray-800 text-sm leading-tight">
-                                Rp {formatPrice(Math.round(Number(pricing["60"]) * (1 - (therapist.discountPercentage || 0) / 100)))}
+                                IDR {formatPrice(Math.round(Number(pricing["60"]) * (1 - (therapist.discountPercentage || 0) / 100)))}
                             </p>
 
                         </>
                     ) : (
                         <p className="font-bold text-gray-800 text-sm leading-tight">
-                            Rp {formatPrice(Number(pricing["60"]))}
+                            IDR {formatPrice(Number(pricing["60"]))}
                         </p>
                     )}
                 </div>
@@ -880,11 +880,11 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     <p className="text-gray-600 text-xs mb-1">90 min</p>
                     {isDiscountActive(therapist) ? (
                         <p className="font-bold text-gray-800 text-sm leading-tight">
-                            Rp {formatPrice(Math.round(Number(pricing["90"]) * (1 - (therapist.discountPercentage || 0) / 100)))}
+                            IDR {formatPrice(Math.round(Number(pricing["90"]) * (1 - (therapist.discountPercentage || 0) / 100)))}
                         </p>
                     ) : (
                         <p className="font-bold text-gray-800 text-sm leading-tight">
-                            Rp {formatPrice(Number(pricing["90"]))}
+                            IDR {formatPrice(Number(pricing["90"]))}
                         </p>
                     )}
                 </div>
@@ -898,11 +898,11 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     <p className="text-gray-600 text-xs mb-1">120 min</p>
                     {isDiscountActive(therapist) ? (
                         <p className="font-bold text-gray-800 text-sm leading-tight">
-                            Rp {formatPrice(Math.round(Number(pricing["120"]) * (1 - (therapist.discountPercentage || 0) / 100)))}
+                            IDR {formatPrice(Math.round(Number(pricing["120"]) * (1 - (therapist.discountPercentage || 0) / 100)))}
                         </p>
                     ) : (
                         <p className="font-bold text-gray-800 text-sm leading-tight">
-                            Rp {formatPrice(Number(pricing["120"]))}
+                            IDR {formatPrice(Number(pricing["120"]))}
                         </p>
                     )}
                 </div>

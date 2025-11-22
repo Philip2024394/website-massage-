@@ -8,6 +8,7 @@ interface ImageUploadProps {
     onImageChange: (imageDataUrl: string) => void;
     className?: string;
     heightClass?: string;
+    imageClassName?: string; // Custom styling for the image element
     variant?: 'default' | 'profile'; // Add variant prop for profile pictures
 }
 
@@ -23,7 +24,7 @@ const UserIcon: React.FC<{ className?: string }> = ({ className = "w-16 h-16" })
     </svg>
 );
 
-const ImageUpload: React.FC<ImageUploadProps> = ({ id, label, currentImage, onImageChange, className, heightClass = 'h-48', variant = 'default' }) => {
+const ImageUpload: React.FC<ImageUploadProps> = ({ id, label, currentImage, onImageChange, className, heightClass = 'h-48', imageClassName, variant = 'default' }) => {
     const [preview, setPreview] = useState<string | null>(currentImage);
     const fileInputRef = useRef<HTMLInputElement>(null);
     
@@ -91,7 +92,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ id, label, currentImage, onIm
                             <img 
                                 src={preview} 
                                 alt="Profile Preview" 
-                                className="w-full h-full object-cover"
+                                className={imageClassName || "w-full h-full object-cover"}
                                 onError={() => {
                                     console.error('❌ Failed to load image preview:', preview.substring(0, 100));
                                     setPreview(null);
@@ -131,7 +132,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ id, label, currentImage, onIm
                 tabIndex={0}
             >
                 {preview && preview.length > 0 ? (
-                    <img src={preview} alt="Preview" className="w-full h-full object-cover rounded-lg" />
+                    <img src={preview} alt="Preview" className={imageClassName || "w-full h-full object-cover rounded-lg"} />
                 ) : (
                     <div className="flex flex-col items-center">
                         <UploadIcon className="w-8 h-8 mb-1" />

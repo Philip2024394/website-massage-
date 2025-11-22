@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { User, UserLocation, Agent, Place, Therapist, Analytics, UserCoins } from '../types';
 import TherapistCard from '../components/TherapistCard';
-import OrangeLocationModal from '../components/OrangeLocationModal';
 import MassagePlaceCard from '../components/MassagePlaceCard';
 import RatingModal from '../components/RatingModal';
 import { MASSAGE_TYPES_CATEGORIZED } from '../constants/rootConstants';
@@ -51,6 +50,7 @@ interface HomePageProps {
     onTermsClick?: () => void;
     onPrivacyClick?: () => void;
     onNavigate?: (page: string) => void;
+    onLanguageChange?: (lang: 'en' | 'id') => void;
     isLoading: boolean;
     t: any;
     language?: 'en' | 'id';
@@ -93,7 +93,8 @@ const HomePage: React.FC<HomePageProps> = ({
     onTherapistJobsClick: _onTherapistJobsClick, 
     onTermsClick, 
     onPrivacyClick, 
-    onNavigate, 
+    onNavigate,
+    onLanguageChange, 
     t,
     language
 }) => {
@@ -503,8 +504,8 @@ const HomePage: React.FC<HomePageProps> = ({
 
     // Removed unused processedTherapists and processedPlaces
 
-    // Count of online therapists (example: status === 'online')
-    const onlineTherapistsCount = 0;
+    // Count of online therapists (status === 'online')
+    const onlineTherapistsCount = therapists.filter(t => t.status === 'online').length;
 
     // Rating modal handlers removed for design mock
 
@@ -530,16 +531,29 @@ const HomePage: React.FC<HomePageProps> = ({
                         <span className="text-orange-500">Street</span>
                     </h1>
                     <div className="flex items-center gap-3 text-gray-600">
-                        {/* Location Update Button - Orange Color */}
+                        {/* Language Selector - Flag Icon */}
                         <button 
-                            onClick={handleLocationRequest} 
-                            className="p-2 hover:bg-orange-50 rounded-full transition-colors text-orange-500" 
-                            title="Update Location"
+                            onClick={() => {
+                                const currentLang = language || 'id';
+                                const newLanguage = currentLang === 'id' ? 'en' : 'id';
+                                console.log('🌐 Language Toggle:');
+                                console.log('  - Current:', currentLang);
+                                console.log('  - New:', newLanguage);
+                                
+                                // Call the language change handler from parent
+                                if (onLanguageChange) {
+                                    onLanguageChange(newLanguage);
+                                    console.log('✅ Language change handler called');
+                                } else {
+                                    console.error('❌ No language change handler provided');
+                                }
+                            }} 
+                            className="flex items-center justify-center w-9 h-9 hover:bg-orange-50 rounded-full transition-colors" 
+                            title={language === 'id' ? 'Switch to English' : 'Ganti ke Bahasa Indonesia'}
                         >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
+                            <span className="text-2xl">
+                                {language === 'id' ? '🇮🇩' : '🇬🇧'}
+                            </span>
                         </button>
 
                         <button onClick={() => {
@@ -580,8 +594,35 @@ const HomePage: React.FC<HomePageProps> = ({
                 />
             </React19SafeWrapper>
 
-
             <main className="p-4 pb-24">
+                {/* Location Display */}
+                {userLocation && (
+                    <div className="flex items-center justify-center gap-2 mb-4">
+                        <svg 
+                            className="w-5 h-5 text-orange-500" 
+                            fill="none" 
+                            viewBox="0 0 24 24" 
+                            stroke="currentColor" 
+                            strokeWidth={2}
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span className="text-sm font-semibold text-gray-800">
+                            {(() => {
+                                if (!userLocation.address) {
+                                    return `${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`;
+                                }
+                                // Parse address to extract main location components
+                                const parts = userLocation.address.split(',').map(p => p.trim());
+                                // Take last 2-4 parts (usually city, province/state, country)
+                                const mainLocation = parts.slice(-4).join(', ');
+                                return mainLocation || userLocation.address;
+                            })()}
+                        </span>
+                    </div>
+                )}
+
                 <div className="flex items-center justify-center gap-2 text-gray-500 mb-4">
                     <Users className="w-5 h-5"/>
                     <span className="font-medium">{(t.home.therapistsOnline || "{count} of {total} therapists online")
@@ -841,37 +882,10 @@ const HomePage: React.FC<HomePageProps> = ({
                 {/* ...existing code for therapists/places rendering, modals, etc. should follow here... */}
             </main>
             
-            {/* Custom Orange Location Modal */}
-            <OrangeLocationModal
-                isVisible={isLocationModalOpen}
-                onAllow={handleLocationAllow}
-                onDeny={handleLocationDeny}
-                language={language || 'en'}
-                size="compact"
-            />
-            
             {/* Rating modal removed for design mock */}
             
             </div> {/* End scrollable content container */}
 
-            {/* Footer - Fixed at bottom */}
-            <footer 
-                className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-4 z-50" 
-                style={{ 
-                    position: 'fixed', 
-                    bottom: '0px', 
-                    left: '0px', 
-                    right: '0px', 
-                    zIndex: '50'
-                }}
-            >
-                <div className="px-4 py-3 max-w-[430px] sm:max-w-5xl mx-auto">
-                    <p className="text-xs text-gray-500 text-center">
-                        &copy; 2025 <span className="text-black font-semibold">Inda</span><span className="text-orange-500 font-semibold">street</span> Massage Platform
-                    </p>
-                </div>
-            </footer>
-            
             <style>{`
                 @keyframes float {
                     0%, 100% {

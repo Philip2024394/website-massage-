@@ -417,14 +417,14 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                     {isDiscountActive(place) ? (
                         <>
                             <p className="font-bold text-gray-800 text-sm line-through opacity-60">
-                                Rp {Number(pricing["60"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
+                                IDR {Number(pricing["60"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
                             </p>
                             <p className="font-bold text-orange-600 text-lg">
-                                Rp {Math.round(Number(pricing["60"]) * (1 - (place as any).discountPercentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
+                                IDR {Math.round(Number(pricing["60"]) * (1 - (place as any).discountPercentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
                             </p>
                         </>
                     ) : (
-                        <p className="font-bold text-gray-800 text-lg">Rp {Number(pricing["60"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
+                        <p className="font-bold text-gray-800 text-lg">IDR {Number(pricing["60"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
                     )}
                 </div>
                     
@@ -440,14 +440,14 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                     {isDiscountActive(place) ? (
                         <>
                             <p className="font-bold text-gray-800 text-sm line-through opacity-60">
-                                Rp {Number(pricing["90"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
+                                IDR {Number(pricing["90"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
                             </p>
                             <p className="font-bold text-orange-600 text-lg">
-                                Rp {Math.round(Number(pricing["90"]) * (1 - (place as any).discountPercentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
+                                IDR {Math.round(Number(pricing["90"]) * (1 - (place as any).discountPercentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
                             </p>
                         </>
                     ) : (
-                        <p className="font-bold text-gray-800 text-lg">Rp {Number(pricing["90"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
+                        <p className="font-bold text-gray-800 text-lg">IDR {Number(pricing["90"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
                     )}
                 </div>
                     
@@ -463,14 +463,14 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                     {isDiscountActive(place) ? (
                         <>
                             <p className="font-bold text-gray-800 text-sm line-through opacity-60">
-                                Rp {Number(pricing["120"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
+                                IDR {Number(pricing["120"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
                             </p>
                             <p className="font-bold text-orange-600 text-lg">
-                                Rp {Math.round(Number(pricing["120"]) * (1 - (place as any).discountPercentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
+                                IDR {Math.round(Number(pricing["120"]) * (1 - (place as any).discountPercentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
                             </p>
                         </>
                     ) : (
-                        <p className="font-bold text-gray-800 text-lg">Rp {Number(pricing["120"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
+                        <p className="font-bold text-gray-800 text-lg">IDR {Number(pricing["120"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
                     )}
                 </div>
             </div>

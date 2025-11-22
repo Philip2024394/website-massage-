@@ -3,7 +3,7 @@ import { placeAuth } from '../lib/auth';
 import { saveSessionCache } from '../lib/sessionManager';
 import { checkRateLimit, handleAppwriteError, resetRateLimit } from '../lib/rateLimitUtils';
 import { trackDailySignIn } from '../lib/coinHooks';
-import { LogIn, UserPlus, Eye, EyeOff } from 'lucide-react';
+import { LogIn, UserPlus, Eye, EyeOff, Mail, Lock, Home } from 'lucide-react';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { AppDrawer } from '../components/AppDrawer';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
@@ -122,8 +122,9 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
                 
                 if (response.success) {
                     console.log('✅ Place account created successfully!');
-                    setIsSignUp(false);
-                    setError('✅ Account created successfully! Please sign in.');
+                    // Don't switch tabs - keep user in Create Account mode
+                    setError('✅ Account created successfully! You can now sign in with these credentials.');
+                    // Keep the email but clear password for security
                     setPassword('');
                 } else {
                     throw new Error(response.error || 'Sign up failed');
@@ -189,7 +190,7 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
     };
 
     return (
-        <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
+        <div className="h-screen bg-gray-50 flex flex-col overflow-hidden fixed inset-0">
             <PageNumberBadge pageNumber={5} pageName="MassagePlaceLoginPage" isLocked={false} />
             
             {/* Global Header */}
@@ -201,6 +202,9 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
                     <div className="flex items-center gap-3 text-gray-600">
                         <button onClick={() => setIsMenuOpen(true)} title="Menu">
                             <BurgerMenuIcon className="w-6 h-6" />
+                        </button>
+                        <button onClick={() => window.history.back()} title="Home" className="hover:text-orange-500 transition-colors">
+                            <Home className="w-5 h-5" />
                         </button>
                     </div>
                 </div>
@@ -226,34 +230,41 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
                 />
             </React19SafeWrapper>
 
-            {/* Main Content */}
-            <main className="flex-1 flex items-center justify-center p-4 overflow-hidden">
-                <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
-                    {/* Header */}
-                    <div className="text-center mb-8">
-                        <h2 className="text-3xl font-bold mb-2 text-gray-800">Massage Place Portal</h2>
-                        <p className="text-gray-600 text-sm">Manage your massage place services and bookings</p>
+            {/* Main Content with Background */}
+            <main 
+                className="flex-1 flex items-start justify-center px-4 py-2 overflow-hidden relative bg-cover bg-center bg-no-repeat min-h-0"
+                style={{
+                    backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/massage%20spa.png)'
+                }}
+            >
+                <div className="max-w-md w-full relative z-10 max-h-full overflow-y-auto pt-4 sm:pt-6" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                    {/* Header - Positioned right under header area */}
+                    <div className="text-center mb-4 sm:mb-6">
+                        <h2 className="text-4xl sm:text-5xl font-bold mb-2 sm:mb-3 text-gray-800 drop-shadow-lg">Massage Place</h2>
+                        <p className="text-gray-600 text-xs sm:text-sm drop-shadow">Manage your massage place services and bookings</p>
                     </div>
 
-                    {error && (
-                        <div className={`mb-6 p-3 rounded-lg ${
-                            error.includes('✅') 
-                                ? 'bg-green-50 text-green-700 border border-green-200' 
-                                : 'bg-red-50 text-red-700 border border-red-200'
-                        }`}>
-                            {error}
-                        </div>
-                    )}
+                    <div className="mb-3 sm:mb-4 min-h-[50px] flex items-center">
+                        {error && (
+                            <div className={`w-full p-2 sm:p-3 rounded-lg text-sm ${
+                                error.includes('✅') 
+                                    ? 'bg-green-50 text-green-700 border border-green-200' 
+                                    : 'bg-red-50 text-red-700 border border-red-200'
+                            }`}>
+                                {error}
+                            </div>
+                        )}
+                    </div>
 
                     {/* Tab Navigation */}
-                    <div className="flex mb-6 bg-gray-100 rounded-lg p-1 border border-gray-200">
+                    <div className="flex mb-4 sm:mb-6 bg-white/95 backdrop-blur-sm rounded-lg p-1 border border-white/20 shadow-lg">
                         <button
                             onClick={() => {
                                 setIsSignUp(false);
                                 setError(''); // Clear error when switching modes
                             }}
                             className={`flex-1 py-3 px-4 rounded-lg transition-all font-medium ${
-                                !isSignUp ? 'bg-white text-orange-600 shadow-sm' : 'text-gray-600 hover:text-gray-800'
+                                !isSignUp ? 'bg-orange-500 text-white shadow-sm' : 'text-gray-700 hover:text-orange-500 hover:bg-orange-50/80'
                             }`}
                         >
                             Sign In
@@ -264,7 +275,7 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
                                 setError(''); // Clear error when switching modes
                             }}
                             className={`flex-1 py-3 px-4 rounded-lg transition-all font-medium ${
-                                isSignUp ? 'bg-white text-orange-600 shadow-sm' : 'text-gray-600 hover:text-gray-800'
+                                isSignUp ? 'bg-orange-500 text-white shadow-sm' : 'text-gray-700 hover:text-orange-500 hover:bg-orange-50/80'
                             }`}
                         >
                             Create Account
@@ -272,38 +283,42 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
                     </div>
 
                     {/* Forms */}
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gray-800 mb-2 drop-shadow">
                                 Email Address
                             </label>
-                            <input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="Enter your email"
-                                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all bg-white text-gray-700"
-                                required
-                            />
+                            <div className="relative">
+                                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-orange-500 w-5 h-5 z-10" />
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="Enter your email"
+                                    className="w-full pl-12 pr-4 py-3 rounded-xl border border-white/20 focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400 transition-all bg-white/95 backdrop-blur-sm text-gray-900 placeholder-gray-500 shadow-lg"
+                                    required
+                                />
+                            </div>
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gray-800 mb-2 drop-shadow">
                                 Password
                             </label>
                             <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-orange-500 w-5 h-5 z-10" />
                                 <input
                                     type={showPassword ? 'text' : 'password'}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder={isSignUp ? "Create a password (min 8 characters)" : "Enter your password"}
-                                    className="w-full pl-4 pr-12 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all bg-white text-gray-700"
+                                    className="w-full pl-12 pr-12 py-3 rounded-xl border border-white/20 focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400 transition-all bg-white/95 backdrop-blur-sm text-gray-900 placeholder-gray-500 shadow-lg"
                                     required
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-orange-500 hover:text-orange-400 transition-colors z-10"
                                 >
                                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                 </button>
@@ -313,7 +328,7 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full py-4 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full py-4 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-xl hover:shadow-2xl backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {loading ? (
                                 <div className="flex items-center justify-center">
@@ -330,6 +345,21 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
                     </form>
                 </div>
             </main>
+            
+            {/* Hide scrollbars */}
+            <style>{`
+                .max-w-md::-webkit-scrollbar {
+                    display: none;
+                }
+                @media (max-height: 600px) {
+                    .space-y-4 > * + * {
+                        margin-top: 0.75rem;
+                    }
+                    .space-y-6 > * + * {
+                        margin-top: 1rem;
+                    }
+                }
+            `}</style>
         </div>
     );
 };

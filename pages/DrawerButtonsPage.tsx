@@ -15,7 +15,8 @@ const DrawerButtonsPage: React.FC = () => {
     const [showAddForm, setShowAddForm] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [authError, setAuthError] = useState<string | null>(null);
-    const [googleMapsApiKey, setGoogleMapsApiKey] = useState('');
+    // Default to provided Google Maps API key
+    const [googleMapsApiKey, setGoogleMapsApiKey] = useState('AIzaSyBTLeHZSz9W5anCvGuVYhyIXp1Jvt8Iwqw');
     const [isEditingApiKey, setIsEditingApiKey] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
@@ -25,10 +26,12 @@ const DrawerButtonsPage: React.FC = () => {
 
     useEffect(() => {
         initializeAndFetch();
-        // Load Google Maps API key from localStorage
+        // Load Google Maps API key from localStorage, fallback to default if not set
         const savedApiKey = localStorage.getItem('googleMapsApiKey');
         if (savedApiKey) {
             setGoogleMapsApiKey(savedApiKey);
+        } else {
+            setGoogleMapsApiKey('AIzaSyBTLeHZSz9W5anCvGuVYhyIXp1Jvt8Iwqw');
         }
     }, []);
 

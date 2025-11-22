@@ -630,6 +630,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onTermsClick={handleNavigateToServiceTerms}
                 onPrivacyClick={handleNavigateToPrivacyPolicy}
                 onNavigate={commonNavigateHandler}
+                onLanguageChange={(lang) => handleLanguageSelect(lang)}
                 isLoading={isLoading}
                 t={t} 
             />;
@@ -743,6 +744,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 return <TherapistDashboardPage 
                     therapistId={loggedInProvider.id}
                     existingTherapistData={existingTherapist}
+                    userLocation={userLocation}
                     onSave={(data) => {
                         console.log('TherapistDashboard onSave called:', data);
                         // Handle save functionality here if needed
@@ -814,6 +816,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 return <PlaceDashboardPage 
                     placeId={loggedInProvider.id}
                     place={currentPlace}
+                    userLocation={userLocation}
                     onSave={handleSavePlace}
                     onLogout={handleProviderLogout}
                     onNavigate={(page) => setPage(page as Page)}
@@ -1351,6 +1354,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 return <TherapistDashboardPage 
                     onSave={handleSaveTherapist}
                     onLogout={handleProviderLogout}
+                    userLocation={userLocation}
                     {...commonDashboardProps}
                     onStatusChange={async (status: AvailabilityStatus) => {
                         await handleTherapistStatusChange(status as string);

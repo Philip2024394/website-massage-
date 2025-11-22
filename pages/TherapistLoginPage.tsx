@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { therapistAuth } from '../lib/auth';
 import { trackDailySignIn } from '../lib/coinHooks';
-import { Eye, EyeOff, Mail, Lock, LogIn, UserPlus } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, LogIn, UserPlus, Home } from 'lucide-react';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { AppDrawer } from '../components/AppDrawer';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
@@ -132,6 +132,9 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({
                     <div className="flex items-center gap-3 text-gray-600">
                         <button onClick={() => setIsMenuOpen(true)} title="Menu">
                             <BurgerMenuIcon className="w-6 h-6" />
+                        </button>
+                        <button onClick={() => window.history.back()} title="Home" className="hover:text-orange-500 transition-colors">
+                            <Home className="w-5 h-5" />
                         </button>
                     </div>
                 </div>

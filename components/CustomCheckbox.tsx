@@ -9,7 +9,7 @@ interface CustomCheckboxProps {
 }
 
 const CustomCheckbox: React.FC<CustomCheckboxProps> = ({ label, checked, onChange, disabled = false }) => (
-    <label className={`flex items-center space-x-3 ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+    <label className={`flex items-center space-x-3 ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'} group`}>
         <div className="relative">
             <input 
                 type="checkbox" 
@@ -18,20 +18,20 @@ const CustomCheckbox: React.FC<CustomCheckboxProps> = ({ label, checked, onChang
                 onChange={onChange}
                 disabled={disabled}
             />
-            <div className={`w-5 h-5 bg-white border-2 rounded transition-colors ${
+            <div className={`w-6 h-6 rounded-md transition-all duration-200 shadow-sm ${
                 disabled 
-                    ? 'border-gray-200 bg-gray-50' 
+                    ? 'border-2 border-gray-200 bg-gray-50' 
                     : checked 
-                        ? 'bg-green-500 border-green-500' 
-                        : 'border-gray-300 peer-checked:bg-green-500 peer-checked:border-green-500'
+                        ? 'bg-gradient-to-br from-green-500 to-green-600 border-2 border-green-600 shadow-md' 
+                        : 'bg-white border-2 border-gray-300 group-hover:border-green-400'
             }`}></div>
-            <svg className={`absolute w-3 h-3 text-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transition-opacity ${
-                checked && !disabled ? 'opacity-100' : 'opacity-0'
-            }`} viewBox="0 0 12 9" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M1 4.5L4.33333 8L11 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <svg className={`absolute w-4 h-4 text-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transition-all duration-200 ${
+                checked && !disabled ? 'opacity-100 scale-100' : 'opacity-0 scale-0'
+            }`} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 8L6.5 11.5L13 5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
         </div>
-        <span className={`text-sm font-medium ${disabled ? 'text-gray-400' : 'text-gray-900'}`}>{label}</span>
+        <span className={`text-sm font-medium transition-colors ${disabled ? 'text-gray-400' : checked ? 'text-gray-900' : 'text-gray-700 group-hover:text-gray-900'}`}>{label}</span>
     </label>
 );
 
