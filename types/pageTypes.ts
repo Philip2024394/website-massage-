@@ -7,6 +7,7 @@ export type Page =
     | 'landing' 
     | 'auth' 
     | 'home' 
+    | 'joinIndastreet'
     | 'detail' 
     | 'massagePlaceProfile' 
     | 'registrationChoice' 

@@ -20,6 +20,7 @@ import React from 'react';
 const PlaceDetailPage = React.lazy(() => import('./pages/PlaceDetailPage'));
 const MassagePlaceProfilePage = React.lazy(() => import('./pages/MassagePlaceProfilePage'));
 const RegistrationChoicePage = React.lazy(() => import('./pages/RegistrationChoicePage'));
+const JoinIndastreetPage = React.lazy(() => import('./pages/JoinIndastreetPage'));
 const TherapistDashboardPage = React.lazy(() => import('./pages/TherapistDashboardPage'));
 const TherapistProfilePage = React.lazy(() => import('./pages/TherapistProfilePage'));
 const TherapistStatusPage = React.lazy(() => import('./pages/TherapistStatusPage'));
@@ -590,6 +591,15 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onLanguageChange={(lang) => handleLanguageSelect(lang)}
                 isLoading={isLoading}
                 t={t} 
+            />;
+
+        case 'joinIndastreet':
+            return <JoinIndastreetPage 
+                onBack={handleBackToHome}
+                onNavigateToTherapistLogin={handleNavigateToTherapistLogin}
+                onNavigateToMassagePlaceLogin={handleNavigateToMassagePlaceLogin}
+                onNavigateToAgentAuth={() => setPage('agentAuth')}
+                t={t}
             />;
 
         case 'therapistProfile':

@@ -673,13 +673,13 @@ const HomePage: React.FC<HomePageProps> = ({
                             onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                console.log('🛒 Online Shop button clicked!');
+                                console.log('🚀 Join Indastreet button clicked!');
                                 console.log('onNavigate function exists:', !!onNavigate);
                                 
                                 if (onNavigate) {
-                                    console.log('✅ Calling onNavigate with coin-shop');
+                                    console.log('✅ Calling onNavigate with joinIndastreet');
                                     try {
-                                        onNavigate('coin-shop');
+                                        onNavigate('joinIndastreet');
                                         console.log('✅ Navigation called successfully');
                                     } catch (error) {
                                         console.error('❌ Error calling onNavigate:', error);
@@ -692,11 +692,11 @@ const HomePage: React.FC<HomePageProps> = ({
                             className="ml-auto inline-flex p-0 bg-transparent border-0 outline-none focus:outline-none active:outline-none ring-0 focus:ring-0 cursor-pointer items-center justify-center flex-shrink-0"
                             style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                             type="button"
-                            title="Click to go to Online Shop"
+                            title="Join Indastreet"
                         >
                             <img 
-                                src="https://ik.imagekit.io/7grri5v7d/online%20shop.png"
-                                alt="Online Shop"
+                                src="https://ik.imagekit.io/7grri5v7d/indastreet_button-removebg-preview.png"
+                                alt="Join Indastreet"
                                 className="select-none transition-opacity hover:opacity-90 h-10 w-auto sm:h-16 md:h-[88px] lg:h-[108px]"
                                 loading="lazy"
                                 draggable={false}
