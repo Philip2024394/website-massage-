@@ -148,6 +148,7 @@ export const therapistAuth = {
                     email,
                     name: email.split('@')[0],
                     whatsappNumber: '',
+                    countryCode: '+66', // Required by Appwrite schema - default Thailand
                     location: '',
                     pricing: JSON.stringify({ '60': 100, '90': 150, '120': 200 }),
                     price60: '100', // Required string field for 60-minute massage
