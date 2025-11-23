@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import type { Place, Pricing, Booking, Notification } from '../types';
+import type { Place, Pricing, Booking, Notification, UserLocation } from '../types';
 import { BookingStatus, HotelVillaServiceStatus } from '../types';
-import { Calendar, TrendingUp, LogOut, Bell, MessageSquare, X, Megaphone, Menu, DollarSign } from 'lucide-react';
+import { Calendar, TrendingUp, LogOut, Bell, MessageSquare, X, Megaphone, Menu, DollarSign, Home } from 'lucide-react';
 import { loadGoogleMapsScript } from '../constants/appConstants';
 import { getStoredGoogleMapsApiKey } from '../utils/appConfig';
 import Button from '../components/Button';
@@ -942,49 +942,6 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                     💡 <strong>Tip:</strong> Share these banners on your social media, WhatsApp status, or send directly to customers to promote your massage services and attract more bookings!
                                 </p>
                             </div>
-
-                            {/* Coin Rewards Shop Section */}
-                            {onNavigate && (
-                                <div className="mt-6">
-                                    <div className="flex items-center gap-3 mb-4">
-                                        <div className="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center">
-                                            <svg className="w-5 h-5 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
-                                                <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
-                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.51-1.31c-.562-.649-1.413-1.076-2.353-1.253V5z" clipRule="evenodd"/>
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <h3 className="text-lg font-bold text-gray-900">Rewards & Incentives</h3>
-                                            <p className="text-sm text-gray-600">Manage your coin rewards and loyalty programs</p>
-                                        </div>
-                                    </div>
-
-                                    {/* Coin Shop Button */}
-                                    <button
-                                        onClick={() => onNavigate('coin-shop')}
-                                        className="w-full flex items-center justify-between p-4 bg-white rounded-xl shadow-md hover:shadow-lg transition-all border-2 border-yellow-200 hover:border-yellow-400"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center text-white text-2xl">
-                                                🪙
-                                            </div>
-                                            <div className="text-left">
-                                                <h3 className="font-bold text-gray-900">Coin Rewards Shop</h3>
-                                                <p className="text-sm text-gray-600">Redeem coins for rewards and cash out</p>
-                                            </div>
-                                        </div>
-                                        <svg className="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                        </svg>
-                                    </button>
-
-                                    <div className="mt-4 p-3 bg-yellow-50 rounded-lg">
-                                        <p className="text-sm text-yellow-700">
-                                            🎯 <strong>Earn Coins:</strong> Complete bookings, get positive reviews, and maintain active status to earn reward coins that can be redeemed for cash and prizes!
-                                        </p>
-                                    </div>
-                                </div>
-                            )}
                         </div>
                     </div>
                 );
@@ -2005,41 +1962,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                             {/* Coin Rewards Menu Items */}
                             {onNavigate && (
                                 <>
-                                    <button
-                                        onClick={() => {
-                                            setIsSideDrawerOpen(false);
-                                            onNavigate('coin-history');
-                                        }}
-                                        className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-orange-500 group transform hover:scale-105"
-                                    >
-                                        <div className="p-2 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg">
-                                            <ColoredHistoryIcon className="w-5 h-5 text-white" />
-                                        </div>
-                                        <div className="flex-grow">
-                                            <p className="font-semibold text-gray-800 group-hover:text-orange-600 transition-colors">
-                                                Coin History
-                                            </p>
-                                            <p className="text-xs text-gray-500">View transactions</p>
-                                        </div>
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            setIsSideDrawerOpen(false);
-                                            onNavigate('coin-shop');
-                                        }}
-                                        className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-green-500 group transform hover:scale-105"
-                                    >
-                                        <div className="p-2 bg-gradient-to-br from-green-500 to-green-600 rounded-lg">
-                                            <ColoredCoinsIcon className="w-5 h-5 text-white" />
-                                        </div>
-                                        <div className="flex-grow">
-                                            <p className="font-semibold text-gray-800 group-hover:text-green-600 transition-colors">
-                                                Coin Shop
-                                            </p>
-                                            <p className="text-xs text-gray-500">Redeem rewards</p>
-                                        </div>
-                                    </button>
-                                </>
+                                </>  
                             )}
 
                             {/* Divider */}
