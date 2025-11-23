@@ -4,7 +4,6 @@ interface JoinIndastreetPageProps {
     onBack: () => void;
     onNavigateToTherapistLogin: () => void;
     onNavigateToMassagePlaceLogin: () => void;
-    onNavigateToAgentAuth: () => void;
     t: any;
 }
 
@@ -12,7 +11,6 @@ const JoinIndastreetPage: React.FC<JoinIndastreetPageProps> = ({
     onBack,
     onNavigateToTherapistLogin,
     onNavigateToMassagePlaceLogin,
-    onNavigateToAgentAuth,
     t
 }) => {
     return (
@@ -140,53 +138,6 @@ const JoinIndastreetPage: React.FC<JoinIndastreetPageProps> = ({
                             </ul>
                             <button className="w-full bg-purple-600 text-white py-3 rounded-lg font-semibold hover:bg-purple-700 transition-colors">
                                 Join as Spa/Place
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Agent/Promoter Card */}
-                    <div 
-                        onClick={onNavigateToAgentAuth}
-                        className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden cursor-pointer transform hover:scale-105 border-2 border-transparent hover:border-orange-500"
-                    >
-                        <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-6 text-white">
-                            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4">
-                                <svg className="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                </svg>
-                            </div>
-                            <h3 className="text-2xl font-bold mb-2">Promoter/Partner</h3>
-                            <p className="text-orange-50">Earn commissions by referring</p>
-                        </div>
-                        <div className="p-6">
-                            <ul className="space-y-3 mb-6">
-                                <li className="flex items-start">
-                                    <svg className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                    </svg>
-                                    <span className="text-gray-700">Earn 20% commission on referrals</span>
-                                </li>
-                                <li className="flex items-start">
-                                    <svg className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                    </svg>
-                                    <span className="text-gray-700">Get your unique referral code</span>
-                                </li>
-                                <li className="flex items-start">
-                                    <svg className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                    </svg>
-                                    <span className="text-gray-700">Track your earnings in real-time</span>
-                                </li>
-                                <li className="flex items-start">
-                                    <svg className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                    </svg>
-                                    <span className="text-gray-700">No investment required</span>
-                                </li>
-                            </ul>
-                            <button className="w-full bg-orange-600 text-white py-3 rounded-lg font-semibold hover:bg-orange-700 transition-colors">
-                                Join as Promoter
                             </button>
                         </div>
                     </div>

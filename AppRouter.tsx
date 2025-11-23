@@ -598,7 +598,6 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onBack={handleBackToHome}
                 onNavigateToTherapistLogin={handleNavigateToTherapistLogin}
                 onNavigateToMassagePlaceLogin={handleNavigateToMassagePlaceLogin}
-                onNavigateToAgentAuth={() => setPage('agentAuth')}
                 t={t}
             />;
 
@@ -856,21 +855,6 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             />;
         }
         
-        case 'agent':
-        case 'agentAuth':
-        case 'agentTerms':
-        case 'agentDashboard': {
-            // Redirect all deprecated agent routes to home
-            setTimeout(() => setPage('home' as Page), 0);
-            return (
-                <div className="p-6 max-w-xl mx-auto mt-10 bg-white border border-yellow-200 rounded-lg shadow">
-                    <h2 className="text-xl font-bold text-yellow-700 mb-2">Agent Portal Removed</h2>
-                    <p className="text-sm text-gray-700">The Agent portal has been removed.</p>
-                    <p className="text-sm text-gray-700 mt-2">Redirecting you to home…</p>
-                </div>
-            );
-        }
-            
         case 'serviceTerms': 
             return <ServiceTermsPage onBack={handleBackToHome} t={(t as any)?.serviceTerms || t} contactNumber={APP_CONFIG.CONTACT_NUMBER} />;
             
@@ -956,7 +940,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             
             // Determine user role and dashboard context for header styling
             let userRole: string | undefined;
-            let notificationsDashboardType: 'hotel' | 'villa' | 'therapist' | 'customer' | 'admin' | 'agent' | 'place' | 'standalone' = 'standalone';
+            let notificationsDashboardType: 'hotel' | 'villa' | 'therapist' | 'customer' | 'admin' | 'place' | 'standalone' = 'standalone';
             
             if (isHotelLoggedIn) {
                 userRole = 'hotel';
@@ -973,9 +957,6 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             } else if (isAdminLoggedIn) {
                 userRole = 'admin';
                 notificationsDashboardType = 'admin';
-            } else if (loggedInAgent) {
-                userRole = 'agent';
-                notificationsDashboardType = 'agent';
             }
 
             return <NotificationsPage 

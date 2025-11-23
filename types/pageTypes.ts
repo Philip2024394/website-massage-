@@ -17,10 +17,6 @@ export type Page =
     | 'therapistProfile' // 🎯 NEW: Customer-facing therapist profile page 
     | 'profile' // 🎯 NEW: Guest profile page for non-registered users
     | 'placeDashboard' 
-    | 'agent' 
-    | 'agentAuth' 
-    | 'agentDashboard' 
-    | 'agentTerms' 
     | 'serviceTerms' 
     | 'placeTerms' 
     | 'placeDiscountBadge' 
@@ -118,5 +114,5 @@ export type LoggedInProvider = {
 
 export type LoggedInUser = { 
     id: string; 
-    type: 'admin' | 'hotel' | 'villa' | 'agent' 
+    type: 'admin' | 'hotel' | 'villa'
 };
