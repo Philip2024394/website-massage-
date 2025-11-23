@@ -171,7 +171,6 @@ export const therapistAuth = {
                     massageTypes: '',
                     languages: '',
                     coordinates: JSON.stringify({ lat: 0, lng: 0 }),
-                    agentCode: agentCode || '', // Store referral agent code if provided
                 }
             );
             
