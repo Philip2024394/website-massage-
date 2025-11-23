@@ -3,6 +3,7 @@ import { ID } from 'appwrite';
 import { getRandomTherapistImage } from '../utils/therapistImageUtils';
 import { buildHotelsPayload } from './hotelsSchema';
 import { sessionCache } from './sessionCache';
+import { checkRateLimit, formatRateLimitError, handleAppwriteError } from './rateLimitUtils';
 
 export interface AuthResponse {
     success: boolean;
@@ -116,6 +117,13 @@ export const therapistAuth = {
         try {
             console.log('🔵 [Therapist Sign-Up] Starting...', { email });
             
+            // Check rate limit (5 attempts per minute)
+            if (!checkRateLimit('therapist-signup', 5, 60000)) {
+                const errorMsg = formatRateLimitError('signup');
+                console.warn('⚠️ [Therapist Sign-Up] Rate limited');
+                return { success: false, error: errorMsg };
+            }
+            
             // Clear session cache to force fresh check
             sessionCache.clear();
             
@@ -187,13 +195,21 @@ export const therapistAuth = {
                 response: error.response,
                 fullError: error
             });
-            return { success: false, error: error.message };
+            const errorMsg = handleAppwriteError(error, 'signup');
+            return { success: false, error: errorMsg };
         }
     },
     
     async signIn(email: string, password: string): Promise<AuthResponse> {
         try {
             console.log('🔵 [Therapist Sign-In] Starting...', { email });
+            
+            // Check rate limit (10 attempts per minute for login)
+            if (!checkRateLimit('therapist-login', 10, 60000)) {
+                const errorMsg = formatRateLimitError('login');
+                console.warn('⚠️ [Therapist Sign-In] Rate limited');
+                return { success: false, error: errorMsg };
+            }
             
             // Clear session cache to force fresh check
             sessionCache.clear();
@@ -257,7 +273,8 @@ export const therapistAuth = {
                 response: error.response,
                 fullError: error
             });
-            return { success: false, error: error.message };
+            const errorMsg = handleAppwriteError(error, 'login');
+            return { success: false, error: errorMsg };
         }
     },
 };
