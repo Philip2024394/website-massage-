@@ -145,6 +145,7 @@ export const therapistAuth = {
                 {
                     // Required fields per schema
                     id: therapistId, // Required by Appwrite schema - document ID
+                    userId: user.$id, // Link to Appwrite auth user
                     email,
                     name: email.split('@')[0],
                     whatsappNumber: '',
@@ -224,12 +225,24 @@ export const therapistAuth = {
             
             console.log(`🔍 [Therapist Sign-In] Found ${therapists.total} total therapists`);
             
-            const therapist = therapists.documents.find((doc: any) => doc.email === email);
+            // First try to find by email
+            let therapist = therapists.documents.find((doc: any) => doc.email === email);
+            
+            // If not found by email, try by userId (for accounts created via signup)
+            if (!therapist) {
+                console.log('⚠️ [Therapist Sign-In] Not found by email, trying userId...');
+                therapist = therapists.documents.find((doc: any) => doc.userId === user.$id);
+            }
             
             if (!therapist) {
-                console.error('❌ [Therapist Sign-In] Therapist document not found for email:', email);
-                console.log('Available emails in collection:', therapists.documents.map((d: any) => d.email));
-                throw new Error('Therapist not found');
+                console.error('❌ [Therapist Sign-In] Therapist document not found');
+                console.log('Search criteria - Email:', email, 'UserId:', user.$id);
+                console.log('Available therapists:', therapists.documents.map((d: any) => ({
+                    id: d.$id,
+                    email: d.email,
+                    userId: d.userId || 'N/A'
+                })));
+                throw new Error('Therapist not found. Please contact support or try registering again.');
             }
             
             console.log('✅ [Therapist Sign-In] Therapist document found:', therapist.$id);
