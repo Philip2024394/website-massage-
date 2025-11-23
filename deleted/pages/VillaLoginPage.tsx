@@ -3,7 +3,7 @@ import { villaAuth } from '../lib/auth';
 import { saveSessionCache } from '../lib/sessionManager';
 import { checkRateLimit, handleAppwriteError, resetRateLimit } from '../lib/rateLimitUtils';
 import { trackDailySignIn } from '../lib/coinHooks';
-import { LogIn, UserPlus, Eye, EyeOff, Mail, Lock } from 'lucide-react';
+import { LogIn, UserPlus, Eye, EyeOff, Mail, Lock, Home } from 'lucide-react';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { AppDrawer } from '../components/AppDrawer';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
@@ -153,6 +153,9 @@ const VillaLoginPage: React.FC<VillaLoginPageProps> = ({
                     <div className="flex items-center gap-3 text-gray-600">
                         <button onClick={() => setIsMenuOpen(true)} title="Menu">
                             <BurgerMenuIcon className="w-6 h-6" />
+                        </button>
+                        <button onClick={_onBack} title="Go to Home" className="hover:text-orange-500 transition-colors">
+                            <Home className="w-5 h-5" />
                         </button>
                     </div>
                 </div>

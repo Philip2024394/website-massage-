@@ -1,6 +1,7 @@
 ﻿import { databases, account } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import { Query } from 'appwrite';
+import { sessionCache } from '../lib/sessionCache';
 
 class BookingExpirationService {
   private intervalId: NodeJS.Timeout | null = null;
@@ -35,19 +36,25 @@ class BookingExpirationService {
         return;
       }
 
-      // Check if user is already logged in before creating anonymous session
+      // Check cache first to avoid repeated 401 errors
+      const cached = sessionCache.get();
+      if (cached && !cached.hasSession) {
+        // No session cached - skip
+        return;
+      }
+
+      // Check if user is already logged in
+      // Note: Anonymous sessions are disabled in this project
       try {
-        const currentUser = await account.get();
+        const currentUser = cached?.hasSession ? cached.user : await account.get();
+        if (!cached?.hasSession) {
+          sessionCache.set(true, currentUser);
+        }
         console.log('✅ Using existing user session for booking checks:', currentUser.email);
       } catch {
-        // No user session, try anonymous (but this might be disabled)
-        try {
-          await account.createAnonymousSession();
-          console.log('✅ Anonymous session created for booking expiration check');
-        } catch (error: any) {
-          console.log('⚠️ Could not create session for booking checks:', error.message);
-          return; // Skip this check if we can't get permissions
-        }
+        // No authenticated session - cache this and skip booking checks
+        sessionCache.setNoSession();
+        return;
       }
 
       const now = new Date().toISOString();

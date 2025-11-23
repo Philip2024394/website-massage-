@@ -51,10 +51,12 @@ function showThrottledNotification(error: any, context: string) {
     if (error?.code === 429) {
         userMessage = 'Server is busy. Please wait a moment and try again.';
         type = 'warning';
-    } else if (error?.code === 404) {
-        userMessage = 'Service temporarily unavailable. Please try again later.';
-        type = 'warning';
     } else if (error?.code === 401) {
+        // 401 without a current session. Previously we attempted automatic anonymous session creation here.
+        // Anonymous auth is DISABLED on this project (501 responses observed), so skip auto-create to prevent spam.
+        console.warn(`🔐 Authentication required for: ${context} (anonymous auth disabled – skipping auto-session)`);
+        showThrottledNotification(error, context);
+        return true;
         userMessage = 'Session expired. Refreshing automatically...';
         type = 'info';
         
@@ -208,11 +210,30 @@ export function initializeGlobalErrorHandling() {
                     handleAppwriteError({ code: 429, message: 'Rate limit exceeded' }, `fetch: ${url}`);
                 }
                 
+                // Suppress 401 errors from Appwrite account endpoints (expected when not logged in)
+                if (response.status === 401) {
+                    const url = typeof args[0] === 'string' ? args[0] : 
+                               args[0] instanceof URL ? args[0].toString() :
+                               args[0] instanceof Request ? args[0].url : 'unknown';
+                    if (url.includes('syd.cloud.appwrite.io/v1/account')) {
+                        // Silently ignore - these are expected when user is not authenticated
+                        return response;
+                    }
+                }
+                
                 return response;
             } catch (error) {
                 const url = typeof args[0] === 'string' ? args[0] : 
                            args[0] instanceof URL ? args[0].toString() :
                            args[0] instanceof Request ? args[0].url : 'unknown';
+                
+                // Suppress 401 errors from Appwrite account endpoints
+                if (url.includes('syd.cloud.appwrite.io/v1/account') && 
+                    (error as any)?.code === 401) {
+                    // Expected - user not authenticated, don't log
+                    throw error;
+                }
+                
                 handleAppwriteError(error, `fetch: ${url}`);
                 throw error;
             }

@@ -1073,13 +1073,22 @@ const VillaDashboardPage: React.FC<VillaDashboardPageProps> = ({
                         <span className="text-2xl">🏡</span>
                         <span>Indastreet Partners</span>
                     </h1>
-                    <button 
-                        onClick={() => updateState({ isSideDrawerOpen: true })} 
-                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                        aria-label="Open side menu"
-                    >
-                        <Menu className="w-5 h-5 text-orange-500" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => onNavigate && onNavigate('home')}
+                            className="p-2 text-gray-700 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-colors"
+                            title="Go to Home"
+                        >
+                            <Home className="w-4 h-4" />
+                        </button>
+                        <button 
+                            onClick={() => updateState({ isSideDrawerOpen: true })} 
+                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                            aria-label="Open side menu"
+                        >
+                            <Menu className="w-5 h-5 text-orange-500" />
+                        </button>
+                    </div>
                 </div>
             </header>
 

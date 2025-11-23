@@ -2,6 +2,7 @@ import { account, databases, DATABASE_ID, COLLECTIONS } from './appwrite';
 import { ID } from 'appwrite';
 import { getRandomTherapistImage } from '../utils/therapistImageUtils';
 import { buildHotelsPayload } from './hotelsSchema';
+import { sessionCache } from './sessionCache';
 
 export interface AuthResponse {
     success: boolean;
@@ -115,6 +116,9 @@ export const therapistAuth = {
         try {
             console.log('🔵 [Therapist Sign-Up] Starting...', { email });
             
+            // Clear session cache to force fresh check
+            sessionCache.clear();
+            
             // Clear any existing session first
             try {
                 await account.deleteSession('current');
@@ -189,6 +193,9 @@ export const therapistAuth = {
     async signIn(email: string, password: string): Promise<AuthResponse> {
         try {
             console.log('🔵 [Therapist Sign-In] Starting...', { email });
+            
+            // Clear session cache to force fresh check
+            sessionCache.clear();
             
             // Clear any existing session first
             try {
@@ -287,6 +294,9 @@ export const placeAuth = {
     
     async signIn(email: string, password: string): Promise<AuthResponse> {
         try {
+            // Clear session cache to force fresh check
+            sessionCache.clear();
+            
             // Delete any existing session first
             try {
                 await account.deleteSession('current');

@@ -11,6 +11,7 @@ import ImageUpload from '../components/ImageUpload';
 import HotelVillaOptIn from '../components/HotelVillaOptIn';
 
 import { placeService } from '../lib/appwriteService';
+import { sanitizePlacePayload } from '../schemas/placeSchema';
 import TherapistTermsPage from './TherapistTermsPage';
 import UserSolidIcon from '../components/icons/UserSolidIcon';
 import DocumentTextIcon from '../components/icons/DocumentTextIcon';
@@ -99,7 +100,7 @@ const BookingCard: React.FC<{ booking: Booking; onUpdateStatus: (id: number, sta
 
 
 const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogout, onNavigateToNotifications, onNavigate, onUpdateBookingStatus, placeId: _placeId, place: placeProp, bookings, notifications, userLocation, t }) => {
-    const [place] = useState<Place | null>(placeProp || null);
+    const [place, setPlace] = useState<Place | null>(placeProp || null);
     const [isLoading, setIsLoading] = useState(true);
     
     // Use _placeId consistently
@@ -168,39 +169,47 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     useEffect(() => {
         const loadPlaceData = async () => {
             setIsLoading(true);
-            
+
             try {
-                // Check if place prop has actual data or just default values
-                const hasActualData = place && (place.name || place.description || place.mainImage);
-                
-                if (hasActualData) {
-                    console.log('📋 Using passed place data:', place);
-                    initializeWithPlaceData(place);
-                } else if (place?.id) {
-                    console.log('🔄 Loading place data from database for provider ID:', place.id);
-                    // Lookup by provider id attribute instead of assuming Appwrite document id
-                    const loadedPlace = await placeService.getByProviderId(place.id.toString());
+                // Prefer the explicit incoming prop data first
+                if (placeProp && (placeProp.name || placeProp.description || placeProp.mainImage)) {
+                    console.log('📋 Using passed placeProp data:', placeProp);
+                    setPlace(placeProp);
+                    initializeWithPlaceData(placeProp);
+                } else if (_placeId) {
+                    console.log('🔄 Loading place data from database for placeId:', _placeId);
+                    const loadedPlace = await placeService.getByProviderId(String(_placeId));
                     if (loadedPlace) {
                         console.log('✅ Loaded place data from database:', loadedPlace);
+                        setPlace(loadedPlace);
                         initializeWithPlaceData(loadedPlace);
                     } else {
-                        console.log('⚠️ No saved data found, using defaults');
+                        console.log('⚠️ No saved data found for placeId, initializing defaults');
+                        const basicPlace = {
+                            id: _placeId,
+                            name: '',
+                            description: '',
+                            rating: 0,
+                            isLive: false
+                        } as Place;
+                        setPlace(basicPlace);
                         initializeWithDefaults();
                     }
                 } else {
-                    console.log('⚠️ No place ID available, using defaults');
+                    console.log('⚠️ No placeId provided, initializing defaults');
                     initializeWithDefaults();
                 }
             } catch (error) {
                 console.error('❌ Error loading place data:', error);
                 initializeWithDefaults();
             }
-            
+
             setIsLoading(false);
         };
-        
+
         loadPlaceData();
-    }, [place]);
+        // Only re-run if the external identifier or prop changes, not when local place state updates
+    }, [_placeId, placeProp]);
     
     const initializeWithPlaceData = (placeData: Place) => {
         setName(placeData.name || '');
@@ -532,35 +541,30 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         const safeGalleryImages = galleryImages || [];
         const filteredGallery = safeGalleryImages.filter(img => img && img.imageUrl && img.imageUrl.trim() !== '');
         
-        onSave({
-            placeId: placeId, // Add missing required field
+        // Only send fields that actually exist in Appwrite Places collection
+        const rawData: any = {
+            placeId: placeId,
             name,
-            description,
-            mainImage,
-            profilePicture,
-            galleryImages: filteredGallery.length > 0 ? filteredGallery : undefined,
-            whatsappNumber,
+            email: place?.email || '',
             pricing: JSON.stringify(pricing),
-            hotelVillaPricing: useSamePricing ? undefined : JSON.stringify(hotelVillaPricing),
-            discountPercentage,
-            discountDuration,
-            isDiscountActive,
-            discountEndTime,
             location,
-            coordinates: JSON.stringify(coordinates),
-            massageTypes: JSON.stringify(massageTypes),
-            languages,
-            additionalServices,
+            coordinates: Array.isArray(coordinates) ? coordinates : [coordinates.lng || 106.8456, coordinates.lat || -6.2088],
             openingTime,
             closingTime,
-            distance: 0, // dummy value
-            activeMembershipDate: place?.activeMembershipDate || '',
+            status: 'Open',
+            category: 'wellness',
+            hotelId: place?.hotelId || '',
             password: place?.password,
-            analytics: JSON.stringify(place?.analytics || { impressions: 0, profileViews: 0, whatsappClicks: 0 }),
-            websiteUrl,
-            websiteTitle,
-            websiteDescription,
-        } as any);
+            isLive: true, // Profile goes live immediately
+        };
+
+        // Add only optional fields that are confirmed to exist
+        if (description) rawData.description = description;
+
+        // Sanitize before sending to onSave
+        const saveData = sanitizePlacePayload(rawData);
+
+        onSave(saveData);
 
         // Show admin approval message
         const notification = document.createElement('div');
@@ -845,7 +849,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         return <div className="flex justify-center items-center h-screen"><div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand-green"></div></div>;
     }
 
-    if (!place) {
+    if (!place && !_placeId) {
         return <div className="p-4 text-center text-red-500">Could not load place data. Please try logging in again.</div>
     }
 
@@ -1108,6 +1112,11 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             default:
                 return (
                     <div className="space-y-6">
+                        {/* Page Title */}
+                        <div className="flex items-center gap-3 mb-6">
+                            <span className="text-3xl">📍</span>
+                            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Massage Spa</h1>
+                        </div>
                         
                         <ImageUpload
                             id="main-image-upload"
@@ -1615,20 +1624,20 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                             <h3 className="text-md font-medium text-gray-800">{t?.pricingTitle || 'Pricing'}</h3>
                             <p className="text-xs text-gray-500 mt-1">Enter prices as: 345k for 345,000 or full amount like 400000</p>
                             
-                            {/* 100% Income Notice */}
-                            <div className="mb-4 p-3 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg mt-2">
+                            {/* Commission Notice */}
+                            <div className="mb-4 p-3 bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-200 rounded-lg mt-2">
                                 <div className="flex items-start space-x-3">
                                     <div className="flex-shrink-0">
-                                        <svg className="w-5 h-5 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className="w-5 h-5 text-orange-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                                         </svg>
                                     </div>
                                     <div className="flex-1">
-                                        <p className="text-sm font-semibold text-green-800">
-                                            💰 100% Your Income
+                                        <p className="text-sm font-semibold text-orange-800">
+                                            💰 Promoter Commission
                                         </p>
-                                        <p className="text-sm text-green-700 mt-1">
-                                            These prices are for <strong>direct bookings from the home page</strong>. You keep <strong>100% of the income</strong> - no commission deducted!
+                                        <p className="text-sm text-orange-700 mt-1">
+                                            Promoters receive <strong>20% commission</strong> when users book your massage service with their shared link.
                                         </p>
                                     </div>
                                 </div>
@@ -1706,25 +1715,36 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         <div className="min-h-screen bg-gray-50 pb-20">
             {/* Header with Burger Menu */}
             <header className="bg-white shadow-sm px-4 py-3 sticky top-0 z-40">
-                <div className="max-w-7xl mx-auto flex justify-between items-center">
-                    <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-3">
-                        <span className="text-2xl">📍</span>
-                        <span className="text-gray-900">Place Dashboard</span>
-                    </h1>
-                    <div className="flex items-center gap-2">
-                        <NotificationBell count={unreadNotificationsCount} onClick={onNavigateToNotifications} />
-                        <button
-                            onClick={() => setIsSideDrawerOpen(true)}
-                            className="p-2 text-gray-700 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-colors"
-                        >
-                            <Menu className="w-5 h-5 text-orange-600" />
-                        </button>
-                    </div>
+                <div className="max-w-7xl mx-auto flex justify-end items-center gap-2">
+                    <button
+                        onClick={() => onNavigate && onNavigate('home')}
+                        className="p-2 text-gray-700 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-colors"
+                        title="Go to Home"
+                    >
+                        <Home className="w-4 h-4" />
+                    </button>
+                    <NotificationBell count={unreadNotificationsCount} onClick={onNavigateToNotifications} />
+                    <button
+                        onClick={() => setIsSideDrawerOpen(true)}
+                        className="p-2 text-gray-700 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-colors"
+                    >
+                        <Menu className="w-5 h-5 text-orange-600" />
+                    </button>
                 </div>
             </header>
 
             {/* Side Drawer */}
             {isSideDrawerOpen && (
+                <>
+                    <style>{`
+                        @keyframes float {
+                            0%, 100% { transform: translateY(0px); }
+                            50% { transform: translateY(-10px); }
+                        }
+                        .animate-float {
+                            animation: float 6s ease-in-out infinite;
+                        }
+                    `}</style>
                 <div className="fixed inset-0 z-50">
                     {/* Overlay */}
                     <div 
@@ -1735,45 +1755,60 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                     {/* Drawer */}
                     <div className="absolute right-0 top-0 h-full w-80 bg-white shadow-xl">
                         {/* Drawer Header */}
-                        <div className="bg-orange-500 px-6 py-4">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <h2 className="text-xl font-bold text-white">Menu</h2>
-                                </div>
-                                <button
-                                    onClick={() => setIsSideDrawerOpen(false)}
-                                    className="text-white hover:text-orange-200 transition-colors"
-                                >
-                                    <X size={24} />
-                                </button>
-                            </div>
+                        <div className="p-6 flex justify-between items-center border-b border-black">
+                            <h2 className="font-bold text-2xl">
+                                <span className="text-black">Inda</span>
+                                <span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
+                            </h2>
+                            <button
+                                onClick={() => setIsSideDrawerOpen(false)}
+                                className="p-2 rounded-full transition-colors"
+                                aria-label="Close menu"
+                            >
+                                <X className="w-6 h-6 text-black" />
+                            </button>
                         </div>
 
                         {/* Drawer Menu Items */}
-                        <div className="py-2">
+                        <nav className="flex-grow overflow-y-auto p-4">
+                            <div className="space-y-2">
                             <button
                                 onClick={() => {
                                     setActiveTab('profile');
                                     setIsSideDrawerOpen(false);
                                 }}
-                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
-                                    activeTab === 'profile' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
+                                className={`flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 group transform hover:scale-105 ${
+                                    activeTab === 'profile' ? 'border-orange-500' : 'border-gray-300'
                                 }`}
                             >
-                                <ColoredProfileIcon className="w-6 h-6" />
-                                <span className="font-medium">Profile</span>
+                                <div className={`p-2 rounded-lg ${activeTab === 'profile' ? 'bg-gradient-to-br from-orange-500 to-orange-600' : 'bg-gray-200'}`}>
+                                    <ColoredProfileIcon className="w-5 h-5 text-white" />
+                                </div>
+                                <div className="flex-grow">
+                                    <p className={`font-semibold transition-colors ${activeTab === 'profile' ? 'text-orange-600' : 'text-gray-800 group-hover:text-orange-600'}`}>
+                                        Profile
+                                    </p>
+                                    <p className="text-xs text-gray-500">Manage your profile</p>
+                                </div>
                             </button>
                             <button
                                 onClick={() => {
                                     setActiveTab('bookings');
                                     setIsSideDrawerOpen(false);
                                 }}
-                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
-                                    activeTab === 'bookings' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
+                                className={`flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 group transform hover:scale-105 ${
+                                    activeTab === 'bookings' ? 'border-orange-500' : 'border-gray-300'
                                 }`}
                             >
-                                <ColoredCalendarIcon className="w-6 h-6" />
-                                <span className="font-medium">Bookings</span>
+                                <div className={`p-2 rounded-lg ${activeTab === 'bookings' ? 'bg-gradient-to-br from-orange-500 to-orange-600' : 'bg-gray-200'}`}>
+                                    <ColoredCalendarIcon className="w-5 h-5 text-white" />
+                                </div>
+                                <div className="flex-grow">
+                                    <p className={`font-semibold transition-colors ${activeTab === 'bookings' ? 'text-orange-600' : 'text-gray-800 group-hover:text-orange-600'}`}>
+                                        Bookings
+                                    </p>
+                                    <p className="text-xs text-gray-500">View your bookings</p>
+                                </div>
                                 {upcomingBookings.length > 0 && (
                                     <span className="ml-auto bg-orange-500 text-white text-xs rounded-full px-2.5 py-0.5 font-bold">
                                         {upcomingBookings.length}
@@ -1785,53 +1820,79 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                     setActiveTab('analytics');
                                     setIsSideDrawerOpen(false);
                                 }}
-                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
-                                    activeTab === 'analytics' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
+                                className={`flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 group transform hover:scale-105 ${
+                                    activeTab === 'analytics' ? 'border-orange-500' : 'border-gray-300'
                                 }`}
                             >
-                                <ColoredAnalyticsIcon className="w-6 h-6" />
-                                <span className="font-medium">Analytics</span>
+                                <div className={`p-2 rounded-lg ${activeTab === 'analytics' ? 'bg-gradient-to-br from-orange-500 to-orange-600' : 'bg-gray-200'}`}>
+                                    <ColoredAnalyticsIcon className="w-5 h-5 text-white" />
+                                </div>
+                                <div className="flex-grow">
+                                    <p className={`font-semibold transition-colors ${activeTab === 'analytics' ? 'text-orange-600' : 'text-gray-800 group-hover:text-orange-600'}`}>
+                                        Analytics
+                                    </p>
+                                    <p className="text-xs text-gray-500">Performance insights</p>
+                                </div>
                             </button>
                             <button
                                 onClick={() => {
                                     setActiveTab('hotelVilla');
                                     setIsSideDrawerOpen(false);
                                 }}
-                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
-                                    activeTab === 'hotelVilla' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
+                                className={`flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 group transform hover:scale-105 ${
+                                    activeTab === 'hotelVilla' ? 'border-orange-500' : 'border-gray-300'
                                 }`}
                             >
-                                <ColoredHotelIcon className="w-6 h-6" />
-                                <span className="font-medium">Indastreet Partners</span>
+                                <div className={`p-2 rounded-lg ${activeTab === 'hotelVilla' ? 'bg-gradient-to-br from-orange-500 to-orange-600' : 'bg-gray-200'}`}>
+                                    <ColoredHotelIcon className="w-5 h-5 text-white" />
+                                </div>
+                                <div className="flex-grow">
+                                    <p className={`font-semibold transition-colors ${activeTab === 'hotelVilla' ? 'text-orange-600' : 'text-gray-800 group-hover:text-orange-600'}`}>
+                                        Indastreet Partners
+                                    </p>
+                                    <p className="text-xs text-gray-500">Partner portal</p>
+                                </div>
                             </button>
                             <button
                                 onClick={() => {
                                     if (onNavigate) onNavigate('place-discount-system');
                                     setIsSideDrawerOpen(false);
                                 }}
-                                className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 border-transparent text-gray-700"
+                                className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-yellow-500 group transform hover:scale-105"
                             >
-                                <div className="w-6 h-6 bg-gradient-to-br from-orange-400 to-yellow-500 rounded-lg flex items-center justify-center text-white text-sm font-bold">
-                                    %
+                                <div className="p-2 bg-gradient-to-br from-orange-400 to-yellow-500 rounded-lg">
+                                    <div className="w-5 h-5 flex items-center justify-center text-white text-sm font-bold">
+                                        %
+                                    </div>
                                 </div>
-                                <span className="font-medium">Discount System</span>
-                                <div className="ml-auto">
-                                    <span className="bg-gradient-to-r from-orange-400 to-yellow-500 text-white text-xs px-2 py-1 rounded-full font-bold">
-                                        NEW
-                                    </span>
+                                <div className="flex-grow">
+                                    <p className="font-semibold text-gray-800 group-hover:text-yellow-600 transition-colors">
+                                        Discount System
+                                    </p>
+                                    <p className="text-xs text-gray-500">Manage discounts</p>
                                 </div>
+                                <span className="bg-gradient-to-r from-orange-400 to-yellow-500 text-white text-xs px-2 py-1 rounded-full font-bold">
+                                    NEW
+                                </span>
                             </button>
                             <button
                                 onClick={() => {
                                     setActiveTab('notifications');
                                     setIsSideDrawerOpen(false);
                                 }}
-                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
-                                    activeTab === 'notifications' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
+                                className={`flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 group transform hover:scale-105 ${
+                                    activeTab === 'notifications' ? 'border-orange-500' : 'border-gray-300'
                                 }`}
                             >
-                                <ColoredBellIcon className="w-6 h-6" />
-                                <span className="font-medium">Notifications</span>
+                                <div className={`p-2 rounded-lg ${activeTab === 'notifications' ? 'bg-gradient-to-br from-orange-500 to-orange-600' : 'bg-gray-200'}`}>
+                                    <ColoredBellIcon className="w-5 h-5 text-white" />
+                                </div>
+                                <div className="flex-grow">
+                                    <p className={`font-semibold transition-colors ${activeTab === 'notifications' ? 'text-orange-600' : 'text-gray-800 group-hover:text-orange-600'}`}>
+                                        Notifications
+                                    </p>
+                                    <p className="text-xs text-gray-500">View updates</p>
+                                </div>
                                 {(notifications || []).filter(n => !n.isRead).length > 0 && (
                                     <span className="ml-auto bg-orange-500 text-white text-xs rounded-full px-2.5 py-0.5 font-bold">
                                         {(notifications || []).filter(n => !n.isRead).length}
@@ -1843,12 +1904,19 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                     setActiveTab('discounts');
                                     setIsSideDrawerOpen(false);
                                 }}
-                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
-                                    activeTab === 'discounts' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
+                                className={`flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 group transform hover:scale-105 ${
+                                    activeTab === 'discounts' ? 'border-orange-500' : 'border-gray-300'
                                 }`}
                             >
-                                <ColoredTagIcon className="w-6 h-6" />
-                                <span className="font-medium">Discounts</span>
+                                <div className={`p-2 rounded-lg ${activeTab === 'discounts' ? 'bg-gradient-to-br from-orange-500 to-orange-600' : 'bg-gray-200'}`}>
+                                    <ColoredTagIcon className="w-5 h-5 text-white" />
+                                </div>
+                                <div className="flex-grow">
+                                    <p className={`font-semibold transition-colors ${activeTab === 'discounts' ? 'text-orange-600' : 'text-gray-800 group-hover:text-orange-600'}`}>
+                                        Discounts
+                                    </p>
+                                    <p className="text-xs text-gray-500">Active discounts</p>
+                                </div>
                             </button>
                             
                             {/* Discount Badge Management */}
@@ -1858,10 +1926,17 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                         setIsSideDrawerOpen(false);
                                         onNavigate('placeDiscountBadge');
                                     }}
-                                    className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-purple-50 transition-colors border-l-4 border-transparent hover:border-purple-500"
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-purple-500 group transform hover:scale-105"
                                 >
-                                    <ColoredTagIcon className="w-6 h-6" />
-                                    <span className="font-medium">Discount Badges</span>
+                                    <div className="p-2 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg">
+                                        <ColoredTagIcon className="w-5 h-5 text-white" />
+                                    </div>
+                                    <div className="flex-grow">
+                                        <p className="font-semibold text-gray-800 group-hover:text-purple-600 transition-colors">
+                                            Discount Badges
+                                        </p>
+                                        <p className="text-xs text-gray-500">Badge management</p>
+                                    </div>
                                 </button>
                             )}
 
@@ -1872,10 +1947,17 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                         setIsSideDrawerOpen(false);
                                         onNavigate('verifiedProBadge');
                                     }}
-                                    className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-emerald-50 transition-colors border-l-4 border-transparent hover:border-emerald-500"
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-emerald-500 group transform hover:scale-105"
                                 >
-                                    <div className="w-6 h-6 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg flex items-center justify-center text-white text-sm font-bold">✓</div>
-                                    <span className="font-medium">Verified Pro Badge</span>
+                                    <div className="p-2 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg">
+                                        <div className="w-5 h-5 flex items-center justify-center text-white text-sm font-bold">✓</div>
+                                    </div>
+                                    <div className="flex-grow">
+                                        <p className="font-semibold text-gray-800 group-hover:text-emerald-600 transition-colors">
+                                            Verified Pro Badge
+                                        </p>
+                                        <p className="text-xs text-gray-500">Get verified status</p>
+                                    </div>
                                 </button>
                             )}
                             
@@ -1884,12 +1966,19 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                     setActiveTab('membership');
                                     setIsSideDrawerOpen(false);
                                 }}
-                                className={`w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 ${
-                                    activeTab === 'membership' ? 'bg-orange-50 text-orange-600 border-orange-500' : 'text-gray-700 border-transparent'
+                                className={`flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 group transform hover:scale-105 ${
+                                    activeTab === 'membership' ? 'border-orange-500' : 'border-gray-300'
                                 }`}
                             >
-                                <ColoredCrownIcon className="w-6 h-6" />
-                                <span className="font-medium">Membership Plans</span>
+                                <div className={`p-2 rounded-lg ${activeTab === 'membership' ? 'bg-gradient-to-br from-orange-500 to-orange-600' : 'bg-gray-200'}`}>
+                                    <ColoredCrownIcon className="w-5 h-5 text-white" />
+                                </div>
+                                <div className="flex-grow">
+                                    <p className={`font-semibold transition-colors ${activeTab === 'membership' ? 'text-orange-600' : 'text-gray-800 group-hover:text-orange-600'}`}>
+                                        Membership Plans
+                                    </p>
+                                    <p className="text-xs text-gray-500">Premium features</p>
+                                </div>
                             </button>
                             <button
                                 onClick={() => {
@@ -1898,10 +1987,17 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                         onNavigate('placeTerms');
                                     }
                                 }}
-                                className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 border-transparent hover:border-orange-500"
+                                className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-blue-500 group transform hover:scale-105"
                             >
-                                <ColoredDocumentIcon className="w-6 h-6" />
-                                <span className="font-medium">Terms & Conditions</span>
+                                <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg">
+                                    <ColoredDocumentIcon className="w-5 h-5 text-white" />
+                                </div>
+                                <div className="flex-grow">
+                                    <p className="font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
+                                        Terms & Conditions
+                                    </p>
+                                    <p className="text-xs text-gray-500">Legal terms</p>
+                                </div>
                             </button>
 
 
@@ -1914,26 +2010,40 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                             setIsSideDrawerOpen(false);
                                             onNavigate('coin-history');
                                         }}
-                                        className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-orange-50 transition-colors border-l-4 border-transparent hover:border-orange-500"
+                                        className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-orange-500 group transform hover:scale-105"
                                     >
-                                        <ColoredHistoryIcon className="w-6 h-6" />
-                                        <span className="font-medium">Coin History</span>
+                                        <div className="p-2 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg">
+                                            <ColoredHistoryIcon className="w-5 h-5 text-white" />
+                                        </div>
+                                        <div className="flex-grow">
+                                            <p className="font-semibold text-gray-800 group-hover:text-orange-600 transition-colors">
+                                                Coin History
+                                            </p>
+                                            <p className="text-xs text-gray-500">View transactions</p>
+                                        </div>
                                     </button>
                                     <button
                                         onClick={() => {
                                             setIsSideDrawerOpen(false);
                                             onNavigate('coin-shop');
                                         }}
-                                        className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-green-50 transition-colors border-l-4 border-transparent hover:border-green-500"
+                                        className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-green-500 group transform hover:scale-105"
                                     >
-                                        <ColoredCoinsIcon className="w-6 h-6" />
-                                        <span className="font-medium">Coin Shop</span>
+                                        <div className="p-2 bg-gradient-to-br from-green-500 to-green-600 rounded-lg">
+                                            <ColoredCoinsIcon className="w-5 h-5 text-white" />
+                                        </div>
+                                        <div className="flex-grow">
+                                            <p className="font-semibold text-gray-800 group-hover:text-green-600 transition-colors">
+                                                Coin Shop
+                                            </p>
+                                            <p className="text-xs text-gray-500">Redeem rewards</p>
+                                        </div>
                                     </button>
                                 </>
                             )}
 
                             {/* Divider */}
-                            <div className="my-2 border-t border-gray-200"></div>
+                            <div className="my-4 border-t border-gray-200"></div>
 
                             {/* Logout Button */}
                             <button
@@ -1941,14 +2051,23 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                     setIsSideDrawerOpen(false);
                                     onLogout();
                                 }}
-                                className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-red-50 transition-colors text-red-600 border-l-4 border-transparent hover:border-red-500"
+                                className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-red-500 group transform hover:scale-105"
                             >
-                                <LogOut className="w-5 h-5" />
-                                <span className="font-medium">Log Out</span>
+                                <div className="p-2 bg-gradient-to-br from-red-500 to-red-600 rounded-lg">
+                                    <LogOut className="w-5 h-5 text-white" />
+                                </div>
+                                <div className="flex-grow">
+                                    <p className="font-semibold text-gray-800 group-hover:text-red-600 transition-colors">
+                                        Log Out
+                                    </p>
+                                    <p className="text-xs text-gray-500">Sign out of account</p>
+                                </div>
                             </button>
-                        </div>
+                            </div>
+                        </nav>
                     </div>
                 </div>
+                </>
             )}
 
             {/* Content Area */}

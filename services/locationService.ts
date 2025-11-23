@@ -116,7 +116,14 @@ class LocationService {
                     }
                 },
                 (error) => {
-                    console.error('❌ GPS location error:', error);
+                    // GPS errors are expected (timeout, permission denied, etc.)
+                    // They're handled gracefully with fallback location
+                    if (error.code === 3) {
+                        // Timeout - common and expected, use info level
+                        console.log('⏱️ GPS location timeout (expected) - will use fallback');
+                    } else {
+                        console.warn('⚠️ GPS location error:', error.message || error);
+                    }
                     reject(this.handleGeolocationError(error));
                 },
                 defaultOptions
@@ -216,7 +223,10 @@ class LocationService {
      * Handle geolocation errors with user-friendly messages
      */
     private handleGeolocationError(error: GeolocationPositionError): LocationError {
-        console.error('🚨 Geolocation error details:', error);
+        // Only log detailed errors for non-timeout cases
+        if (error.code !== 3) {
+            console.warn('🚨 Geolocation error:', error.message);
+        }
         
         switch (error.code) {
             case error.PERMISSION_DENIED:

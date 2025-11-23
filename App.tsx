@@ -79,34 +79,33 @@ const App = () => {
                 }
                 
                 const { account } = await import('./lib/appwrite');
+                const { sessionCache } = await import('./lib/sessionCache');
                 
-                // Enhanced session management with timeout protection
+                // Check cache first to avoid repeated 401 errors
+                const cached = sessionCache.get();
+                if (cached) {
+                    if (cached.hasSession) {
+                        console.log('✅ Session active (cached):', cached.user?.email);
+                    }
+                    return;
+                }
+                
+                // Check for existing authenticated session only
+                // Anonymous sessions are disabled to prevent 401/501 error loops
                 try {
                     const currentUser = await Promise.race([
                         account.get(),
                         new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
                     ]) as any;
                     
-                    console.log('✅ Session already active:', currentUser.email || 'anonymous');
-                    return;
-                } catch (error: any) {
-                    // Only create anonymous session if needed and not rate limited
-                    if (error.message?.includes('401') || error.message?.includes('timeout')) {
-                        try {
-                            await Promise.race([
-                                account.createAnonymousSession(),
-                                new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
-                            ]);
-                            console.log('✅ Anonymous session created');
-                        } catch (sessionError: any) {
-                            if (sessionError.message?.includes('429')) {
-                                console.log('⚠️ Rate limited - session deferred');
-                            } else if (sessionError.message?.includes('already exists')) {
-                                console.log('✅ Session already exists');
-                            } else {
-                                console.log('Session creation deferred:', sessionError.message);
-                            }
-                        }
+                    sessionCache.set(true, currentUser);
+                    console.log('✅ Session already active:', currentUser.email);
+                } catch (sessionError: any) {
+                    // No session - cache this result to prevent repeated 401s
+                    sessionCache.setNoSession();
+                    // Suppress 401 console noise - this is expected when not logged in
+                    if (sessionError?.code !== 401 && sessionError?.message !== 'timeout') {
+                        console.log('ℹ️ Session check:', sessionError.message || 'No active session');
                     }
                 }
             } catch (error: any) {
@@ -363,7 +362,6 @@ const App = () => {
                     handleNavigateToHotelLogin={navigation?.handleNavigateToHotelLogin || (() => {})}
                     handleNavigateToVillaLogin={navigation?.handleNavigateToVillaLogin || (() => {})}
                     handleNavigateToMassagePlaceLogin={navigation?.handleNavigateToMassagePlaceLogin || (() => {})}
-                    handleNavigateToAdminLogin={navigation?.handleNavigateToAdminLogin || (() => {})}
                     handleNavigateToServiceTerms={navigation?.handleNavigateToServiceTerms || (() => {})}
                     handleNavigateToPrivacyPolicy={navigation?.handleNavigateToPrivacyPolicy || (() => {})}
                     handleNavigateToCustomerDashboard={navigation?.handleNavigateToCustomerDashboard || (() => {})}
@@ -391,14 +389,12 @@ const App = () => {
                     handleAgentLogout={authHandlers?.handleAgentLogout || (() => Promise.resolve())}
                     handleHotelLogout={authHandlers?.handleHotelLogout || (() => Promise.resolve())}
                     handleVillaLogout={authHandlers?.handleVillaLogout || (() => Promise.resolve())}
-                    handleAdminLogout={authHandlers?.handleAdminLogout || (() => Promise.resolve())}
                     handleHotelLogin={authHandlers?.handleHotelLogin || (() => {})}
                     handleVillaLogin={authHandlers?.handleVillaLogin || (() => {})}
                     handleCreateBooking={() => Promise.resolve()}
 
                     handleUpdateBookingStatus={() => Promise.resolve()}
                     handleMarkNotificationAsRead={() => {}}
-                    handleAdminLogin={authHandlers?.handleAdminLogin || (() => {})}
                     handleNavigateToNotifications={navigation?.handleNavigateToNotifications || (() => {})}
                     handleNavigateToAgentAuth={navigation?.handleNavigateToAgentAuth || (() => {})}
 

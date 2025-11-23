@@ -144,7 +144,7 @@ const UnifiedFooter: React.FC<UnifiedFooterProps> = ({
     // Helper function to determine if a button is active
     const isActive = (buttonType: string) => {
         const homePages = ['home', 'landing'];
-        const dashboardPages = ['adminDashboard', 'therapistDashboard', 'hotelDashboard', 'villaDashboard', 'agentDashboard', 'customerDashboard'];
+        const dashboardPages = ['therapistDashboard', 'hotelDashboard', 'villaDashboard', 'agentDashboard', 'customerDashboard'];
         const chatPages = ['chatList', 'chat'];
         const notificationPages = ['notifications'];
         const profilePages = ['profile'];

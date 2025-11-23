@@ -17,6 +17,9 @@ interface PlaceDetailPageProps {
     t: any;
     loggedInProviderId?: number | string; // To prevent self-notification
     agentCode?: string; // Optional agent attribution for sharing
+    // Villa portal handlers (optional)
+    onVillaPortalClick?: () => void;
+    onAgentPortalClick?: () => void;
 }
 
 const WhatsAppIcon: React.FC<{className?: string}> = ({ className }) => (

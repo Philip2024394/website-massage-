@@ -749,11 +749,26 @@ export const placeService = {
                 console.warn('⚠️ Places collection disabled - cannot create place');
                 throw new Error('Places collection not configured');
             }
-            
+            // Ensure we use a single canonical identifier for the document id AND attributes
+            let canonicalId = place?.id || place?.placeId;
+            if (!canonicalId || typeof canonicalId !== 'string') {
+                try {
+                    const { ID } = await import('appwrite');
+                    canonicalId = ID.unique();
+                } catch {
+                    // Fallback: pseudo-random id
+                    canonicalId = 'plc_' + Math.random().toString(36).slice(2, 10);
+                }
+            }
+
+            // Normalize id and placeId attributes to match document id for reliable lookups
+            place.id = canonicalId;
+            place.placeId = canonicalId;
+
             const response = await databases.createDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.places,
-                'unique()',
+                canonicalId,
                 place
             );
             return response;
@@ -763,20 +778,78 @@ export const placeService = {
         }
     },
     async getByProviderId(providerId: string): Promise<any | null> {
-        // Find a place document by the provider's id field (stored in the document attributes)
+        // Robust lookup: attempt direct document id, then attribute fields (id, placeId)
+        if (!providerId) {
+            console.warn('⚠️ getByProviderId called without providerId');
+            return null;
+        }
         try {
-            // Try matching both as string and number to be safe
-            const response = await databases.listDocuments(
-                APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.places,
-                [
-                    // Appwrite equal can take an array of values
-                    Query.equal('id', [providerId, Number(providerId)])
-                ]
-            );
-            return response.documents.length > 0 ? response.documents[0] : null;
+            // 1. Try direct document fetch (most reliable when we pass Appwrite $id through login flow)
+            try {
+                const direct = await databases.getDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.places,
+                    providerId
+                );
+                if (direct && direct.$id) {
+                    console.log('✅ Found place via direct $id lookup:', direct.$id);
+                    return direct;
+                }
+            } catch (directErr: any) {
+                // Expected if providerId is not the document $id; log at debug level only
+                if (directErr?.code !== 404) {
+                    console.log('ℹ️ Direct $id lookup did not return document:', directErr?.message || directErr);
+                }
+            }
+
+            // Helper to run a single-field query safely
+            const tryField = async (field: string) => {
+                try {
+                    const resp = await databases.listDocuments(
+                        APPWRITE_CONFIG.databaseId,
+                        APPWRITE_CONFIG.collections.places,
+                        [Query.equal(field, providerId)]
+                    );
+                    if (resp.documents.length > 0) {
+                        console.log(`✅ Found place via ${field} attribute lookup:`, resp.documents[0].$id);
+                        return resp.documents[0];
+                    }
+                } catch (e) {
+                    console.log(`ℹ️ ${field} lookup failed:`, (e as any)?.message || e);
+                }
+                return null;
+            };
+
+            // 2. Try 'id' attribute
+            const byIdAttr = await tryField('id');
+            if (byIdAttr) return byIdAttr;
+
+            // 3. Try 'placeId' attribute (legacy / alternate field)
+            const byPlaceIdAttr = await tryField('placeId');
+            if (byPlaceIdAttr) return byPlaceIdAttr;
+
+            // 4. If numeric-looking, try numeric variant for 'id'
+            const numeric = Number(providerId);
+            if (!isNaN(numeric)) {
+                try {
+                    const respNum = await databases.listDocuments(
+                        APPWRITE_CONFIG.databaseId,
+                        APPWRITE_CONFIG.collections.places,
+                        [Query.equal('id', numeric)]
+                    );
+                    if (respNum.documents.length > 0) {
+                        console.log('✅ Found place via numeric id attribute lookup:', respNum.documents[0].$id);
+                        return respNum.documents[0];
+                    }
+                } catch (numErr) {
+                    console.log('ℹ️ Numeric id lookup failed:', (numErr as any)?.message || numErr);
+                }
+            }
+
+            console.warn('⚠️ No place document found for providerId after all strategies:', providerId);
+            return null;
         } catch (error) {
-            console.error('Error finding place by provider id:', error);
+            console.error('❌ Error in getByProviderId combined lookup:', error);
             return null;
         }
     },

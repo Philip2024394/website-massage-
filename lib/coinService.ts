@@ -636,17 +636,17 @@ class CoinService {
         isFirstBooking: boolean = false
     ): Promise<CoinTransaction | null> {
         try {
-            let amount = 50;
+            let amount = 5;
             let reason = 'Booking completed';
 
             if (isFirstBooking) {
-                amount = 100;
+                amount = 10;
                 reason = 'First booking completed';
             } else if (bookingNumber === 5) {
-                amount = 200;
+                amount = 20;
                 reason = '5th booking milestone';
             } else if (bookingNumber === 10) {
-                amount = 500;
+                amount = 50;
                 reason = '10th booking milestone';
             }
 

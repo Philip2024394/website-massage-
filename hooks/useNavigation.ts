@@ -15,7 +15,6 @@ interface UseNavigationProps {
     setProviderForBooking: (provider: { provider: Therapist | Place; type: 'therapist' | 'place' } | null) => void;
     setIsAdminLoggedIn: (value: boolean) => void;
     setLoggedInUser: (user: LoggedInUser | null) => void;
-    setAdminDashboardTab: React.Dispatch<React.SetStateAction<any>>;
     loggedInProvider: LoggedInProvider | null;
     loggedInCustomer: any;
     // Additional props for landing page navigation
@@ -38,7 +37,6 @@ export const useNavigation = ({
     setProviderForBooking,
     setIsAdminLoggedIn,
     setLoggedInUser,
-    setAdminDashboardTab,
     loggedInProvider,
     loggedInCustomer,
     setLanguage,
@@ -85,10 +83,7 @@ export const useNavigation = ({
     // Simple page navigation handlers
     const handleNavigateToAuth = useCallback(() => setPage('profile'), [setPage]);
     const handleNavigateToTherapistLogin = useCallback(() => setPage('therapistLogin'), [setPage]);
-    const handleNavigateToHotelLogin = useCallback(() => setPage('villaLogin'), [setPage]);
-    const handleNavigateToVillaLogin = useCallback(() => setPage('villaLogin'), [setPage]);
     const handleNavigateToMassagePlaceLogin = useCallback(() => setPage('massagePlaceLogin'), [setPage]);
-    const handleNavigateToAdminLogin = useCallback(() => setPage('adminLogin'), [setPage]);
     const handleNavigateToRegistrationChoice = useCallback(() => setPage('registrationChoice'), [setPage]);
     
     // Registration selection handler
@@ -101,16 +96,7 @@ export const useNavigation = ({
     const handleNavigateToServiceTerms = useCallback(() => setPage('serviceTerms'), [setPage]);
     const handleNavigateToPrivacyPolicy = useCallback(() => setPage('privacy'), [setPage]);
     const handleNavigateToNotifications = useCallback(() => setPage('notifications'), [setPage]);
-    const handleNavigateToAgentAuth = useCallback(() => setPage('villaLogin'), [setPage]);
-    const handleNavigateToCustomerAuth = useCallback(() => setPage('profile'), [setPage]);
     const handleNavigateToTherapistDashboard = useCallback(() => setPage('therapistDashboard'), [setPage]);
-    const handleNavigateToCustomerDashboard = useCallback(() => {
-        if (loggedInCustomer) {
-            setPage('customerDashboard');
-        } else {
-            setPage('profile');
-        }
-    }, [loggedInCustomer, setPage]);
     const handleNavigateToTherapistProfileCreation = useCallback(() => {
         console.log('🎯 HANDLER: Navigating to therapist job registration');
         alert('🎯 APP.TSX CALLBACK EXECUTING!');
@@ -152,17 +138,6 @@ export const useNavigation = ({
         setPage('booking');
     }, [setProviderForBooking, setPage]);
 
-    // Complex navigation handlers
-    const handleAdminLogin = useCallback(() => {
-        // Clear the start_fresh flag to allow session restoration
-        sessionStorage.removeItem('start_fresh');
-        
-        setIsAdminLoggedIn(true);
-        setLoggedInUser({ id: 'admin', type: 'admin' });
-        setAdminDashboardTab('membership-pricing'); // Set membership pricing as first page
-        setPage('adminDashboard');
-    }, [setIsAdminLoggedIn, setLoggedInUser, setAdminDashboardTab, setPage]);
-
     // Landing page navigation handlers
     const handleLanguageSelect = useCallback(async (lang: Language) => {
         console.log('🌐 Language selection on landing page:', lang);
@@ -172,7 +147,6 @@ export const useNavigation = ({
 
     const handleEnterApp = useCallback(async (lang: Language, location: UserLocation) => {
         console.log('🚀 handleEnterApp called with language:', lang, 'location:', location);
-        console.log('🚀 localStorage before enter:', localStorage.getItem('app_language'));
         
         try {
             console.log('🚀 Starting app entry process...');
@@ -182,14 +156,20 @@ export const useNavigation = ({
             // Mark that user has entered the app for this session
             sessionStorage.setItem('has_entered_app', 'true');
             
-            // Clear all dashboard sessions when entering from landing page
-            setIsAdminLoggedIn(false);
-            setIsHotelLoggedIn(false);
-            setIsVillaLoggedIn(false);
-            setLoggedInProvider(null);
-            setLoggedInAgent(null);
-            setImpersonatedAgent(null);
-            setLoggedInCustomer(null);
+            // Clear dashboard sessions (using Appwrite session only)
+            const existingProvider = null; // localStorage disabled
+            if (!existingProvider) {
+                console.log('🚀 No existing provider - clearing dashboard states');
+                setIsAdminLoggedIn(false);
+                setIsHotelLoggedIn(false);
+                setIsVillaLoggedIn(false);
+                setLoggedInProvider(null);
+                setLoggedInAgent(null);
+                setImpersonatedAgent(null);
+                setLoggedInCustomer(null);
+            } else {
+                console.log('🚀 Existing provider found - preserving login state:', existingProvider);
+            }
             
             // Set user preferences immediately (no delays)
             console.log('🚀 Setting language to:', lang);
@@ -197,14 +177,14 @@ export const useNavigation = ({
             
             console.log('🚀 Setting user location to:', location);
             setUserLocation(location);
-            localStorage.setItem('user_location', JSON.stringify(location));
+            // localStorage disabled - using Appwrite only
             
             // Navigate to home page immediately
             console.log('🚀 Navigating to home page');
             setPage('home');
             
-            // Clean up session in background (non-blocking)
-            logout().catch(error => console.warn('Background logout failed:', error));
+            // No need to call logout() - user is starting fresh, not logging out
+            // The app handles fresh state via sessionStorage flags
             
             console.log('✅ App entry completed successfully');
         } catch (error) {
@@ -237,27 +217,18 @@ export const useNavigation = ({
         // Simple navigation
         handleNavigateToAuth,
         handleNavigateToTherapistLogin,
-        handleNavigateToHotelLogin,
-        handleNavigateToVillaLogin,
         handleNavigateToMassagePlaceLogin,
-        handleNavigateToAdminLogin,
         handleNavigateToRegistrationChoice,
         handleSelectRegistration,
         handleNavigateToServiceTerms,
         handleNavigateToPrivacyPolicy,
         handleNavigateToNotifications,
-        handleNavigateToAgentAuth,
-        handleNavigateToCustomerAuth,
         handleNavigateToTherapistDashboard,
-        handleNavigateToCustomerDashboard,
         handleNavigateToTherapistProfileCreation,
         
         // Booking navigation
         handleNavigateToBooking,
         handleNavigateToBookingPage,
-        
-        // Complex navigation
-        handleAdminLogin,
         
         // Landing page handlers
         handleLanguageSelect,

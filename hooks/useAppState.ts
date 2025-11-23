@@ -3,34 +3,17 @@ import { useState } from 'react';
 import type { User, Place, Therapist, UserLocation, Booking, Notification, Agent, AdminMessage, ChatRoom } from '../types';
 import type { Page, Language, LoggedInProvider, LoggedInUser } from '../types/pageTypes';
 
-// Helper functions for localStorage persistence
-const getFromLocalStorage = (key: string, defaultValue: any = null) => {
-  try {
-    const item = localStorage.getItem(key);
-    if (!item) return defaultValue;
-    
-    // Special handling for simple string values that aren't JSON
-    if (key === 'app_language' && (item === 'en' || item === 'id')) {
-      return item;
-    }
-    
-    return JSON.parse(item);
-  } catch (_error) {
-    console.error(`Error reading ${key} from localStorage:`, _error);
-    return defaultValue;
-  }
+// localStorage disabled - using Appwrite storage only
+const getFromLocalStorage = (_key: string, defaultValue: any = null) => {
+  return defaultValue; // No-op: localStorage disabled
 };
 
-const setToLocalStorage = (key: string, value: any) => {
-  try {
-    if (value === null || value === undefined) {
-      localStorage.removeItem(key);
-    } else {
-      localStorage.setItem(key, JSON.stringify(value));
-    }
-  } catch (_error) {
-    console.error(`Error saving ${key} to localStorage:`, _error);
-  }
+const setToLocalStorage = (_key: string, _value: any) => {
+  // No-op: localStorage disabled
+};
+
+const saveToLocalStorage = (_key: string, _value: any) => {
+  // No-op: localStorage disabled
 };
 
 export const useAppState = () => {
@@ -48,6 +31,19 @@ export const useAppState = () => {
       if (hotelMenuMatch || villaMenuMatch) {
         console.log('🏨 Hotel/Villa menu URL detected:', pathname);
         return 'hotelVillaMenu';
+      }
+      
+      // 🔧 FIX: Check if user is already logged in as place provider and restore dashboard
+      const storedProvider = getFromLocalStorage('app_logged_in_provider');
+      if (storedProvider && storedProvider.type === 'place') {
+        console.log('✅ Found logged in place provider, restoring placeDashboard:', storedProvider.id);
+        return 'placeDashboard';
+      }
+      
+      // Check for other logged-in states
+      if (storedProvider && storedProvider.type === 'therapist') {
+        console.log('✅ Found logged in therapist, restoring therapistDashboard:', storedProvider.id);
+        return 'therapistDashboard';
       }
       
       // Restore last page from session if available
@@ -158,8 +154,6 @@ export const useAppState = () => {
     _setIsAdminLoggedIn(value);
     setToLocalStorage('app_is_admin_logged_in', value);
   };
-
-  const [adminDashboardTab, setAdminDashboardTab] = useState<'platform-analytics' | 'confirm-therapists' | 'confirm-places' | 'confirm-accounts' | 'chat-messages' | 'drawer-buttons' | 'agent-commission' | 'bank-details' | 'payment-transactions' | 'shop-management' | 'membership-pricing'>('platform-analytics');
 
   const [loggedInUser, _setLoggedInUser] = useState<LoggedInUser | null>(() => getFromLocalStorage('app_logged_in_user'));
   const setLoggedInUser = (user: LoggedInUser | null) => {
@@ -279,7 +273,6 @@ export const useAppState = () => {
     
     // Admin
     isAdminLoggedIn, setIsAdminLoggedIn,
-    adminDashboardTab, setAdminDashboardTab,
     loggedInUser, setLoggedInUser,
     
     // Customer

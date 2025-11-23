@@ -768,7 +768,14 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                         <span className="text-3xl">💆</span>
                         <span>Therapist Dashboard</span>
                     </h1>
-                    <div className="flex items-center gap-3 text-gray-600">
+                    <div className="flex items-center gap-2 text-gray-600">
+                        <button
+                            onClick={() => onNavigate && onNavigate('home')}
+                            className="p-2 text-gray-700 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-colors"
+                            title="Go to Home"
+                        >
+                            <Home className="w-4 h-4" />
+                        </button>
                         {/* Status Badge */}
                         <button 
                             onClick={() => setIsDropdownOpen(!isDropdownOpen)}

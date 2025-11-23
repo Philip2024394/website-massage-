@@ -68,7 +68,14 @@ export async function trackBookingCompletion(
         await coinService.awardBookingCompletion(userId, totalBookings, isFirstBooking);
         
         // Queue reward banner for display
-        const coinAmount = totalBookings >= 10 ? 100 : 50;
+        let coinAmount = 5; // Regular booking
+        if (isFirstBooking) {
+            coinAmount = 10;
+        } else if (totalBookings === 5) {
+            coinAmount = 20;
+        } else if (totalBookings === 10) {
+            coinAmount = 50;
+        }
         rewardBannerService.queueRewardBanner(
             userType,
             'booking-completion',

@@ -43,9 +43,6 @@ interface AppStateContextType {
     isLoading: boolean;
     setIsLoading: (loading: boolean) => void;
     
-    adminDashboardTab: string;
-    setAdminDashboardTab: (tab: string) => void;
-    
     // Booking/Provider state
     providerForBooking: { provider: Therapist | Place; type: 'therapist' | 'place' } | null;
     setProviderForBooking: (provider: { provider: Therapist | Place; type: 'therapist' | 'place' } | null) => void;

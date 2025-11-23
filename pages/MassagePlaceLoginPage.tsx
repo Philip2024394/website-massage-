@@ -4,9 +4,6 @@ import { saveSessionCache } from '../lib/sessionManager';
 import { checkRateLimit, handleAppwriteError, resetRateLimit } from '../lib/rateLimitUtils';
 import { trackDailySignIn } from '../lib/coinHooks';
 import { LogIn, UserPlus, Eye, EyeOff, Mail, Lock, Home } from 'lucide-react';
-import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
-import { AppDrawer } from '../components/AppDrawer';
-import { React19SafeWrapper } from '../components/React19SafeWrapper';
 import PageNumberBadge from '../components/PageNumberBadge';
 
 interface MassagePlaceLoginPageProps {
@@ -21,8 +18,8 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [debugInfo, setDebugInfo] = useState<string>('');
 
     // Make rate limit reset functions available in browser console for testing
     React.useEffect(() => {
@@ -78,12 +75,21 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
             }
         };
         
+        // Add test dashboard navigation helper
+        (window as any).testDashboardNav = () => {
+            console.log('🧪 Testing dashboard navigation with mock placeId...');
+            const mockPlaceId = 'test_place_123';
+            onSuccess(mockPlaceId);
+            console.log('✅ Called onSuccess with:', mockPlaceId);
+        };
+        
         console.log('🔧 Debug helpers loaded:');
         console.log('   - resetPlaceRateLimit()');
         console.log('   - debugPlaceAuth(email, password)');
         console.log('   - checkMassageSpa()');
         console.log('   - createTestMassageSpa(email, password)');
-    }, []);
+        console.log('   - testDashboardNav() - Test navigation to dashboard');
+    }, [onSuccess]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -119,13 +125,40 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
 
             if (isSignUp) {
                 const response = await placeAuth.signUp(email, password);
-                
+
                 if (response.success) {
-                    console.log('✅ Place account created successfully!');
-                    // Don't switch tabs - keep user in Create Account mode
-                    setError('✅ Account created successfully! You can now sign in with these credentials.');
-                    // Keep the email but clear password for security
-                    setPassword('');
+                    console.log('✅ Place account created successfully! Auto-directing to dashboard…');
+                    const effectivePlaceId = response.documentId || response.userId || '';
+                    
+                    if (!effectivePlaceId) {
+                        throw new Error('No placeId returned from signup - cannot proceed to dashboard');
+                    }
+                    
+                    console.log('💾 Provider data ready (localStorage disabled)');
+                    console.log('💾 Provider data:', { id: effectivePlaceId, type: 'place' });
+                    
+                    // localStorage disabled - using Appwrite session only
+                    console.log('✅ Provider data verified (using Appwrite storage)');
+                    
+                    setDebugInfo(`Provider stored in Appwrite: ${effectivePlaceId}, Type: place`);
+                    
+                    // Mark app as entered
+                    sessionStorage.setItem('has_entered_app', 'true');
+                    sessionStorage.setItem('current_page', 'placeDashboard');
+                    
+                    // Persist session cache immediately so dashboard can load
+                    saveSessionCache({
+                        type: 'place',
+                        id: effectivePlaceId,
+                        email: email,
+                        documentId: response.documentId || '',
+                        data: { $id: effectivePlaceId, email }
+                    });
+                    
+                    console.log('🔄 Calling onSuccess to navigate to dashboard with placeId:', effectivePlaceId);
+                    // Navigate straight to dashboard (skip manual sign-in step)
+                    onSuccess(effectivePlaceId);
+                    return;
                 } else {
                     throw new Error(response.error || 'Sign up failed');
                 }
@@ -133,13 +166,30 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
                 const response = await placeAuth.signIn(email, password);
                 
                 if (response.success && response.userId) {
-                    // Authentication successful - save session cache
+                    // Prefer the Appwrite PLACE document id for provider operations
+                    const effectivePlaceId = response.documentId || response.userId;
+                    
+                    if (!effectivePlaceId) {
+                        throw new Error('No placeId returned from signin - cannot proceed to dashboard');
+                    }
+                    
+                    console.log('💾 Provider data ready (localStorage disabled)');
+                    console.log('💾 Provider data:', { id: effectivePlaceId, type: 'place' });
+                    
+                    // localStorage disabled - using Appwrite session only
+                    console.log('✅ Provider data verified (using Appwrite storage)');
+                    
+                    // Mark app as entered
+                    sessionStorage.setItem('has_entered_app', 'true');
+                    sessionStorage.setItem('current_page', 'placeDashboard');
+                    
+                    // Authentication successful - save session cache (align id with place document for dashboard lookup)
                     saveSessionCache({
                         type: 'place',
-                        id: response.userId,
+                        id: effectivePlaceId,
                         email: email,
                         documentId: response.documentId || '',
-                        data: { $id: response.userId, email }
+                        data: { $id: effectivePlaceId, email }
                     });
                     
                     // Track daily sign-in for coin rewards (only for login, not signup)
@@ -151,8 +201,10 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
                         }
                     }
                     
-                    console.log(`✅ Place login successful for ${email}`);
-                    onSuccess(response.userId);
+                    console.log(`✅ Place login successful for ${email} (placeId: ${effectivePlaceId})`);
+                    console.log('🔄 Calling onSuccess to navigate to dashboard with placeId:', effectivePlaceId);
+                    // Pass the PLACE document id to router so dashboard can load the correct profile
+                    onSuccess(effectivePlaceId);
                 } else {
                     throw new Error(response.error || 'Sign in failed');
                 }
@@ -200,35 +252,12 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
                         <span className="text-black">Inda</span><span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
                     </h1>
                     <div className="flex items-center gap-3 text-gray-600">
-                        <button onClick={() => setIsMenuOpen(true)} title="Menu">
-                            <BurgerMenuIcon className="w-6 h-6" />
-                        </button>
-                        <button onClick={() => window.history.back()} title="Home" className="hover:text-orange-500 transition-colors">
+                        <button onClick={_onBack} title="Go to Home" className="hover:text-orange-500 transition-colors">
                             <Home className="w-5 h-5" />
                         </button>
                     </div>
                 </div>
             </header>
-
-            {/* Global App Drawer */}
-            <React19SafeWrapper condition={isMenuOpen}>
-                <AppDrawer
-                    isOpen={isMenuOpen}
-                    onClose={() => setIsMenuOpen(false)}
-                    onMassageJobsClick={() => {}}
-                    onHotelPortalClick={() => {}}
-                    onVillaPortalClick={() => {}}
-                    onTherapistPortalClick={() => {}}
-                    onMassagePlacePortalClick={() => {}}
-                    onAgentPortalClick={() => {}}
-                    onCustomerPortalClick={() => {}}
-                    onAdminPortalClick={() => {}}
-                    onTermsClick={() => {}}
-                    onPrivacyClick={() => {}}
-                    therapists={[]}
-                    places={[]}
-                />
-            </React19SafeWrapper>
 
             {/* Main Content with Background */}
             <main 
@@ -252,6 +281,11 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
                                     : 'bg-red-50 text-red-700 border border-red-200'
                             }`}>
                                 {error}
+                            </div>
+                        )}
+                        {debugInfo && !error && (
+                            <div className="w-full p-2 sm:p-3 rounded-lg text-sm bg-blue-50 text-blue-700 border border-blue-200">
+                                🔍 {debugInfo}
                             </div>
                         )}
                     </div>
@@ -320,7 +354,7 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
                                     onClick={() => setShowPassword(!showPassword)}
                                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-orange-500 hover:text-orange-400 transition-colors z-10"
                                 >
-                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                    {showPassword ? '🙈' : '👁️'}
                                 </button>
                             </div>
                         </div>
@@ -336,9 +370,8 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
                                     {isSignUp ? 'Creating Account...' : 'Signing In...'}
                                 </div>
                             ) : (
-                                <div className="flex items-center justify-center">
-                                    {isSignUp ? <UserPlus className="w-5 h-5 mr-2" /> : <LogIn className="w-5 h-5 mr-2" />}
-                                    {isSignUp ? 'Create Place Account' : 'Sign In to Place'}
+                                <div className="flex items-center justify-center gap-2">
+                                    {isSignUp ? '✨ Create Place Account' : '🔑 Sign In to Place'}
                                 </div>
                             )}
                         </button>

@@ -1,0 +1,21 @@
+# CODEOWNERS establishes protected ownership of critical files.
+# Changes to these files should go through PR review to avoid accidental regressions.
+
+# Core runtime & routing
+App.tsx @Philip2024394
+AppRouter.tsx @Philip2024394
+
+# Authentication & Appwrite integration
+lib/auth.ts @Philip2024394
+lib/appwriteService.ts @Philip2024394
+lib/globalErrorHandler.ts @Philip2024394
+
+# Dashboards (Place & Therapist)
+pages/PlaceDashboardPage.tsx @Philip2024394
+pages/TherapistDashboardPage.tsx @Philip2024394
+
+# Schema & Sanitizers
+schemas/placeSchema.ts @Philip2024394
+
+# Tests affecting critical logic
+tests/placeSchema.spec.ts @Philip2024394

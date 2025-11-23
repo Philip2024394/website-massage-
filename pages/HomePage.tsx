@@ -36,10 +36,10 @@ interface HomePageProps {
     onLogout: () => void;
     onLoginClick: () => void;
     onCreateProfileClick: () => void;
-    onAgentPortalClick: () => void;
+    onAgentPortalClick?: () => void;
     onCustomerPortalClick?: () => void; // Add customer portal callback
-    onHotelPortalClick: () => void;
-    onVillaPortalClick: () => void;
+    onHotelPortalClick?: () => void;
+    onVillaPortalClick?: () => void;
     onTherapistPortalClick: () => void;
     onMassagePlacePortalClick: () => void;
     onAdminPortalClick: () => void;

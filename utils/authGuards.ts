@@ -137,6 +137,11 @@ export const clearAllAuthenticationStates = (stateSetters: {
     if (stateSetters.setLoggedInCustomer) stateSetters.setLoggedInCustomer(null);
     if (stateSetters.setImpersonatedAgent) stateSetters.setImpersonatedAgent(null);
     
+    // Clear sessionStorage for provider data
+    sessionStorage.removeItem('logged_in_provider');
+    sessionStorage.removeItem('has_entered_app');
+    sessionStorage.removeItem('current_page');
+    
     console.log('✅ All authentication states cleared');
 };
 

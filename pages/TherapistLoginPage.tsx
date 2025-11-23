@@ -133,7 +133,7 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({
                         <button onClick={() => setIsMenuOpen(true)} title="Menu">
                             <BurgerMenuIcon className="w-6 h-6" />
                         </button>
-                        <button onClick={() => window.history.back()} title="Home" className="hover:text-orange-500 transition-colors">
+                        <button onClick={_onBack} title="Go to Home" className="hover:text-orange-500 transition-colors">
                             <Home className="w-5 h-5" />
                         </button>
                     </div>

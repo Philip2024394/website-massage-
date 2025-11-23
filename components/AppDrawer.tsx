@@ -114,17 +114,27 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
     };
 
     const handleItemClick = (callback?: () => void, fallbackPage?: string) => {
-        console.log('🔥 Button clicked, callback:', callback, 'fallback:', fallbackPage);
+        console.log('🔥 AppDrawer button clicked!');
+        console.log('   - callback exists:', !!callback);
+        console.log('   - fallback page:', fallbackPage);
+        console.log('   - onNavigate exists:', !!onNavigate);
+        
         if (callback) {
-            callback();
+            try {
+                console.log('   - Executing callback...');
+                callback();
+                console.log('   - Callback executed successfully');
+            } catch (error) {
+                console.error('   - Callback error:', error);
+            }
             onClose();
-            return;
+        } else if (fallbackPage && onNavigate) {
+            console.log('   - Using fallback navigation to:', fallbackPage);
+            onNavigate(fallbackPage);
+            onClose();
+        } else {
+            console.warn('   - No callback or fallback available!');
         }
-        if (fallbackPage) {
-            go(fallbackPage);
-            return;
-        }
-        onClose();
     };
 
     if (!isOpen) return null;
@@ -201,23 +211,6 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                 {translate('home.menu.sections.loginCreateAccount')}
                             </h3>
                             <div className="space-y-2">
-                                {/* Hotel portal removed */}
-
-                                <button 
-                                    onClick={() => handleItemClick(onVillaPortalClick, 'villaLogin')}
-                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm transition-all border-l-4 border-black group"
-                                >
-                                    <div className="p-2 bg-black rounded-lg">
-                                        <Home className="w-5 h-5 text-white" />
-                                    </div>
-                                    <div className="flex-grow">
-                                        <p className="font-semibold text-black">
-                                            {translate('home.menu.villa')}
-                                        </p>
-                                        <p className="text-xs text-gray-500">{translate('home.menu.villaDesc')}</p>
-                                    </div>
-                                </button>
-
                                 <button 
                                     onClick={() => handleItemClick(onTherapistPortalClick, 'therapistLogin')}
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-teal-500 group transform hover:scale-105"

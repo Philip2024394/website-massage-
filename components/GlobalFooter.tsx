@@ -3,7 +3,7 @@ import React from 'react';
 interface GlobalFooterProps {
     currentPage: string;
     onNavigate: (page: string) => void;
-    userRole?: 'user' | 'therapist' | 'place' | 'admin' | 'hotel' | 'villa' | 'agent' | 'customer' | null;
+    userRole?: 'user' | 'therapist' | 'place' | 'admin' | 'hotel' | 'agent' | null;
     unreadNotifications?: number;
     hasNewBookings?: boolean;
 }
@@ -20,8 +20,8 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
         const homePages = ['home', 'landing'];
         const searchPages = ['search', 'therapists', 'places', 'massageTypes'];
         const notificationPages = ['notifications'];
-        const shopPages = ['coin-shop', 'shop', 'membership'];
-                const profilePages = ['profile', 'customerDashboard', 'therapistDashboard', 'villaDashboard', 'agentDashboard', 'adminDashboard'];
+        const shopPages = ['shop', 'membership'];
+                const profilePages = ['profile', 'therapistDashboard', 'agentDashboard'];
 
         switch (buttonType) {
             case 'home':
@@ -68,50 +68,20 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
         },
         getSecondButton(),
         {
-            key: 'shop',
-            icon: imageIcon('shop', 'https://ik.imagekit.io/7grri5v7d/home%20buttonss.png', 'Shop'),
-            label: 'Shop',
-            onClick: () => {
-                try { sessionStorage.setItem('coin_shop_origin', 'home'); } catch {}
-                onNavigate('coin-shop');
-            },
-            badgeCount: 0
-        },
-        {
             key: 'profile',
             icon: imageIcon('profile', 'https://ik.imagekit.io/7grri5v7d/home%20buttonsss.png?updatedAt=1763217899529', 'Profile'),
             label: 'Profile',
             onClick: () => {
                 switch (userRole) {
-                    case 'admin':
-                        onNavigate('adminDashboard');
-                        break;
                     case 'therapist':
                     case 'place':
                         onNavigate('therapistDashboard');
                         break;
                     case 'hotel':
-                        onNavigate('villaDashboard');
-                        break;
-                    case 'villa':
-                        onNavigate('villaDashboard');
+                        onNavigate('agentDashboard');
                         break;
                     case 'agent':
                         onNavigate('agentDashboard');
-                        break;
-                    case 'customer':
-                    case 'user':
-                        try {
-                            if (currentPage === 'customerDashboard') {
-                                window.dispatchEvent(new CustomEvent('customer_dashboard_set_tab', { detail: { tab: 'profile' } }));
-                            } else {
-                                sessionStorage.setItem('customer_dashboard_initial_tab', 'profile');
-                                onNavigate('customerDashboard');
-                            }
-                        } catch {
-                            // Fallback: still navigate
-                            onNavigate('customerDashboard');
-                        }
                         break;
                     default:
                         onNavigate('profile');
@@ -121,35 +91,6 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
             badgeCount: unreadNotifications
         }
     ];
-
-    // Inject a dedicated Menu button for customers on their dashboard to open the side drawer
-    if ((userRole === 'customer' || userRole === 'user') && currentPage === 'customerDashboard') {
-        const menuButton = {
-            key: 'menu',
-            icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" className={`w-7 h-7 ${isActive('menu') ? 'opacity-100' : 'opacity-60'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-            ),
-            label: 'Menu',
-            onClick: () => {
-                try {
-                    window.dispatchEvent(new CustomEvent('customer_dashboard_open_drawer'));
-                } catch {
-                    // no-op
-                }
-            },
-            badgeCount: 0
-        } as const;
-
-        // Place Menu as the second item, shifting others to keep four items visible
-        navigationItems = [navigationItems[0], menuButton, ...navigationItems.slice(1)];
-        // Keep footer concise: if more than 4, drop extra before 'profile'
-        if (navigationItems.length > 4) {
-            // Remove the third item if we have 5 (prefer to keep notifications)
-            navigationItems.splice(2, navigationItems.length - 4);
-        }
-    }
 
     return (
         <footer

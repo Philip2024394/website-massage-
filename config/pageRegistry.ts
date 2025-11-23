@@ -5,16 +5,11 @@ export const PAGE_REGISTRY = {
     2: { name: 'HomePage', file: 'pages/HomePage.tsx', locked: false },
     3: { name: 'UnifiedLoginPage', file: 'pages/UnifiedLoginPage.tsx', locked: false },
     4: { name: 'TherapistLoginPage', file: 'pages/TherapistLoginPage.tsx', locked: false },
-    5: { name: 'AdminLoginPage', file: 'pages/AdminLoginPage.tsx', locked: false },
     
     // Therapist Pages (21-40)
     21: { name: 'TherapistDashboardPage', file: 'pages/TherapistDashboardPage.tsx', locked: false },
     22: { name: 'TherapistStatusPage', file: 'pages/TherapistStatusPage.tsx', locked: false },
     23: { name: 'TherapistProfileForm', file: 'components/therapist/TherapistProfileForm.tsx', locked: false },
-    
-    // Admin Pages (41-60)
-    41: { name: 'AdminDashboardPage', file: 'pages/AdminDashboardPage.tsx', locked: true },
-    42: { name: 'LiveAdminDashboard', file: 'pages/LiveAdminDashboardEnhanced.tsx', locked: false },
     
     // Customer Pages (61-80)
     61: { name: 'CustomerAuthPage', file: 'pages/CustomerAuthPage.tsx', locked: false },

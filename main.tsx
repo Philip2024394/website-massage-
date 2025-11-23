@@ -4,6 +4,9 @@ import App from './App';
 import ErrorBoundary from './components/ErrorBoundary';
 import './index.css';
 
+// Initialize DOM error handler to prevent removeChild errors
+import './utils/domErrorHandler';
+
 console.log('🚀 main.tsx: Starting React app...');
 
 // Register Service Worker for notifications

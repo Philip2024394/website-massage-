@@ -277,12 +277,26 @@ export function clearSessionCache(): void {
  */
 export async function logout(): Promise<void> {
     try {
-        await account.deleteSession('current');
-        clearSessionCache();
-        console.log('✅ Session cleared successfully');
+        // Check if there's actually a session before attempting to delete
+        // This prevents unnecessary 401 errors
+        try {
+            await account.get();
+            // Session exists, proceed with deletion
+            await account.deleteSession('current');
+            clearSessionCache();
+            console.log('✅ Session cleared successfully');
+        } catch (checkError: any) {
+            // No session exists (401), nothing to delete
+            if (checkError.code === 401) {
+                console.log('📭 No active session to clear');
+                clearSessionCache();
+                return;
+            }
+            throw checkError;
+        }
     } catch (error: any) {
         // If error is 401 and user is guest, this is expected behavior
-        if (error.code === 401 && error.message?.includes('missing scopes')) {
+        if (error.code === 401) {
             console.log('📭 Logout attempted on guest user - no active session to clear');
             clearSessionCache();
             return;
