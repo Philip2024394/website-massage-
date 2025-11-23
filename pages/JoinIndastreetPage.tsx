@@ -47,7 +47,7 @@ const JoinIndastreetPage: React.FC<JoinIndastreetPageProps> = ({
                 </div>
 
                 {/* Partner Type Cards */}
-                <div className="grid md:grid-cols-3 gap-6 mb-12">
+                <div className="grid md:grid-cols-2 gap-8 mb-12 max-w-5xl mx-auto">
                     {/* Therapist Card */}
                     <div 
                         onClick={onNavigateToTherapistLogin}
