@@ -112,7 +112,7 @@ export const adminAuth = {
 
 // Therapist Authentication
 export const therapistAuth = {
-    async signUp(email: string, password: string, agentCode?: string): Promise<AuthResponse> {
+    async signUp(email: string, password: string): Promise<AuthResponse> {
         try {
             console.log('🔵 [Therapist Sign-Up] Starting...', { email });
             
