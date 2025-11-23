@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import type { Therapist, Pricing, Booking, Notification } from '../types';
+import type { Therapist, Pricing, Booking, Notification, UserLocation } from '../types';
 import type { Page } from '../types/pageTypes';
 import { AvailabilityStatus, BookingStatus } from '../types';
 import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages, stringifyPricing, stringifyCoordinates, stringifyMassageTypes, stringifyLanguages, stringifyAnalytics } from '../utils/appwriteHelpers';
 import { therapistService } from '../lib/appwriteService';
 import { MASSAGE_TYPES_CATEGORIZED } from '../constants/rootConstants';
-import { LogOut, Activity, Calendar, TrendingUp, Bell, User, Crown, Building, FileText, Settings, Phone, X, Tag, Share2, Download, Star, CreditCard } from 'lucide-react';
+import { LogOut, Activity, Calendar, TrendingUp, Bell, User, Crown, Building, FileText, Settings, Phone, X, Tag, Share2, Download, Star, CreditCard, Home } from 'lucide-react';
 import { ColoredHistoryIcon, ColoredCoinsIcon } from '../components/ColoredIcons';
 import { AnalyticsCard, ActivatedDiscountButton, LiveDiscountCountdown, BookingCard, BusyCountdownTimer } from '../components/therapist-dashboard';
 
@@ -1403,51 +1403,6 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                                 description="Total reviews"
                                             />
                                         </div>
-
-                                        {/* Coin Rewards Section */}
-                                        {onNavigate && (
-                                            <div className="mt-8 space-y-4">
-                                                <h3 className="text-lg font-semibold text-gray-900 mb-4">💰 Coin Rewards</h3>
-                                                
-                                                {/* Coin History Button */}
-                                                <button
-                                                    onClick={() => onNavigate('coinHistory')}
-                                                    className="w-full flex items-center justify-between p-4 bg-white rounded-xl shadow-md hover:shadow-lg transition-all border-2 border-orange-200 hover:border-orange-400"
-                                                >
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center text-white text-2xl">
-                                                            📊
-                                                        </div>
-                                                        <div className="text-left">
-                                                            <h3 className="font-bold text-gray-900">Coin History</h3>
-                                                            <p className="text-sm text-gray-600">View transactions & expiration</p>
-                                                        </div>
-                                                    </div>
-                                                    <svg className="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                                    </svg>
-                                                </button>
-
-                                                {/* Coin Shop Button */}
-                                                <button
-                                                    onClick={() => onNavigate('coin-shop')}
-                                                    className="w-full flex items-center justify-between p-4 bg-white rounded-xl shadow-md hover:shadow-lg transition-all border-2 border-yellow-200 hover:border-yellow-400"
-                                                >
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center text-white text-2xl">
-                                                            🪙
-                                                        </div>
-                                                        <div className="text-left">
-                                                            <h3 className="font-bold text-gray-900">Coin Rewards Shop</h3>
-                                                            <p className="text-sm text-gray-600">Redeem coins for rewards & cash out</p>
-                                                        </div>
-                                                    </div>
-                                                    <svg className="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                        )}
                                     </div>
                                 )}
 
@@ -3129,53 +3084,6 @@ const TherapistDashboardPage: React.FC<TherapistDashboardPageProps> = ({
                                             Additional Features
                                         </h3>
                                         <div className="space-y-2">
-                                            
-
-
-
-
-                                            {/* Coin History */}
-                                            {onNavigate && (
-                                                <button
-                                                    onClick={() => {
-                                                        setIsSideDrawerOpen(false);
-                                                        onNavigate('coinHistory' as any);
-                                                    }}
-                                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-blue-400 group transform hover:scale-105 hover:bg-blue-50"
-                                                >
-                                                    <div className="p-2 bg-gradient-to-br from-blue-400 to-blue-500 rounded-lg">
-                                                        <ColoredHistoryIcon className="w-5 h-5 text-white" />
-                                                    </div>
-                                                    <div className="flex-grow">
-                                                        <p className="font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
-                                                            Coin History
-                                                        </p>
-                                                        <p className="text-xs text-gray-500">View reward transactions</p>
-                                                    </div>
-                                                </button>
-                                            )}
-
-                                            {/* Coin Shop */}
-                                            {onNavigate && (
-                                                <button
-                                                    onClick={() => {
-                                                        setIsSideDrawerOpen(false);
-                                                        onNavigate('coin-shop' as any);
-                                                    }}
-                                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-green-400 group transform hover:scale-105 hover:bg-green-50"
-                                                >
-                                                    <div className="p-2 bg-gradient-to-br from-green-400 to-green-500 rounded-lg">
-                                                        <ColoredCoinsIcon className="w-5 h-5 text-white" />
-                                                    </div>
-                                                    <div className="flex-grow">
-                                                        <p className="font-semibold text-gray-800 group-hover:text-green-600 transition-colors">
-                                                            Coin Shop
-                                                        </p>
-                                                        <p className="text-xs text-gray-500">Redeem rewards & benefits</p>
-                                                    </div>
-                                                </button>
-                                            )}
-
                                             {/* Verified Pro Badge */}
                                             {onNavigate && (
                                                 <button
