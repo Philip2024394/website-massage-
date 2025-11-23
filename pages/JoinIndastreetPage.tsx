@@ -1,4 +1,5 @@
 import React from 'react';
+import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 
 interface JoinIndastreetPageProps {
     onBack: () => void;
@@ -15,29 +16,40 @@ const JoinIndastreetPage: React.FC<JoinIndastreetPageProps> = ({
 }) => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-teal-50">
-            {/* Header */}
-            <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-                <div className="max-w-7xl mx-auto px-4 py-4 flex items-center">
+            {/* Global Header - Same as HomePage */}
+            <header className="bg-white p-4 shadow-md sticky top-0 z-[9997]">
+                <div className="flex justify-between items-center">
                     <button 
                         onClick={onBack}
-                        className="mr-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
+                        className="p-2 hover:bg-orange-50 rounded-full transition-colors"
+                        title="Back to Home"
                     >
                         <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                         </svg>
                     </button>
-                    <h1 className="text-2xl font-bold text-gray-900">Join Indastreet</h1>
+                    <h1 className="text-2xl font-bold text-gray-800">
+                        <span className="text-black">Inda</span>
+                        <span className="text-orange-500">Street</span>
+                    </h1>
+                    <div className="flex items-center gap-3 text-gray-600">
+                        <button className="p-2 hover:bg-orange-50 rounded-full transition-colors text-orange-500">
+                           <BurgerMenuIcon className="w-6 h-6" />
+                        </button>
+                    </div>
                 </div>
-            </div>
+            </header>
 
             <div className="max-w-6xl mx-auto px-4 py-8 pb-24">
-                {/* Hero Section */}
+                {/* Hero Image Section */}
                 <div className="text-center mb-12">
-                    <img 
-                        src="https://ik.imagekit.io/7grri5v7d/indastreet_button-removebg-preview.png"
-                        alt="Indastreet"
-                        className="h-32 mx-auto mb-6"
-                    />
+                    <div className="max-w-4xl mx-auto mb-8">
+                        <img 
+                            src="https://ik.imagekit.io/7grri5v7d/indastreet%20agent.png?updatedAt=1763103354040"
+                            alt="Join Indastreet"
+                            className="w-full h-auto rounded-3xl shadow-2xl object-cover"
+                        />
+                    </div>
                     <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
                         Grow Your Wellness Business with Indastreet
                     </h2>
