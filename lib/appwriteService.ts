@@ -1833,6 +1833,80 @@ export const reviewService = {
         }
     },
 
+    async createAnonymous(review: {
+        providerId: string | number;
+        providerType: 'therapist' | 'place';
+        providerName: string;
+        rating: number;
+        reviewerName: string;
+        whatsappNumber: string;
+    }): Promise<any> {
+        try {
+            const response = await databases.createDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.reviews,
+                ID.unique(),
+                {
+                    providerId: Number(review.providerId),
+                    providerType: review.providerType,
+                    providerName: review.providerName,
+                    rating: review.rating,
+                    comment: '', // Anonymous reviews don't have comments
+                    whatsapp: review.whatsappNumber,
+                    reviewerName: review.reviewerName,
+                    isAnonymous: true,
+                    status: 'approved', // Auto-approve anonymous reviews
+                    createdAt: new Date().toISOString()
+                }
+            );
+            console.log('✅ Anonymous review created successfully:', response.$id);
+            
+            // Update provider's average rating
+            await this.updateProviderRating(review.providerId, review.providerType);
+            
+            return response;
+        } catch (error) {
+            console.error('❌ Error creating anonymous review:', error);
+            throw error;
+        }
+    },
+
+    async updateProviderRating(providerId: string | number, providerType: 'therapist' | 'place'): Promise<void> {
+        try {
+            // Get all approved reviews for this provider
+            const reviews = await this.getByProvider(Number(providerId), providerType);
+            
+            if (reviews.length === 0) return;
+            
+            // Calculate average rating
+            const totalRating = reviews.reduce((sum, review) => sum + (review.rating || 0), 0);
+            const averageRating = totalRating / reviews.length;
+            const roundedRating = Math.round(averageRating * 10) / 10; // Round to 1 decimal
+            
+            console.log(`📊 Updating ${providerType} ${providerId} rating: ${roundedRating} (from ${reviews.length} reviews)`);
+            
+            // Update the provider's rating
+            const collectionId = providerType === 'therapist' 
+                ? APPWRITE_CONFIG.collections.therapists 
+                : APPWRITE_CONFIG.collections.places;
+            
+            await databases.updateDocument(
+                APPWRITE_CONFIG.databaseId,
+                collectionId,
+                String(providerId),
+                {
+                    rating: roundedRating,
+                    reviewCount: reviews.length
+                }
+            );
+            
+            console.log(`✅ Updated ${providerType} rating to ${roundedRating}`);
+        } catch (error) {
+            console.error('❌ Error updating provider rating:', error);
+            // Don't throw - rating update failure shouldn't prevent review submission
+        }
+    },
+
     async getAll(): Promise<any[]> {
         try {
             const response = await databases.listDocuments(

@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import type { Place, Analytics } from '../types';
 import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages } from '../utils/appwriteHelpers';
 import { getDisplayRating, getDisplayReviewCount, formatRating } from '../utils/ratingUtils';
-import { bookingService } from '../lib/appwriteService';
+import { bookingService, reviewService } from '../lib/appwriteService';
 import DistanceDisplay from './DistanceDisplay';
+import AnonymousReviewModal from './AnonymousReviewModal';
+import { initializeUserReferralCode } from '../lib/coinHooks';
 
 // Helper function to check if discount is active and not expired
 const isDiscountActive = (place: Place): boolean => {
@@ -78,6 +80,8 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
 }) => {
     const [showReferModal, setShowReferModal] = useState(false);
     const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
+    const [showReviewModal, setShowReviewModal] = useState(false);
+    const [userReferralCode, setUserReferralCode] = useState<string>('');
     const [discountTimeLeft, setDiscountTimeLeft] = useState<string>('');
     // Bookings count derived from persisted analytics JSON (no random fallback)
     const [bookingsCount, setBookingsCount] = useState<number>(() => {
@@ -141,6 +145,47 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
         
         return () => clearInterval(interval);
     }, [activeDiscount]);
+    
+    // Load user referral code when modal opens
+    useEffect(() => {
+        if (showReferModal && isCustomerLoggedIn) {
+            const userId = localStorage.getItem('appwrite_user_id');
+            if (userId) {
+                initializeUserReferralCode(userId).then(code => {
+                    setUserReferralCode(code);
+                });
+            }
+        }
+    }, [showReferModal, isCustomerLoggedIn]);
+
+    // Handle anonymous review submission
+    const handleAnonymousReviewSubmit = async (reviewData: {
+        name: string;
+        whatsappNumber: string;
+        rating: number;
+        providerId: string | number;
+        providerType: 'therapist' | 'place';
+    }) => {
+        try {
+            await reviewService.createAnonymous({
+                providerType: reviewData.providerType,
+                providerId: String(reviewData.providerId),
+                providerName: place.name,
+                rating: reviewData.rating,
+                reviewerName: reviewData.name,
+                whatsappNumber: reviewData.whatsappNumber
+            });
+            
+            setShowReviewModal(false);
+            alert('Thank you for your review! 🌟');
+            
+            // Refresh page to show updated rating
+            setTimeout(() => window.location.reload(), 1000);
+        } catch (error) {
+            console.error('Error submitting review:', error);
+            throw error;
+        }
+    };
     
     // Parse pricing
     const pricing = parsePricing(place.pricing) || { "60": 0, "90": 0, "120": 0 };
@@ -591,12 +636,10 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                         </button>
                     )}
                     <button
-                        onClick={() => {
-                            if (!isCustomerLoggedIn) {
-                                setShowLoginRequiredModal(true);
-                            } else {
-                                onRate(place);
-                            }
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setShowReviewModal(true);
                         }}
                         className="flex items-center gap-1.5 text-sm text-gray-700 hover:text-gray-900 font-semibold transition-colors"
                     >
@@ -613,56 +656,16 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4" onClick={() => setShowReferModal(false)}>
                     <div className="bg-white rounded-xl shadow-2xl w-full max-w-[88vw] max-h-[78vh] sm:max-w-xs md:max-w-sm p-3 sm:p-4 animate-fadeIn overflow-y-auto" onClick={(e) => e.stopPropagation()}>
                         <div className="text-center">
-                            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 overflow-hidden relative">
-                                {/* Falling Coins Animation */}
-                                {[...Array(6)].map((_, i) => (
-                                    <img
-                                        key={i}
-                                        src="https://ik.imagekit.io/7grri5v7d/INDASTREET_coins_new-removebg-preview.png?updatedAt=1762338892035"
-                                        alt=""
-                                        className={`absolute w-4 h-4 opacity-60 animate-coin-fall-${i + 1}`}
-                                        style={{
-                                            left: `${10 + (i * 12)}%`,
-                                            animationDelay: `${i * 0.3}s`
-                                        }}
-                                    />
-                                ))}
-                                
-                                {/* Accumulated Coins at Bottom */}
-                                {[...Array(4)].map((_, i) => (
-                                    <img
-                                        key={`bottom-${i}`}
-                                        src="https://ik.imagekit.io/7grri5v7d/INDASTREET_coins_new-removebg-preview.png?updatedAt=1762338892035"
-                                        alt=""
-                                        className="absolute w-3 h-3 opacity-40 animate-pulse"
-                                        style={{
-                                            bottom: '8px',
-                                            left: `${20 + (i * 15)}%`,
-                                            animationDelay: `${i * 0.5}s`
-                                        }}
-                                    />
-                                ))}
-                                
+                            <div className="w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-3 sm:mb-4">
                                 <img 
-                                    src="https://ik.imagekit.io/7grri5v7d/INDASTREET_coins_new-removebg-preview.png?updatedAt=1762338892035"
-                                    alt="IndaStreet Coins"
-                                    className="w-20 h-20 sm:w-28 sm:h-28 object-contain"
+                                    src="https://ik.imagekit.io/7grri5v7d/refer%20a%20friend.png"
+                                    alt="Refer a Friend"
+                                    className="w-full h-full object-contain"
                                 />
                             </div>
                             
                             <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-1 sm:mb-2">Refer a Friend</h3>
-                            <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">Share IndaStreet with friends and earn coins! 🎁</p>
-                            
-                            <div className="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl p-3 sm:p-4 mb-4 sm:mb-6">
-                                <div className="flex items-center justify-center gap-2 mb-2">
-                                    <svg className="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
-                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" />
-                                    </svg>
-                                    <span className="text-2xl font-bold text-orange-600">50 Coins</span>
-                                </div>
-                                <p className="text-sm text-gray-700">For each friend who signs up!</p>
-                            </div>
+                            <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">Share IndaStreet with friends! 🎁</p>
                             
                             <div className="space-y-3 mb-4 sm:mb-6">
                                 <p className="text-sm text-gray-600 text-left">
@@ -671,13 +674,14 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                                 <div className="flex gap-2">
                                     <input 
                                         type="text" 
-                                        value="https://www.indastreetmassage.com/ref/USER123" 
+                                        value={userReferralCode ? `https://www.indastreetmassage.com/ref/${userReferralCode}` : 'Loading...'} 
                                         readOnly 
                                         className="flex-1 px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm"
                                     />
                                     <button
                                         onClick={() => {
-                                            navigator.clipboard.writeText('https://www.indastreetmassage.com/ref/USER123');
+                                            const link = userReferralCode ? `https://www.indastreetmassage.com/ref/${userReferralCode}` : 'https://www.indastreetmassage.com';
+                                            navigator.clipboard.writeText(link);
                                             alert('Link copied to clipboard!');
                                         }}
                                         className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-semibold text-sm"
@@ -692,7 +696,9 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                                     <button
                                         onClick={() => {
-                                            window.open(`https://wa.me/?text=${encodeURIComponent('Check out IndaStreet - Book amazing massages! https://www.indastreetmassage.com/ref/USER123')}`, '_blank');
+                                            const referralLink = userReferralCode ? `https://www.indastreetmassage.com/ref/${userReferralCode}` : 'https://www.indastreetmassage.com';
+                                            const message = `Check out IndaStreet - Book amazing massages! 💆‍♀️ Use my referral link and we both earn coins! ${referralLink}`;
+                                            window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
                                         }}
                                         className="flex flex-col items-center gap-2 p-3 sm:p-4 rounded-lg transition-all hover:scale-105"
                                     >
@@ -705,7 +711,8 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                                     </button>
                                     <button
                                         onClick={() => {
-                                            window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://www.indastreetmassage.com/ref/USER123')}`, '_blank');
+                                            const referralLink = userReferralCode ? `https://www.indastreetmassage.com/ref/${userReferralCode}` : 'https://www.indastreetmassage.com';
+                                            window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}`, '_blank');
                                         }}
                                         className="flex flex-col items-center gap-2 p-3 sm:p-4 rounded-lg transition-all hover:scale-105"
                                     >
@@ -718,7 +725,9 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                                     </button>
                                     <button
                                         onClick={() => {
-                                            navigator.clipboard.writeText('Check out IndaStreet - Book amazing massages! https://www.indastreetmassage.com/ref/USER123');
+                                            const referralLink = userReferralCode ? `https://www.indastreetmassage.com/ref/${userReferralCode}` : 'https://www.indastreetmassage.com';
+                                            const message = `Check out IndaStreet - Book amazing massages! 💆‍♀️ ${referralLink}`;
+                                            navigator.clipboard.writeText(message);
                                             alert('Instagram message copied! Open Instagram and paste to share.');
                                         }}
                                         className="flex flex-col items-center gap-2 p-3 sm:p-4 rounded-lg transition-all hover:scale-105"
@@ -732,7 +741,9 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                                     </button>
                                     <button
                                         onClick={() => {
-                                            navigator.clipboard.writeText('Check out IndaStreet - Book amazing massages! https://www.indastreetmassage.com/ref/USER123');
+                                            const referralLink = userReferralCode ? `https://www.indastreetmassage.com/ref/${userReferralCode}` : 'https://www.indastreetmassage.com';
+                                            const message = `Check out IndaStreet - Book amazing massages! 💆‍♀️ ${referralLink}`;
+                                            navigator.clipboard.writeText(message);
                                             alert('TikTok message copied! Open TikTok and paste to share.');
                                         }}
                                         className="flex flex-col items-center gap-2 p-3 sm:p-4 rounded-lg transition-all hover:scale-105"
@@ -756,6 +767,18 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Anonymous Review Modal */}
+            {showReviewModal && (
+                <AnonymousReviewModal
+                    providerName={place.name}
+                    providerId={place.$id || place.id}
+                    providerType="place"
+                    providerImage={(place as any).mainImage || 'https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382'}
+                    onClose={() => setShowReviewModal(false)}
+                    onSubmit={handleAnonymousReviewSubmit}
+                />
             )}
 
             {/* Login Required Modal */}

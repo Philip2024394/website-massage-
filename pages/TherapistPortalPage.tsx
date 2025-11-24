@@ -34,6 +34,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   const [price60, setPrice60] = useState(String(therapist?.price60 || '100'));
   const [price90, setPrice90] = useState(String(therapist?.price90 || '150'));
   const [price120, setPrice120] = useState(String(therapist?.price120 || '200'));
+  const [yearsOfExperience, setYearsOfExperience] = useState(String(therapist?.yearsOfExperience || '5'));
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>(() => {
     try {
       const raw: any = therapist?.languages;
@@ -225,7 +226,10 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
     );
   };
 
-  const countWords = (text: string) => text.trim().split(/\s+/).filter(Boolean).length;
+  const countWords = (text: string) => {
+    if (!text || text.trim() === '') return 0;
+    return text.trim().split(/\s+/).filter(Boolean).length;
+  };
 
   const handleSaveProfile = async () => {
     if (!therapist) return;
@@ -283,6 +287,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         price60: price60.trim(),
         price90: price90.trim(),
         price120: price120.trim(),
+        yearsOfExperience: parseInt(yearsOfExperience) || 5,
         whatsappNumber: normalizedWhatsApp,
         massageTypes: JSON.stringify(selectedMassageTypes.slice(0, 5)),
         coordinates: JSON.stringify(coordinates),
@@ -465,6 +470,21 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               <p className={`text-xs mt-1 ${countWords(description) > 350 ? 'text-red-600 font-semibold' : 'text-gray-500'}`}>
                 {countWords(description)} / 350 words
               </p>
+            </div>
+
+            {/* Years of Experience */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">🎯 Years of Experience</label>
+              <input
+                type="number"
+                min="1"
+                max="50"
+                value={yearsOfExperience}
+                onChange={e => setYearsOfExperience(e.target.value)}
+                className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-orange-500 focus:outline-none transition-colors"
+                placeholder="5"
+              />
+              <p className="text-xs text-gray-500 mt-1">Enter your years of professional massage experience (1-50)</p>
             </div>
 
             {/* Languages */}

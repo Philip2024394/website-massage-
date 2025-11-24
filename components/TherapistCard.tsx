@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import type { Therapist, Analytics } from '../types';
 import { AvailabilityStatus } from '../types';
 import { parsePricing, parseMassageTypes, parseCoordinates, parseLanguages } from '../utils/appwriteHelpers';
-import { notificationService, bookingService } from '../lib/appwriteService';
+import { notificationService, bookingService, reviewService } from '../lib/appwriteService';
 import { getRandomTherapistImage } from '../utils/therapistImageUtils';
 import { getDisplayRating, getDisplayReviewCount, formatRating } from '../utils/ratingUtils';
 import DistanceDisplay from './DistanceDisplay';
 import BookingConfirmationPopup from './BookingConfirmationPopup';
 import BusyCountdownTimer from './BusyCountdownTimer';
+import AnonymousReviewModal from './AnonymousReviewModal';
+import { initializeUserReferralCode } from '../lib/coinHooks';
 
 interface TherapistCardProps {
     therapist: Therapist;
@@ -134,6 +136,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     const [showReferModal, setShowReferModal] = useState(false);
     const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
     const [showBookingConfirmation, setShowBookingConfirmation] = useState(false);
+    const [showReviewModal, setShowReviewModal] = useState(false);
+    const [userReferralCode, setUserReferralCode] = useState<string>('');
     const [countdown, setCountdown] = useState<string>('');
     const [isOvertime, setIsOvertime] = useState(false);
     const [_discountTimeLeft, _setDiscountTimeLeft] = useState<string>('');
@@ -321,6 +325,47 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     }
 
     const style = statusStyles[displayStatus];
+    
+    // Load user referral code when modal opens
+    useEffect(() => {
+        if (showReferModal && isCustomerLoggedIn) {
+            const userId = localStorage.getItem('appwrite_user_id');
+            if (userId) {
+                initializeUserReferralCode(userId).then(code => {
+                    setUserReferralCode(code);
+                });
+            }
+        }
+    }, [showReferModal, isCustomerLoggedIn]);
+
+    // Handle anonymous review submission
+    const handleAnonymousReviewSubmit = async (reviewData: {
+        name: string;
+        whatsappNumber: string;
+        rating: number;
+        providerId: string | number;
+        providerType: 'therapist' | 'place';
+    }) => {
+        try {
+            await reviewService.createAnonymous({
+                providerType: reviewData.providerType,
+                providerId: String(reviewData.providerId),
+                providerName: therapist.name,
+                rating: reviewData.rating,
+                reviewerName: reviewData.name,
+                whatsappNumber: reviewData.whatsappNumber
+            });
+            
+            setShowReviewModal(false);
+            alert('Thank you for your review! 🌟');
+            
+            // Refresh page to show updated rating
+            setTimeout(() => window.location.reload(), 1000);
+        } catch (error) {
+            console.error('Error submitting review:', error);
+            throw error;
+        }
+    };
     
     // Parse pricing - support both new separate fields and old JSON format
     const getPricing = () => {
@@ -1079,12 +1124,10 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     </button>
                 )}
                 <button
-                    onClick={() => {
-                        if (!isCustomerLoggedIn) {
-                            setShowLoginRequiredModal(true);
-                        } else {
-                            onRate(therapist);
-                        }
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setShowReviewModal(true);
                     }}
                     className="flex items-center gap-1 text-xs text-gray-700 hover:text-gray-900 font-semibold transition-colors"
                 >
@@ -1126,28 +1169,16 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4" onClick={() => setShowReferModal(false)}>
                     <div className="bg-white rounded-xl shadow-2xl w-full max-w-[88vw] max-h-[80vh] sm:max-w-xs md:max-w-sm p-3 sm:p-4 overflow-y-auto" onClick={(e) => e.stopPropagation()}>
                         <div className="text-center">
-                            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3">
-                                {/* Main coin image - Increased by 20% */}
+                            <div className="w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-3 sm:mb-4">
                                 <img 
-                                    src="https://ik.imagekit.io/7grri5v7d/INDASTREET_coins_new-removebg-preview.png?updatedAt=1762338892035"
-                                    alt="IndaStreet Coins"
-                                    className="w-14 h-14 sm:w-20 sm:h-20 object-contain"
+                                    src="https://ik.imagekit.io/7grri5v7d/refer%20a%20friend.png"
+                                    alt="Refer a Friend"
+                                    className="w-full h-full object-contain"
                                 />
                             </div>
                             
                             <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-1 sm:mb-2">Refer a Friend</h3>
-                            <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">Share IndaStreet with friends and earn coins! 🎁</p>
-                            
-                            <div className="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg p-2 sm:p-3 mb-3 sm:mb-4">
-                                <div className="flex items-center justify-center gap-1 sm:gap-2 mb-1">
-                                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
-                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" />
-                                    </svg>
-                                    <span className="text-lg sm:text-xl font-bold text-orange-600">50 Coins</span>
-                                </div>
-                                <p className="text-xs text-gray-700">For each friend who signs up!</p>
-                            </div>
+                            <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">Share IndaStreet with friends! 🎁</p>
                             
                             <div className="space-y-2 mb-3 sm:mb-4">
                                 <p className="text-xs text-gray-600 text-left">
@@ -1156,7 +1187,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                 <div className="flex gap-1">
                                     <input 
                                         type="text" 
-                                        value="https://www.indastreetmassage.com/ref/USER123" 
+                                        value={userReferralCode ? `https://www.indastreetmassage.com/ref/${userReferralCode}` : 'Loading...'} 
                                         readOnly 
                                         className="flex-1 px-2 py-1.5 sm:py-2 border border-gray-300 rounded-lg bg-gray-50 text-xs"
                                         placeholder="Your referral link"
@@ -1165,7 +1196,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                     />
                                     <button
                                         onClick={() => {
-                                            navigator.clipboard.writeText('https://www.indastreetmassage.com/ref/USER123');
+                                            const link = userReferralCode ? `https://www.indastreetmassage.com/ref/${userReferralCode}` : 'https://www.indastreetmassage.com';
+                                            navigator.clipboard.writeText(link);
                                             alert('Link copied to clipboard!');
                                         }}
                                         className="px-3 py-1.5 sm:py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-semibold text-xs whitespace-nowrap"
@@ -1180,7 +1212,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                 <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
                                     <button
                                         onClick={() => {
-                                            window.open(`https://wa.me/?text=${encodeURIComponent('Check out IndaStreet - Book amazing massages! https://www.indastreetmassage.com/ref/USER123')}`, '_blank');
+                                            const referralLink = userReferralCode ? `https://www.indastreetmassage.com/ref/${userReferralCode}` : 'https://www.indastreetmassage.com';
+                                            const message = `Check out IndaStreet - Book amazing massages! 💆‍♀️ Use my referral link and we both earn coins! ${referralLink}`;
+                                            window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
                                         }}
                                         className="flex flex-col items-center gap-1 p-1.5 sm:p-2 rounded-lg transition-all hover:scale-105"
                                     >
@@ -1193,7 +1227,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                     </button>
                                     <button
                                         onClick={() => {
-                                            window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://www.indastreetmassage.com/ref/USER123')}`, '_blank');
+                                            const referralLink = userReferralCode ? `https://www.indastreetmassage.com/ref/${userReferralCode}` : 'https://www.indastreetmassage.com';
+                                            window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}`, '_blank');
                                         }}
                                         className="flex flex-col items-center gap-1 p-1.5 sm:p-2 rounded-lg transition-all hover:scale-105"
                                     >
@@ -1206,7 +1241,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                     </button>
                                     <button
                                         onClick={() => {
-                                            navigator.clipboard.writeText('Check out IndaStreet - Book amazing massages! https://www.indastreetmassage.com/ref/USER123');
+                                            const referralLink = userReferralCode ? `https://www.indastreetmassage.com/ref/${userReferralCode}` : 'https://www.indastreetmassage.com';
+                                            const message = `Check out IndaStreet - Book amazing massages! 💆‍♀️ ${referralLink}`;
+                                            navigator.clipboard.writeText(message);
                                             alert('Instagram message copied! Open Instagram and paste to share.');
                                         }}
                                         className="flex flex-col items-center gap-1 p-1.5 sm:p-2 rounded-lg transition-all hover:scale-105"
@@ -1220,7 +1257,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                     </button>
                                     <button
                                         onClick={() => {
-                                            navigator.clipboard.writeText('Check out IndaStreet - Book amazing massages! https://www.indastreetmassage.com/ref/USER123');
+                                            const referralLink = userReferralCode ? `https://www.indastreetmassage.com/ref/${userReferralCode}` : 'https://www.indastreetmassage.com';
+                                            const message = `Check out IndaStreet - Book amazing massages! 💆‍♀️ ${referralLink}`;
+                                            navigator.clipboard.writeText(message);
                                             alert('TikTok message copied! Open TikTok and paste to share.');
                                         }}
                                         className="flex flex-col items-center gap-1 p-1.5 sm:p-2 rounded-lg transition-all hover:scale-105"
@@ -1244,6 +1283,18 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Anonymous Review Modal */}
+            {showReviewModal && (
+                <AnonymousReviewModal
+                    providerName={therapist.name}
+                    providerId={therapist.$id || therapist.id}
+                    providerType="therapist"
+                    providerImage={therapist.profilePicture || (therapist as any).mainImage || getRandomTherapistImage(therapist.id.toString())}
+                    onClose={() => setShowReviewModal(false)}
+                    onSubmit={handleAnonymousReviewSubmit}
+                />
             )}
 
             {/* Login Required Modal */}
