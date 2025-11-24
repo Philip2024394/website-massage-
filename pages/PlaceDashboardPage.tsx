@@ -1563,30 +1563,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                             </div>
                             {!mapsApiLoaded && (
                                 <div className="space-y-3">
-                                    {/* Manual Address Input (Fallback) */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            📝 Business Address
-                                        </label>
-                                        <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <MapPinIcon className="h-5 w-5 text-gray-400" />
-                                            </div>
-                                            <input
-                                                type="text"
-                                                value={location}
-                                                onChange={(e) => {
-                                                    setLocation(e.target.value);
-                                                    setIsLocationManuallyEdited(true);
-                                                }}
-                                                placeholder="Enter your business address..."
-                                                className="block w-full pl-10 pr-3 py-3 bg-white border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 placeholder-gray-500"
-                                            />
-                                        </div>
-                                        <p className="text-xs text-gray-500 mt-2">
-                                            💡 Enter your full business address
-                                        </p>
-                                    </div>
+                                    {/* Location is set via "Set Location" button above - no manual input needed */}
                                 </div>
                             )}
                         </div>
