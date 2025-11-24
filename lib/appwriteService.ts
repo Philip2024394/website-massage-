@@ -892,7 +892,22 @@ export const placeService = {
                 canonicalId,
                 place
             );
-            return response;
+            
+            // Map Appwrite lowercase attributes to camelCase for frontend compatibility
+            return {
+                ...response,
+                mainImage: (response as any).mainimage || response.mainImage,
+                galleryImages: (response as any).galleryimages || response.galleryImages,
+                openingTime: (response as any).openingtime || response.openingTime,
+                closingTime: (response as any).closingtime || response.closingTime,
+                discountPercentage: (response as any).discountpercentage || response.discountPercentage,
+                discountDuration: (response as any).discountduration || response.discountDuration,
+                isDiscountActive: (response as any).isdiscountactive || response.isDiscountActive,
+                discountEndTime: (response as any).discountendtime || response.discountEndTime,
+                websiteUrl: (response as any).websiteurl || response.websiteUrl,
+                websiteTitle: (response as any).websitetitle || response.websiteTitle,
+                websiteDescription: (response as any).websitedescription || response.websiteDescription,
+            };
         } catch (error) {
             console.error('Error creating place:', error);
             throw error;
@@ -905,6 +920,22 @@ export const placeService = {
             return null;
         }
         try {
+            // Helper to map attributes
+            const mapAttributes = (doc: any) => ({
+                ...doc,
+                mainImage: (doc as any).mainimage || doc.mainImage,
+                galleryImages: (doc as any).galleryimages || doc.galleryImages,
+                openingTime: (doc as any).openingtime || doc.openingTime,
+                closingTime: (doc as any).closingtime || doc.closingTime,
+                discountPercentage: (doc as any).discountpercentage || doc.discountPercentage,
+                discountDuration: (doc as any).discountduration || doc.discountDuration,
+                isDiscountActive: (doc as any).isdiscountactive || doc.isDiscountActive,
+                discountEndTime: (doc as any).discountendtime || doc.discountEndTime,
+                websiteUrl: (doc as any).websiteurl || doc.websiteUrl,
+                websiteTitle: (doc as any).websitetitle || doc.websiteTitle,
+                websiteDescription: (doc as any).websitedescription || doc.websiteDescription,
+            });
+            
             // 1. Try direct document fetch (most reliable when we pass Appwrite $id through login flow)
             try {
                 const direct = await databases.getDocument(
@@ -914,7 +945,7 @@ export const placeService = {
                 );
                 if (direct && direct.$id) {
                     console.log('✅ Found place via direct $id lookup:', direct.$id);
-                    return direct;
+                    return mapAttributes(direct);
                 }
             } catch (directErr: any) {
                 // Expected if providerId is not the document $id; log at debug level only
@@ -933,7 +964,7 @@ export const placeService = {
                     );
                     if (resp.documents.length > 0) {
                         console.log(`✅ Found place via ${field} attribute lookup:`, resp.documents[0].$id);
-                        return resp.documents[0];
+                        return mapAttributes(resp.documents[0]);
                     }
                 } catch (e) {
                     console.log(`ℹ️ ${field} lookup failed:`, (e as any)?.message || e);
@@ -960,7 +991,7 @@ export const placeService = {
                     );
                     if (respNum.documents.length > 0) {
                         console.log('✅ Found place via numeric id attribute lookup:', respNum.documents[0].$id);
-                        return respNum.documents[0];
+                        return mapAttributes(respNum.documents[0]);
                     }
                 } catch (numErr) {
                     console.log('ℹ️ Numeric id lookup failed:', (numErr as any)?.message || numErr);
@@ -1064,7 +1095,22 @@ export const placeService = {
                 id,
                 data
             );
-            return response;
+            
+            // Map Appwrite lowercase attributes to camelCase for frontend compatibility
+            return {
+                ...response,
+                mainImage: (response as any).mainimage || response.mainImage,
+                galleryImages: (response as any).galleryimages || response.galleryImages,
+                openingTime: (response as any).openingtime || response.openingTime,
+                closingTime: (response as any).closingtime || response.closingTime,
+                discountPercentage: (response as any).discountpercentage || response.discountPercentage,
+                discountDuration: (response as any).discountduration || response.discountDuration,
+                isDiscountActive: (response as any).isdiscountactive || response.isDiscountActive,
+                discountEndTime: (response as any).discountendtime || response.discountEndTime,
+                websiteUrl: (response as any).websiteurl || response.websiteUrl,
+                websiteTitle: (response as any).websitetitle || response.websiteTitle,
+                websiteDescription: (response as any).websitedescription || response.websiteDescription,
+            };
         } catch (error) {
             console.error('Error updating place:', error);
             throw error;
