@@ -279,9 +279,9 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         setClosingTime(placeData.closingTime || '21:00');
         
         // Initialize website information
-        setWebsiteUrl((placeData as any).websiteUrl || '');
-        setWebsiteTitle((placeData as any).websiteTitle || '');
-        setWebsiteDescription((placeData as any).websiteDescription || '');
+        setWebsiteUrl((placeData as any).websiteurl || '');
+        setWebsiteTitle((placeData as any).websitetitle || '');
+        setWebsiteDescription((placeData as any).websitedescription || '');
     };
     
     const initializeWithDefaults = () => {
@@ -589,9 +589,9 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             additionalservices: JSON.stringify(additionalServices),
             
             // Website information
-            websiteUrl: websiteUrl || '',
-            websiteTitle: websiteTitle || '',
-            websiteDescription: websiteDescription || '',
+            websiteurl: websiteUrl || '',
+            websitetitle: websiteTitle || '',
+            websitedescription: websiteDescription || '',
             
             // Discounts
             discountPercentage: isDiscountActive ? Number(discountPercentage) : 0,
