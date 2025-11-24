@@ -260,13 +260,21 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         updateData.profilePicture = profileImageDataUrl;
       }
 
-      await therapistService.update(String(therapist.$id || therapist.id), updateData);
+      const savedTherapist = await therapistService.update(String(therapist.$id || therapist.id), updateData);
+      console.log('✅ Profile saved to Appwrite:', savedTherapist);
+      console.log('📊 Saved data includes:', {
+        name: savedTherapist.name,
+        isLive: savedTherapist.isLive,
+        whatsappNumber: savedTherapist.whatsappNumber,
+        coordinates: savedTherapist.coordinates
+      });
 
       // Fire refresh event
+      console.log('🔔 Dispatching refreshTherapistData event...');
       window.dispatchEvent(new CustomEvent('refreshTherapistData', { detail: 'profile-updated' }));
       
       showToast('✅ Profile saved and LIVE!', 'success');
-      console.log('✅ Profile saved successfully');
+      console.log('✅ Profile saved successfully - Check HomePage in 2 seconds');
     } catch (e) {
       console.error('❌ Failed to save profile:', e);
       showToast('Failed to save profile', 'error');

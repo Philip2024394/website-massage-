@@ -47,16 +47,21 @@ export const useAllHooks = () => {
             try {
                 console.log('🔄 [REFRESH EVENT] Calling fetchPublicData...');
                 const { therapists, places } = await dataFetching.fetchPublicData();
-                console.log('🔄 [REFRESH EVENT] Fetched data:', { therapistCount: therapists.length, placeCount: places.length });
+                console.log('🔄 [REFRESH EVENT] Fetched data:', { 
+                    therapistCount: therapists.length, 
+                    placeCount: places.length,
+                    therapistNames: therapists.map((t: any) => t.name).join(', ')
+                });
+                
                 console.log('🔄 [REFRESH EVENT] Updating state with new therapists...');
                 state.setTherapists(therapists);
                 state.setPlaces(places);
-                console.log('✅ [REFRESH EVENT] State updated successfully. HomePage should re-render now.');
+                console.log('✅ [REFRESH EVENT] HomePage therapists updated successfully!');
             } catch (error) {
                 console.error('❌ [REFRESH EVENT] Failed to refresh data:', error);
             }
         };
-        
+
         window.addEventListener('refreshTherapistData', handleDataRefresh);
         
         return () => {
