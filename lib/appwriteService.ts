@@ -639,7 +639,10 @@ export const therapistService = {
             // Update other fields only if provided
             if (data.name) mappedData.name = data.name;
             if (data.email) mappedData.email = data.email;
-            if (data.profilePicture) mappedData.profilePicture = data.profilePicture;
+            // Only save profilePicture if it's a URL (not base64 data)
+            if (data.profilePicture && !data.profilePicture.startsWith('data:')) {
+                mappedData.profilePicture = data.profilePicture;
+            }
             if (data.description) mappedData.description = data.description;
             if (data.whatsappNumber) mappedData.whatsappNumber = data.whatsappNumber;
             if (data.location) mappedData.location = data.location;

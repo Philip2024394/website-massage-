@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MASSAGE_TYPES_CATEGORIZED } from '../constants/rootConstants';
 import type { Therapist } from '../types';
-import { therapistService } from '../lib/appwriteService';
+import { therapistService, imageUploadService } from '../lib/appwriteService';
 import { showToast } from '../utils/showToastPortal';
 import { loadGoogleMapsScript } from '../constants/appConstants';
 import { getStoredGoogleMapsApiKey } from '../utils/appConfig';
@@ -180,11 +180,11 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
     reader.onloadend = () => {
       setProfileImageDataUrl(reader.result as string);
       setUploadingImage(false);
-      showToast('Image uploaded', 'success');
+      showToast('✅ Image ready (will upload on save)', 'success');
     };
     reader.onerror = () => {
       setUploadingImage(false);
-      showToast('Upload failed', 'error');
+      showToast('❌ Image load failed', 'error');
     };
     reader.readAsDataURL(file);
   };
@@ -242,6 +242,19 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         return;
       }
 
+      // Upload profile image to Appwrite Storage if changed
+      let profilePictureUrl = therapist.profilePicture;
+      if (profileImageDataUrl && profileImageDataUrl.startsWith('data:')) {
+        console.log('📤 Uploading profile image to Appwrite Storage...');
+        try {
+          profilePictureUrl = await imageUploadService.uploadProfileImage(profileImageDataUrl);
+          console.log('✅ Profile image uploaded:', profilePictureUrl);
+        } catch (uploadError) {
+          console.error('❌ Failed to upload profile image:', uploadError);
+          showToast('⚠️ Image upload failed, saving without image', 'error');
+        }
+      }
+
       // Build update data
       const updateData: any = {
         name: name.trim(),
@@ -256,8 +269,9 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         isLive: true, // Auto-live on save
       };
       
-      if (profileImageDataUrl) {
-        updateData.profilePicture = profileImageDataUrl;
+      // Only include profilePicture if it's a valid URL
+      if (profilePictureUrl && !profilePictureUrl.startsWith('data:')) {
+        updateData.profilePicture = profilePictureUrl;
       }
 
       const savedTherapist = await therapistService.update(String(therapist.$id || therapist.id), updateData);
@@ -311,16 +325,20 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {onNavigateToStatus && (
-              <button onClick={onNavigateToStatus} className="text-xs px-3 py-2 rounded-lg bg-orange-100 text-orange-700 hover:bg-orange-200 font-medium">
-                Status
-              </button>
-            )}
-            {onLogout && (
-              <button onClick={onLogout} className="text-xs px-3 py-2 rounded-lg border hover:bg-gray-50">
-                Logout
-              </button>
-            )}
+            <button 
+              onClick={onNavigateToStatus} 
+              className="text-xs px-3 py-2 rounded-lg bg-orange-100 text-orange-700 hover:bg-orange-200 font-medium"
+              style={{ display: onNavigateToStatus ? 'block' : 'none' }}
+            >
+              Status
+            </button>
+            <button 
+              onClick={onLogout} 
+              className="text-xs px-3 py-2 rounded-lg border hover:bg-gray-50"
+              style={{ display: onLogout ? 'block' : 'none' }}
+            >
+              Logout
+            </button>
           </div>
         </div>
       </div>
@@ -397,16 +415,19 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               >
                 {locationSet ? '✅ Location Set - Click to Update' : '📍 Set My Location'}
               </button>
-              {locationSet && coordinates && (
-                <div className="mt-3 p-3 bg-green-50 border-2 border-green-200 rounded-lg">
-                  <p className="text-sm text-green-800 font-medium">
-                    ✅ Location captured: {coordinates.lat.toFixed(5)}, {coordinates.lng.toFixed(5)}
-                  </p>
-                </div>
-              )}
-              {coordinates && (
-                <div ref={mapRef} className="mt-3 w-full h-48 rounded-lg border-2 border-gray-300"></div>
-              )}
+              <div 
+                className="mt-3 p-3 bg-green-50 border-2 border-green-200 rounded-lg"
+                style={{ display: (locationSet && coordinates) ? 'block' : 'none' }}
+              >
+                <p className="text-sm text-green-800 font-medium">
+                  ✅ Location captured: {coordinates ? `${coordinates.lat.toFixed(5)}, ${coordinates.lng.toFixed(5)}` : ''}
+                </p>
+              </div>
+              <div 
+                ref={mapRef} 
+                className="mt-3 w-full h-48 rounded-lg border-2 border-gray-300"
+                style={{ display: coordinates ? 'block' : 'none' }}
+              ></div>
             </div>
 
             {/* Description */}
@@ -501,16 +522,17 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
             </div>
 
             {/* Validation Warning */}
-            {!canSave && (
-              <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4">
-                <p className="text-sm text-red-700 font-semibold">⚠️ Missing Required Fields:</p>
-                <ul className="text-xs text-red-600 mt-2 space-y-1 list-disc list-inside">
-                  {!name.trim() && <li>Name is required</li>}
-                  {!/^\+62\d{6,15}$/.test(whatsappNumber.trim()) && <li>Valid WhatsApp number is required</li>}
-                  {!coordinates && <li>Location must be set</li>}
-                </ul>
-              </div>
-            )}
+            <div 
+              className="bg-red-50 border-2 border-red-200 rounded-lg p-4"
+              style={{ display: !canSave ? 'block' : 'none' }}
+            >
+              <p className="text-sm text-red-700 font-semibold">⚠️ Missing Required Fields:</p>
+              <ul className="text-xs text-red-600 mt-2 space-y-1 list-disc list-inside">
+                <li style={{ display: !name.trim() ? 'list-item' : 'none' }}>Name is required</li>
+                <li style={{ display: !/^\+62\d{6,15}$/.test(whatsappNumber.trim()) ? 'list-item' : 'none' }}>Valid WhatsApp number is required</li>
+                <li style={{ display: !coordinates ? 'list-item' : 'none' }}>Location must be set</li>
+              </ul>
+            </div>
 
             {/* Publish Button */}
             <div className="pt-4">
