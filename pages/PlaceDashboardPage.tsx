@@ -240,8 +240,8 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             setPricing(typeof placeData.pricing === 'string' ? JSON.parse(placeData.pricing) : placeData.pricing || { '60': 0, '90': 0, '120': 0 });
             
             // Load hotel/villa pricing if exists
-            if ((placeData as any).hotelVillaPricing) {
-                setHotelVillaPricing(typeof (placeData as any).hotelVillaPricing === 'string' ? JSON.parse((placeData as any).hotelVillaPricing) : (placeData as any).hotelVillaPricing);
+            if ((placeData as any).hotelvillapricing) {
+                setHotelVillaPricing(typeof (placeData as any).hotelvillapricing === 'string' ? JSON.parse((placeData as any).hotelvillapricing) : (placeData as any).hotelvillapricing);
                 setUseSamePricing(false);
             } else {
                 setHotelVillaPricing(typeof placeData.pricing === 'string' ? JSON.parse(placeData.pricing) : placeData.pricing || { '60': 0, '90': 0, '120': 0 });
@@ -573,7 +573,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             
             // Pricing
             pricing: JSON.stringify(pricing),
-            hotelVillaPricing: JSON.stringify(hotelVillaPricing),
+            hotelvillapricing: JSON.stringify(hotelVillaPricing),
             
             // Location
             location,
