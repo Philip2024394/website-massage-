@@ -1708,23 +1708,29 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
-            {/* Header with Burger Menu */}
-            <header className="bg-white shadow-sm px-4 py-3 sticky top-0 z-40">
-                <div className="max-w-7xl mx-auto flex justify-end items-center gap-2">
-                    <button
-                        onClick={() => onNavigate && onNavigate('home')}
-                        className="p-2 text-gray-700 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-colors"
-                        title="Go to Home"
-                    >
-                        <Home className="w-4 h-4" />
-                    </button>
-                    <NotificationBell count={unreadNotificationsCount} onClick={onNavigateToNotifications} />
-                    <button
-                        onClick={() => setIsSideDrawerOpen(true)}
-                        className="p-2 text-gray-700 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-colors"
-                    >
-                        <Menu className="w-5 h-5 text-orange-600" />
-                    </button>
+            {/* Brand Header with Home Icon */}
+            <header className="bg-white shadow-md p-4 sticky top-0 z-40">
+                <div className="flex justify-between items-center">
+                    <h1 className="text-2xl font-bold text-gray-800">
+                        <span className="text-black">Inda</span>
+                        <span className="text-orange-500">Street</span>
+                    </h1>
+                    <div className="flex items-center gap-3">
+                        <NotificationBell count={unreadNotificationsCount} onClick={onNavigateToNotifications} />
+                        <button
+                            onClick={() => onNavigate && onNavigate('home')}
+                            className="p-2 text-gray-700 hover:text-orange-500 hover:bg-orange-50 rounded-full transition-colors"
+                            title="Go to Home"
+                        >
+                            <Home className="w-6 h-6" />
+                        </button>
+                        <button
+                            onClick={() => setIsSideDrawerOpen(true)}
+                            className="p-2 text-orange-500 hover:bg-orange-50 rounded-full transition-colors"
+                        >
+                            <Menu className="w-6 h-6" />
+                        </button>
+                    </div>
                 </div>
             </header>
 
