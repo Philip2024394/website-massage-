@@ -996,10 +996,28 @@ export const placeService = {
                 APPWRITE_CONFIG.collections.places
             );
             console.log('✅ Fetched PLACES:', response.documents.length);
-            response.documents.forEach((p: any) => {
+            
+            // Map Appwrite lowercase attributes to camelCase for frontend compatibility
+            const mappedPlaces = response.documents.map((p: any) => {
                 console.log(`  🏨 ${p.name} - isLive: ${p.isLive}, ID: ${p.$id}`);
+                return {
+                    ...p,
+                    // Map lowercase Appwrite attributes to camelCase
+                    mainImage: (p as any).mainimage || p.mainImage,
+                    galleryImages: (p as any).galleryimages || p.galleryImages,
+                    openingTime: (p as any).openingtime || p.openingTime,
+                    closingTime: (p as any).closingtime || p.closingTime,
+                    discountPercentage: (p as any).discountpercentage || p.discountPercentage,
+                    discountDuration: (p as any).discountduration || p.discountDuration,
+                    isDiscountActive: (p as any).isdiscountactive || p.isDiscountActive,
+                    discountEndTime: (p as any).discountendtime || p.discountEndTime,
+                    websiteUrl: (p as any).websiteurl || p.websiteUrl,
+                    websiteTitle: (p as any).websitetitle || p.websiteTitle,
+                    websiteDescription: (p as any).websitedescription || p.websiteDescription,
+                };
             });
-            return response.documents;
+            
+            return mappedPlaces;
         } catch (error) {
             console.error('❌ Error fetching places (collection might not exist):', error);
             console.error('❌ Error details:', {
@@ -1017,7 +1035,22 @@ export const placeService = {
                 APPWRITE_CONFIG.collections.places,
                 id
             );
-            return response;
+            
+            // Map Appwrite lowercase attributes to camelCase for frontend compatibility
+            return {
+                ...response,
+                mainImage: (response as any).mainimage || response.mainImage,
+                galleryImages: (response as any).galleryimages || response.galleryImages,
+                openingTime: (response as any).openingtime || response.openingTime,
+                closingTime: (response as any).closingtime || response.closingTime,
+                discountPercentage: (response as any).discountpercentage || response.discountPercentage,
+                discountDuration: (response as any).discountduration || response.discountDuration,
+                isDiscountActive: (response as any).isdiscountactive || response.isDiscountActive,
+                discountEndTime: (response as any).discountendtime || response.discountEndTime,
+                websiteUrl: (response as any).websiteurl || response.websiteUrl,
+                websiteTitle: (response as any).websitetitle || response.websiteTitle,
+                websiteDescription: (response as any).websitedescription || response.websiteDescription,
+            };
         } catch (error) {
             console.error('Error fetching place:', error);
             throw error;
