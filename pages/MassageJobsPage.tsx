@@ -5,6 +5,7 @@ import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { AppDrawer } from '../components/AppDrawer';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
+import { Home } from 'lucide-react';
 
 const DATABASE_ID = APPWRITE_CONFIG.databaseId;
 const COLLECTIONS = APPWRITE_CONFIG.collections;
@@ -224,11 +225,13 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                     <h1 className="text-2xl font-bold text-gray-800">
                         <span className="text-black">Inda</span><span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
                     </h1>
-                    <div className="flex items-center gap-3">
-                        <button onClick={() => setIsMenuOpen(true)} title="Menu" className="text-gray-600">
-                           <BurgerMenuIcon className="w-6 h-6" />
-                        </button>
-                    </div>
+                    <button 
+                        onClick={() => onNavigate && onNavigate('home')}
+                        className="p-2 hover:bg-gray-100 rounded-full transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+                        title="Home"
+                    >
+                        <Home className="w-6 h-6 text-gray-600" />
+                    </button>
                 </div>
             </header>
 
@@ -243,6 +246,13 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
 
             <main className="p-4">
                 <div className="max-w-7xl mx-auto">
+
+                    {/* Description Text */}
+                    <div className="text-center mb-6">
+                        <p className="text-sm sm:text-base text-gray-700 max-w-3xl mx-auto">
+                            Showcase your availability for employment or offer your massage services to be discovered by local and international massage spas
+                        </p>
+                    </div>
 
                     {/* Toggle Button - Jobs vs Therapists */}
                     <div className="flex justify-center mb-6">

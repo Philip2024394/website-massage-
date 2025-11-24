@@ -119,7 +119,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         { imageUrl: '', caption: '', description: '' },
         { imageUrl: '', caption: '', description: '' }
     ]);
-    const [whatsappNumber, setWhatsappNumber] = useState('');
+    const [contactNumber, setContactNumber] = useState('');
     const [pricing, setPricing] = useState<Pricing>({ 60: 0, 90: 0, 120: 0 });
     const [hotelVillaPricing, setHotelVillaPricing] = useState<Pricing>({ 60: 0, 90: 0, 120: 0 });
     const [useSamePricing, setUseSamePricing] = useState(false);
@@ -233,7 +233,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             setGalleryImages(loadedGallery.slice(0, 6));
         }
         
-        setWhatsappNumber(placeData.whatsappNumber || '');
+        setContactNumber(placeData.contactNumber || '');
         
         // Parse JSON strings from Appwrite
         try {
@@ -290,7 +290,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         setMainImage('');
         setProfilePicture('');
         setGalleryImages(Array(6).fill({ imageUrl: '', caption: '', description: '' }));
-        setWhatsappNumber('');
+        setContactNumber('');
         setPricing({ '60': 0, '90': 0, '120': 0 });
         setHotelVillaPricing({ '60': 0, '90': 0, '120': 0 });
         setUseSamePricing(true);
@@ -427,7 +427,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             mainImage,
             profilePicture,
             galleryImages,
-            whatsappNumber,
+            contactNumber,
             pricing,
             hotelVillaPricing,
             useSamePricing,
@@ -456,7 +456,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         } catch (error) {
             console.error('❌ Failed to auto-save place form data:', error);
         }
-    }, [name, description, mainImage, profilePicture, galleryImages, whatsappNumber, pricing, hotelVillaPricing, useSamePricing, discountPercentage, discountDuration, isDiscountActive, discountEndTime, location, coordinates, massageTypes, languages, additionalServices, openingTime, closingTime, websiteUrl, websiteTitle, websiteDescription, isLocationManuallyEdited, placeId]);
+    }, [name, description, mainImage, profilePicture, galleryImages, contactNumber, pricing, hotelVillaPricing, useSamePricing, discountPercentage, discountDuration, isDiscountActive, discountEndTime, location, coordinates, massageTypes, languages, additionalServices, openingTime, closingTime, websiteUrl, websiteTitle, websiteDescription, isLocationManuallyEdited, placeId]);
 
     // Auto-save form data whenever any field changes (with 2 second debounce)
     useEffect(() => {
@@ -480,7 +480,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                     setMainImage(parsedData.mainImage || '');
                     setProfilePicture(parsedData.profilePicture || '');
                     setGalleryImages(parsedData.galleryImages || Array(6).fill({ imageUrl: '', caption: '', description: '' }));
-                    setWhatsappNumber(parsedData.whatsappNumber || '');
+                    setContactNumber(parsedData.contactNumber || '');
                     setPricing(parsedData.pricing || { '60': 0, '90': 0, '120': 0 });
                     setHotelVillaPricing(parsedData.hotelVillaPricing || { '60': 0, '90': 0, '120': 0 });
                     setUseSamePricing(parsedData.useSamePricing !== undefined ? parsedData.useSamePricing : true);
@@ -518,7 +518,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         const missingFields = [];
         
         if (!name || name.trim() === '') missingFields.push('• Business/Place Name');
-        if (!whatsappNumber || whatsappNumber.trim() === '') missingFields.push('• WhatsApp Number');
+        if (!contactNumber || contactNumber.trim() === '') missingFields.push('• Contact Number');
         if (!location || location.trim() === '') missingFields.push('• Full Address/Location');
         if (!description || description.trim() === '') missingFields.push('• Business Description');
         if (!mainImage || mainImage.trim() === '') missingFields.push('• Main Business Photo');
@@ -564,7 +564,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             description,
             
             // Contact
-            whatsappNumber,
+            contactNumber,
             
             // Images
             mainImage,
@@ -774,81 +774,93 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             return;
         }
 
-        if (!mapsApiLoaded || !(window as any).google || !(window as any).google.maps) {
-            alert('Google Maps is not loaded yet. Please wait a moment and try again.');
-            return;
-        }
-
-        setIsGettingLocation(true);
-        navigator.geolocation.getCurrentPosition(position => {
-            try {
-                const geocoder = new (window as any).google.maps.Geocoder();
-                const latlng = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude
-                };
-                setCoordinates(latlng);
-                geocoder.geocode({ location: latlng }, (results: any, status: string) => {
-                    setIsGettingLocation(false);
-                    if (status === 'OK' && results[0]) {
-                        setLocation(results[0].formatted_address);
-                        setIsLocationManuallyEdited(false);
-                        // Mobile-friendly notification
-                        if ('vibrate' in navigator) {
-                            navigator.vibrate(200);
-                        }
-                        // Show a better mobile notification
-                        const notification = document.createElement('div');
-                        notification.innerHTML = `
-                            <div class="fixed top-4 left-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-lg z-50 flex items-center gap-3">
-                                <div class="w-6 h-6 bg-white rounded-full flex items-center justify-center">
-                                    <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                                    </svg>
-                                </div>
-                                <span class="font-medium">📍 Location set successfully!</span>
-                            </div>
-                        `;
-                        document.body.appendChild(notification);
-                        setTimeout(() => {
-                            try {
-                                if (notification && notification.parentNode && notification.parentNode.contains(notification)) {
-                                    notification.parentNode.removeChild(notification);
-                                }
-                            } catch (error) {
-                                console.warn('Failed to remove notification element:', error);
-                            }
-                        }, 3000);
-                    } else {
-                        console.error('Geocoder failed due to: ' + status);
-                        alert('Could not find address for your location.');
+        // Check if Google Maps is loaded, if not wait for it
+        const checkAndProceed = () => {
+            if (!mapsApiLoaded || !(window as any).google || !(window as any).google.maps) {
+                // Show loading state
+                setIsGettingLocation(true);
+                
+                // Try again after a short delay (max 3 attempts)
+                let attempts = 0;
+                const maxAttempts = 3;
+                
+                const waitForMaps = setInterval(() => {
+                    attempts++;
+                    if ((window as any).google && (window as any).google.maps) {
+                        clearInterval(waitForMaps);
+                        setMapsApiLoaded(true);
+                        proceedWithLocation();
+                    } else if (attempts >= maxAttempts) {
+                        clearInterval(waitForMaps);
+                        setIsGettingLocation(false);
+                        alert('Google Maps is still loading. Please try again in a moment.');
                     }
-                });
-            } catch (error) {
-                setIsGettingLocation(false);
-                console.error('Error in location detection:', error);
-                alert('Failed to get location. Please ensure Google Maps is loaded and try again.');
+                }, 1000);
+                
+                return;
             }
-        }, (error) => {
-                setIsGettingLocation(false);
-                let errorMessage = 'Could not get your location.';
-                switch(error.code) {
-                    case error.PERMISSION_DENIED:
-                        errorMessage = 'Location access denied. Please enable location permissions in your browser settings.';
-                        break;
-                    case error.POSITION_UNAVAILABLE:
-                        errorMessage = 'Location information unavailable. Please try again.';
-                        break;
-                    case error.TIMEOUT:
-                        errorMessage = 'Location request timed out. Please try again.';
-                        break;
+            
+            proceedWithLocation();
+        };
+
+        const proceedWithLocation = () => {
+            setIsGettingLocation(true);
+            navigator.geolocation.getCurrentPosition(position => {
+                try {
+                    const geocoder = new (window as any).google.maps.Geocoder();
+                    const latlng = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    setCoordinates(latlng);
+                    geocoder.geocode({ location: latlng }, (results: any, status: string) => {
+                        setIsGettingLocation(false);
+                        if (status === 'OK' && results[0]) {
+                            setLocation(results[0].formatted_address);
+                            setIsLocationManuallyEdited(false);
+                            // Mobile-friendly notification
+                            if ('vibrate' in navigator) {
+                                navigator.vibrate(200);
+                            }
+                            // Show a better mobile notification
+                            const notification = document.createElement('div');
+                            notification.innerHTML = `
+                                <div class="fixed top-4 left-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-lg z-50 flex items-center gap-3">
+                                    <div class="w-6 h-6 bg-white rounded-full flex items-center justify-center">
+                                        <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                        </svg>
+                                    </div>
+                                    <span class="font-medium">📍 Location set successfully!</span>
+                                </div>
+                            `;
+                            document.body.appendChild(notification);
+                            setTimeout(() => {
+                                try {
+                                    if (notification && notification.parentNode && notification.parentNode.contains(notification)) {
+                                        notification.parentNode.removeChild(notification);
+                                    }
+                                } catch (error) {
+                                    console.warn('Failed to remove notification element:', error);
+                                }
+                            }, 3000);
+                        } else {
+                            alert('Geocoding failed: ' + status);
+                        }
+                    });
+                } catch (error) {
+                    setIsGettingLocation(false);
+                    console.error('Geocoding error:', error);
+                    alert('Error getting location. Please try again.');
                 }
-                alert(errorMessage);
-            }, {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 60000
+            }, error => {
+                setIsGettingLocation(false);
+                console.error('Geolocation error:', error);
+                alert('Unable to retrieve your location. Please check your browser permissions.');
             });
+        };
+
+        checkAndProceed();
     };
 
     // Profile image handling with warning modal
@@ -1341,7 +1353,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                         </div>
                         
                         <div>
-                            <label className="block text-sm font-medium text-gray-900">{t?.whatsappLabel || 'WhatsApp Number'}</label>
+                            <label className="block text-sm font-medium text-gray-900">{t?.whatsappLabel || 'Contact Number'}</label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <PhoneIcon className="h-5 w-5 text-gray-400" />
@@ -1351,8 +1363,8 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                 </div>
                                 <input 
                                     type="text" 
-                                    value={whatsappNumber} 
-                                    onChange={e => setWhatsappNumber(e.target.value)} 
+                                    value={contactNumber} 
+                                    onChange={e => setContactNumber(e.target.value)} 
                                     placeholder="81234567890" 
                                     className="mt-1 block w-full pl-20 pr-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-green focus:border-brand-green text-gray-900" 
                                 />
@@ -1505,27 +1517,27 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                         <p className="text-xs text-gray-500 text-center">
                                             📍 {location.substring(0, 50)}{location.length > 50 ? '...' : ''}
                                         </p>
-                                        {coordinates.lat !== 0 && coordinates.lng !== 0 && (
+                                        {coordinates && coordinates.lat && coordinates.lng && coordinates.lat !== 0 && coordinates.lng !== 0 && (
                                             <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
                                                 <p className="text-xs font-medium text-gray-700 mb-2">Location Coordinates:</p>
                                                 <div className="grid grid-cols-2 gap-2 text-xs mb-2">
                                                     <div className="bg-white rounded p-2 border">
                                                         <span className="text-gray-500">Lat:</span>
-                                                        <span className="font-mono ml-1 text-gray-900">{coordinates.lat.toFixed(6)}</span>
+                                                        <span className="font-mono ml-1 text-gray-900">{Number(coordinates.lat).toFixed(6)}</span>
                                                     </div>
                                                     <div className="bg-white rounded p-2 border">
                                                         <span className="text-gray-500">Lng:</span>
-                                                        <span className="font-mono ml-1 text-gray-900">{coordinates.lng.toFixed(6)}</span>
+                                                        <span className="font-mono ml-1 text-gray-900">{Number(coordinates.lng).toFixed(6)}</span>
                                                     </div>
                                                 </div>
                                                 <div className="bg-white rounded p-2 border">
                                                     <span className="text-gray-500 text-xs">Map ID:</span>
                                                     <div className="font-mono text-xs text-gray-900 mt-1 break-all">
-                                                        {coordinates.lat.toFixed(6)},{coordinates.lng.toFixed(6)}
+                                                        {Number(coordinates.lat).toFixed(6)},{Number(coordinates.lng).toFixed(6)}
                                                     </div>
                                                     <button
                                                         onClick={() => {
-                                                            const coordString = `${coordinates.lat.toFixed(6)},${coordinates.lng.toFixed(6)}`;
+                                                            const coordString = `${Number(coordinates.lat).toFixed(6)},${Number(coordinates.lng).toFixed(6)}`;
                                                             navigator.clipboard.writeText(coordString);
                                                             setToast({ message: '📋 Coordinates copied to clipboard!', type: 'success' });
                                                             setTimeout(() => setToast(null), 2000);

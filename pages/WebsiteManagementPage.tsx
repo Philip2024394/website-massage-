@@ -96,25 +96,36 @@ const WebsiteManagementPage: React.FC<WebsiteManagementPageProps> = ({
                             <span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
                         </h1>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => setIsPreviewMode(!isPreviewMode)}
-                            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-gray-700 bg-white rounded-md shadow-sm hover:bg-gray-50 transition-colors border border-gray-200"
-                        >
-                            <Eye className="w-4 h-4" />
-                            {isPreviewMode ? 'Edit' : 'Preview'}
-                        </button>
-                        <button
-                            onClick={handleSave}
-                            disabled={isSaving}
-                            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-white bg-gray-800 rounded-md shadow-sm hover:bg-black transition-colors disabled:opacity-50"
-                        >
-                            <Save className="w-4 h-4" />
-                            {isSaving ? 'Saving' : 'Save'}
-                        </button>
-                    </div>
+                    <button
+                        onClick={onBack}
+                        className="p-2 hover:bg-gray-100 rounded-full transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+                        title="Home"
+                    >
+                        <Home className="w-6 h-6 text-gray-600" />
+                    </button>
                 </div>
             </header>
+
+            {/* Action Buttons Below Header */}
+            <div className="bg-white border-b border-gray-200 sticky top-[72px] z-[9996]">
+                <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-end gap-2">
+                    <button
+                        onClick={() => setIsPreviewMode(!isPreviewMode)}
+                        className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-gray-700 bg-white rounded-md shadow-sm hover:bg-gray-50 transition-colors border border-gray-200"
+                    >
+                        <Eye className="w-4 h-4" />
+                        {isPreviewMode ? 'Edit' : 'Preview'}
+                    </button>
+                    <button
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-white bg-gray-800 rounded-md shadow-sm hover:bg-black transition-colors disabled:opacity-50"
+                    >
+                        <Save className="w-4 h-4" />
+                        {isSaving ? 'Saving' : 'Save'}
+                    </button>
+                </div>
+            </div>
 
             <div className="max-w-4xl mx-auto px-4 py-6">
                 {isPreviewMode ? (

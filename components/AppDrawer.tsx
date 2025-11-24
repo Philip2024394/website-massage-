@@ -254,7 +254,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                     </div>
                                     <div className="flex-grow">
                                         <p className="font-semibold text-gray-800 group-hover:text-purple-600 transition-colors">
-                                            Website Management
+                                            Website Partners
                                         </p>
                                         <p className="text-xs text-gray-500">Apply for partnership</p>
                                     </div>
