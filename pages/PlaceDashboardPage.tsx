@@ -259,8 +259,8 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             console.error('Error parsing place data:', _e);
         }
         
-        setLanguages(placeData.languages || []);
-        setAdditionalServices((placeData as any).additionalServices || []);
+        setLanguages((placeData as any).languagesspoken || []);
+        setAdditionalServices((placeData as any).additionalservices || []);
         
         // Auto-fill location from userLocation if place location is empty
         if (placeData.location) {
@@ -585,8 +585,8 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             
             // Services
             massagetypes: JSON.stringify(massageTypes),
-            languages: JSON.stringify(languages),
-            additionalServices: JSON.stringify(additionalServices),
+            languagesspoken: JSON.stringify(languages),
+            additionalservices: JSON.stringify(additionalServices),
             
             // Website information
             websiteUrl: websiteUrl || '',
