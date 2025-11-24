@@ -16,6 +16,7 @@ export type Page =
     | 'therapistPortal'
     | 'therapistProfile' // 🎯 NEW: Customer-facing therapist profile page 
     | 'profile' // 🎯 NEW: Guest profile page for non-registered users
+    | 'qr-code' // QR Code sharing page
     | 'placeDashboard' 
     | 'serviceTerms' 
     | 'placeTerms' 

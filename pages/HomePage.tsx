@@ -736,6 +736,7 @@ const HomePage: React.FC<HomePageProps> = ({
                     onNavigate={onNavigate}
                     onTermsClick={onTermsClick}
                     onPrivacyClick={onPrivacyClick}
+                    onQRCodeClick={() => onNavigate && onNavigate('qr-code')}
                     therapists={therapists}
                     places={places}
                 />
@@ -745,32 +746,35 @@ const HomePage: React.FC<HomePageProps> = ({
                 {/* Location Display & Search */}
                 <div className="mb-4">
                     {userLocation ? (
-                        <div className="flex items-center justify-center gap-2">
-                            <svg 
-                                className="w-5 h-5 text-orange-500" 
-                                fill="none" 
-                                viewBox="0 0 24 24" 
-                                stroke="currentColor" 
-                                strokeWidth={2}
-                            >
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            <span className="text-sm font-semibold text-gray-800">
-                                {(() => {
-                                    if (!userLocation.address || userLocation.address.trim() === '') {
-                                        return `${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`;
-                                    }
-                                    try {
-                                        // Extract only the last part (city/area name)
-                                        const parts = String(userLocation.address).split(',').map(p => p.trim());
-                                        // Return last 2 parts (e.g., "Jakarta, Indonesia")
-                                        return parts.slice(-2).join(', ');
-                                    } catch (e) {
-                                        return `${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`;
-                                    }
-                                })()}
-                            </span>
+                        <div className="flex flex-col items-center gap-1">
+                            <div className="flex items-center justify-center gap-2">
+                                <svg 
+                                    className="w-5 h-5 text-orange-500" 
+                                    fill="none" 
+                                    viewBox="0 0 24 24" 
+                                    stroke="currentColor" 
+                                    strokeWidth={2}
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <span className="text-sm font-semibold text-gray-800">
+                                    {(() => {
+                                        if (!userLocation.address || userLocation.address.trim() === '') {
+                                            return `${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`;
+                                        }
+                                        try {
+                                            // Extract only the last part (city/area name)
+                                            const parts = String(userLocation.address).split(',').map(p => p.trim());
+                                            // Return last 2 parts (e.g., "Jakarta, Indonesia")
+                                            return parts.slice(-2).join(', ');
+                                        } catch (e) {
+                                            return `${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`;
+                                        }
+                                    })()}
+                                </span>
+                            </div>
+                            <p className="text-xs text-gray-600 font-medium">Indonesia's Massage Therapist Hub</p>
                         </div>
                     ) : (
                         <div className="flex flex-col items-center gap-2 max-w-md mx-auto">

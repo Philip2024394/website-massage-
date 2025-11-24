@@ -27,6 +27,7 @@ interface AppDrawerProps {
     onNavigate?: (page: string) => void;
     onTermsClick?: () => void;
     onPrivacyClick?: () => void;
+    onQRCodeClick?: () => void;
     
     // Data for display
     therapists?: any[];
@@ -49,6 +50,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
     onNavigate,
     onTermsClick,
     onPrivacyClick,
+    onQRCodeClick,
     therapists = [],
     places = []
 }) => {
@@ -428,15 +430,15 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                         {/* FOOTER LINKS */}
                         <div className="pt-4 mt-6 border-t border-gray-300">
                             <div className="flex justify-center gap-4 px-4 py-2">
-                                {onAdminPortalClick && (
+                                {onQRCodeClick && (
                                     <button 
-                                        onClick={() => handleItemClick(onAdminPortalClick)}
+                                        onClick={() => handleItemClick(onQRCodeClick)}
                                         className="text-xs text-orange-500 hover:text-orange-600 transition-colors font-bold"
                                     >
-                                        Admin
+                                        QR Code
                                     </button>
                                 )}
-                                {(onAdminPortalClick && (onTermsClick || onPrivacyClick)) && (
+                                {(onQRCodeClick && (onTermsClick || onPrivacyClick)) && (
                                     <span className="text-xs text-gray-400">•</span>
                                 )}
                                 {onTermsClick && (

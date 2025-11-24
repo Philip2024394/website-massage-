@@ -329,43 +329,13 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                         <span className="text-black">Inda</span>
                         <span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
                     </h1>
-                    <div className="flex items-center gap-3 text-gray-600">
-                        {/* Quick Access Buttons */}
-                        <button 
-                            onClick={() => {
-                                if (onNavigate) {
-                                    onNavigate('notifications');
-                                }
-                            }} 
-                            className="p-2 hover:bg-gray-100 rounded-full transition-colors" 
-                            title="Notifications"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                            </svg>
-                        </button>
-                        
-                        <button 
-                            onClick={() => {
-                                if (onNavigate) {
-                                    onNavigate('referral');
-                                }
-                            }} 
-                            className="p-2 hover:bg-gray-100 rounded-full transition-colors" 
-                            title="Invite Friends"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
-                        </button>
-
-                        <button onClick={() => {
-                            console.log('🍔 Partners Page - Burger menu clicked! Current isMenuOpen:', isMenuOpen);
-                            setIsMenuOpen(true);
-                        }} title="Menu" style={{ zIndex: 9999, position: 'relative' }}>
-                           <BurgerMenuIcon className="w-6 h-6" />
-                        </button>
-                    </div>
+                    <button 
+                        onClick={() => onNavigate && onNavigate('home')}
+                        className="p-2 hover:bg-gray-100 rounded-full transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+                        title="Home"
+                    >
+                        <HomeIcon className="w-6 h-6 text-gray-600" />
+                    </button>
                 </div>
             </header>
             
@@ -388,6 +358,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                 onNavigate={onNavigate}
                 onTermsClick={onTermsClick}
                 onPrivacyClick={onPrivacyClick}
+                onQRCodeClick={() => onNavigate && onNavigate('qr-code')}
                 therapists={therapists}
                 places={places}
             />
@@ -404,8 +375,10 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
             >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
                     <h1 className="text-2xl font-bold sm:text-4xl lg:text-5xl xl:text-6xl drop-shadow-lg">
-                        <span className="text-black">Inda</span><span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
-                        <span className="text-black text-xl sm:text-3xl lg:text-4xl xl:text-5xl ml-2">Partners</span>
+                        <div>
+                            <span className="text-black">Inda</span><span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
+                        </div>
+                        <div className="text-black text-xl sm:text-3xl lg:text-4xl xl:text-5xl">Partners</div>
                     </h1>
                     <p className="mt-3 sm:mt-4 text-sm sm:text-lg lg:text-xl text-white max-w-3xl mx-auto drop-shadow-md px-4">
                         Discover our trusted network of verified wellness professionals, luxury accommodations, 
@@ -655,18 +628,28 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                 )}
 
                 {/* Join Partner Program CTA */}
-                <div className="mt-8 sm:mt-12 bg-gradient-to-r from-orange-600 to-amber-600 rounded-lg sm:rounded-xl p-6 sm:p-8 text-center text-white mx-2 sm:mx-0">
-                    <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Want to become an Indastreet Partner?</h2>
-                    <p className="text-orange-100 mb-4 sm:mb-6 max-w-2xl mx-auto text-sm sm:text-base px-2">
-                        Join our network of verified wellness professionals and luxury accommodations. 
-                        Get featured on our platform and boost your online visibility.
-                    </p>
-                    <button 
-                        onClick={() => onNavigate && onNavigate('partnership-application')}
-                        className="bg-white text-orange-600 px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors duration-200 text-sm sm:text-base"
-                    >
-                        Apply for Partnership
-                    </button>
+                <div 
+                    className="mt-8 sm:mt-12 bg-gradient-to-r from-orange-600 to-amber-600 rounded-lg sm:rounded-xl p-6 sm:p-8 text-center text-white mx-2 sm:mx-0 relative overflow-hidden"
+                    style={{
+                        backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/start%20your%20journey.png?updatedAt=1763196282314)',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        backgroundRepeat: 'no-repeat'
+                    }}
+                >
+                    <div className="relative z-10">
+                        <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 drop-shadow-lg">Want to become an Indastreet Partner?</h2>
+                        <p className="text-white mb-4 sm:mb-6 max-w-2xl mx-auto text-sm sm:text-base px-2 drop-shadow-md">
+                            Join our network of verified wellness professionals and luxury accommodations. 
+                            Get featured on our platform and boost your online visibility.
+                        </p>
+                        <button 
+                            onClick={() => onNavigate && onNavigate('partnership-application')}
+                            className="bg-white text-orange-600 px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors duration-200 text-sm sm:text-base shadow-lg"
+                        >
+                            Apply for Partnership
+                        </button>
+                    </div>
                 </div>
             </div>
 

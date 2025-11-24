@@ -84,6 +84,7 @@ const RewardBannersTestPage = React.lazy(() => import('./pages/RewardBannersTest
 import WebsiteManagementPage from './pages/WebsiteManagementPage';
 import TodaysDiscountsPage from './pages/TodaysDiscountsPage';
 import GuestProfilePage from './pages/GuestProfilePage'; // 🎯 NEW: Guest profile for non-registered users
+import QRCodePage from './pages/QRCodePage'; // QR Code sharing page
 import { APP_CONFIG } from './config/appConfig';
 
 interface AppRouterProps {
@@ -724,6 +725,11 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onPrivacyClick={handleNavigateToPrivacyPolicy}
                 therapists={therapists}
                 places={places}
+            />;
+
+        case 'qr-code': // QR Code sharing page
+            return <QRCodePage 
+                onNavigate={commonNavigateHandler}
             />;
             
         case 'detail': 
