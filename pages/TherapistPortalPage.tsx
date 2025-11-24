@@ -441,7 +441,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">💆 Massage Types (up to 5)</label>
               <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
-                {Object.values(MASSAGE_TYPES_CATEGORIZED).flat().map(type => (
+                {MASSAGE_TYPES_CATEGORIZED.flatMap(category => category.types).map(type => (
                   <button
                     key={type}
                     onClick={() => handleToggleMassageType(type)}

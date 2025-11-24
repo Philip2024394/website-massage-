@@ -75,20 +75,19 @@ const PageNumberBadge: React.FC<PageNumberBadgeProps> = ({
                 }
                 font-mono text-sm font-bold min-h-[40px]
             `}>
-                {/* Lock icon if locked */}
-                {actualIsLocked && (
-                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-                    </svg>
-                )}
+                {/* Lock icon - always rendered, hidden with CSS */}
+                <svg className={`w-6 h-6 transition-opacity ${actualIsLocked ? 'opacity-100' : 'opacity-0 w-0 h-0'}`} fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                </svg>
                 
-                {/* Lock Status - More Prominent Display */}
+                {/* Lock Status - static text, conditional styling only */}
                 <span className={`text-xs font-bold px-2 py-1 rounded ${
                     actualIsLocked 
                         ? 'bg-white bg-opacity-90 text-red-600' 
                         : 'bg-black bg-opacity-50 text-white'
                 }`}>
-                    {actualIsLocked ? '🔒 LOCKED' : 'UNLOCKED'}
+                    <span className={actualIsLocked ? '' : 'hidden'}>🔒 LOCKED</span>
+                    <span className={actualIsLocked ? 'hidden' : ''}>UNLOCKED</span>
                 </span>
                 
                 {/* Page number */}
