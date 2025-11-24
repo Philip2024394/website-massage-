@@ -564,10 +564,10 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             description,
             
             // Contact
-            contactNumber,
+            whatsappnumber: contactNumber,
             
             // Images
-            mainImage,
+            mainimage: mainImage,
             profilePicture,
             galleryImages: JSON.stringify(filteredGallery),
             
@@ -584,7 +584,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             closingTime,
             
             // Services
-            massageTypes: JSON.stringify(massageTypes),
+            massagetypes: JSON.stringify(massageTypes),
             languages: JSON.stringify(languages),
             additionalServices: JSON.stringify(additionalServices),
             
