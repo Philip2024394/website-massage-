@@ -354,6 +354,19 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     }
     const massageTypes = parseMassageTypes(therapist.massageTypes) || [];
     
+    // Debug logging for massage types and languages
+    if (therapist.name === 'phil10' || (therapist as any).$id === '6912d611003551067831') {
+        console.log('🔍 CARD DATA DEBUG:', {
+            therapistId: therapist.$id || therapist.id,
+            therapistName: therapist.name,
+            rawMassageTypes: therapist.massageTypes,
+            parsedMassageTypes: massageTypes,
+            massageTypesCount: massageTypes.length,
+            rawLanguages: therapist.languages,
+            languagesType: typeof therapist.languages
+        });
+    }
+    
     // Helper function to format price in 4-character format: "280k"
     const formatPrice = (price: number | string): string => {
         const numPrice = typeof price === 'string' ? parseFloat(price) : price;

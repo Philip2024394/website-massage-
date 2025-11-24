@@ -35,7 +35,15 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   const [price90, setPrice90] = useState(String(therapist?.price90 || '150'));
   const [price120, setPrice120] = useState(String(therapist?.price120 || '200'));
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>(() => {
-    if (Array.isArray(therapist?.languages)) return therapist.languages.slice(0, 3);
+    try {
+      const raw: any = therapist?.languages;
+      // Handle both array format (already parsed) and JSON string format
+      if (Array.isArray(raw)) return raw.slice(0, 3);
+      if (typeof raw === 'string' && raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed.slice(0, 3);
+      }
+    } catch {}
     return [];
   });
   const [selectedMassageTypes, setSelectedMassageTypes] = useState<string[]>(() => {
@@ -271,7 +279,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       const updateData: any = {
         name: name.trim(),
         description: description.trim(),
-        languages: selectedLanguages,
+        languages: JSON.stringify(selectedLanguages), // FIX: JSON stringify languages array
         price60: price60.trim(),
         price90: price90.trim(),
         price120: price120.trim(),

@@ -57,12 +57,31 @@ export const stringifyCoordinates = (coordinates: { lat: number; lng: number }):
 };
 
 // Massage types helpers
-export const parseMassageTypes = (massageTypesString: string): string[] => {
-  try {
-    return JSON.parse(massageTypesString);
-  } catch {
+export const parseMassageTypes = (massageTypesString: string | string[] | any): string[] => {
+  // Handle null, undefined, or empty values
+  if (!massageTypesString) {
     return [];
   }
+  
+  // If it's already an array, return it
+  if (Array.isArray(massageTypesString)) {
+    return massageTypesString;
+  }
+  
+  // If it's a string, try to parse it
+  if (typeof massageTypesString === 'string') {
+    try {
+      const parsed = JSON.parse(massageTypesString);
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  }
+  
+  return [];
 };
 
 export const stringifyMassageTypes = (massageTypes: string[]): string => {
