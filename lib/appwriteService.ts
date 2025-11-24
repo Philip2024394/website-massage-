@@ -893,11 +893,24 @@ export const placeService = {
                 place
             );
             
+            // Parse galleryimages JSON string if it exists
+            let parsedGalleryImages = response.galleryImages;
+            if ((response as any).galleryimages) {
+                try {
+                    parsedGalleryImages = typeof (response as any).galleryimages === 'string' 
+                        ? JSON.parse((response as any).galleryimages) 
+                        : (response as any).galleryimages;
+                } catch (e) {
+                    console.error('Error parsing galleryimages:', e);
+                    parsedGalleryImages = [];
+                }
+            }
+            
             // Map Appwrite lowercase attributes to camelCase for frontend compatibility
             return {
                 ...response,
                 mainImage: (response as any).mainimage || response.mainImage,
-                galleryImages: (response as any).galleryimages || response.galleryImages,
+                galleryImages: parsedGalleryImages,
                 openingTime: (response as any).openingtime || response.openingTime,
                 closingTime: (response as any).closingtime || response.closingTime,
                 discountPercentage: (response as any).discountpercentage || response.discountPercentage,
@@ -907,6 +920,12 @@ export const placeService = {
                 websiteUrl: (response as any).websiteurl || response.websiteUrl,
                 websiteTitle: (response as any).websitetitle || response.websiteTitle,
                 websiteDescription: (response as any).websitedescription || response.websiteDescription,
+                // Map critical display attributes
+                massageTypes: (response as any).massagetypes || response.massageTypes,
+                languages: (response as any).languagesspoken || response.languages,
+                additionalServices: (response as any).additionalservices || response.additionalServices,
+                contactNumber: (response as any).whatsappnumber || response.contactNumber,
+                hotelVillaPricing: (response as any).hotelvillapricing || response.hotelVillaPricing,
             };
         } catch (error) {
             console.error('Error creating place:', error);
@@ -921,20 +940,43 @@ export const placeService = {
         }
         try {
             // Helper to map attributes
-            const mapAttributes = (doc: any) => ({
-                ...doc,
-                mainImage: (doc as any).mainimage || doc.mainImage,
-                galleryImages: (doc as any).galleryimages || doc.galleryImages,
-                openingTime: (doc as any).openingtime || doc.openingTime,
-                closingTime: (doc as any).closingtime || doc.closingTime,
-                discountPercentage: (doc as any).discountpercentage || doc.discountPercentage,
-                discountDuration: (doc as any).discountduration || doc.discountDuration,
-                isDiscountActive: (doc as any).isdiscountactive || doc.isDiscountActive,
-                discountEndTime: (doc as any).discountendtime || doc.discountEndTime,
-                websiteUrl: (doc as any).websiteurl || doc.websiteUrl,
-                websiteTitle: (doc as any).websitetitle || doc.websiteTitle,
-                websiteDescription: (doc as any).websitedescription || doc.websiteDescription,
-            });
+            const mapAttributes = (doc: any) => {
+                // Parse galleryImages JSON string if it exists (check both camelCase and lowercase)
+                let parsedGalleryImages = [];
+                const galleryData = doc.galleryImages || (doc as any).galleryimages;
+                
+                if (galleryData) {
+                    try {
+                        parsedGalleryImages = typeof galleryData === 'string' 
+                            ? JSON.parse(galleryData) 
+                            : galleryData;
+                    } catch (e) {
+                        console.error('Error parsing gallery images:', e);
+                        parsedGalleryImages = [];
+                    }
+                }
+                
+                return {
+                    ...doc,
+                    mainImage: (doc as any).mainimage || doc.mainImage,
+                    galleryImages: parsedGalleryImages,
+                    openingTime: (doc as any).openingtime || doc.openingTime,
+                    closingTime: (doc as any).closingtime || doc.closingTime,
+                    discountPercentage: (doc as any).discountpercentage || doc.discountPercentage,
+                    discountDuration: (doc as any).discountduration || doc.discountDuration,
+                    isDiscountActive: (doc as any).isdiscountactive || doc.isDiscountActive,
+                    discountEndTime: (doc as any).discountendtime || doc.discountEndTime,
+                    websiteUrl: (doc as any).websiteurl || doc.websiteUrl,
+                    websiteTitle: (doc as any).websitetitle || doc.websiteTitle,
+                    websiteDescription: (doc as any).websitedescription || doc.websiteDescription,
+                    // Map critical display attributes
+                    massageTypes: (doc as any).massagetypes || doc.massageTypes,
+                    languages: (doc as any).languagesspoken || doc.languages,
+                    additionalServices: (doc as any).additionalservices || doc.additionalServices,
+                    contactNumber: (doc as any).whatsappnumber || doc.contactNumber,
+                    hotelVillaPricing: (doc as any).hotelvillapricing || doc.hotelVillaPricing,
+                };
+            };
             
             // 1. Try direct document fetch (most reliable when we pass Appwrite $id through login flow)
             try {
@@ -1031,11 +1073,27 @@ export const placeService = {
             // Map Appwrite lowercase attributes to camelCase for frontend compatibility
             const mappedPlaces = response.documents.map((p: any) => {
                 console.log(`  🏨 ${p.name} - isLive: ${p.isLive}, ID: ${p.$id}`);
+                
+                // Parse galleryImages JSON string if it exists (check both camelCase and lowercase)
+                let parsedGalleryImages = [];
+                const galleryData = p.galleryImages || (p as any).galleryimages;
+                
+                if (galleryData) {
+                    try {
+                        parsedGalleryImages = typeof galleryData === 'string' 
+                            ? JSON.parse(galleryData) 
+                            : galleryData;
+                    } catch (e) {
+                        console.error('Error parsing gallery images:', e);
+                        parsedGalleryImages = [];
+                    }
+                }
+                
                 return {
                     ...p,
                     // Map lowercase Appwrite attributes to camelCase
                     mainImage: (p as any).mainimage || p.mainImage,
-                    galleryImages: (p as any).galleryimages || p.galleryImages,
+                    galleryImages: parsedGalleryImages,
                     openingTime: (p as any).openingtime || p.openingTime,
                     closingTime: (p as any).closingtime || p.closingTime,
                     discountPercentage: (p as any).discountpercentage || p.discountPercentage,
@@ -1045,6 +1103,12 @@ export const placeService = {
                     websiteUrl: (p as any).websiteurl || p.websiteUrl,
                     websiteTitle: (p as any).websitetitle || p.websiteTitle,
                     websiteDescription: (p as any).websitedescription || p.websiteDescription,
+                    // Map critical display attributes
+                    massageTypes: (p as any).massagetypes || p.massageTypes,
+                    languages: (p as any).languagesspoken || p.languages,
+                    additionalServices: (p as any).additionalservices || p.additionalServices,
+                    contactNumber: (p as any).whatsappnumber || p.contactNumber,
+                    hotelVillaPricing: (p as any).hotelvillapricing || p.hotelVillaPricing,
                 };
             });
             
@@ -1067,11 +1131,24 @@ export const placeService = {
                 id
             );
             
+            // Parse galleryimages JSON string if it exists
+            let parsedGalleryImages = response.galleryImages;
+            if ((response as any).galleryimages) {
+                try {
+                    parsedGalleryImages = typeof (response as any).galleryimages === 'string' 
+                        ? JSON.parse((response as any).galleryimages) 
+                        : (response as any).galleryimages;
+                } catch (e) {
+                    console.error('Error parsing galleryimages:', e);
+                    parsedGalleryImages = [];
+                }
+            }
+            
             // Map Appwrite lowercase attributes to camelCase for frontend compatibility
             return {
                 ...response,
                 mainImage: (response as any).mainimage || response.mainImage,
-                galleryImages: (response as any).galleryimages || response.galleryImages,
+                galleryImages: parsedGalleryImages,
                 openingTime: (response as any).openingtime || response.openingTime,
                 closingTime: (response as any).closingtime || response.closingTime,
                 discountPercentage: (response as any).discountpercentage || response.discountPercentage,
@@ -1081,6 +1158,12 @@ export const placeService = {
                 websiteUrl: (response as any).websiteurl || response.websiteUrl,
                 websiteTitle: (response as any).websitetitle || response.websiteTitle,
                 websiteDescription: (response as any).websitedescription || response.websiteDescription,
+                // Map critical display attributes
+                massageTypes: (response as any).massagetypes || response.massageTypes,
+                languages: (response as any).languagesspoken || response.languages,
+                additionalServices: (response as any).additionalservices || response.additionalServices,
+                contactNumber: (response as any).whatsappnumber || response.contactNumber,
+                hotelVillaPricing: (response as any).hotelvillapricing || response.hotelVillaPricing,
             };
         } catch (error) {
             console.error('Error fetching place:', error);
@@ -1096,11 +1179,24 @@ export const placeService = {
                 data
             );
             
+            // Parse galleryimages JSON string if it exists
+            let parsedGalleryImages = response.galleryImages;
+            if ((response as any).galleryimages) {
+                try {
+                    parsedGalleryImages = typeof (response as any).galleryimages === 'string' 
+                        ? JSON.parse((response as any).galleryimages) 
+                        : (response as any).galleryimages;
+                } catch (e) {
+                    console.error('Error parsing galleryimages:', e);
+                    parsedGalleryImages = [];
+                }
+            }
+            
             // Map Appwrite lowercase attributes to camelCase for frontend compatibility
             return {
                 ...response,
                 mainImage: (response as any).mainimage || response.mainImage,
-                galleryImages: (response as any).galleryimages || response.galleryImages,
+                galleryImages: parsedGalleryImages,
                 openingTime: (response as any).openingtime || response.openingTime,
                 closingTime: (response as any).closingtime || response.closingTime,
                 discountPercentage: (response as any).discountpercentage || response.discountPercentage,
@@ -1110,6 +1206,12 @@ export const placeService = {
                 websiteUrl: (response as any).websiteurl || response.websiteUrl,
                 websiteTitle: (response as any).websitetitle || response.websiteTitle,
                 websiteDescription: (response as any).websitedescription || response.websiteDescription,
+                // Map critical display attributes
+                massageTypes: (response as any).massagetypes || response.massageTypes,
+                languages: (response as any).languagesspoken || response.languages,
+                additionalServices: (response as any).additionalservices || response.additionalServices,
+                contactNumber: (response as any).whatsappnumber || response.contactNumber,
+                hotelVillaPricing: (response as any).hotelvillapricing || response.hotelVillaPricing,
             };
         } catch (error) {
             console.error('Error updating place:', error);
@@ -2518,12 +2620,14 @@ export const notificationService = {
                 return mockNotification;
             }
             
+            const notificationId = ID.unique();
             const response = await databases.createDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.notifications,
-                ID.unique(),
+                notificationId,
                 {
                     ...notification,
+                    notificationId: notificationId,
                     isRead: notification.isRead || false,
                     createdAt: new Date().toISOString()
                 }

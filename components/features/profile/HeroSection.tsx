@@ -202,7 +202,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 </div>
                 
                 {/* Distance Badge - Right side, bottom of image */}
-                {place.distance !== undefined && (
+                {place.distance !== undefined && place.distance !== null && (
                     <div className="absolute bottom-4 right-4 bg-black/70 backdrop-blur-md text-white px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
                         <MapPin className="w-4 h-4 text-orange-400" />
                         <span className="font-semibold text-sm">{place.distance.toFixed(1)} km</span>
@@ -289,53 +289,110 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 {/* Place Name - Positioned higher */}
                 <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">{place.name || 'Relax Massage Jogja'}</h2>
                 
-                {/* Location without icon */}
+                {/* Location */}
                 <div className="mb-4">
-                    <span className="text-sm md:text-base text-gray-600">{place.location}</span>
+                    <span className="text-sm md:text-base text-gray-600">
+                        {place.location || 'Location not specified'}
+                    </span>
                 </div>
 
-                {/* Bio Text - Same as MassagePlaceCard */}
-                <div className="mb-4">
-                    <p className="text-xs text-gray-600 leading-relaxed text-justify">
-                        Certified massage therapist with 4+ years experience. Specialized in therapeutic and relaxation techniques. Available for home, hotel, and villa services. Professional, licensed, and highly rated by clients for exceptional service quality.
-                    </p>
-                </div>
+                {/* Description - Use actual place description */}
+                {place.description && place.description.trim() !== '' && (
+                    <div className="mb-4">
+                        <p className="text-xs text-gray-600 leading-relaxed text-justify">
+                            {place.description}
+                        </p>
+                    </div>
+                )}
 
-                {/* Massage Specializations - Same as MassagePlaceCard */}
-                <div className="mb-4">
-                    <div className="mb-2">
-                        <h4 className="text-xs font-semibold text-gray-700">
-                            Massage Specializations
-                        </h4>
-                    </div>
-                    <div className="flex flex-wrap gap-1">
-                        <span className="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs font-medium rounded-full border border-orange-200">Deep Tissue</span>
-                        <span className="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs font-medium rounded-full border border-orange-200">Swedish Massage</span>
-                    </div>
-                </div>
+                {/* Massage Specializations - Use actual massage types */}
+                {place.massageTypes && (() => {
+                    let types = [];
+                    try {
+                        types = typeof place.massageTypes === 'string' 
+                            ? JSON.parse(place.massageTypes) 
+                            : place.massageTypes;
+                    } catch (e) {
+                        console.error('Error parsing massage types:', e);
+                    }
+                    
+                    if (Array.isArray(types) && types.length > 0) {
+                        return (
+                            <div className="mb-4">
+                                <div className="mb-2">
+                                    <h4 className="text-xs font-semibold text-gray-700">
+                                        Massage Specializations
+                                    </h4>
+                                </div>
+                                <div className="flex flex-wrap gap-1">
+                                    {types.slice(0, 6).map((type, index) => (
+                                        <span key={index} className="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs font-medium rounded-full border border-orange-200">
+                                            {type}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        );
+                    }
+                    return null;
+                })()}
 
-                {/* Languages and Years Experience - Same line layout as MassagePlaceCard */}
-                <div className="mb-6">
-                    <div className="flex items-center justify-between mb-2">
-                        <h4 className="text-xs font-semibold text-gray-700">Languages</h4>
-                        <div className="flex items-center gap-1">
-                            <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span className="text-xs font-semibold text-gray-700">8+ Years Experience</span>
-                        </div>
-                    </div>
-                    <div className="flex flex-wrap gap-1">
-                        <span className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-gray-800 text-xs font-medium rounded-full flex items-center gap-1">
-                            <span className="text-xs">🇬🇧</span>
-                            <span className="text-xs">English</span>
-                        </span>
-                        <span className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-gray-800 text-xs font-medium rounded-full flex items-center gap-1">
-                            <span className="text-xs">🇮🇩</span>
-                            <span className="text-xs">Indonesian</span>
-                        </span>
-                    </div>
-                </div>
+                {/* Languages and Years Experience */}
+                {place.languages && (() => {
+                    let languages = [];
+                    try {
+                        languages = typeof place.languages === 'string' 
+                            ? JSON.parse(place.languages) 
+                            : place.languages;
+                    } catch (e) {
+                        console.error('Error parsing languages:', e);
+                    }
+                    
+                    // Calculate years of experience from membership date
+                    let yearsExperience = 0;
+                    if (place.activeMembershipDate) {
+                        try {
+                            const startDate = new Date(place.activeMembershipDate);
+                            if (!isNaN(startDate.getTime())) {
+                                const diffMs = Date.now() - startDate.getTime();
+                                yearsExperience = Math.floor(diffMs / (1000 * 60 * 60 * 24 * 365));
+                            }
+                        } catch (e) {
+                            console.error('Error calculating experience:', e);
+                        }
+                    }
+                    
+                    if (Array.isArray(languages) && languages.length > 0) {
+                        return (
+                            <div className="mb-6">
+                                <div className="flex items-center justify-between mb-2">
+                                    <h4 className="text-xs font-semibold text-gray-700">Languages</h4>
+                                    {yearsExperience > 0 && (
+                                        <div className="flex items-center gap-1">
+                                            <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            <span className="text-xs font-semibold text-gray-700">{yearsExperience}+ Years Experience</span>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="flex flex-wrap gap-1">
+                                    {languages.map((lang, index) => {
+                                        const langData = LANGUAGE_MAP[lang.toLowerCase()];
+                                        if (!langData) return null;
+                                        return (
+                                            <span key={index} className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-gray-800 text-xs font-medium rounded-full flex items-center gap-1">
+                                                <span className="text-xs">{langData.flag}</span>
+                                                <span className="text-xs">{langData.name}</span>
+                                            </span>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        );
+                    }
+                    return null;
+                })()}
 
                 {/* Pricing Grid - Same as Therapist Card */}
                 {place.pricing && (() => {

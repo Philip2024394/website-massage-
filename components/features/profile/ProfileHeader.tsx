@@ -1,16 +1,16 @@
 import React from 'react';
-import { Menu } from 'lucide-react';
+import { Home } from 'lucide-react';
 
 interface ProfileHeaderProps {
-    onMenuClick: () => void;
+    onHomeClick: () => void;
 }
 
 /**
  * Reusable Profile Header component
- * Contains branding on left and menu burger on right
+ * Contains branding on left and home icon on right
  */
 export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ 
-    onMenuClick
+    onHomeClick
 }) => {
     return (
         <header className="bg-white shadow-md sticky top-0 z-30">
@@ -22,12 +22,13 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                         <span className="text-orange-500">Street</span>
                     </h1>
                     
-                    {/* Burger menu on the right */}
+                    {/* Home icon on the right */}
                     <button
-                        onClick={onMenuClick}
+                        onClick={onHomeClick}
                         className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                        aria-label="Go to home"
                     >
-                        <Menu className="w-6 h-6 text-gray-600" />
+                        <Home className="w-6 h-6 text-gray-600" />
                     </button>
                 </div>
             </div>

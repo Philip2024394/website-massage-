@@ -121,8 +121,6 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     ]);
     const [contactNumber, setContactNumber] = useState('');
     const [pricing, setPricing] = useState<Pricing>({ 60: 0, 90: 0, 120: 0 });
-    const [hotelVillaPricing, setHotelVillaPricing] = useState<Pricing>({ 60: 0, 90: 0, 120: 0 });
-    const [useSamePricing, setUseSamePricing] = useState(false);
     const [discountPercentage, setDiscountPercentage] = useState<number>(0);
     const [discountDuration, setDiscountDuration] = useState<number>(24); // hours
     const [isDiscountActive, setIsDiscountActive] = useState<boolean>(false);
@@ -216,16 +214,35 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     const initializeWithPlaceData = (placeData: Place) => {
         setName(placeData.name || '');
         setDescription(placeData.description || '');
-        setMainImage(placeData.mainImage || '');
-        setProfilePicture((placeData as any).profilePicture || placeData.mainImage || '');
         
-        // Load gallery images with captions and descriptions
-        if ((placeData as any).galleryimages && Array.isArray((placeData as any).galleryimages)) {
-            const loadedGallery = [...(placeData as any).galleryimages].map((item: any) => ({
+        // Load mainimage from Appwrite (lowercase attribute)
+        const mainImageValue = (placeData as any).mainimage || placeData.mainImage || '';
+        setMainImage(mainImageValue);
+        setProfilePicture((placeData as any).profilePicture || mainImageValue || '');
+        
+        // Load gallery images - Appwrite uses 'galleryImages' (camelCase)
+        const galleryData = (placeData as any).galleryImages || (placeData as any).galleryimages;
+        if (galleryData) {
+            let parsedGallery = [];
+            
+            // Parse if it's a JSON string
+            if (typeof galleryData === 'string') {
+                try {
+                    parsedGallery = JSON.parse(galleryData);
+                } catch (e) {
+                    console.error('Error parsing gallery images:', e);
+                    parsedGallery = [];
+                }
+            } else if (Array.isArray(galleryData)) {
+                parsedGallery = galleryData;
+            }
+            
+            const loadedGallery = parsedGallery.map((item: any) => ({
                 imageUrl: item.imageUrl || '',
                 caption: item.caption || '',
                 description: item.description || ''
             }));
+            
             // Ensure we always have 6 slots
             while (loadedGallery.length < 6) {
                 loadedGallery.push({ imageUrl: '', caption: '', description: '' });
@@ -239,28 +256,27 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         try {
             setPricing(typeof placeData.pricing === 'string' ? JSON.parse(placeData.pricing) : placeData.pricing || { '60': 0, '90': 0, '120': 0 });
             
-            // Load hotel/villa pricing if exists
-            if ((placeData as any).hotelvillapricing) {
-                setHotelVillaPricing(typeof (placeData as any).hotelvillapricing === 'string' ? JSON.parse((placeData as any).hotelvillapricing) : (placeData as any).hotelvillapricing);
-                setUseSamePricing(false);
-            } else {
-                setHotelVillaPricing(typeof placeData.pricing === 'string' ? JSON.parse(placeData.pricing) : placeData.pricing || { '60': 0, '90': 0, '120': 0 });
-                setUseSamePricing(true);
-            }
-            
             setDiscountPercentage((placeData as any).discountpercentage || 0);
             setDiscountDuration((placeData as any).discountduration || 24);
             setIsDiscountActive((placeData as any).isdiscountactive || false);
             setDiscountEndTime((placeData as any).discountendtime || '');
             
             setCoordinates(typeof placeData.coordinates === 'string' ? JSON.parse(placeData.coordinates) : placeData.coordinates || { lat: 0, lng: 0 });
-            setMassageTypes(typeof placeData.massageTypes === 'string' ? JSON.parse(placeData.massageTypes) : placeData.massageTypes || []);
+            
+            // Parse massage types - handle both JSON string and array
+            const massageTypesRaw = (placeData as any).massagetypes || placeData.massageTypes;
+            setMassageTypes(typeof massageTypesRaw === 'string' ? JSON.parse(massageTypesRaw) : massageTypesRaw || []);
+            
+            // Parse languages - handle both JSON string and array
+            const languagesRaw = (placeData as any).languagesspoken || placeData.languages;
+            setLanguages(typeof languagesRaw === 'string' ? JSON.parse(languagesRaw) : languagesRaw || []);
+            
+            // Parse additional services - handle both JSON string and array
+            const servicesRaw = (placeData as any).additionalservices || placeData.additionalServices;
+            setAdditionalServices(typeof servicesRaw === 'string' ? JSON.parse(servicesRaw) : servicesRaw || []);
         } catch (_e) {
             console.error('Error parsing place data:', _e);
         }
-        
-        setLanguages((placeData as any).languagesspoken || []);
-        setAdditionalServices((placeData as any).additionalservices || []);
         
         // Auto-fill location from userLocation if place location is empty
         if (placeData.location) {
@@ -292,8 +308,6 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         setGalleryImages(Array(6).fill({ imageUrl: '', caption: '', description: '' }));
         setContactNumber('');
         setPricing({ '60': 0, '90': 0, '120': 0 });
-        setHotelVillaPricing({ '60': 0, '90': 0, '120': 0 });
-        setUseSamePricing(true);
         setDiscountPercentage(0);
         setDiscountDuration(24);
         setIsDiscountActive(false);
@@ -419,99 +433,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         }
     }, [mapsApiLoaded]);
 
-    // 🔄 AUTO-SAVE FUNCTIONALITY: Save form data to localStorage whenever it changes
-    const autoSaveFormData = useCallback(() => {
-        const formData = {
-            name,
-            description,
-            mainImage,
-            profilePicture,
-            galleryImages,
-            contactNumber,
-            pricing,
-            hotelVillaPricing,
-            useSamePricing,
-            discountPercentage,
-            discountDuration,
-            isDiscountActive,
-            discountEndTime,
-            location,
-            isLocationManuallyEdited,
-            coordinates,
-            massageTypes,
-            languages,
-            additionalServices,
-            openingTime,
-            closingTime,
-            websiteUrl,
-            websiteTitle,
-            websiteDescription,
-            lastAutoSaved: new Date().toISOString()
-        };
-        
-        try {
-            const storageKey = `place_profile_autosave_${placeId}`;
-            localStorage.setItem(storageKey, JSON.stringify(formData));
-            console.log('💾 Auto-saved place form data to localStorage');
-        } catch (error) {
-            console.error('❌ Failed to auto-save place form data:', error);
-        }
-    }, [name, description, mainImage, profilePicture, galleryImages, contactNumber, pricing, hotelVillaPricing, useSamePricing, discountPercentage, discountDuration, isDiscountActive, discountEndTime, location, coordinates, massageTypes, languages, additionalServices, openingTime, closingTime, websiteUrl, websiteTitle, websiteDescription, isLocationManuallyEdited, placeId]);
-
-    // Auto-save form data whenever any field changes (with 2 second debounce)
-    useEffect(() => {
-        const timeoutId = setTimeout(autoSaveFormData, 2000);
-        return () => clearTimeout(timeoutId);
-    }, [autoSaveFormData]);
-
-    // 🔄 RESTORE AUTO-SAVED DATA: Load form data from localStorage on component mount
-    useEffect(() => {
-        const restoreAutoSavedData = async () => {
-            try {
-                const storageKey = `place_profile_autosave_${placeId}`;
-                const savedData = localStorage.getItem(storageKey);
-                
-                if (savedData && !place) { // Only restore if no existing place data
-                    const parsedData = JSON.parse(savedData);
-                    console.log('🔄 Restoring auto-saved place form data');
-                    
-                    setName(parsedData.name || '');
-                    setDescription(parsedData.description || '');
-                    setMainImage(parsedData.mainImage || '');
-                    setProfilePicture(parsedData.profilePicture || '');
-                    setGalleryImages(parsedData.galleryImages || Array(6).fill({ imageUrl: '', caption: '', description: '' }));
-                    setContactNumber(parsedData.contactNumber || '');
-                    setPricing(parsedData.pricing || { '60': 0, '90': 0, '120': 0 });
-                    setHotelVillaPricing(parsedData.hotelVillaPricing || { '60': 0, '90': 0, '120': 0 });
-                    setUseSamePricing(parsedData.useSamePricing !== undefined ? parsedData.useSamePricing : true);
-                    setDiscountPercentage(parsedData.discountPercentage || 0);
-                    setDiscountDuration(parsedData.discountDuration || 24);
-                    setIsDiscountActive(parsedData.isDiscountActive || false);
-                    setDiscountEndTime(parsedData.discountEndTime || '');
-                    setLocation(parsedData.location || '');
-                    setIsLocationManuallyEdited(parsedData.isLocationManuallyEdited || false);
-                    setCoordinates(parsedData.coordinates || { lat: 0, lng: 0 });
-                    setMassageTypes(parsedData.massageTypes || []);
-                    setLanguages(parsedData.languages || []);
-                    setAdditionalServices(parsedData.additionalServices || []);
-                    setOpeningTime(parsedData.openingTime || '09:00');
-                    setClosingTime(parsedData.closingTime || '21:00');
-                    setWebsiteUrl(parsedData.websiteUrl || '');
-                    setWebsiteTitle(parsedData.websiteTitle || '');
-                    setWebsiteDescription(parsedData.websiteDescription || '');
-                    
-                    console.log('✅ Auto-saved place data restored successfully');
-                }
-            } catch (error) {
-                console.error('❌ Failed to restore auto-saved place data:', error);
-            }
-        };
-        
-        // Only restore auto-saved data if we don't have existing place data
-        if (!place && placeId) {
-            restoreAutoSavedData();
-        }
-    }, [placeId]); // Only depend on placeId to avoid infinite loops
+    // Note: All data is saved to Appwrite only - no localStorage usage
 
     const handleSave = () => {
         // Comprehensive validation with detailed error messages
@@ -543,6 +465,15 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         const safeGalleryImages = galleryImages || [];
         const filteredGallery = safeGalleryImages.filter(img => img && img.imageUrl && img.imageUrl.trim() !== '');
         
+        console.log('💾 ========== SAVE PROFILE DEBUG ==========');
+        console.log('📸 Main Image:', mainImage);
+        console.log('📸 Profile Picture:', profilePicture);
+        console.log('📸 Gallery Images Count:', filteredGallery.length);
+        console.log('🎯 Massage Types:', massageTypes);
+        console.log('🌐 Languages:', languages);
+        console.log('➕ Additional Services:', additionalServices);
+        console.log('==========================================');
+        
         // Calculate discount end time if discount is active
         const calculatedDiscountEndTime = isDiscountActive && discountDuration > 0 
             ? new Date(Date.now() + discountDuration * 60 * 60 * 1000).toISOString()
@@ -551,12 +482,11 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         // Send ALL fields to ensure 100% data persistence
         const rawData: any = {
             // System fields
-            placeId: placeId,
+            placeid: placeId,
             status: 'Open',
             category: 'wellness',
-            hotelId: place?.hotelId || '',
             password: place?.password,
-            isLive: true, // Profile goes live immediately
+            islive: true, // Profile goes live immediately
             
             // Basic info
             name,
@@ -569,11 +499,10 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             // Images
             mainimage: mainImage,
             profilePicture: profilePicture,
-            galleryimages: JSON.stringify(filteredGallery),
+            galleryImages: JSON.stringify(filteredGallery),
             
             // Pricing
             pricing: JSON.stringify(pricing),
-            hotelvillapricing: JSON.stringify(hotelVillaPricing),
             
             // Location
             location,
@@ -602,13 +531,19 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
 
         // Sanitize before sending to onSave
         const saveData = sanitizePlacePayload(rawData);
+        
+        console.log('📦 Raw Data Keys:', Object.keys(rawData));
+        console.log('📦 Sanitized Data Keys:', Object.keys(saveData));
+        console.log('📦 Sanitized mainimage:', (saveData as any).mainimage);
+        console.log('📦 Sanitized massagetypes:', (saveData as any).massagetypes);
+        console.log('📦 Sanitized languagesspoken:', (saveData as any).languagesspoken);
 
         onSave(saveData);
 
-        // Show admin approval message
+        // Show success message - profile goes live immediately
         const notification = document.createElement('div');
         notification.innerHTML = `
-            <div class="fixed top-4 left-4 right-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white p-6 rounded-xl shadow-2xl z-50 max-w-md mx-auto">
+            <div class="fixed top-4 left-4 right-4 bg-gradient-to-r from-green-500 to-green-600 text-white p-6 rounded-xl shadow-2xl z-50 max-w-md mx-auto">
                 <div class="flex items-center gap-4">
                     <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center flex-shrink-0">
                         <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -616,15 +551,15 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                         </svg>
                     </div>
                     <div class="flex-1">
-                        <h3 class="font-bold text-lg mb-1">Profile Saved Successfully!</h3>
-                        <p class="text-orange-100 text-sm leading-relaxed">
-                            Thank you for updating your profile. The <strong>IndaStreet Team</strong> will review and confirm your changes for approval soon.
+                        <h3 class="font-bold text-lg mb-1">Profile Updated & Live!</h3>
+                        <p class="text-green-100 text-sm leading-relaxed">
+                            Your profile has been saved and is now <strong>live</strong> on IndaStreet. Customers can see your updates immediately.
                         </p>
-                        <div class="mt-3 flex items-center gap-2 text-xs text-orange-200">
+                        <div class="mt-3 flex items-center gap-2 text-xs text-green-200">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                             </svg>
-                            <span>Usually processed within 24 hours</span>
+                            <span>Changes are visible to all users now</span>
                         </div>
                     </div>
                 </div>
@@ -645,7 +580,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             } catch (error) {
                 console.warn('Failed to remove notification element:', error);
             }
-        }, 6000);
+        }, 5000);
 
         // Clear auto-saved data after successful save
         try {
@@ -1627,6 +1562,151 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                     )}
                                 </div>
                             </div>
+                        </div>
+
+                        {/* Discount Activation Section */}
+                        <div className="bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-300 rounded-xl p-6 shadow-md">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center">
+                                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-bold text-gray-900">Activate Discount</h3>
+                                    <p className="text-sm text-gray-600">Boost bookings with special offers</p>
+                                </div>
+                            </div>
+
+                            {/* Discount Percentage Buttons */}
+                            <div className="mb-4">
+                                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                    Select Discount Percentage
+                                </label>
+                                <div className="grid grid-cols-4 gap-3">
+                                    {[10, 15, 20, 30].map((percent) => (
+                                        <button
+                                            key={percent}
+                                            type="button"
+                                            onClick={() => setDiscountPercentage(percent)}
+                                            className={`py-3 rounded-lg font-bold text-lg transition-all ${
+                                                discountPercentage === percent
+                                                    ? 'bg-orange-500 text-white shadow-lg scale-105'
+                                                    : 'bg-white text-gray-700 hover:bg-gray-100 border-2 border-gray-200'
+                                            }`}
+                                        >
+                                            {percent}%
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Duration Buttons */}
+                            <div className="mb-4">
+                                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                    Select Duration
+                                </label>
+                                <div className="grid grid-cols-3 gap-3">
+                                    {[
+                                        { label: '4 Hours', value: 4 },
+                                        { label: '8 Hours', value: 8 },
+                                        { label: '12 Hours', value: 12 }
+                                    ].map((duration) => (
+                                        <button
+                                            key={duration.value}
+                                            type="button"
+                                            onClick={() => setDiscountDuration(duration.value)}
+                                            className={`py-3 rounded-lg font-bold transition-all ${
+                                                discountDuration === duration.value
+                                                    ? 'bg-orange-500 text-white shadow-lg scale-105'
+                                                    : 'bg-white text-gray-700 hover:bg-gray-100 border-2 border-gray-200'
+                                            }`}
+                                        >
+                                            {duration.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Activate Button */}
+                            <button
+                                type="button"
+                                onClick={async () => {
+                                    if (!discountPercentage || !discountDuration) {
+                                        setToast({ message: '⚠️ Please select discount percentage and duration', type: 'error' });
+                                        setTimeout(() => setToast(null), 3000);
+                                        return;
+                                    }
+
+                                    try {
+                                        const endTime = new Date(Date.now() + discountDuration * 60 * 60 * 1000).toISOString();
+                                        
+                                        await placeService.update(placeId, {
+                                            discountpercentage: discountPercentage,
+                                            discountduration: discountDuration,
+                                            isdiscountactive: true,
+                                            discountendtime: endTime
+                                        });
+
+                                        setIsDiscountActive(true);
+                                        setDiscountEndTime(endTime);
+                                        
+                                        setToast({ 
+                                            message: `✅ ${discountPercentage}% discount activated for ${discountDuration} hours!`, 
+                                            type: 'success' 
+                                        });
+                                        setTimeout(() => setToast(null), 3000);
+                                    } catch (error) {
+                                        console.error('Error activating discount:', error);
+                                        setToast({ message: '❌ Failed to activate discount', type: 'error' });
+                                        setTimeout(() => setToast(null), 3000);
+                                    }
+                                }}
+                                disabled={!discountPercentage || !discountDuration}
+                                className={`w-full py-4 rounded-lg font-bold text-white transition-all ${
+                                    discountPercentage && discountDuration
+                                        ? 'bg-gradient-to-r from-orange-500 to-red-500 hover:shadow-lg hover:scale-105'
+                                        : 'bg-gray-300 cursor-not-allowed'
+                                }`}
+                            >
+                                {discountPercentage && discountDuration
+                                    ? `Activate ${discountPercentage}% OFF for ${discountDuration}h`
+                                    : 'Select Options to Activate'}
+                            </button>
+
+                            {/* Active Discount Display */}
+                            {isDiscountActive && discountEndTime && new Date(discountEndTime) > new Date() && (
+                                <div className="mt-4 p-4 bg-green-50 border-2 border-green-500 rounded-lg">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-green-900 font-bold">🎉 Discount Active!</p>
+                                            <p className="text-sm text-green-700">
+                                                {discountPercentage}% OFF - Expires at {new Date(discountEndTime).toLocaleTimeString()}
+                                            </p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={async () => {
+                                                try {
+                                                    await placeService.update(placeId, {
+                                                        isdiscountactive: false,
+                                                        discountendtime: ''
+                                                    });
+                                                    setIsDiscountActive(false);
+                                                    setDiscountEndTime('');
+                                                    setToast({ message: '✅ Discount deactivated', type: 'success' });
+                                                    setTimeout(() => setToast(null), 3000);
+                                                } catch (error) {
+                                                    console.error('Error deactivating discount:', error);
+                                                }
+                                            }}
+                                            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-medium"
+                                        >
+                                            End Now
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <div className="sticky bottom-0 left-0 right-0 bg-white pt-4 pb-4 border-t border-gray-200 shadow-lg z-50">

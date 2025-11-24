@@ -15,7 +15,6 @@ export interface PlacePayload {
   openingTime: string;
   closingTime: string;
   coordinates: any; // Point or [lng, lat]
-  hotelId: string;
   description?: string;
   
   // Contact
@@ -25,9 +24,6 @@ export interface PlacePayload {
   mainImage?: string;
   profilePicture?: string;
   galleryImages?: string; // JSON string of array
-  
-  // Pricing extensions
-  hotelVillaPricing?: string; // JSON string
   
   // Services
   massageTypes?: string; // JSON string of array
@@ -46,22 +42,20 @@ export interface PlacePayload {
   discountEndTime?: string | null;
 }
 
-// Whitelist of attributes allowed to reach Appwrite - COMPLETE LIST (34 fields)
-export const PLACE_ALLOWED: (keyof PlacePayload)[] = [
-  // Core system fields (15)
-  'id','placeId','name','category','email','password','pricing','location','status','isLive','openingTime','closingTime','coordinates','hotelId','description',
-  // Contact (1)
-  'whatsappNumber',
-  // Images (3)
-  'mainImage','profilePicture','galleryImages',
-  // Pricing extensions (1)
-  'hotelVillaPricing',
-  // Services (3)
-  'massageTypes','languages','additionalServices',
-  // Website information (3)
-  'websiteUrl','websiteTitle','websiteDescription',
-  // Discounts (4)
-  'discountPercentage','discountDuration','isDiscountActive','discountEndTime'
+// Whitelist of attributes allowed to reach Appwrite - LOWERCASE to match Appwrite schema
+export const PLACE_ALLOWED = [
+  // Core system fields (13 - removed hotelid)
+  'id','placeid','name','category','email','password','pricing','location','status','islive','openingtime','closingtime','coordinates','description',
+  // Contact (1 - LOWERCASE)
+  'whatsappnumber',
+  // Images (3 - MIXED CASE - mainimage lowercase, others camelCase)
+  'mainimage','profilePicture','galleryImages',
+  // Services (3 - LOWERCASE)
+  'massagetypes','languagesspoken','additionalservices',
+  // Website information (3 - LOWERCASE)
+  'websiteurl','websitetitle','websitedescription',
+  // Discounts (4 - LOWERCASE)
+  'discountpercentage','discountduration','isdiscountactive','discountendtime'
 ];
 
 // Sanitizer – strips unknown keys and optionally logs removed ones.
@@ -79,7 +73,7 @@ export function sanitizePlacePayload(input: Record<string, any>, log: boolean = 
     console.warn('[PLACE_SANITIZER] Removed unknown keys:', removed);
   }
   // Minimal runtime check for required core fields
-  const required: (keyof PlacePayload)[] = ['name','category','email','pricing','location','status','isLive','openingTime','closingTime','coordinates','hotelId'];
+  const required: (keyof PlacePayload)[] = ['name','category','email','pricing','location','status','isLive','openingTime','closingTime','coordinates'];
   const missing = required.filter(r => output[r] === undefined || output[r] === '');
   if (missing.length) {
     console.warn('[PLACE_SANITIZER] Missing required fields (may be filled server-side):', missing);
@@ -102,7 +96,6 @@ export function buildDefaultPlacePayload(email: string, placeId: string) : Place
     isLive: false,
     openingTime: '09:00',
     closingTime: '21:00',
-    coordinates: [106.8456, -6.2088],
-    hotelId: ''
+    coordinates: [106.8456, -6.2088]
   };
 }
