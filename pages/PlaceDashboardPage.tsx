@@ -217,7 +217,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         setName(placeData.name || '');
         setDescription(placeData.description || '');
         setMainImage(placeData.mainImage || '');
-        setProfilePicture((placeData as any).profilepicture || placeData.mainImage || '');
+        setProfilePicture((placeData as any).profilePicture || placeData.mainImage || '');
         
         // Load gallery images with captions and descriptions
         if ((placeData as any).galleryimages && Array.isArray((placeData as any).galleryimages)) {
@@ -568,7 +568,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             
             // Images
             mainimage: mainImage,
-            profilepicture: profilePicture,
+            profilePicture: profilePicture,
             galleryimages: JSON.stringify(filteredGallery),
             
             // Pricing
