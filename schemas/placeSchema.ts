@@ -17,11 +17,51 @@ export interface PlacePayload {
   coordinates: any; // Point or [lng, lat]
   hotelId: string;
   description?: string;
+  
+  // Contact
+  whatsappNumber?: string;
+  
+  // Images
+  mainImage?: string;
+  profilePicture?: string;
+  galleryImages?: string; // JSON string of array
+  
+  // Pricing extensions
+  hotelVillaPricing?: string; // JSON string
+  
+  // Services
+  massageTypes?: string; // JSON string of array
+  languages?: string; // JSON string of array
+  additionalServices?: string; // JSON string of array
+  
+  // Website information
+  websiteUrl?: string;
+  websiteTitle?: string;
+  websiteDescription?: string;
+  
+  // Discounts
+  discountPercentage?: number;
+  discountDuration?: number;
+  isDiscountActive?: boolean;
+  discountEndTime?: string | null;
 }
 
-// Whitelist of attributes allowed to reach Appwrite.
+// Whitelist of attributes allowed to reach Appwrite - COMPLETE LIST (34 fields)
 export const PLACE_ALLOWED: (keyof PlacePayload)[] = [
-  'id','placeId','name','category','email','password','pricing','location','status','isLive','openingTime','closingTime','coordinates','hotelId','description'
+  // Core system fields (15)
+  'id','placeId','name','category','email','password','pricing','location','status','isLive','openingTime','closingTime','coordinates','hotelId','description',
+  // Contact (1)
+  'whatsappNumber',
+  // Images (3)
+  'mainImage','profilePicture','galleryImages',
+  // Pricing extensions (1)
+  'hotelVillaPricing',
+  // Services (3)
+  'massageTypes','languages','additionalServices',
+  // Website information (3)
+  'websiteUrl','websiteTitle','websiteDescription',
+  // Discounts (4)
+  'discountPercentage','discountDuration','isDiscountActive','discountEndTime'
 ];
 
 // Sanitizer – strips unknown keys and optionally logs removed ones.

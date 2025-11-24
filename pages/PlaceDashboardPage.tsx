@@ -542,25 +542,62 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         const safeGalleryImages = galleryImages || [];
         const filteredGallery = safeGalleryImages.filter(img => img && img.imageUrl && img.imageUrl.trim() !== '');
         
-        // Only send fields that actually exist in Appwrite Places collection
+        // Calculate discount end time if discount is active
+        const calculatedDiscountEndTime = isDiscountActive && discountDuration > 0 
+            ? new Date(Date.now() + discountDuration * 60 * 60 * 1000).toISOString()
+            : discountEndTime || null;
+        
+        // Send ALL fields to ensure 100% data persistence
         const rawData: any = {
+            // System fields
             placeId: placeId,
-            name,
-            email: place?.email || '',
-            pricing: JSON.stringify(pricing),
-            location,
-            coordinates: Array.isArray(coordinates) ? coordinates : [coordinates.lng || 106.8456, coordinates.lat || -6.2088],
-            openingTime,
-            closingTime,
             status: 'Open',
             category: 'wellness',
             hotelId: place?.hotelId || '',
             password: place?.password,
             isLive: true, // Profile goes live immediately
+            
+            // Basic info
+            name,
+            email: place?.email || '',
+            description,
+            
+            // Contact
+            whatsappNumber,
+            
+            // Images
+            mainImage,
+            profilePicture,
+            galleryImages: JSON.stringify(filteredGallery),
+            
+            // Pricing
+            pricing: JSON.stringify(pricing),
+            hotelVillaPricing: JSON.stringify(hotelVillaPricing),
+            
+            // Location
+            location,
+            coordinates: Array.isArray(coordinates) ? coordinates : [coordinates.lng || 106.8456, coordinates.lat || -6.2088],
+            
+            // Hours
+            openingTime,
+            closingTime,
+            
+            // Services
+            massageTypes: JSON.stringify(massageTypes),
+            languages: JSON.stringify(languages),
+            additionalServices: JSON.stringify(additionalServices),
+            
+            // Website information
+            websiteUrl: websiteUrl || '',
+            websiteTitle: websiteTitle || '',
+            websiteDescription: websiteDescription || '',
+            
+            // Discounts
+            discountPercentage: isDiscountActive ? Number(discountPercentage) : 0,
+            discountDuration: isDiscountActive ? Number(discountDuration) : 0,
+            isDiscountActive: Boolean(isDiscountActive),
+            discountEndTime: calculatedDiscountEndTime,
         };
-
-        // Add only optional fields that are confirmed to exist
-        if (description) rawData.description = description;
 
         // Sanitize before sending to onSave
         const saveData = sanitizePlacePayload(rawData);
