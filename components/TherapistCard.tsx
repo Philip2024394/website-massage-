@@ -169,7 +169,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         };
         loadBookingsCount();
     }, [bookingsCount, therapist]);
-    const joinedDateRaw = therapist.membershipStartDate || therapist.activeMembershipDate;
+    const joinedDateRaw = therapist.membershipStartDate || therapist.activeMembershipDate || (therapist as any).$createdAt;
     const joinedDisplay = (() => {
         if (!joinedDateRaw) return '—';
         try {
@@ -579,10 +579,32 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
 
             `}</style>
             
-            {/* External meta bar (Joined / Bookings) */}
+            {/* External meta bar (Joined / Free / Bookings) */}
             <div className="flex justify-between items-center mb-2 px-2">
-                <span className="text-[11px] text-gray-600 font-medium">Joined: {joinedDisplay}</span>
-                <span className="text-[11px] text-gray-600 font-medium">Bookings: {bookingsCount}</span>
+                <span className="text-[11px] text-gray-600 font-medium flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    Joined: {joinedDisplay}
+                </span>
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onNavigate?.('therapist-registration');
+                    }}
+                    className="text-[11px] text-green-600 font-semibold flex items-center gap-1 hover:text-green-700 hover:underline transition-colors cursor-pointer"
+                >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Therapist Join Free
+                </button>
+                <span className="text-[11px] text-gray-600 font-medium flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                    Bookings: {bookingsCount}
+                </span>
             </div>
             <div className="bg-white rounded-xl shadow-md overflow-visible relative transition-all duration-300">
                 {/* Removed Portal/Status overlay buttons from main image per UX request. Status now only shown below therapist name. */}

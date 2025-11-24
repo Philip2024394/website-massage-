@@ -150,6 +150,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     const [mapsApiLoaded, setMapsApiLoaded] = useState(false);
     const [activeTab, setActiveTab] = useState('profile');
     const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
+    const [showNotificationsView, setShowNotificationsView] = useState(false);
     
     // Website information for Indastreet Partners Directory
     const [websiteUrl, setWebsiteUrl] = useState('');
@@ -1109,7 +1110,6 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                     <div className="space-y-6">
                         {/* Page Title */}
                         <div className="flex items-center gap-3 mb-6">
-                            <span className="text-3xl">📍</span>
                             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Massage Spa</h1>
                         </div>
                         
@@ -1471,122 +1471,85 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                             </div>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-900">{t?.locationLabel || 'Location'}</label>
-                            
-                            {mapsApiLoaded ? (
-                                <>
-                                    {/* Location Display */}
-                                    <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <MapPinIcon className="h-5 w-5 text-gray-600" />
-                                            <span className="text-sm font-medium text-gray-700">Current Location:</span>
-                                            {(coordinates.lat !== 0 || coordinates.lng !== 0) && (
-                                                <div className="ml-auto flex items-center gap-1">
-                                                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                                    <span className="text-green-600 font-medium text-xs">Live</span>
-                                                </div>
-                                            )}
-                                        </div>
-                                        <p className="text-sm text-gray-600 mb-2">
-                                            {location || 'No location set'}
+                            <label className="block text-sm font-medium text-gray-900 mb-2">{t?.locationLabel || 'Location'}</label>
+                            <div className="bg-white border-2 border-gray-200 rounded-lg p-4">
+                                <div className="relative mb-3">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <MapPinIcon className="h-5 w-5 text-gray-400" />
+                                    </div>
+                                    <input 
+                                        ref={locationInputRef} 
+                                        type="text" 
+                                        value={location} 
+                                        onChange={(e) => {
+                                            setLocation(e.target.value);
+                                            setIsLocationManuallyEdited(true);
+                                        }} 
+                                        placeholder={t?.locationPlaceholder || 'Enter your location'} 
+                                        className="block w-full pl-10 pr-3 py-3 bg-gray-50 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-orange focus:border-brand-orange text-gray-900 text-sm" 
+                                        readOnly={!mapsApiLoaded}
+                                    />
+                                </div>
+                                <Button 
+                                    onClick={handleSetLocation} 
+                                    variant="secondary" 
+                                    className={`w-full flex items-center justify-center gap-2 py-3 text-white border-0 ${
+                                        location ? 'bg-green-500 hover:bg-green-600' : 'bg-brand-orange hover:bg-orange-600'
+                                    }`}
+                                >
+                                    <MapPinIcon className="w-5 h-5" />
+                                    <span className="font-semibold">{location ? 'Location Set ✓' : 'Set Location from Device'}</span>
+                                </Button>
+                                {location && (
+                                    <div className="mt-3 space-y-2">
+                                        <p className="text-xs text-gray-500 text-center">
+                                            📍 {location.substring(0, 50)}{location.length > 50 ? '...' : ''}
                                         </p>
-                                        {location && (
-                                            <div className="flex items-center justify-between text-xs">
-                                                <span className="text-gray-500">
-                                                    📍 Ready for customer navigation
-                                                </span>
-                                                <div className="flex items-center gap-1">
-                                                    <div className={`w-2 h-2 rounded-full ${isLocationManuallyEdited ? 'bg-blue-500' : 'bg-green-500'}`}></div>
-                                                    <span className="font-medium text-gray-600">
-                                                        {isLocationManuallyEdited ? 'Manual' : 'GPS'}
-                                                    </span>
+                                        {coordinates.lat !== 0 && coordinates.lng !== 0 && (
+                                            <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                                                <p className="text-xs font-medium text-gray-700 mb-2">Location Coordinates:</p>
+                                                <div className="grid grid-cols-2 gap-2 text-xs mb-2">
+                                                    <div className="bg-white rounded p-2 border">
+                                                        <span className="text-gray-500">Lat:</span>
+                                                        <span className="font-mono ml-1 text-gray-900">{coordinates.lat.toFixed(6)}</span>
+                                                    </div>
+                                                    <div className="bg-white rounded p-2 border">
+                                                        <span className="text-gray-500">Lng:</span>
+                                                        <span className="font-mono ml-1 text-gray-900">{coordinates.lng.toFixed(6)}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="bg-white rounded p-2 border">
+                                                    <span className="text-gray-500 text-xs">Map ID:</span>
+                                                    <div className="font-mono text-xs text-gray-900 mt-1 break-all">
+                                                        {coordinates.lat.toFixed(6)},{coordinates.lng.toFixed(6)}
+                                                    </div>
+                                                    <button
+                                                        onClick={() => {
+                                                            const coordString = `${coordinates.lat.toFixed(6)},${coordinates.lng.toFixed(6)}`;
+                                                            navigator.clipboard.writeText(coordString);
+                                                            setToast({ message: '📋 Coordinates copied to clipboard!', type: 'success' });
+                                                            setTimeout(() => setToast(null), 2000);
+                                                        }}
+                                                        className="mt-1 mr-3 text-xs text-orange-600 hover:text-orange-700 underline"
+                                                    >
+                                                        Copy Coordinates
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            const mapsUrl = `https://www.google.com/maps?q=${coordinates.lat},${coordinates.lng}`;
+                                                            window.open(mapsUrl, '_blank');
+                                                        }}
+                                                        className="text-xs text-orange-600 hover:text-orange-700 underline"
+                                                    >
+                                                        Open in Google Maps
+                                                    </button>
                                                 </div>
                                             </div>
                                         )}
                                     </div>
-                                    
-                                    {/* Mobile Location Button */}
-                                    <Button 
-                                        onClick={handleSetLocation} 
-                                        disabled={isGettingLocation}
-                                        variant="secondary" 
-                                        className={`w-full flex items-center justify-center gap-3 py-4 text-base font-semibold rounded-xl transition-all duration-200 ${
-                                            isGettingLocation
-                                                ? 'bg-gray-400 text-white cursor-not-allowed'
-                                                : coordinates.lat !== 0 || coordinates.lng !== 0
-                                                ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg' 
-                                                : 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg'
-                                        }`}
-                                        >
-                                            <div className={`w-6 h-6 ${isGettingLocation ? 'animate-spin' : coordinates.lat !== 0 || coordinates.lng !== 0 ? 'animate-pulse' : ''}`}>
-                                                {isGettingLocation ? (
-                                                    <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                                    </svg>
-                                                ) : (
-                                                    <MapPinIcon className="w-full h-full" />
-                                                )}
-                                            </div>
-                                            <span>
-                                                {isGettingLocation
-                                                    ? '🔍 Getting your location...'
-                                                    : coordinates.lat !== 0 || coordinates.lng !== 0 
-                                                    ? '📍 Update GPS Location' 
-                                                    : '📱 Use My Device Location'
-                                                }
-                                            </span>
-                                            {coordinates.lat === 0 && coordinates.lng === 0 && (
-                                                <div className="ml-2 w-2 h-2 bg-white rounded-full animate-bounce"></div>
-                                            )}
-                                        </Button>
-                                        
-                                        {/* Mobile Location Tips */}
-                                        <div className="text-center mt-3">
-                                            <p className="text-xs text-gray-500">
-                                                {coordinates.lat !== 0 || coordinates.lng !== 0 
-                                                    ? '✅ GPS coordinates active - customers can navigate directly to you'
-                                                    : '💡 Enable device location for accurate customer navigation'
-                                                }
-                                            </p>
-                                        </div>
-
-                                        {/* Manual Address Edit Field */}
-                                        <div className="mt-4">
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                📝 Edit Address (if needed)
-                                            </label>
-                                            <div className="relative">
-                                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                    <MapPinIcon className="h-5 w-5 text-gray-400" />
-                                                </div>
-                                                <input
-                                                    ref={locationInputRef}
-                                                    type="text"
-                                                    value={location}
-                                                    onChange={(e) => {
-                                                        setLocation(e.target.value);
-                                                        setIsLocationManuallyEdited(true);
-                                                    }}
-                                                    placeholder="Enter your business address..."
-                                                    className="block w-full pl-10 pr-3 py-3 bg-white border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 placeholder-gray-500"
-                                                />
-                                            </div>
-                                            <div className="flex items-center justify-between mt-2">
-                                                <p className="text-xs text-gray-500">
-                                                    💡 You can manually edit the address detected by GPS or type your own
-                                                </p>
-                                                {location && (
-                                                    <div className="flex items-center gap-1">
-                                                        <div className={`w-2 h-2 rounded-full ${isLocationManuallyEdited ? 'bg-blue-500' : 'bg-green-500'}`}></div>
-                                                        <span className="text-xs font-medium text-gray-600">
-                                                            {isLocationManuallyEdited ? 'Manual' : 'GPS'}
-                                                        </span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                </>
-                            ) : (
+                                )}
+                            </div>
+                            {!mapsApiLoaded && (
                                 <div className="space-y-3">
                                     {/* Manual Address Input (Fallback) */}
                                     <div>
@@ -1617,26 +1580,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                         </div>
                         <div>
                             <h3 className="text-md font-medium text-gray-800">{t?.pricingTitle || 'Pricing'}</h3>
-                            <p className="text-xs text-gray-500 mt-1">Enter prices as: 345k for 345,000 or full amount like 400000</p>
-                            
-                            {/* Commission Notice */}
-                            <div className="mb-4 p-3 bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-200 rounded-lg mt-2">
-                                <div className="flex items-start space-x-3">
-                                    <div className="flex-shrink-0">
-                                        <svg className="w-5 h-5 text-orange-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                                        </svg>
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className="text-sm font-semibold text-orange-800">
-                                            💰 Promoter Commission
-                                        </p>
-                                        <p className="text-sm text-orange-700 mt-1">
-                                            Promoters receive <strong>20% commission</strong> when users book your massage service with their shared link.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
+                            <p className="text-xs text-gray-500 mt-1">Set your online massage prices</p>
                             
                             <div className="grid grid-cols-3 gap-2 mt-2">
                                 <div>
@@ -1708,341 +1652,143 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
-            {/* Brand Header with Home Icon */}
-            <header className="bg-white shadow-md p-4 sticky top-0 z-40">
+            {/* Brand Header with Home Icon - Mobile Optimized */}
+            <header className="bg-white shadow-md p-3 sm:p-4 sticky top-0 z-40">
                 <div className="flex justify-between items-center">
-                    <h1 className="text-2xl font-bold text-gray-800">
+                    <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
                         <span className="text-black">Inda</span>
                         <span className="text-orange-500">Street</span>
                     </h1>
-                    <div className="flex items-center gap-3">
-                        <NotificationBell count={unreadNotificationsCount} onClick={onNavigateToNotifications} />
+                    <div className="flex items-center gap-2 sm:gap-3">
+                        <NotificationBell 
+                            count={unreadNotificationsCount} 
+                            onClick={() => setShowNotificationsView(!showNotificationsView)} 
+                        />
                         <button
-                            onClick={() => onNavigate && onNavigate('home')}
-                            className="p-2 text-gray-700 hover:text-orange-500 hover:bg-orange-50 rounded-full transition-colors"
-                            title="Go to Home"
+                            onClick={() => {
+                                if (showNotificationsView) {
+                                    setShowNotificationsView(false);
+                                } else {
+                                    onNavigate && onNavigate('home');
+                                }
+                            }}
+                            className="min-w-[44px] min-h-[44px] p-2 flex items-center justify-center text-gray-700 active:text-orange-500 active:bg-orange-50 rounded-full transition-colors touch-manipulation"
+                            title={showNotificationsView ? "Back to Dashboard" : "Go to Home"}
+                            aria-label={showNotificationsView ? "Back to Dashboard" : "Go to Home"}
                         >
-                            <Home className="w-6 h-6" />
-                        </button>
-                        <button
-                            onClick={() => setIsSideDrawerOpen(true)}
-                            className="p-2 text-orange-500 hover:bg-orange-50 rounded-full transition-colors"
-                        >
-                            <Menu className="w-6 h-6" />
+                            <Home className="w-5 h-5 sm:w-6 sm:h-6" />
                         </button>
                     </div>
                 </div>
             </header>
 
-            {/* Side Drawer */}
-            {isSideDrawerOpen && (
-                <>
-                    <style>{`
-                        @keyframes float {
-                            0%, 100% { transform: translateY(0px); }
-                            50% { transform: translateY(-10px); }
-                        }
-                        .animate-float {
-                            animation: float 6s ease-in-out infinite;
-                        }
-                    `}</style>
-                <div className="fixed inset-0 z-50">
-                    {/* Overlay */}
-                    <div 
-                        className="absolute inset-0 bg-black bg-opacity-50"
-                        onClick={() => setIsSideDrawerOpen(false)}
-                    ></div>
-                    
-                    {/* Drawer */}
-                    <div className="absolute right-0 top-0 h-full w-80 bg-white shadow-xl">
-                        {/* Drawer Header */}
-                        <div className="p-6 flex justify-between items-center border-b border-black">
-                            <h2 className="font-bold text-2xl">
-                                <span className="text-black">Inda</span>
-                                <span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
-                            </h2>
-                            <button
-                                onClick={() => setIsSideDrawerOpen(false)}
-                                className="p-2 rounded-full transition-colors"
-                                aria-label="Close menu"
-                            >
-                                <X className="w-6 h-6 text-black" />
-                            </button>
-                        </div>
-
-                        {/* Drawer Menu Items */}
-                        <nav className="flex-grow overflow-y-auto p-4">
-                            <div className="space-y-2">
-                            <button
-                                onClick={() => {
-                                    setActiveTab('profile');
-                                    setIsSideDrawerOpen(false);
-                                }}
-                                className={`flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 group transform hover:scale-105 ${
-                                    activeTab === 'profile' ? 'border-orange-500' : 'border-gray-300'
-                                }`}
-                            >
-                                <div className={`p-2 rounded-lg ${activeTab === 'profile' ? 'bg-gradient-to-br from-orange-500 to-orange-600' : 'bg-gray-200'}`}>
-                                    <ColoredProfileIcon className="w-5 h-5 text-white" />
-                                </div>
-                                <div className="flex-grow">
-                                    <p className={`font-semibold transition-colors ${activeTab === 'profile' ? 'text-orange-600' : 'text-gray-800 group-hover:text-orange-600'}`}>
-                                        Profile
-                                    </p>
-                                    <p className="text-xs text-gray-500">Manage your profile</p>
-                                </div>
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setActiveTab('bookings');
-                                    setIsSideDrawerOpen(false);
-                                }}
-                                className={`flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 group transform hover:scale-105 ${
-                                    activeTab === 'bookings' ? 'border-orange-500' : 'border-gray-300'
-                                }`}
-                            >
-                                <div className={`p-2 rounded-lg ${activeTab === 'bookings' ? 'bg-gradient-to-br from-orange-500 to-orange-600' : 'bg-gray-200'}`}>
-                                    <ColoredCalendarIcon className="w-5 h-5 text-white" />
-                                </div>
-                                <div className="flex-grow">
-                                    <p className={`font-semibold transition-colors ${activeTab === 'bookings' ? 'text-orange-600' : 'text-gray-800 group-hover:text-orange-600'}`}>
-                                        Bookings
-                                    </p>
-                                    <p className="text-xs text-gray-500">View your bookings</p>
-                                </div>
-                                {upcomingBookings.length > 0 && (
-                                    <span className="ml-auto bg-orange-500 text-white text-xs rounded-full px-2.5 py-0.5 font-bold">
-                                        {upcomingBookings.length}
-                                    </span>
-                                )}
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setActiveTab('analytics');
-                                    setIsSideDrawerOpen(false);
-                                }}
-                                className={`flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 group transform hover:scale-105 ${
-                                    activeTab === 'analytics' ? 'border-orange-500' : 'border-gray-300'
-                                }`}
-                            >
-                                <div className={`p-2 rounded-lg ${activeTab === 'analytics' ? 'bg-gradient-to-br from-orange-500 to-orange-600' : 'bg-gray-200'}`}>
-                                    <ColoredAnalyticsIcon className="w-5 h-5 text-white" />
-                                </div>
-                                <div className="flex-grow">
-                                    <p className={`font-semibold transition-colors ${activeTab === 'analytics' ? 'text-orange-600' : 'text-gray-800 group-hover:text-orange-600'}`}>
-                                        Analytics
-                                    </p>
-                                    <p className="text-xs text-gray-500">Performance insights</p>
-                                </div>
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setActiveTab('hotelVilla');
-                                    setIsSideDrawerOpen(false);
-                                }}
-                                className={`flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 group transform hover:scale-105 ${
-                                    activeTab === 'hotelVilla' ? 'border-orange-500' : 'border-gray-300'
-                                }`}
-                            >
-                                <div className={`p-2 rounded-lg ${activeTab === 'hotelVilla' ? 'bg-gradient-to-br from-orange-500 to-orange-600' : 'bg-gray-200'}`}>
-                                    <ColoredHotelIcon className="w-5 h-5 text-white" />
-                                </div>
-                                <div className="flex-grow">
-                                    <p className={`font-semibold transition-colors ${activeTab === 'hotelVilla' ? 'text-orange-600' : 'text-gray-800 group-hover:text-orange-600'}`}>
-                                        Indastreet Partners
-                                    </p>
-                                    <p className="text-xs text-gray-500">Partner portal</p>
-                                </div>
-                            </button>
-                            <button
-                                onClick={() => {
-                                    if (onNavigate) onNavigate('place-discount-system');
-                                    setIsSideDrawerOpen(false);
-                                }}
-                                className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-yellow-500 group transform hover:scale-105"
-                            >
-                                <div className="p-2 bg-gradient-to-br from-orange-400 to-yellow-500 rounded-lg">
-                                    <div className="w-5 h-5 flex items-center justify-center text-white text-sm font-bold">
-                                        %
-                                    </div>
-                                </div>
-                                <div className="flex-grow">
-                                    <p className="font-semibold text-gray-800 group-hover:text-yellow-600 transition-colors">
-                                        Discount System
-                                    </p>
-                                    <p className="text-xs text-gray-500">Manage discounts</p>
-                                </div>
-                                <span className="bg-gradient-to-r from-orange-400 to-yellow-500 text-white text-xs px-2 py-1 rounded-full font-bold">
-                                    NEW
-                                </span>
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setActiveTab('notifications');
-                                    setIsSideDrawerOpen(false);
-                                }}
-                                className={`flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 group transform hover:scale-105 ${
-                                    activeTab === 'notifications' ? 'border-orange-500' : 'border-gray-300'
-                                }`}
-                            >
-                                <div className={`p-2 rounded-lg ${activeTab === 'notifications' ? 'bg-gradient-to-br from-orange-500 to-orange-600' : 'bg-gray-200'}`}>
-                                    <ColoredBellIcon className="w-5 h-5 text-white" />
-                                </div>
-                                <div className="flex-grow">
-                                    <p className={`font-semibold transition-colors ${activeTab === 'notifications' ? 'text-orange-600' : 'text-gray-800 group-hover:text-orange-600'}`}>
-                                        Notifications
-                                    </p>
-                                    <p className="text-xs text-gray-500">View updates</p>
-                                </div>
-                                {(notifications || []).filter(n => !n.isRead).length > 0 && (
-                                    <span className="ml-auto bg-orange-500 text-white text-xs rounded-full px-2.5 py-0.5 font-bold">
-                                        {(notifications || []).filter(n => !n.isRead).length}
-                                    </span>
-                                )}
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setActiveTab('discounts');
-                                    setIsSideDrawerOpen(false);
-                                }}
-                                className={`flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 group transform hover:scale-105 ${
-                                    activeTab === 'discounts' ? 'border-orange-500' : 'border-gray-300'
-                                }`}
-                            >
-                                <div className={`p-2 rounded-lg ${activeTab === 'discounts' ? 'bg-gradient-to-br from-orange-500 to-orange-600' : 'bg-gray-200'}`}>
-                                    <ColoredTagIcon className="w-5 h-5 text-white" />
-                                </div>
-                                <div className="flex-grow">
-                                    <p className={`font-semibold transition-colors ${activeTab === 'discounts' ? 'text-orange-600' : 'text-gray-800 group-hover:text-orange-600'}`}>
-                                        Discounts
-                                    </p>
-                                    <p className="text-xs text-gray-500">Active discounts</p>
-                                </div>
-                            </button>
-                            
-                            {/* Discount Badge Management */}
-                            {onNavigate && (
-                                <button
-                                    onClick={() => {
-                                        setIsSideDrawerOpen(false);
-                                        onNavigate('placeDiscountBadge');
-                                    }}
-                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-purple-500 group transform hover:scale-105"
-                                >
-                                    <div className="p-2 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg">
-                                        <ColoredTagIcon className="w-5 h-5 text-white" />
-                                    </div>
-                                    <div className="flex-grow">
-                                        <p className="font-semibold text-gray-800 group-hover:text-purple-600 transition-colors">
-                                            Discount Badges
-                                        </p>
-                                        <p className="text-xs text-gray-500">Badge management</p>
-                                    </div>
-                                </button>
-                            )}
-
-                            {/* Verified Pro Badge */}
-                            {onNavigate && (
-                                <button
-                                    onClick={() => {
-                                        setIsSideDrawerOpen(false);
-                                        onNavigate('verifiedProBadge');
-                                    }}
-                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-emerald-500 group transform hover:scale-105"
-                                >
-                                    <div className="p-2 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg">
-                                        <div className="w-5 h-5 flex items-center justify-center text-white text-sm font-bold">✓</div>
-                                    </div>
-                                    <div className="flex-grow">
-                                        <p className="font-semibold text-gray-800 group-hover:text-emerald-600 transition-colors">
-                                            Verified Pro Badge
-                                        </p>
-                                        <p className="text-xs text-gray-500">Get verified status</p>
-                                    </div>
-                                </button>
-                            )}
-                            
-                            <button
-                                onClick={() => {
-                                    setActiveTab('membership');
-                                    setIsSideDrawerOpen(false);
-                                }}
-                                className={`flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 group transform hover:scale-105 ${
-                                    activeTab === 'membership' ? 'border-orange-500' : 'border-gray-300'
-                                }`}
-                            >
-                                <div className={`p-2 rounded-lg ${activeTab === 'membership' ? 'bg-gradient-to-br from-orange-500 to-orange-600' : 'bg-gray-200'}`}>
-                                    <ColoredCrownIcon className="w-5 h-5 text-white" />
-                                </div>
-                                <div className="flex-grow">
-                                    <p className={`font-semibold transition-colors ${activeTab === 'membership' ? 'text-orange-600' : 'text-gray-800 group-hover:text-orange-600'}`}>
-                                        Membership Plans
-                                    </p>
-                                    <p className="text-xs text-gray-500">Premium features</p>
-                                </div>
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setIsSideDrawerOpen(false);
-                                    if (onNavigate) {
-                                        onNavigate('placeTerms');
-                                    }
-                                }}
-                                className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-blue-500 group transform hover:scale-105"
-                            >
-                                <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg">
-                                    <ColoredDocumentIcon className="w-5 h-5 text-white" />
-                                </div>
-                                <div className="flex-grow">
-                                    <p className="font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
-                                        Terms & Conditions
-                                    </p>
-                                    <p className="text-xs text-gray-500">Legal terms</p>
-                                </div>
-                            </button>
-
-
-
-                            {/* Coin Rewards Menu Items */}
-                            {onNavigate && (
-                                <>
-                                </>  
-                            )}
-
-                            {/* Divider */}
-                            <div className="my-4 border-t border-gray-200"></div>
-
-                            {/* Logout Button */}
-                            <button
-                                onClick={() => {
-                                    setIsSideDrawerOpen(false);
-                                    onLogout();
-                                }}
-                                className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-red-500 group transform hover:scale-105"
-                            >
-                                <div className="p-2 bg-gradient-to-br from-red-500 to-red-600 rounded-lg">
-                                    <LogOut className="w-5 h-5 text-white" />
-                                </div>
-                                <div className="flex-grow">
-                                    <p className="font-semibold text-gray-800 group-hover:text-red-600 transition-colors">
-                                        Log Out
-                                    </p>
-                                    <p className="text-xs text-gray-500">Sign out of account</p>
-                                </div>
-                            </button>
-                            </div>
-                        </nav>
-                    </div>
-                </div>
-                </>
-            )}
 
             {/* Content Area */}
             <main className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-6 pb-40">
-                {renderContent()}
+                {showNotificationsView ? (
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-2xl font-bold text-gray-900">Bookings & Notifications</h2>
+                            <button
+                                onClick={() => onNavigate && onNavigate('home')}
+                                className="min-w-[44px] min-h-[44px] p-2 flex items-center justify-center text-gray-700 hover:text-orange-500 hover:bg-orange-50 rounded-full transition-colors"
+                                title="Go to Home"
+                                aria-label="Go to Home"
+                            >
+                                <Home className="w-6 h-6" />
+                            </button>
+                        </div>
+                        
+                        {/* Upcoming Bookings Section */}
+                        {upcomingBookings.length > 0 && (
+                            <div className="bg-white rounded-lg shadow-md p-4">
+                                <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                                    <span className="text-2xl">📅</span>
+                                    Upcoming Bookings
+                                </h3>
+                                <div className="space-y-3">
+                                    {upcomingBookings.map((booking: any) => (
+                                        <div key={booking.$id} className="p-4 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg border-l-4 border-orange-500">
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <p className="font-semibold text-gray-900">{booking.customerName || 'Customer'}</p>
+                                                    <p className="text-sm text-gray-600">
+                                                        {booking.duration} min - {booking.massageType}
+                                                    </p>
+                                                    <p className="text-xs text-gray-500 mt-1">
+                                                        {new Date(booking.bookingDate).toLocaleDateString()} at {booking.bookingTime}
+                                                    </p>
+                                                </div>
+                                                <span className="px-3 py-1 bg-orange-500 text-white text-xs font-semibold rounded-full">
+                                                    {booking.status}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                        
+                        {/* Notifications Section */}
+                        <div className="bg-white rounded-lg shadow-md p-4">
+                            <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                                <span className="text-2xl">🔔</span>
+                                Notifications
+                            </h3>
+                            <div className="space-y-3">
+                                {(notifications || []).length > 0 ? (
+                                    (notifications || []).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((notification: any) => (
+                                        <div 
+                                            key={notification.id} 
+                                            className={`p-4 rounded-lg shadow-sm flex items-start gap-4 ${
+                                                notification.isRead ? 'bg-white border border-gray-200' : 'bg-gradient-to-r from-green-50 to-blue-50 border-l-4 border-orange-500'
+                                            }`}
+                                        >
+                                            <div className="flex-shrink-0">
+                                                <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                                                    <Bell className="w-5 h-5 text-orange-600" />
+                                                </div>
+                                            </div>
+                                            <div className="flex-grow">
+                                                <p className={`text-sm ${
+                                                    notification.isRead ? 'text-gray-600' : 'text-gray-800 font-semibold'
+                                                }`}>
+                                                    {notification.message}
+                                                </p>
+                                                <p className="text-xs text-gray-400 mt-1">
+                                                    {new Date(notification.createdAt).toLocaleString()}
+                                                </p>
+                                            </div>
+                                            {!notification.isRead && (
+                                                <div className="w-2.5 h-2.5 bg-orange-500 rounded-full flex-shrink-0 mt-1 animate-pulse"></div>
+                                            )}
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="text-center py-8">
+                                        <Bell className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                                        <p className="text-gray-500">No notifications yet</p>
+                                        <p className="text-xs text-gray-400 mt-2">
+                                            New updates and messages will appear here
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        
+                        {/* No bookings message */}
+                        {upcomingBookings.length === 0 && (notifications || []).length === 0 && (
+                            <div className="text-center py-12 bg-white rounded-lg shadow-md">
+                                <div className="text-6xl mb-4">📭</div>
+                                <p className="text-gray-600 font-medium">No upcoming bookings or notifications</p>
+                                <p className="text-sm text-gray-400 mt-2">Check back later for updates</p>
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    renderContent()
+                )}
             </main>
-
-
 
             {/* Validation Popup */}
             <ValidationPopup

@@ -110,7 +110,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
         };
         loadBookingsCount();
     }, [bookingsCount, place]);
-    const joinedDateRaw = (place as any).activeMembershipDate;
+    const joinedDateRaw = (place as any).activeMembershipDate || (place as any).membershipStartDate || (place as any).$createdAt;
     const joinedDisplay = (() => {
         if (!joinedDateRaw) return '—';
         try {
@@ -248,33 +248,55 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
 
     return (
         <>
-            {/* External meta bar (Joined / Bookings) */}
+            {/* External meta bar (Joined / Free / Bookings) */}
             <div className="flex justify-between items-center mb-2 px-2">
-                <span className="text-[11px] text-gray-600 font-medium">Joined: {joinedDisplay}</span>
-                <span className="text-[11px] text-gray-600 font-medium">Bookings: {bookingsCount}</span>
+                <span className="text-[11px] text-gray-600 font-medium flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    Joined: {joinedDisplay}
+                </span>
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onNavigate?.('place-registration');
+                    }}
+                    className="text-[11px] text-green-600 font-semibold flex items-center gap-1 hover:text-green-700 hover:underline transition-colors cursor-pointer"
+                >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Massage Spa Join Free
+                </button>
+                <span className="text-[11px] text-gray-600 font-medium flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                    Bookings: {bookingsCount}
+                </span>
             </div>
-            <div className="bg-white rounded-xl shadow-md overflow-visible relative">
-                {/* Main Image Banner */}
+            <div className="bg-white rounded-xl shadow-md overflow-visible relative active:shadow-lg transition-shadow touch-manipulation">
+                {/* Main Image Banner + Lazy Loading */}
                 <div className="h-48 w-full bg-gradient-to-r from-orange-400 to-orange-600 overflow-hidden relative rounded-t-xl">
                     <img 
                         src={mainImage} 
                         alt={`${place.name} cover`} 
                         className="w-full h-full object-cover"
+                        loading="lazy"
                         onError={(e) => {
                             (e.target as HTMLImageElement).src = 'https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382';
                         }}
                     />
-                    {/* Star Rating - Top Left Corner */}
-                    <div 
-                        className="absolute top-2 left-2 flex items-center gap-1 bg-black/70 backdrop-blur-md rounded-full px-3 py-1.5 shadow-lg cursor-pointer"
+                    {/* Star Rating - Top Left Corner - Enhanced Touch Target */}
+                    <button 
+                        className="absolute top-2 left-2 flex items-center gap-1 bg-black/70 backdrop-blur-md rounded-full px-3 py-2 shadow-lg min-h-[44px] touch-manipulation active:bg-black/80"
                         onClick={() => onRate(place)}
                         aria-label={`Rate ${place.name}`}
-                        role="button"
                     >
                         <StarIcon className="w-4 h-4 text-yellow-400"/>
                         <span className="font-bold text-white text-sm">{formatRating(getDisplayRating(place.rating, place.reviewCount))}</span>
                         <span className="text-xs text-gray-300">({getDisplayReviewCount(place.reviewCount)})</span>
-                    </div>
+                    </button>
 
                 {/* Discount Badge - Database driven discount */}
                 {isDiscountActive(place) && (
@@ -714,7 +736,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                                             const referralLink = userReferralCode ? `https://www.indastreetmassage.com/ref/${userReferralCode}` : 'https://www.indastreetmassage.com';
                                             window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}`, '_blank');
                                         }}
-                                        className="flex flex-col items-center gap-2 p-3 sm:p-4 rounded-lg transition-all hover:scale-105"
+                                        className="flex flex-col items-center gap-2 p-3 sm:p-4 rounded-lg transition-all hover:scale-105 min-h-[44px] min-w-[44px] touch-manipulation active:scale-95"
                                     >
                                         <img 
                                             src="https://ik.imagekit.io/7grri5v7d/facebook.png?updatedAt=1761844676576" 
@@ -730,7 +752,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                                             navigator.clipboard.writeText(message);
                                             alert('Instagram message copied! Open Instagram and paste to share.');
                                         }}
-                                        className="flex flex-col items-center gap-2 p-3 sm:p-4 rounded-lg transition-all hover:scale-105"
+                                        className="flex flex-col items-center gap-2 p-3 sm:p-4 rounded-lg transition-all hover:scale-105 min-h-[44px] min-w-[44px] touch-manipulation active:scale-95"
                                     >
                                         <img 
                                             src="https://ik.imagekit.io/7grri5v7d/insta.png?updatedAt=1761845305146" 
@@ -746,7 +768,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                                             navigator.clipboard.writeText(message);
                                             alert('TikTok message copied! Open TikTok and paste to share.');
                                         }}
-                                        className="flex flex-col items-center gap-2 p-3 sm:p-4 rounded-lg transition-all hover:scale-105"
+                                        className="flex flex-col items-center gap-2 p-3 sm:p-4 rounded-lg transition-all hover:scale-105 min-h-[44px] min-w-[44px] touch-manipulation active:scale-95"
                                     >
                                         <img 
                                             src="https://ik.imagekit.io/7grri5v7d/tiktok.png?updatedAt=1761845101981" 
@@ -760,7 +782,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                             
                             <button
                                 onClick={() => setShowReferModal(false)}
-                                className="w-full px-6 py-3 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 transition-colors"
+                                className="w-full px-6 py-3 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 transition-colors min-h-[44px] touch-manipulation active:bg-orange-800"
                             >
                                 Close
                             </button>
@@ -798,7 +820,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                                     setShowLoginRequiredModal(false);
                                     onShowRegisterPrompt?.();
                                 }}
-                                className="w-full px-4 py-3 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 transition-colors"
+                                className="w-full px-4 py-3 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 transition-colors min-h-[44px] touch-manipulation active:bg-orange-700"
                             >
                                 Register / Login
                             </button>

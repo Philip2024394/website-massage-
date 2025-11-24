@@ -370,10 +370,55 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                     }}
                 />
 
-                {/* Gallery Section - 6 Images with Captions */}
-                <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Establishment</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pb-20">
+                {/* Gallery Section - 6 Images with Captions + Mobile Swipe Support */}
+                <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 mb-6">
+                    <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Our Establishment</h3>
+                    
+                    {/* Mobile: Swipeable Gallery */}
+                    <div className="block md:hidden mb-4">
+                        <div className="relative">
+                            <div 
+                                className="overflow-x-auto scrollbar-hide snap-x snap-mandatory"
+                                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                            >
+                                <div className="flex gap-3 pb-4">
+                                    {galleryImages.slice(0, 6).map((image, index) => (
+                                        <div 
+                                            key={index}
+                                            className="flex-shrink-0 w-[calc(100vw-3rem)] snap-center"
+                                            onClick={() => setExpandedImage(image)}
+                                        >
+                                            <div className="relative rounded-xl overflow-hidden shadow-md aspect-[4/3] bg-gray-100">
+                                                <img
+                                                    src={image.imageUrl || 'https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png'}
+                                                    alt={image.caption || `Gallery ${index + 1}`}
+                                                    className="w-full h-full object-cover"
+                                                    loading="lazy"
+                                                    onError={(e) => {
+                                                        e.currentTarget.src = 'https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png';
+                                                    }}
+                                                />
+                                                {image.caption && (
+                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
+                                                        <p className="text-white text-sm font-medium line-clamp-2">{image.caption}</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            {/* Swipe Indicator */}
+                            <div className="flex justify-center gap-1.5 mt-2">
+                                {galleryImages.slice(0, 6).map((_, index) => (
+                                    <div key={index} className="w-1.5 h-1.5 rounded-full bg-gray-300"></div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {/* Desktop: Grid Gallery */}
+                    <div className="hidden md:grid grid-cols-2 md:grid-cols-3 gap-4 pb-20">
                         {galleryImages.slice(0, 6).map((image, index) => (
                             <GalleryImageCard
                                 key={index}

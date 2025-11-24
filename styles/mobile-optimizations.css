@@ -1,0 +1,233 @@
+/* Mobile Optimizations for Massage Place System */
+
+/* Hide scrollbars for swipe galleries while maintaining functionality */
+.scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari, Opera */
+}
+
+/* Smooth scroll snap for mobile galleries */
+.snap-x {
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+}
+
+.snap-center {
+    scroll-snap-align: center;
+}
+
+/* Enhanced touch targets (minimum 44x44px for accessibility) */
+.touch-target {
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-center: center;
+}
+
+/* Touch manipulation for better responsiveness */
+.touch-manipulation {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Active states for mobile (replaces hover) */
+@media (hover: none) and (pointer: coarse) {
+    .mobile-active:active {
+        opacity: 0.8;
+        transform: scale(0.98);
+    }
+}
+
+/* Lazy loading image placeholder */
+img[loading="lazy"] {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s ease-in-out infinite;
+}
+
+@keyframes loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Optimize animations for mobile performance */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Mobile-optimized spacing */
+@media (max-width: 640px) {
+    .mobile-compact {
+        padding: 0.75rem !important;
+    }
+    
+    .mobile-text-sm {
+        font-size: 0.875rem !important;
+    }
+    
+    .mobile-gap-sm {
+        gap: 0.5rem !important;
+    }
+}
+
+/* Prevent text selection during swipe gestures */
+.swipeable {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Gallery swipe indicators */
+.swipe-indicator {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.swipe-indicator.active {
+    width: 24px;
+    border-radius: 3px;
+    background-color: #f97316;
+}
+
+/* Smooth momentum scrolling for iOS */
+.momentum-scroll {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+}
+
+/* Safe area padding for notched devices */
+@supports (padding: max(0px)) {
+    .safe-area-top {
+        padding-top: max(env(safe-area-inset-top), 0.75rem);
+    }
+    
+    .safe-area-bottom {
+        padding-bottom: max(env(safe-area-inset-bottom), 1rem);
+    }
+}
+
+/* Optimize button press feedback */
+button:active,
+.interactive:active {
+    transform: scale(0.97);
+    transition: transform 0.1s ease;
+}
+
+/* Image optimization classes */
+.img-optimized {
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+/* Prevent zoom on double tap for specific elements */
+.no-tap-zoom {
+    touch-action: manipulation;
+}
+
+/* Mobile-friendly modal transitions */
+@media (max-width: 768px) {
+    .mobile-modal-enter {
+        animation: slideUp 0.3s ease-out;
+    }
+    
+    @keyframes slideUp {
+        from {
+            transform: translateY(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+}
+
+/* Optimize card interactions for mobile */
+.card-touch {
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.card-touch:active {
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
+}
+
+/* Loading spinner optimization */
+.spinner-mobile {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #f97316;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive image container */
+.responsive-img-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+}
+
+.responsive-img-container::before {
+    content: "";
+    display: block;
+    padding-top: 75%; /* 4:3 aspect ratio */
+}
+
+.responsive-img-container img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Gallery fade effect */
+.gallery-fade {
+    position: relative;
+}
+
+.gallery-fade::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 40px;
+    background: linear-gradient(to right, transparent, white);
+    pointer-events: none;
+}
+
+/* Mobile-optimized form inputs */
+@media (max-width: 640px) {
+    input[type="text"],
+    input[type="tel"],
+    input[type="email"],
+    textarea {
+        font-size: 16px !important; /* Prevents zoom on iOS */
+    }
+}
