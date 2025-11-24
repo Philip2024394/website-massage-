@@ -310,6 +310,17 @@ const databases = new Databases(client);
 const account = new Account(client);
 const storage = new Storage(client);
 
+// Suppress Appwrite localStorage warning (we've disabled localStorage globally)
+if (typeof window !== 'undefined') {
+    const originalWarn = console.warn;
+    console.warn = (...args: any[]) => {
+        if (typeof args[0] === 'string' && args[0].includes('Appwrite is using localStorage')) {
+            return; // Suppress: localStorage disabled globally via disableLocalStorage.ts
+        }
+        originalWarn.apply(console, args);
+    };
+}
+
 export const appwriteClient = client;
 export const appwriteDatabases = databases;
 export const appwriteAccount = account;
@@ -317,6 +328,32 @@ export const appwriteAccount = account;
 export const therapistService = {
     async create(therapist: any): Promise<any> {
         try {
+            // Seed analytics with initial bookings (32-50) if not provided
+            if (!therapist.analytics) {
+                const seedBookings = 32 + Math.floor(Math.random() * 19); // 32-50 inclusive
+                therapist.analytics = JSON.stringify({
+                    impressions: 0,
+                    views: 0,
+                    profileViews: 0,
+                    whatsapp_clicks: 0,
+                    whatsappClicks: 0,
+                    phone_clicks: 0,
+                    directions_clicks: 0,
+                    bookings: seedBookings
+                });
+            } else {
+                // Ensure bookings field exists
+                try {
+                    const parsed = JSON.parse(therapist.analytics);
+                    if (parsed && typeof parsed.bookings !== 'number') {
+                        parsed.bookings = 32 + Math.floor(Math.random() * 19);
+                        therapist.analytics = JSON.stringify(parsed);
+                    }
+                } catch {
+                    const seedBookings = 32 + Math.floor(Math.random() * 19);
+                    therapist.analytics = JSON.stringify({ bookings: seedBookings });
+                }
+            }
             const response = await databases.createDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.therapists,
@@ -566,6 +603,19 @@ export const therapistService = {
                 // Convert status to proper capitalized format for availability field
                 const statusCapitalized = data.status.charAt(0).toUpperCase() + data.status.slice(1).toLowerCase();
                 mappedData.availability = statusCapitalized; // Database expects capitalized for availability
+                // Synchronize new available/busy string attributes (recently added to schema)
+                if (data.status.toLowerCase() === 'available') {
+                    mappedData.available = new Date().toISOString();
+                    mappedData.busy = '';
+                } else if (data.status.toLowerCase() === 'busy') {
+                    // Use bookedUntil / busyDuration to form busy value; fallback to timestamp
+                    const bookedUntilTs = data.bookedUntil || data.busyUntil || new Date(Date.now() + 60*60*1000).toISOString();
+                    mappedData.busy = bookedUntilTs;
+                    mappedData.available = '';
+                } else if (data.status.toLowerCase() === 'offline') {
+                    mappedData.available = '';
+                    mappedData.busy = '';
+                }
             }
             
             // Handle explicit availability field (ensure it's capitalized)
@@ -598,7 +648,14 @@ export const therapistService = {
             if (data.price90 !== undefined) mappedData.price90 = String(data.price90);
             if (data.price120 !== undefined) mappedData.price120 = String(data.price120);
             if (data.massageTypes) mappedData.massageTypes = data.massageTypes;
-            if (data.languages) mappedData.languages = data.languages;
+            if (data.languages) {
+                // Schema expects a single string. If array provided, join.
+                if (Array.isArray(data.languages)) {
+                    mappedData.languages = data.languages.join(', ');
+                } else {
+                    mappedData.languages = data.languages;
+                }
+            }
             if (data.coordinates) mappedData.coordinates = data.coordinates;
             if (data.isLive !== undefined) mappedData.isLive = data.isLive;
             if (data.hourlyRate) mappedData.hourlyRate = data.hourlyRate;
@@ -607,8 +664,16 @@ export const therapistService = {
             if (data.isLicensed !== undefined) mappedData.isLicensed = data.isLicensed;
             
             // Handle discount fields - preserve from current document if not provided
-            if (data.discountPercentage !== undefined) mappedData.discountPercentage = data.discountPercentage;
-            if (data.discountDuration !== undefined) mappedData.discountDuration = data.discountDuration;
+            if (data.discountPercentage !== undefined) {
+                // Clamp discount percentage to schema range 0-100
+                const pct = Number(data.discountPercentage);
+                mappedData.discountPercentage = isNaN(pct) ? 0 : Math.min(Math.max(pct, 0), 100);
+            }
+            if (data.discountDuration !== undefined) {
+                // Clamp duration (hours) to 0-168 (7 days)
+                const dur = Number(data.discountDuration);
+                mappedData.discountDuration = isNaN(dur) ? 0 : Math.min(Math.max(dur, 0), 168);
+            }
             if (data.discountEndTime !== undefined) mappedData.discountEndTime = data.discountEndTime;
             if (data.isDiscountActive !== undefined) mappedData.isDiscountActive = data.isDiscountActive;
             
@@ -626,7 +691,7 @@ export const therapistService = {
             });
             
             // Handle busy timer fields - store in existing description field as JSON for now
-            if (data.busyUntil !== undefined || data.busyDuration !== undefined) {
+            if (data.bookedUntil !== undefined || data.busyDuration !== undefined || data.busyUntil !== undefined) {
                 try {
                     // Get current description to preserve it
                     let currentDesc = currentDocument.description || '';
@@ -645,9 +710,9 @@ export const therapistService = {
                     }
                     
                     // Update timer data
-                    if (data.busyUntil !== undefined || data.busyDuration !== undefined) {
+                    if (data.busyUntil !== undefined || data.busyDuration !== undefined || data.bookedUntil !== undefined) {
                         busyTimerData = {
-                            busyUntil: data.busyUntil ?? busyTimerData?.busyUntil ?? null,
+                            busyUntil: data.busyUntil ?? data.bookedUntil ?? busyTimerData?.busyUntil ?? null,
                             busyDuration: data.busyDuration ?? busyTimerData?.busyDuration ?? null
                         };
                         
@@ -667,6 +732,12 @@ export const therapistService = {
             const { $id: _$id, $createdAt: _$createdAt, $updatedAt: _$updatedAt, $permissions: _$permissions, $databaseId: _$databaseId, $collectionId, ...cleanMappedData } = mappedData;
             
             console.log('📋 Final mapped data for Appwrite schema (with all required fields):', cleanMappedData);
+            console.log('🔍 Location field check:', {
+                inOriginalData: !!data.location,
+                inMappedData: !!mappedData.location,
+                inCleanData: !!cleanMappedData.location,
+                locationValue: cleanMappedData.location || 'MISSING'
+            });
             console.log('🔍 Status/Availability values being sent:', {
                 status: cleanMappedData.status,
                 availability: cleanMappedData.availability,
@@ -674,6 +745,27 @@ export const therapistService = {
                 originalAvailability: data.availability
             });
             
+            // Derive isOnline from status if provided and not explicitly set
+            if (mappedData.status && mappedData.isOnline === undefined) {
+                mappedData.isOnline = mappedData.status !== 'offline';
+            }
+            // Ensure available/busy coherence even if status not passed but fields were
+            if (!data.status) {
+                if (data.available) {
+                    mappedData.available = data.available;
+                    mappedData.busy = '';
+                    mappedData.status = 'available';
+                    mappedData.availability = 'Available';
+                    mappedData.isOnline = true;
+                } else if (data.busy) {
+                    mappedData.busy = data.busy;
+                    mappedData.available = '';
+                    mappedData.status = 'busy';
+                    mappedData.availability = 'Busy';
+                    mappedData.isOnline = true;
+                }
+            }
+
             const response = await rateLimitedDb.updateDocument(
                 databases,
                 APPWRITE_CONFIG.databaseId,
@@ -764,6 +856,32 @@ export const placeService = {
             // Normalize id and placeId attributes to match document id for reliable lookups
             place.id = canonicalId;
             place.placeId = canonicalId;
+
+            // Seed analytics with initial bookings (32-50) if not provided
+            if (!place.analytics) {
+                const seedBookings = 32 + Math.floor(Math.random() * 19);
+                place.analytics = JSON.stringify({
+                    impressions: 0,
+                    views: 0,
+                    profileViews: 0,
+                    whatsapp_clicks: 0,
+                    whatsappClicks: 0,
+                    phone_clicks: 0,
+                    directions_clicks: 0,
+                    bookings: seedBookings
+                });
+            } else {
+                try {
+                    const parsed = JSON.parse(place.analytics);
+                    if (parsed && typeof parsed.bookings !== 'number') {
+                        parsed.bookings = 32 + Math.floor(Math.random() * 19);
+                        place.analytics = JSON.stringify(parsed);
+                    }
+                } catch {
+                    const seedBookings = 32 + Math.floor(Math.random() * 19);
+                    place.analytics = JSON.stringify({ bookings: seedBookings });
+                }
+            }
 
             const response = await databases.createDocument(
                 APPWRITE_CONFIG.databaseId,
@@ -1863,7 +1981,13 @@ export const bookingService = {
                     status: 'Pending',
                     duration: booking.duration || parseInt(booking.service),
                     totalCost: booking.totalCost || 0,
-                    paymentMethod: booking.paymentMethod || 'Unpaid'
+                    paymentMethod: booking.paymentMethod || 'Unpaid',
+                    // New lifecycle fields
+                    confirmedAt: null,
+                    completedAt: null,
+                    cancelledAt: null,
+                    responseDeadline: new Date(Date.now() + 10 * 60 * 1000).toISOString(), // 10 minute SLA
+                    providerResponseStatus: 'AwaitingResponse'
                 }
             );
             console.log('✅ Booking created successfully:', response.$id);
@@ -1977,16 +2101,115 @@ export const bookingService = {
         status: 'Pending' | 'Confirmed' | 'Completed' | 'Cancelled'
     ): Promise<any> {
         try {
+            const nowIso = new Date().toISOString();
+            const update: any = { status };
+            if (status === 'Confirmed') {
+                update.confirmedAt = nowIso;
+                update.providerResponseStatus = 'Confirmed';
+            } else if (status === 'Completed') {
+                update.completedAt = nowIso;
+            } else if (status === 'Cancelled') {
+                update.cancelledAt = nowIso;
+                update.providerResponseStatus = 'Declined';
+            }
+
             const response = await databases.updateDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.bookings,
                 bookingId,
-                { status }
+                update
             );
             console.log(`✅ Booking ${bookingId} status updated to ${status}`);
+
+            // Fire analytics only on Confirmed and Completed
+            if (status === 'Confirmed' || status === 'Completed') {
+                try {
+                    const { analyticsService } = await import('../services/analyticsService');
+                    const providerType = response.providerType as 'therapist' | 'place';
+                    const providerId = response.providerId;
+                    const amount = response.totalCost || 0;
+                    if (status === 'Confirmed') {
+                        await analyticsService.trackBookingCompleted(
+                            Date.now(), // local synthetic booking id for event; persisted $id may be string
+                            providerId,
+                            providerType,
+                            amount,
+                            response.userId || undefined
+                        );
+                    }
+                    if (status === 'Completed' && amount > 0) {
+                        await analyticsService.trackRevenue(providerId, providerType, amount);
+                    }
+
+                    // Increment provider's bookings counter in analytics JSON
+                    try {
+                        const collectionId = providerType === 'therapist' 
+                            ? APPWRITE_CONFIG.collections.therapists 
+                            : APPWRITE_CONFIG.collections.places;
+                        if (collectionId) {
+                            const providerDoc = await databases.getDocument(
+                                APPWRITE_CONFIG.databaseId,
+                                collectionId,
+                                providerId.toString()
+                            );
+                            let analyticsObj: any = {};
+                            try {
+                                if (providerDoc.analytics) {
+                                    analyticsObj = JSON.parse(providerDoc.analytics);
+                                }
+                            } catch { analyticsObj = {}; }
+                            const currentBookings = typeof analyticsObj.bookings === 'number' ? analyticsObj.bookings : 0;
+                            analyticsObj.bookings = currentBookings + 1;
+                            const updatedAnalytics = JSON.stringify(analyticsObj);
+                            await databases.updateDocument(
+                                APPWRITE_CONFIG.databaseId,
+                                collectionId,
+                                providerId.toString(),
+                                { analytics: updatedAnalytics }
+                            );
+                            console.log(`📈 Incremented bookings for provider ${providerId} (${providerType}) to ${analyticsObj.bookings}`);
+                        }
+                    } catch (incErr) {
+                        console.warn('⚠️ Failed to increment provider bookings count:', (incErr as any)?.message);
+                    }
+                } catch (e) {
+                    console.warn('⚠️ Analytics tracking failed for booking status transition:', (e as any)?.message);
+                }
+            }
             return response;
         } catch (error) {
             console.error(`Error updating booking status to ${status}:`, error);
+            throw error;
+        }
+    },
+
+    async confirm(bookingId: string): Promise<any> {
+        return this.updateStatus(bookingId, 'Confirmed');
+    },
+
+    async complete(bookingId: string): Promise<any> {
+        return this.updateStatus(bookingId, 'Completed');
+    },
+
+    async decline(bookingId: string, reason?: string): Promise<any> {
+        // Reuse cancel logic but mark providerResponseStatus
+        try {
+            const nowIso = new Date().toISOString();
+            const response = await databases.updateDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.bookings,
+                bookingId,
+                {
+                    status: 'Cancelled',
+                    cancelledAt: nowIso,
+                    providerResponseStatus: 'Declined',
+                    cancellationReason: reason || null
+                }
+            );
+            console.log(`✅ Booking ${bookingId} declined${reason ? ' (' + reason + ')' : ''}`);
+            return response;
+        } catch (error) {
+            console.error('Error declining booking:', error);
             throw error;
         }
     },

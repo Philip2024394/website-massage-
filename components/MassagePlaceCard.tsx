@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import type { Place, Analytics } from '../types';
-import { parsePricing, parseCoordinates } from '../utils/appwriteHelpers';
+import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages } from '../utils/appwriteHelpers';
 import { getDisplayRating, getDisplayReviewCount, formatRating } from '../utils/ratingUtils';
+import { bookingService } from '../lib/appwriteService';
 import DistanceDisplay from './DistanceDisplay';
 
 // Helper function to check if discount is active and not expired
@@ -78,6 +79,44 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
     const [showReferModal, setShowReferModal] = useState(false);
     const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
     const [discountTimeLeft, setDiscountTimeLeft] = useState<string>('');
+    // Bookings count derived from persisted analytics JSON (no random fallback)
+    const [bookingsCount, setBookingsCount] = useState<number>(() => {
+        try {
+            if ((place as any).analytics) {
+                const parsed = JSON.parse((place as any).analytics);
+                if (parsed && typeof parsed.bookings === 'number') return parsed.bookings;
+            }
+        } catch {}
+        return 0;
+    });
+
+    useEffect(() => {
+        const loadBookingsCount = async () => {
+            if (bookingsCount > 0) return; // analytics already provided
+            try {
+                const providerId = String((place as any).id || (place as any).$id || '');
+                if (!providerId) return;
+                const docs = await bookingService.getByProvider(providerId, 'place');
+                if (Array.isArray(docs) && docs.length > 0) {
+                    setBookingsCount(docs.length);
+                }
+            } catch (e) {
+                // silent
+            }
+        };
+        loadBookingsCount();
+    }, [bookingsCount, place]);
+    const joinedDateRaw = (place as any).activeMembershipDate;
+    const joinedDisplay = (() => {
+        if (!joinedDateRaw) return '—';
+        try {
+            const d = new Date(joinedDateRaw);
+            if (isNaN(d.getTime())) return '—';
+            return d.toLocaleDateString('en-GB');
+        } catch {
+            return '—';
+        }
+    })();
     
     // Countdown timer for active discount
     useEffect(() => {
@@ -113,6 +152,33 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
     const amenities = (place as any).amenities || [];
     const displayAmenities = Array.isArray(amenities) ? amenities.slice(0, 3) : [];
 
+    // Dynamic data sourcing for description & specializations
+    const rawDescription = (place as any).description || '';
+    const description = rawDescription && rawDescription.trim().length > 0
+        ? rawDescription.trim()
+        : `Professional massage place. Create or update your profile description to help customers understand your services.`;
+
+    const parsedMassageTypes = parseMassageTypes((place as any).massageTypes) || [];
+    const massageTypesDisplay = Array.isArray(parsedMassageTypes) ? parsedMassageTypes.slice(0, 6) : [];
+
+    const parsedLanguages = parseLanguages((place as any).languages) || [];
+    const languagesDisplay = Array.isArray(parsedLanguages) ? parsedLanguages.slice(0, 5) : [];
+
+    // Years of experience: prefer explicit yearsOfExperience, fallback to membership duration
+    const yearsOfExperience = (() => {
+        const direct = (place as any).yearsOfExperience;
+        if (typeof direct === 'number' && direct > 0) return direct;
+        try {
+            const startRaw = (place as any).activeMembershipDate || (place as any).membershipStartDate;
+            if (!startRaw) return undefined;
+            const startDate = new Date(startRaw);
+            if (isNaN(startDate.getTime())) return undefined;
+            const diffMs = Date.now() - startDate.getTime();
+            const years = diffMs / (1000 * 60 * 60 * 24 * 365);
+            return years >= 1 ? Math.floor(years) : undefined;
+        } catch { return undefined; }
+    })();
+
 
 
     const handleViewDetails = () => {
@@ -136,28 +202,34 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
     };
 
     return (
-        <div className="bg-white rounded-xl shadow-md overflow-visible relative">
-            {/* Main Image Banner */}
-            <div className="h-48 w-full bg-gradient-to-r from-orange-400 to-orange-600 overflow-hidden relative rounded-t-xl">
-                <img 
-                    src={mainImage} 
-                    alt={`${place.name} cover`} 
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382';
-                    }}
-                />
-                {/* Star Rating - Top Left Corner */}
-                <div 
-                    className="absolute top-2 left-2 flex items-center gap-1 bg-black/70 backdrop-blur-md rounded-full px-3 py-1.5 shadow-lg cursor-pointer"
-                    onClick={() => onRate(place)}
-                    aria-label={`Rate ${place.name}`}
-                    role="button"
-                >
-                    <StarIcon className="w-4 h-4 text-yellow-400"/>
-                    <span className="font-bold text-white text-sm">{formatRating(getDisplayRating(place.rating, place.reviewCount))}</span>
-                    <span className="text-xs text-gray-300">({getDisplayReviewCount(place.reviewCount)})</span>
-                </div>
+        <>
+            {/* External meta bar (Joined / Bookings) */}
+            <div className="flex justify-between items-center mb-2 px-2">
+                <span className="text-[11px] text-gray-600 font-medium">Joined: {joinedDisplay}</span>
+                <span className="text-[11px] text-gray-600 font-medium">Bookings: {bookingsCount}</span>
+            </div>
+            <div className="bg-white rounded-xl shadow-md overflow-visible relative">
+                {/* Main Image Banner */}
+                <div className="h-48 w-full bg-gradient-to-r from-orange-400 to-orange-600 overflow-hidden relative rounded-t-xl">
+                    <img 
+                        src={mainImage} 
+                        alt={`${place.name} cover`} 
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                            (e.target as HTMLImageElement).src = 'https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382';
+                        }}
+                    />
+                    {/* Star Rating - Top Left Corner */}
+                    <div 
+                        className="absolute top-2 left-2 flex items-center gap-1 bg-black/70 backdrop-blur-md rounded-full px-3 py-1.5 shadow-lg cursor-pointer"
+                        onClick={() => onRate(place)}
+                        aria-label={`Rate ${place.name}`}
+                        role="button"
+                    >
+                        <StarIcon className="w-4 h-4 text-yellow-400"/>
+                        <span className="font-bold text-white text-sm">{formatRating(getDisplayRating(place.rating, place.reviewCount))}</span>
+                        <span className="text-xs text-gray-300">({getDisplayReviewCount(place.reviewCount)})</span>
+                    </div>
 
                 {/* Discount Badge - Database driven discount */}
                 {isDiscountActive(place) && (
@@ -322,10 +394,10 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                 </div>
             </div>
 
-            {/* Massage Place Bio - 4 lines of detailed description (Same position as TherapistCard) */}
+            {/* Massage Place Bio - dynamic from Appwrite */}
             <div className="absolute top-72 left-4 right-4 z-10 massage-place-bio-section">
-                <p className="text-xs text-gray-600 leading-relaxed text-justify">
-                    Certified massage therapist with 4+ years experience. Specialized in therapeutic and relaxation techniques. Available for home, hotel, and villa services. Professional, licensed, and highly rated by clients for exceptional service quality.
+                <p className="text-xs text-gray-600 leading-relaxed text-justify line-clamp-4">
+                    {description}
                 </p>
             </div>
             
@@ -337,41 +409,44 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                     </div>
                 </div>
 
-                {/* Massage Specializations - Mock badges */}
-                <div className="mt-4">
-                    <div className="mb-2">
-                        <h4 className="text-xs font-semibold text-gray-700">
-                            Massage Specializations
-                        </h4>
-                    </div>
-                    <div className="flex flex-wrap gap-1">
-                        <span className="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs font-medium rounded-full border border-orange-200">Deep Tissue</span>
-                        <span className="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs font-medium rounded-full border border-orange-200">Swedish Massage</span>
-                    </div>
-                </div>
-
-                {/* Languages and Years Experience - Same line layout */}
-                <div className="mt-4">
-                    <div className="flex items-center justify-between mb-2">
-                        <h4 className="text-xs font-semibold text-gray-700">Languages</h4>
-                        <div className="flex items-center gap-1">
-                            <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span className="text-xs font-semibold text-gray-700">8+ Years Experience</span>
+                {/* Massage Specializations - dynamic */}
+                {massageTypesDisplay.length > 0 && (
+                    <div className="mt-4">
+                        <div className="mb-2">
+                            <h4 className="text-xs font-semibold text-gray-700">Massage Specializations</h4>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                            {massageTypesDisplay.map((mt: string) => (
+                                <span key={mt} className="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs font-medium rounded-full border border-orange-200">{mt}</span>
+                            ))}
                         </div>
                     </div>
-                    <div className="flex flex-wrap gap-1">
-                        <span className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-gray-800 text-xs font-medium rounded-full flex items-center gap-1">
-                            <span className="text-xs">🇬🇧</span>
-                            <span className="text-xs">English</span>
-                        </span>
-                        <span className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-gray-800 text-xs font-medium rounded-full flex items-center gap-1">
-                            <span className="text-xs">🇮🇩</span>
-                            <span className="text-xs">Indonesian</span>
-                        </span>
+                )}
+
+                {/* Languages & Experience - dynamic */}
+                {(languagesDisplay.length > 0 || yearsOfExperience) && (
+                    <div className="mt-4">
+                        <div className="flex items-center justify-between mb-2">
+                            <h4 className="text-xs font-semibold text-gray-700">Languages</h4>
+                            {yearsOfExperience && (
+                                <div className="flex items-center gap-1">
+                                    <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span className="text-xs font-semibold text-gray-700">{yearsOfExperience}+ Years Experience</span>
+                                </div>
+                            )}
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                            {languagesDisplay.map((lang: string) => (
+                                <span key={lang} className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-gray-800 text-xs font-medium rounded-full flex items-center gap-1">
+                                    <span className="text-xs">🌐</span>
+                                    <span className="text-xs">{lang}</span>
+                                </span>
+                            ))}
+                        </div>
                     </div>
-                </div>
+                )}
 
 
 
@@ -758,6 +833,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                 .animate-coin-fall-6 { animation: coin-fall-6 3s ease-in forwards, coin-float 2s ease-in-out 4.5s infinite; }
             `}</style>
         </div>
+        </>
     );
 };
 

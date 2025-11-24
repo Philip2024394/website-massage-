@@ -43,14 +43,17 @@ export const useAllHooks = () => {
     useEffect(() => {
         const handleDataRefresh = async (event: Event) => {
             const customEvent = event as CustomEvent;
-            console.log('🔄 Data refresh triggered:', customEvent.detail);
+            console.log('🔄 [REFRESH EVENT] Data refresh triggered:', customEvent.detail);
             try {
+                console.log('🔄 [REFRESH EVENT] Calling fetchPublicData...');
                 const { therapists, places } = await dataFetching.fetchPublicData();
+                console.log('🔄 [REFRESH EVENT] Fetched data:', { therapistCount: therapists.length, placeCount: places.length });
+                console.log('🔄 [REFRESH EVENT] Updating state with new therapists...');
                 state.setTherapists(therapists);
                 state.setPlaces(places);
-                console.log('✅ Data refreshed successfully after discount activation');
+                console.log('✅ [REFRESH EVENT] State updated successfully. HomePage should re-render now.');
             } catch (error) {
-                console.error('❌ Failed to refresh data:', error);
+                console.error('❌ [REFRESH EVENT] Failed to refresh data:', error);
             }
         };
         
@@ -69,7 +72,6 @@ export const useAllHooks = () => {
         setProviderForBooking: state.setProviderForBooking,
         setIsAdminLoggedIn: state.setIsAdminLoggedIn,
         setLoggedInUser: state.setLoggedInUser,
-        setAdminDashboardTab: state.setAdminDashboardTab,
         loggedInProvider: state.loggedInProvider,
         loggedInCustomer: state.loggedInCustomer,
         // Additional props for landing page navigation
@@ -100,16 +102,12 @@ export const useAllHooks = () => {
     
     // Session restoration on app startup
     useSessionRestore({
-        setIsAdminLoggedIn: state.setIsAdminLoggedIn,
-        setLoggedInUser: state.setLoggedInUser,
         setLoggedInProvider: state.setLoggedInProvider,
         setLoggedInCustomer: state.setLoggedInCustomer,
         setLoggedInAgent: state.setLoggedInAgent,
         setIsHotelLoggedIn: state.setIsHotelLoggedIn,
-        setIsVillaLoggedIn: state.setIsVillaLoggedIn,
-        setAdminDashboardTab: state.setAdminDashboardTab
+        setIsVillaLoggedIn: state.setIsVillaLoggedIn
     });
-    
     // ALWAYS call booking handlers in the same order
     const bookingHandlers = useBookingHandlers({
         language: state.language,

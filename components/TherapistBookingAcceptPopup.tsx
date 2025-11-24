@@ -3,12 +3,15 @@ import { CheckCircle, Clock, MapPin, DollarSign, X } from 'lucide-react';
 import { databases } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import { startContinuousNotifications, stopContinuousNotifications } from '../lib/continuousNotificationService';
+import { playSound, playSequence } from '../lib/notificationSounds';
+import { broadcastDecline } from '../lib/bookingAssignment';
 
 interface TherapistBookingAcceptPopupProps {
   isOpen: boolean;
   onClose: () => void;
   bookingId: string;
   customerName?: string;
+  customerWhatsApp?: string;
   duration: number;
   price: number;
   location?: string;
@@ -24,6 +27,7 @@ const TherapistBookingAcceptPopup: React.FC<TherapistBookingAcceptPopupProps> = 
   onClose,
   bookingId,
   customerName = "Customer",
+  customerWhatsApp = '',
   duration,
   price,
   location,
@@ -75,13 +79,15 @@ const TherapistBookingAcceptPopup: React.FC<TherapistBookingAcceptPopupProps> = 
           } catch {}
         }
         if (shouldSetBusy) {
+          const busyUntil = new Date(Date.now() + duration * 60000).toISOString();
           await databases.updateDocument(
             APPWRITE_CONFIG.databaseId,
             APPWRITE_CONFIG.collections.therapists,
             therapistId,
             {
               status: 'Busy',
-              currentBookingId: bookingId
+              currentBookingId: bookingId,
+              busyUntil
             }
           );
         }
@@ -90,6 +96,7 @@ const TherapistBookingAcceptPopup: React.FC<TherapistBookingAcceptPopupProps> = 
       console.log('✅ Booking accepted:', bookingId);
       setIsAccepted(true);
       stopContinuousNotifications(bookingId);
+      playSound('bookingAccepted');
 
       // Close popup after showing success
       setTimeout(() => {
@@ -228,7 +235,26 @@ const TherapistBookingAcceptPopup: React.FC<TherapistBookingAcceptPopupProps> = 
               </button>
 
               <button
-                onClick={onClose}
+                onClick={async () => {
+                  if (isAccepting) return;
+                  try {
+                    playSound('bookingDeclined');
+                    // Broadcast to other available therapists (limit inside function)
+                    await broadcastDecline({
+                      bookingId,
+                      customerName,
+                      customerWhatsApp,
+                      durationMinutes: duration,
+                      price
+                    }, therapistId);
+                    // Sequence sound to indicate broadcast chain
+                    void playSequence(['bookingBroadcast']);
+                  } catch (e) {
+                    console.warn('Decline broadcast failed', e);
+                  } finally {
+                    onClose();
+                  }
+                }}
                 disabled={isAccepting}
                 className="w-full py-3 text-gray-600 hover:text-gray-800 font-semibold transition-colors"
               >

@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Clock, X, User, Phone, Calendar } from 'lucide-react';
 import { databases } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
+// New notification + assignment utilities
+import { playSound } from '../lib/notificationSounds';
+import { assignInitialTherapist } from '../lib/bookingAssignment';
+import { showToast } from '../utils/showToastPortal';
 
 // Extend window type
 declare global {
@@ -261,6 +265,9 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
           $updatedAt: new Date().toISOString()
         };
         console.log('✅ Mock booking created:', mockBooking);
+        playSound('bookingCreated');
+        // Optional: auto-assignment when therapist list workflow desired (disabled to avoid duplicate WhatsApp windows)
+        // void assignInitialTherapist({ bookingId, customerName, customerWhatsApp, durationMinutes: finalDuration, price: finalPrice });
         onClose();
         return;
       }
@@ -273,13 +280,14 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
       );
 
       console.log('✅ Booking created successfully:', booking);
-      // Audio note:
-      // Do not play a one-off sound here. The Booking Status Tracker starts
-      // continuous notifications immediately, which provides the audible feedback.
-      // Playing here caused overlapping sounds.
+      // Subtle creation sound (tracker may add its own loop; short beep is acceptable)
+      playSound('bookingCreated');
+      // Optional initial assignment broadcast (kept minimal to prevent duplicate manual message windows)
+      // void assignInitialTherapist({ bookingId, customerName, customerWhatsApp, durationMinutes: finalDuration, price: finalPrice });
 
       // Send WhatsApp notification to therapist/place
       const acceptUrl = `${window.location.origin}/accept-booking/${booking.$id}`;
+      const declineUrl = `${window.location.origin}/decline-booking/${booking.$id}`;
       
       // Enhanced WhatsApp message with provider-type aware header
       const isPlace = therapistType === 'place';
@@ -312,7 +320,8 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
         message += `- Status returns to AVAILABLE when ${hotelVillaType} confirms commission received\n\n`;
       }
       
-      message += `✅ Accept booking: ${acceptUrl}\n\n`;
+      message += `✅ Accept: ${acceptUrl}\n`;
+      message += `❌ Decline: ${declineUrl}\n\n`;
       message += `⏰ IMPORTANT: You have 15 minutes to respond!\n`;
       message += `📞 INDASTREET SUPPORT: +62-XXX-XXXX`;
 
@@ -333,6 +342,7 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
         console.warn('⚠️ BookingStatusTracker not available');
       }
 
+      showToast('Booking request sent', 'success');
       setStep('confirming');
       // Give users more time to read the confirmation message
       setTimeout(() => {

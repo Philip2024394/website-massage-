@@ -1,6 +1,29 @@
 {
   "projectId": "YOUR_PROJECT_ID",
-  "functions": [],
+  "functions": [
+    {
+      "functionId": "booking_confirm",
+      "name": "booking-confirm",
+      "runtime": "node-20.0",
+      "path": "functions/booking-confirm",
+      "entrypoint": "index.ts",
+      "enabled": true,
+      "events": [],
+      "schedule": "",
+      "timeout": 15
+    },
+    {
+      "functionId": "booking_decline",
+      "name": "booking-decline",
+      "runtime": "node-20.0",
+      "path": "functions/booking-decline",
+      "entrypoint": "index.ts",
+      "enabled": true,
+      "events": [],
+      "schedule": "",
+      "timeout": 15
+    }
+  ],
   "collections": [],
   "buckets": [],
   "teams": [],

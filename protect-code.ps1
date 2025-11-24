@@ -14,7 +14,6 @@ param(
 # Define critical files that have been fixed
 $ProtectedFiles = @{
     "therapist" = @(
-        "pages\TherapistDashboardPage.tsx",
         "pages\TherapistStatusPage.tsx"
     )
     "drawer" = @(

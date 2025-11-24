@@ -96,7 +96,7 @@ export const useNavigation = ({
     const handleNavigateToServiceTerms = useCallback(() => setPage('serviceTerms'), [setPage]);
     const handleNavigateToPrivacyPolicy = useCallback(() => setPage('privacy'), [setPage]);
     const handleNavigateToNotifications = useCallback(() => setPage('notifications'), [setPage]);
-    const handleNavigateToTherapistDashboard = useCallback(() => setPage('therapistDashboard'), [setPage]);
+    const handleNavigateToTherapistPortal = useCallback(() => setPage('therapistPortal'), [setPage]);
     const handleNavigateToTherapistProfileCreation = useCallback(() => {
         console.log('🎯 HANDLER: Navigating to therapist job registration');
         alert('🎯 APP.TSX CALLBACK EXECUTING!');
@@ -223,7 +223,7 @@ export const useNavigation = ({
         handleNavigateToServiceTerms,
         handleNavigateToPrivacyPolicy,
         handleNavigateToNotifications,
-        handleNavigateToTherapistDashboard,
+        handleNavigateToTherapistPortal,
         handleNavigateToTherapistProfileCreation,
         
         // Booking navigation

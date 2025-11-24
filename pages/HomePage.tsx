@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { User, UserLocation, Agent, Place, Therapist, Analytics, UserCoins } from '../types';
 import TherapistCard from '../components/TherapistCard';
 import MassagePlaceCard from '../components/MassagePlaceCard';
@@ -14,6 +14,8 @@ import { getCustomerLocation, findNearbyTherapists, findNearbyPlaces } from '../
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
 import PageNumberBadge from '../components/PageNumberBadge';
 import { THERAPIST_MAIN_IMAGES } from '../lib/services/imageService';
+import { loadGoogleMapsScript } from '../constants/appConstants';
+import { getStoredGoogleMapsApiKey } from '../utils/appConfig';
 
 
 interface HomePageProps {
@@ -210,6 +212,11 @@ const HomePage: React.FC<HomePageProps> = ({
     const [isLocationDetecting, setIsLocationDetecting] = useState(false);
     // Shuffled unique home page therapist images (no repeats until all 17 used)
     const [shuffledHomeImages, setShuffledHomeImages] = useState<string[]>([]);
+    
+    // Google Maps Autocomplete
+    const [mapsApiLoaded, setMapsApiLoaded] = useState(false);
+    const locationInputRef = useRef<HTMLInputElement>(null);
+    const autocompleteRef = useRef<any>(null);
 
     // Fisher-Yates shuffle to randomize array order
     const shuffleArray = (arr: string[]) => {
@@ -245,6 +252,82 @@ const HomePage: React.FC<HomePageProps> = ({
             document.body.classList.remove('is-home');
         };
     }, []);
+
+    // Load Google Maps API for location autocomplete
+    useEffect(() => {
+        const checkGoogleMaps = () => {
+            if ((window as any).google?.maps?.places) {
+                setMapsApiLoaded(true);
+                return true;
+            }
+            return false;
+        };
+
+        const loadMapsAPI = () => {
+            const apiKey = getStoredGoogleMapsApiKey();
+            if (!apiKey) {
+                console.warn('⚠️ Google Maps API key not configured');
+                return;
+            }
+
+            console.log('🗺️ Loading Google Maps API for location autocomplete...');
+            loadGoogleMapsScript(
+                apiKey,
+                () => {
+                    console.log('✅ Google Maps API loaded for HomePage');
+                    setMapsApiLoaded(true);
+                },
+                () => {
+                    console.error('❌ Failed to load Google Maps API');
+                }
+            );
+        };
+
+        if (!checkGoogleMaps()) {
+            loadMapsAPI();
+        }
+    }, []);
+
+    // Initialize Google Maps Places Autocomplete
+    useEffect(() => {
+        if (!mapsApiLoaded || !locationInputRef.current) return;
+
+        try {
+            const autocomplete = new (window as any).google.maps.places.Autocomplete(locationInputRef.current, {
+                types: ['(cities)'],
+                fields: ['geometry', 'formatted_address', 'name']
+            });
+
+            autocomplete.addListener('place_changed', () => {
+                const place = autocomplete.getPlace();
+                
+                if (!place.geometry || !place.geometry.location) {
+                    console.warn('No location details available for selected place');
+                    return;
+                }
+
+                const lat = place.geometry.location.lat();
+                const lng = place.geometry.location.lng();
+                const address = place.formatted_address || place.name || 'Selected location';
+
+                console.log('✅ Location selected from autocomplete:', { address, lat, lng });
+
+                // Update user location
+                if (onSetUserLocation) {
+                    onSetUserLocation({
+                        address,
+                        lat,
+                        lng
+                    });
+                }
+            });
+
+            autocompleteRef.current = autocomplete;
+            console.log('✅ Google Maps Autocomplete initialized');
+        } catch (error) {
+            console.error('❌ Failed to initialize autocomplete:', error);
+        }
+    }, [mapsApiLoaded, onSetUserLocation]);
 
     // Update selectedMassageType when prop changes - React 19 safe
     useEffect(() => {
@@ -312,10 +395,36 @@ const HomePage: React.FC<HomePageProps> = ({
             
             console.log('✅ Location detected:', location);
             
+            // Use Google Maps Geocoding to get address from coordinates
+            let address = 'Current location';
+            
+            if ((window as any).google?.maps?.Geocoder) {
+                try {
+                    const geocoder = new (window as any).google.maps.Geocoder();
+                    const result = await new Promise<any>((resolve, reject) => {
+                        geocoder.geocode(
+                            { location: { lat: location.lat, lng: location.lng } },
+                            (results: any[], status: string) => {
+                                if (status === 'OK' && results && results.length > 0) {
+                                    resolve(results[0]);
+                                } else {
+                                    reject(new Error('Geocoding failed'));
+                                }
+                            }
+                        );
+                    });
+                    
+                    address = result.formatted_address || 'Current location';
+                    console.log('✅ Reverse geocoded address:', address);
+                } catch (geoError) {
+                    console.warn('⚠️ Reverse geocoding failed, using default address:', geoError);
+                }
+            }
+            
             // Update the app's user location
             if (onSetUserLocation) {
                 onSetUserLocation({
-                    address: 'Current location',
+                    address,
                     lat: location.lat,
                     lng: location.lng
                 });
@@ -366,10 +475,36 @@ const HomePage: React.FC<HomePageProps> = ({
                 
                 console.log('✅ Location detected:', location);
                 
+                // Use Google Maps Geocoding to get address from coordinates
+                let address = 'Auto-detected location';
+                
+                if ((window as any).google?.maps?.Geocoder) {
+                    try {
+                        const geocoder = new (window as any).google.maps.Geocoder();
+                        const result = await new Promise<any>((resolve, reject) => {
+                            geocoder.geocode(
+                                { location: { lat: location.lat, lng: location.lng } },
+                                (results: any[], status: string) => {
+                                    if (status === 'OK' && results && results.length > 0) {
+                                        resolve(results[0]);
+                                    } else {
+                                        reject(new Error('Geocoding failed'));
+                                    }
+                                }
+                            );
+                        });
+                        
+                        address = result.formatted_address || 'Auto-detected location';
+                        console.log('✅ Auto reverse geocoded address:', address);
+                    } catch (geoError) {
+                        console.warn('⚠️ Auto reverse geocoding failed, using default address:', geoError);
+                    }
+                }
+                
                 // Automatically update the app's user location if not set
                 if (!userLocation && onSetUserLocation) {
                     onSetUserLocation({
-                        address: 'Auto-detected location',
+                        address,
                         lat: location.lat,
                         lng: location.lng
                     });
@@ -409,25 +544,28 @@ const HomePage: React.FC<HomePageProps> = ({
                     : autoDetectedLocation;
 
                 if (!coords) {
+                    console.warn('⚠️ No valid coordinates found, showing all providers');
                     // No coordinates available, show all therapists
                     setNearbyTherapists(therapists);
                     setNearbyPlaces(places);
                     return;
                 }
 
-                // Find nearby therapists and places (15km radius)
-                const nearbyTherapistsResult = await findNearbyTherapists('0', coords, 15);
-                const nearbyPlacesResult = await findNearbyPlaces('0', coords, 15);
+                console.log('📍 Using coordinates:', coords);
+
+                // Find nearby therapists and places (50km radius)
+                const nearbyTherapistsResult = await findNearbyTherapists('0', coords, 50);
+                const nearbyPlacesResult = await findNearbyPlaces('0', coords, 50);
                 
-                console.log(`📍 Found ${nearbyTherapistsResult.length} nearby therapists`);
-                console.log(`📍 Found ${nearbyPlacesResult.length} nearby places`);
+                console.log(`✅ Found ${nearbyTherapistsResult.length} nearby therapists within 50km`);
+                console.log(`✅ Found ${nearbyPlacesResult.length} nearby places within 50km`);
                 
                 // If no nearby providers found, fallback to all therapists
                 setNearbyTherapists(nearbyTherapistsResult.length > 0 ? nearbyTherapistsResult : therapists);
                 setNearbyPlaces(nearbyPlacesResult.length > 0 ? nearbyPlacesResult : places);
                 
             } catch (error) {
-                console.log('📍 Location filtering failed (silent fallback):', error);
+                console.error('❌ Location filtering error:', error);
                 // Silent fallback to all providers
                 setNearbyTherapists(therapists);
                 setNearbyPlaces(places);
@@ -439,23 +577,32 @@ const HomePage: React.FC<HomePageProps> = ({
 
     // Log therapist display info with location filtering
     useEffect(() => {
-        const liveTherapists = nearbyTherapists.filter((t: any) => t.isLive === true);
+        const liveTherapists = nearbyTherapists.filter((t: any) => {
+            const isOwner = loggedInProvider && loggedInProvider.type === 'therapist' && (
+                String(t.id) === String(loggedInProvider.id) || String(t.$id) === String(loggedInProvider.id)
+            );
+            return t.isLive === true || isOwner; // Always include own profile preview
+        });
         const filteredTherapists = liveTherapists.filter((t: any) => 
             selectedMassageType === 'all' || (t.massageTypes && t.massageTypes.includes(selectedMassageType))
         );
         
-        console.log('🏠 HomePage Therapist Display Debug (Location-Filtered):');
-        console.log('  📊 Total therapists prop:', therapists.length);
-        console.log('  � Nearby therapists (location-filtered):', nearbyTherapists.length);
+        console.log('🏠 [HomePage RENDER] Therapist Display Debug (Location-Filtered 50km radius):');
+        console.log('  📊 Total therapists prop:', therapists.length, therapists.map((t: any) => ({ id: t.$id || t.id, name: t.name, isLive: t.isLive })));
+        console.log('  📍 Nearby therapists (location-filtered):', nearbyTherapists.length);
         console.log('  🔴 Live nearby therapists (isLive=true):', liveTherapists.length);
         console.log('  🎯 Final filtered therapists (massage type + location):', filteredTherapists.length);
         console.log('  📍 Auto-detected location:', autoDetectedLocation);
         console.log('  🎨 Selected massage type:', selectedMassageType);
+        const missingCoords = therapists.filter((t: any)=>!t.coordinates).length;
+        console.log('  ⚠️ Therapists missing coordinates:', missingCoords);
         
         // Also log places
         const livePlaces = nearbyPlaces.filter((p: any) => p.isLive === true);
         console.log('  🏢 Total places prop:', places.length);
         console.log('  📍 Nearby places (location-filtered):', nearbyPlaces.length);
+        const missingPlaceCoords = places.filter((p: any)=>!p.coordinates).length;
+        console.log('  ⚠️ Places missing coordinates:', missingPlaceCoords);
         console.log('  🔴 Live nearby places:', livePlaces.length);
     }, [therapists, nearbyTherapists, places, nearbyPlaces, selectedMassageType, autoDetectedLocation]);
 
@@ -595,33 +742,51 @@ const HomePage: React.FC<HomePageProps> = ({
             </React19SafeWrapper>
 
             <main className="p-4 pb-24">
-                {/* Location Display */}
-                {userLocation && (
-                    <div className="flex items-center justify-center gap-2 mb-4">
-                        <svg 
-                            className="w-5 h-5 text-orange-500" 
-                            fill="none" 
-                            viewBox="0 0 24 24" 
-                            stroke="currentColor" 
-                            strokeWidth={2}
-                        >
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        <span className="text-sm font-semibold text-gray-800">
-                            {(() => {
-                                if (!userLocation.address) {
-                                    return `${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`;
-                                }
-                                // Parse address to extract main location components
-                                const parts = userLocation.address.split(',').map(p => p.trim());
-                                // Take last 2-4 parts (usually city, province/state, country)
-                                const mainLocation = parts.slice(-4).join(', ');
-                                return mainLocation || userLocation.address;
-                            })()}
-                        </span>
-                    </div>
-                )}
+                {/* Location Display & Search */}
+                <div className="mb-4">
+                    {userLocation ? (
+                        <div className="flex items-center justify-center gap-2">
+                            <svg 
+                                className="w-5 h-5 text-orange-500" 
+                                fill="none" 
+                                viewBox="0 0 24 24" 
+                                stroke="currentColor" 
+                                strokeWidth={2}
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <span className="text-sm font-semibold text-gray-800">
+                                {(() => {
+                                    if (!userLocation.address || userLocation.address.trim() === '') {
+                                        return `${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`;
+                                    }
+                                    try {
+                                        // Extract only the last part (city/area name)
+                                        const parts = String(userLocation.address).split(',').map(p => p.trim());
+                                        // Return last 2 parts (e.g., "Jakarta, Indonesia")
+                                        return parts.slice(-2).join(', ');
+                                    } catch (e) {
+                                        return `${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`;
+                                    }
+                                })()}
+                            </span>
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center gap-2 max-w-md mx-auto">
+                            <label className="text-sm font-medium text-gray-700">Search your city or area</label>
+                            <input
+                                ref={locationInputRef}
+                                type="text"
+                                placeholder="Enter your location..."
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                            />
+                            <p className="text-xs text-gray-500 text-center">
+                                Or <button onClick={handleLocationAllow} className="text-orange-600 hover:underline">use my current location</button>
+                            </p>
+                        </div>
+                    )}
+                </div>
 
                 <div className="flex items-center justify-center gap-2 text-gray-500 mb-4">
                     <Users className="w-5 h-5"/>
@@ -718,9 +883,41 @@ const HomePage: React.FC<HomePageProps> = ({
                         <div className="space-y-4">
                         {/* Build list with injected unique mainImage per view */}
                         {(() => {
-                            const preparedTherapists = nearbyTherapists
-                                .filter((t: any) => t.isLive === true)
-                                .filter((t: any) => selectedMassageType === 'all' || (t.massageTypes && t.massageTypes.includes(selectedMassageType)))
+                            const isOwner = (t: any) => (
+                                loggedInProvider && loggedInProvider.type === 'therapist' && (
+                                    String(t.id) === String(loggedInProvider.id) || String(t.$id) === String(loggedInProvider.id)
+                                )
+                            );
+
+                            // Show all therapists (live) plus include owner even if not live
+                            let baseList = therapists
+                                .filter((t: any) => t.isLive === true || isOwner(t))
+                                .filter((t: any) => selectedMassageType === 'all' || (t.massageTypes && t.massageTypes.includes(selectedMassageType)));
+
+                            // Ensure owner's profile appears once
+                            if (loggedInProvider && loggedInProvider.type === 'therapist') {
+                                const alreadyIncluded = baseList.some((t: any) => String(t.id) === String(loggedInProvider.id) || String(t.$id) === String(loggedInProvider.id));
+                                if (!alreadyIncluded) {
+                                    const ownerDoc = therapists.find((t: any) => String(t.id) === String(loggedInProvider.id) || String(t.$id) === String(loggedInProvider.id));
+                                    if (ownerDoc && (selectedMassageType === 'all' || (ownerDoc.massageTypes && ownerDoc.massageTypes.includes(selectedMassageType)))) {
+                                        baseList = [ownerDoc, ...baseList];
+                                    }
+                                }
+                            }
+
+                            // Sort by status: Available -> Busy -> Offline
+                            const statusRank = (s: any) => {
+                                const val = String(s || '').toLowerCase();
+                                if (val === 'available' || val === 'online') return 0;
+                                if (val === 'busy') return 1;
+                                if (val === 'offline') return 2;
+                                return 1;
+                            };
+                            baseList = baseList.slice().sort((a: any, b: any) => statusRank(a.status) - statusRank(b.status));
+
+                            // Removed sample therapist fallback: now show empty-state message below if none live
+
+                            const preparedTherapists = baseList
                                 .map((therapist: any, index: number) => {
                                     // Assign deterministic unique image from shuffled set; if more therapists than images, start second cycle
                                     const assignedImage = shuffledHomeImages.length > 0 
@@ -771,7 +968,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                 );
                             });
                         })()}
-                        {nearbyTherapists.filter((t: any) => t.isLive === true).length === 0 && (
+                        {therapists.filter((t: any) => t.isLive === true || (loggedInProvider && loggedInProvider.type === 'therapist' && (String((t as any).id) === String(loggedInProvider.id) || String((t as any).$id) === String(loggedInProvider.id)))).length === 0 && (
                             <div className="text-center py-12 bg-white rounded-lg">
                                 <p className="text-gray-500">Tidak ada terapis tersedia di area Anda saat ini.</p>
                                 {autoDetectedLocation && (
@@ -821,7 +1018,29 @@ const HomePage: React.FC<HomePageProps> = ({
                                 places: places
                             });
                             
-                            const livePlaces = nearbyPlaces?.filter(place => place.isLive) || [];
+                            const livePlaces = (places?.filter(place => place.isLive) || []).slice();
+
+                            // Determine open/closed now and sort open first
+                            const isOpenNow = (p: any) => {
+                                try {
+                                    if (!p.openingTime || !p.closingTime) return false;
+                                    const now = new Date();
+                                    const [oh, om] = String(p.openingTime).split(':').map(Number);
+                                    const [ch, cm] = String(p.closingTime).split(':').map(Number);
+                                    const current = now.getHours() * 60 + now.getMinutes();
+                                    const openM = (oh || 0) * 60 + (om || 0);
+                                    const closeM = (ch || 0) * 60 + (cm || 0);
+                                    if (closeM >= openM) {
+                                        return current >= openM && current <= closeM;
+                                    } else {
+                                        // Handles overnight hours (e.g., 20:00 - 02:00)
+                                        return current >= openM || current <= closeM;
+                                    }
+                                } catch {
+                                    return false;
+                                }
+                            };
+                            livePlaces.sort((a, b) => Number(isOpenNow(b)) - Number(isOpenNow(a)));
                             
                             if (livePlaces.length === 0) {
                                 return (
@@ -850,13 +1069,6 @@ const HomePage: React.FC<HomePageProps> = ({
                                         .map((place, index) => {
                                             const placeId = place.id || (place as any).$id;
                                             
-                                            // Mock discount data - show all 4 discount levels (20%, 15%, 10%, 5%) on first 4 places
-                                            const hasDiscount = index < 4;
-                                            const mockDiscount = hasDiscount ? {
-                                                percentage: index === 0 ? 20 : index === 1 ? 15 : index === 2 ? 10 : 5,
-                                                expiresAt: new Date(Date.now() + (index + 2) * 60 * 60 * 1000) // Expires in 2-5 hours
-                                            } : null;
-                                            
                                             return (
                                                 <MassagePlaceCard
                                                     key={placeId}
@@ -867,7 +1079,6 @@ const HomePage: React.FC<HomePageProps> = ({
                                                     onIncrementAnalytics={(metric) => onIncrementAnalytics(placeId, 'place', metric)}
                                                     onShowRegisterPrompt={onShowRegisterPrompt}
                                                     isCustomerLoggedIn={!!loggedInCustomer}
-                                                    activeDiscount={mockDiscount}
                                                     t={t}
                                                     userLocation={autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null)}
                                                 />

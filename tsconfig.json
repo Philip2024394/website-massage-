@@ -27,6 +27,11 @@
   "include": [
     "src/**/*",
     "translations/**/*",
+    "lib/**/*",
+    "pages/**/*",
+    "hooks/**/*",
+    "utils/**/*",
+    "components/**/*",
     "*.tsx",
     "*.ts"
   ],
@@ -35,6 +40,7 @@
     "dist",
     "build", 
     "mobile",
+    "deleted/**/*",
     "vite.config.ts",
     "*-backup.*",
     "*-new.*",

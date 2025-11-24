@@ -1,6 +1,5 @@
 {
   "therapist": {
-    "pages\\TherapistDashboardPage.tsx": true,
     "pages\\TherapistStatusPage.tsx": true
   },
   "shared": {

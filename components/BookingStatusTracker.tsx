@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { startContinuousNotifications, stopContinuousNotifications } from '../lib/continuousNotificationService';
 import { Clock, CheckCircle, XCircle, AlertTriangle, Search, User, MessageCircle } from 'lucide-react';
+import { showToast } from '../utils/showToastPortal';
 
 interface BookingStatusTrackerProps {
   isOpen: boolean;
@@ -72,6 +73,7 @@ const BookingStatusTracker: React.FC<BookingStatusTrackerProps> = ({
       };
       setAcceptedTherapist(mockTherapist);
       setStatus('therapist-found');
+      showToast('Therapist found! Please confirm', 'success');
       // Stop continuous notifications once a therapist is found
       if (bookingId) stopContinuousNotifications(bookingId);
       playNotificationSound('success');
@@ -91,6 +93,7 @@ const BookingStatusTracker: React.FC<BookingStatusTrackerProps> = ({
       if (remaining === 0 && status === 'waiting') {
         setStatus('searching');
         playNotificationSound('alert');
+        showToast('Searching for another available therapist...', 'warning');
         simulateTherapistAcceptance();
         clearInterval(interval);
       }
@@ -129,6 +132,7 @@ const BookingStatusTracker: React.FC<BookingStatusTrackerProps> = ({
       window.open(whatsappUrl, '_blank');
       
       setStatus('confirmed');
+      showToast('Booking confirmed', 'success');
       playNotificationSound('success');
       
       // Close the tracker after a delay
@@ -163,6 +167,7 @@ const BookingStatusTracker: React.FC<BookingStatusTrackerProps> = ({
   // Handle cancel warning dismissal
   const handleKeepBooking = () => {
     setShowCancelWarning(false);
+    showToast('Continuing booking', 'success');
   };
 
   const formatTime = (seconds: number) => {

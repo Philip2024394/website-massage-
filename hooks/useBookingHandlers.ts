@@ -70,22 +70,23 @@ export const useBookingHandlers = ({
         };
         setBookings(prev => [...prev, newBooking]);
 
-        // Track booking completion in analytics (lazy loaded)
-        import('../services/analyticsService')
-            .then(({ analyticsService }) => {
-                // Calculate amount from service duration
-                const defaultPricing = { '60': 200000, '90': 300000, '120': 400000 };
-                const amount = defaultPricing[newBooking.service as '60' | '90' | '120'] || 200000;
-                
-                return analyticsService.trackBookingCompleted(
-                    newBooking.id,
-                    newBooking.providerId,
-                    newBooking.providerType as 'therapist' | 'place',
-                    amount,
-                    user?.id.toString()
-                );
+        // Persist booking server-side (deferred import)
+        import('../lib/appwriteService')
+            .then(({ bookingService }) => {
+                return bookingService.create({
+                    providerId: newBooking.providerId.toString(),
+                    providerType: newBooking.providerType as 'therapist' | 'place',
+                    providerName: newBooking.providerName,
+                    userId: newBooking.userId,
+                    userName: newBooking.userName,
+                    service: newBooking.service,
+                    startTime: new Date(newBooking.startTime).toISOString(),
+                    duration: parseInt(newBooking.service),
+                    totalCost: 0,
+                    paymentMethod: 'Unpaid'
+                });
             })
-            .catch(err => console.error('Analytics tracking error:', err));
+            .catch(err => console.error('Booking persistence error:', err));
 
         // � PROFESSIONAL DUAL MESSAGING SYSTEM:
         // 1. WhatsApp notification to provider (private, instant backup)

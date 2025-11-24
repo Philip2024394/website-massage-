@@ -64,29 +64,8 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
     };
 
     // Combine system notifications with user notifications
-    const systemNotifications = [];
-    
-    // Welcome notification (only for therapists)
-    if ((userRole === 'therapist' || userRole === 'place') && !welcomeRead) {
-        systemNotifications.push({
-            id: 'welcome-therapist',
-            type: 'welcome',
-            message: 'Welcome to Indastreet! 🎉 Your journey as a massage therapist starts here. Access your dashboard to manage your services, view bookings, and connect with clients.',
-            createdAt: new Date().toISOString(),
-            isRead: false,
-            isSystem: true
-        });
-    }
-
-    // Customer service notification
-    systemNotifications.push({
-        id: 'customer-service',
-        type: 'support',
-        message: 'Need help? Contact our customer service team at indastreet.id@gmail.com for any questions or support.',
-        createdAt: new Date().toISOString(),
-        isRead: true, // Always shown but marked as read
-        isSystem: true
-    });
+    // Removed welcome/support system notifications for therapist dashboard cleanup.
+    const systemNotifications: any[] = [];
 
     const allNotifications = [...systemNotifications, ...notifications];
     const sortedNotifications = allNotifications.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -125,8 +104,8 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
                         <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
                             {dashboardType === 'therapist' && (
                                 <>
-                                    <span className="text-3xl">💆</span>
-                                    <span>Therapist Dashboard</span>
+                                    <span className="text-3xl">🔔</span>
+                                    <span>Notifications</span>
                                 </>
                             )}
                             {dashboardType === 'place' && (
@@ -157,24 +136,7 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
                                     <p className={`text-sm ${n.isRead ? 'text-gray-600' : 'text-gray-800 font-semibold'}`}>
                                         {n.message}
                                     </p>
-                                    {/* Special handling for customer service notification */}
-                                    {n.type === 'support' && (
-                                        <div className="mt-3 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
-                                            <div className="flex items-center justify-between">
-                                                <div>
-                                                    <p className="text-sm font-semibold text-blue-800">Customer Service Email:</p>
-                                                    <p className="text-sm text-blue-600 font-mono">indastreet.id@gmail.com</p>
-                                                </div>
-                                                <button 
-                                                    onClick={copyEmail}
-                                                    className="bg-blue-500 text-white px-3 py-1 rounded-md text-xs hover:bg-blue-600 transition-colors"
-                                                    aria-label="Copy customer service email address to clipboard"
-                                                >
-                                                    Copy Email
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
+                                    {/* Removed customer service block from therapist notifications page */}
                                     <p className="text-xs text-gray-400 mt-1">
                                         {new Date(n.createdAt).toLocaleString()}
                                     </p>
@@ -201,22 +163,7 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
                     )}
                 </div>
 
-            {/* Quick Actions for Therapists */}
-            {(userRole === 'therapist' || userRole === 'place') && (
-                <div className="mt-8 p-4 bg-white rounded-lg shadow-sm border-l-4 border-orange-500">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-3">Quick Actions</h3>
-                    <div className="space-y-2">
-                        <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                            <span className="text-sm text-gray-600">Dashboard</span>
-                            <span className="text-xs text-orange-500">Manage your profile & services</span>
-                        </div>
-                        <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                            <span className="text-sm text-gray-600">Customer Support</span>
-                            <span className="text-xs text-blue-500">indastreet.id@gmail.com</span>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {/* Quick Actions removed */}
             </div>
         </div>
     );

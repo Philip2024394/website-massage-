@@ -42,8 +42,8 @@ export const useAppState = () => {
       
       // Check for other logged-in states
       if (storedProvider && storedProvider.type === 'therapist') {
-        console.log('✅ Found logged in therapist, restoring therapistDashboard:', storedProvider.id);
-        return 'therapistDashboard';
+        console.log('✅ Found logged in therapist, restoring therapistPortal:', storedProvider.id);
+        return 'therapistPortal';
       }
       
       // Restore last page from session if available

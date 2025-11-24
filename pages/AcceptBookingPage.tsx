@@ -92,6 +92,7 @@ const AcceptBookingPage: React.FC = () => {
         bookingId={booking.$id}
         therapistId={booking.therapistId}
         customerName={booking.customerName || 'Customer'}
+        customerWhatsApp={booking.customerWhatsApp || ''}
         duration={booking.duration}
         price={booking.price}
         location={booking.location || 'Not specified'}

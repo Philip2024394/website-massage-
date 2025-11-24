@@ -14,14 +14,15 @@ import HomePage from './pages/HomePage';
 import CustomerProvidersPage from './pages/CustomerProvidersPage';
 import CustomerReviewsPage from './pages/CustomerReviewsPage';
 import CustomerSupportPage from './pages/CustomerSupportPage';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { therapistService } from './lib/appwriteService';
 
 // Lazy-load heavy/non-critical pages to shrink initial JS bundle
 const PlaceDetailPage = React.lazy(() => import('./pages/PlaceDetailPage'));
 const MassagePlaceProfilePage = React.lazy(() => import('./pages/MassagePlaceProfilePage'));
 const RegistrationChoicePage = React.lazy(() => import('./pages/RegistrationChoicePage'));
 const JoinIndastreetPage = React.lazy(() => import('./pages/JoinIndastreetPage'));
-const TherapistDashboardPage = React.lazy(() => import('./pages/TherapistDashboardPage'));
+const TherapistPortalPage = React.lazy(() => import('./pages/TherapistPortalPage'));
 const TherapistProfilePage = React.lazy(() => import('./pages/TherapistProfilePage'));
 const TherapistStatusPage = React.lazy(() => import('./pages/TherapistStatusPage'));
 const PlaceDashboardPage = React.lazy(() => import('./pages/PlaceDashboardPage'));
@@ -39,6 +40,7 @@ const NotificationsPage = React.lazy(() => import('./pages/NotificationsPage'));
 import MassageTypesPage from './pages/MassageTypesPage';
 const MassagePlaceLoginPage = React.lazy(() => import('./pages/MassagePlaceLoginPage'));
 const AcceptBookingPage = React.lazy(() => import('./pages/AcceptBookingPage'));
+const DeclineBookingPage = React.lazy(() => import('./pages/DeclineBookingPage'));
 const EmployerJobPostingPage = React.lazy(() => import('./pages/EmployerJobPostingPage'));
 const JobPostingPaymentPage = React.lazy(() => import('./pages/JobPostingPaymentPage'));
 const BrowseJobsPage = React.lazy(() => import('./pages/BrowseJobsPage'));
@@ -238,6 +240,92 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         setLoggedInProvider,
         setSelectedJobId
     } = props;
+
+    // Industry-standard portal loading state separate from public list
+    const [portalTherapist, setPortalTherapist] = useState<Therapist | null>(null);
+    const [portalLoading, setPortalLoading] = useState(false);
+    const [portalError, setPortalError] = useState<string | null>(null);
+
+    // Fetch therapist document after successful login when navigating to portal
+    useEffect(() => {
+        const shouldLoad = page === 'therapistPortal' && loggedInProvider?.type === 'therapist';
+        if (!shouldLoad) return;
+        // If already loaded or currently loading, skip
+        if (portalTherapist || portalLoading) return;
+        const load = async () => {
+            setPortalLoading(true);
+            setPortalError(null);
+            try {
+                console.log('🔄 [PortalFetch] Starting therapist portal fetch for id:', loggedInProvider.id);
+                let doc: Therapist | null = null;
+                // Primary: direct getById
+                if (loggedInProvider.id) {
+                    const byId = await therapistService.getById(String(loggedInProvider.id));
+                    if (byId) {
+                        console.log('✅ [PortalFetch] Loaded via getById:', byId.name);
+                        doc = byId;
+                    }
+                }
+                // Fallback: email lookup via existing user or account
+                if (!doc) {
+                    let email: string | undefined = user?.email;
+                    if (!email) {
+                        const currentUser = await therapistService.getCurrentUser();
+                        email = currentUser?.email;
+                        console.log('🔍 [PortalFetch] Using currentUser email fallback:', email);
+                    }
+                    if (email) {
+                        const matches = await therapistService.getByEmail(email);
+                        if (matches && matches.length > 0) {
+                            const first = matches[0];
+                            if (first) {
+                                console.log('✅ [PortalFetch] Loaded via email fallback:', first.name);
+                                doc = first;
+                            }
+                        } else {
+                            console.warn('⚠️ [PortalFetch] No document found by email');
+                        }
+                    }
+                }
+                if (!doc) {
+                    setPortalError('Unable to load therapist profile. Please refresh or retry login.');
+                }
+                setPortalTherapist(doc);
+            } catch (e: any) {
+                console.error('❌ [PortalFetch] Error:', e);
+                setPortalError(e?.message || 'Unexpected portal load error');
+            } finally {
+                setPortalLoading(false);
+            }
+        };
+        load();
+    }, [page, loggedInProvider, portalTherapist, portalLoading, user]);
+
+    // 🔄 Refresh portal therapist data when profile updates
+    useEffect(() => {
+        if (page !== 'therapistPortal' || loggedInProvider?.type !== 'therapist') return;
+        
+        const handlePortalRefresh = async () => {
+            console.log('🔄 [PortalRefresh] Refreshing therapist portal data after profile update');
+            try {
+                if (loggedInProvider.id) {
+                    const updated = await therapistService.getById(String(loggedInProvider.id));
+                    if (updated) {
+                        console.log('✅ [PortalRefresh] Updated portal therapist:', updated.name);
+                        setPortalTherapist(updated);
+                    }
+                }
+            } catch (e) {
+                console.error('❌ [PortalRefresh] Failed to refresh portal data:', e);
+            }
+        };
+        
+        window.addEventListener('refreshTherapistData', handlePortalRefresh);
+        
+        return () => {
+            window.removeEventListener('refreshTherapistData', handlePortalRefresh);
+        };
+    }, [page, loggedInProvider]);
     
     // Capture affiliate code once on router mount
     React.useEffect(() => {
@@ -676,48 +764,60 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onSuccess={(therapistId) => {
                     console.log('🚀 AppRouter: TherapistLogin onSuccess called with ID:', therapistId);
                     setLoggedInProvider({ id: therapistId, type: 'therapist' });
-                    setPage('therapistDashboard');
+                    // First page after login: status page with availability & discount controls
+                    setPage('therapistStatus');
                 }} 
                 onBack={handleBackToHome} 
             />;
-
-        case 'therapistDashboard': {
+        case 'therapistPortal': {
             console.log('🎯 AppRouter: THERAPIST DASHBOARD CASE TRIGGERED!');
             console.log('🔍 AppRouter: Current loggedInProvider:', loggedInProvider);
             
             // Find therapist by document ID (now passed from login)
             const existingTherapist = therapists.find(t => 
                 t.id === loggedInProvider?.id || 
-                t.$id === loggedInProvider?.id ||
+                (t as any).$id === loggedInProvider?.id ||
                 String(t.id) === String(loggedInProvider?.id) ||
-                String(t.$id) === String(loggedInProvider?.id)
+                String((t as any).$id) === String(loggedInProvider?.id)
             );
             
             console.log('🎯 AppRouter: Found therapist:', !!existingTherapist, existingTherapist?.name);
             
             if (loggedInProvider?.type === 'therapist') {
-                return <TherapistDashboardPage 
-                    therapistId={loggedInProvider.id}
-                    existingTherapistData={existingTherapist}
-                    userLocation={userLocation}
-                    onSave={(data) => {
-                        console.log('TherapistDashboard onSave called:', data);
-                        // Handle save functionality here if needed
-                    }}
-                    onLogout={handleProviderLogout}
-                    onNavigateToNotifications={() => setPage('notifications')}
-                    onNavigate={setPage}
-                    onUpdateBookingStatus={(bookingId, status) => {
-                        console.log('Update booking status:', bookingId, status);
-                        // Handle booking status update here
-                    }}
-                    onStatusChange={async (status: AvailabilityStatus) => {
-                        await handleTherapistStatusChange(status as unknown as string);
-                    }}
-                    bookings={bookings}
-                    notifications={notifications || []}
-                    t={t}
-                />;
+                const finalTherapist = portalTherapist || existingTherapist || null;
+                // Industry-standard loading skeleton
+                if (portalLoading && !finalTherapist) {
+                    return (
+                        <div className="min-h-screen flex items-center justify-center bg-white">
+                            <div className="flex flex-col items-center gap-4">
+                                <div className="w-16 h-16 border-4 border-orange-200 border-t-orange-600 rounded-full animate-spin" />
+                                <p className="text-sm text-gray-600">Loading therapist dashboard...</p>
+                            </div>
+                        </div>
+                    );
+                }
+                if (portalError && !finalTherapist) {
+                    return (
+                        <div className="min-h-screen flex items-center justify-center bg-red-50 p-4">
+                            <div className="bg-white border border-red-400 rounded-lg p-6 max-w-sm w-full">
+                                <h2 className="text-lg font-semibold text-red-700 mb-2">Dashboard Load Error</h2>
+                                <p className="text-sm text-red-600 mb-4">{portalError}</p>
+                                <button
+                                    onClick={() => { setPortalTherapist(null); setPortalError(null); }}
+                                    className="px-4 py-2 text-sm rounded bg-orange-600 text-white hover:bg-orange-700"
+                                >Retry</button>
+                            </div>
+                        </div>
+                    );
+                }
+                return (
+                    <TherapistPortalPage 
+                        therapist={finalTherapist}
+                        onNavigateToStatus={() => setPage('therapistStatus')}
+                        onLogout={handleProviderLogout}
+                        onNavigateHome={() => setPage('home')}
+                    />
+                );
             }
             return null;
         }
@@ -729,7 +829,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     await handleTherapistStatusChange(status as string);
                 }}
                 onLogout={handleProviderLogout}
-                onNavigateToDashboard={() => setPage('therapistDashboard')}
+                onNavigateToDashboard={() => setPage('therapistPortal')}
                 t={t} 
             /> || null;
             
@@ -913,6 +1013,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'accept-booking':
             // Render accept booking flow when deep-linked or path-detected
             return <AcceptBookingPage />;
+        case 'decline-booking':
+            return <DeclineBookingPage />;
             
         case 'bookings':
             return (
@@ -1163,32 +1265,9 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             console.error('🚨 AppRouter: Unknown page case reached!', {
                 page,
                 loggedInProvider,
-                expectedCases: ['therapistDashboard', 'therapistLogin', 'home', 'landing'],
+                expectedCases: ['therapistPortal', 'therapistLogin', 'home', 'landing'],
                 allProps: Object.keys(props)
             });
-            
-            // If we should be on therapist dashboard but ended up in default, force it
-            if (loggedInProvider?.type === 'therapist' && 
-                ['therapistDashboard', 'therapist-dashboard'].includes(page as string)) {
-                return <TherapistDashboardPage 
-                    onSave={handleSaveTherapist}
-                    onLogout={handleProviderLogout}
-                    userLocation={userLocation}
-                    {...commonDashboardProps}
-                    onStatusChange={async (status: AvailabilityStatus) => {
-                        await handleTherapistStatusChange(status as string);
-                    }}
-                    therapistId={loggedInProvider.id.toString()}
-                    existingTherapistData={therapists.find(t => 
-                        t.id === loggedInProvider.id || 
-                        t.$id === loggedInProvider.id ||
-                        (t as any).documentId === loggedInProvider.id
-                    ) || undefined}
-                    notifications={notifications.filter(n => n.providerId === loggedInProvider.id)}
-                    t={t}
-                />;
-            }
-            
             return null;
     }
 };

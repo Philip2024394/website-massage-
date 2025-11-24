@@ -15,7 +15,7 @@ export const STORAGE_KEYS = {
   SUPABASE_CONFIG: 'supabaseConfig',
 } as const;
 
-export type Page = 'landing' | 'auth' | 'home' | 'detail' | 'registrationChoice' | 'providerAuth' | 'therapistDashboard' | 'placeDashboard' | 'agent' | 'agentAuth' | 'agentDashboard' | 'agentTerms' | 'serviceTerms' | 'privacy' | 'membership' | 'booking' | 'notifications' | 'hotelLogin' | 'hotelDashboard' | 'villaLogin' | 'villaDashboard' | 'supabaseSettings';
+export type Page = 'landing' | 'auth' | 'home' | 'detail' | 'registrationChoice' | 'providerAuth' | 'therapistPortal' | 'placeDashboard' | 'agent' | 'agentAuth' | 'agentDashboard' | 'agentTerms' | 'serviceTerms' | 'privacy' | 'membership' | 'booking' | 'notifications' | 'hotelLogin' | 'hotelDashboard' | 'villaLogin' | 'villaDashboard' | 'supabaseSettings' | 'hotelVillaMenu' | 'coinHistory' | 'coin-history' | 'coin-shop';
 
 export type Language = 'en' | 'id';
 

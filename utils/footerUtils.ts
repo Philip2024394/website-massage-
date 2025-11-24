@@ -22,7 +22,7 @@ export const getFooterConfig = (
   // Dashboard pages that have their own footers
   const dashboardPages = [
     'adminDashboard',
-    'therapistDashboard',
+    'therapistPortal',
     'placeDashboard',
     'villaDashboard',
     'agentDashboard',

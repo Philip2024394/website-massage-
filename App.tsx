@@ -359,14 +359,12 @@ const App = () => {
                         state.setShowRegisterPrompt(true);
                     }}
                     handleIncrementAnalytics={() => Promise.resolve()}
-                    handleNavigateToHotelLogin={navigation?.handleNavigateToHotelLogin || (() => {})}
-                    handleNavigateToVillaLogin={navigation?.handleNavigateToVillaLogin || (() => {})}
-                    handleNavigateToMassagePlaceLogin={navigation?.handleNavigateToMassagePlaceLogin || (() => {})}
+                    handleNavigateToHotelLogin={() => {}}
+                    handleNavigateToMassagePlaceLogin={() => {}}
                     handleNavigateToServiceTerms={navigation?.handleNavigateToServiceTerms || (() => {})}
                     handleNavigateToPrivacyPolicy={navigation?.handleNavigateToPrivacyPolicy || (() => {})}
-                    handleNavigateToCustomerDashboard={navigation?.handleNavigateToCustomerDashboard || (() => {})}
                     handleBackToHome={navigation?.handleBackToHome || (() => {})}
-                    handleSelectRegistration={navigation?.handleSelectRegistration || (() => {})}
+                    handleSelectRegistration={() => {}}
                     handleTherapistStatusChange={(status: string) => 
                         providerAgentHandlers?.handleTherapistStatusChange 
                             ? providerAgentHandlers.handleTherapistStatusChange(status)
@@ -388,15 +386,13 @@ const App = () => {
                     handleCustomerLogout={authHandlers?.handleCustomerLogout || (() => Promise.resolve())}
                     handleAgentLogout={authHandlers?.handleAgentLogout || (() => Promise.resolve())}
                     handleHotelLogout={authHandlers?.handleHotelLogout || (() => Promise.resolve())}
-                    handleVillaLogout={authHandlers?.handleVillaLogout || (() => Promise.resolve())}
                     handleHotelLogin={authHandlers?.handleHotelLogin || (() => {})}
-                    handleVillaLogin={authHandlers?.handleVillaLogin || (() => {})}
                     handleCreateBooking={() => Promise.resolve()}
 
                     handleUpdateBookingStatus={() => Promise.resolve()}
                     handleMarkNotificationAsRead={() => {}}
                     handleNavigateToNotifications={navigation?.handleNavigateToNotifications || (() => {})}
-                    handleNavigateToAgentAuth={navigation?.handleNavigateToAgentAuth || (() => {})}
+                    handleNavigateToAgentAuth={navigation?.handleNavigateToAuth || (() => {})}
 
 
                     setPage={state.setPage}

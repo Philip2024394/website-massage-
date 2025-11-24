@@ -1,4 +1,7 @@
 import { account, databases, DATABASE_ID, COLLECTIONS } from './appwrite';
+import { APPWRITE_CONFIG } from './appwrite.config';
+import { Query } from 'appwrite';
+import { logger } from '../utils/logger';
 import { ID } from 'appwrite';
 import { getRandomTherapistImage } from '../utils/therapistImageUtils';
 import { buildHotelsPayload } from './hotelsSchema';
@@ -112,10 +115,22 @@ export const adminAuth = {
 };
 
 // Therapist Authentication
+const INCLUDE_USER_ID = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_INCLUDE_USER_ID === '1') || (typeof process !== 'undefined' && process.env?.VITE_INCLUDE_USER_ID === '1');
+const DEBUG_AUTH = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_DEBUG_AUTH === '1') || (typeof process !== 'undefined' && process.env?.VITE_DEBUG_AUTH === '1');
+
 export const therapistAuth = {
     async signUp(email: string, password: string): Promise<AuthResponse> {
         try {
-            console.log('🔵 [Therapist Sign-Up] Starting...', { email });
+            logger.debug('🔵 [Therapist Sign-Up] Starting...', { email });
+            // Environment diagnostics
+            const origin = (typeof window !== 'undefined' && window.location ? window.location.origin : 'no-window');
+            logger.debug('🛠 [Therapist Sign-Up] Environment', {
+                endpoint: APPWRITE_CONFIG.endpoint,
+                projectId: APPWRITE_CONFIG.projectId,
+                databaseId: APPWRITE_CONFIG.databaseId,
+                therapistsCollection: APPWRITE_CONFIG.collections.therapists,
+                origin
+            });
             
             // Check rate limit (5 attempts per minute)
             if (!checkRateLimit('therapist-signup', 5, 60000)) {
@@ -136,12 +151,20 @@ export const therapistAuth = {
             }
             
             console.log('🔵 [Therapist Sign-Up] Creating Appwrite account...');
-            const user = await account.create(ID.unique(), email, password);
-            console.log('✅ [Therapist Sign-Up] Appwrite account created:', user.$id);
+            const normalizedEmail = email.toLowerCase().trim();
+            const user = await account.create(ID.unique(), normalizedEmail, password);
+            logger.debug('✅ [Therapist Sign-Up] Appwrite account created:', user.$id);
+            
+            // Create session after account creation
+            logger.debug('🔵 [Therapist Sign-Up] Creating session...');
+            await account.createEmailPasswordSession(normalizedEmail, password);
+            logger.debug('✅ [Therapist Sign-Up] Session created');
+            
             const therapistId = ID.unique();
             
-            console.log('🔵 [Therapist Sign-Up] Creating therapist document...', {
+            logger.debug('🔵 [Therapist Sign-Up] Creating therapist document...', {
                 therapistId,
+                email: normalizedEmail,
                 collectionId: COLLECTIONS.THERAPISTS,
                 databaseId: DATABASE_ID
             });
@@ -153,9 +176,9 @@ export const therapistAuth = {
                 {
                     // Required fields per schema
                     id: therapistId, // Required by Appwrite schema - document ID
-                    userId: user.$id, // Link to Appwrite auth user
-                    email,
-                    name: email.split('@')[0],
+                    email: normalizedEmail,
+                    name: normalizedEmail.split('@')[0],
+                    ...(INCLUDE_USER_ID ? { userId: user.$id } : {}),
                     whatsappNumber: '',
                     countryCode: '+66', // Required by Appwrite schema - default Thailand
                     location: '',
@@ -164,7 +187,7 @@ export const therapistAuth = {
                     price90: '150', // Required string field for 90-minute massage
                     price120: '200', // Required string field for 120-minute massage
                     status: 'available', // Valid enum: available, busy, offline
-                    isLive: true, // 🚀 AUTO-ACTIVE: New registrations are automatically live
+                    isLive: false, // ✅ CHANGED: New accounts start as NOT LIVE until profile completed
                     hourlyRate: 100, // Required by Appwrite schema (50-500 range)
                     therapistId: therapistId, // Required by Appwrite schema
                     hotelId: '', // Required by Appwrite schema - empty for independent therapists
@@ -183,12 +206,25 @@ export const therapistAuth = {
                 }
             );
             
-            console.log('✅ [Therapist Sign-Up] Therapist document created:', therapist.$id);
-            console.log('🎉 [Therapist Sign-Up] SUCCESS! Returning response...');
+            logger.debug('✅ [Therapist Sign-Up] Therapist document created:', therapist.$id);
+            logger.debug('📧 [Therapist Sign-Up] Email stored in document:', therapist.email);
+            
+            // Wait a moment to ensure document is fully persisted
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Log out after registration so user must sign in
+            try {
+                await account.deleteSession('current');
+                logger.debug('✅ [Therapist Sign-Up] Session cleared - user must sign in');
+            } catch (logoutError) {
+                console.warn('⚠️ [Therapist Sign-Up] Could not clear session:', logoutError);
+            }
+            
+            logger.debug('🎉 [Therapist Sign-Up] SUCCESS! Returning response...');
             
             return { success: true, userId: user.$id, documentId: therapist.$id };
         } catch (error: any) {
-            console.error('❌ [Therapist Sign-Up] ERROR:', {
+            if (DEBUG_AUTH) console.error('❌ [Therapist Sign-Up] ERROR:', {
                 message: error.message,
                 code: error.code,
                 type: error.type,
@@ -202,7 +238,17 @@ export const therapistAuth = {
     
     async signIn(email: string, password: string): Promise<AuthResponse> {
         try {
-            console.log('🔵 [Therapist Sign-In] Starting...', { email });
+            const normalizedEmail = email.toLowerCase().trim();
+            logger.debug('🔵 [Therapist Sign-In] Starting...', { email: normalizedEmail });
+            // Environment diagnostics
+            const origin = (typeof window !== 'undefined' && window.location ? window.location.origin : 'no-window');
+            logger.debug('🛠 [Therapist Sign-In] Environment', {
+                endpoint: APPWRITE_CONFIG.endpoint,
+                projectId: APPWRITE_CONFIG.projectId,
+                databaseId: APPWRITE_CONFIG.databaseId,
+                therapistsCollection: APPWRITE_CONFIG.collections.therapists,
+                origin
+            });
             
             // Check rate limit (10 attempts per minute for login)
             if (!checkRateLimit('therapist-login', 10, 60000)) {
@@ -217,56 +263,75 @@ export const therapistAuth = {
             // Clear any existing session first
             try {
                 await account.deleteSession('current');
-                console.log('✅ [Therapist Sign-In] Cleared existing session');
+                logger.debug('✅ [Therapist Sign-In] Cleared existing session');
             } catch {
-                console.log('ℹ️ [Therapist Sign-In] No active session to delete');
+                logger.debug('ℹ️ [Therapist Sign-In] No active session to delete');
             }
             
             console.log('🔵 [Therapist Sign-In] Creating email/password session...');
-            await account.createEmailPasswordSession(email, password);
+            await account.createEmailPasswordSession(normalizedEmail, password);
             console.log('✅ [Therapist Sign-In] Session created');
             
             console.log('🔵 [Therapist Sign-In] Getting user account...');
             const user = await account.get();
             console.log('✅ [Therapist Sign-In] User account retrieved:', user.$id);
             
-            console.log('🔵 [Therapist Sign-In] Searching for therapist document...', {
-                collectionId: COLLECTIONS.THERAPISTS,
-                searchEmail: email
-            });
-            const therapists = await databases.listDocuments(
-                DATABASE_ID,
-                COLLECTIONS.THERAPISTS
-            );
-            
-            console.log(`🔍 [Therapist Sign-In] Found ${therapists.total} total therapists`);
-            
-            // First try to find by email
-            let therapist = therapists.documents.find((doc: any) => doc.email === email);
-            
-            // If not found by email, try by userId (for accounts created via signup)
+            logger.debug('🔵 [Therapist Sign-In] Email lookup with retry');
+            const searchEmail = normalizedEmail;
+            let therapist: any = null;
+
+            for (let attempt = 1; attempt <= 3; attempt++) {
+                if (attempt > 1) {
+                    await new Promise(r => setTimeout(r, attempt * 250));
+                    logger.debug(`⏱️ [Therapist Sign-In] Email retry attempt ${attempt}`);
+                }
+                try {
+                    const match = await databases.listDocuments(
+                        DATABASE_ID,
+                        COLLECTIONS.THERAPISTS,
+                        [Query.equal('email', searchEmail)]
+                    );
+                    if (match.documents.length > 0) {
+                        therapist = match.documents[0];
+                        logger.debug('✅ [Therapist Sign-In] Email query matched document:', therapist.$id);
+                        break;
+                    } else {
+                        logger.debug(`⚠️ [Therapist Sign-In] Attempt ${attempt}: email not indexed yet`);
+                    }
+                } catch (attemptErr: any) {
+                    if (DEBUG_AUTH) console.warn('⚠️ [Therapist Sign-In] Email lookup error:', attemptErr?.message || attemptErr);
+                }
+            }
+
+            // Optional broad scan only if absolutely not found
             if (!therapist) {
-                console.log('⚠️ [Therapist Sign-In] Not found by email, trying userId...');
-                therapist = therapists.documents.find((doc: any) => doc.userId === user.$id);
+                logger.debug('🔍 [Therapist Sign-In] Broad scan fallback');
+                try {
+                    const allDocs = await databases.listDocuments(
+                        DATABASE_ID,
+                        COLLECTIONS.THERAPISTS
+                    );
+                    therapist = allDocs.documents.find((doc: any) => doc.email && doc.email.toLowerCase().trim() === searchEmail) || null;
+                    if (therapist) {
+                        logger.debug('✅ [Therapist Sign-In] Broad scan found document:', therapist.$id);
+                    }
+                } catch (broadErr: any) {
+                    if (DEBUG_AUTH) console.warn('⚠️ [Therapist Sign-In] Broad scan failed:', broadErr?.message || broadErr);
+                }
             }
             
             if (!therapist) {
-                console.error('❌ [Therapist Sign-In] Therapist document not found');
-                console.log('Search criteria - Email:', email, 'UserId:', user.$id);
-                console.log('Available therapists:', therapists.documents.map((d: any) => ({
-                    id: d.$id,
-                    email: d.email,
-                    userId: d.userId || 'N/A'
-                })));
-                throw new Error('Therapist not found. Please contact support or try registering again.');
+                if (DEBUG_AUTH) console.error('❌ [Therapist Sign-In] Therapist document not found');
+                logger.debug('Search criteria - Email:', email, 'Normalized:', searchEmail);
+                throw new Error('Therapist profile not found yet. Wait a moment and retry sign-in. If still missing after 30s, re-register or contact support: ' + email);
             }
             
-            console.log('✅ [Therapist Sign-In] Therapist document found:', therapist.$id);
-            console.log('🎉 [Therapist Sign-In] SUCCESS! Returning response...');
+            logger.debug('✅ [Therapist Sign-In] Therapist document found:', therapist.$id);
+            logger.debug('🎉 [Therapist Sign-In] SUCCESS! Returning response...');
             
             return { success: true, userId: user.$id, documentId: therapist.$id };
         } catch (error: any) {
-            console.error('❌ [Therapist Sign-In] ERROR:', {
+            if (DEBUG_AUTH) console.error('❌ [Therapist Sign-In] ERROR:', {
                 message: error.message,
                 code: error.code,
                 type: error.type,

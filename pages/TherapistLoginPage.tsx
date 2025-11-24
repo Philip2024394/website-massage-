@@ -82,10 +82,12 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({
                 console.log('✅ [Login Success] About to call onSuccess with ID:', therapistId);
                 onSuccess(therapistId);
             } else {
-                throw new Error(response.error || 'Sign in failed. Please try again.');
+                const errorMessage = typeof response.error === 'string' ? response.error : 'Sign in failed. Please try again.';
+                throw new Error(errorMessage);
             }
         } catch (err: any) {
-            setError(err.message || 'Authentication failed. Please try again.');
+            const errorMessage = typeof err === 'string' ? err : (err?.message || 'Authentication failed. Please try again.');
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -100,18 +102,22 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({
             const response = await therapistAuth.signUp(registerData.email, registerData.password);
             
             if (response.success && response.userId) {
+                // Switch to login mode after successful registration
                 setViewMode('login');
-                setError('✅ Account created successfully! Please sign in.');
-                setPhoneNumber(registerData.email);  // Pre-fill email for login
+                setPhoneNumber(registerData.email); // Pre-fill email for login
+                setPassword(''); // Clear password for security
                 setRegisterData({
                     email: '',
                     password: ''
                 });
+                setError('✅ Account created successfully! Please sign in with your credentials.');
             } else {
-                throw new Error(response.error || 'Registration failed. Please try again.');
+                const errorMessage = typeof response.error === 'string' ? response.error : 'Registration failed. Please try again.';
+                throw new Error(errorMessage);
             }
         } catch (err: any) {
-            setError(err.message || 'Registration failed. Please try again.');
+            const errorMessage = typeof err === 'string' ? err : (err?.message || 'Registration failed. Please try again.');
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }

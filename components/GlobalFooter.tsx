@@ -21,7 +21,7 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
         const searchPages = ['search', 'therapists', 'places', 'massageTypes'];
         const notificationPages = ['notifications'];
         const shopPages = ['shop', 'membership'];
-                const profilePages = ['profile', 'therapistDashboard', 'agentDashboard'];
+                const profilePages = ['profile', 'therapistPortal', 'agentDashboard'];
 
         switch (buttonType) {
             case 'home':
@@ -75,7 +75,7 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
                 switch (userRole) {
                     case 'therapist':
                     case 'place':
-                        onNavigate('therapistDashboard');
+                        onNavigate('therapistPortal');
                         break;
                     case 'hotel':
                         onNavigate('agentDashboard');

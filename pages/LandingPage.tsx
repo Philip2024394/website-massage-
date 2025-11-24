@@ -20,6 +20,15 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
     const defaultLanguage: Language = 'id';
     const [isDetectingLocation, setIsDetectingLocation] = useState(false);
     const { requestInstall, isInstalled, isIOS, showIOSInstructions, setShowIOSInstructions } = usePWAInstall();
+    const isMountedRef = React.useRef(true);
+
+    // Track component mount status
+    useEffect(() => {
+        isMountedRef.current = true;
+        return () => {
+            isMountedRef.current = false;
+        };
+    }, []);
 
     // Auto-detect location on component mount for mobile devices
     useEffect(() => {
@@ -48,10 +57,18 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
 
     const handleEnterApp = async () => {
         if (isDetectingLocation) return;
+        if (!isMountedRef.current) return;
+        
+        // Set loading state immediately but synchronously
         setIsDetectingLocation(true);
+        
+        // Use requestAnimationFrame to ensure React processes the state change
+        // before we start the async navigation that will unmount the component
+        await new Promise(resolve => requestAnimationFrame(resolve));
         
         try {
             const userLocation = await locationService.requestLocationWithFallback();
+            if (!isMountedRef.current) return;
             await onEnterApp(defaultLanguage, userLocation);
             try { 
                 await requestInstall(); 
@@ -66,6 +83,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
             };
             
             try {
+                if (!isMountedRef.current) return;
                 await onEnterApp(defaultLanguage, defaultLocation);
                 try { 
                     await requestInstall(); 
@@ -75,7 +93,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
             }
         } finally {
             setTimeout(() => {
-                setIsDetectingLocation(false);
+                if (isMountedRef.current) {
+                    setIsDetectingLocation(false);
+                }
             }, 100);
         }
     };

@@ -62,9 +62,17 @@ const parseCoordinates = (coordinates: any): { lat: number; lng: number } | null
             coords = JSON.parse(coordinates);
         }
         
-        // Handle object format: {lat: number, lng: number}
-        if (coords && typeof coords.lat === 'number' && typeof coords.lng === 'number') {
-            return coords;
+        // Handle object format: {lat: number, lng: number} (also legacy 'lon')
+        if (coords && typeof coords === 'object') {
+            if (typeof (coords as any).lat === 'number') {
+                // Legacy fix: rename lon -> lng if present
+                if (typeof (coords as any).lon === 'number' && (coords as any).lng === undefined) {
+                    (coords as any).lng = (coords as any).lon;
+                }
+                if (typeof (coords as any).lng === 'number') {
+                    return { lat: (coords as any).lat, lng: (coords as any).lng };
+                }
+            }
         }
         
         // Handle array format: [lat, lng]

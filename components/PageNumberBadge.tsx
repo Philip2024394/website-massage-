@@ -64,11 +64,9 @@ const PageNumberBadge: React.FC<PageNumberBadgeProps> = ({
         }
     }, [pageNumber, pageName, propIsLocked]);
 
-    // Don't render if numbers are disabled
-    if (!showNumbers) return null;
-
+    // Use CSS to hide instead of returning null to prevent React DOM errors
     return (
-        <div className="fixed top-4 right-4 z-[9999] pointer-events-none select-none">
+        <div className={`fixed top-4 right-4 z-[9999] pointer-events-none select-none transition-opacity duration-200 ${showNumbers ? 'opacity-100' : 'opacity-0 invisible'}`}>
             <div className={`
                 inline-flex items-center gap-2 px-4 py-2 rounded-lg shadow-xl backdrop-blur-md
                 ${actualIsLocked 

@@ -13,7 +13,7 @@ export type Page =
     | 'registrationChoice' 
     | 'providerAuth' 
     | 'therapistStatus' 
-    | 'therapistDashboard'
+    | 'therapistPortal'
     | 'therapistProfile' // 🎯 NEW: Customer-facing therapist profile page 
     | 'profile' // 🎯 NEW: Guest profile page for non-registered users
     | 'placeDashboard' 
@@ -95,11 +95,15 @@ export type Page =
     | 'payment-info' 
     | 'adminShopManagement'
     | 'coin-history' 
+    | 'coinHistory' // Added camelCase variant used in navigation handlers
+    | 'coin-shop' // Added hyphenated coin shop page id
+    | 'hotelVillaMenu' // Added live hotel/villa menu page id
     | 'coinSystemTest'
     | 'coin-test' 
     | 'website-management'
     | 'todays-discounts'
     | 'accept-booking'
+    | 'decline-booking'
     | 'verifiedProBadge'
     | 'customerProviders'
     | 'customerReviews'

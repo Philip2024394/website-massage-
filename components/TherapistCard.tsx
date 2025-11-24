@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { Therapist, Analytics } from '../types';
 import { AvailabilityStatus } from '../types';
 import { parsePricing, parseMassageTypes, parseCoordinates, parseLanguages } from '../utils/appwriteHelpers';
-import { notificationService } from '../lib/appwriteService';
+import { notificationService, bookingService } from '../lib/appwriteService';
 import { getRandomTherapistImage } from '../utils/therapistImageUtils';
 import { getDisplayRating, getDisplayReviewCount, formatRating } from '../utils/ratingUtils';
 import DistanceDisplay from './DistanceDisplay';
@@ -137,6 +137,45 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     const [countdown, setCountdown] = useState<string>('');
     const [isOvertime, setIsOvertime] = useState(false);
     const [_discountTimeLeft, _setDiscountTimeLeft] = useState<string>('');
+    // Bookings count sourced from persisted analytics JSON (no random fallback)
+    const [bookingsCount, setBookingsCount] = useState<number>(() => {
+        try {
+            if (therapist.analytics) {
+                const parsed = JSON.parse(therapist.analytics);
+                if (parsed && typeof parsed.bookings === 'number') return parsed.bookings;
+            }
+        } catch {}
+        return 0;
+    });
+
+    // Fallback: derive bookings count from bookings collection if analytics not populated
+    useEffect(() => {
+        const loadBookingsCount = async () => {
+            if (bookingsCount > 0) return; // already have analytics value
+            try {
+                const providerId = String((therapist as any).id || (therapist as any).$id || '');
+                if (!providerId) return;
+                const bookingDocs = await bookingService.getByProvider(providerId, 'therapist');
+                if (Array.isArray(bookingDocs) && bookingDocs.length > 0) {
+                    setBookingsCount(bookingDocs.length);
+                }
+            } catch (e) {
+                // Silent fallback
+            }
+        };
+        loadBookingsCount();
+    }, [bookingsCount, therapist]);
+    const joinedDateRaw = therapist.membershipStartDate || therapist.activeMembershipDate;
+    const joinedDisplay = (() => {
+        if (!joinedDateRaw) return '—';
+        try {
+            const d = new Date(joinedDateRaw);
+            if (isNaN(d.getTime())) return '—';
+            return d.toLocaleDateString('en-GB');
+        } catch {
+            return '—';
+        }
+    })();
     
     // Helper function to calculate dynamic spacing based on description length
     const getDynamicSpacing = (longSpacing: string, mediumSpacing: string, shortSpacing: string) => {
@@ -154,6 +193,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
 
     // Detect language from translations object
     const currentLanguage: 'en' | 'id' = _t?.schedule === 'Schedule' ? 'en' : 'id';
+
+    // Location parsing for display (show city / first segment)
+    const locationCity = therapist.location ? String(therapist.location).split(',')[0].trim() : '';
     
     // Countdown timer for active discount
     useEffect(() => {
@@ -256,8 +298,28 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         status: validStatus
     };
     
-    // Get the display status (now always shows actual status)
-    const displayStatus = getDisplayStatus(therapistWithStatus);
+    // Get the initial display status (prefers explicit status/busyUntil/bookedUntil)
+    let displayStatus = getDisplayStatus(therapistWithStatus);
+
+    // Fallback: derive status from new schema timestamp fields `available` / `busy`
+    // If the explicit status is Offline (or missing) but we have one of the new fields populated,
+    // use those to infer a better display state for cards.
+    if (displayStatus === AvailabilityStatus.Offline) {
+        const availableField = (therapist as any).available as string | undefined;
+        const busyField = (therapist as any).busy as string | undefined;
+        const hasAvailable = typeof availableField === 'string' && availableField.trim().length > 0;
+        const hasBusy = typeof busyField === 'string' && busyField.trim().length > 0;
+
+        // Prefer Busy if both somehow present (defensive). Otherwise choose the one that exists.
+        if (hasBusy && !hasAvailable) {
+            displayStatus = AvailabilityStatus.Busy;
+        } else if (hasAvailable && !hasBusy) {
+            displayStatus = AvailabilityStatus.Available;
+        } else if (hasBusy && hasAvailable) {
+            displayStatus = AvailabilityStatus.Busy; // ambiguous, choose Busy
+        }
+    }
+
     const style = statusStyles[displayStatus];
     
     // Parse pricing - support both new separate fields and old JSON format
@@ -459,7 +521,13 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
 
             `}</style>
             
+            {/* External meta bar (Joined / Bookings) */}
+            <div className="flex justify-between items-center mb-2 px-2">
+                <span className="text-[11px] text-gray-600 font-medium">Joined: {joinedDisplay}</span>
+                <span className="text-[11px] text-gray-600 font-medium">Bookings: {bookingsCount}</span>
+            </div>
             <div className="bg-white rounded-xl shadow-md overflow-visible relative transition-all duration-300">
+                {/* Removed Portal/Status overlay buttons from main image per UX request. Status now only shown below therapist name. */}
                 
                 {/* Main Image Banner */}
                 <div className="h-48 w-full overflow-visible relative rounded-t-xl">
@@ -681,9 +749,12 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             </div>
             
             {/* Therapist Name - Positioned in new line below distance */}
-            <div className="absolute top-56 left-32 right-4 z-10">
-                <h3 className="text-xl font-bold text-gray-900">{therapist.name}</h3>
-            </div>
+                        <div className="absolute top-56 left-32 right-4 z-10">
+                                <h3 className="text-xl font-bold text-gray-900">{therapist.name}</h3>
+                                {locationCity && (
+                                    <p className="text-[11px] font-medium text-gray-700 mt-0.5">Therapist – {locationCity}</p>
+                                )}
+                        </div>
             
             {/* Online Status - Positioned below name on same left alignment */}
             <div className="absolute top-60 left-32 z-10">
@@ -698,25 +769,27 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         )}
                         <span className={`w-2 h-2 rounded-full block status-indicator ${isOvertime ? 'bg-red-500' : style.dot} ${displayStatus === AvailabilityStatus.Available ? 'animate-pulse' : ''}`}></span>
                     </span>
-                    {displayStatus === AvailabilityStatus.Busy && therapist.busyUntil ? (
-                        <div className="flex items-center gap-1">
-                            <span>Busy</span>
-                            <BusyCountdownTimer 
-                                endTime={therapist.busyUntil}
-                                onExpired={() => {
-                                    // Optionally refresh the therapist status or trigger a re-render
-                                    console.log('Therapist should be available again');
-                                }}
-                            />
-                        </div>
-                    ) : displayStatus === AvailabilityStatus.Busy && countdown ? (
-                        <span>
-                            {isOvertime ? 'Busy - Extra Time ' : 'Busy - Free in '}
-                            {countdown}
-                        </span>
-                    ) : (
-                        displayStatus
-                    )}
+                                        {displayStatus === AvailabilityStatus.Busy ? (
+                                            therapist.busyUntil ? (
+                                                <div className="flex items-center gap-1">
+                                                    <span>Busy</span>
+                                                    <BusyCountdownTimer
+                                                        endTime={therapist.busyUntil}
+                                                        onExpired={() => {
+                                                            console.log('Busy period ended – therapist should be available.');
+                                                        }}
+                                                    />
+                                                </div>
+                                            ) : countdown ? (
+                                                <span>
+                                                    {isOvertime ? 'Busy - Extra Time ' : 'Busy - Free in '} {countdown}
+                                                </span>
+                                            ) : (
+                                                <span>Busy</span>
+                                            )
+                                        ) : (
+                                            displayStatus
+                                        )}
                 </div>
             </div>
             

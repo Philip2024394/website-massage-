@@ -328,6 +328,7 @@ export interface Place {
     hotelDiscount?: number; // minimum 20%
     villaDiscount?: number; // minimum 20%
     hotelVillaPricing?: PricingString; // Special pricing for hotel/villa live menu (JSON string for Appwrite)
+    hotelId?: string; // Optional linkage to hotel record (added to satisfy dashboard payload)
     
     // Verification badge fields
     isVerified?: boolean;
@@ -440,6 +441,7 @@ export interface Booking {
     providerResponseStatus?: ProviderResponseStatus;
     providerResponseTime?: string; // ISO string when provider confirmed/declined
     confirmationDeadline?: string; // ISO string - 25 minutes from booking creation
+    responseDeadline?: string; // ISO string - unified 10 minute SLA (server authoritative)
     
     // Fallback system
     isReassigned?: boolean;

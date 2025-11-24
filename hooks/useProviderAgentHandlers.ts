@@ -2,34 +2,47 @@ import type { Therapist, Place, Agent, AvailabilityStatus } from '../types';
 import type { Page, LoggedInProvider } from '../types/pageTypes';
 import { therapistService, placeService, agentService, adminMessageService, notificationService } from '../lib/appwriteService';
 
-// Toast notification utility for better UX - uses safe DOM manipulation
+// Toast notification utility refactored to use dedicated overlay root (portal container)
 const showToast = (message: string, type: 'success' | 'error' | 'warning' = 'success') => {
+    const container = document.getElementById('overlay-root');
+    const targetParent = container || document.body;
+    if (!targetParent) return;
+
     const bgColor = type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-orange-500';
     const icon = type === 'success' ? '✓' : type === 'error' ? '⚠️' : '⚠';
-    
+
     const toast = document.createElement('div');
-    toast.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-[9999] transition-opacity duration-300`;
+    toast.className = `pointer-events-auto mb-3 ml-auto ${bgColor} text-white px-5 py-3 rounded-lg shadow-lg w-fit animate-fade-in`;
     toast.innerHTML = `<strong>${icon}</strong> ${message}`;
     toast.style.opacity = '1';
-    
-    // Append to body safely with React-friendly approach
-    if (document.body) {
-        try {
-            document.body.appendChild(toast);
-            
-            // Fade out and remove with proper cleanup
+
+    // Ensure container has positioning if using overlay-root
+    if (targetParent === container && !container!.style.position) {
+        container!.style.position = 'fixed';
+        container!.style.top = '0';
+        container!.style.right = '0';
+        container!.style.zIndex = '9999';
+        container!.style.padding = '1rem';
+        container!.style.display = 'flex';
+        container!.style.flexDirection = 'column';
+        container!.style.alignItems = 'flex-end';
+        container!.style.pointerEvents = 'none';
+    }
+
+    try {
+        targetParent.appendChild(toast);
+        // Fade out and remove
+        setTimeout(() => {
+            toast.style.transition = 'opacity 0.3s';
+            toast.style.opacity = '0';
             setTimeout(() => {
-                toast.style.opacity = '0';
-                setTimeout(() => {
-                    // Use a safer removal approach that avoids React conflicts
-                    if (toast && toast.parentNode === document.body) {
-                        document.body.removeChild(toast);
-                    }
-                }, 300);
-            }, 4000);
-        } catch (error) {
-            console.warn('Toast notification could not be displayed:', error);
-        }
+                if (toast && toast.parentNode === targetParent) {
+                    targetParent.removeChild(toast);
+                }
+            }, 320);
+        }, 4000);
+    } catch (err) {
+        console.warn('Toast notification failed to append:', err);
     }
 };
 

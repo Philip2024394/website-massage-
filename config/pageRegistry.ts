@@ -7,7 +7,7 @@ export const PAGE_REGISTRY = {
     4: { name: 'TherapistLoginPage', file: 'pages/TherapistLoginPage.tsx', locked: false },
     
     // Therapist Pages (21-40)
-    21: { name: 'TherapistDashboardPage', file: 'pages/TherapistDashboardPage.tsx', locked: false },
+    21: { name: 'TherapistPortalPage', file: 'pages/TherapistPortalPage.tsx', locked: false },
     22: { name: 'TherapistStatusPage', file: 'pages/TherapistStatusPage.tsx', locked: false },
     23: { name: 'TherapistProfileForm', file: 'components/therapist/TherapistProfileForm.tsx', locked: false },
     
