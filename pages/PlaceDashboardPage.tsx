@@ -217,11 +217,11 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         setName(placeData.name || '');
         setDescription(placeData.description || '');
         setMainImage(placeData.mainImage || '');
-        setProfilePicture((placeData as any).profilePicture || placeData.mainImage || '');
+        setProfilePicture((placeData as any).profilepicture || placeData.mainImage || '');
         
         // Load gallery images with captions and descriptions
-        if ((placeData as any).galleryImages && Array.isArray((placeData as any).galleryImages)) {
-            const loadedGallery = [...(placeData as any).galleryImages].map((item: any) => ({
+        if ((placeData as any).galleryimages && Array.isArray((placeData as any).galleryimages)) {
+            const loadedGallery = [...(placeData as any).galleryimages].map((item: any) => ({
                 imageUrl: item.imageUrl || '',
                 caption: item.caption || '',
                 description: item.description || ''
@@ -248,10 +248,10 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                 setUseSamePricing(true);
             }
             
-            setDiscountPercentage((placeData as any).discountPercentage || 0);
-            setDiscountDuration((placeData as any).discountDuration || 24);
-            setIsDiscountActive((placeData as any).isDiscountActive || false);
-            setDiscountEndTime((placeData as any).discountEndTime || '');
+            setDiscountPercentage((placeData as any).discountpercentage || 0);
+            setDiscountDuration((placeData as any).discountduration || 24);
+            setIsDiscountActive((placeData as any).isdiscountactive || false);
+            setDiscountEndTime((placeData as any).discountendtime || '');
             
             setCoordinates(typeof placeData.coordinates === 'string' ? JSON.parse(placeData.coordinates) : placeData.coordinates || { lat: 0, lng: 0 });
             setMassageTypes(typeof placeData.massageTypes === 'string' ? JSON.parse(placeData.massageTypes) : placeData.massageTypes || []);
@@ -275,8 +275,8 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             setLocation('');
         }
         
-        setOpeningTime(placeData.openingTime || '09:00');
-        setClosingTime(placeData.closingTime || '21:00');
+        setOpeningTime((placeData as any).openingtime || '09:00');
+        setClosingTime((placeData as any).closingtime || '21:00');
         
         // Initialize website information
         setWebsiteUrl((placeData as any).websiteurl || '');
@@ -568,8 +568,8 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             
             // Images
             mainimage: mainImage,
-            profilePicture,
-            galleryImages: JSON.stringify(filteredGallery),
+            profilepicture: profilePicture,
+            galleryimages: JSON.stringify(filteredGallery),
             
             // Pricing
             pricing: JSON.stringify(pricing),
@@ -580,8 +580,8 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             coordinates: Array.isArray(coordinates) ? coordinates : [coordinates.lng || 106.8456, coordinates.lat || -6.2088],
             
             // Hours
-            openingTime,
-            closingTime,
+            openingtime: openingTime,
+            closingtime: closingTime,
             
             // Services
             massagetypes: JSON.stringify(massageTypes),
@@ -594,10 +594,10 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             websitedescription: websiteDescription || '',
             
             // Discounts
-            discountPercentage: isDiscountActive ? Number(discountPercentage) : 0,
-            discountDuration: isDiscountActive ? Number(discountDuration) : 0,
-            isDiscountActive: Boolean(isDiscountActive),
-            discountEndTime: calculatedDiscountEndTime,
+            discountpercentage: isDiscountActive ? Number(discountPercentage) : 0,
+            discountduration: isDiscountActive ? Number(discountDuration) : 0,
+            isdiscountactive: Boolean(isDiscountActive),
+            discountendtime: calculatedDiscountEndTime,
         };
 
         // Sanitize before sending to onSave
