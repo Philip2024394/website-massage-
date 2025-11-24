@@ -149,6 +149,13 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
     
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        const accuracy = position.coords.accuracy;
+        console.log(`📍 Location accuracy: ${accuracy}m`);
+        
+        if (accuracy > 500) {
+          showToast(`⚠️ Location accuracy is low (${Math.round(accuracy)}m). Try moving to an open area.`, 'warning');
+        }
+        
         const coords = {
           lat: position.coords.latitude,
           lng: position.coords.longitude
@@ -163,7 +170,12 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       },
       (error) => {
         console.error('Geolocation error:', error);
-        showToast('❌ Location access denied', 'error');
+        showToast('❌ Location access denied. Please enable location permissions.', 'error');
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 0 // Always get fresh location, no cache
       }
     );
   };
@@ -419,9 +431,11 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                 className="mt-3 p-3 bg-green-50 border-2 border-green-200 rounded-lg"
                 style={{ display: (locationSet && coordinates) ? 'block' : 'none' }}
               >
-                <p className="text-sm text-green-800 font-medium">
-                  ✅ Location captured: {coordinates ? `${coordinates.lat.toFixed(5)}, ${coordinates.lng.toFixed(5)}` : ''}
-                </p>
+                {coordinates && (
+                  <p className="text-sm text-green-800 font-medium">
+                    ✅ Location captured: {coordinates.lat.toFixed(5)}, {coordinates.lng.toFixed(5)}
+                  </p>
+                )}
               </div>
               <div 
                 ref={mapRef} 

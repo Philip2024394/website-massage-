@@ -239,30 +239,106 @@ export const findNearbyPlaces = async (
 };
 
 /**
- * Get customer location from browser geolocation
+ * Get customer location with IP fallback - PRODUCTION-READY
+ * Uses multiple strategies for maximum reliability:
+ * 1. High-accuracy GPS (fresh, not cached)
+ * 2. IP-based geolocation fallback
+ * 3. Accuracy validation (rejects inaccurate results)
  */
-export const getCustomerLocation = (): Promise<{ lat: number; lng: number }> => {
-    return new Promise((resolve, reject) => {
-        if (!navigator.geolocation) {
-            reject(new Error('Geolocation is not supported by your browser'));
-            return;
+export const getCustomerLocation = async (): Promise<{ lat: number; lng: number }> => {
+    console.log('📍 Starting location detection...');
+    
+    // Strategy 1: Try GPS with strict accuracy requirements
+    if (navigator.geolocation) {
+        try {
+            const gpsLocation = await new Promise<{ lat: number; lng: number }>((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const accuracy = position.coords.accuracy;
+                        console.log(`✅ GPS location obtained with accuracy: ${accuracy}m`);
+                        
+                        // Reject if accuracy is worse than 500 meters (inaccurate)
+                        if (accuracy > 500) {
+                            console.warn(`⚠️ GPS accuracy too low: ${accuracy}m - trying fallback`);
+                            reject(new Error(`GPS accuracy insufficient: ${accuracy}m`));
+                            return;
+                        }
+                        
+                        resolve({
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        });
+                    },
+                    (error) => {
+                        console.warn('⚠️ GPS failed:', error.message);
+                        reject(error);
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 15000, // 15 seconds for accurate GPS lock
+                        maximumAge: 0 // CRITICAL: NO CACHE - Always get fresh location
+                    }
+                );
+            });
+            
+            console.log('🎯 Using accurate GPS location:', gpsLocation);
+            return gpsLocation;
+            
+        } catch (gpsError) {
+            console.warn('⚠️ GPS strategy failed, falling back to IP geolocation');
         }
-
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                resolve({
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude
-                });
-            },
-            (error) => {
-                reject(new Error(`Location error: ${error.message}`));
-            },
-            {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 300000 // 5 minutes cache
+    }
+    
+    // Strategy 2: IP-based geolocation fallback (for desktop/laptop or GPS failure)
+    try {
+        console.log('🌐 Attempting IP-based geolocation...');
+        
+        // Use multiple IP geolocation services for reliability
+        const ipServices = [
+            'https://ipapi.co/json/',
+            'https://ipinfo.io/json',
+            'https://ip-api.com/json/'
+        ];
+        
+        for (const service of ipServices) {
+            try {
+                const response = await fetch(service);
+                if (!response.ok) continue;
+                
+                const data = await response.json();
+                
+                // Handle different response formats
+                let lat: number | undefined;
+                let lng: number | undefined;
+                
+                if (data.latitude && data.longitude) {
+                    lat = parseFloat(data.latitude);
+                    lng = parseFloat(data.longitude);
+                } else if (data.lat && data.lon) {
+                    lat = parseFloat(data.lat);
+                    lng = parseFloat(data.lon);
+                } else if (data.loc) {
+                    // ipinfo.io format: "lat,lng"
+                    const [latStr, lngStr] = data.loc.split(',');
+                    lat = parseFloat(latStr);
+                    lng = parseFloat(lngStr);
+                }
+                
+                if (lat && lng && !isNaN(lat) && !isNaN(lng)) {
+                    console.log(`✅ IP geolocation successful using ${service}:`, { lat, lng });
+                    console.log(`📍 Approximate city: ${data.city || 'Unknown'}, ${data.country || 'Unknown'}`);
+                    return { lat, lng };
+                }
+            } catch (serviceError) {
+                console.warn(`⚠️ IP service ${service} failed, trying next...`);
+                continue;
             }
-        );
-    });
+        }
+        
+        throw new Error('All IP geolocation services failed');
+        
+    } catch (ipError) {
+        console.error('❌ All location detection methods failed');
+        throw new Error('Unable to detect location. Please enable location permissions or check your internet connection.');
+    }
 };

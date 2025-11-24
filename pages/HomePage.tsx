@@ -927,6 +927,18 @@ const HomePage: React.FC<HomePageProps> = ({
                                 });
                             return preparedTherapists.map((therapist: any, index: number) => {
                                 // 🌐 Enhanced Debug: Comprehensive therapist data analysis
+                                // Parse languages safely - handle both JSON arrays and comma-separated strings
+                                let languagesParsed: string[] = [];
+                                try {
+                                    if (therapist.languages) {
+                                        // Try parsing as JSON first
+                                        languagesParsed = JSON.parse(therapist.languages);
+                                    }
+                                } catch (e) {
+                                    // If JSON parse fails, treat as comma-separated string
+                                    languagesParsed = therapist.languages ? therapist.languages.split(',').map((lang: string) => lang.trim()) : [];
+                                }
+                                
                                 console.log('🏠 HomePage passing to TherapistCard:', {
                                     id: therapist.$id || therapist.id,
                                     name: therapist.name,
@@ -936,7 +948,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                     languagesEmpty: therapist.languages === '',
                                     languagesNull: therapist.languages === null,
                                     languagesUndefined: therapist.languages === undefined,
-                                    languagesParsed: therapist.languages ? JSON.parse(therapist.languages || '[]') : [],
+                                    languagesParsed: languagesParsed,
                                     isLive: therapist.isLive,
                                     massageTypes: therapist.massageTypes,
                                     allFields: Object.keys(therapist)
