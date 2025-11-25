@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "cross-env VITE_PORT=3000 vite",
     "build": "cross-env ROLLUP_NO_NATIVE=1 tsc && vite build --config vite.config.deployment.ts",
-    "build:netlify": "cross-env ROLLUP_NO_NATIVE=1 ROLLUP_NO_WASM=1 tsc && vite build",
+    "build:netlify": "cross-env ROLLUP_NO_NATIVE=1 ROLLUP_NO_WASM=1 vite build",
     "build:npm": "npm run type-check && cross-env ROLLUP_NO_NATIVE=1 ROLLUP_NO_WASM=1 vite build",
     "build:local": "cross-env ROLLUP_NO_NATIVE=1 tsc && vite build",
     "build:vercel": "node esbuild.config.cjs",
