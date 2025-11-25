@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Star, MapPin, Clock, Calendar, ShieldCheck } from 'lucide-react';
+import AnonymousReviewModal from '../../AnonymousReviewModal';
 
 // Helper function to check if discount is active and not expired
 const isDiscountActive = (place: Place): boolean => {
@@ -64,7 +65,19 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 }) => {
     const [showReferModal, setShowReferModal] = useState(false);
     const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
+    const [showReviewModal, setShowReviewModal] = useState(false);
     const [discountTimeLeft, setDiscountTimeLeft] = useState<string>('');
+    
+    // Handle anonymous review submission
+    const handleAnonymousReviewSubmit = async (reviewData: any) => {
+        try {
+            console.log('Review submitted for massage place:', reviewData);
+            // Review is handled by AnonymousReviewModal component
+            setShowReviewModal(false);
+        } catch (error) {
+            console.error('Error submitting review:', error);
+        }
+    };
     
     // Countdown timer for active discount - same as MassagePlaceCard
     useEffect(() => {
@@ -137,6 +150,16 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
             {/* Main Banner Image - Increased height by 10% */}
             <div className="relative h-48 md:h-72">
+                {(() => {
+                    console.log('🖼️ HeroSection mainImage debug:', {
+                        hasMainImage: !!place.mainImage,
+                        mainImageValue: place.mainImage,
+                        mainImageLength: place.mainImage?.length,
+                        rawMainImage: (place as any).mainimage,
+                        placeName: place.name
+                    });
+                    return null;
+                })()}
                 <img
                     src={place.mainImage || 'https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382'}
                     alt={place.name}
@@ -191,16 +214,32 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     </div>
                 )}
                 
-                {/* Operating Hours Badge - Right corner, positioned optimally when discount is active */}
+                {/* Operating Hours Badge - Moves down when discount is active */}
                 <div className={`absolute bg-black/70 backdrop-blur-md text-white px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg transition-all duration-300 ${
                     (isDiscountActive(place) || (activeDiscount && discountTimeLeft !== 'EXPIRED')) 
-                        ? 'top-2 right-48 md:right-64' // Move up and to the left when discount is active
-                        : 'top-4 right-4' // Default position when no discount
+                        ? 'top-24 right-2' // Move down below discount badge when discount is active
+                        : 'top-2 right-2' // Default position when no discount
                 }`}>
                     <Clock className="w-4 h-4 text-green-400" />
                     <span className="font-semibold text-sm">{place.operatingHours || 'Daily 9:00 AM - 9:00 PM'}</span>
                 </div>
                 
+                {/* Review Badge - Top Left Corner */}
+                <div 
+                    className="absolute top-2 left-2 flex items-center gap-1 bg-black/70 backdrop-blur-md rounded-full px-3 py-1.5 shadow-lg cursor-pointer z-30"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setShowReviewModal(true);
+                    }}
+                    role="button"
+                    aria-label={`Rate ${place.name}`}
+                >
+                    <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                    <span className="font-bold text-white text-sm">{place.rating || 5.0}</span>
+                    <span className="text-xs text-gray-300">({place.reviewCount || 0})</span>
+                </div>
+
                 {/* Distance Badge - Right side, bottom of image */}
                 {place.distance !== undefined && place.distance !== null && (
                     <div className="absolute bottom-4 right-4 bg-black/70 backdrop-blur-md text-white px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
@@ -209,18 +248,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     </div>
                 )}
 
-                
-                {/* Circular Profile Image - LEFT side, 20% LARGER than before */}
+                {/* Circular Profile Image - LEFT side, overlapping banner */}
                 <div className="absolute bottom-0 left-6 md:left-8 transform translate-y-1/2">
                     <div className="relative">
-                        {/* Star Rating - Professionally positioned on lower edge */}
-                        <div className="absolute bottom-0 -right-1 bg-yellow-400 rounded-full w-10 h-10 flex items-center justify-center shadow-lg z-10 border-2 border-white">
-                            <div className="flex flex-col items-center">
-                                <Star className="w-3.5 h-3.5 fill-white text-white mb-0.5" />
-                                <span className="font-bold text-xs text-white leading-none">{place.rating || 5.0}</span>
-                            </div>
-                        </div>
-                        
                         <div className="w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-white shadow-2xl overflow-hidden bg-white">
                             <img
                                 src={place.profilePicture || place.mainImage || 'https://via.placeholder.com/150?text=Logo'}
@@ -290,11 +320,13 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">{place.name || 'Relax Massage Jogja'}</h2>
                 
                 {/* Location */}
-                <div className="mb-4">
-                    <span className="text-sm md:text-base text-gray-600">
-                        {place.location || 'Location not specified'}
-                    </span>
-                </div>
+                {place.location && place.location.trim() !== '' && place.location !== 'Location pending setup' && (
+                    <div className="mb-4">
+                        <span className="text-sm md:text-base text-gray-600">
+                            {place.location}
+                        </span>
+                    </div>
+                )}
 
                 {/* Description - Use actual place description */}
                 {place.description && place.description.trim() !== '' && (
@@ -523,12 +555,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                         <span>Refer Friend</span>
                     </button>
                     <button
-                        onClick={() => {
-                            if (!isCustomerLoggedIn) {
-                                setShowLoginRequiredModal(true);
-                            } else if (onRate) {
-                                onRate(place);
-                            }
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setShowReviewModal(true);
                         }}
                         className="flex items-center gap-1.5 text-sm text-gray-700 hover:text-gray-900 font-semibold transition-colors"
                     >
@@ -743,6 +773,18 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Anonymous Review Modal */}
+            {showReviewModal && (
+                <AnonymousReviewModal
+                    providerName={place.name}
+                    providerId={place.$id || place.id}
+                    providerType="place"
+                    providerImage={(place as any).mainImage || 'https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382'}
+                    onClose={() => setShowReviewModal(false)}
+                    onSubmit={handleAnonymousReviewSubmit}
+                />
             )}
             
             <style>{`

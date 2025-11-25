@@ -1,5 +1,53 @@
 // Main image URLs for therapist cards on HOME PAGE (stored in Appwrite)
 import type { MonthlyAgentMetrics } from '../types';
+
+// Email notification function for admin
+async function sendAdminNotification(data: {
+    type: 'therapist' | 'massage-place',
+    name: string,
+    email: string,
+    whatsappNumber: string,
+    location: string,
+    registrationDate: string
+}): Promise<void> {
+    try {
+        const emailBody = `
+New ${data.type === 'therapist' ? 'Therapist' : 'Massage Place'} Registration
+
+Name: ${data.name}
+Email: ${data.email}
+WhatsApp: ${data.whatsappNumber}
+Location: ${data.location}
+Registration Date: ${new Date(data.registrationDate).toLocaleString()}
+        `.trim();
+
+        // Using a simple HTTP request to a free email service (you may need to replace this with your preferred service)
+        // For production, consider using Appwrite Functions with an email provider or an external API like SendGrid
+        const response = await fetch('https://api.web3forms.com/submit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                access_key: '46ce7d7f-e9d5-4d49-8f14-0b0e3c3e1f5a', // Web3Forms free API key (replace with your own)
+                subject: `New ${data.type === 'therapist' ? 'Therapist' : 'Massage Place'} Registration`,
+                from_name: 'IndaStreet Registration System',
+                email: 'indastreet.id@gmail.com',
+                message: emailBody,
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error(`Email service returned ${response.status}`);
+        }
+
+        console.log('✅ Admin notification email sent successfully');
+    } catch (error) {
+        console.error('❌ Failed to send admin notification email:', error);
+        throw error;
+    }
+}
+
 const THERAPIST_MAIN_IMAGES = [
     'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4181001758526d84/view?project=68f23b11000d25eb3664',
     'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4182001d05a11a19/view?project=68f23b11000d25eb3664',
@@ -360,6 +408,22 @@ export const therapistService = {
                 'unique()',
                 therapist
             );
+            
+            // Send email notification to admin
+            try {
+                await sendAdminNotification({
+                    type: 'therapist',
+                    name: therapist.name || 'Unknown',
+                    email: therapist.email || 'Not provided',
+                    whatsappNumber: therapist.whatsappNumber || therapist.contactNumber || 'Not provided',
+                    location: therapist.location || 'Not provided',
+                    registrationDate: new Date().toISOString()
+                });
+            } catch (emailError) {
+                console.error('Failed to send admin notification:', emailError);
+                // Don't throw - registration was successful even if email failed
+            }
+            
             return response;
         } catch (error) {
             console.error('Error creating therapist:', error);
@@ -893,6 +957,21 @@ export const placeService = {
                 place
             );
             
+            // Send email notification to admin
+            try {
+                await sendAdminNotification({
+                    type: 'massage-place',
+                    name: place.name || 'Unknown',
+                    email: place.email || 'Not provided',
+                    whatsappNumber: place.whatsappNumber || 'Not provided',
+                    location: place.location || 'Not provided',
+                    registrationDate: new Date().toISOString()
+                });
+            } catch (emailError) {
+                console.error('Failed to send admin notification:', emailError);
+                // Don't throw - registration was successful even if email failed
+            }
+            
             // Parse galleryimages JSON string if it exists
             let parsedGalleryImages = response.galleryImages;
             if ((response as any).galleryimages) {
@@ -1103,10 +1182,37 @@ export const placeService = {
                     websiteUrl: (p as any).websiteurl || p.websiteUrl,
                     websiteTitle: (p as any).websitetitle || p.websiteTitle,
                     websiteDescription: (p as any).websitedescription || p.websiteDescription,
-                    // Map critical display attributes
-                    massageTypes: (p as any).massagetypes || p.massageTypes,
-                    languages: (p as any).languagesspoken || p.languages,
-                    additionalServices: (p as any).additionalservices || p.additionalServices,
+                    // Map critical display attributes and parse JSON strings
+                    massageTypes: (() => {
+                        const raw = (p as any).massagetypes || p.massageTypes;
+                        if (!raw) return [];
+                        try {
+                            return typeof raw === 'string' ? JSON.parse(raw) : raw;
+                        } catch (e) {
+                            console.error('Error parsing massage types:', e);
+                            return [];
+                        }
+                    })(),
+                    languages: (() => {
+                        const raw = (p as any).languagesspoken || p.languages;
+                        if (!raw) return [];
+                        try {
+                            return typeof raw === 'string' ? JSON.parse(raw) : raw;
+                        } catch (e) {
+                            console.error('Error parsing languages:', e);
+                            return [];
+                        }
+                    })(),
+                    additionalServices: (() => {
+                        const raw = (p as any).additionalservices || p.additionalServices;
+                        if (!raw) return [];
+                        try {
+                            return typeof raw === 'string' ? JSON.parse(raw) : raw;
+                        } catch (e) {
+                            console.error('Error parsing additional services:', e);
+                            return [];
+                        }
+                    })(),
                     contactNumber: (p as any).whatsappnumber || p.contactNumber,
                     hotelVillaPricing: (p as any).hotelvillapricing || p.hotelVillaPricing,
                 };
@@ -1158,10 +1264,37 @@ export const placeService = {
                 websiteUrl: (response as any).websiteurl || response.websiteUrl,
                 websiteTitle: (response as any).websitetitle || response.websiteTitle,
                 websiteDescription: (response as any).websitedescription || response.websiteDescription,
-                // Map critical display attributes
-                massageTypes: (response as any).massagetypes || response.massageTypes,
-                languages: (response as any).languagesspoken || response.languages,
-                additionalServices: (response as any).additionalservices || response.additionalServices,
+                // Map critical display attributes and parse JSON strings
+                massageTypes: (() => {
+                    const raw = (response as any).massagetypes || response.massageTypes;
+                    if (!raw) return [];
+                    try {
+                        return typeof raw === 'string' ? JSON.parse(raw) : raw;
+                    } catch (e) {
+                        console.error('Error parsing massage types:', e);
+                        return [];
+                    }
+                })(),
+                languages: (() => {
+                    const raw = (response as any).languagesspoken || response.languages;
+                    if (!raw) return [];
+                    try {
+                        return typeof raw === 'string' ? JSON.parse(raw) : raw;
+                    } catch (e) {
+                        console.error('Error parsing languages:', e);
+                        return [];
+                    }
+                })(),
+                additionalServices: (() => {
+                    const raw = (response as any).additionalservices || response.additionalServices;
+                    if (!raw) return [];
+                    try {
+                        return typeof raw === 'string' ? JSON.parse(raw) : raw;
+                    } catch (e) {
+                        console.error('Error parsing additional services:', e);
+                        return [];
+                    }
+                })(),
                 contactNumber: (response as any).whatsappnumber || response.contactNumber,
                 hotelVillaPricing: (response as any).hotelvillapricing || response.hotelVillaPricing,
             };
@@ -1206,10 +1339,37 @@ export const placeService = {
                 websiteUrl: (response as any).websiteurl || response.websiteUrl,
                 websiteTitle: (response as any).websitetitle || response.websiteTitle,
                 websiteDescription: (response as any).websitedescription || response.websiteDescription,
-                // Map critical display attributes
-                massageTypes: (response as any).massagetypes || response.massageTypes,
-                languages: (response as any).languagesspoken || response.languages,
-                additionalServices: (response as any).additionalservices || response.additionalServices,
+                // Map critical display attributes and parse JSON strings
+                massageTypes: (() => {
+                    const raw = (response as any).massagetypes || response.massageTypes;
+                    if (!raw) return [];
+                    try {
+                        return typeof raw === 'string' ? JSON.parse(raw) : raw;
+                    } catch (e) {
+                        console.error('Error parsing massage types:', e);
+                        return [];
+                    }
+                })(),
+                languages: (() => {
+                    const raw = (response as any).languagesspoken || response.languages;
+                    if (!raw) return [];
+                    try {
+                        return typeof raw === 'string' ? JSON.parse(raw) : raw;
+                    } catch (e) {
+                        console.error('Error parsing languages:', e);
+                        return [];
+                    }
+                })(),
+                additionalServices: (() => {
+                    const raw = (response as any).additionalservices || response.additionalServices;
+                    if (!raw) return [];
+                    try {
+                        return typeof raw === 'string' ? JSON.parse(raw) : raw;
+                    } catch (e) {
+                        console.error('Error parsing additional services:', e);
+                        return [];
+                    }
+                })(),
                 contactNumber: (response as any).whatsappnumber || response.contactNumber,
                 hotelVillaPricing: (response as any).hotelvillapricing || response.hotelVillaPricing,
             };

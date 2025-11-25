@@ -42,20 +42,20 @@ export interface PlacePayload {
   discountEndTime?: string | null;
 }
 
-// Whitelist of attributes allowed to reach Appwrite - LOWERCASE to match Appwrite schema
+// Whitelist of attributes allowed to reach Appwrite - Mixed case to match Appwrite schema
 export const PLACE_ALLOWED = [
-  // Core system fields (13 - removed hotelid)
-  'id','placeid','name','category','email','password','pricing','location','status','islive','openingtime','closingtime','coordinates','description',
+  // Core system fields (placeId, isLive, openingTime, closingTime are camelCase in Appwrite)
+  'id','placeId','name','category','email','password','pricing','location','status','isLive','openingTime','closingTime','coordinates','description',
   // Contact (1 - LOWERCASE)
   'whatsappnumber',
   // Images (3 - MIXED CASE - mainimage lowercase, others camelCase)
   'mainimage','profilePicture','galleryImages',
-  // Services (3 - LOWERCASE)
+  // Services (3 - LOWERCASE to match Appwrite schema)
   'massagetypes','languagesspoken','additionalservices',
-  // Website information (3 - LOWERCASE)
+  // Website information (3 - LOWERCASE to match Appwrite)
   'websiteurl','websitetitle','websitedescription',
-  // Discounts (4 - LOWERCASE)
-  'discountpercentage','discountduration','isdiscountactive','discountendtime'
+  // Discounts (4 - camelCase)
+  'discountPercentage','discountDuration','isDiscountActive','discountEndTime'
 ];
 
 // Sanitizer – strips unknown keys and optionally logs removed ones.
@@ -91,7 +91,7 @@ export function buildDefaultPlacePayload(email: string, placeId: string) : Place
     email,
     password: '',
     pricing: JSON.stringify({ '60': 100, '90': 150, '120': 200 }),
-    location: 'Location pending setup',
+    location: '',
     status: 'Closed',
     isLive: false,
     openingTime: '09:00',

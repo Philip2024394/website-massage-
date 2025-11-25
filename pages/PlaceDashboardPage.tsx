@@ -111,6 +111,12 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     const [description, setDescription] = useState('');
     const [mainImage, setMainImage] = useState('');
     const [profilePicture, setProfilePicture] = useState('');
+    
+    // Log main image changes for debugging
+    useEffect(() => {
+        console.log('🔄 Main image state changed:', mainImage?.substring(0, 100) + (mainImage?.length > 100 ? '...' : ''));
+    }, [mainImage]);
+    
     const [galleryImages, setGalleryImages] = useState<Array<{ imageUrl: string; caption: string; description: string }>>([
         { imageUrl: '', caption: '', description: '' },
         { imageUrl: '', caption: '', description: '' },
@@ -291,13 +297,13 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             setLocation('');
         }
         
-        setOpeningTime((placeData as any).openingtime || '09:00');
-        setClosingTime((placeData as any).closingtime || '21:00');
+        setOpeningTime((placeData as any).openingtime || (placeData as any).openingTime || '09:00');
+        setClosingTime((placeData as any).closingtime || (placeData as any).closingTime || '21:00');
         
         // Initialize website information
-        setWebsiteUrl((placeData as any).websiteurl || '');
-        setWebsiteTitle((placeData as any).websitetitle || '');
-        setWebsiteDescription((placeData as any).websitedescription || '');
+        setWebsiteUrl((placeData as any).websiteurl || (placeData as any).websiteUrl || '');
+        setWebsiteTitle((placeData as any).websitetitle || (placeData as any).websiteTitle || '');
+        setWebsiteDescription((placeData as any).websitedescription || (placeData as any).websiteDescription || '');
     };
     
     const initializeWithDefaults = () => {
@@ -467,6 +473,8 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         
         console.log('💾 ========== SAVE PROFILE DEBUG ==========');
         console.log('📸 Main Image:', mainImage);
+        console.log('📸 Main Image Length:', mainImage?.length || 0);
+        console.log('📸 Main Image Type:', typeof mainImage);
         console.log('📸 Profile Picture:', profilePicture);
         console.log('📸 Gallery Images Count:', filteredGallery.length);
         console.log('🎯 Massage Types:', massageTypes);
@@ -482,7 +490,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         // Send ALL fields to ensure 100% data persistence
         const rawData: any = {
             // System fields
-            placeid: placeId,
+            placeId: placeId,
             status: 'Open',
             category: 'wellness',
             password: place?.password,
@@ -517,7 +525,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             languagesspoken: JSON.stringify(languages),
             additionalservices: JSON.stringify(additionalServices),
             
-            // Website information
+            // Website information (using lowercase to match Appwrite schema)
             websiteurl: websiteUrl || '',
             websitetitle: websiteTitle || '',
             websitedescription: websiteDescription || '',
@@ -537,6 +545,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         console.log('📦 Sanitized mainimage:', (saveData as any).mainimage);
         console.log('📦 Sanitized massagetypes:', (saveData as any).massagetypes);
         console.log('📦 Sanitized languagesspoken:', (saveData as any).languagesspoken);
+        console.log('📦 Sanitized additionalservices:', (saveData as any).additionalservices);
 
         onSave(saveData);
 
@@ -1066,6 +1075,17 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                             currentImage={mainImage}
                             onImageChange={setMainImage}
                         />
+                        {!mainImage && (
+                            <label 
+                                htmlFor="main-image-upload-input"
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition-colors cursor-pointer shadow-md"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                Upload Main Image
+                            </label>
+                        )}
                         
                         {/* Profile Picture Upload (Circular Logo) */}
                         <div className="mb-6">
@@ -1199,6 +1219,17 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                         </div>
                                     )}
                                 </div>
+                                {!profilePicture && (
+                                    <label 
+                                        htmlFor="profile-picture-upload-input"
+                                        className="inline-flex items-center gap-2 px-4 py-2 mt-3 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition-colors cursor-pointer shadow-md"
+                                    >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        </svg>
+                                        Upload Profile Picture
+                                    </label>
+                                )}
                                 <p className="text-xs text-gray-500 mt-3 text-center max-w-xs">
                                     This will appear as a circular logo overlapping your banner image
                                 </p>
@@ -1306,6 +1337,26 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                             </div>
                             <p className="text-xs text-gray-500 mt-1">Enter number without +62 prefix (e.g., 81234567890)</p>
                         </div>
+                        
+                        <div>
+                            <label className="block text-sm font-medium text-gray-900">Website URL (Optional)</label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                                    </svg>
+                                </div>
+                                <input 
+                                    type="url" 
+                                    value={websiteUrl} 
+                                    onChange={e => setWebsiteUrl(e.target.value)} 
+                                    placeholder="https://www.yourwebsite.com" 
+                                    className="mt-1 block w-full pl-10 pr-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-green focus:border-brand-green text-gray-900" 
+                                />
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">Add your business website to show on your profile card</p>
+                        </div>
+                        
                         <div>
                             <label className="block text-sm font-medium text-gray-900">Business Hours</label>
                             <div className="grid grid-cols-2 gap-4 mt-1">

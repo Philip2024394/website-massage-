@@ -362,7 +362,7 @@ export const placeAuth = {
                 email,                                         // ✅ Required: Email address
                 password: '',                                  // ✅ Required: Managed by Appwrite auth
                 pricing: JSON.stringify({ '60': 100, '90': 150, '120': 200 }), // ✅ Required: Pricing structure
-                location: 'Location pending setup',           // ✅ Required: Address
+                location: '',                                  // ✅ Required: Address
                 status: 'Closed',                             // ✅ Required: Open/Closed status
                 isLive: false,                                // ✅ Required: Admin approval
                 openingTime: '09:00',                         // ✅ Required: Opening time
@@ -432,7 +432,7 @@ export const placeAuth = {
                         email,
                         password: '',
                         pricing: JSON.stringify({ '60': 100, '90': 150, '120': 200 }),
-                        location: 'Location pending setup',
+                        location: '',
                         status: 'Closed',
                         isLive: false,
                         openingTime: '09:00',

@@ -11,6 +11,7 @@ import { getUserLocation, createTaxiBookingLink, openTaxiApp } from '../services
 import { getAmenityIcon } from '../constants/amenityIcons';
 import { customLinksService } from '../lib/appwriteService';
 import PageNumberBadge from '../components/PageNumberBadge';
+import AnonymousReviewModal from '../components/AnonymousReviewModal';
 
 // Helper function to check if discount is active and not expired
 const isDiscountActive = (place: Place): boolean => {
@@ -110,6 +111,9 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
     // Custom links from Appwrite
     const [, setCustomLinks] = useState<any[]>([]); // Removed unused variable name
     
+    // Review modal state
+    const [showReviewModal, setShowReviewModal] = useState(false);
+    
     // Fetch custom links on mount
     useEffect(() => {
         customLinksService.getAll()
@@ -176,6 +180,17 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
     // Suppress unused variable warnings for destructured values
     void _isFavorite;
     void _setIsFavorite;
+
+    // Handle anonymous review submission
+    const handleAnonymousReviewSubmit = async (reviewData: any) => {
+        try {
+            console.log('Review submitted for massage place:', reviewData);
+            // Review is handled by AnonymousReviewModal component
+            setShowReviewModal(false);
+        } catch (error) {
+            console.error('Error submitting review:', error);
+        }
+    };
 
     // Handle booking - same as therapist book now
     const handleBookNowClick = () => {
@@ -365,8 +380,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                         };
                     })()}
                     onRate={(place) => {
-                        // TODO: Implement review modal for places
-                        console.log('Rate place:', place);
+                        setShowReviewModal(true);
                     }}
                 />
 
@@ -430,62 +444,84 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                 </div>
 
                 {/* Massage Prices Section with Background Image */}
-                <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6 relative">
+                <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6 relative min-h-[400px]">
                     {/* Background Image - Full Coverage */}
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="absolute inset-0">
                         <img
                             src="https://ik.imagekit.io/7grri5v7d/massage%20oil.png?updatedAt=1760816872135"
                             alt="Massage Oil"
-                            className="w-full h-full object-cover opacity-100"
+                            className="w-full h-full object-cover"
                         />
                     </div>
                     
-                    {/* Content - Above Background */}
+                    {/* Content - Text directly on background */}
                     <div className="relative z-10 p-6">
-                        <h3 className="text-2xl font-bold text-gray-900 mb-4">Massage Prices</h3>
-                        <div className="space-y-3">
+                        <h3 className="text-3xl font-bold text-black mb-6 drop-shadow-2xl text-center">Massage Prices</h3>
+                        <div className="space-y-4">
                             {isDiscountActive(place) && (
-                                <div className="text-center mb-4">
-                                    <p className="text-black font-semibold text-sm flex items-center justify-center gap-1">
-                                        🔥 Discounted Price's Displayed
+                                <div className="text-center mb-6">
+                                    <p className="text-orange-600 font-bold text-lg flex items-center justify-center gap-2 drop-shadow-lg">
+                                        🔥 Discounted Prices Displayed
                                     </p>
                                 </div>
                             )}
                             {services.length > 0 ? (
-                                services.map((service, index) => (
-                                    <ServiceItem 
-                                        key={index} 
-                                        service={service} 
-                                        isDiscountActive={isDiscountActive(place)}
-                                        discountPercentage={(place as any).discountPercentage}
-                                    />
-                                ))
+                                services.map((service, index) => {
+                                    const discountPercentage = isDiscountActive(place) ? (place as any).discountPercentage : 0;
+                                    const originalPrice = service.price;
+                                    const discountedPrice = discountPercentage > 0 
+                                        ? Math.round(originalPrice * (1 - discountPercentage / 100))
+                                        : originalPrice;
+                                    
+                                    return (
+                                        <div key={index} className="flex items-center justify-between py-3 px-4 backdrop-blur-sm bg-white/50 rounded-lg border-2 border-orange-500/40">
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-orange-600 text-2xl drop-shadow-lg">{service.icon}</span>
+                                                <div>
+                                                    <h4 className="text-orange-600 font-bold text-lg drop-shadow-lg">{service.name}</h4>
+                                                    <p className="text-orange-700 text-sm drop-shadow-md">{service.duration}</p>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                {discountPercentage > 0 ? (
+                                                    <>
+                                                        <p className="text-gray-600 line-through text-sm drop-shadow-md">IDR {originalPrice.toLocaleString()}</p>
+                                                        <p className="text-black font-bold text-xl drop-shadow-2xl">IDR {discountedPrice.toLocaleString()}</p>
+                                                    </>
+                                                ) : (
+                                                    <p className="text-black font-bold text-xl drop-shadow-2xl">IDR {originalPrice.toLocaleString()}</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })
                             ) : (
-                                <p className="text-gray-500">Contact us for pricing details</p>
+                                <p className="text-orange-600 text-center text-lg drop-shadow-lg">Contact us for pricing details</p>
                             )}
                         </div>
                     </div>
                 </div>
 
                 {/* Amenities Section */}
-                <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 relative overflow-hidden">
-                    {/* Background Image - Full Color View */}
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6 relative min-h-[400px]">
+                    {/* Background Image - Full Coverage */}
+                    <div className="absolute inset-0">
                         <img
                             src="https://ik.imagekit.io/7grri5v7d/massage%20spa.png?updatedAt=1762514431664"
                             alt="Massage Spa Background"
-                            className="w-full h-full object-cover opacity-100"
+                            className="w-full h-full object-cover"
                         />
                     </div>
                     
-                    {/* Content - Above Background with enhanced contrast */}
-                    <div className="relative z-10">
-                        <h3 className="text-2xl font-bold text-black mb-4 drop-shadow-lg">Amenities</h3>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pb-20">
+                    {/* Content - Text directly on background */}
+                    <div className="relative z-10 p-6">
+                        <h3 className="text-3xl font-bold text-black mb-2 drop-shadow-2xl text-center">Amenities</h3>
+                        <p className="text-sm text-gray-700 mb-6 text-center drop-shadow-lg">Additional services provided during your massage session</p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {Array.isArray(amenities) && amenities.map((amenity, index) => (
-                                <div key={index} className="flex items-center gap-3 text-gray-800 p-3 bg-white/95 backdrop-blur-md rounded-lg border border-white/50 hover:border-orange-300 hover:bg-orange-50/95 transition-colors shadow-lg">
-                                    {getAmenityIcon(amenity)}
-                                    <span className="font-medium">{amenity}</span>
+                                <div key={index} className="flex items-center gap-4 p-4 backdrop-blur-sm bg-white/50 rounded-lg border-2 border-orange-500/40 hover:border-orange-500/60 transition-all hover:shadow-lg">
+                                    <span className="text-3xl drop-shadow-lg">{getAmenityIcon(amenity)}</span>
+                                    <span className="font-bold text-lg text-orange-600 drop-shadow-lg">{amenity}</span>
                                 </div>
                             ))}
                         </div>
@@ -494,7 +530,9 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
 
                 {/* Visit Us Section with Location and Transport Options */}
                 <div className="bg-white rounded-2xl shadow-lg p-6 mb-0">
-                    <p className="text-gray-700 mb-6">{place.location}</p>
+                    {place.location && place.location.trim() !== '' && place.location !== 'Location pending setup' && (
+                        <p className="text-gray-700 mb-6">{place.location}</p>
+                    )}
                     
                     {/* Visit Us Transport Container */}
                     <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border-2 border-yellow-300 rounded-xl p-5 relative overflow-hidden">
@@ -517,14 +555,14 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                         {/* Transport Buttons */}
                         <div className="grid grid-cols-2 gap-3">
                             <button
-                                onClick={handleBikeTaxi}
+                                onClick={() => alert('This feature is in development and coming soon.')}
                                 className="flex items-center justify-center gap-2 py-2.5 px-4 bg-yellow-500 text-white font-semibold text-sm rounded-lg hover:bg-yellow-600 transition-colors shadow-lg"
                             >
                                 <Bike className="w-4 h-4" />
                                 <span>Bike Ride</span>
                             </button>
                             <button
-                                onClick={handleCarTaxi}
+                                onClick={() => alert('This feature is in development and coming soon.')}
                                 className="flex items-center justify-center gap-2 py-2.5 px-4 bg-yellow-500 text-white font-semibold text-sm rounded-lg hover:bg-yellow-600 transition-colors shadow-lg"
                             >
                                 <Car className="w-4 h-4" />
@@ -541,6 +579,18 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                 <ExpandedImageModal
                     image={expandedImage}
                     onClose={() => setExpandedImage(null)}
+                />
+            )}
+
+            {/* Anonymous Review Modal */}
+            {showReviewModal && place && (
+                <AnonymousReviewModal
+                    providerName={place.name}
+                    providerId={place.$id || place.id}
+                    providerType="place"
+                    providerImage={(place as any).mainImage || 'https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382'}
+                    onClose={() => setShowReviewModal(false)}
+                    onSubmit={handleAnonymousReviewSubmit}
                 />
             )}
         </div>

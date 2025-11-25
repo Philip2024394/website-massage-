@@ -34,7 +34,9 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ id, label, currentImage, onIm
     }, [currentImage]);
 
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        console.log('📂 File input change event triggered');
         const file = event.target.files?.[0];
+        console.log('📂 Selected file:', file);
         if (file) {
             console.log('📸 Image selected:', file.name, 'Size:', file.size, 'Type:', file.type);
             
@@ -72,6 +74,12 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ id, label, currentImage, onIm
     };
 
     const triggerFileInput = () => {
+        console.log('🖱️ ImageUpload: File input triggered for:', id);
+        console.log('🖱️ File input ref:', fileInputRef.current);
+        if (!fileInputRef.current) {
+            console.error('❌ File input ref is null!');
+            return;
+        }
         fileInputRef.current?.click();
     };
 

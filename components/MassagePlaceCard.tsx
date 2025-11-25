@@ -190,7 +190,15 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
     // Parse pricing
     const pricing = parsePricing(place.pricing) || { "60": 0, "90": 0, "120": 0 };
     
-    // Get main image
+    // Get main image with debug logging
+    console.log('🖼️ MassagePlaceCard mainImage debug:', {
+        placeName: place.name,
+        hasMainImage: !!(place as any).mainImage,
+        mainImageValue: (place as any).mainImage,
+        mainImageLength: (place as any).mainImage?.length,
+        rawMainImage: (place as any).mainimage,
+        placeId: (place as any).$id || place.id
+    });
     const mainImage = (place as any).mainImage || 'https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382';
     
     // Get amenities if available
@@ -259,7 +267,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
-                        onNavigate?.('place-registration');
+                        onNavigate?.('place-login');
                     }}
                     className="text-[11px] text-green-600 font-semibold flex items-center gap-1 hover:text-green-700 hover:underline transition-colors cursor-pointer"
                 >
@@ -466,6 +474,21 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                 <p className="text-xs text-gray-600 leading-relaxed text-justify line-clamp-4">
                     {description}
                 </p>
+                {/* Website Link */}
+                {(place as any).websiteUrl && (
+                    <a
+                        href={(place as any).websiteUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex items-center gap-1 mt-2 text-xs text-orange-600 hover:text-orange-700 font-medium hover:underline transition-colors"
+                    >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                        </svg>
+                        Visit Website
+                    </a>
+                )}
             </div>
             
             {/* Content */}
@@ -520,7 +543,8 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                 {/* Amenities */}
                 {displayAmenities.length > 0 && (
                     <div>
-                        <h4 className="text-sm font-semibold text-gray-700 mb-2">Amenities</h4>
+                        <h4 className="text-sm font-semibold text-gray-700 mb-1">Amenities</h4>
+                        <p className="text-xs text-gray-500 mb-2">Additional services provided during your massage session</p>
                         <div className="flex flex-wrap gap-2">
                             {displayAmenities.map((amenity: string) => (
                                 <span key={amenity} className="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded-full">
