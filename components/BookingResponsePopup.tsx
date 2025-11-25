@@ -166,7 +166,7 @@ const BookingResponsePopup: React.FC<BookingResponsePopupProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[100] p-4">
-      <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl animate-slideUp">
+      <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl animate-slideUp max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-4 rounded-t-2xl">
           <div className="flex items-center justify-between">

@@ -224,8 +224,7 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
       const acceptUrl = `${window.location.origin}/accept-booking/${booking.$id}`;
       
       // Enhanced WhatsApp message with complete customer information
-      // selectedOption already declared above on line 135
-      const isPlace = (providerType || 'therapist') === 'place';
+      // selectedOption and isPlace already declared above
       
       let message = isPlace
         ? `🏢 NEW VENUE BOOKING - INDASTREET\n\n`
@@ -307,7 +306,7 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
   if (showWarning) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4">
-        <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl">
+        <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl max-h-[90vh] overflow-y-auto">
           <div className="bg-gradient-to-r from-orange-500 to-red-500 p-5 rounded-t-2xl">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -366,7 +365,7 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl">
+      <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl max-h-[90vh] overflow-y-auto">
         <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-4 rounded-t-2xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">

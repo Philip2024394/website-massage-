@@ -97,7 +97,7 @@ const WelcomePopup: React.FC<WelcomePopupProps> = ({ language, isAdmin = false, 
       </div>
 
       <div 
-        className="bg-gradient-to-br from-white to-orange-50 rounded-3xl max-w-md w-full p-8 relative shadow-2xl animate-popIn"
+        className="bg-gradient-to-br from-white to-orange-50 rounded-3xl max-w-md w-full p-8 relative shadow-2xl animate-popIn max-h-[90vh] overflow-y-auto"
         style={{
           animation: 'popIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)'
         }}

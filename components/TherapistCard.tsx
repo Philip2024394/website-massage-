@@ -1064,25 +1064,27 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             <div className={`flex gap-2 ${getDynamicSpacing('mt-2', 'mt-1', 'mt-1')}`}>
                 <button
                     onClick={() => {
-                        console.log('🟢 Pesan button clicked - using booking confirmation flow with customer details');
-                        // Check if customer is logged in first
-                        if (!isCustomerLoggedIn) {
-                            onShowRegisterPrompt?.();
-                            return;
-                        }
+                        console.log('🟢 Book Now button clicked - opening booking popup with customer details form');
                         
                         // Open booking popup to collect customer details (name, WhatsApp, duration preference)
-                        const openScheduleBookingPopup = (window as any).openScheduleBookingPopup;
-                        if (openScheduleBookingPopup) {
-                            openScheduleBookingPopup({
-                                therapistId: typeof therapist.id === 'string' ? therapist.id : therapist.id?.toString(),
-                                therapistName: therapist.name,
-                                therapistType: 'therapist',
-                                profilePicture: therapist.profilePicture || therapist.mainImage,
-                                isImmediateBooking: true // Flag to indicate this is immediate booking, not scheduled
-                            });
+                        // No login required - popup collects all needed information
+                        const openBookingPopup = (window as any).openBookingPopup;
+                        if (openBookingPopup) {
+                            openBookingPopup(
+                                therapist.name,
+                                therapist.whatsappNumber || '',
+                                typeof therapist.id === 'string' ? therapist.id : therapist.id?.toString(),
+                                'therapist',
+                                undefined, // hotelVillaId
+                                undefined, // hotelVillaName
+                                undefined, // hotelVillaType
+                                therapist.profilePicture || therapist.mainImage,
+                                undefined, // hotelVillaLocation
+                                therapist.pricing, // pricing
+                                therapist.discountPercentage // discount
+                            );
                         } else {
-                            console.warn('⚠️ Schedule booking popup not available - falling back to direct WhatsApp');
+                            console.warn('⚠️ Booking popup not available - falling back to direct WhatsApp');
                             // Fallback to original behavior if popup not available
                             openWhatsApp();
                         }

@@ -50,7 +50,7 @@ const RegisterPromptPopup: React.FC<RegisterPromptPopupProps> = ({
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black bg-opacity-50 animate-fadeIn">
-            <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-slideUp">
+            <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-slideUp max-h-[90vh] overflow-y-auto">
                 {/* Header */}
                 <div className="p-6 pb-2">
                     <div className="flex items-center justify-between mb-4">
