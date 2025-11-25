@@ -17,6 +17,8 @@ import './utils/disableLocalStorage';
 import './lib/globalErrorHandler'; // Initialize global error handling
 import { LanguageProvider } from './context/LanguageContext';
 import { agentShareAnalyticsService } from './lib/appwriteService';
+import './lib/notificationSound'; // Initialize notification sound system
+import { pushNotifications } from './lib/pushNotifications'; // Initialize Appwrite push notifications
 // Temporarily removed: import { useSimpleLanguage } from './context/SimpleLanguageContext';
 // Temporarily removed: import SimpleLanguageSelector from './components/SimpleLanguageSelector';
 
@@ -35,6 +37,8 @@ const App = () => {
         hotelVillaName?: string;
         hotelVillaType?: 'hotel' | 'villa';
         hotelVillaLocation?: string;
+        pricing?: { [key: string]: number };
+        discountPercentage?: number;
     } | null>(null);
 
     // Booking Status Tracker state
@@ -118,6 +122,11 @@ const App = () => {
 
         initializeAppwriteSession();
         bookingExpirationService.start();
+        
+        // Initialize push notifications for lock-screen alerts
+        pushNotifications.initialize().catch(err => {
+            console.log('Push notification initialization:', err.message);
+        });
         
         // Initialize VS Code translation service
         vscodeTranslateService.init();
@@ -234,7 +243,9 @@ const App = () => {
         hotelVillaName?: string,
         hotelVillaType?: 'hotel' | 'villa',
         profilePicture?: string,
-        hotelVillaLocation?: string
+        hotelVillaLocation?: string,
+        pricing?: { [key: string]: number },
+        discountPercentage?: number
     ) => {
         console.log('📱 Opening booking popup for:', {
             providerName,
@@ -255,7 +266,9 @@ const App = () => {
             hotelVillaId,
             hotelVillaName,
             hotelVillaType,
-            hotelVillaLocation
+            hotelVillaLocation,
+            pricing,
+            discountPercentage
         });
         setIsBookingPopupOpen(true);
     };
@@ -442,6 +455,8 @@ const App = () => {
                 hotelVillaName={bookingProviderInfo?.hotelVillaName}
                 hotelVillaType={bookingProviderInfo?.hotelVillaType}
                 hotelVillaLocation={bookingProviderInfo?.hotelVillaLocation}
+                pricing={bookingProviderInfo?.pricing}
+                discountPercentage={bookingProviderInfo?.discountPercentage}
             />
 
             {/* Global Booking Status Tracker */}

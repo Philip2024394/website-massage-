@@ -32,6 +32,8 @@ interface BookingPopupProps {
   hotelVillaName?: string;
   hotelVillaType?: 'hotel' | 'villa';
   hotelVillaLocation?: string;
+  pricing?: { [key: string]: number };
+  discountPercentage?: number;
 }
 
 const BookingPopup: React.FC<BookingPopupProps> = ({
@@ -44,20 +46,51 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
   hotelVillaId,
   hotelVillaName,
   hotelVillaType,
-  hotelVillaLocation
+  hotelVillaLocation,
+  pricing,
+  discountPercentage = 0
 }) => {
   const [showWarning, setShowWarning] = useState(true);
   const [selectedDuration, setSelectedDuration] = useState<number | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  
+  // User information fields
+  const [customerName, setCustomerName] = useState<string>('');
+  const [customerWhatsApp, setCustomerWhatsApp] = useState<string>('');
+  const [locationType, setLocationType] = useState<'hotel' | 'villa' | 'home'>('hotel');
+  const [hotelVillaNameInput, setHotelVillaNameInput] = useState<string>('');
   const [roomNumber, setRoomNumber] = useState<string>('');
+  const [homeAddress, setHomeAddress] = useState<string>('');
 
   // Check if this is a hotel/villa booking
   const isHotelVillaBooking = Boolean(hotelVillaId && hotelVillaName);
 
+  // Use pricing from props if available, otherwise use default prices
   const bookingOptions: BookingOption[] = [
-    { duration: 60, price: 50 },
-    { duration: 90, price: 70 },
-    { duration: 120, price: 90 }
+    { 
+      duration: 60, 
+      price: pricing && pricing["60"] 
+        ? (discountPercentage > 0 
+            ? Math.round(Number(pricing["60"]) * 1000 * (1 - discountPercentage / 100))
+            : Number(pricing["60"]) * 1000)
+        : 250000 // Default IDR 250K
+    },
+    { 
+      duration: 90, 
+      price: pricing && pricing["90"] 
+        ? (discountPercentage > 0 
+            ? Math.round(Number(pricing["90"]) * 1000 * (1 - discountPercentage / 100))
+            : Number(pricing["90"]) * 1000)
+        : 350000 // Default IDR 350K
+    },
+    { 
+      duration: 120, 
+      price: pricing && pricing["120"] 
+        ? (discountPercentage > 0 
+            ? Math.round(Number(pricing["120"]) * 1000 * (1 - discountPercentage / 100))
+            : Number(pricing["120"]) * 1000)
+        : 450000 // Default IDR 450K
+    }
   ];
 
   const createBookingRecord = async () => {
@@ -133,12 +166,28 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
         startTime: now.toISOString(), // Your schema uses startTime
         bookingType: 'immediate', // Optional - booking type
         service: 'massage', // Required in your schema
+        
+        // Customer Information
+        customerName: customerName.trim(),
+        customerWhatsApp: customerWhatsApp.trim(),
+        locationType,
+        
+        // Location Details
+        ...(locationType === 'home' && { 
+          homeAddress: homeAddress.trim() 
+        }),
+        ...(locationType !== 'home' && {
+          hotelVillaName: hotelVillaNameInput.trim(),
+          roomNumber: roomNumber.trim(),
+          locationType
+        }),
+        
         ...(hotelVillaId && { hotelVillaId }),
         ...(hotelVillaId && { hotelId: hotelVillaId }), // Map to your hotelId field
         ...(hotelVillaName && { hotelVillaName }),
         ...(hotelVillaType && { hotelVillaType }),
         ...(hotelVillaLocation && { hotelVillaLocation }),
-        ...(isHotelVillaBooking && roomNumber.trim() && { roomNumber: roomNumber.trim() }),
+        
         // Commission tracking for hotel/villa bookings
         ...(isHotelVillaBooking && { 
           commissionStatus: 'pending',
@@ -174,34 +223,55 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
 
       const acceptUrl = `${window.location.origin}/accept-booking/${booking.$id}`;
       
-      // Enhanced WhatsApp message tailored by provider type
+      // Enhanced WhatsApp message with complete customer information
+      // selectedOption already declared above on line 135
+      const isPlace = (providerType || 'therapist') === 'place';
       
-      const isPlaceMsg = isPlace;
       let message = isPlace
-        ? `🏢 NEW VENUE BOOKING REQUEST - INDASTREET\n\n`
-        : `🛵 NEW MOBILE BOOKING REQUEST - INDASTREET\n\n`;
-      message += `💼 Service: ${selectedOption.duration} min Professional Massage\n`;
-      message += `💰 Price: $${selectedOption.price}\n`;
-      message += `📅 Time: ${now.toLocaleString()}\n\n`;
+        ? `🏢 NEW VENUE BOOKING - INDASTREET\n\n`
+        : `🛵 NEW MOBILE BOOKING - INDASTREET\n\n`;
       
-      if (isHotelVillaBooking) {
-        message += `🏨 ${hotelVillaType === 'hotel' ? 'HOTEL' : 'VILLA'} BOOKING\n`;
-        message += `🏢 ${hotelVillaType === 'hotel' ? 'Hotel' : 'Villa'}: ${hotelVillaName}\n`;
-        if (hotelVillaLocation) {
-          message += `📍 Location: ${hotelVillaLocation}\n`;
-        }
-        message += `🚪 Room: ${roomNumber}\n\n`;
-        message += `💼 COMMISSION TRACKING:\n`;
-        message += `- You will be marked BUSY during service\n`;
-        message += `- Status returns to AVAILABLE when ${hotelVillaType} confirms commission received\n\n`;
+      // Customer Information
+      message += `👤 CUSTOMER DETAILS:\n`;
+      message += `Name: ${customerName}\n`;
+      message += `WhatsApp: ${customerWhatsApp}\n\n`;
+      
+      // Location Information
+      message += `📍 LOCATION:\n`;
+      if (locationType === 'home') {
+        message += `Type: Home Address\n`;
+        message += `Address: ${homeAddress}\n\n`;
+      } else {
+        message += `Type: ${locationType === 'hotel' ? 'Hotel' : 'Villa'}\n`;
+        message += `${locationType === 'hotel' ? 'Hotel' : 'Villa'} Name: ${hotelVillaNameInput}\n`;
+        message += `Room Number: ${roomNumber}\n\n`;
       }
       
-      message += `✅ Accept booking: ${acceptUrl}\n\n`;
-      message += `⏰ Note: You have 5 minutes to respond.\n`;
-      if (isPlaceMsg) {
+      // Service Details
+      message += `💼 SERVICE DETAILS:\n`;
+      message += `Duration: ${selectedDuration} minutes\n`;
+      message += `Price: IDR ${selectedOption.price.toLocaleString()}\n`;
+      if (discountPercentage > 0) {
+        message += `🔥 Discount: ${discountPercentage}% OFF Applied!\n`;
+      }
+      message += `Time: ${now.toLocaleString()}\n\n`;
+      
+      // Accept/Reject Link
+      message += `🔗 RESPOND TO BOOKING:\n`;
+      message += `${acceptUrl}\n\n`;
+      
+      // Important Notes
+      message += `⏰ IMPORTANT:\n`;
+      message += `- Click link above to Accept or Reject\n`;
+      message += `- You have 5 minutes to respond\n`;
+      message += `- After 5 minutes, request goes to next provider\n\n`;
+      
+      if (isPlace) {
         message += `🏢 Venue: ${therapistName}\n`;
+      } else {
+        message += `🛵 Therapist: ${therapistName}\n`;
       }
-      message += `📞 INDASTREET SUPPORT: +62-XXX-XXXX`;
+      message += `📞 INDASTREET Support: +62-XXX-XXXX`;
 
       const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
       window.open(whatsappUrl, '_blank');
@@ -324,6 +394,130 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
         </div>
 
         <div className="p-4 space-y-3">
+          {/* User Information Section */}
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-3">
+            <h3 className="font-semibold text-gray-800 text-sm mb-3">Your Information</h3>
+            
+            {/* Name */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Your Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                placeholder="Enter your full name"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm"
+              />
+            </div>
+
+            {/* WhatsApp Number */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                WhatsApp Number <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="tel"
+                value={customerWhatsApp}
+                onChange={(e) => setCustomerWhatsApp(e.target.value)}
+                placeholder="+62 812 3456 7890"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm"
+              />
+            </div>
+
+            {/* Location Type */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Location Type <span className="text-red-500">*</span>
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setLocationType('hotel')}
+                  className={`py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+                    locationType === 'hotel'
+                      ? 'bg-orange-500 text-white'
+                      : 'bg-white border border-gray-300 text-gray-700 hover:border-orange-300'
+                  }`}
+                >
+                  Hotel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLocationType('villa')}
+                  className={`py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+                    locationType === 'villa'
+                      ? 'bg-orange-500 text-white'
+                      : 'bg-white border border-gray-300 text-gray-700 hover:border-orange-300'
+                  }`}
+                >
+                  Villa
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLocationType('home')}
+                  className={`py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+                    locationType === 'home'
+                      ? 'bg-orange-500 text-white'
+                      : 'bg-white border border-gray-300 text-gray-700 hover:border-orange-300'
+                  }`}
+                >
+                  Home
+                </button>
+              </div>
+            </div>
+
+            {/* Hotel/Villa Details */}
+            {(locationType === 'hotel' || locationType === 'villa') && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {locationType === 'hotel' ? 'Hotel' : 'Villa'} Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={hotelVillaNameInput}
+                    onChange={(e) => setHotelVillaNameInput(e.target.value)}
+                    placeholder={`Enter ${locationType} name`}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Room Number <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={roomNumber}
+                    onChange={(e) => setRoomNumber(e.target.value)}
+                    placeholder="e.g., 205"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm"
+                  />
+                </div>
+              </>
+            )}
+
+            {/* Home Address */}
+            {locationType === 'home' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Full Address <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  value={homeAddress}
+                  onChange={(e) => setHomeAddress(e.target.value)}
+                  placeholder="Enter your complete address with landmarks"
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Duration Selection */}
+          <div className="space-y-2">
+            <h3 className="font-semibold text-gray-800 text-sm">Select Duration</h3>
           {bookingOptions.map((option) => (
             <button
               key={option.duration}
@@ -342,43 +536,40 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
                     <div className="text-xs text-gray-500">Professional massage</div>
                   </div>
                 </div>
-                <div className="text-xl font-bold text-orange-600">${option.price}</div>
+                <div className="text-right">
+                  {discountPercentage > 0 && pricing && (
+                    <div className="text-xs text-gray-500 line-through">
+                      IDR {(pricing[option.duration.toString()] * 1000).toLocaleString()}
+                    </div>
+                  )}
+                  <div className="text-lg font-bold text-orange-600">
+                    IDR {option.price.toLocaleString()}
+                  </div>
+                </div>
               </div>
             </button>
           ))}
+          </div>
 
-          {/* Hotel/Villa Room Number Field */}
-          {isHotelVillaBooking && (
-            <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
-              <h3 className="font-semibold text-gray-800 mb-2 text-sm">
-                {hotelVillaType === 'hotel' ? 'Hotel' : 'Villa'} Details
-              </h3>
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Room Number <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={roomNumber}
-                    onChange={(e) => setRoomNumber(e.target.value)}
-                    placeholder="Enter room number"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm"
-                  />
-                </div>
-                <div className="text-xs text-gray-600">
-                  <div><strong>{hotelVillaType === 'hotel' ? 'Hotel' : 'Villa'}:</strong> {hotelVillaName}</div>
-                  {hotelVillaLocation && <div><strong>Location:</strong> {hotelVillaLocation}</div>}
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Remove old Hotel/Villa section since it's now in user info */}
 
           <button
             onClick={createBookingRecord}
-            disabled={!selectedDuration || isCreating || (isHotelVillaBooking && !roomNumber.trim())}
+            disabled={
+              !selectedDuration || 
+              isCreating || 
+              !customerName.trim() || 
+              !customerWhatsApp.trim() ||
+              (locationType !== 'home' && (!hotelVillaNameInput.trim() || !roomNumber.trim())) ||
+              (locationType === 'home' && !homeAddress.trim())
+            }
             className={`w-full font-bold py-3 rounded-xl transition-all shadow-lg ${
-              selectedDuration && !isCreating && (!isHotelVillaBooking || roomNumber.trim())
+              selectedDuration && 
+              !isCreating && 
+              customerName.trim() && 
+              customerWhatsApp.trim() &&
+              ((locationType !== 'home' && hotelVillaNameInput.trim() && roomNumber.trim()) ||
+               (locationType === 'home' && homeAddress.trim()))
                 ? 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700'
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
             }`}
