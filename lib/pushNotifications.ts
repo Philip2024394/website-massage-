@@ -71,10 +71,15 @@ class PushNotificationManager {
         // Create new subscription (VAPID key optional for testing)
         const vapidKey = process.env.VITE_VAPID_PUBLIC_KEY;
         
-        subscription = await this.swRegistration.pushManager.subscribe({
-          userVisibleOnly: true,
-          ...(vapidKey && { applicationServerKey: this.urlBase64ToUint8Array(vapidKey) })
-        });
+        const options: PushSubscriptionOptionsInit = {
+          userVisibleOnly: true
+        };
+        
+        if (vapidKey) {
+          options.applicationServerKey = this.urlBase64ToUint8Array(vapidKey);
+        }
+        
+        subscription = await this.swRegistration.pushManager.subscribe(options);
       }
 
       // Save subscription to Appwrite (for sending notifications later)
@@ -153,7 +158,7 @@ class PushNotificationManager {
   /**
    * Convert VAPID key to Uint8Array
    */
-  private urlBase64ToUint8Array(base64String: string): Uint8Array {
+  private urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
     const padding = '='.repeat((4 - base64String.length % 4) % 4);
     const base64 = (base64String + padding)
       .replace(/\-/g, '+')
@@ -165,7 +170,7 @@ class PushNotificationManager {
     for (let i = 0; i < rawData.length; ++i) {
       outputArray[i] = rawData.charCodeAt(i);
     }
-    return outputArray;
+    return outputArray as Uint8Array<ArrayBuffer>;
   }
 }
 
