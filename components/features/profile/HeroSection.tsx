@@ -263,8 +263,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             </div>
 
             {/* Social Share Buttons - Below main image, right side with spacing */}
-            <div className="flex justify-end pr-6 py-4" onClick={(e) => e.stopPropagation()}>
-                <div className="flex gap-3">
+            <div className="flex justify-end pr-6 py-4 max-w-full overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                <div className="flex gap-3 flex-wrap justify-end">
                     {/* WhatsApp */}
                     <a
                         href={`https://wa.me/?text=Check out ${place.name} on IndaStreet!`}
@@ -430,9 +430,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 {place.pricing && (() => {
                     const pricing = typeof place.pricing === 'string' ? JSON.parse(place.pricing) : place.pricing;
                     return (
-                        <div className="grid grid-cols-3 gap-2 text-center text-sm">
+                        <div className="grid grid-cols-3 gap-2 text-center text-sm max-w-full">
                             {/* 60 min pricing */}
-                            <div className={`bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative transition-all duration-500 ${
+                            <div className={`bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative transition-all duration-500 min-w-0 ${
                                 (place.discountPercentage && place.discountPercentage > 0) || (activeDiscount && discountTimeLeft !== 'EXPIRED')
                                     ? 'shadow-orange-500/60 shadow-xl ring-4 ring-orange-400/40 bg-gradient-to-br from-orange-50 to-orange-100 animate-pulse border-orange-300' 
                                     : ''

@@ -389,17 +389,17 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                     <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Our Establishment</h3>
                     
                     {/* Mobile: Swipeable Gallery */}
-                    <div className="block md:hidden mb-4">
-                        <div className="relative">
+                    <div className="block md:hidden mb-4 overflow-hidden">
+                        <div className="relative overflow-hidden">
                             <div 
                                 className="overflow-x-auto scrollbar-hide snap-x snap-mandatory"
                                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                             >
-                                <div className="flex gap-3 pb-4">
+                                <div className="flex gap-3 pb-4 px-1">
                                     {galleryImages.slice(0, 6).map((image, index) => (
                                         <div 
                                             key={index}
-                                            className="flex-shrink-0 w-[85vw] sm:w-[45vw] md:w-[30vw] snap-center"
+                                            className="flex-shrink-0 w-[80%] sm:w-[45%] md:w-[30%] snap-center"
                                             onClick={() => setExpandedImage(image)}
                                         >
                                             <div className="relative rounded-xl overflow-hidden shadow-md aspect-[4/3] bg-gray-100">
@@ -455,9 +455,9 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                     </div>
                     
                     {/* Content - Text directly on background */}
-                    <div className="relative z-10 p-6">
+                    <div className="relative z-10 p-6 max-w-full overflow-hidden">
                         <h3 className="text-3xl font-bold text-black mb-6 drop-shadow-2xl text-center">Massage Prices</h3>
-                        <div className="space-y-4">
+                        <div className="space-y-4 max-w-full">
                             {isDiscountActive(place) && (
                                 <div className="text-center mb-6">
                                     <p className="text-orange-600 font-bold text-lg flex items-center justify-center gap-2 drop-shadow-lg">
@@ -514,10 +514,10 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                     </div>
                     
                     {/* Content - Text directly on background */}
-                    <div className="relative z-10 p-6">
+                    <div className="relative z-10 p-6 max-w-full overflow-hidden">
                         <h3 className="text-3xl font-bold text-black mb-2 drop-shadow-2xl text-center">Amenities</h3>
                         <p className="text-sm text-gray-700 mb-6 text-center drop-shadow-lg">Additional services provided during your massage session</p>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-full">
                             {Array.isArray(amenities) && amenities.map((amenity, index) => (
                                 <div key={index} className="flex items-center gap-4 p-4 backdrop-blur-sm bg-white/50 rounded-lg border-2 border-orange-500/40 hover:border-orange-500/60 transition-all hover:shadow-lg">
                                     <span className="text-3xl drop-shadow-lg">{getAmenityIcon(amenity)}</span>
