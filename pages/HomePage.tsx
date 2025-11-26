@@ -829,12 +829,13 @@ const HomePage: React.FC<HomePageProps> = ({
                                 className="w-full pl-10 pr-8 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 appearance-none focus:outline-none focus:ring-2 focus:ring-green-600"
                                 value={selectedMassageType}
                                 onChange={e => setSelectedMassageType(e.target.value)}
+                                style={{ backgroundColor: 'white' } as React.CSSProperties}
                             >
-                                <option value="all">{t.home.massageType}</option>
+                                <option value="all" style={{ backgroundColor: 'white' } as React.CSSProperties}>{t.home.massageType}</option>
                                 {MASSAGE_TYPES_CATEGORIZED.map(category => (
-                                    <optgroup label={category.category} key={category.category}>
+                                    <optgroup label={category.category} key={category.category} style={{ backgroundColor: 'white' } as React.CSSProperties}>
                                         {category.types.map((type, index) => (
-                                            <option key={`${category.category}-${type}-${index}`} value={type}>{type}</option>
+                                            <option key={`${category.category}-${type}-${index}`} value={type} style={{ backgroundColor: 'white' } as React.CSSProperties}>{type}</option>
                                         ))}
                                     </optgroup>
                                 ))}
@@ -869,7 +870,7 @@ const HomePage: React.FC<HomePageProps> = ({
                             <img 
                                 src="https://ik.imagekit.io/7grri5v7d/indastreet_button-removebg-preview.png"
                                 alt="Join Indastreet"
-                                className="select-none transition-opacity hover:opacity-90 h-10 w-auto sm:h-16 md:h-[88px] lg:h-[108px]"
+                                className="select-none transition-opacity hover:opacity-90 h-14 w-auto sm:h-20 md:h-[110px] lg:h-[130px]"
                                 loading="lazy"
                                 draggable={false}
                             />
