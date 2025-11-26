@@ -68,10 +68,41 @@ const JoinIndastreetPage: React.FC<JoinIndastreetPageProps> = ({
                                     <p className="text-sm text-gray-600 mt-2">Earn 20% commission for every new therapist or massage place you bring to Indastreet</p>
                                 </div>
                                 <div className="bg-gradient-to-br from-teal-50 to-teal-100 rounded-xl p-6">
-                                    <div className="text-4xl font-bold text-teal-600 mb-2">10%</div>
+                                    <div className="text-4xl font-bold text-teal-600 mb-2">20%</div>
                                     <p className="text-gray-700 font-semibold">Recurring Commission</p>
-                                    <p className="text-sm text-gray-600 mt-2">Continuous 10% earnings as your partners grow their business</p>
+                                    <p className="text-sm text-gray-600 mt-2">Continuous 20% earnings every month as your partners stay active</p>
                                 </div>
+                            </div>
+
+                            <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 mb-6 border-2 border-purple-300">
+                                <h4 className="text-xl font-bold text-gray-900 mb-4">💰 Income Potential - Real Examples:</h4>
+                                <div className="space-y-4">
+                                    <div className="bg-white rounded-lg p-4">
+                                        <p className="text-gray-700 mb-2">
+                                            <span className="font-bold text-purple-600">Example 1:</span> Recruit just <span className="font-bold">5 therapists</span> at IDR 200,000/month
+                                        </p>
+                                        <ul className="ml-4 space-y-1 text-sm text-gray-600">
+                                            <li>• <strong>First Month:</strong> IDR 200,000 (5 × 40,000)</li>
+                                            <li>• <strong>Every Month After:</strong> IDR 200,000 (5 × 40,000) recurring</li>
+                                            <li>• <strong>Year 1 Total:</strong> <span className="font-bold text-green-600">IDR 2,400,000</span></li>
+                                        </ul>
+                                    </div>
+                                    <div className="bg-white rounded-lg p-4">
+                                        <p className="text-gray-700 mb-2">
+                                            <span className="font-bold text-purple-600">Example 2:</span> Recruit <span className="font-bold">20 therapists</span> at IDR 200,000/month
+                                        </p>
+                                        <ul className="ml-4 space-y-1 text-sm text-gray-600">
+                                            <li>• <strong>First Month:</strong> IDR 800,000 (20 × 40,000)</li>
+                                            <li>• <strong>Every Month After:</strong> IDR 800,000 (20 × 40,000) recurring</li>
+                                            <li>• <strong>Year 1 Total:</strong> <span className="font-bold text-green-600">IDR 9,600,000</span></li>
+                                        </ul>
+                                    </div>
+                                    <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-4 text-white">
+                                        <p className="font-bold mb-2">🚀 Serious Income Potential:</p>
+                                        <p className="text-sm">With <span className="font-bold">50 active members</span> staying for 1 year at IDR 200,000/month = <span className="font-bold text-yellow-300 text-lg">IDR 24,000,000</span> total earnings! Build your network and create sustainable passive income.</p>
+                                    </div>
+                                </div>
+                                <p className="text-xs text-gray-500 mt-4 italic">* Terms and conditions apply. Commission rates and payment schedules subject to Indastreet partner agreement.</p>
                             </div>
 
                             <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-6 mb-6">

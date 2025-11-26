@@ -626,7 +626,7 @@ const HowItWorksPage: React.FC<HowItWorksPageProps> = ({
                                             <th className="text-left py-3 px-4 text-gray-700">Package</th>
                                             <th className="text-right py-3 px-4 text-gray-700">Price</th>
                                             <th className="text-right py-3 px-4 text-gray-700">Your Commission (20%)</th>
-                                            <th className="text-right py-3 px-4 text-gray-700">Recurring Commission (10%)</th>
+                                            <th className="text-right py-3 px-4 text-gray-700">Recurring Commission (20%)</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -634,25 +634,25 @@ const HowItWorksPage: React.FC<HowItWorksPageProps> = ({
                                             <td className="py-3 px-4">1 Month</td>
                                             <td className="text-right py-3 px-4">IDR 200,000</td>
                                             <td className="text-right py-3 px-4 font-bold text-green-600">IDR 40,000</td>
-                                            <td className="text-right py-3 px-4 font-bold text-blue-600">IDR 20,000</td>
+                                            <td className="text-right py-3 px-4 font-bold text-blue-600">IDR 40,000</td>
                                         </tr>
                                         <tr className="border-b border-gray-100">
                                             <td className="py-3 px-4">3 Months</td>
                                             <td className="text-right py-3 px-4">IDR 600,000</td>
-                                            <td className="text-right py-3 px-4 font-bold text-green-600">IDR 80,000</td>
-                                            <td className="text-right py-3 px-4 font-bold text-blue-600">IDR 40,000</td>
+                                            <td className="text-right py-3 px-4 font-bold text-green-600">IDR 120,000</td>
+                                            <td className="text-right py-3 px-4 font-bold text-blue-600">IDR 120,000</td>
                                         </tr>
                                         <tr className="border-b border-gray-100">
                                             <td className="py-3 px-4">6 Months</td>
                                             <td className="text-right py-3 px-4">IDR 1,200,000</td>
-                                            <td className="text-right py-3 px-4 font-bold text-green-600">IDR 140,000</td>
-                                            <td className="text-right py-3 px-4 font-bold text-blue-600">IDR 80,000</td>
+                                            <td className="text-right py-3 px-4 font-bold text-green-600">IDR 240,000</td>
+                                            <td className="text-right py-3 px-4 font-bold text-blue-600">IDR 240,000</td>
                                         </tr>
                                         <tr className="border-b border-gray-100">
                                             <td className="py-3 px-4 font-bold">1 Year</td>
                                             <td className="text-right py-3 px-4 font-bold">IDR 2,400,000</td>
-                                            <td className="text-right py-3 px-4 font-bold text-green-600 text-lg">IDR 270,000</td>
-                                            <td className="text-right py-3 px-4 font-bold text-blue-600 text-lg">IDR 150,000</td>
+                                            <td className="text-right py-3 px-4 font-bold text-green-600 text-lg">IDR 480,000</td>
+                                            <td className="text-right py-3 px-4 font-bold text-blue-600 text-lg">IDR 480,000</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -666,8 +666,8 @@ const HowItWorksPage: React.FC<HowItWorksPageProps> = ({
                                             <span><strong>First Month:</strong> Earn 20% commission when a therapist you recruit signs up for the first time</span>
                                         </li>
                                         <li className="flex items-start gap-2">
-                                            <span className="font-bold text-blue-600">10%</span>
-                                            <span><strong>Recurring (Month 2+):</strong> Earn 10% commission every month the same therapist renews their membership</span>
+                                            <span className="font-bold text-blue-600">20%</span>
+                                            <span><strong>Recurring (Month 2+):</strong> Earn 20% commission every month the same therapist renews their membership</span>
                                         </li>
                                     </ul>
                                 </div>
@@ -677,13 +677,13 @@ const HowItWorksPage: React.FC<HowItWorksPageProps> = ({
                                     </p>
                                     <ul className="space-y-1 text-gray-700 ml-4">
                                         <li>• <strong>Month 1:</strong> You earn <span className="font-bold text-green-600">IDR 40,000</span> (20%)</li>
-                                        <li>• <strong>Month 2:</strong> If they renew, you earn <span className="font-bold text-blue-600">IDR 20,000</span> (10%)</li>
-                                        <li>• <strong>Month 3+:</strong> You continue earning <span className="font-bold text-blue-600">IDR 20,000</span> (10%) each month they stay active</li>
+                                        <li>• <strong>Month 2:</strong> If they renew, you earn <span className="font-bold text-blue-600">IDR 40,000</span> (20%)</li>
+                                        <li>• <strong>Month 3+:</strong> You continue earning <span className="font-bold text-blue-600">IDR 40,000</span> (20%) each month they stay active</li>
                                     </ul>
                                 </div>
                                 <div className="p-4 bg-orange-50 rounded-lg border-2 border-orange-200">
                                     <p className="text-gray-700">
-                                        <span className="font-bold">🚀 Build Passive Income:</span> Recruit 10 therapists on 1-month plans = <span className="font-bold text-green-600">IDR 400,000</span> first month + <span className="font-bold text-blue-600">IDR 200,000</span> every month they renew!
+                                        <span className="font-bold">🚀 Build Passive Income:</span> Recruit 10 therapists on 1-month plans = <span className="font-bold text-green-600">IDR 400,000</span> first month + <span className="font-bold text-blue-600">IDR 400,000</span> every month they renew!
                                     </p>
                                 </div>
                                 <div className="p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border-2 border-purple-300">
@@ -696,23 +696,23 @@ const HowItWorksPage: React.FC<HowItWorksPageProps> = ({
                                         </div>
                                         <div className="bg-white p-4 rounded-lg shadow">
                                             <div className="text-sm text-gray-600 mb-1">After 3 Months</div>
-                                            <div className="text-2xl font-bold text-purple-600">IDR 80,000</div>
-                                            <div className="text-xs text-gray-500 mt-1">Month 1 (20%) + Month 2-3 (10% each)</div>
+                                            <div className="text-2xl font-bold text-purple-600">IDR 120,000</div>
+                                            <div className="text-xs text-gray-500 mt-1">Month 1 (20%) + Month 2-3 (20% each)</div>
                                         </div>
                                         <div className="bg-white p-4 rounded-lg shadow">
                                             <div className="text-sm text-gray-600 mb-1">After 6 Months</div>
-                                            <div className="text-2xl font-bold text-purple-600">IDR 140,000</div>
-                                            <div className="text-xs text-gray-500 mt-1">Month 1 (20%) + Month 2-6 (10% each)</div>
+                                            <div className="text-2xl font-bold text-purple-600">IDR 240,000</div>
+                                            <div className="text-xs text-gray-500 mt-1">Month 1 (20%) + Month 2-6 (20% each)</div>
                                         </div>
                                         <div className="bg-white p-4 rounded-lg shadow border-2 border-purple-400">
                                             <div className="text-sm text-gray-600 mb-1">After 1 Year</div>
-                                            <div className="text-3xl font-bold text-purple-600">IDR 260,000</div>
-                                            <div className="text-xs text-gray-500 mt-1">Month 1 (20%) + Month 2-12 (10% each)</div>
+                                            <div className="text-3xl font-bold text-purple-600">IDR 480,000</div>
+                                            <div className="text-xs text-gray-500 mt-1">Month 1 (20%) + Month 2-12 (20% each)</div>
                                         </div>
                                     </div>
                                     <div className="mt-4 p-3 bg-white rounded-lg">
                                         <p className="text-sm text-gray-700">
-                                            <span className="font-bold">💡 Pro Tip:</span> With <span className="font-bold">10 active members</span> staying for 1 year, you earn <span className="font-bold text-purple-600">IDR 2,600,000</span> total! The more members you recruit and keep active, the more passive income you build.
+                                            <span className="font-bold">💡 Pro Tip:</span> With <span className="font-bold">10 active members</span> staying for 1 year, you earn <span className="font-bold text-purple-600">IDR 4,800,000</span> total! The more members you recruit and keep active, the more passive income you build.
                                         </p>
                                     </div>
                                 </div>
