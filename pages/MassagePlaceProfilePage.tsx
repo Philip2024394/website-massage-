@@ -350,7 +350,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
             />
 
             {/* Main Content */}
-            <main className="w-full max-w-6xl mx-auto px-4 py-6 pb-4 overflow-x-hidden">
+            <main className="w-full max-w-6xl mx-auto px-4 py-6 pb-24 overflow-x-hidden">
                 <PageNumberBadge pageNumber={83} pageName="MassagePlaceProfile" isLocked={false} />
                 
                 {/* Hero Section with place info and actions */}
@@ -385,7 +385,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                 />
 
                 {/* Gallery Section - 6 Images with Captions + Mobile Swipe Support */}
-                <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 mb-6">
+                <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 mb-6 max-w-full overflow-hidden">
                     <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Our Establishment</h3>
                     
                     {/* Mobile: Swipeable Gallery */}
@@ -444,7 +444,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                 </div>
 
                 {/* Massage Prices Section with Background Image */}
-                <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6 relative min-h-[400px]">
+                <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6 relative min-h-[400px] max-w-full">
                     {/* Background Image - Full Coverage */}
                     <div className="absolute inset-0">
                         <img
@@ -503,7 +503,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                 </div>
 
                 {/* Amenities Section */}
-                <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6 relative min-h-[400px]">
+                <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6 relative min-h-[400px] max-w-full">
                     {/* Background Image - Full Coverage */}
                     <div className="absolute inset-0">
                         <img
@@ -529,7 +529,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                 </div>
 
                 {/* Visit Us Section with Location and Transport Options */}
-                <div className="bg-white rounded-2xl shadow-lg p-6 mb-0">
+                <div className="bg-white rounded-2xl shadow-lg p-6 mb-24 max-w-full overflow-hidden">
                     {place.location && place.location.trim() !== '' && place.location !== 'Location pending setup' && (
                         <p className="text-gray-700 mb-6">{place.location}</p>
                     )}
