@@ -131,7 +131,7 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({
             <header className="bg-white p-4 shadow-md z-[9997] flex-shrink-0">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">
-                        <span className="text-black">Inda</span><span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
+                        <span className="text-black">Inda</span><span className="text-orange-500">Street</span>
                     </h1>
                     <div className="flex items-center gap-3 text-gray-600">
                         <button onClick={() => setIsMenuOpen(true)} title="Menu">
@@ -274,9 +274,8 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({
                                         Signing In...
                                     </div>
                                 ) : (
-                                    <div className="flex items-center justify-center">
-                                        <LogIn className="w-5 h-5 mr-2" />
-                                        Sign In to Therapist
+                                    <div className="flex items-center justify-center gap-2">
+                                        🔑 Sign In to Therapist
                                     </div>
                                 )}
                             </button>

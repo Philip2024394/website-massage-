@@ -1558,57 +1558,57 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                             <p className="text-xs text-gray-500 mt-1">Set your online massage prices</p>
                             
                             <div className="grid grid-cols-3 gap-2 mt-2">
-                                <div>
-                                <label className="block text-xs font-medium text-gray-900">{t?.['60min'] || '60 min'}</label>
+                                <div className="bg-orange-50 border border-orange-200 rounded-lg p-2">
+                                <label className="block text-xs font-semibold text-orange-800 text-center mb-1">{t?.['60min'] || '60 min'}</label>
                                 <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
+                                    <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none"><CurrencyRpIcon className="h-3 w-3 text-gray-400" /></div>
                                     <input 
                                         type="text" 
                                         value={formatPriceForDisplay(pricing['60'])} 
                                         onChange={e => handlePriceChange('60', e.target.value)} 
                                         placeholder="345k"
-                                        className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900 font-mono"
+                                        className="block w-full pl-7 pr-1 py-1.5 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900 font-mono text-sm"
                                     />
                                     </div>
                                     {pricing['60'] > 0 && (
-                                        <p className="text-xs text-gray-500 mt-1">
-                                            = Rp {pricing['60'].toLocaleString('id-ID')}
+                                        <p className="text-[10px] text-gray-600 mt-0.5 text-center">
+                                            Rp {pricing['60'].toLocaleString('id-ID')}
                                         </p>
                                     )}
                                 </div>
-                                <div>
-                                <label className="block text-xs font-medium text-gray-900">{t?.['90min'] || '90 min'}</label>
+                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-2">
+                                <label className="block text-xs font-semibold text-blue-800 text-center mb-1">{t?.['90min'] || '90 min'}</label>
                                     <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
+                                    <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none"><CurrencyRpIcon className="h-3 w-3 text-gray-400" /></div>
                                     <input 
                                         type="text" 
                                         value={formatPriceForDisplay(pricing['90'])} 
                                         onChange={e => handlePriceChange('90', e.target.value)} 
                                         placeholder="450k"
-                                        className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900 font-mono"
+                                        className="block w-full pl-7 pr-1 py-1.5 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900 font-mono text-sm"
                                     />
                                     </div>
                                     {pricing['90'] > 0 && (
-                                        <p className="text-xs text-gray-500 mt-1">
-                                            = Rp {pricing['90'].toLocaleString('id-ID')}
+                                        <p className="text-[10px] text-gray-600 mt-0.5 text-center">
+                                            Rp {pricing['90'].toLocaleString('id-ID')}
                                         </p>
                                     )}
                                 </div>
-                                <div>
-                                <label className="block text-xs font-medium text-gray-900">{t?.['120min'] || '120 min'}</label>
+                                <div className="bg-green-50 border border-green-200 rounded-lg p-2">
+                                <label className="block text-xs font-semibold text-green-800 text-center mb-1">{t?.['120min'] || '120 min'}</label>
                                     <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CurrencyRpIcon className="h-4 w-4 text-gray-400" /></div>
+                                    <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none"><CurrencyRpIcon className="h-3 w-3 text-gray-400" /></div>
                                     <input 
                                         type="text" 
                                         value={formatPriceForDisplay(pricing['120'])} 
                                         onChange={e => handlePriceChange('120', e.target.value)} 
                                         placeholder="600k"
-                                        className="mt-1 block w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900 font-mono"
+                                        className="block w-full pl-7 pr-1 py-1.5 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900 font-mono text-sm"
                                     />
                                     </div>
                                     {pricing['120'] > 0 && (
-                                        <p className="text-xs text-gray-500 mt-1">
-                                            = Rp {pricing['120'].toLocaleString('id-ID')}
+                                        <p className="text-[10px] text-gray-600 mt-0.5 text-center">
+                                            Rp {pricing['120'].toLocaleString('id-ID')}
                                         </p>
                                     )}
                                 </div>

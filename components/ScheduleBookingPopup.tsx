@@ -409,7 +409,7 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
         <div className="p-3 sm:p-4">
           {/* Step 1: Select Duration */}
           {step === 'duration' && (
-            <div className="space-y-2 sm:space-y-3">
+            <div className="space-y-1.5 sm:space-y-2">
               <h3 className="text-base font-semibold text-gray-800 mb-2 sm:mb-3">Select Duration</h3>
               {durations.map((option) => (
                 <button
@@ -431,7 +431,7 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
                       setStep('time');
                     }
                   }}
-                  className="w-full p-2.5 sm:p-3 rounded-xl border-2 border-gray-200 hover:border-orange-500 hover:bg-orange-50 transition-all"
+                  className="w-full p-2 sm:p-2.5 rounded-xl border-2 border-gray-200 hover:border-orange-500 hover:bg-orange-50 transition-all"
                 >
                   <div className="flex items-center justify-between">
                     <div className="text-left flex items-center gap-2">

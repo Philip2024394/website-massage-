@@ -20,7 +20,6 @@ interface TraditionalBalineseMassagePageProps {
 
 const TraditionalBalineseMassagePage: React.FC<TraditionalBalineseMassagePageProps> = ({ onNavigate }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [imageError, setImageError] = useState(false);
 
     // Updated image URL with fresh timestamp for cache busting
     const imageUrl = `https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=${Date.now()}&tr=w-1920,h-400,fo-auto`;
@@ -28,24 +27,13 @@ const TraditionalBalineseMassagePage: React.FC<TraditionalBalineseMassagePagePro
     return (
         <div className="min-h-screen bg-gray-50 overflow-x-hidden w-full max-w-full">
             <header 
-                className="p-4 sticky top-0 z-20 shadow-sm bg-cover bg-center bg-no-repeat relative w-full max-w-full overflow-hidden"
+                className="p-4 sticky top-0 z-20 shadow-sm bg-cover bg-center bg-no-repeat w-full max-w-full overflow-hidden"
                 style={{
-                    backgroundImage: imageError 
-                        ? `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5))` 
-                        : `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${imageUrl})`,
+                    backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${imageUrl})`,
                 }}
             >
                 <div className="flex justify-between items-center relative z-10 max-w-full">
                     <div className="flex items-center gap-3">
-                        <img 
-                            src={imageUrl}
-                            alt="Balinese Massage"
-                            className="h-10 w-10 object-cover rounded-full border-2 border-white shadow-lg"
-                            onError={() => {
-                                console.error('Image failed to load:', imageUrl);
-                                setImageError(true);
-                            }}
-                        />
                         <h1 className="text-2xl font-bold">
                             <span className="text-black drop-shadow-lg">Inda</span>
                             <span className="text-orange-500 drop-shadow-lg">Street</span>

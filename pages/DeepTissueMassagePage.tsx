@@ -39,15 +39,15 @@ const DeepTissueMassagePage: React.FC<DeepTissueMassagePageProps> = ({
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 overflow-x-hidden w-full">
             {/* Flying Butterfly Animation */}
             <FlyingButterfly />
             
-            <header className="bg-white p-4 shadow-md sticky top-0 z-20">
+            <header className="bg-white p-4 shadow-md sticky top-0 z-20 w-full">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">
                         <span className="text-black">Inda</span>
-                        <span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
+                        <span className="text-orange-500">Street</span>
                     </h1>
                     <div className="flex items-center gap-3 text-gray-600">
                         {/* Home Button */}
@@ -62,20 +62,6 @@ const DeepTissueMassagePage: React.FC<DeepTissueMassagePageProps> = ({
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                            </svg>
-                        </button>
-                        
-                        <button 
-                            onClick={() => {
-                                if (onNavigate) {
-                                    onNavigate('referral');
-                                }
-                            }} 
-                            className="p-2 hover:bg-gray-100 rounded-full transition-colors" 
-                            title="Invite Friends"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
                         </button>
 
@@ -106,19 +92,16 @@ const DeepTissueMassagePage: React.FC<DeepTissueMassagePageProps> = ({
                 places={places}
             />
             {/* Hero Section */}
-            <div 
-                className="relative text-white py-24 bg-cover bg-center bg-no-repeat"
-                style={{
-                    backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/massage%20deep%20tissue%20indonisea.png?updatedAt=1762573128421)',
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat'
-                }}
-            >
+            <div className="relative text-white py-24 w-full overflow-hidden">
+                <img 
+                    src="https://ik.imagekit.io/7grri5v7d/massage%20deep%20tissue%20indonisea.png?updatedAt=1762573128421"
+                    alt="Deep Tissue Massage"
+                    className="absolute inset-0 w-full h-full object-cover"
+                />
                 {/* Clean overlay for better text readability */}
                 <div className="absolute inset-0 bg-black bg-opacity-40"></div>
                 
-                <div className="max-w-6xl mx-auto px-4 text-center relative z-10">
+                <div className="container mx-auto px-4 text-center relative z-10">
                     <h1 className="text-6xl font-bold mb-6 drop-shadow-lg">Deep Tissue Massage</h1>
                     <p className="text-2xl text-white mb-4 drop-shadow-md">
                         Targeted Therapy for Chronic Pain & Muscle Tension
@@ -135,7 +118,7 @@ const DeepTissueMassagePage: React.FC<DeepTissueMassagePageProps> = ({
                 </div>
             </div>
 
-            <div className="max-w-6xl mx-auto px-4 py-16 pb-24">
+            <div className="container mx-auto px-4 py-16 pb-24">
                 {/* What Is Deep Tissue */}
                 <div className="mb-16">
                     <h2 className="text-4xl font-bold text-gray-900 mb-8 text-center">What is Deep Tissue Massage?</h2>

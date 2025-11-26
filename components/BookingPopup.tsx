@@ -515,13 +515,13 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
           </div>
 
           {/* Duration Selection */}
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <h3 className="font-semibold text-gray-800 text-sm">Select Duration</h3>
           {bookingOptions.map((option) => (
             <button
               key={option.duration}
               onClick={() => setSelectedDuration(option.duration)}
-              className={`w-full p-3 rounded-xl border-2 transition-all ${
+              className={`w-full p-2 rounded-xl border-2 transition-all ${
                 selectedDuration === option.duration
                   ? 'border-orange-500 bg-orange-50'
                   : 'border-gray-200 hover:border-orange-300 bg-white'

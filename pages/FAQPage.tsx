@@ -75,12 +75,12 @@ const FAQPage: React.FC<FAQPageProps> = ({
         {
             category: 'therapist',
             question: 'How do I create a therapist profile on IndaStreet?',
-            answer: 'Click "Sign Up" and select "Therapist". Fill in your personal details, certifications, specializations, work experience, and languages. Upload your certification documents for verification. Choose a membership package (1, 3, 6, or 12 months) and complete payment via bank transfer. After admin approval, your profile goes live and you can start receiving bookings.'
+            answer: 'Click "Sign Up" and select "Therapist". Fill in your personal details, certifications, specializations, work experience, and languages. Choose the membership package (1 month) and complete payment via bank transfer. After admin approval, your profile goes live and you can start receiving bookings.'
         },
         {
             category: 'therapist',
             question: 'What are the membership costs for therapists?',
-            answer: 'We offer flexible membership packages: 1 Month - IDR 100,000 | 3 Months - IDR 250,000 (save 17%) | 6 Months - IDR 450,000 (save 25%) | 1 Year - IDR 800,000 (save 33%). All packages include profile verification, booking management dashboard, WhatsApp integration, and priority placement in search results.'
+            answer: 'We offer a flexible membership plan: 1 Month - IDR 200,000 with a 30-day free trial included. Your membership comes complete with profile verification, a booking management dashboard, WhatsApp integration, and priority placement in search results to maximize your visibility.'
         },
         {
             category: 'therapist',
@@ -90,7 +90,7 @@ const FAQPage: React.FC<FAQPageProps> = ({
         {
             category: 'therapist',
             question: 'What certifications do I need to join IndaStreet?',
-            answer: 'You need valid massage therapy certifications from recognized institutions. Accepted certifications include: Traditional Balinese Massage Certificate, Swedish Massage Certification, Deep Tissue Therapy, Aromatherapy Certification, Reflexology Training, or equivalent professional qualifications. Upload clear photos/scans of your certificates during registration for verification.'
+            answer: 'You do not need formal massage therapy certifications to join IndaStreet. Experience is valued, and you can start your career once you have practical skills. Simply upload clear photos during registration and create an honest profile showcasing your experience, specialties, and techniques. Building your reputation through client reviews is what matters most.'
         },
         {
             category: 'therapist',
@@ -100,7 +100,7 @@ const FAQPage: React.FC<FAQPageProps> = ({
         {
             category: 'therapist',
             question: 'Can I work in multiple locations across Indonesia?',
-            answer: 'Yes! You can list multiple service locations (e.g., Seminyak, Ubud, Canggu). Update your availability by area in your dashboard. Many therapists work in 2-3 locations and clients can filter by specific neighborhoods or cities when searching.'
+            answer: 'Yes! You can list multiple service locations each month when moving from city to city (e.g., Seminyak, Ubud, Canggu). Update your availability by area in your dashboard. Many therapists work in 2-3 locations each month and clients can filter by specific neighborhoods or cities when searching.'
         },
 
         // Hotel FAQs

@@ -1188,7 +1188,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'how-it-works':
             return renderSimplePage(HowItWorksPage);
         case 'massage-bali':
-            return renderSimplePage(MassageBaliPage);
+            return <MassageBaliPage onNavigate={commonNavigateHandler} {...portalHandlers} {...commonDataProps} />;
         case 'blog':
             return renderSimplePage(BlogIndexPage);
         case 'faq':

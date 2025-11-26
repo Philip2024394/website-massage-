@@ -96,7 +96,7 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
                 <div className="grid md:grid-cols-2 gap-12 items-center mb-20">
                     <div>
                         <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                            Our Inda<span className="text-orange-500">street</span> Mission
+                            Our Inda<span className="text-orange-500">Street</span> Mission
                         </h2>
                         <p className="text-lg text-gray-700 mb-4">
                             We're igniting the future for Indonesia's youth. IndaStreet is the SuperApp that puts everything at your fingertips: from sizzling food delivery and seamless rides to unforgettable local destinations, exciting motor rentals, and genuine connections through dating.

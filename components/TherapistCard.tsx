@@ -590,7 +590,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
-                        onNavigate?.('therapist-registration');
+                        onNavigate?.('therapistLogin');
                     }}
                     className="text-[11px] text-green-600 font-semibold flex items-center gap-1 hover:text-green-700 hover:underline transition-colors cursor-pointer"
                 >

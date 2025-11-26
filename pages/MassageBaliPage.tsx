@@ -201,18 +201,16 @@ const MassageBaliPage: React.FC<MassageBaliPageProps> = ({
             />
 
             {/* Hero Section */}
-            <div className="relative text-white py-16 md:py-24 overflow-hidden">
-                {/* Background Image */}
-                <div 
-                    className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                    style={{
-                        // Added stronger cache-buster to force browsers/CDN to fetch latest asset
-                        backgroundImage: "url(https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382&v=20251031-v4)"
-                    }}
-                    key="massage-bali-hero-v4"
-                ></div>
+            <div 
+                className="relative text-white py-16 md:py-24 overflow-hidden w-full max-w-full bg-cover bg-center bg-no-repeat"
+                style={{
+                    // Added stronger cache-buster to force browsers/CDN to fetch latest asset
+                    backgroundImage: "url(https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382&v=20251031-v4)"
+                }}
+                key="massage-bali-hero-v4"
+            >
                 {/* Content */}
-                <div className="max-w-6xl mx-auto px-4 text-center relative z-10">
+                <div className="mx-auto px-4 text-center relative z-10 max-w-full">
                     <h1 className="text-4xl md:text-6xl font-bold mb-4 md:mb-6 drop-shadow-lg">Massage in Bali</h1>
                     <p className="text-lg md:text-2xl text-white mb-3 md:mb-4 drop-shadow-md">
                         Find Professional Balinese Massage Therapists Across the Island

@@ -94,15 +94,15 @@ const BalineseMassagePage: React.FC<BalineseMassagePageProps> = ({
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 overflow-x-hidden w-full max-w-full">
             {/* Flying Butterfly Animation */}
             <FlyingButterfly />
             
-            <header className="bg-white p-4 shadow-md sticky top-0 z-20">
-                <div className="flex justify-between items-center">
+            <header className="bg-white p-4 shadow-md sticky top-0 z-20 w-full max-w-full overflow-hidden">
+                <div className="flex justify-between items-center max-w-full">
                     <h1 className="text-2xl font-bold text-gray-800">
                         <span className="text-black">Inda</span>
-                        <span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
+                        <span className="text-orange-500">Street</span>
                     </h1>
                     <div className="flex items-center gap-3 text-gray-600">
                         {/* Home Button */}
@@ -149,7 +149,7 @@ const BalineseMassagePage: React.FC<BalineseMassagePageProps> = ({
 
             {/* Hero Section */}
             <div 
-                className="relative text-white py-24 overflow-hidden bg-cover bg-center"
+                className="relative text-white py-24 overflow-hidden bg-cover bg-center w-full max-w-full"
                 style={{
                     backgroundImage: heroImage ? `url(${heroImage})` : 'linear-gradient(to right, rgb(234, 88, 12), rgb(22, 163, 74))',
                     backgroundColor: heroImage ? 'transparent' : undefined
@@ -159,7 +159,7 @@ const BalineseMassagePage: React.FC<BalineseMassagePageProps> = ({
                     <div className="absolute top-10 right-10 text-9xl">🌺</div>
                     <div className="absolute bottom-10 left-10 text-8xl">🌿</div>
                 </div>
-                <div className="max-w-6xl mx-auto px-4 text-center relative z-10">
+                <div className="mx-auto px-4 text-center relative z-10 max-w-full">
                     <h1 className="text-6xl font-bold mb-6">Traditional Balinese Massage 🌺</h1>
                     <p className="text-2xl text-orange-100 mb-4">
                         1,000-Year-Old Healing Tradition from the Island of the Gods
@@ -179,11 +179,11 @@ const BalineseMassagePage: React.FC<BalineseMassagePageProps> = ({
                 </div>
             </div>
 
-            <div className="max-w-6xl mx-auto px-4 py-16 pb-24">
+            <div className="mx-auto px-4 py-16 pb-24 max-w-full overflow-x-hidden">
                 {/* What Is Balinese Massage */}
-                <div className="mb-16">
+                <div className="mb-16 max-w-full">
                     <h2 className="text-4xl font-bold text-gray-900 mb-8 text-center">What is Balinese Massage?</h2>
-                    <div className="bg-white rounded-2xl p-8 shadow-xl">
+                    <div className="bg-white rounded-2xl p-8 shadow-xl max-w-full">
                         <p className="text-lg text-gray-700 leading-relaxed mb-6">
                             Balinese massage is a traditional Indonesian therapy that has been practiced for over 
                             1,000 years. It combines gentle stretching, acupressure, reflexology, and aromatherapy 
@@ -194,7 +194,7 @@ const BalineseMassagePage: React.FC<BalineseMassagePageProps> = ({
                             problem areas, Balinese massage is a holistic full-body treatment designed to bring balance 
                             to mind, body, and spirit.
                         </p>
-                        <div className="grid md:grid-cols-3 gap-6 mt-8">
+                        <div className="grid md:grid-cols-3 gap-6 mt-8 max-w-full">
                             <div className="text-center">
                                 <div className="mb-3 flex justify-center">
                                     <img 
