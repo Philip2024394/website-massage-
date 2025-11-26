@@ -38,8 +38,8 @@ const HowItWorksPage: React.FC<HowItWorksPageProps> = ({
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
+        <div className="min-h-screen bg-gray-50 overflow-x-hidden w-full max-w-full">
+            <header className="p-4 bg-white sticky top-0 z-20 shadow-sm w-full max-w-full">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">
                         <span className="text-black">Inda</span>
@@ -82,10 +82,10 @@ const HowItWorksPage: React.FC<HowItWorksPageProps> = ({
                 places={places}
             />
 
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 overflow-x-hidden w-full max-w-full">
             {/* Hero Section */}
             <div 
-                className="bg-gradient-to-r from-blue-600 to-blue-500 text-white py-20 relative bg-cover bg-center"
+                className="bg-gradient-to-r from-blue-600 to-blue-500 text-white py-20 relative bg-cover bg-center w-full max-w-full overflow-hidden"
                 style={{
                     backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382)',
                 }}
@@ -99,8 +99,8 @@ const HowItWorksPage: React.FC<HowItWorksPageProps> = ({
             </div>
 
             {/* Tab Navigation */}
-            <div className="max-w-6xl mx-auto px-4 mt-8">
-                <div className="bg-white rounded-2xl shadow-xl p-2 flex flex-wrap gap-2">
+            <div className="max-w-6xl mx-auto px-4 mt-8 overflow-x-hidden">
+                <div className="bg-white rounded-2xl shadow-xl p-2 flex flex-wrap gap-2 max-w-full">
                     <button
                         onClick={() => setActiveTab('therapist')}
                         className={`flex-1 min-w-[150px] py-4 px-6 rounded-xl font-bold transition-all ${
@@ -144,7 +144,7 @@ const HowItWorksPage: React.FC<HowItWorksPageProps> = ({
                 </div>
             </div>
 
-            <div className="max-w-6xl mx-auto px-4 py-16">
+            <div className="max-w-full mx-auto px-4 py-16 overflow-x-hidden">
                 {/* For Therapists */}
                 {activeTab === 'therapist' && (
                     <div className="space-y-12">
@@ -556,13 +556,13 @@ const HowItWorksPage: React.FC<HowItWorksPageProps> = ({
                         </div>
 
                         <div 
-                            className="bg-gradient-to-r from-green-500 to-green-600 rounded-2xl p-8 md:p-12 text-white mb-12 relative bg-cover bg-center"
+                            className="bg-gradient-to-r from-green-500 to-green-600 rounded-2xl p-8 md:p-12 text-white mb-12 relative bg-cover bg-center max-w-full overflow-hidden"
                             style={{
                                 backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/massage%20app%20indastreets%20agent.png?updatedAt=1762092663015)',
                             }}
                         >
-                            <div className="relative z-10">
-                                <div className="grid md:grid-cols-3 gap-8 text-center">
+                            <div className="relative z-10 max-w-full overflow-hidden">
+                                <div className="grid md:grid-cols-3 gap-8 text-center max-w-full">
                                     <div>
                                         <div className="text-5xl font-bold mb-2">20%</div>
                                         <div className="text-green-100">Commission Rate</div>
@@ -617,10 +617,10 @@ const HowItWorksPage: React.FC<HowItWorksPageProps> = ({
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-2xl p-8 shadow-lg">
+                        <div className="bg-white rounded-2xl p-8 shadow-lg max-w-full overflow-hidden">
                             <h3 className="text-2xl font-bold text-gray-900 mb-6">Commission Example</h3>
-                            <div className="overflow-x-auto">
-                                <table className="w-full">
+                            <div className="overflow-x-auto max-w-full">
+                                <table className="w-full min-w-0">
                                     <thead>
                                         <tr className="border-b-2 border-gray-200">
                                             <th className="text-left py-3 px-4 text-gray-700">Package</th>

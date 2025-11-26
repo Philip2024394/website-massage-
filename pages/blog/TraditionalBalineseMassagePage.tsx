@@ -26,16 +26,16 @@ const TraditionalBalineseMassagePage: React.FC<TraditionalBalineseMassagePagePro
     const imageUrl = `https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=${Date.now()}&tr=w-1920,h-400,fo-auto`;
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 overflow-x-hidden w-full max-w-full">
             <header 
-                className="p-4 sticky top-0 z-20 shadow-sm bg-cover bg-center bg-no-repeat relative"
+                className="p-4 sticky top-0 z-20 shadow-sm bg-cover bg-center bg-no-repeat relative w-full max-w-full overflow-hidden"
                 style={{
                     backgroundImage: imageError 
                         ? `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5))` 
                         : `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${imageUrl})`,
                 }}
             >
-                <div className="flex justify-between items-center relative z-10">
+                <div className="flex justify-between items-center relative z-10 max-w-full">
                     <div className="flex items-center gap-3">
                         <img 
                             src={imageUrl}
@@ -51,13 +51,24 @@ const TraditionalBalineseMassagePage: React.FC<TraditionalBalineseMassagePagePro
                             <span className="text-orange-500 drop-shadow-lg">Street</span>
                         </h1>
                     </div>
-                    <button 
-                        onClick={() => setIsMenuOpen(true)} 
-                        title="Menu"
-                        className="text-white hover:text-orange-300 transition-colors drop-shadow-lg"
-                    >
-                        <BurgerMenuIcon className="w-6 h-6" />
-                    </button>
+                    <div className="flex items-center gap-3">
+                        <button 
+                            onClick={() => onNavigate?.('home')} 
+                            title="Home"
+                            className="text-white hover:text-orange-300 transition-colors drop-shadow-lg"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                            </svg>
+                        </button>
+                        <button 
+                            onClick={() => setIsMenuOpen(true)} 
+                            title="Menu"
+                            className="text-white hover:text-orange-300 transition-colors drop-shadow-lg"
+                        >
+                            <BurgerMenuIcon className="w-6 h-6" />
+                        </button>
+                    </div>
                 </div>
             </header>
             
@@ -96,15 +107,15 @@ const TraditionalBalineseMassagePage: React.FC<TraditionalBalineseMassagePagePro
                 </div>
             )}
 
-            <article className="max-w-4xl mx-auto px-4 py-12">
-                <nav className="mb-8 text-sm text-gray-600">
+            <article className="mx-auto px-4 py-12 overflow-x-hidden w-full max-w-full">
+                <nav className="mb-8 text-sm text-gray-600 max-w-full">
                     <button onClick={() => onNavigate?.('home')} className="hover:text-orange-600">Home</button> / 
                     <button onClick={() => onNavigate?.('blog')} className="hover:text-orange-600 ml-1">Blog</button> / 
                     <span className="ml-1">Traditional Balinese Massage</span>
                 </nav>
 
-                <header className="mb-8">
-                    <div className="mb-4">
+                <header className="mb-8 max-w-full">
+                    <div className="mb-4 max-w-full">
                         <span className="bg-green-100 text-green-700 px-4 py-1 rounded-full text-sm font-bold uppercase">Techniques</span>
                     </div>
                     <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
@@ -119,7 +130,7 @@ const TraditionalBalineseMassagePage: React.FC<TraditionalBalineseMassagePagePro
                     </div>
                 </header>
 
-                <div className="mb-12 rounded-2xl overflow-hidden">
+                <div className="mb-12 rounded-2xl overflow-hidden max-w-full">
                     <img 
                         src="https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382&cb=1730425600000"
                         alt="Traditional Balinese massage techniques and healing in Bali Indonesia" 
@@ -128,7 +139,7 @@ const TraditionalBalineseMassagePage: React.FC<TraditionalBalineseMassagePagePro
                     />
                 </div>
 
-                <div className="prose prose-base max-w-none">
+                <div className="prose prose-base max-w-none overflow-x-hidden">
                     <p className="text-lg text-gray-700 mb-6 leading-relaxed">
                         Balinese massage (Pijat Bali) is a 1,000-year-old healing tradition combining acupressure, reflexology, aromatherapy, and gentle stretching. Rooted in Ayurvedic, Chinese, and indigenous Balinese medicine, this deeply therapeutic modality balances energy flow, relieves tension, and promotes holistic wellness.
                     </p>
@@ -229,12 +240,12 @@ const TraditionalBalineseMassagePage: React.FC<TraditionalBalineseMassagePagePro
                         <li><strong>Ylang-Ylang:</strong> Exotic floral scent reducing blood pressure and stress</li>
                     </ul>
 
-                    <div className="relative rounded-2xl overflow-hidden my-12 p-8">
+                    <div className="relative rounded-2xl overflow-hidden my-12 p-8 max-w-full">
                         <div 
                             className="absolute inset-0 bg-cover bg-center"
                             style={{backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/massage%20jogja.png)'}}
                         ></div>
-                        <div className="relative">
+                        <div className="relative max-w-full">
                             <h2 className="text-2xl font-bold text-white mt-12 mb-6 drop-shadow-lg">The Traditional Balinese Massage Experience</h2>
                             <p className="text-white mb-6 leading-relaxed drop-shadow-md">
                                 A full Balinese massage session follows a specific sequence designed to maximize therapeutic benefits:
@@ -308,12 +319,12 @@ const TraditionalBalineseMassagePage: React.FC<TraditionalBalineseMassagePagePro
                     </p>
                 </div>
 
-                <div className="mt-12 relative rounded-2xl overflow-hidden p-8 text-white text-center">
+                <div className="mt-12 relative rounded-2xl overflow-hidden p-8 text-white text-center max-w-full">
                     <div 
                         className="absolute inset-0 bg-cover bg-center"
                         style={{backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/garden%20forest.png)'}}
                     ></div>
-                    <div className="relative">
+                    <div className="relative max-w-full">
                         <h3 className="text-2xl font-bold mb-4 drop-shadow-lg">Experience Authentic Balinese Massage</h3>
                         <p className="text-xl mb-6 drop-shadow-md">Find certified traditional therapists on Indastreet</p>
                         <button 

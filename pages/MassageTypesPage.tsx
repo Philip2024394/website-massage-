@@ -33,11 +33,7 @@ const StarIcon: React.FC<{ className?: string }> = ({ className }) => (
     </svg>
 );
 
-const UsersIcon = ({ className = 'w-5 h-5' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.653-.122-1.28-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.653.122-1.28.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-    </svg>
-);
+
 
 const BuildingIcon = ({ className = 'w-5 h-5' }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -152,15 +148,13 @@ const MassageTypesPage: React.FC<MassageTypesPageProps> = ({
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 overflow-x-hidden w-full max-w-full">
             {/* Header matching HomePage */}
-            <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
+            <header className="p-4 bg-white sticky top-0 z-20 shadow-sm w-full max-w-full overflow-hidden">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">
                         <span className="text-black">Inda</span>
-                        <span className="text-orange-500">
-                            <span className="inline-block animate-float">S</span>treet
-                        </span>
+                        <span className="text-orange-500">Street</span>
                     </h1>
                     <div className="flex items-center gap-4 text-gray-600">
                         <button 
@@ -201,12 +195,12 @@ const MassageTypesPage: React.FC<MassageTypesPageProps> = ({
                 />
             </React19SafeWrapper>
 
-            <main className="p-4 pb-20">
-                <div className="flex flex-col gap-4">
+            <main className="p-4 pb-20 overflow-x-hidden max-w-full">
+                <div className="flex flex-col gap-4 max-w-full">
                     {massageTypes.map((massage, index) => (
                         <div 
                             key={massage.name}
-                            className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
+                            className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 max-w-full"
                         >
                             <div className="relative">
                                 <img 
@@ -309,14 +303,11 @@ const MassageTypesPage: React.FC<MassageTypesPageProps> = ({
 
                                 {/* Action Buttons - Reorganized */}
                                 <div className="flex gap-3 text-xs mt-3 pt-3 border-t border-gray-100">
-                                    {/* Find Therapists - Left with circular icon */}
+                                    {/* Find Therapists - Left */}
                                     <button 
                                         onClick={() => onFindTherapists?.(massage.name)}
                                         className="flex items-center gap-2 text-orange-500 font-semibold hover:text-orange-600 transition-colors"
                                     >
-                                        <span className="flex items-center justify-center w-6 h-6 bg-orange-100 rounded-full">
-                                            <UsersIcon className="w-4 h-4" />
-                                        </span>
                                         Find Therapists →
                                     </button>
                                     

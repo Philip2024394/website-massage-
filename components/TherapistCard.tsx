@@ -874,8 +874,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             </div>
             
             {/* Therapist Bio - Use actual therapist description or fallback - Expanded for 350 characters */}
-            <div className="absolute top-72 left-6 right-6 z-10 therapist-bio-section max-h-40 overflow-hidden bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-sm">
-                <p className="text-xs text-gray-700 leading-5 break-words whitespace-normal line-clamp-8">
+            <div className="absolute top-72 left-6 right-6 z-10 therapist-bio-section bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-sm">
+                <p className="text-xs text-gray-700 leading-5 break-words whitespace-normal line-clamp-6">
                     {therapist.description || 
                      `Certified massage therapist with ${therapist.yearsOfExperience || 5}+ years experience. Specialized in therapeutic and relaxation techniques. Available for home, hotel, and villa services. Professional, licensed, and highly rated by clients for exceptional service quality.`}
                 </p>

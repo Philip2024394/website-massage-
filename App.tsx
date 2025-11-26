@@ -68,6 +68,42 @@ const App = () => {
     useEffect(() => {
         // localStorage disabled: skip cleanupLocalStorage()
         
+        // Play welcome music once per session
+        const playWelcomeMusic = () => {
+            const hasPlayedMusic = sessionStorage.getItem('welcomeMusicPlayed');
+            if (!hasPlayedMusic) {
+                const audio = new Audio('/sounds/indastreet.mp3');
+                audio.volume = 0.5; // Set volume to 50%
+                
+                // Play with user interaction fallback
+                const playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise
+                        .then(() => {
+                            console.log('🎵 Welcome music playing');
+                            sessionStorage.setItem('welcomeMusicPlayed', 'true');
+                        })
+                        .catch((error) => {
+                            // Autoplay was prevented, will try on first user interaction
+                            console.log('🎵 Welcome music autoplay prevented, will play on user interaction');
+                            const playOnInteraction = () => {
+                                audio.play().then(() => {
+                                    console.log('🎵 Welcome music playing after user interaction');
+                                    sessionStorage.setItem('welcomeMusicPlayed', 'true');
+                                }).catch(() => {});
+                                document.removeEventListener('click', playOnInteraction);
+                                document.removeEventListener('touchstart', playOnInteraction);
+                            };
+                            document.addEventListener('click', playOnInteraction, { once: true });
+                            document.addEventListener('touchstart', playOnInteraction, { once: true });
+                        });
+                }
+            }
+        };
+        
+        // Play welcome music after a short delay to ensure page is ready
+        setTimeout(playWelcomeMusic, 500);
+        
         // 🔧 FIX: Initialize Appwrite SDK and make it globally available
         const initializeAppwriteSession = async () => {
             try {

@@ -327,7 +327,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">
                         <span className="text-black">Inda</span>
-                        <span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
+                        <span className="text-orange-500">Street</span>
                     </h1>
                     <button 
                         onClick={() => onNavigate && onNavigate('home')}

@@ -22,7 +22,13 @@ interface BankAccount {
     $updatedAt?: string;
 }
 
-const JobUnlockPaymentPage: React.FC = () => {
+interface JobUnlockPaymentPageProps {
+    onNavigate?: (page: string) => void;
+    onTermsClick?: () => void;
+    onPrivacyClick?: () => void;
+}
+
+const JobUnlockPaymentPage: React.FC<JobUnlockPaymentPageProps> = ({ onNavigate, onTermsClick, onPrivacyClick }) => {
     const [showTerms, setShowTerms] = useState(false);
     const [acceptedTerms, setAcceptedTerms] = useState(false);
     const [paymentProof, setPaymentProof] = useState<File | null>(null);
@@ -116,26 +122,29 @@ const JobUnlockPaymentPage: React.FC = () => {
 
     if (submitted) {
         return (
-            <div className="min-h-screen bg-gray-50 pb-32">
+            <div className="min-h-screen bg-gray-50 pb-32 overflow-x-hidden w-full max-w-full">
                 {/* Header */}
-                <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
-                    <div className="flex justify-between items-center">
+                <header className="p-4 bg-white sticky top-0 z-20 shadow-sm w-full max-w-full overflow-hidden">
+                    <div className="flex justify-between items-center max-w-full">
                         <h1 className="text-2xl font-bold text-gray-800">
                             <span className="text-black">Inda</span>
-                            <span className="text-orange-500">
-                                <span className="inline-block animate-float">S</span>treet
-                            </span>
+                            <span className="text-orange-500">Street</span>
                         </h1>
-                        <div className="flex items-center gap-4 pb-20 text-gray-600">
-                            <button onClick={() => setIsMenuOpen(true)} title="Menu">
+                        <div className="flex items-center gap-3 text-gray-600">
+                            <button onClick={() => onNavigate?.('home')} title="Home" className="hover:text-orange-500 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                </svg>
+                            </button>
+                            <button onClick={() => setIsMenuOpen(true)} title="Menu" className="hover:text-orange-500 transition-colors">
                                <BurgerMenuIcon className="w-6 h-6" />
                             </button>
                         </div>
                     </div>
                 </header>
 
-                <div className="max-w-2xl mx-auto px-4 py-12">
-                    <div className="bg-white rounded-2xl shadow-lg p-8 text-center border border-gray-100">
+                <div className="mx-auto px-4 py-12 max-w-full overflow-x-hidden">
+                    <div className="bg-white rounded-2xl shadow-lg p-8 text-center border border-gray-100 max-w-full">
                         <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                             <svg className="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -164,18 +173,18 @@ const JobUnlockPaymentPage: React.FC = () => {
                 </div>
 
                 {/* Footer - Fixed positioning */}
-                <footer className="fixed bottom-0 left-0 right-0 bg-gray-50 border-t border-gray-200 py-6 z-50">
-                    <div className="max-w-4xl mx-auto px-4">
+                <footer className="fixed bottom-0 left-0 right-0 bg-gray-50 border-t border-gray-200 py-6 z-50 w-full max-w-full overflow-hidden">
+                    <div className="mx-auto px-4 max-w-full">
                         <div className="flex justify-center gap-2 mb-3">
-                            <button className="text-xs text-orange-500 font-medium hover:underline">
+                            <button onClick={() => onNavigate?.('join-indastreet')} className="text-xs text-orange-500 font-medium hover:underline">
                                 Become Agent
                             </button>
                             <span className="text-gray-400">|</span>
-                            <button className="text-xs text-orange-500 font-medium hover:underline">
+                            <button onClick={onTermsClick} className="text-xs text-orange-500 font-medium hover:underline">
                                 Terms
                             </button>
                             <span className="text-gray-400">|</span>
-                            <button className="text-xs text-orange-500 font-medium hover:underline">
+                            <button onClick={onPrivacyClick} className="text-xs text-orange-500 font-medium hover:underline">
                                 Privacy
                             </button>
                         </div>
@@ -189,18 +198,21 @@ const JobUnlockPaymentPage: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-32">
+        <div className="min-h-screen bg-gray-50 pb-32 overflow-x-hidden w-full max-w-full">
             {/* Header */}
-            <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
-                <div className="flex justify-between items-center">
+            <header className="p-4 bg-white sticky top-0 z-20 shadow-sm w-full max-w-full overflow-hidden">
+                <div className="flex justify-between items-center max-w-full">
                     <h1 className="text-2xl font-bold text-gray-800">
                         <span className="text-black">Inda</span>
-                        <span className="text-orange-500">
-                            <span className="inline-block animate-float">S</span>treet
-                        </span>
+                        <span className="text-orange-500">Street</span>
                     </h1>
-                    <div className="flex items-center gap-4 pb-20 text-gray-600">
-                        <button onClick={() => setIsMenuOpen(true)} title="Menu">
+                    <div className="flex items-center gap-3 text-gray-600">
+                        <button onClick={() => onNavigate?.('home')} title="Home" className="hover:text-orange-500 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                            </svg>
+                        </button>
+                        <button onClick={() => setIsMenuOpen(true)} title="Menu" className="hover:text-orange-500 transition-colors">
                            <BurgerMenuIcon className="w-6 h-6" />
                         </button>
                     </div>
@@ -276,9 +288,9 @@ const JobUnlockPaymentPage: React.FC = () => {
             )}
 
             {/* Hero Section with indaStreet Guy Image */}
-            <div className="relative bg-white text-gray-800 py-12 overflow-hidden">
-                <div className="max-w-4xl mx-auto px-4">
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="relative bg-white text-gray-800 py-12 overflow-hidden w-full max-w-full">
+                <div className="mx-auto px-4 max-w-full overflow-x-hidden">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-6 max-w-full">
                         {/* Text Content */}
                         <div className="flex-1 text-center md:text-left z-10">
                             <div className="flex items-center justify-center md:justify-start gap-3 mb-3">
@@ -308,10 +320,10 @@ const JobUnlockPaymentPage: React.FC = () => {
             </div>
 
             {/* Main Content */}
-            <main className="p-4">
-                <div className="max-w-4xl mx-auto">
+            <main className="p-4 overflow-x-hidden w-full max-w-full">
+                <div className="mx-auto max-w-full">
                     {/* Personal Touch Message */}
-                    <div className="bg-white rounded-2xl shadow-lg p-8 mb-6 border border-gray-200">
+                    <div className="bg-white rounded-2xl shadow-lg p-8 mb-6 border border-gray-200 max-w-full">
                         <div className="flex items-start gap-4 pb-20">
                             <div className="w-14 h-14 bg-orange-100 rounded-xl flex items-center justify-center flex-shrink-0">
                                 <svg className="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -648,18 +660,18 @@ const JobUnlockPaymentPage: React.FC = () => {
             </main>
 
             {/* Footer - Fixed positioning */}
-            <footer className="fixed bottom-0 left-0 right-0 bg-gray-50 border-t border-gray-200 py-6 z-50">
-                <div className="max-w-4xl mx-auto px-4">
+            <footer className="fixed bottom-0 left-0 right-0 bg-gray-50 border-t border-gray-200 py-6 z-50 w-full max-w-full overflow-hidden">
+                <div className="mx-auto px-4 max-w-full">{
                     <div className="flex justify-center gap-2 mb-3">
-                        <button className="text-xs text-orange-500 font-medium hover:underline">
+                        <button onClick={() => onNavigate?.('join-indastreet')} className="text-xs text-orange-500 font-medium hover:underline">
                             Become Agent
                         </button>
                         <span className="text-gray-400">|</span>
-                        <button className="text-xs text-orange-500 font-medium hover:underline">
+                        <button onClick={onTermsClick} className="text-xs text-orange-500 font-medium hover:underline">
                             Terms
                         </button>
                         <span className="text-gray-400">|</span>
-                        <button className="text-xs text-orange-500 font-medium hover:underline">
+                        <button onClick={onPrivacyClick} className="text-xs text-orange-500 font-medium hover:underline">
                             Privacy
                         </button>
                     </div>
