@@ -325,7 +325,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 overflow-x-hidden">
+        <div className="min-h-screen bg-gray-50 overflow-x-hidden w-full max-w-full">
             {/* Header with brand and home icon */}
             <ProfileHeader
                 onHomeClick={() => onNavigate ? onNavigate('home') : onBack()}
@@ -350,7 +350,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
             />
 
             {/* Main Content */}
-            <main className="w-full max-w-6xl mx-auto px-4 py-6 pb-24 overflow-x-hidden">
+            <main className="w-full max-w-full mx-auto px-4 py-6 pb-24 overflow-x-hidden">
                 <PageNumberBadge pageNumber={83} pageName="MassagePlaceProfile" isLocked={false} />
                 
                 {/* Hero Section with place info and actions */}
@@ -399,7 +399,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                                     {galleryImages.slice(0, 6).map((image, index) => (
                                         <div 
                                             key={index}
-                                            className="flex-shrink-0 w-[calc(100vw-5rem)] sm:w-[calc(50vw-3rem)] md:w-[calc(33.333vw-3rem)] snap-center"
+                                            className="flex-shrink-0 w-[85vw] sm:w-[45vw] md:w-[30vw] snap-center"
                                             onClick={() => setExpandedImage(image)}
                                         >
                                             <div className="relative rounded-xl overflow-hidden shadow-md aspect-[4/3] bg-gray-100">

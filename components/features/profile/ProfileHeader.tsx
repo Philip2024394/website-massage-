@@ -13,7 +13,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
     onHomeClick
 }) => {
     return (
-        <header className="bg-white shadow-md sticky top-0 z-30">
+        <header className="bg-white shadow-md sticky top-0 z-30 w-full max-w-full overflow-hidden">
             <div className="w-full px-4 py-4">
                 <div className="flex items-center justify-between">
                     {/* Brand on the left */}

@@ -147,7 +147,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     50% { opacity: 0.7; }
                 }
             `}</style>
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6 max-w-full">
             {/* Main Banner Image - Increased height by 10% */}
             <div className="relative h-48 md:h-72">
                 {(() => {
