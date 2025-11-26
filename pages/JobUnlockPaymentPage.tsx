@@ -661,7 +661,7 @@ const JobUnlockPaymentPage: React.FC<JobUnlockPaymentPageProps> = ({ onNavigate,
 
             {/* Footer - Fixed positioning */}
             <footer className="fixed bottom-0 left-0 right-0 bg-gray-50 border-t border-gray-200 py-6 z-50 w-full max-w-full overflow-hidden">
-                <div className="mx-auto px-4 max-w-full">{
+                <div className="mx-auto px-4 max-w-full">
                     <div className="flex justify-center gap-2 mb-3">
                         <button onClick={() => onNavigate?.('join-indastreet')} className="text-xs text-orange-500 font-medium hover:underline">
                             Become Agent
