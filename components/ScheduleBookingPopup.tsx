@@ -376,7 +376,7 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4">
-      <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl max-h-[85vh] sm:max-h-[90vh] overflow-y-auto">
         {/* Header - Orange Indastreet Branding */}
         <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-4 rounded-t-2xl sticky top-0 z-10">
           <div className="flex items-center justify-between">
@@ -406,11 +406,11 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
           </div>
         </div>
 
-        <div className="p-4">
+        <div className="p-3 sm:p-4">
           {/* Step 1: Select Duration */}
           {step === 'duration' && (
-            <div className="space-y-3">
-              <h3 className="text-base font-semibold text-gray-800 mb-3">Select Duration</h3>
+            <div className="space-y-2 sm:space-y-3">
+              <h3 className="text-base font-semibold text-gray-800 mb-2 sm:mb-3">Select Duration</h3>
               {durations.map((option) => (
                 <button
                   key={option.minutes}
@@ -431,7 +431,7 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
                       setStep('time');
                     }
                   }}
-                  className="w-full p-3 rounded-xl border-2 border-gray-200 hover:border-orange-500 hover:bg-orange-50 transition-all"
+                  className="w-full p-2.5 sm:p-3 rounded-xl border-2 border-gray-200 hover:border-orange-500 hover:bg-orange-50 transition-all"
                 >
                   <div className="flex items-center justify-between">
                     <div className="text-left flex items-center gap-2">
@@ -443,7 +443,7 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
                         )}
                       </div>
                     </div>
-                    <div className="text-xl font-bold text-orange-600">${option.price}</div>
+                    <div className="text-lg sm:text-xl font-bold text-orange-600">${option.price}</div>
                   </div>
                 </button>
               ))}

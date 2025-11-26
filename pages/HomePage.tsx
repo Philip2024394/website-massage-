@@ -196,6 +196,18 @@ const HomePage: React.FC<HomePageProps> = ({
         t = fallbackT;
     }
 
+    // Debug data received
+    console.log('🏠 HomePage Data Debug:', {
+        therapistsCount: therapists?.length || 0,
+        placesCount: places?.length || 0,
+        therapistsLive: therapists?.filter((t: any) => t.isLive)?.length || 0,
+        placesLive: places?.filter((p: any) => p.isLive)?.length || 0,
+        hasTherapists: !!therapists && therapists.length > 0,
+        hasPlaces: !!places && places.length > 0,
+        therapistsSample: therapists?.slice(0, 2),
+        placesSample: places?.slice(0, 2)
+    });
+
     const [activeTab, setActiveTab] = useState('home');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
@@ -1070,7 +1082,7 @@ const HomePage: React.FC<HomePageProps> = ({
                             }
                             
                             return (
-                                <div className="space-y-4">
+                                <div className="space-y-4 max-w-full overflow-hidden">
                                     {livePlaces
                                         .slice(0, 9) // Show maximum 9 places
                                         .map((place, index) => {
